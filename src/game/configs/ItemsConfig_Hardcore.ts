@@ -1,5 +1,5 @@
 import { ItemRarity, IBaseItem, IEquipmentStats } from './ItemsConfig';
-import { resolveAssetObject } from '../utils/assetPath';
+import { resolveAssetObject } from '../../utils/assetPath';
 
 const rawItemsDatabase: Record<string, IEquipmentStats> = {
     // --- ОРУЖИЕ ---

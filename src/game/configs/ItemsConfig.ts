@@ -1,4 +1,4 @@
-import { resolveAssetObject } from '../utils/assetPath';
+import { resolveAssetObject } from '../../utils/assetPath';
 
 /**
  * @enum {string}
