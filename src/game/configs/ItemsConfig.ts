@@ -243,7 +243,12 @@ const rawItemsDatabase: Record<string, IEquipmentStats> = {
     'starter_shield': { id: 'starter_shield', name: 'Деревянный Баклер', priceGold: 0, image: '/assets/images/items/shields/starter_shield.png', rarity: 'COMMON', mainTab: 'ARSENAL', subTab: 'SHIELDS', textureKey: 'shield_wood', defenseBonus: 8, hpBonus: 40, desc: 'Маленький щит из дубовых досок.' },
 };
 
-export const ITEMS_DATABASE: Record<string, IBaseItem | IEquipmentStats> = resolveAssetObject(rawItemsDatabase) as Record<string, IBaseItem | IEquipmentStats>;
+export const ITEMS_DATABASE: Record<string, IBaseItem | IEquipmentStats> = Object.fromEntries(
+    Object.entries(rawItemsDatabase).map(([key, item]) => [
+        key,
+        { ...item, image: resolveAssetPath(item.image) }
+    ])
+) as Record<string, IBaseItem | IEquipmentStats>;
 
 /**
  * Хелпер для расчета "Мощи" (Gear Score) предмета
