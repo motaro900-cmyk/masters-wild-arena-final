@@ -403,10 +403,10 @@ const EquipmentSlot = ({ id, label, icon, itemId, activeDraggingId }: any) => {
                 ) : (
                     <img 
                         src={
-                            id === 'HELMETS' ? resolveAssetPath('/blueprint_helmet.png') :
-                            id === 'ARMOR' ? resolveAssetPath('/blueprint_armor.png') :
-                            id === 'WEAPONS' ? resolveAssetPath('/blueprint_weapon.png') :
-                            resolveAssetPath('/blueprint_shield.png')
+                            id === 'HELMETS' ? resolveAssetPath('/assets/blueprint_helmet.png') :
+                            id === 'ARMOR' ? resolveAssetPath('/assets/blueprint_armor.png') :
+                            id === 'WEAPONS' ? resolveAssetPath('/assets/blueprint_weapon.png') :
+                            resolveAssetPath('/assets/blueprint_shield.png')
                         } 
                         style={{ 
                             width: '80%', 
