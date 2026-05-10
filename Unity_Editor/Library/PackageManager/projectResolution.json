@@ -1,0 +1,47 @@
+{
+  "context": {
+    "projectPath": "C:/Users/Motar/Desktop/Masters of the Wild/Unity_Editor/Packages",
+    "unityVersion": "6000.4.4f1"
+  },
+  "inputs": [
+    "C:\\Users\\Motar\\Desktop\\Masters of the Wild\\Unity_Editor\\Packages\\manifest.json",
+    "C:\\Users\\Motar\\Desktop\\Masters of the Wild\\Unity_Editor\\Packages\\packages-lock.json",
+    "C:\\Program Files\\Unity\\Hub\\Editor\\6000.4.4f1\\Editor\\Data\\Resources\\PackageManager\\BuiltInPackages\\BuiltInPackagesCombined.sha1"
+  ],
+  "outputs": {
+    "com.unity.ugui@2.0.0": {
+      "name": "com.unity.ugui",
+      "displayName": "uGUI",
+      "resolvedPath": "C:\\Users\\Motar\\Desktop\\Masters of the Wild\\Unity_Editor\\Library\\PackageCache\\com.unity.ugui@d8a2716f3013",
+      "fingerprint": "d8a2716f30132e533c8f0cd850b4ba55bd18c2a6",
+      "editorCompatibility": "2019.2.0a1",
+      "version": "2.0.0",
+      "source": "builtin",
+      "testable": false
+    },
+    "com.unity.modules.imgui@1.0.0": {
+      "name": "com.unity.modules.imgui",
+      "displayName": "IMGUI",
+      "resolvedPath": "C:\\Users\\Motar\\Desktop\\Masters of the Wild\\Unity_Editor\\Library\\PackageCache\\com.unity.modules.imgui",
+      "version": "1.0.0",
+      "source": "builtin",
+      "testable": false
+    },
+    "com.unity.modules.jsonserialize@1.0.0": {
+      "name": "com.unity.modules.jsonserialize",
+      "displayName": "JSONSerialize",
+      "resolvedPath": "C:\\Users\\Motar\\Desktop\\Masters of the Wild\\Unity_Editor\\Library\\PackageCache\\com.unity.modules.jsonserialize",
+      "version": "1.0.0",
+      "source": "builtin",
+      "testable": false
+    },
+    "com.unity.modules.ui@1.0.0": {
+      "name": "com.unity.modules.ui",
+      "displayName": "UI",
+      "resolvedPath": "C:\\Users\\Motar\\Desktop\\Masters of the Wild\\Unity_Editor\\Library\\PackageCache\\com.unity.modules.ui",
+      "version": "1.0.0",
+      "source": "builtin",
+      "testable": false
+    }
+  }
+}

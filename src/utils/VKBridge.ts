@@ -1,0 +1,51 @@
+type VkUser = {
+    id: string;
+    firstName: string;
+    lastName: string;
+    photo: string;
+    photo100?: string;
+};
+
+declare global {
+    interface Window {
+        vkBridge?: {
+            send: (event: string, params?: any) => Promise<any>;
+        };
+    }
+}
+
+const getVkBridge = () => typeof window !== 'undefined' ? window.vkBridge : undefined;
+
+export const isVkMiniApp = (): boolean => Boolean(getVkBridge());
+
+export const initVK = async (): Promise<boolean> => {
+    const bridge = getVkBridge();
+    if (!bridge) return false;
+
+    try {
+        await bridge.send('VKWebAppInit');
+        return true;
+    } catch (error) {
+        console.warn('VKWebAppInit failed:', error);
+        return false;
+    }
+};
+
+export const getVkUserInfo = async (): Promise<VkUser | null> => {
+    const bridge = getVkBridge();
+    if (!bridge) return null;
+
+    try {
+        const user = await bridge.send('VKWebAppGetUserInfo');
+        return {
+            id: String(user.id),
+            firstName: user.first_name || user.firstName || 'Игрок',
+            lastName: user.last_name || user.lastName || '',
+            photo: user.photo_100 || user.photo_200 || user.photo || '',
+            photo100: user.photo_100 || user.photo_200 || user.photo || ''
+        };
+    } catch (error) {
+        console.warn('VKWebAppGetUserInfo failed:', error);
+        return null;
+    }
+};
