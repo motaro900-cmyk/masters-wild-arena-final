@@ -27,8 +27,14 @@ export class MainScreen extends PIXI.Container {
             const bgTex = await PIXI.Assets.load(AssetsMap.BACKGROUNDS.MAIN_MENU);
             this.bg = new PIXI.Sprite(bgTex);
             this.bg.anchor.set(0.5);
-            this.bg.width = 1920;
-            this.bg.height = 1080;
+            
+            // Cover-fit: масштабируем чтобы полностью заполнить 1920x1080
+            const scaleX = 1920 / bgTex.width;
+            const scaleY = 1080 / bgTex.height;
+            const scale = Math.max(scaleX, scaleY);
+            this.bg.scale.set(scale);
+            this.bg.position.set(1920 / 2, 1080 / 2);
+            
             this.addChildAt(this.bg, 0);
             this.render();
         } catch (e) {
