@@ -25,6 +25,7 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose }) => {
     const [localSound, setLocalSound] = useState(globalSound);
     const [localGraphics, setLocalGraphics] = useState(globalGraphics);
     const [localNotifications, setLocalNotifications] = useState(globalNotifications);
+    const [localFullscreen, setLocalFullscreen] = useState(!!document.fullscreenElement);
 
     const isLight = localTheme === 'LIGHT';
 
@@ -35,6 +36,14 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose }) => {
         setSoundVolume(localSound);
         setGraphicsQuality(localGraphics);
         setNotificationsEnabled(localNotifications);
+
+        // Управление полноэкранным режимом
+        if (localFullscreen && !document.fullscreenElement) {
+            document.documentElement.requestFullscreen().catch(e => console.warn("Fullscreen error:", e));
+        } else if (!localFullscreen && document.fullscreenElement) {
+            document.exitFullscreen().catch(e => console.warn("Exit Fullscreen error:", e));
+        }
+
         onClose();
     };
 
@@ -146,6 +155,26 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose }) => {
                     <div style={{
                         width: 18, height: 18, borderRadius: '50%', background: localShowFps ? (isLight ? '#fff' : '#1a0f00') : (isLight ? '#8b4513' : '#3a2a15'),
                         position: 'absolute', top: 2, left: localShowFps ? 28 : 3, transition: '0.3s'
+                    }} />
+                </div>
+            </div>
+
+            {/* ПОЛНОЭКРАННЫЙ РЕЖИМ */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0', borderBottom: `1px solid ${colors.border}` }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <span style={{ fontSize: 18 }}>📺</span>
+                    <span style={{ fontFamily: "'Cinzel', serif", fontSize: 14, color: colors.accent, fontWeight: 700 }}>ПОЛНОЭКРАННЫЙ РЕЖИМ</span>
+                </div>
+                <div 
+                    onClick={() => setLocalFullscreen(!localFullscreen)}
+                    style={{
+                        width: 50, height: 24, borderRadius: 12, background: localFullscreen ? colors.accent : colors.card,
+                        position: 'relative', cursor: 'pointer', transition: '0.3s', border: `1px solid ${colors.border}`
+                    }}
+                >
+                    <div style={{
+                        width: 18, height: 18, borderRadius: '50%', background: localFullscreen ? (isLight ? '#fff' : '#1a0f00') : (isLight ? '#8b4513' : '#3a2a15'),
+                        position: 'absolute', top: 2, left: localFullscreen ? 28 : 3, transition: '0.3s'
                     }} />
                 </div>
             </div>
