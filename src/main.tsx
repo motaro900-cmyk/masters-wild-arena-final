@@ -12,6 +12,15 @@ import { AnimatePresence } from 'framer-motion';
 import { FpsCounter } from './ui/components/hud/FpsCounter';
 import { initVK, getVkUserInfo } from './utils/VKBridge';
 
+// [VK] Global Error Handler
+if (typeof window !== 'undefined') {
+    window.addEventListener('error', (e) => {
+        if (e.message && (e.message.includes('ERR_CERT_DATE_INVALID') || e.message.includes('404'))) {
+            console.warn('⚠️ Network/Cert error detected. Attempting recovery...');
+        }
+    });
+}
+
 // ─── КОМПОНЕНТЫ ──────────────────────────────────────────────────────────────
 
 const SafeGameLayout = ({ containerRef }: { containerRef: React.RefObject<HTMLDivElement> }) => {
