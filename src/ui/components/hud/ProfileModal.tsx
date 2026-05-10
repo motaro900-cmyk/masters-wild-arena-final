@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Check, Camera, Shield, Award } from 'lucide-react';
 import { useGameStore } from '../../../store/useGameStore';
-import { GfxWoodPanel, GfxMenuButton, AvatarFrame } from './SharedUI';
+import { AvatarFrame } from './SharedUI';
 import { cn } from '../../../utils/cn';
 import { resolveAssetPath } from '../../../utils/assetPath';
 
@@ -50,37 +50,81 @@ export const ProfileModal: React.FC = () => {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md pointer-events-auto"
+                className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/90 backdrop-blur-xl pointer-events-auto"
                 onClick={() => setProfileModalOpen(false)}
             >
                 <motion.div
-                    initial={{ scale: 0.95, opacity: 0, y: 30 }}
-                    animate={{ scale: 1, opacity: 1, y: 0 }}
-                    exit={{ scale: 0.95, opacity: 0, y: 30 }}
-                    className="relative w-full max-w-[900px] h-[750px] flex flex-col"
+                    initial={{ scale: 0.9, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0.9, opacity: 0 }}
+                    className="relative w-full max-w-[1100px] h-[800px] flex flex-col overflow-hidden rounded-[40px] border-[3px] border-[#c8a870]/30 shadow-[0_0_100px_rgba(0,0,0,1)] bg-[#0a0a0c]"
                     onClick={(e) => e.stopPropagation()}
                 >
-                    <GfxWoodPanel className="w-full h-full flex flex-col p-8">
+                    {/* BACKGROUND DECORATION */}
+                    <div className="absolute inset-0 opacity-20 pointer-events-none">
+                         <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_50%,#c8a87033_0%,transparent_70%)]" />
+                    </div>
+
+                    {/* HEADER */}
+                    <div className="relative z-10 flex items-center justify-between px-10 py-8 shrink-0 bg-gradient-to-b from-black/40 to-transparent">
+                        <div className="flex flex-col">
+                            <h2 className="text-4xl font-black text-[#f0c040] tracking-[0.3em] uppercase drop-shadow-[0_0_20px_rgba(240,192,64,0.3)]">
+                                Профиль Героя
+                            </h2>
+                            <p className="text-[#c8a870]/60 text-sm font-bold tracking-[0.4em] uppercase mt-1">Кастомизация внешнего вида</p>
+                        </div>
+                        <button 
+                            onClick={() => setProfileModalOpen(false)}
+                            className="w-14 h-14 rounded-2xl bg-black/40 border-2 border-[#c8a870]/20 flex items-center justify-center text-[#c8a870] hover:bg-[#c8a870] hover:text-black transition-all shadow-xl active:scale-90"
+                        >
+                            <X size={32} strokeWidth={3} />
+                        </button>
+                    </div>
+
+                    <div className="relative z-10 flex flex-1 overflow-hidden px-10 pb-10 gap-10">
                         
-                        {/* HEADER */}
-                        <div className="flex items-center justify-between py-2 shrink-0 border-b border-white/5">
-                            <div className="flex items-center gap-4">
-                                <Award className="text-amber-400" size={32} />
-                                <h2 className="text-2xl font-black text-white tracking-[0.2em] uppercase drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
-                                    Настройка Профиля
-                                </h2>
-                            </div>
-                            <button 
-                                onClick={() => setProfileModalOpen(false)}
-                                className="w-12 h-12 rounded-xl bg-red-950/30 border border-red-500/30 flex items-center justify-center text-red-400 hover:bg-red-500 hover:text-white transition-all shadow-lg active:scale-95"
+                        {/* LEFT: PREVIEW PANEL */}
+                        <div className="w-[400px] flex flex-col items-center justify-center bg-black/40 rounded-[32px] border border-white/5 p-10 shadow-inner relative overflow-hidden group">
+                            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(240,192,64,0.1)_0%,transparent_70%)] opacity-50 group-hover:opacity-100 transition-opacity duration-1000" />
+                            
+                            <motion.div
+                                key={`${avatar}-${frame}`}
+                                initial={{ scale: 0.8, opacity: 0, rotate: -5 }}
+                                animate={{ scale: 1, opacity: 1, rotate: 0 }}
+                                transition={{ type: 'spring', damping: 15 }}
+                                className="relative z-10"
                             >
-                                <X size={28} strokeWidth={3} />
-                            </button>
+                                <AvatarFrame 
+                                    avatarFilename={avatar.replace('.png','')} 
+                                    frameFilename={frame.replace('.png','')} 
+                                    size={280} 
+                                    showGlow={true}
+                                />
+                            </motion.div>
+
+                            <div className="mt-12 text-center z-10">
+                                <motion.div
+                                    key={title}
+                                    initial={{ y: 20, opacity: 0 }}
+                                    animate={{ y: 0, opacity: 1 }}
+                                    className="px-6 py-2 bg-[#f0c040] text-black font-black text-xs tracking-[0.5em] uppercase rounded-full shadow-[0_0_30px_rgba(240,192,64,0.4)]"
+                                >
+                                    {title}
+                                </motion.div>
+                                <h3 className="text-3xl font-black text-white mt-4 tracking-tighter uppercase italic">ИГРОК ВК</h3>
+                                <div className="flex items-center justify-center gap-2 mt-2 opacity-50">
+                                    <div className="h-px w-8 bg-gradient-to-r from-transparent to-[#c8a870]" />
+                                    <span className="text-[10px] font-bold text-[#c8a870] tracking-[0.3em]">ЛЕГЕНДА АРЕНЫ</span>
+                                    <div className="h-px w-8 bg-gradient-to-l from-transparent to-[#c8a870]" />
+                                </div>
+                            </div>
                         </div>
 
-                        <div className="flex flex-1 overflow-hidden mt-6 gap-6">
-                            {/* SIDEBAR */}
-                            <div className="w-[200px] flex flex-col gap-3 shrink-0">
+                        {/* RIGHT: SELECTION AREA */}
+                        <div className="flex-1 flex flex-col gap-6">
+                            
+                            {/* TABS */}
+                            <div className="flex gap-4 p-1.5 bg-black/40 rounded-2xl border border-white/5">
                                 {[
                                     { id: 'avatars', label: 'АВАТАРЫ', Icon: Camera },
                                     { id: 'frames',  label: 'РАМКИ',   Icon: Shield },
@@ -90,111 +134,125 @@ export const ProfileModal: React.FC = () => {
                                         key={tab.id}
                                         onClick={() => setActiveTab(tab.id as any)}
                                         className={cn(
-                                            "flex items-center gap-4 px-5 py-4 rounded-xl font-black text-[11px] tracking-[0.25em] transition-all border",
+                                            "flex-1 flex items-center justify-center gap-3 py-4 rounded-xl font-black text-[10px] tracking-[0.2em] transition-all border-2",
                                             activeTab === tab.id 
-                                                ? "bg-amber-600/20 text-amber-300 border-amber-500/40 shadow-inner" 
+                                                ? "bg-[#c8a870] text-black border-[#f0c040] shadow-[0_0_20px_rgba(200,168,112,0.3)]" 
                                                 : "text-stone-500 border-transparent hover:text-stone-300 hover:bg-white/5"
                                         )}
                                     >
-                                        <tab.Icon size={16} strokeWidth={3} />
+                                        <tab.Icon size={14} strokeWidth={3} />
                                         {tab.label}
                                     </button>
                                 ))}
                             </div>
 
-                            {/* CONTENT AREA */}
-                            <div className="flex-1 p-6 overflow-y-auto custom-scrollbar bg-black/40 rounded-2xl border border-white/5">
-                                
-                                {activeTab === 'avatars' && (
-                                    <div className="grid grid-cols-4 gap-4">
-                                        {AVATARS_DATA.map((av) => (
-                                            <motion.button
-                                                key={av.id}
-                                                whileHover={{ scale: 1.05 }}
-                                                whileTap={{ scale: 0.95 }}
-                                                onClick={() => updateProfile({ avatar: av.id })}
-                                                className={cn(
-                                                    "relative aspect-square rounded-2xl flex items-center justify-center bg-stone-900/50 border-2 transition-all overflow-hidden group shadow-xl",
-                                                    avatar === av.id 
-                                                        ? "border-amber-400 shadow-[0_0_20px_rgba(245,158,11,0.2)]" 
-                                                        : "border-stone-800 hover:border-amber-600/60"
-                                                )}
-                                            >
-                                                <div className="w-full h-full p-2 flex items-center justify-center group-hover:scale-110 transition-transform duration-500">
-                                                    <img src={resolveAssetPath(`/assets/images/avatars/${av.id}`)} alt={av.label} className="w-full h-full object-contain" />
-                                                </div>
-                                                
-                                                {avatar === av.id && (
-                                                    <div className="absolute inset-0 bg-amber-500/10 pointer-events-none" />
-                                                )}
-                                            </motion.button>
-                                        ))}
-                                    </div>
-                                )}
+                            {/* SCROLLABLE GRID */}
+                            <div className="flex-1 overflow-y-auto custom-scrollbar pr-4">
+                                <AnimatePresence mode="wait">
+                                    {activeTab === 'avatars' && (
+                                        <motion.div 
+                                            key="avatars"
+                                            initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
+                                            className="grid grid-cols-4 gap-4"
+                                        >
+                                            {AVATARS_DATA.map((av) => (
+                                                <motion.button
+                                                    key={av.id}
+                                                    whileHover={{ scale: 1.05, y: -5 }}
+                                                    whileTap={{ scale: 0.95 }}
+                                                    onClick={() => updateProfile({ avatar: av.id })}
+                                                    className={cn(
+                                                        "relative aspect-square rounded-[24px] flex items-center justify-center bg-stone-900/30 border-2 transition-all overflow-hidden group",
+                                                        avatar === av.id 
+                                                            ? "border-[#f0c040] shadow-[0_0_25px_rgba(240,192,64,0.2)] bg-[#f0c040]/10" 
+                                                            : "border-white/5 hover:border-[#c8a870]/40 hover:bg-white/5"
+                                                    )}
+                                                >
+                                                    <div className="w-full h-full p-3 flex items-center justify-center group-hover:scale-115 transition-transform duration-700">
+                                                        <img src={resolveAssetPath(`/assets/images/avatars/${av.id}`)} alt={av.label} className="w-full h-full object-contain" />
+                                                    </div>
+                                                    {avatar === av.id && (
+                                                        <div className="absolute top-3 right-3 w-6 h-6 bg-[#f0c040] rounded-full flex items-center justify-center shadow-lg">
+                                                            <Check className="text-black" size={14} strokeWidth={4} />
+                                                        </div>
+                                                    )}
+                                                </motion.button>
+                                            ))}
+                                        </motion.div>
+                                    )}
 
-                                {activeTab === 'frames' && (
-                                    <div className="grid grid-cols-1 gap-3">
-                                        {FRAMES_DATA.map((fr) => (
-                                            <button
-                                                key={fr.id}
-                                                onClick={() => updateProfile({ frame: fr.id })}
-                                                className={cn(
-                                                    "group flex items-center justify-between p-4 rounded-xl border-2 transition-all bg-stone-900/40",
-                                                    frame === fr.id ? "border-amber-400 bg-amber-600/10" : "border-transparent hover:border-amber-700/50"
-                                                )}
-                                            >
-                                                <div className="flex items-center gap-6">
-                                                    <div className="w-20 h-20 rounded-xl bg-stone-950 flex items-center justify-center shadow-inner">
-                                                        <AvatarFrame avatarFilename={avatar.replace('.png','')} frameFilename={fr.id.replace('.png','')} size={70} />
-                                                    </div>
-                                                    <span className="font-black text-lg tracking-widest text-white uppercase group-hover:text-amber-400 transition-colors">{fr.label}</span>
-                                                </div>
-                                                {frame === fr.id && (
-                                                    <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center">
-                                                        <Check className="text-white" size={18} strokeWidth={4} />
-                                                    </div>
-                                                )}
-                                            </button>
-                                        ))}
-                                    </div>
-                                )}
+                                    {activeTab === 'frames' && (
+                                        <motion.div 
+                                            key="frames"
+                                            initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
+                                            className="grid grid-cols-2 gap-4"
+                                        >
+                                            {FRAMES_DATA.map((fr) => (
+                                                <button
+                                                    key={fr.id}
+                                                    onClick={() => updateProfile({ frame: fr.id })}
+                                                    className={cn(
+                                                        "group flex flex-col items-center p-6 rounded-[32px] border-2 transition-all bg-black/40",
+                                                        frame === fr.id 
+                                                            ? "border-[#f0c040] bg-[#f0c040]/10 shadow-xl" 
+                                                            : "border-white/5 hover:border-[#c8a870]/40"
+                                                    )}
+                                                >
+                                                    <AvatarFrame avatarFilename={avatar.replace('.png','')} frameFilename={fr.id.replace('.png','')} size={120} showGlow={frame === fr.id} />
+                                                    <span className={cn(
+                                                        "mt-4 font-black text-xs tracking-[0.3em] uppercase transition-colors",
+                                                        frame === fr.id ? "text-[#f0c040]" : "text-stone-500 group-hover:text-stone-300"
+                                                    )}>
+                                                        {fr.label}
+                                                    </span>
+                                                </button>
+                                            ))}
+                                        </motion.div>
+                                    )}
 
-                                {activeTab === 'titles' && (
-                                    <div className="flex flex-col gap-3">
-                                        {['ЛЕГЕНДА АРЕНЫ', 'НОВИЧОК', 'ВОИН ДВОРА', 'МАСТЕР ЗВЕРЕЙ'].map((t) => (
-                                            <button
-                                                key={t}
-                                                onClick={() => updateProfile({ title: t })}
-                                                className={cn(
-                                                    "group flex items-center justify-between p-6 rounded-xl border-2 transition-all bg-stone-900/40",
-                                                    title === t ? "border-amber-400 bg-amber-600/10 shadow-xl" : "border-transparent hover:border-amber-700/50"
-                                                )}
-                                            >
-                                                <span className={cn(
-                                                    "font-black text-xl tracking-[0.3em] uppercase drop-shadow-lg transition-all",
-                                                    title === t ? "text-amber-400 scale-105" : "text-stone-500 group-hover:text-stone-300"
-                                                )}>
-                                                    {t}
-                                                </span>
-                                                {title === t && (
-                                                    <div className="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center">
-                                                        <Check className="text-white" size={24} strokeWidth={4} />
-                                                    </div>
-                                                )}
-                                            </button>
-                                        ))}
-                                    </div>
-                                )}
+                                    {activeTab === 'titles' && (
+                                        <motion.div 
+                                            key="titles"
+                                            initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
+                                            className="flex flex-col gap-3"
+                                        >
+                                            {['ЛЕГЕНДА АРЕНЫ', 'НОВИЧОК', 'ВОИН ДВОРА', 'МАСТЕР ЗВЕРЕЙ', 'СОКРУШИТЕЛЬ', 'ВЕЧНЫЙ'].map((t) => (
+                                                <button
+                                                    key={t}
+                                                    onClick={() => updateProfile({ title: t })}
+                                                    className={cn(
+                                                        "group flex items-center justify-between px-8 py-6 rounded-2xl border-2 transition-all bg-black/40",
+                                                        title === t ? "border-[#f0c040] bg-[#f0c040]/10" : "border-white/5 hover:border-[#c8a870]/40"
+                                                    )}
+                                                >
+                                                    <span className={cn(
+                                                        "font-black text-xl tracking-[0.4em] uppercase drop-shadow-lg transition-all",
+                                                        title === t ? "text-[#f0c040] scale-105" : "text-stone-500 group-hover:text-stone-300"
+                                                    )}>
+                                                        {t}
+                                                    </span>
+                                                    {title === t && (
+                                                        <Check className="text-[#f0c040]" size={24} strokeWidth={4} />
+                                                    )}
+                                                </button>
+                                            ))}
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+                            </div>
+
+                            {/* APPLY BUTTON */}
+                            <div className="mt-auto pt-6 flex justify-end">
+                                <button 
+                                    onClick={() => setProfileModalOpen(false)}
+                                    className="w-[280px] h-[70px] bg-gradient-to-r from-[#c8a870] to-[#f0c040] hover:brightness-110 active:scale-95 transition-all rounded-2xl flex items-center justify-center shadow-[0_10px_30px_rgba(240,192,64,0.3)] group"
+                                >
+                                    <span className="font-black text-black text-lg uppercase tracking-[0.3em]">Применить</span>
+                                    <Check className="ml-4 text-black group-hover:scale-125 transition-transform" size={24} strokeWidth={4} />
+                                </button>
                             </div>
                         </div>
-
-                        {/* FOOTER */}
-                        <div className="py-6 flex justify-end shrink-0 gap-4">
-                            <GfxMenuButton onClick={() => setProfileModalOpen(false)} variant="gold" className="w-[240px] h-[60px]">
-                                <span className="font-black text-amber-950 uppercase tracking-widest">Применить</span>
-                            </GfxMenuButton>
-                        </div>
-                    </GfxWoodPanel>
+                    </div>
                 </motion.div>
             </motion.div>
         </AnimatePresence>

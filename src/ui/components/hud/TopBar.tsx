@@ -1,7 +1,7 @@
 import React from 'react';
 import { useGameStore } from '../../../store/useGameStore';
 import { AssetsMap } from '../../../configs/AssetsMap';
-import { resolveAssetPath } from '../../../utils/assetPath';
+import { AvatarFrame } from './SharedUI';
 
 interface TopBarProps {
     onOpenWindow: (name: string) => void;
@@ -12,9 +12,6 @@ export const TopBar: React.FC<TopBarProps> = ({ onOpenWindow, mode }) => {
     const { avatar, title, level, crystals, gold, energy, exp, vkUser } = useGameStore();
     const textShadow = { textShadow: '0 2px 4px rgba(0,0,0,1), 0 0 10px rgba(0,0,0,0.5)' };
 
-    // Нормализуем путь: если это уже URL или абсолютный путь, оставляем как есть
-    const avatarUrl = avatar?.includes('/') ? avatar : resolveAssetPath(`/assets/images/avatars/${avatar || 'панда.png'}`);
-
     if (mode === 'profile_only') {
         return (
             <div
@@ -24,8 +21,12 @@ export const TopBar: React.FC<TopBarProps> = ({ onOpenWindow, mode }) => {
                 <img src={AssetsMap.UI.PANEL_PROFILE} className="w-full h-full object-contain" alt="" />
                 
                 {/* АВАТАР - сдвигаем внутрь рамки */}
-                <div className="absolute top-[35px] left-[45px] w-[82px] h-[82px] overflow-hidden rounded-xl border-2 border-amber-500/20 shadow-2xl z-10">
-                    <img src={vkUser?.photo || avatarUrl} className="w-full h-full object-cover" alt="" />
+                <div className="absolute top-[28px] left-[42px] z-10">
+                    <AvatarFrame 
+                        avatarFilename={avatar.replace('.png','')} 
+                        frameFilename={(useGameStore.getState().frame || 'Рамка 1.png').replace('.png','')} 
+                        size={92} 
+                    />
                 </div>
 
                 <div className="absolute top-[35px] left-[155px] flex flex-col gap-0">

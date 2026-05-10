@@ -12,6 +12,7 @@ const rawAssetsMap = {
         PANEL_PROFILE: '/assets/images/ui/profile_panel_full.png',
         PANEL_CHAT: '/assets/images/ui/chat_panel_full.png',
         PANEL_QUEST: '/assets/images/ui/Zadanie.png',
+        PROFILE_PLAQUE: '/assets/images/ui/profile_plaque.png',
 
         // Кнопки
         BTN_BATTLE_RANKED: '/assets/images/ui/btn_ranked_v2.png',

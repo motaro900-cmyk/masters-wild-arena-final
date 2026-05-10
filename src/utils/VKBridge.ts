@@ -1,3 +1,5 @@
+import bridge from '@vkontakte/vk-bridge';
+
 type VkUser = {
     id: string;
     firstName: string;
@@ -6,20 +8,12 @@ type VkUser = {
     photo100?: string;
 };
 
-declare global {
-    interface Window {
-        vkBridge?: {
-            send: (event: string, params?: any) => Promise<any>;
-        };
-    }
-}
-
-const getVkBridge = () => typeof window !== 'undefined' ? window.vkBridge : undefined;
-
-export const isVkMiniApp = (): boolean => Boolean(getVkBridge());
+export const isVkMiniApp = (): boolean => {
+    // В десктопном браузере вне VK это вернет false или не сработает
+    return typeof window !== 'undefined' && (window as any).isVkMiniApp === true;
+};
 
 export const initVK = async (): Promise<boolean> => {
-    const bridge = getVkBridge();
     if (!bridge) return false;
 
     // [Lead Architect]: Страховка от зависания VK Bridge
@@ -35,7 +29,8 @@ export const initVK = async (): Promise<boolean> => {
             await bridge.send('VKWebAppInit');
             // Запрашиваем полный экран сразу после инициализации
             try {
-                await bridge.send('VKWebAppResizeTo', {
+                // @ts-ignore - Некоторых методов может не быть в типах, но они работают
+                await bridge.send('VKWebAppResizeTo' as any, {
                     width: window.innerWidth,
                     height: window.innerHeight
                 });
@@ -53,17 +48,16 @@ export const initVK = async (): Promise<boolean> => {
 };
 
 export const getVkUserInfo = async (): Promise<VkUser | null> => {
-    const bridge = getVkBridge();
     if (!bridge) return null;
 
     try {
         const user = await bridge.send('VKWebAppGetUserInfo');
         return {
             id: String(user.id),
-            firstName: user.first_name || user.firstName || 'Игрок',
-            lastName: user.last_name || user.lastName || '',
-            photo: user.photo_100 || user.photo_200 || user.photo || '',
-            photo100: user.photo_100 || user.photo_200 || user.photo || ''
+            firstName: user.first_name || 'Игрок',
+            lastName: user.last_name || '',
+            photo: user.photo_100 || user.photo_200 || '',
+            photo100: user.photo_100 || user.photo_200 || ''
         };
     } catch (error) {
         console.warn('VKWebAppGetUserInfo failed:', error);

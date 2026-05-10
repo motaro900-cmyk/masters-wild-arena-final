@@ -14,7 +14,7 @@ type RewardType = 'GOLD' | 'CRYSTAL' | 'ENERGY';
  * DailyGiftWindow (v2.2) — Использование РЕАЛЬНОГО сундука (iconrgy.png).
  */
 export const DailyGiftWindow: React.FC<DailyGiftWindowProps> = ({ onClose }) => {
-    const { addGold, addCrystals } = useGameStore();
+    const { addGold, addCrystals, addEnergy } = useGameStore();
     
     const [status, setStatus] = useState<'READY' | 'OPENING' | 'CLAIMED'>('READY');
     const [reward, setReward] = useState<{ type: RewardType, amount: number } | null>(null);
@@ -67,7 +67,12 @@ export const DailyGiftWindow: React.FC<DailyGiftWindowProps> = ({ onClose }) => 
         setTimeout(() => {
             setReward({ type, amount });
             setStatus('CLAIMED');
-                safeSetItem('lastGiftClaim', Date.now().toString());
+            safeSetItem('lastGiftClaim', Date.now().toString());
+
+            // Применяем награду в стор
+            if (type === 'GOLD') addGold(amount);
+            else if (type === 'CRYSTAL') addCrystals(amount);
+            else if (type === 'ENERGY') addEnergy(amount);
         }, 1500);
     };
 

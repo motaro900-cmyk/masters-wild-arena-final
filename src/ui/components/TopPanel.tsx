@@ -1,5 +1,6 @@
 import React from 'react';
 import { useGameStore } from '../../store/useGameStore';
+import { AvatarFrame } from './hud/SharedUI';
 
 const SvgIcon = {
   Trophy: () => <svg viewBox="0 0 24 24" width="14" height="14" fill="#fbbf24"><path d="M18 2h-3v2h3v2h-1.07c-.45 2.71-2.22 4.96-4.93 5.76V15h3v2h-3v2h-2v-2H7v-2h3v-3.24c-2.71-.8-4.48-3.05-4.93-5.76H4V6h3V4H4V2h3V0h10v2z"/></svg>,
@@ -22,8 +23,12 @@ export const TopPanel: React.FC = () => {
     <div className="absolute top-3 left-4 right-4 flex justify-between items-start pointer-events-none z-50">
       {/* Профиль игрока - СДЕЛАНО УЖЕ */}
       <div className="flex items-center p-1 bg-[#1c1f26] border-[3px] border-[#3d4149] rounded-2xl h-[84px] min-w-[300px] pointer-events-auto shadow-2xl relative">
-        <div className="relative ml-0.5 w-14 h-14 border-[3px] border-[#8a6845] rotate-[22.5deg] rounded-[18%] bg-[#16181d] flex items-center justify-center shadow-lg">
-           <span className="-rotate-[22.5deg] text-2xl">{currentHeroId === 'panda' ? '🐼' : '🐾'}</span>
+        <div className="ml-1 z-10">
+           <AvatarFrame 
+              avatarFilename={useGameStore.getState().avatar.replace('.png','')} 
+              frameFilename={(useGameStore.getState().frame || 'Рамка 1.png').replace('.png','')} 
+              size={64} 
+           />
         </div>
         <div className="ml-3 flex flex-col flex-1 h-full justify-between py-0.5">
           <div className="flex justify-between items-start gap-2">

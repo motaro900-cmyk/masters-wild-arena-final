@@ -54,7 +54,10 @@ export const GameHUD: React.FC = () => {
             {/* 1. PLAYER PROFILE */}
             {!isFullScreenScene && (
                 <div className="absolute top-[20px] left-[10px] hud-interactive">
-                    <PlayerProfile onOpenRanks={() => setActiveWindow('RANKS_LIST')} />
+                    <PlayerProfile 
+                        onOpenProfile={() => setActiveWindow('PROFILE')}
+                        onOpenRanks={() => setActiveWindow('RANKS_LIST')} 
+                    />
                 </div>
             )}
 
@@ -157,9 +160,7 @@ export const GameHUD: React.FC = () => {
                       </BaseWindow>
                   )}
                   {activeWindow === 'PROFILE' && (
-                      <BaseWindow title="ПРОФИЛЬ" isOpen={true} onClose={() => setActiveWindow(null)} width="850px">
-                          <ProfileWindow />
-                      </BaseWindow>
+                      <ProfileWindow onClose={() => setActiveWindow(null)} />
                   )}
                   {activeWindow === 'GIFT' && (
                       <BaseWindow title="ЕЖЕДНЕВНЫЙ ПОДАРОК" isOpen={true} onClose={() => setActiveWindow(null)} width="600px">

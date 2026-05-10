@@ -105,7 +105,7 @@ const Root = () => {
 
             console.log('🎮 Starting GameEngine...');
             const game = new GameApp();
-            await game.init(containerRef.current);
+            await game.init(containerRef.current!);
             console.log('✅ Game Ready!');
 
             const state = useGameStore.getState();

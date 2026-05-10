@@ -145,17 +145,54 @@ export const GfxProgressBar: React.FC<{ value: number; max: number; color?: stri
 };
 
 /**
- * АВАТАР (В стиле фото)
+ * АВАТАР (В стиле фото) - Улучшенный: больше масштаб, меньше лишних рамок
  */
-export const AvatarFrame: React.FC<{ avatarFilename: string; frameFilename: string; size?: number }> = ({ avatarFilename, frameFilename, size = 64 }) => {
+export const AvatarFrame: React.FC<{ 
+    avatarFilename: string; 
+    frameFilename: string; 
+    size?: number;
+    showGlow?: boolean;
+}> = ({ avatarFilename, frameFilename, size = 64, showGlow = false }) => {
     const avatarSrc = resolveAssetPath(`/assets/images/avatars/${avatarFilename}.png`);
     const frameSrc = resolveAssetPath(`/assets/images/frames/${frameFilename}.png`);
+    
     return (
-        <div style={{ position: 'relative', width: `${size}px`, height: `${size}px`, filter: 'drop-shadow(0 8px 15px rgba(0,0,0,0.8))' }}>
-            <div style={{ position: 'absolute', inset: '12%', borderRadius: '50%', overflow: 'hidden', background: '#0c0a09', border: '2px solid #8a5a2a' }}>
-                <img src={avatarSrc} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" />
+        <div 
+            style={{ 
+                position: 'relative', 
+                width: `${size}px`, 
+                height: `${size}px`, 
+                filter: showGlow ? 'drop-shadow(0 0 15px rgba(240,192,64,0.4))' : 'drop-shadow(0 8px 15px rgba(0,0,0,0.6))' 
+            }}
+        >
+            {/* Внутренняя часть аватара - теперь без лишней обводки и большего размера */}
+            <div style={{ 
+                position: 'absolute', 
+                inset: '6%', // Было 12%, теперь аватар крупнее
+                borderRadius: '50%', 
+                overflow: 'hidden', 
+                background: 'radial-gradient(circle, #1a1a1a 0%, #050505 100%)' 
+            }}>
+                <img 
+                    src={avatarSrc} 
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                    alt="" 
+                />
             </div>
-            <img src={frameSrc} style={{ position: 'absolute', inset: '-15%', width: '130%', height: '130%', objectFit: 'contain', filter: 'sepia(0.1) saturate(1.2) brightness(0.9)' }} alt="" />
+            
+            {/* Сама рамка */}
+            <img 
+                src={frameSrc} 
+                style={{ 
+                    position: 'absolute', 
+                    inset: '-10%', // Было -15%, теперь плотнее прилегает
+                    width: '120%', 
+                    height: '120%', 
+                    objectFit: 'contain', 
+                    filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))' 
+                }} 
+                alt="" 
+            />
         </div>
     );
 };
