@@ -28,11 +28,9 @@ export class MainScreen extends PIXI.Container {
             this.bg = new PIXI.Sprite(bgTex);
             this.bg.anchor.set(0.5);
             
-            // Cover-fit: масштабируем чтобы полностью заполнить 1920x1080
-            const scaleX = 1920 / bgTex.width;
-            const scaleY = 1080 / bgTex.height;
-            const scale = Math.max(scaleX, scaleY);
-            this.bg.scale.set(scale);
+            // [Fix]: Принудительно растягиваем на весь экран 1920x1080
+            this.bg.width = 1920;
+            this.bg.height = 1080;
             this.bg.position.set(1920 / 2, 1080 / 2);
             
             this.addChildAt(this.bg, 0);
