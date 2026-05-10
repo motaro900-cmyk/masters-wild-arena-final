@@ -87,11 +87,12 @@ export class PixiApp {
             PixiApp.canvas = this.pixiApp.canvas as HTMLCanvasElement;
 
             const canvas = this.pixiApp.canvas as HTMLCanvasElement;
-            canvas.style.maxWidth = '100vw';
-            canvas.style.maxHeight = '100vh';
-            canvas.style.objectFit = 'contain';
+            // [Fix]: Убираем ограничения vw/vh, которые ломают масштаб на маленьких экранах.
+            // Холст должен просто заполнять свой контейнер (1920x1080), 
+            // который уже масштабируется внешним SafeGameLayout.
+            canvas.style.width = '100%';
+            canvas.style.height = '100%';
             canvas.style.display = 'block';
-            canvas.style.margin = '0 auto';
 
             if (container && !(container instanceof HTMLCanvasElement)) {
                 container.appendChild(this.pixiApp.canvas as HTMLCanvasElement);
