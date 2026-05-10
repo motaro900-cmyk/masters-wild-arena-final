@@ -22,13 +22,25 @@ export const initVK = async (): Promise<boolean> => {
     const bridge = getVkBridge();
     if (!bridge) return false;
 
-    try {
-        await bridge.send('VKWebAppInit');
-        return true;
-    } catch (error) {
-        console.warn('VKWebAppInit failed:', error);
-        return false;
-    }
+    // [Lead Architect]: Страховка от зависания VK Bridge
+    const timeoutPromise = new Promise<boolean>((resolve) => {
+        setTimeout(() => {
+            console.warn('⚠️ VK Bridge Init Timeout (3s). Starting anyway...');
+            resolve(false);
+        }, 3000);
+    });
+
+    const initPromise = (async () => {
+        try {
+            await bridge.send('VKWebAppInit');
+            return true;
+        } catch (error) {
+            console.warn('VKWebAppInit failed:', error);
+            return false;
+        }
+    })();
+
+    return Promise.race([initPromise, timeoutPromise]);
 };
 
 export const getVkUserInfo = async (): Promise<VkUser | null> => {
