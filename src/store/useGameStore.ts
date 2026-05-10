@@ -28,12 +28,17 @@ export const useGameStore = create<any>()(
             isPremium: false,
             claimedRewards: [],
 
-            // --- ИНВЕНТАРЬ ---
-            inventory: [],
-            equippedWeaponId: null,
-            equippedHelmId: null,
-            equippedArmorId: null,
-            equippedShieldId: null,
+            // --- ИНВЕНТАРЬ (стартовые предметы) ---
+            inventory: [
+                { id: 'stick',          type: 'WEAPONS',  rarity: 'COMMON', level: 1 },
+                { id: 'starter_helm',   type: 'HELMETS',  rarity: 'COMMON', level: 1 },
+                { id: 'starter_armor',  type: 'ARMOR',    rarity: 'COMMON', level: 1 },
+                { id: 'starter_shield', type: 'SHIELDS',  rarity: 'COMMON', level: 1 },
+            ],
+            equippedWeaponId: 'stick',
+            equippedHelmId: 'starter_helm',
+            equippedArmorId: 'starter_armor',
+            equippedShieldId: 'starter_shield',
 
             // --- ГЕРОИ ---
             selectedHeroId: 'panda',
