@@ -86,7 +86,7 @@
   <!-- VK Bridge -->
   <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js"></script>
   
-  <script>
+    <script>
     // [Anti-Tamper] Disable Context Menu
     document.addEventListener('contextmenu', e => e.preventDefault());
     
@@ -97,6 +97,13 @@
       if (e.ctrlKey && e.shiftKey && e.keyCode == 'J'.charCodeAt(0)) return false;
       if (e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) return false;
     };
+
+    // [VK] Early Init
+    if (window.vkBridge) {
+      window.vkBridge.send('VKWebAppInit')
+        .then(() => console.log('🚀 [VK] Bridge Initialized Early'))
+        .catch(err => console.error('❌ [VK] Early Init Error:', err));
+    }
   </script>
 
   <script type="module" src="/src/main.tsx"></script>

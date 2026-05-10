@@ -84,14 +84,20 @@ const Root = () => {
         initialized.current = true;
 
         const initApp = async () => {
+            console.log('🏁 Root: Initializing App...');
             const vkAvailable = await initVK();
+            console.log('📡 VK Status:', vkAvailable ? 'Connected' : 'Standalone');
+
             if (vkAvailable) {
                 const user = await getVkUserInfo();
+                console.log('👤 VK User:', user?.firstName || 'Unknown');
                 if (user) useGameStore.getState().setVkUser(user);
             }
 
+            console.log('🎮 Starting GameEngine...');
             const game = new GameApp();
             await game.init(containerRef.current);
+            console.log('✅ Game Ready!');
 
             const state = useGameStore.getState();
             if (Date.now() - state.lastDailyRefresh > 86_400_000 || state.dailyQuests.length === 0) {
