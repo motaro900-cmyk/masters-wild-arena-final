@@ -104,4 +104,9 @@ const rawItemsDatabase: Record<string, IEquipmentStats> = {
     'stick': { id: 'stick', name: 'Дубовая Палка', priceGold: 0, image: '/assets/images/items/weapons/stick.png', rarity: ItemRarity.COMMON, mainTab: 'ARSENAL', subTab: 'WEAPONS', textureKey: 'weapon_stick', attackBonus: 20, desc: 'Простая палка.' },
 };
 
-export const ITEMS_DATABASE: Record<string, IBaseItem | IEquipmentStats> = resolveAssetObject(rawItemsDatabase) as Record<string, IBaseItem | IEquipmentStats>;
+export const ITEMS_DATABASE: Record<string, IBaseItem | IEquipmentStats> = Object.fromEntries(
+    Object.entries(rawItemsDatabase).map(([key, item]) => [
+        key,
+        { ...item, image: resolveAssetObject(item.image) }
+    ])
+) as Record<string, IBaseItem | IEquipmentStats>;

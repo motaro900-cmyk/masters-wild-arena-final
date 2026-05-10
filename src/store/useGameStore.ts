@@ -5,7 +5,6 @@ import { ITEMS_DATABASE, calculateItemPower, IEquipmentStats } from '../game/con
 import { HEROES_DB } from '../configs/HeroesConfig';
 import { QUESTS_POOL } from '../configs/QuestsConfig';
 import { audioService } from '../services/AudioService';
-import { AssetsMap } from '../configs/AssetsMap';
 
 /**
  * Единый стор с использованием Slice-подхода (внутренняя организация)
@@ -16,37 +15,73 @@ export const useGameStore = create<any>()(
             // --- СОСТОЯНИЕ ИГРОКА ---
             level: 1,
             exp: 0,
-            gold: 25850,
-            crystals: 1250,
-            energy: 6,
-            maxEnergy: 10,
+            gold: 50000,
+            crystals: 5000,
+            rating: 0,
+            energy: 50,
+            maxEnergy: 50,
             avatar: 'панда.png',
             frame: 'Рамка 6.png',
-            title: 'ЛЕГЕНДА АРЕНЫ',
+            title: 'НОВИЧОК',
             bpLevel: 1,
-            bpExp: 250,
+            bpExp: 0,
+            trophies: 0,
             isPremium: false,
             claimedRewards: [],
 
             // --- ИНВЕНТАРЬ (стартовые предметы) ---
             inventory: [
-                { id: 'stick',          type: 'WEAPONS',  rarity: 'COMMON', level: 1 },
-                { id: 'starter_helm',   type: 'HELMETS',  rarity: 'COMMON', level: 1 },
-                { id: 'starter_armor',  type: 'ARMOR',    rarity: 'COMMON', level: 1 },
-                { id: 'starter_shield', type: 'SHIELDS',  rarity: 'COMMON', level: 1 },
+                { id: 'stick', type: 'WEAPONS', rarity: 'COMMON', level: 1 },
+                { id: 'starter_helm', type: 'HELMETS', rarity: 'COMMON', level: 1 },
+                { id: 'starter_armor', type: 'ARMOR', rarity: 'COMMON', level: 1 },
+                { id: 'starter_shield', type: 'SHIELDS', rarity: 'COMMON', level: 1 },
             ],
-            equippedWeaponId: 'stick',
-            equippedHelmId: 'starter_helm',
-            equippedArmorId: 'starter_armor',
-            equippedShieldId: 'starter_shield',
+            heroEquipment: {
+                'panda': {
+                    WEAPONS: 'stick',
+                    HELMETS: 'starter_helm',
+                    ARMOR: 'starter_armor',
+                    SHIELDS: 'starter_shield'
+                }
+            },
+            get equippedItems() {
+                const currentHeroId = this.selectedHeroId || 'panda';
+                return this.heroEquipment[currentHeroId] || {};
+            },
 
             // --- ГЕРОИ ---
             selectedHeroId: 'panda',
             heroGalleryId: 'panda',
-            ownedHeroes: ['panda', 'boar'],
+            ownedHeroes: ['panda'],
+            tutorialStep: 0,
+            mail: [
+                {
+                    id: 'welcome-mail',
+                    tab: 'INBOX',
+                    type: 'SYSTEM',
+                    from: 'МУДРЫЙ ФИЛИН',
+                    subject: 'ДОБРО ПОЖАЛОВАТЬ!',
+                    body: 'Приветствуем тебя, защитник! В Masters of the Wild твоя сила растет с каждой битвой. Мы подготовили для тебя стартовый набор, чтобы путь был легче. Исследуй, сражайся и помни: джунгли не прощают слабости, но вознаграждают храбрых!',
+                    date: 'СЕГОДНЯ',
+                    isRead: false,
+                    isStarred: false,
+                    expiresAt: Date.now() + 30 * 24 * 60 * 60 * 1000, // 30 дней
+                    rewards: [
+                        { type: 'GOLD', amount: 1000 },
+                        { type: 'CRYSTALS', amount: 50 }
+                    ]
+                }
+            ],
+            friends: [],
+            friendRequests: [],
+            clanId: null,
+            clanData: null,
+            clanCoins: 0,
             heroes: {
-                'panda': { strength: 52, agility: 20, stamina: 32 },
-                'boar': { strength: 68, agility: 18, stamina: 38 }
+                'panda': { strength: 52, agility: 20, stamina: 32 }
+            },
+            heroTalents: {
+                'panda': {}
             },
 
             // --- КВЕСТЫ ---
@@ -64,6 +99,10 @@ export const useGameStore = create<any>()(
             graphicsQuality: 'ULTRA',
             notificationsEnabled: true,
             vkUser: null,
+            showIntro: true,
+            isPowerSaving: false,
+            isMuted: false,
+            playerId: 'MW-' + Math.random().toString(36).substr(2, 9).toUpperCase(),
 
             // --- ЭКШЕНЫ ИГРОКА ---
             addGold: (amount: number) => set((state: any) => ({ gold: state.gold + amount })),
@@ -79,6 +118,7 @@ export const useGameStore = create<any>()(
                 }
                 return { exp: newExp, level: newLevel };
             }),
+            addClanCoins: (amount: number) => set((state: any) => ({ clanCoins: state.clanCoins + amount })),
             consumeEnergy: () => {
                 const state = get() as any;
                 if (state.energy > 0) {
@@ -96,15 +136,94 @@ export const useGameStore = create<any>()(
                 if (state.inventory.some((i: any) => String(i.id) === itemId)) return state;
                 return { inventory: [...state.inventory, itemObj] };
             }),
-            equipWeapon: (id: string) => set({ equippedWeaponId: id }),
-            equipHelm: (id: string) => set({ equippedHelmId: id }),
-            equipArmor: (id: string) => set({ equippedArmorId: id }),
-            equipShield: (id: string) => set({ equippedShieldId: id }),
+            sellItem: (id: string) => {
+                const state = get();
+                const itemInInv = state.inventory.find((i: any) => i.id === id);
+                if (!itemInInv) return;
+
+                // Нельзя продать экипированное
+                const isEquipped = Object.values(state.equippedItems).some(val => val === id);
+                if (isEquipped) {
+                    alert('Нельзя продать экипированный предмет!');
+                    return;
+                }
+
+                const data = ITEMS_DATABASE[id] as any;
+                const sellPrice = Math.floor((data?.priceGold || 100) * 0.5);
+                
+                state.addGold(sellPrice);
+                set({
+                    inventory: state.inventory.filter((i: any) => i.id !== id)
+                });
+            },
+            
+            equipItem: (id: string) => {
+                const state = get();
+                const data = ITEMS_DATABASE[id] as any;
+                if (!data) return;
+                
+                const heroId = state.selectedHeroId || 'panda';
+                const subTab = data.subTab; // WEAPONS, HELMETS, etc.
+
+                // 1. Проверяем, не надето ли это на другом герое
+                const newHeroEquipment = { ...state.heroEquipment };
+                Object.entries(newHeroEquipment).forEach(([hId, gear]: [string, any]) => {
+                    if (Object.values(gear).includes(id)) {
+                        // Снимаем с предыдущего
+                        const updatedGear = { ...gear };
+                        Object.keys(updatedGear).forEach(slot => {
+                            if (updatedGear[slot] === id) delete updatedGear[slot];
+                        });
+                        newHeroEquipment[hId] = updatedGear;
+                    }
+                });
+
+                // 2. Надеваем на текущего героя
+                const currentGear = { ...(newHeroEquipment[heroId] || {}) };
+                currentGear[subTab] = id;
+                newHeroEquipment[heroId] = currentGear;
+
+                set({ heroEquipment: newHeroEquipment });
+                
+                // Для обратной совместимости, если где-то используются старые поля
+                if (subTab === 'WEAPONS') set({ equippedWeaponId: id });
+                if (subTab === 'HELMETS') set({ equippedHelmId: id });
+                if (subTab === 'ARMOR') set({ equippedArmorId: id });
+                if (subTab === 'SHIELDS') set({ equippedShieldId: id });
+            },
+            unequipItem: (id: string) => {
+                const state = get();
+                const heroId = state.selectedHeroId || 'panda';
+                const newHeroEquipment = { ...state.heroEquipment };
+                const currentGear = { ...(newHeroEquipment[heroId] || {}) };
+
+                Object.keys(currentGear).forEach(slot => {
+                    if (currentGear[slot] === id) delete currentGear[slot];
+                });
+
+                newHeroEquipment[heroId] = currentGear;
+                set({ heroEquipment: newHeroEquipment });
+
+                // Сброс старых полей
+                const data = ITEMS_DATABASE[id] as any;
+                if (data?.subTab === 'WEAPONS') set({ equippedWeaponId: null });
+                if (data?.subTab === 'HELMETS') set({ equippedHelmId: null });
+                if (data?.subTab === 'ARMOR') set({ equippedArmorId: null });
+                if (data?.subTab === 'SHIELDS') set({ equippedShieldId: null });
+            },
+            getHeroByItemId: (itemId: string) => {
+                const state = get();
+                let foundHeroId: string | null = null;
+                Object.entries(state.heroEquipment).forEach(([hId, gear]: [string, any]) => {
+                    if (Object.values(gear).includes(itemId)) foundHeroId = hId;
+                });
+                return foundHeroId;
+            },
 
             equipBest: () => {
                 const state = get() as any;
                 const inv = state.inventory;
-                
+
                 const findBest = (subTab: string) => {
                     return inv
                         .filter((i: any) => {
@@ -150,7 +269,7 @@ export const useGameStore = create<any>()(
 
                 if (price !== undefined && balance >= price) {
                     const newBalanceKey = currencyType === 'gold' ? 'gold' : 'crystals';
-                    
+
                     if (isBankItem) {
                         // Обработка покупки ресурсов (Золото, Алмазы, Энергия)
                         const amount = itemData.amount || 0;
@@ -165,9 +284,9 @@ export const useGameStore = create<any>()(
                         }
                     } else {
                         // Обычный предмет в инвентарь
-                        set({ 
-                            [newBalanceKey]: balance - price, 
-                            inventory: [...state.inventory, { id: itemId, type: itemData.subTab, rarity: itemData.rarity, level: 1 }] 
+                        set({
+                            [newBalanceKey]: balance - price,
+                            inventory: [...state.inventory, { id: itemId, type: itemData.subTab, rarity: itemData.rarity, level: 1 }]
                         });
                     }
                     return true;
@@ -175,83 +294,101 @@ export const useGameStore = create<any>()(
 
                 return false;
             },
-
-            sellItem: (itemId: string) => set((state: any) => {
-                const item = state.inventory.find((i: any) => i.id === itemId);
-                if (!item) return state;
-                
-                const data = ITEMS_DATABASE[itemId] as any;
-                if (!data) return state;
-
-                // Цена продажи = 50% от цены покупки
-                const price = Math.floor((data.price || 100) * 0.5);
-
-                // Нельзя продать экипированное
-                const isEquipped = itemId === state.equippedWeaponId || itemId === state.equippedHelmId || 
-                                 itemId === state.equippedArmorId || itemId === state.equippedShieldId;
-                if (isEquipped) return state;
-
-                return {
-                    inventory: state.inventory.filter((i: any) => i.id !== itemId),
-                    gold: state.gold + price
-                };
-            }),
-
             // --- ЭКШЕНЫ ГЕРОЕВ ---
             setSelectedHeroId: (id: string) => set({ selectedHeroId: id }),
             setHeroGalleryId: (id: string) => set({ heroGalleryId: id }),
+            unlockHero: (heroId: string) => set((state: any) => {
+                if (state.ownedHeroes.includes(heroId)) return state;
+                return { ownedHeroes: [...state.ownedHeroes, heroId] };
+            }),
+            spendGold: (amount: number) => set((state: any) => ({ gold: Math.max(0, state.gold - amount) })),
+            spendDiamonds: (amount: number) => set((state: any) => ({ crystals: Math.max(0, state.crystals - amount) })),
+            upgradeTalent: (heroId: string, talentId: string) => set((state: any) => {
+                const currentHeroTalents = state.heroTalents[heroId] || {};
+                const currentLevel = currentHeroTalents[talentId] || 0;
+                
+                return {
+                    heroTalents: {
+                        ...state.heroTalents,
+                        [heroId]: {
+                            ...currentHeroTalents,
+                            [talentId]: currentLevel + 1
+                        }
+                    }
+                };
+            }),
+            resetTalents: (heroId: string) => set((state: any) => {
+                const talents = { ...state.heroTalents };
+                talents[heroId] = {};
+                return { heroTalents: talents };
+            }),
             getCalculatedStats: (heroId: string) => {
                 const state = get() as any;
                 const heroData = HEROES_DB.find(h => h.id === heroId);
                 if (!heroData) return null;
 
-                const weapon = state.equippedWeaponId ? ITEMS_DATABASE[state.equippedWeaponId] : null;
-                const helm = state.equippedHelmId ? ITEMS_DATABASE[state.equippedHelmId] : null;
-                const armor = state.equippedArmorId ? ITEMS_DATABASE[state.equippedArmorId] : null;
-                const shield = state.equippedShieldId ? ITEMS_DATABASE[state.equippedShieldId] : null;
+                const equipment = state.heroEquipment[heroId] || {};
+                const weapon = equipment.WEAPONS ? ITEMS_DATABASE[equipment.WEAPONS] : null;
+                const helm = equipment.HELMETS ? ITEMS_DATABASE[equipment.HELMETS] : null;
+                const armor = equipment.ARMOR ? ITEMS_DATABASE[equipment.ARMOR] : null;
+                const shield = equipment.SHIELDS ? ITEMS_DATABASE[equipment.SHIELDS] : null;
 
                 const allItems = [weapon, helm, armor, shield].filter(Boolean) as IEquipmentStats[];
 
                 // Базовые статы героя
-                let hp = heroData.baseStats.hp;
-                let attack = heroData.baseStats.attack;
-                let defense = heroData.baseStats.defense;
-                let speed = heroData.baseStats.speed;
-                let crit = heroData.baseStats.crit;
-                
-                // Новые базовые статы
-                let evasion = heroData.baseStats.evasion || 0;
-                let resilience = heroData.baseStats.resilience || 0;
-                let lifesteal = heroData.baseStats.lifesteal || 0;
-                let penetration = heroData.baseStats.penetration || 0;
-                let critDamage = heroData.baseStats.critDamage || 1.5;
+                const base = {
+                    hp: heroData.baseStats.hp,
+                    attack: heroData.baseStats.attack,
+                    defense: heroData.baseStats.defense,
+                    speed: heroData.baseStats.speed,
+                    critChance: heroData.baseStats.crit,
+                    evasion: heroData.baseStats.evasion || 0,
+                    resilience: heroData.baseStats.resilience || 0,
+                    lifesteal: heroData.baseStats.lifesteal || 0,
+                    penetration: heroData.baseStats.penetration || 0,
+                    critDamage: heroData.baseStats.critDamage || 1.5
+                };
+
+                // Итоговые статы
+                const total = { ...base };
+
+                // Добавляем бонусы от талантов
+                const talents = state.heroTalents[heroId] || {};
+                Object.entries(talents).forEach(([tId, lvl]: [string, any]) => {
+                    const level = lvl as number;
+                    if (level <= 0) return;
+
+                    // Логика бонусов талантов
+                    if (tId === 'atk_base') total.attack *= (1 + (level * 0.05)); // +5% за уровень
+                    if (tId === 'atk_crit') total.critChance += (level * 2);      // +2% за уровень
+                    if (tId === 'atk_pen') total.penetration += (level * 10);    // +10 за уровень
+                    
+                    if (tId === 'def_base') total.hp *= (1 + (level * 0.05));    // +5% за уровень
+                    if (tId === 'def_res') total.resilience += (level * 5);      // +5 за уровень
+                    if (tId === 'def_eva') total.evasion += (level * 2);         // +2% за уровень
+
+                    if (tId === 'mas_base') total.speed += (level * 2);          // +2 скорости за уровень
+                    if (tId === 'mas_spd') total.speed *= (1 + (level * 0.03));  // +3% скорости за уровень
+                    if (tId === 'mas_ult') total.critDamage += 0.2;              // Пример бонуса для ульты
+                });
 
                 // Добавляем бонусы от предметов
                 allItems.forEach(item => {
-                    if (item.hpBonus) hp += item.hpBonus;
-                    if (item.attackBonus) attack += item.attackBonus;
-                    if (item.defenseBonus) defense += item.defenseBonus;
-                    if (item.critBonus) crit += (item.critBonus * 100); // Предполагаем 0.1 -> 10%
-                    if (item.speedBonus) speed += (item.speedBonus * 10); // Предполагаем 0.1 -> 1
-                    
-                    if (item.evasion) evasion += item.evasion;
-                    if (item.resilience) resilience += item.resilience;
-                    if (item.lifesteal) lifesteal += item.lifesteal;
-                    if (item.penetration) penetration += item.penetration;
-                    if (item.critDamage) critDamage += item.critDamage;
+                    if (item.hpBonus) total.hp += item.hpBonus;
+                    if (item.attackBonus) total.attack += item.attackBonus;
+                    if (item.defenseBonus) total.defense += item.defenseBonus;
+                    if (item.critBonus) total.critChance += (item.critBonus * 100);
+                    if (item.speedBonus) total.speed += (item.speedBonus * 10);
+                    if (item.evasion) total.evasion += item.evasion;
+                    if (item.resilience) total.resilience += item.resilience;
+                    if (item.lifesteal) total.lifesteal += item.lifesteal;
+                    if (item.penetration) total.penetration += item.penetration;
+                    if (item.critDamage) total.critDamage += item.critDamage;
                 });
 
                 return {
-                    hp, 
-                    attack, 
-                    defense, 
-                    speed, 
-                    critChance: crit,
-                    evasion,
-                    resilience,
-                    lifesteal,
-                    penetration,
-                    critDamage,
+                    base,
+                    total,
                     weaponTexture: (weapon as IEquipmentStats)?.textureKey || null
                 };
             },
@@ -299,18 +436,128 @@ export const useGameStore = create<any>()(
             goToArena: () => set({ activeScreen: 'BATTLE' }),
             goToShop: (tab = 'ARSENAL') => set({ activeScreen: 'SHOP', shopInitialTab: tab }),
             goToHeroes: (tab = 'LIST') => set({ activeScreen: 'HEROES', heroesInitialTab: tab }),
-            setUiTheme: (theme: string) => set({ uiTheme: theme }),
-            setShowFps: (show: boolean) => set({ showFps: show }),
-            setMusicVolume: (val: number) => {
-                set({ musicVolume: val });
-                audioService.setMusicVolume(val / 100);
+            setNotificationsEnabled: (enabled: boolean) => set({ notificationsEnabled: enabled }),
+            setIsPowerSaving: (enabled: boolean) => set({ isPowerSaving: enabled }),
+            setIsMuted: (enabled: boolean) => {
+                const isMuted = enabled;
+                set({ isMuted });
+                if (isMuted) {
+                    audioService.setMusicVolume(0);
+                    audioService.setSFXVolume(0);
+                } else {
+                    const state = get();
+                    audioService.setMusicVolume(state.musicVolume / 100);
+                    audioService.setSFXVolume(state.soundVolume / 100);
+                }
             },
-            setSoundVolume: (val: number) => {
-                set({ soundVolume: val });
-                audioService.setSFXVolume(val / 100);
+            setShowFps: (show: boolean) => set({ showFps: show }),
+            setMusicVolume: (vol: number) => {
+                set({ musicVolume: vol });
+                if (!get().isMuted) audioService.setMusicVolume(vol / 100);
+            },
+            setSoundVolume: (vol: number) => {
+                set({ soundVolume: vol });
+                if (!get().isMuted) audioService.setSFXVolume(vol / 100);
             },
             setGraphicsQuality: (val: string) => set({ graphicsQuality: val }),
-            setNotificationsEnabled: (val: boolean) => set({ notificationsEnabled: val }),
+            markMailAsRead: (id: string) => set((state: any) => ({
+                mail: state.mail.map((m: any) => m.id === id ? { ...m, isRead: true } : m)
+            })),
+            deleteMail: (id: string) => set((state: any) => {
+                const mailItem = state.mail.find((m: any) => m.id === id);
+                // Нельзя удалять приветствие и новости
+                if (mailItem?.id === 'welcome-mail' || mailItem?.tab === 'NEWS') return state;
+                
+                return {
+                    mail: state.mail.filter((m: any) => m.id !== id)
+                };
+            }),
+            archiveMail: (id: string) => set((state: any) => ({
+                mail: state.mail.map((m: any) => m.id === id ? { ...m, tab: 'ARCHIVE' } : m)
+            })),
+            toggleMailStar: (id: string) => set((state: any) => ({
+                mail: state.mail.map((m: any) => m.id === id ? { ...m, isStarred: !m.isStarred } : m)
+            })),
+            claimMailReward: (id: string) => {
+                const mail = get().mail.find((m: any) => m.id === id);
+                if (mail && mail.rewards) {
+                    mail.rewards.forEach((r: any) => {
+                        if (r.type === 'GOLD') get().addGold(r.amount);
+                        if (r.type === 'CRYSTALS') get().addCrystals(r.amount);
+                    });
+                    set((state: any) => ({
+                        mail: state.mail.map((m: any) => m.id === id ? { ...m, rewards: null, isRead: true } : m)
+                    }));
+                }
+            },
+            collectAllMailRewards: () => {
+                const mails = get().mail;
+                let totalGold = 0;
+                let totalCrystals = 0;
+                
+                mails.forEach((m: any) => {
+                    if (m.tab === 'INBOX' && m.rewards) {
+                        m.rewards.forEach((r: any) => {
+                            if (r.type === 'GOLD') totalGold += r.amount;
+                            if (r.type === 'CRYSTALS') totalCrystals += r.amount;
+                        });
+                    }
+                });
+
+                if (totalGold > 0) get().addGold(totalGold);
+                if (totalCrystals > 0) get().addCrystals(totalCrystals);
+
+                set((state: any) => ({
+                    mail: state.mail.map((m: any) => 
+                        m.tab === 'INBOX' ? { ...m, rewards: null, isRead: true } : m
+                    )
+                }));
+            },
+            sendFeedback: (category: string, text: string) => {
+                const state = get();
+                const feedbackData = {
+                    category,
+                    text,
+                    userId: state.playerId,
+                    level: state.level,
+                    platform: navigator.platform,
+                    version: 'v1.1.0',
+                    timestamp: Date.now()
+                };
+                console.log('🚀 Feedback Sent:', feedbackData);
+            },
+            removeFriend: (id: string) => set((state: any) => ({
+                friends: state.friends.filter((f: any) => f.id !== id)
+            })),
+            acceptFriendRequest: (id: string) => set((state: any) => {
+                const request = state.friendRequests.find((r: any) => r.id === id);
+                if (!request) return state;
+                return {
+                    friends: [...state.friends, request],
+                    friendRequests: state.friendRequests.filter((r: any) => r.id !== id)
+                };
+            }),
+            declineFriendRequest: (id: string) => set((state: any) => ({
+                friendRequests: state.friendRequests.filter((r: any) => r.id !== id)
+            })),
+            sendGift: (friendId: string) => set((state: any) => ({
+                friends: state.friends.map((f: any) => f.id === friendId ? { ...f, giftSent: true } : f)
+            })),
+            collectAllGifts: () => set((state: any) => {
+                const hasGifts = state.friends.some((f: any) => f.hasGift);
+                if (!hasGifts) return state;
+                return {
+                    friends: state.friends.map((f: any) => ({ ...f, hasGift: false, giftSent: true })),
+                    gold: state.gold + (state.friends.filter((f: any) => f.hasGift).length * 100)
+                };
+            }),
+            addFriend: (friend: any) => set((state: any) => ({
+                friends: [...state.friends, friend],
+                friendRequests: state.friendRequests.filter((r: any) => r.id !== friend.id)
+            })),
+            setRating: (rating: number) => set({ rating: Math.max(0, rating) }),
+            joinClan: (id: string, data: any) => set({ clanId: id, clanData: data }),
+            leaveClan: () => set({ clanId: null, clanData: null }),
             setVkUser: (user: any) => set({ vkUser: user }),
             setAvatar: (avatar: string) => set({ avatar }),
             setFrame: (frame: string) => set({ frame }),
@@ -319,7 +566,7 @@ export const useGameStore = create<any>()(
         {
             name: 'game-storage',
             storage: createJSONStorage(() => getStorage()),
-            version: 2, // Поднимаем версию для сброса старого инвентаря
+            version: 13, // Поднято до 13: Система талантов
         }
     )
 );

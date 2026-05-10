@@ -65,6 +65,12 @@ const rawAssetsMap = {
         SLOT_BG: '/assets/images/ui/slot_bg.png',
         EQUIPMENT_PANEL: '/assets/images/ui/equipment_panel.png',
         HERO_PEDESTAL: '/assets/images/ui/hero_pedestal.png',
+        
+        // Blueprint icons
+        BLUEPRINT_HELMET: '/assets/blueprint_helmet.png',
+        BLUEPRINT_ARMOR: '/assets/blueprint_armor.png',
+        BLUEPRINT_WEAPON: '/assets/blueprint_weapon.png',
+        BLUEPRINT_SHIELD: '/assets/blueprint_shield.png',
     },
     BACKGROUNDS: {
         MAIN_MENU: '/assets/images/backgrounds/bg_main.png',

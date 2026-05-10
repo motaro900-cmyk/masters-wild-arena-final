@@ -1,24 +1,22 @@
 import React, { useState, useEffect } from 'react';
+import { PixiApp } from '../../../engine/core/PixiApp';
 
 export const FpsCounter: React.FC = () => {
     const [fps, setFps] = useState(0);
 
     useEffect(() => {
-        let frameCount = 0;
-        let lastTime = performance.now();
         let animationId: number;
+        const pixiApp = PixiApp.getInstance();
 
         const update = () => {
-            frameCount++;
-            const currentTime = performance.now();
-            const elapsed = currentTime - lastTime;
-
-            if (elapsed >= 1000) {
-                setFps(Math.round((frameCount * 1000) / elapsed));
-                frameCount = 0;
-                lastTime = currentTime;
+            try {
+                const app = pixiApp.getApp();
+                if (app && app.ticker) {
+                    setFps(Math.round(app.ticker.FPS));
+                }
+            } catch (e) {
+                // Engine not ready yet
             }
-
             animationId = requestAnimationFrame(update);
         };
 
@@ -32,23 +30,24 @@ export const FpsCounter: React.FC = () => {
             top: '20px',
             right: '20px',
             zIndex: 9999,
-            background: 'rgba(0, 0, 0, 0.6)',
-            color: fps < 30 ? '#ff4444' : fps < 55 ? '#ffcc00' : '#44ff44',
-            padding: '5px 12px',
-            borderRadius: '8px',
-            fontFamily: "'Courier New', Courier, monospace",
-            fontSize: '16px',
-            fontWeight: 'bold',
+            background: 'rgba(0, 0, 0, 0.7)',
+            color: fps < 25 ? '#ff4444' : fps < 50 ? '#ffcc00' : '#44ff44',
+            padding: '4px 10px',
+            borderRadius: '6px',
+            fontFamily: "'monospace'",
+            fontSize: '14px',
+            fontWeight: 800,
             pointerEvents: 'none',
             border: '1px solid rgba(255, 255, 255, 0.1)',
-            backdropFilter: 'blur(4px)',
+            backdropFilter: 'blur(10px)',
             display: 'flex',
             alignItems: 'center',
-            gap: '8px',
-            boxShadow: '0 4px 15px rgba(0,0,0,0.3)'
+            gap: '6px',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.5)',
+            transition: 'color 0.3s ease'
         }}>
-            <span style={{ fontSize: '10px', opacity: 0.7, color: '#fff' }}>FPS:</span>
-            {fps}
+            <span style={{ fontSize: '9px', opacity: 0.5, color: '#fff', textTransform: 'uppercase', letterSpacing: '1px' }}>FPS</span>
+            <span style={{ minWidth: '25px', textAlign: 'center' }}>{fps}</span>
         </div>
     );
 };

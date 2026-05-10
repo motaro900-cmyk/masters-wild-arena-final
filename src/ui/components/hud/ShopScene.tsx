@@ -74,7 +74,7 @@ export const ShopScene: React.FC = () => {
 
     const getSectionTitle = (main: MainTab) => {
         switch (main) {
-            case 'ARSENAL': return 'ДРЕВНИЙ АРСЕНАЛ';
+            case 'ARSENAL': return 'ЭКИПИРОВКА';
             case 'ALCHEMY': return 'МАГИЧЕСКАЯ ЛАВКА';
             case 'SKINS': return 'ГАРДЕРОБ ГЕРОЯ';
             case 'BANK': return 'КОРОЛЕВСКИЙ БАНК';
@@ -201,7 +201,7 @@ export const ShopScene: React.FC = () => {
                         zIndex: 1,
                         display: 'flex', flexDirection: 'column', gap: '15px', padding: '40px 20px'
                     }}>
-                        <SidebarBtn active={activeMainTab === 'ARSENAL'} onClick={() => setActiveMainTab('ARSENAL')} label="АРСЕНАЛ" image={AssetsMap.UI.TAB_ARSENAL} />
+                        <SidebarBtn active={activeMainTab === 'ARSENAL'} onClick={() => setActiveMainTab('ARSENAL')} label="ЭКИПИРОВКА" image={AssetsMap.UI.TAB_ARSENAL} />
                         <SidebarBtn active={activeMainTab === 'ALCHEMY'} onClick={() => setActiveMainTab('ALCHEMY')} label="АЛХИМИЯ" image={AssetsMap.UI.TAB_ALCHEMY} />
                         <SidebarBtn active={activeMainTab === 'SKINS'} onClick={() => setActiveMainTab('SKINS')} label="ОБЛИКИ" image={AssetsMap.UI.TAB_SKINS} />
                         <SidebarBtn active={activeMainTab === 'BANK'} onClick={() => setActiveMainTab('BANK')} label="БАНК" image={AssetsMap.UI.TAB_BANK} />

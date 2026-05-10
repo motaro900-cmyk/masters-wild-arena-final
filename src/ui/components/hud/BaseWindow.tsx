@@ -15,7 +15,7 @@ export const BaseWindow: React.FC<BaseWindowProps> = ({ title, isOpen, onClose, 
     const uiTheme = useGameStore(state => state.uiTheme);
     const isLight = uiTheme === 'LIGHT';
 
-    // Цветовые схемы тем
+    // Цветовая схема окна
     const theme = {
         bg: isLight ? '#f5e6c8' : '#2a1b0a',
         pattern: isLight 
@@ -43,56 +43,47 @@ export const BaseWindow: React.FC<BaseWindowProps> = ({ title, isOpen, onClose, 
                         borderRadius: '20px',
                         boxShadow: theme.shadow,
                         position: 'relative',
-                        display: 'flex',
+                        display: 'flex', 
                         flexDirection: 'column',
                         overflow: 'hidden',
                         pointerEvents: 'auto',
                     }}
                 >
-                    {/* ЗАГОЛОВОК */}
-                    <div style={{ 
-                        height: '70px', 
+                    {/* Заголовок окна */}
+                    <div style={{
+                        height: '70px',
                         background: theme.headerBg,
-                        borderBottom: `2px solid ${theme.border}`,
-                        display: 'flex',
+                        display: 'flex', 
                         alignItems: 'center',
+                        padding: '0 30px',
                         justifyContent: 'space-between',
-                        padding: '0 25px'
+                        borderBottom: `2px solid ${theme.border}`
                     }}>
-                        <h2 className="font-fantasy" style={{ 
-                            color: theme.titleColor, 
-                            fontSize: '32px', 
-                            margin: 0, 
-                            textShadow: isLight ? 'none' : '2px 2px 4px black' 
-                        }}>
-                            {title}
-                        </h2>
+                        <h2 style={{
+                            color: theme.titleColor,
+                            fontSize: '28px',
+                            fontFamily: "'Philosopher', serif",
+                            margin: 0,
+                            textTransform: 'uppercase',
+                            letterSpacing: '2px'
+                        }}>{title}</h2>
+                        
                         <button 
                             onClick={onClose}
-                            style={{ 
-                                background: isLight ? '#a67c52' : '#ef4444', 
-                                border: `2px solid ${isLight ? '#5d4037' : '#f87171'}`, 
-                                color: 'white', 
-                                width: '40px', 
-                                height: '40px', 
-                                borderRadius: '50%',
+                            style={{
+                                background: 'none',
+                                border: 'none',
                                 cursor: 'pointer',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center'
+                                color: theme.titleColor,
+                                opacity: 0.7
                             }}
                         >
-                            <X size={24} />
+                            <X size={32} />
                         </button>
                     </div>
 
-                    {/* КОНТЕНТ */}
-                    <div style={{ 
-                        flex: 1, 
-                        padding: '30px', 
-                        overflowY: 'auto',
-                        color: isLight ? '#4a3219' : '#e8d8a8' // Цвет текста контента
-                    }} className="custom-scrollbar">
+                    {/* Контент окна */}
+                    <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
                         {children}
                     </div>
                 </motion.div>

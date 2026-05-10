@@ -3,7 +3,7 @@ import { useGameStore } from '../../store/useGameStore';
 import { AssetsMap } from '../../configs/AssetsMap';
 
 // HUD Components
-import { PlayerProfile } from './hud/PlayerProfile';
+
 import { BattlePassBar } from './hud/BattlePassBar';
 import { ResourceBar } from './hud/ResourceBar';
 import { LeftSidebar } from './hud/LeftSidebar';
@@ -11,35 +11,30 @@ import { DailyTaskPanel } from './hud/DailyTaskPanel';
 import { ChatPanel } from './hud/ChatPanel';
 import { ActionButtons } from './hud/ActionButtons';
 import { DailyGiftBanner } from './hud/DailyGiftBanner';
-import { HeroScene } from './hud/HeroScene';
 import { BattleScene } from './hud/BattleScene';
 
 // Window Components
 import { BaseWindow } from './hud/BaseWindow';
-// import { ShopWindow } from './hud/ShopWindow'; // УДАЛЕНО: используем ShopScene
 import { FriendsWindow } from './hud/FriendsWindow';
 import { MailWindow } from './hud/MailWindow';
 import { SettingsWindow } from './hud/SettingsWindow';
-import { ProfileWindow } from './hud/ProfileWindow';
 import { DailyGiftWindow } from './hud/DailyGiftWindow';
 import { RankingWindow } from './hud/RankingWindow';
 import { ClanWindow } from './hud/ClanWindow';
 import { RanksListWindow } from './hud/RanksListWindow';
 import { InventoryPanel } from './hud/InventoryPanel';
-import { ALL_SHOP_ITEMS } from '../../configs/ShopConfig';
 
 export const GameHUD: React.FC = () => {
     const activeScreen = useGameStore(state => state.activeScreen);
     const [activeWindow, setActiveWindow] = useState<string | null>(null);
     const goToShop = useGameStore(state => state.goToShop);
 
-    // Скрываем HUD в бою, в магазине, в героях или на экранах загрузки
-    
-    // Show ONLY ResourceBar when in Shop or Heroes
     const isFullScreenScene = activeScreen === 'SHOP' || activeScreen === 'HEROES';
     
     if (activeScreen === 'BATTLE') return <BattleScene />;
     if (activeScreen !== 'MAIN_MENU' && activeScreen !== 'ARENA' && !isFullScreenScene) return null;
+
+
 
     return (
         <div style={{ 
@@ -51,15 +46,7 @@ export const GameHUD: React.FC = () => {
             pointerEvents: 'none',
             overflow: 'hidden'
         }}>
-            {/* 1. PLAYER PROFILE */}
-            {!isFullScreenScene && (
-                <div className="absolute top-[20px] left-[10px] hud-interactive">
-                    <PlayerProfile 
-                        onOpenProfile={() => setActiveWindow('PROFILE')}
-                        onOpenRanks={() => setActiveWindow('RANKS_LIST')} 
-                    />
-                </div>
-            )}
+
 
             {/* 2. BATTLE PASS BAR */}
             {!isFullScreenScene && (
@@ -68,7 +55,7 @@ export const GameHUD: React.FC = () => {
                 </div>
             )}
 
-            {/* 3. RESOURCES (Always visible in Shop/Heroes) */}
+            {/* 3. RESOURCES */}
             <div className="absolute top-[25px] right-[25px] hud-interactive">
                 <ResourceBar onOpenShop={(tab) => {
                     goToShop(tab === 'RESOURCES' ? 'BANK' : 'ALCHEMY');
@@ -96,7 +83,10 @@ export const GameHUD: React.FC = () => {
                     </div>
                     
                     <div className="absolute bottom-[30px] left-1/2 -translate-x-1/2 hud-interactive">
-                        <ActionButtons onStartBattle={() => useGameStore.getState().goToArena()} />
+                        <ActionButtons 
+                            onStartBattle={() => useGameStore.getState().goToArena()} 
+                            onOpenRanks={() => setActiveWindow('RANKS_LIST')}
+                        />
                     </div>
                     
                     <div 
@@ -139,11 +129,12 @@ export const GameHUD: React.FC = () => {
                 </>
             )}
 
+
+
             {/* --- МОДАЛЬНЫЕ ОКНА --- */}
             {activeWindow && (
               <div className="absolute inset-0 z-[100] pointer-events-none bg-black/60 backdrop-blur-sm">
                 <div className="absolute top-[540px] left-[960px] -translate-x-1/2 -translate-y-1/2 hud-interactive">
-                  {/* МАГАЗИН ТЕПЕРЬ ПОЛНОЭКРАННЫЙ (ShopScene.tsx) */}
                   {activeWindow === 'FRIENDS' && (
                       <BaseWindow title="ДРУЗЬЯ" isOpen={true} onClose={() => setActiveWindow(null)} width="800px">
                           <FriendsWindow onClose={() => setActiveWindow(null)} />
@@ -158,9 +149,6 @@ export const GameHUD: React.FC = () => {
                       <BaseWindow title="НАСТРОЙКИ" isOpen={true} onClose={() => setActiveWindow(null)} width="650px">
                           <SettingsWindow onClose={() => setActiveWindow(null)} />
                       </BaseWindow>
-                  )}
-                  {activeWindow === 'PROFILE' && (
-                      <ProfileWindow onClose={() => setActiveWindow(null)} />
                   )}
                   {activeWindow === 'GIFT' && (
                       <BaseWindow title="ЕЖЕДНЕВНЫЙ ПОДАРОК" isOpen={true} onClose={() => setActiveWindow(null)} width="600px">
@@ -186,9 +174,7 @@ export const GameHUD: React.FC = () => {
                       <BaseWindow title="ИНВЕНТАРЬ" isOpen={true} onClose={() => setActiveWindow(null)} width="1100px">
                           <div style={{ padding: '30px', display: 'flex', justifyContent: 'center' }}>
                             <InventoryPanel 
-                                onItemClick={(id) => {
-                                    // Обработка клика теперь внутри компонента для выделения
-                                }}
+                                onItemClick={() => {}}
                                 isEquipped={(id) => {
                                     const { equippedWeaponId, equippedHelmId, equippedArmorId, equippedShieldId } = useGameStore.getState();
                                     return id === equippedWeaponId || id === equippedHelmId || id === equippedArmorId || id === equippedShieldId;

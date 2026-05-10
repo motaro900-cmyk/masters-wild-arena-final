@@ -1,5 +1,6 @@
 import React from 'react';
 import { cn } from '../../../utils/cn';
+import { useGameStore } from '../../../store/useGameStore';
 import { resolveAssetPath } from '../../../utils/assetPath';
 
 /**
@@ -12,51 +13,56 @@ import { resolveAssetPath } from '../../../utils/assetPath';
 /**
  * КРУГЛАЯ КНОПКА (Шоколад + Золото)
  */
-export const GfxRoundButton: React.FC<{ 
-    icon: string; 
-    onClick?: () => void; 
+export const GfxRoundButton: React.FC<{
+    icon: string;
+    onClick?: () => void;
     size?: number;
     notification?: number;
     className?: string;
     style?: React.CSSProperties;
-}> = ({ icon, onClick, size = 64, notification, className, style }) => (
-    <div 
+}> = ({ icon, onClick, size = 64, notification, className, style }) => {
+    const isLow = useGameStore(state => state.graphicsQuality === 'LOW');
+    return (
+    <div
         onClick={onClick}
         className={cn("relative cursor-pointer active:scale-90 transition-all group", className)}
         style={{ width: `${size}px`, height: `${size}px`, ...style }}
     >
-        <div style={{ 
-            position: 'absolute', 
-            inset: 0, 
+        <div style={{
+            position: 'absolute',
+            inset: 0,
             background: 'radial-gradient(circle, #2b1d11 0%, #0c0a09 100%)', // Глубокий шоколад
             border: '3px solid #8a5a2a', // Медь
             borderRadius: '50%',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.9), inset 0 0 15px rgba(196,139,59,0.2)'
+            boxShadow: isLow ? 'none' : '0 4px 12px rgba(0,0,0,0.9), inset 0 0 15px rgba(196,139,59,0.2)'
         }} className="group-hover:border-[#c48b3b]" />
-        
-        <img 
-            src={resolveAssetPath(`/assets/images/ui/${icon}.png`)} 
-            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', padding: '18px', filter: 'drop-shadow(0 2px 4px black) sepia(0.2) brightness(1.1)' }} 
-            alt="" 
+
+        <img
+            src={resolveAssetPath(`/assets/images/ui/${icon}.png`)}
+            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', padding: '18px', filter: isLow ? 'none' : 'drop-shadow(0 2px 4px black) sepia(0.2) brightness(1.1)' }}
+            alt=""
         />
-        
+
         {notification && (
-            <div style={{ 
-                position: 'absolute', top: '-2px', right: '-2px', minWidth: '22px', height: '22px', 
+            <div style={{
+                position: 'absolute', top: '-2px', right: '-2px', minWidth: '22px', height: '22px',
                 backgroundColor: '#991b1b', borderRadius: '50%', border: '2px solid #fde68a',
                 color: 'white', fontSize: '10px', fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center',
                 boxShadow: '0 2px 8px rgba(0,0,0,0.6)'
             }}>{notification}</div>
         )}
     </div>
-);
+    );
+};
 
 /**
  * ЗОЛОТАЯ ПАНЕЛЬ (Тонированная под медь/золото с фото)
  */
-export const GfxGoldPanel: React.FC<{ children: React.ReactNode; className?: string; style?: React.CSSProperties }> = ({ children, className, style }) => (
-    <div 
-        className={cn("relative border-[16px] border-transparent shadow-2xl", className)}
+export const GfxGoldPanel: React.FC<{ children: React.ReactNode; className?: string; style?: React.CSSProperties }> = ({ children, className, style }) => {
+    const isLow = useGameStore(state => state.graphicsQuality === 'LOW');
+    return (
+    <div
+        className={cn("relative border-[16px] border-transparent", !isLow && "shadow-2xl", className)}
         style={{
             borderImageSource: `url('${resolveAssetPath('/assets/images/ui/social_bar_bg.png')}')`,
             borderImageSlice: '40 fill',
@@ -68,14 +74,17 @@ export const GfxGoldPanel: React.FC<{ children: React.ReactNode; className?: str
             {children}
         </div>
     </div>
-);
+    );
+};
 
 /**
  * ТЕМНОЕ ДЕРЕВО (Максимально темное)
  */
-export const GfxWoodPanel: React.FC<{ children: React.ReactNode; className?: string; style?: React.CSSProperties }> = ({ children, className, style }) => (
-    <div 
-        className={cn("relative border-[18px] border-transparent shadow-inner", className)}
+export const GfxWoodPanel: React.FC<{ children: React.ReactNode; className?: string; style?: React.CSSProperties }> = ({ children, className, style }) => {
+    const isLow = useGameStore(state => state.graphicsQuality === 'LOW');
+    return (
+    <div
+        className={cn("relative border-[18px] border-transparent", !isLow && "shadow-inner", className)}
         style={{
             borderImageSource: `url('${resolveAssetPath('/assets/images/ui/panel_dark.png')}')`,
             borderImageSlice: '40 fill',
@@ -87,36 +96,41 @@ export const GfxWoodPanel: React.FC<{ children: React.ReactNode; className?: str
             {children}
         </div>
     </div>
-);
+    );
+};
 
 /**
  * МЕНЮ КНОПКА (Унифицированная под фото)
  */
-export const GfxMenuButton: React.FC<{ 
-    children: React.ReactNode; 
-    onClick?: () => void; 
+export const GfxMenuButton: React.FC<{
+    children: React.ReactNode;
+    onClick?: () => void;
     className?: string;
     variant?: 'bronze' | 'gold' | 'red';
     style?: React.CSSProperties;
 }> = ({ children, onClick, className, variant = 'bronze', style }) => {
-    
+
     const filterMap = {
         bronze: 'sepia(0.3) brightness(0.7) contrast(1.2)', // Темная бронза
         gold: 'sepia(0.1) brightness(1.1)',
         red: 'hue-rotate(-55deg) saturate(1.8) brightness(0.8) contrast(1.2)' // Глубокий красный кристалл
     };
 
+    const isLow = useGameStore(state => state.graphicsQuality === 'LOW');
     return (
-        <div 
+        <div
             onClick={onClick}
             className={cn("relative cursor-pointer active:scale-95 transition-all group", className)}
             style={style}
         >
-            <img 
-                src={resolveAssetPath(`/assets/images/ui/${variant === 'red' || variant === 'gold' ? 'btn_battle_gold' : 'btn_bronze'}.png`)} 
-                style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'fill', filter: filterMap[variant] }} 
+            <img
+                src={resolveAssetPath(`/assets/images/ui/${variant === 'red' || variant === 'gold' ? 'btn_battle_gold' : 'btn_bronze'}.png`)}
+                style={{ 
+                    position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'fill', 
+                    filter: isLow ? 'none' : filterMap[variant] 
+                }}
                 className="group-hover:brightness-110"
-                alt="" 
+                alt=""
             />
             <div className="relative z-10 w-full h-full flex items-center justify-center">
                 {children}
@@ -132,12 +146,12 @@ export const GfxProgressBar: React.FC<{ value: number; max: number; color?: stri
     const pct = Math.min(100, (value / (max || 1)) * 100);
     return (
         <div className={cn("relative h-3 w-full bg-[#0c0a09] rounded-full border border-[#451a03] overflow-hidden shadow-inner", className)}>
-            <div 
+            <div
                 className="h-full transition-all duration-700"
-                style={{ 
-                    width: `${pct}%`, 
+                style={{
+                    width: `${pct}%`,
                     background: `linear-gradient(180deg, #fef3c7 0%, ${color} 50%, #8a5a2a 100%)`, // Металлический градиент
-                    boxShadow: `0 0 15px ${color}66` 
+                    boxShadow: `0 0 15px ${color}66`
                 }}
             />
         </div>
@@ -147,51 +161,52 @@ export const GfxProgressBar: React.FC<{ value: number; max: number; color?: stri
 /**
  * АВАТАР (В стиле фото) - Улучшенный: больше масштаб, меньше лишних рамок
  */
-export const AvatarFrame: React.FC<{ 
-    avatarFilename: string; 
-    frameFilename: string; 
+export const AvatarFrame: React.FC<{
+    avatarFilename: string;
+    frameFilename: string;
     size?: number;
     showGlow?: boolean;
 }> = ({ avatarFilename, frameFilename, size = 64, showGlow = false }) => {
+    const isLow = useGameStore(state => state.graphicsQuality === 'LOW');
     const avatarSrc = resolveAssetPath(`/assets/images/avatars/${avatarFilename}.png`);
     const frameSrc = resolveAssetPath(`/assets/images/frames/${frameFilename}.png`);
-    
+
     return (
-        <div 
-            style={{ 
-                position: 'relative', 
-                width: `${size}px`, 
-                height: `${size}px`, 
-                filter: showGlow ? 'drop-shadow(0 0 15px rgba(240,192,64,0.4))' : 'drop-shadow(0 8px 15px rgba(0,0,0,0.6))' 
+        <div
+            style={{
+                position: 'relative',
+                width: `${size}px`,
+                height: `${size}px`,
+                filter: isLow ? 'none' : (showGlow ? 'drop-shadow(0 0 15px rgba(240,192,64,0.4))' : 'drop-shadow(0 8px 15px rgba(0,0,0,0.6))')
             }}
         >
             {/* Внутренняя часть аватара - теперь без лишней обводки и большего размера */}
-            <div style={{ 
-                position: 'absolute', 
+            <div style={{
+                position: 'absolute',
                 inset: '6%', // Было 12%, теперь аватар крупнее
-                borderRadius: '50%', 
-                overflow: 'hidden', 
-                background: 'radial-gradient(circle, #1a1a1a 0%, #050505 100%)' 
+                borderRadius: '50%',
+                overflow: 'hidden',
+                background: 'radial-gradient(circle, #1a1a1a 0%, #050505 100%)'
             }}>
-                <img 
-                    src={avatarSrc} 
-                    style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-                    alt="" 
+                <img
+                    src={avatarSrc}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    alt=""
                 />
             </div>
-            
+
             {/* Сама рамка */}
-            <img 
-                src={frameSrc} 
-                style={{ 
-                    position: 'absolute', 
+            <img
+                src={frameSrc}
+                style={{
+                    position: 'absolute',
                     inset: '-10%', // Было -15%, теперь плотнее прилегает
-                    width: '120%', 
-                    height: '120%', 
-                    objectFit: 'contain', 
-                    filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))' 
-                }} 
-                alt="" 
+                    width: '120%',
+                    height: '120%',
+                    objectFit: 'contain',
+                    filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))'
+                }}
+                alt=""
             />
         </div>
     );

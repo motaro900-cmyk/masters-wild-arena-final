@@ -3,7 +3,7 @@ import { useGameStore } from '../../../store/useGameStore';
 import { AssetsMap } from '../../../configs/AssetsMap';
 
 /**
- * BattlePassBar (v5.0) — Экстремально раздвинутые тексты для эффекта простора.
+ * BattlePassBar (v5.1) — Растянутая по высоте версия.
  */
 export const BattlePassBar: React.FC = () => {
   const { bpLevel, setActiveScreen } = useGameStore();
@@ -19,7 +19,7 @@ export const BattlePassBar: React.FC = () => {
       {/* Главный спрайт Battle Pass */}
       <div style={{
         width: 550, 
-        height: 95, 
+        height: 120, // Увеличили с 95
         backgroundImage: `url(${AssetsMap.UI.ICON_BEAST_PASS})`,
         backgroundSize: '100% 100%',
         backgroundRepeat: 'no-repeat',
@@ -34,7 +34,7 @@ export const BattlePassBar: React.FC = () => {
         {/* УРОВЕНЬ НА ГЕРБЕ */}
         <div style={{
           position: 'absolute',
-          left: '12.5%', 
+          left: '12.1%', // Сдвинули на 2px влево (12.5% -> 12.1%)
           top: '46%',   
           transform: 'translate(-50%, -50%)',
           display: 'flex',
@@ -44,7 +44,7 @@ export const BattlePassBar: React.FC = () => {
         }}>
           <span style={{
             fontFamily: "'Cinzel', serif",
-            fontSize: 34,
+            fontSize: 38, // Увеличили с 34
             fontWeight: 900,
             color: '#ffffff',
             textShadow: '0 0 10px rgba(0,0,0,1), 0 2px 4px rgba(0,0,0,1)',
@@ -54,18 +54,18 @@ export const BattlePassBar: React.FC = () => {
           </span>
         </div>
 
-        {/* ЗАГОЛОВОК — ЕЩЕ ВЫШЕ */}
+        {/* ЗАГОЛОВОК */}
         <div style={{
           position: 'absolute',
           left: '48%', 
           top: '18%', 
           transform: 'translateX(-50%)',
           fontFamily: "'Cinzel', serif",
-          fontSize: 16,
+          fontSize: 18, // Увеличили с 16
           fontWeight: 900,
           color: '#f0c040',
           textShadow: '0 2px 4px rgba(0,0,0,1)',
-          letterSpacing: '2.5px',
+          letterSpacing: '2.8px',
           textTransform: 'uppercase',
           pointerEvents: 'none',
           whiteSpace: 'nowrap'
@@ -73,24 +73,24 @@ export const BattlePassBar: React.FC = () => {
           БОЕВОЙ ПРОПУСК
         </div>
 
-        {/* ТАЙМЕР — ЕЩЕ НИЖЕ */}
+        {/* ТАЙМЕР */}
         <div style={{
           position: 'absolute',
           left: '48%', 
-          bottom: '8%', 
+          bottom: '12%', // Чуть подняли от края
           transform: 'translateX(-50%)',
           fontFamily: "'Nunito', sans-serif",
-          fontSize: 12, 
+          fontSize: 13, 
           fontWeight: 800,
-          color: 'rgba(255, 255, 255, 0.55)',
+          color: 'rgba(255, 255, 255, 0.6)',
           textShadow: '0 1px 3px rgba(0,0,0,0.8)',
           display: 'flex',
           alignItems: 'center',
-          gap: 5,
+          gap: 6,
           pointerEvents: 'none',
           whiteSpace: 'nowrap'
         }}>
-          <span style={{ fontSize: 10 }}>⏳</span>
+          <span style={{ fontSize: 11 }}>⏳</span>
           <span>ДО КОНЦА: 14д 06ч 24м</span>
         </div>
       </div>

@@ -1,10 +1,20 @@
 import React from 'react';
 import { AssetsMap } from '../../../configs/AssetsMap';
+import { useGameStore } from '../../../store/useGameStore';
+import { getRankInfo } from '../../../configs/RankSystem';
+
+interface ActionButtonsProps {
+  onStartBattle: () => void;
+  onOpenRanks: () => void;
+}
 
 /**
- * ActionButtons (v2.5) — Еще больший сдвиг Рейтинга вправо.
+ * ActionButtons (v2.6) — Поддержка системы рангов и кликабельности.
  */
-export const ActionButtons: React.FC<{ onStartBattle: () => void }> = ({ onStartBattle }) => {
+export const ActionButtons: React.FC<ActionButtonsProps> = ({ onStartBattle, onOpenRanks }) => {
+  const { rating } = useGameStore();
+  const rank = getRankInfo(rating);
+
   return (
     <div style={{
       width: 640,
@@ -16,14 +26,18 @@ export const ActionButtons: React.FC<{ onStartBattle: () => void }> = ({ onStart
       alignItems: 'center',
     }}>
       {/* Главный спрайт панели */}
-      <div style={{
-        width: '100%',
-        height: '100%',
-        backgroundImage: `url(${AssetsMap.UI.BTN_BATTLE_GROUP})`,
-        backgroundSize: '100% 100%',
-        backgroundRepeat: 'no-repeat',
-        position: 'relative',
-      }}>
+      <div 
+        onClick={onOpenRanks}
+        style={{
+          width: '100%',
+          height: '100%',
+          backgroundImage: `url(${AssetsMap.UI.BTN_BATTLE_GROUP})`,
+          backgroundSize: '100% 100%',
+          backgroundRepeat: 'no-repeat',
+          position: 'relative',
+          cursor: 'pointer',
+        }}
+      >
         
         {/* ЛЕВЫЙ БЛОК: РЕЙТИНГ */}
         <div style={{
@@ -35,17 +49,18 @@ export const ActionButtons: React.FC<{ onStartBattle: () => void }> = ({ onStart
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          paddingLeft: '110px', // Значительно сдвинули вправо (было 40)
+          paddingLeft: '110px',
           fontFamily: "'Cinzel', serif",
           fontSize: 13,
           fontWeight: 800,
           color: '#f0c040',
           textShadow: '0 2px 4px rgba(0,0,0,1)',
+          pointerEvents: 'none',
         }}>
-          РЕЙТИНГ: 1250
+          РЕЙТИНГ: {rating}
         </div>
 
-        {/* ПРАВЫЙ БЛОК: ЛИГА */}
+        {/* ПРАВЫЙ БЛОК: РАНГ */}
         <div style={{
           position: 'absolute',
           top: '12%',
@@ -61,8 +76,9 @@ export const ActionButtons: React.FC<{ onStartBattle: () => void }> = ({ onStart
           fontWeight: 800,
           color: '#f0c040',
           textShadow: '0 2px 4px rgba(0,0,0,1)',
+          pointerEvents: 'none',
         }}>
-          ЛИГА: МАСТЕР
+          РАНГ: {rank.name}
         </div>
 
         {/* НИЖНИЙ БЛОК — КНОПКИ БОЯ */}

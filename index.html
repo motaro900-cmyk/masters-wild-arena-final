@@ -80,7 +80,35 @@
 
 <body>
   <div id="root">
-    <div id="game-container"></div>
+    <div style="
+      display: flex; 
+      flex-direction: column; 
+      align-items: center; 
+      justify-content: center; 
+      color: #c8a870; 
+      font-family: 'Cinzel', serif; 
+      text-align: center;
+      gap: 20px;
+    ">
+      <div style="font-size: 24px; letter-spacing: 2px;">МАСТЕР ДИКОЙ ПРИРОДЫ</div>
+      <div style="width: 200px; height: 4px; background: rgba(200, 168, 112, 0.2); border-radius: 2px; overflow: hidden; position: relative;">
+        <div style="
+          position: absolute; 
+          height: 100%; 
+          width: 50%; 
+          background: #f0c040; 
+          box-shadow: 0 0 15px #f0c040;
+          animation: loading-anim 1.5s infinite ease-in-out;
+        "></div>
+      </div>
+      <div style="font-size: 14px; opacity: 0.6; font-family: sans-serif;">Загрузка ресурсов...</div>
+      <style>
+        @keyframes loading-anim {
+          0% { left: -50%; }
+          100% { left: 100%; }
+        }
+      </style>
+    </div>
   </div>
 
   <script>

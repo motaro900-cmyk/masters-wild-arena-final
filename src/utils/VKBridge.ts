@@ -64,3 +64,31 @@ export const getVkUserInfo = async (): Promise<VkUser | null> => {
         return null;
     }
 };
+
+/**
+ * Запрашивает разрешение на отправку уведомлений
+ */
+export const requestNotifications = async (): Promise<boolean> => {
+    if (!bridge) return false;
+    try {
+        const result = await bridge.send('VKWebAppAllowNotifications');
+        return result.result === true;
+    } catch (error) {
+        console.warn('VKWebAppAllowNotifications failed:', error);
+        return false;
+    }
+};
+
+/**
+ * Вызывает окно приглашения друзей в игру
+ */
+export const showInviteBox = async (): Promise<boolean> => {
+    if (!bridge) return false;
+    try {
+        await bridge.send('VKWebAppShowInviteBox');
+        return true;
+    } catch (error) {
+        console.warn('VKWebAppShowInviteBox failed:', error);
+        return false;
+    }
+};

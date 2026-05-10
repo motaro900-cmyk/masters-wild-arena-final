@@ -1,9 +1,10 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { RANK_SYSTEM, getRankInfo } from '../../../configs/RankSystem';
+import { useGameStore } from '../../../store/useGameStore';
 
 export const RanksListWindow: React.FC = () => {
-    const playerTrophies = 2850; // В будущем берем из стора
+    const { rating: playerTrophies } = useGameStore();
     const currentRank = getRankInfo(playerTrophies);
 
     return (
@@ -16,7 +17,7 @@ export const RanksListWindow: React.FC = () => {
             padding: '10px'
         }}>
             <p style={{ color: '#c8a870', textAlign: 'center', fontStyle: 'italic', margin: '0 0 10px 0' }}>
-                Побеждайте в боях, чтобы зарабатывать кубки и открывать новые лиги!
+                Побеждайте в боях, чтобы зарабатывать кубки и открывать новые ранги!
             </p>
 
             <div className="leaderboard-scroll" style={{

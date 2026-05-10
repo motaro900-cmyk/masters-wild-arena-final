@@ -1,28 +1,22 @@
 import React, { useState } from 'react';
 import { useGameStore } from '../../../store/useGameStore';
 import { resolveAssetPath } from '../../../utils/assetPath';
+import { showInviteBox } from '../../../utils/VKBridge';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface FriendsWindowProps {
     onClose: () => void;
 }
 
 /**
- * FriendsWindow (v2.1) — Добавлена поддержка ТЕМ.
+ * FriendsWindow (v2.2) — Интеграция с VK и Стором.
  */
 export const FriendsWindow: React.FC<FriendsWindowProps> = ({ onClose }) => {
-    const { uiTheme } = useGameStore();
+    const { uiTheme, friends, friendRequests, removeFriend, acceptFriendRequest, declineFriendRequest, sendGift, collectAllGifts } = useGameStore();
     const isLight = uiTheme === 'LIGHT';
 
     const [activeTab, setActiveTab] = useState<'ALL' | 'ONLINE' | 'REQUESTS'>('ALL');
     const [searchQuery, setSearchQuery] = useState('');
-
-    const friends = [
-        { id: '1024', name: 'WILD_WOLF', level: 12, online: true, avatar: 'панда.png' },
-        { id: '2048', name: 'BEAR_KING', level: 8, online: false, avatar: 'панда.png' },
-        { id: '3072', name: 'NIGHT_PANTHER', level: 15, online: true, avatar: 'панда.png' },
-        { id: '4096', name: 'FOREST_SHAMAN', level: 22, online: true, avatar: 'панда.png' },
-        { id: '5120', name: 'IRON_CLAW', level: 5, online: false, avatar: 'панда.png' },
-    ];
 
     // Цветовая палитра темы
     const colors = {
@@ -33,7 +27,7 @@ export const FriendsWindow: React.FC<FriendsWindowProps> = ({ onClose }) => {
         inputBg: isLight ? 'rgba(0,0,0,0.05)' : 'rgba(0,0,0,0.3)'
     };
 
-    const filteredFriends = friends.filter(f => {
+    const filteredFriends = (activeTab === 'REQUESTS' ? friendRequests : friends).filter((f: any) => {
         const matchesSearch = f.name.toLowerCase().includes(searchQuery.toLowerCase()) || f.id.includes(searchQuery);
         if (activeTab === 'ONLINE') return matchesSearch && f.online;
         return matchesSearch;
@@ -46,41 +40,73 @@ export const FriendsWindow: React.FC<FriendsWindowProps> = ({ onClose }) => {
         }}>
             
             {/* ПОИСК И ВКЛАДКИ */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginBottom: 25 }}>
-                <div style={{ position: 'relative' }}>
-                    <span style={{ position: 'absolute', left: 15, top: 11, opacity: 0.4 }}>🔍</span>
-                    <input 
-                        type="text" placeholder="ПОИСК ПО ИМЕНИ ИЛИ ID..." value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        style={{
-                            width: '100%', padding: '12px 15px 12px 45px', background: colors.inputBg,
-                            border: `1px solid ${colors.border}`, borderRadius: 10, color: colors.text,
-                            fontSize: 13, fontWeight: 700, outline: 'none'
-                        }}
-                    />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', marginBottom: 20 }}>
+                <div style={{ display: 'flex', gap: '10px' }}>
+                    <div style={{ position: 'relative', flex: 1 }}>
+                        <span style={{ position: 'absolute', left: 15, top: 11, opacity: 0.4 }}>🔍</span>
+                        <input 
+                            type="text" placeholder="ПОИСК ПО ИМЕНИ ИЛИ ID..." value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            style={{
+                                width: '100%', padding: '12px 15px 12px 45px', background: colors.inputBg,
+                                border: `1px solid ${colors.border}`, borderRadius: 12, color: colors.text,
+                                fontSize: 13, fontWeight: 700, outline: 'none'
+                            }}
+                        />
+                    </div>
+                    <button style={{ width: '48px', height: '48px', background: colors.cardBg, border: `1px solid ${colors.border}`, borderRadius: 12, cursor: 'pointer', fontSize: '20px' }}>➕</button>
                 </div>
 
-                <div style={{ display: 'flex', gap: 10 }}>
-                    {['ALL', 'ONLINE', 'REQUESTS'].map(tab => (
-                        <button key={tab} onClick={() => setActiveTab(tab as any)}
+                <div style={{ display: 'flex', gap: 8 }}>
+                    {[
+                        { id: 'ALL', label: 'ВСЕ', count: friends.length },
+                        { id: 'ONLINE', label: 'В СЕТИ', count: friends.filter((f: any) => f.online).length },
+                        { id: 'REQUESTS', label: 'ЗАПРОСЫ', count: friendRequests.length, badge: true }
+                    ].map(tab => (
+                        <button key={tab.id} onClick={() => setActiveTab(tab.id as any)}
                             style={{
-                                flex: 1, padding: '10px 0', borderRadius: 8, cursor: 'pointer', transition: '0.3s',
-                                background: activeTab === tab ? (isLight ? '#8b4513' : '#3a2a15') : 'transparent',
-                                border: `1px solid ${activeTab === tab ? colors.accent : colors.border}`,
-                                color: activeTab === tab ? '#fff' : (isLight ? '#8b4513' : 'rgba(232, 216, 168, 0.4)'),
-                                fontFamily: "'Cinzel', serif", fontSize: 11, fontWeight: 900
+                                flex: 1, padding: '12px 0', borderRadius: 10, cursor: 'pointer', transition: '0.3s',
+                                background: activeTab === tab.id ? colors.accent : 'rgba(255,255,255,0.03)',
+                                border: `1px solid ${activeTab === tab.id ? colors.accent : colors.border}`,
+                                color: activeTab === tab.id ? '#000' : colors.text,
+                                fontFamily: "'Cinzel', serif", fontSize: 11, fontWeight: 900,
+                                position: 'relative'
                             }}
                         >
-                            {tab === 'ALL' ? 'ВСЕ' : tab === 'ONLINE' ? 'В СЕТИ' : 'ЗАПРОСЫ'}
+                            {tab.label}
+                            {tab.badge && tab.count > 0 && (
+                                <motion.div 
+                                    initial={{ scale: 0 }} animate={{ scale: 1 }}
+                                    style={{ position: 'absolute', top: -5, right: -5, background: '#ff4444', color: '#fff', borderRadius: '50%', width: 18, height: 18, fontSize: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, border: '2px solid #1a1510' }}
+                                >
+                                    {tab.count}
+                                </motion.div>
+                            )}
                         </button>
                     ))}
                 </div>
             </div>
 
+            {/* QUICK ACTIONS */}
+            {activeTab !== 'REQUESTS' && friends.length > 0 && (
+                <motion.button 
+                    whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+                    onClick={collectAllGifts}
+                    style={{
+                        marginBottom: 15, width: '100%', padding: '12px', background: 'linear-gradient(180deg, #f0c040, #c87820)',
+                        border: 'none', borderRadius: 10, color: '#000', fontWeight: 900, cursor: 'pointer',
+                        fontSize: 11, textTransform: 'uppercase', letterSpacing: '1px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
+                        boxShadow: '0 4px 15px rgba(240,192,64,0.2)'
+                    }}
+                >
+                    🎁 Собрать и отправить всё
+                </motion.button>
+            )}
+
             {/* СПИСОК ДРУЗЕЙ */}
             <div style={{ flex: 1, overflowY: 'auto', paddingRight: 10 }} className="custom-scrollbar">
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                    {filteredFriends.length > 0 ? filteredFriends.map(f => (
+                    {filteredFriends.length > 0 ? filteredFriends.map((f: any) => (
                         <div key={f.id}
                             style={{
                                 background: colors.cardBg, border: `1px solid ${colors.border}`,
@@ -107,7 +133,7 @@ export const FriendsWindow: React.FC<FriendsWindowProps> = ({ onClose }) => {
                                 )}
                             </div>
 
-                            <div style={{ flex: 1 }}>
+                             <div style={{ flex: 1 }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 2 }}>
                                     <span style={{ fontFamily: "'Cinzel', serif", fontSize: 15, fontWeight: 700, color: isLight ? '#5d4037' : '#fff' }}>{f.name}</span>
                                     <span style={{ 
@@ -117,40 +143,83 @@ export const FriendsWindow: React.FC<FriendsWindowProps> = ({ onClose }) => {
                                         LVL {f.level}
                                     </span>
                                 </div>
-                                <div style={{ fontSize: 10, opacity: 0.5, fontWeight: 700 }}>ID: {f.id} • {f.online ? 'В СЕТИ' : 'БЫЛ НЕДАВНО'}</div>
+                                <div style={{ fontSize: 10, opacity: 0.5, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 5 }}>
+                                    {f.online ? (
+                                        <span style={{ color: '#22c55e' }}>● В СЕТИ</span>
+                                    ) : (
+                                        <span>БЫЛ(А) {f.lastSeen || 'НЕДАВНО'}</span>
+                                    )}
+                                    • ID: {f.id}
+                                </div>
                             </div>
 
                             <div style={{ display: 'flex', gap: 8 }}>
-                                <button style={{
-                                    width: 40, height: 40, background: isLight ? 'rgba(0,0,0,0.05)' : 'rgba(240,192,64,0.1)', 
-                                    border: `1px solid ${colors.border}`, borderRadius: 8, cursor: 'pointer', fontSize: 18, color: colors.accent
-                                }}>⚔️</button>
-                                <button style={{
-                                    width: 40, height: 40, background: isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)', 
-                                    border: `1px solid ${colors.border}`, borderRadius: 8, cursor: 'pointer', fontSize: 18, color: colors.text
-                                }}>💬</button>
-                                <button style={{
-                                    width: 40, height: 40, background: isLight ? 'rgba(255,0,0,0.05)' : 'rgba(255,68,68,0.05)', 
-                                    border: `1px solid ${isLight ? 'rgba(255,0,0,0.1)' : 'rgba(255,68,68,0.1)'}`, borderRadius: 8, cursor: 'pointer', fontSize: 16, color: '#ff4444'
-                                }}>🗑️</button>
+                                {activeTab === 'REQUESTS' ? (
+                                    <>
+                                        <button 
+                                            onClick={() => acceptFriendRequest(f.id)}
+                                            style={{ width: 40, height: 40, background: '#22c55e', border: 'none', borderRadius: 10, cursor: 'pointer', fontSize: 18, color: '#fff' }}
+                                        >✓</button>
+                                        <button 
+                                            onClick={() => declineFriendRequest(f.id)}
+                                            style={{ width: 40, height: 40, background: 'rgba(255,255,255,0.05)', border: `1px solid ${colors.border}`, borderRadius: 10, cursor: 'pointer', fontSize: 18, color: '#ff4444' }}
+                                        >×</button>
+                                    </>
+                                ) : (
+                                    <>
+                                        <motion.button 
+                                            whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
+                                            onClick={() => sendGift(f.id)}
+                                            style={{
+                                                width: 42, height: 42, background: f.giftSent ? 'rgba(255,255,255,0.05)' : 'rgba(240,192,64,0.1)', 
+                                                border: `1px solid ${f.giftSent ? colors.border : colors.accent}`, borderRadius: 12, cursor: f.giftSent ? 'default' : 'pointer', fontSize: 20, color: f.giftSent ? 'rgba(255,255,255,0.2)' : colors.accent, opacity: f.giftSent ? 0.5 : 1
+                                            }}
+                                        >🎁</motion.button>
+                                        <motion.button 
+                                            whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
+                                            style={{
+                                                width: 42, height: 42, background: 'rgba(255,255,255,0.05)', 
+                                                border: `1px solid ${colors.border}`, borderRadius: 12, cursor: 'pointer', fontSize: 20, color: colors.text
+                                            }}
+                                        >⚔️</motion.button>
+                                        <button 
+                                            onClick={() => removeFriend(f.id)}
+                                            style={{
+                                                width: 42, height: 42, background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, color: '#ff4444', opacity: 0.4
+                                            }}
+                                        >🗑️</button>
+                                    </>
+                                )}
                             </div>
                         </div>
                     )) : (
-                        <div style={{ textAlign: 'center', padding: '100px 0', opacity: 0.2 }}>👥 ПУСТО</div>
+                        <div style={{ textAlign: 'center', padding: '60px 20px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                            <motion.div 
+                                animate={{ scale: [1, 1.1, 1], rotate: [0, 5, -5, 0] }}
+                                transition={{ repeat: Infinity, duration: 4 }}
+                                style={{ fontSize: 80, marginBottom: 20, filter: 'drop-shadow(0 0 20px rgba(240,192,64,0.3))' }}
+                            >
+                                🤝
+                            </motion.div>
+                            <div style={{ fontFamily: "'Cinzel', serif", fontSize: 18, color: colors.accent, marginBottom: 10, letterSpacing: '1px' }}>ВАШИ СОЮЗНИКИ ЖДУТ</div>
+                            <p style={{ fontSize: 13, opacity: 0.6, marginBottom: 30, lineHeight: '1.6' }}>
+                                Вместе выживать в дикой природе легче! <br/> Пригласите друзей и получайте бонусы.
+                            </p>
+                            <motion.button 
+                                whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+                                onClick={() => showInviteBox()}
+                                style={{
+                                    padding: '16px 40px', background: 'linear-gradient(180deg, #f0c040, #a88020)',
+                                    border: 'none', borderRadius: 12, color: '#000', fontWeight: 900, cursor: 'pointer', 
+                                    fontFamily: "'Cinzel', serif", fontSize: 14, boxShadow: '0 10px 20px rgba(240,192,64,0.3)'
+                                }}
+                            >
+                                ПРИГЛАСИТЬ ДРУЗЕЙ
+                            </motion.button>
+                        </div>
                     )}
                 </div>
             </div>
-
-            <button 
-                onClick={onClose}
-                style={{
-                    marginTop: 20, width: '100%', padding: '16px 0', background: isLight ? '#8b4513' : 'rgba(255,255,255,0.05)',
-                    border: 'none', borderRadius: '12px', color: isLight ? '#fff' : 'rgba(232, 216, 168, 0.5)',
-                    fontFamily: "'Cinzel', serif", fontSize: 14, fontWeight: 800, cursor: 'pointer'
-                }}
-            >
-                ЗАКРЫТЬ
-            </button>
         </div>
     );
 };

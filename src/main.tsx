@@ -10,6 +10,7 @@ import { BattlePassScene } from './ui/components/hud/BattlePassScene';
 import { HeroScene } from './ui/components/hud/HeroScene';
 import { AnimatePresence } from 'framer-motion';
 import { FpsCounter } from './ui/components/hud/FpsCounter';
+import { IntroScreen } from './ui/components/screens/IntroScreen';
 import { initVK, getVkUserInfo } from './utils/VKBridge';
 
 // [VK] Global Error Handler
@@ -25,7 +26,10 @@ if (typeof window !== 'undefined') {
 
 const SafeGameLayout = ({ containerRef }: { containerRef: React.RefObject<HTMLDivElement> }) => {
     const [scale, setScale] = React.useState(1);
-    const [showFps, setShowFps] = React.useState(false);
+    const { showFps, setShowFps } = useGameStore(state => ({ 
+        showFps: state.showFps, 
+        setShowFps: state.setShowFps 
+    }));
 
     React.useEffect(() => {
         const handleResize = () => {
@@ -38,7 +42,7 @@ const SafeGameLayout = ({ containerRef }: { containerRef: React.RefObject<HTMLDi
         };
 
         const handleKey = (e: KeyboardEvent) => {
-            if (e.code === 'F8') setShowFps(prev => !prev);
+            if (e.code === 'F8') setShowFps(!showFps);
         };
 
         window.addEventListener('resize', handleResize);
@@ -48,7 +52,12 @@ const SafeGameLayout = ({ containerRef }: { containerRef: React.RefObject<HTMLDi
             window.removeEventListener('resize', handleResize);
             window.removeEventListener('keydown', handleKey);
         };
-    }, []);
+    }, [showFps, setShowFps]);
+
+    const { showIntro, onIntroComplete } = useGameStore(state => ({
+        showIntro: (state as any).showIntro ?? true,
+        onIntroComplete: () => (useGameStore.setState as any)({ showIntro: false })
+    }));
 
     return (
         <div style={{
@@ -68,6 +77,7 @@ const SafeGameLayout = ({ containerRef }: { containerRef: React.RefObject<HTMLDi
                 </div>
                 {showFps && <FpsCounter />}
                 <SceneSwitcher />
+                {showIntro && <IntroScreen onComplete={onIntroComplete} />}
             </div>
         </div>
     );
@@ -93,28 +103,41 @@ const Root = () => {
         initialized.current = true;
 
         const initApp = async () => {
-            console.log('🏁 Root: Initializing App...');
-            const vkAvailable = await initVK();
-            console.log('📡 VK Status:', vkAvailable ? 'Connected' : 'Standalone');
+            try {
+                console.log('🏁 Root: Initializing App...');
+                const vkAvailable = await initVK();
+                console.log('📡 VK Status:', vkAvailable ? 'Connected' : 'Standalone');
 
-            if (vkAvailable) {
-                const user = await getVkUserInfo();
-                console.log('👤 VK User:', user?.firstName || 'Unknown');
-                if (user) useGameStore.getState().setVkUser(user);
-            }
+                if (vkAvailable) {
+                    const user = await getVkUserInfo();
+                    if (user) useGameStore.getState().setVkUser(user);
+                }
 
-            console.log('🎮 Starting GameEngine...');
-            const game = new GameApp();
-            await game.init(containerRef.current!);
-            console.log('✅ Game Ready!');
+                console.log('🎮 Starting GameEngine...');
+                const game = new GameApp();
+                await game.init(containerRef.current!);
+                console.log('✅ Game Ready!');
 
-            const state = useGameStore.getState();
-            if (Date.now() - state.lastDailyRefresh > 86_400_000 || state.dailyQuests.length === 0) {
-                state.refreshDailyQuests();
+                const state = useGameStore.getState();
+                if (Date.now() - state.lastDailyRefresh > 86_400_000 || state.dailyQuests.length === 0) {
+                    state.refreshDailyQuests();
+                }
+            } catch (err: any) {
+                console.error('Game Init Error:', err);
+                // Показываем ошибку на экране, если что-то пошло совсем не так
+                if (containerRef.current) {
+                    containerRef.current.innerHTML = `
+                        <div style="color: #ff4444; padding: 40px; text-align: center; font-family: sans-serif;">
+                            <h2>Критическая ошибка запуска</h2>
+                            <p>${err.message || 'Неизвестная ошибка'}</p>
+                            <button onclick="window.location.reload()" style="padding: 10px 20px; background: #fff; border: none; border-radius: 5px; cursor: pointer; margin-top: 20px;">Перезапустить</button>
+                        </div>
+                    `;
+                }
             }
         };
 
-        initApp().catch(err => console.error('Game Init Error:', err));
+        initApp();
     }, []);
 
     return <SafeGameLayout containerRef={containerRef} />;
