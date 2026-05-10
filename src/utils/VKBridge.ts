@@ -33,6 +33,15 @@ export const initVK = async (): Promise<boolean> => {
     const initPromise = (async () => {
         try {
             await bridge.send('VKWebAppInit');
+            // Запрашиваем полный экран сразу после инициализации
+            try {
+                await bridge.send('VKWebAppResizeTo', {
+                    width: window.innerWidth,
+                    height: window.innerHeight
+                });
+            } catch {
+                // Игнорируем если платформа не поддерживает
+            }
             return true;
         } catch (error) {
             console.warn('VKWebAppInit failed:', error);
