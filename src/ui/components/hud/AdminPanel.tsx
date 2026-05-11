@@ -149,6 +149,19 @@ export const AdminPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
         }
     };
 
+    const handleRemoteUpdate = async (field: string, value: any) => {
+        if (!selectedPlayer) return;
+        try {
+            const updateData = { [field]: Number(value) };
+            await syncService.updateRemotePlayerData(selectedPlayer.id, updateData);
+            alert(`Успешно: ${field} установлено на ${value}`);
+            refreshPlayers();
+        } catch (e) {
+            console.error('Remote update error:', e);
+            alert('Ошибка при обновлении данных');
+        }
+    };
+
     const applyMailTemplate = (type: 'REWARD' | 'LAG' | 'WELCOME') => {
         if (type === 'REWARD') { setMailSubject('🏆 НАГРАДА ЗА ИВЕНТ'); setMailBody('Поздравляем! Вы проявили невероятную отвагу и мастерство. Вот ваша награда!'); setMailAmount('1000'); }
         if (type === 'LAG') { setMailSubject('⚙️ КОМПЕНСАЦИЯ'); setMailBody('Приносим извинения за временные неудобства на сервере. Примите этот небольшой подарок.'); setMailAmount('250'); }
@@ -315,15 +328,15 @@ export const AdminPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                                     <Section title="БЫСТРОЕ РЕДАКТИРОВАНИЕ ПАРАМЕТРОВ (Modify Selected Player)">
                                         <div style={editRow}>
                                             <div style={{ flex: 1 }}><div style={statLabel}>УСТАНОВИТЬ ЗОЛОТО</div><input type="number" style={inputStyle} value={serverPlayerGold} onChange={e => setServerPlayerGold(e.target.value)} /></div>
-                                            <button onClick={() => alert(`SUCCESS: ${selectedPlayer.name} gold set to ${serverPlayerGold}`)} style={applyBtn}>SET</button>
+                                            <button onClick={() => handleRemoteUpdate('золото', serverPlayerGold)} style={applyBtn}>SET</button>
                                         </div>
                                         <div style={editRow}>
                                             <div style={{ flex: 1 }}><div style={statLabel}>УСТАНОВИТЬ КРИСТАЛЛЫ</div><input type="number" style={inputStyle} value={serverPlayerCrystals} onChange={e => setServerPlayerCrystals(e.target.value)} /></div>
-                                            <button onClick={() => alert(`SUCCESS: ${selectedPlayer.name} gems set to ${serverPlayerCrystals}`)} style={applyBtn}>SET</button>
+                                            <button onClick={() => handleRemoteUpdate('кристаллы', serverPlayerCrystals)} style={applyBtn}>SET</button>
                                         </div>
                                         <div style={editRow}>
                                             <div style={{ flex: 1 }}><div style={statLabel}>УСТАНОВИТЬ УРОВЕНЬ</div><input type="number" style={inputStyle} value={serverPlayerLevel} onChange={e => setServerPlayerLevel(e.target.value)} /></div>
-                                            <button onClick={() => alert(`SUCCESS: ${selectedPlayer.name} level set to ${serverPlayerLevel}`)} style={applyBtn}>SET</button>
+                                            <button onClick={() => handleRemoteUpdate('лев', serverPlayerLevel)} style={applyBtn}>SET</button>
                                         </div>
                                     </Section>
 

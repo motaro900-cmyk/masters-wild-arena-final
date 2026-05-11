@@ -110,6 +110,18 @@ export class SyncService {
             console.error('[SyncService] Failed to fetch players:', error);
             return [];
         }
+    /**
+     * Удаленно обновляет данные игрока в Firebase (для админки)
+     */
+    public async updateRemotePlayerData(userId: string, data: any): Promise<void> {
+        try {
+            const playerRef = doc(db, 'пользователи', userId);
+            await setDoc(playerRef, data, { merge: true });
+            console.log(`[SyncService] Remote data updated for player: ${userId}`);
+        } catch (error) {
+            console.error('[SyncService] Remote update failed:', error);
+            throw error;
+        }
     }
 }
 
