@@ -3,7 +3,6 @@ import { useGameStore } from '../../store/useGameStore';
 import { AssetsMap } from '../../configs/AssetsMap';
 
 // HUD Components
-
 import { BattlePassBar } from './hud/BattlePassBar';
 import { ResourceBar } from './hud/ResourceBar';
 import { LeftSidebar } from './hud/LeftSidebar';
@@ -13,7 +12,10 @@ import { ActionButtons } from './hud/ActionButtons';
 import { DailyGiftBanner } from './hud/DailyGiftBanner';
 import { BattleScene } from './hud/BattleScene';
 
+
+
 // Window Components
+import { AncientsSanctuaryWindow } from './hud/AncientsSanctuaryWindow';
 import { BaseWindow } from './hud/BaseWindow';
 import { FriendsWindow } from './hud/FriendsWindow';
 import { MailWindow } from './hud/MailWindow';
@@ -23,15 +25,26 @@ import { RankingWindow } from './hud/RankingWindow';
 import { ClanWindow } from './hud/ClanWindow';
 import { RanksListWindow } from './hud/RanksListWindow';
 import { InventoryPanel } from './hud/InventoryPanel';
+import { AdminPanel } from './hud/AdminPanel';
+import { UnderDevelopmentModal } from './hud/SharedUI';
 
 export const GameHUD: React.FC = () => {
     const activeScreen = useGameStore(state => state.activeScreen);
     const [activeWindow, setActiveWindow] = useState<string | null>(null);
+    const [showAdmin, setShowAdmin] = useState(false);
+    const [devModal, setDevModal] = useState({ isOpen: false, title: '' });
     const goToShop = useGameStore(state => state.goToShop);
+    // goToCity is now handled via devModal state
 
-    const isFullScreenScene = activeScreen === 'SHOP' || activeScreen === 'HEROES';
+    // Expose to window for external screen communication (like CityScreen)
+    React.useEffect(() => {
+        (window as any).setActiveHUDWindow = (win: string | null) => setActiveWindow(win);
+    }, []);
+
+    const isFullScreenScene = activeScreen === 'SHOP' || activeScreen === 'HEROES' || activeScreen === 'CITY';
     
     if (activeScreen === 'BATTLE') return <BattleScene />;
+    if (activeScreen === 'INTRO') return null;
     if (activeScreen !== 'MAIN_MENU' && activeScreen !== 'ARENA' && !isFullScreenScene) return null;
 
 
@@ -46,8 +59,6 @@ export const GameHUD: React.FC = () => {
             pointerEvents: 'none',
             overflow: 'hidden'
         }}>
-
-
             {/* 2. BATTLE PASS BAR */}
             {!isFullScreenScene && (
                 <div className="absolute top-[20px] left-1/2 -translate-x-1/2 hud-interactive">
@@ -56,11 +67,13 @@ export const GameHUD: React.FC = () => {
             )}
 
             {/* 3. RESOURCES */}
-            <div className="absolute top-[25px] right-[25px] hud-interactive">
-                <ResourceBar onOpenShop={(tab) => {
-                    goToShop(tab === 'RESOURCES' ? 'BANK' : 'ALCHEMY');
-                }} />
-            </div>
+            {!isFullScreenScene && (
+                <div className="absolute top-[25px] right-[25px] hud-interactive">
+                    <ResourceBar onOpenShop={(tab) => {
+                        goToShop(tab === 'RESOURCES' ? 'BANK' : 'ALCHEMY');
+                    }} />
+                </div>
+            )}
 
             {/* 4. SIDEBARS & PANELS */}
             {!isFullScreenScene && (
@@ -78,16 +91,120 @@ export const GameHUD: React.FC = () => {
                         <DailyTaskPanel />
                     </div>
 
+                    {/* CITY PORTAL HOTSPOT (Castle in the background) */}
+                    <div 
+                        className="absolute top-[200px] right-[450px] hud-interactive"
+                        style={{
+                            width: '350px',
+                            height: '400px',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            pointerEvents: 'auto',
+                            borderRadius: '50%'
+                        }}
+                        onClick={() => setDevModal({ isOpen: true, title: 'В ГОРОД' })}
+                    >
+                        {/* Invisible area with hover effect */}
+                        <div className="city-portal-hover" style={{
+                            width: '100%',
+                            height: '100%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            flexDirection: 'column',
+                            gap: '10px',
+                            opacity: 0,
+                            transition: 'opacity 0.3s ease'
+                        }}>
+                             <div style={{
+                                padding: '8px 20px',
+                                background: 'rgba(20, 15, 10, 0.8)',
+                                border: '2px solid #f0c040',
+                                borderRadius: '10px',
+                                color: '#f0c040',
+                                fontFamily: "'Cinzel', serif",
+                                fontSize: '20px',
+                                fontWeight: 'bold',
+                                textShadow: '0 2px 10px rgba(0,0,0,1)',
+                                boxShadow: '0 0 20px rgba(240,192,64,0.4)'
+                             }}>
+                                В ГОРОД
+                             </div>
+                             <div style={{
+                                width: '40px',
+                                height: '40px',
+                                border: '3px solid #f0c040',
+                                borderTopColor: 'transparent',
+                                borderRadius: '50%',
+                                animation: 'spin 2s linear infinite'
+                             }} />
+                        </div>
+                        <style>{`
+                            .hud-interactive:hover .city-portal-hover {
+                                opacity: 1;
+                            }
+                            @keyframes spin {
+                                from { transform: rotate(0deg); }
+                                to { transform: rotate(360deg); }
+                            }
+                        `}</style>
+                    </div>
+
                     <div className="absolute bottom-[30px] left-[-5px] hud-interactive">
                         <ChatPanel />
                     </div>
                     
                     <div className="absolute bottom-[30px] left-1/2 -translate-x-1/2 hud-interactive">
                         <ActionButtons 
-                            onStartBattle={() => useGameStore.getState().goToArena()} 
+                            onStartBattle={() => setDevModal({ isOpen: true, title: 'РЕЙТИНГОВЫЙ БОЙ' })} 
+                            onWarmup={() => setDevModal({ isOpen: true, title: 'РАЗМИНКА' })}
                             onOpenRanks={() => setActiveWindow('RANKS_LIST')}
                         />
                     </div>
+
+                    {/* STANDALONE CITY BUTTON (100px further right) */}
+                    <button 
+                        className="absolute bottom-[40px] left-[calc(50%+420px)] hud-interactive"
+                        onClick={() => setDevModal({ isOpen: true, title: 'В ГОРОД' })}
+                        style={{
+                            width: '120px',
+                            height: '110px',
+                            background: 'rgba(15, 10, 5, 0.8)',
+                            backdropFilter: 'blur(8px)',
+                            border: '2px solid #c8a870',
+                            borderRadius: '16px',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '5px',
+                            boxShadow: '0 8px 25px rgba(0,0,0,0.6)',
+                            transition: 'all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+                            pointerEvents: 'auto'
+                        }}
+                        onMouseEnter={e => {
+                            e.currentTarget.style.transform = 'scale(1.1) translateY(-5px)';
+                            e.currentTarget.style.borderColor = '#f0c040';
+                        }}
+                        onMouseLeave={e => {
+                            e.currentTarget.style.transform = 'scale(1) translateY(0)';
+                            e.currentTarget.style.borderColor = '#c8a870';
+                        }}
+                    >
+                        <div style={{ fontSize: '32px', filter: 'drop-shadow(0 0 10px rgba(240,192,64,0.4))' }}>🏰</div>
+                        <div style={{
+                            fontFamily: "'Cinzel', serif",
+                            fontSize: '14px',
+                            fontWeight: 900,
+                            color: '#f0c040',
+                            letterSpacing: '1px',
+                            textShadow: '0 2px 4px rgba(0,0,0,1)'
+                        }}>В ГОРОД</div>
+                    </button>
                     
                     <div 
                         className="absolute bottom-[40px] right-[25px] hud-interactive"
@@ -129,12 +246,15 @@ export const GameHUD: React.FC = () => {
                 </>
             )}
 
-
-
             {/* --- МОДАЛЬНЫЕ ОКНА --- */}
             {activeWindow && (
               <div className="absolute inset-0 z-[100] pointer-events-none bg-black/60 backdrop-blur-sm">
                 <div className="absolute top-[540px] left-[960px] -translate-x-1/2 -translate-y-1/2 hud-interactive">
+                  {activeWindow === 'SANCTUARY' && (
+                      <BaseWindow title="ОБИТЕЛЬ ДРЕВНИХ" isOpen={true} onClose={() => setActiveWindow(null)} width="800px">
+                          <AncientsSanctuaryWindow />
+                      </BaseWindow>
+                  )}
                   {activeWindow === 'FRIENDS' && (
                       <BaseWindow title="ДРУЗЬЯ" isOpen={true} onClose={() => setActiveWindow(null)} width="800px">
                           <FriendsWindow onClose={() => setActiveWindow(null)} />
@@ -147,7 +267,13 @@ export const GameHUD: React.FC = () => {
                   )}
                   {activeWindow === 'SETTINGS' && (
                       <BaseWindow title="НАСТРОЙКИ" isOpen={true} onClose={() => setActiveWindow(null)} width="650px">
-                          <SettingsWindow onClose={() => setActiveWindow(null)} />
+                          <SettingsWindow 
+                            onClose={() => setActiveWindow(null)} 
+                            onOpenAdmin={() => {
+                                setActiveWindow(null);
+                                setShowAdmin(true);
+                            }}
+                          />
                       </BaseWindow>
                   )}
                   {activeWindow === 'GIFT' && (
@@ -175,10 +301,6 @@ export const GameHUD: React.FC = () => {
                           <div style={{ padding: '30px', display: 'flex', justifyContent: 'center' }}>
                             <InventoryPanel 
                                 onItemClick={() => {}}
-                                isEquipped={(id) => {
-                                    const { equippedWeaponId, equippedHelmId, equippedArmorId, equippedShieldId } = useGameStore.getState();
-                                    return id === equippedWeaponId || id === equippedHelmId || id === equippedArmorId || id === equippedShieldId;
-                                }}
                             />
                           </div>
                       </BaseWindow>
@@ -186,6 +308,14 @@ export const GameHUD: React.FC = () => {
                 </div>
               </div>
             )}
+            {/* --- ADMIN PANEL (GLOBAL OVERLAY) --- */}
+            {showAdmin && <AdminPanel onClose={() => setShowAdmin(false)} />}
+
+            <UnderDevelopmentModal 
+                isOpen={devModal.isOpen} 
+                title={devModal.title} 
+                onClose={() => setDevModal({ ...devModal, isOpen: false })} 
+            />
         </div>
     );
 };

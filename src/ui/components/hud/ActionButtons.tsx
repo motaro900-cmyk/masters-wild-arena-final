@@ -5,13 +5,14 @@ import { getRankInfo } from '../../../configs/RankSystem';
 
 interface ActionButtonsProps {
   onStartBattle: () => void;
+  onWarmup: () => void;
   onOpenRanks: () => void;
 }
 
 /**
- * ActionButtons (v2.6) — Поддержка системы рангов и кликабельности.
+ * ActionButtons (v2.7) — Поддержка модалки разработки для ЗБТ.
  */
-export const ActionButtons: React.FC<ActionButtonsProps> = ({ onStartBattle, onOpenRanks }) => {
+export const ActionButtons: React.FC<ActionButtonsProps> = ({ onStartBattle, onWarmup, onOpenRanks }) => {
   const { rating } = useGameStore();
   const rank = getRankInfo(rating);
 
@@ -92,7 +93,7 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({ onStartBattle, onO
         }}>
           {/* ЛЕВАЯ КНОПКА (Синяя) */}
           <button 
-            onClick={onStartBattle}
+            onClick={onWarmup}
             style={{
               flex: '0 0 35%',
               height: '100%',

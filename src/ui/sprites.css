@@ -1,0 +1,99 @@
+
+/* Sprite Sheets Mapping */
+
+.sprite-icon {
+    display: inline-block;
+    background-repeat: no-repeat;
+    background-size: auto;
+    image-rendering: auto; /* Smoother rendering for high-res assets */
+    vertical-align: middle;
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.8));
+}
+
+
+/* Stats Sheet (8 icons: Attack, Defense, Speed, HP, Accuracy, Armor Pen, Lifesteal, Crit) */
+/* Grid 4x2 assumed */
+.sprite-stat {
+    width: 32px;
+    height: 32px;
+    background-image: url('/assets/images/sheets/stats_sheet.png');
+    background-size: 400% 200%; /* 4 columns, 2 rows */
+}
+
+.stat-attack { background-position: 0% 0%; }
+.stat-defense { background-position: 33.33% 0%; }
+.stat-speed { background-position: 66.66% 0%; }
+.stat-hp { background-position: 100% 0%; }
+.stat-accuracy { background-position: 0% 100%; }
+.stat-penetration { background-position: 33.33% 100%; }
+.stat-lifesteal { background-position: 66.66% 100%; }
+.stat-crit { background-position: 100% 100%; }
+
+/* Talents Sheet (12 icons, grid 4x3) */
+.sprite-talent {
+    width: 64px;
+    height: 64px;
+    background-image: url('/assets/images/sheets/talents_sheet.png');
+    background-size: 400% 300%;
+}
+.talent-1 { background-position: 0% 0%; }
+.talent-2 { background-position: 33.33% 0%; }
+.talent-3 { background-position: 66.66% 0%; }
+.talent-4 { background-position: 100% 0%; }
+.talent-5 { background-position: 0% 50%; }
+.talent-6 { background-position: 33.33% 50%; }
+.talent-7 { background-position: 66.66% 50%; }
+.talent-8 { background-position: 100% 50%; }
+.talent-9 { background-position: 0% 100%; }
+.talent-10 { background-position: 33.33% 100%; }
+.talent-11 { background-position: 66.66% 100%; }
+.talent-12 { background-position: 100% 100%; }
+
+/* Equipment Master Sheets (16 icons each, grid 4x4) */
+.sprite-item {
+    width: 100px;
+    height: 100px;
+    background-size: 400% 400%;
+    filter: drop-shadow(0 5px 15px rgba(0,0,0,0.9));
+}
+
+.sprite-helm { background-image: url('/assets/images/sheets/helms_sheet.png'); }
+.sprite-weapon { background-image: url('/assets/images/sheets/weapons_sheet.png'); }
+.sprite-armor { background-image: url('/assets/images/sheets/armor_shields_sheet.png'); }
+
+/* Positional helpers for 4x4 grid */
+.pos-1 { background-position: 0% 0%; }
+.pos-2 { background-position: 33.33% 0%; }
+.pos-3 { background-position: 66.66% 0%; }
+.pos-4 { background-position: 100% 0%; }
+.pos-5 { background-position: 0% 33.33%; }
+.pos-6 { background-position: 33.33% 33.33%; }
+.pos-7 { background-position: 66.66% 33.33%; }
+.pos-8 { background-position: 100% 33.33%; }
+.pos-9 { background-position: 0% 66.66%; }
+.pos-10 { background-position: 33.33% 66.66%; }
+.pos-11 { background-position: 66.66% 66.66%; }
+.pos-12 { background-position: 100% 66.66%; }
+.pos-13 { background-position: 0% 100%; }
+.pos-14 { background-position: 33.33% 100%; }
+.pos-15 { background-position: 66.66% 100%; }
+.pos-16 { background-position: 100% 100%; }
+
+/* Avatar Medallions (9 icons, grid 3x3) */
+.sprite-avatar {
+    width: 100px;
+    height: 100px;
+    background-image: url('/assets/images/sheets/avatars_medallions.png');
+    background-size: 300% 300%;
+}
+
+.avatar-pos-1 { background-position: 0% 0%; }
+.avatar-pos-2 { background-position: 50% 0%; }
+.avatar-pos-3 { background-position: 100% 0%; }
+.avatar-pos-4 { background-position: 0% 50%; }
+.avatar-pos-5 { background-position: 50% 50%; }
+.avatar-pos-6 { background-position: 100% 50%; }
+.avatar-pos-7 { background-position: 0% 100%; }
+.avatar-pos-8 { background-position: 50% 100%; }
+.avatar-pos-9 { background-position: 100% 100%; }
+

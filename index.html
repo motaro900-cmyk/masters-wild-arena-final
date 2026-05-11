@@ -112,16 +112,21 @@
   </div>
 
   <script>
-    // [Anti-Tamper] Disable Context Menu
-    document.addEventListener('contextmenu', e => e.preventDefault());
-    
-    // [Anti-Tamper] Disable F12 and Ctrl+Shift+I
-    document.onkeydown = function(e) {
-      if (e.keyCode == 123) return false; // F12
-      if (e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)) return false;
-      if (e.ctrlKey && e.shiftKey && e.keyCode == 'J'.charCodeAt(0)) return false;
-      if (e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) return false;
-    };
+    // [Recovery] Detect module load failure (e.g. CDN/Cert errors)
+    window.addEventListener('error', function(e) {
+      if (e.target && (e.target.src || e.target.href)) {
+        const root = document.getElementById('root');
+        if (root && root.innerHTML.includes('Загрузка ресурсов')) {
+          root.innerHTML = `
+            <div style="color: #ff4444; padding: 40px; text-align: center; font-family: sans-serif; background: #0a0a1a; position: fixed; inset: 0; z-index: 9999; display: flex; flex-direction: column; align-items: center; justifyContent: center;">
+              <h2 style="font-family: 'Cinzel', serif; color: #f0c040;">Ошибка загрузки файлов игры</h2>
+              <p style="color: #aaa; max-width: 500px; margin: 20px 0;">Не удалось загрузить компоненты игры. Это может быть связано с плохим соединением или проблемами с сертификатом безопасности (Let's Encrypt).</p>
+              <button onclick="window.location.reload()" style="padding: 12px 24px; background: #f0c040; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">ПОПРОБОВАТЬ СНОВА</button>
+            </div>
+          `;
+        }
+      }
+    }, true);
   </script>
 
   <script type="module" src="/src/main.tsx"></script>

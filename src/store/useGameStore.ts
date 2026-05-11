@@ -5,6 +5,8 @@ import { ITEMS_DATABASE, calculateItemPower, IEquipmentStats } from '../game/con
 import { HEROES_DB } from '../configs/HeroesConfig';
 import { QUESTS_POOL } from '../configs/QuestsConfig';
 import { audioService } from '../services/AudioService';
+import { AssetsMap } from '../configs/AssetsMap';
+
 
 /**
  * Единый стор с использованием Slice-подхода (внутренняя организация)
@@ -20,7 +22,7 @@ export const useGameStore = create<any>()(
             rating: 0,
             energy: 50,
             maxEnergy: 50,
-            avatar: 'панда.png',
+            avatar: 'sprite:sprite-avatar avatar-pos-1',
             frame: 'Рамка 6.png',
             title: 'НОВИЧОК',
             bpLevel: 1,
@@ -85,12 +87,12 @@ export const useGameStore = create<any>()(
             },
 
             // --- КВЕСТЫ ---
-            dailyQuests: [],
             lastDailyRefresh: 0,
 
             // --- ИНТЕРФЕЙС ---
-            activeScreen: 'MAIN_MENU',
-            shopInitialTab: 'ARSENAL',
+            activeScreen: 'INTRO', // Стартуем всегда с интро (внутри компонента решим, показывать ли его)
+            showIntro: true,
+
             heroesInitialTab: 'LIST',
             uiTheme: 'DARK',
             showFps: false,
@@ -98,8 +100,11 @@ export const useGameStore = create<any>()(
             soundVolume: 85,
             graphicsQuality: 'ULTRA',
             notificationsEnabled: true,
+            pveStage: 1,
+            maxPveStage: 1,
+            activePveEnemy: null,
+
             vkUser: null,
-            showIntro: true,
             isPowerSaving: false,
             isMuted: false,
             playerId: 'MW-' + Math.random().toString(36).substr(2, 9).toUpperCase(),
@@ -429,13 +434,8 @@ export const useGameStore = create<any>()(
             },
 
             // --- ЭКШЕНЫ ИНТЕРФЕЙСА ---
-            setScreen: (screen: any) => set({ activeScreen: screen }),
             setActiveScreen: (screen: any) => set({ activeScreen: screen }),
-            goToMainMenu: () => set({ activeScreen: 'MAIN_MENU' }),
             goToInventory: () => set({ activeScreen: 'HEROES', heroesInitialTab: 'HERO' }),
-            goToArena: () => set({ activeScreen: 'BATTLE' }),
-            goToShop: (tab = 'ARSENAL') => set({ activeScreen: 'SHOP', shopInitialTab: tab }),
-            goToHeroes: (tab = 'LIST') => set({ activeScreen: 'HEROES', heroesInitialTab: tab }),
             setNotificationsEnabled: (enabled: boolean) => set({ notificationsEnabled: enabled }),
             setIsPowerSaving: (enabled: boolean) => set({ isPowerSaving: enabled }),
             setIsMuted: (enabled: boolean) => {
@@ -562,6 +562,49 @@ export const useGameStore = create<any>()(
             setAvatar: (avatar: string) => set({ avatar }),
             setFrame: (frame: string) => set({ frame }),
             setTitle: (title: string) => set({ title }),
+
+            // --- НАВИГАЦИЯ ---
+            setScreen: (screen: any) => set({ activeScreen: screen }),
+            goToMainMenu: () => set({ activeScreen: 'MAIN_MENU' }),
+            goToCity: () => set({ activeScreen: 'CITY' }),
+            goToArena: () => set({ activeScreen: 'BATTLE' }), // Или 'ARENA', если есть такой экран
+            goToShop: (tab = 'ARSENAL') => set({ activeScreen: 'SHOP', shopInitialTab: tab }),
+            goToHeroes: (tab = 'LIST') => set({ activeScreen: 'HEROES', heroesInitialTab: tab }),
+
+            // --- PVE ЛОГИКА ---
+            startPveBattle: (stage: number) => {
+                const isBoss = stage % 5 === 0;
+                const difficultyMult = 1 + (stage * 0.15);
+                const enemy = {
+                    id: `pve_mob_${stage}`,
+                    name: isBoss ? `СТРАЖ ОБИТЕЛИ (Этаж ${stage})` : `ДРЕВНИЙ ДУХ (Этаж ${stage})`,
+                    level: stage,
+                    hp: Math.floor(100 * difficultyMult * (isBoss ? 2 : 1)),
+                    attack: Math.floor(15 * difficultyMult * (isBoss ? 1.5 : 1)),
+                    defense: Math.floor(10 * difficultyMult),
+                    image: AssetsMap.CHARACTERS.PANDA_FULL,
+                    isBoss
+                };
+                set({ activeScreen: 'BATTLE', activePveEnemy: enemy });
+            },
+
+            completePveBattle: (win: boolean) => {
+                const { pveStage, maxPveStage } = get();
+                if (win) {
+                    const nextStage = pveStage + 1;
+                    const isBoss = pveStage % 5 === 0;
+                    set((state: any) => ({ 
+                        gold: state.gold + (pveStage * 100),
+                        crystals: isBoss ? state.crystals + 20 : state.crystals,
+                        pveStage: nextStage,
+                        maxPveStage: Math.max(maxPveStage, nextStage),
+                        activeScreen: 'CITY',
+                        activePveEnemy: null
+                    }));
+                } else {
+                    set({ activeScreen: 'CITY', activePveEnemy: null });
+                }
+            },
         }),
         {
             name: 'game-storage',

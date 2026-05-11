@@ -1,12 +1,14 @@
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../../../store/useGameStore';
-import { ITEMS_DATABASE, calculateItemPower, ItemRarity, IEquipmentStats } from '../../../game/configs/ItemsConfig';
+import { ITEMS_DATABASE, calculateItemPower, ItemRarity } from '../../../game/configs/ItemsConfig';
 import { HEROES_DB } from '../../../configs/HeroesConfig';
+import { UnderDevelopmentModal } from './SharedUI';
 
 interface InventoryPanelProps {
     onItemClick?: (id: string) => void;
     mode?: 'FULL' | 'COMPACT';
+    setGlobalHoveredItem?: (id: string | null, x: number, y: number) => void;
 }
 
 const RARITY_COLORS: any = {
@@ -17,11 +19,11 @@ const RARITY_COLORS: any = {
     [ItemRarity.LEGENDARY]: { border: '#f59e0b', glow: 'rgba(245,158,11,0.5)', bg: 'rgba(60,45,10,0.9)' }
 };
 
-export const InventoryPanel: React.FC<InventoryPanelProps> = ({ mode = 'FULL', onItemClick }) => {
+export const InventoryPanel: React.FC<InventoryPanelProps> = ({ mode = 'FULL', onItemClick, setGlobalHoveredItem }) => {
     const { inventory, sellItem, equippedItems, equipItem, unequipItem, getHeroByItemId, selectedHeroId } = useGameStore();
-    const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState<'ALL' | 'EQUIPMENT' | 'POTIONS'>('ALL');
     const [sortBy, setSortBy] = useState<'POWER' | 'RARITY'>('POWER');
+    const [devModalOpen, setDevModalOpen] = useState(false);
     
     // Всплывающие цифры
     const [floatingTexts, setFloatingTexts] = useState<any[]>([]);
@@ -76,8 +78,6 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ mode = 'FULL', o
         }
     };
 
-    const selectedItemData = selectedItemId ? ITEMS_DATABASE[selectedItemId] : null;
-
     return (
         <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', gap: '15px' }}>
             
@@ -91,7 +91,13 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ mode = 'FULL', o
                     ].map(tab => (
                         <button 
                             key={tab.id}
-                            onClick={() => setActiveTab(tab.id as any)}
+                            onClick={() => {
+                                if (tab.id === 'POTIONS') {
+                                    setDevModalOpen(true);
+                                } else {
+                                    setActiveTab(tab.id as any);
+                                }
+                            }}
                             style={{
                                 padding: '8px 16px', borderRadius: '8px', border: '1px solid rgba(240,192,64,0.2)',
                                 background: activeTab === tab.id ? 'rgba(240,192,64,0.1)' : 'transparent',
@@ -142,18 +148,37 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ mode = 'FULL', o
                             key={item.id + i}
                             whileHover={{ scale: 1.05, zIndex: 10 }}
                             whileTap={{ scale: 0.95 }}
+                            onMouseMove={(e) => setGlobalHoveredItem?.(item.id, e.clientX, e.clientY)}
+                            onMouseEnter={(e) => setGlobalHoveredItem?.(item.id, e.clientX, e.clientY)}
+                            onMouseLeave={() => setGlobalHoveredItem?.(null, 0, 0)}
                             onClick={() => {
-                                setSelectedItemId(item.id);
+                                if (isEquippedOnCurrent) {
+                                    unequipItem(item.id);
+                                    addFloatingText('СНЯТО', '#ef4444');
+                                } else {
+                                    const otherHero = getHeroByItemId(item.id);
+                                    if (otherHero && !confirm(`Этот предмет надет на ${otherHero}. Передать его текущему герою?`)) return;
+                                    
+                                    if (data.attackBonus) addFloatingText(`+${data.attackBonus} АТАКА`, '#f97316');
+                                    if (data.hpBonus) addFloatingText(`+${data.hpBonus} ХП`, '#ef4444');
+                                    if (data.defenseBonus) addFloatingText(`+${data.defenseBonus} ЗАЩИТА`, '#3b82f6');
+                                    
+                                    equipItem(item.id);
+                                }
                                 onItemClick?.(item.id);
                             }}
                             style={{
-                                background: rarity.bg, borderRadius: '8px', border: `2px solid ${selectedItemId === item.id ? '#f0c040' : rarity.border}`,
+                                background: rarity.bg, borderRadius: '8px', border: `2px solid ${isEquippedOnCurrent ? '#f0c040' : rarity.border}`,
                                 position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center',
                                 boxShadow: isEquippedOnCurrent ? '0 0 15px rgba(240,192,64,0.3)' : '0 4px 10px rgba(0,0,0,0.3)',
                                 cursor: 'pointer'
                             }}
                         >
-                            <img src={data.image} style={{ width: '70%', height: '70%', objectFit: 'contain', opacity: isEquippedOnOther ? 0.6 : 1 }} alt="" />
+                            {data.spriteClass ? (
+                                <div className={data.spriteClass} style={{ width: '80px', height: '80px', opacity: isEquippedOnOther ? 0.6 : 1 }} />
+                            ) : (
+                                <img src={data.image} style={{ width: '70%', height: '70%', objectFit: 'contain', opacity: isEquippedOnOther ? 0.6 : 1 }} alt="" />
+                            )}
                             
                             {/* МЕТКА ЭКИПИРОВКИ (ТЕКУЩИЙ ГЕРОЙ) */}
                             {isEquippedOnCurrent && (
@@ -200,96 +225,11 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ mode = 'FULL', o
                     onClick={handleSellJunk}
                     style={{ background: 'transparent', border: '1px solid #ef4444', color: '#ef4444', padding: '6px 12px', borderRadius: '6px', fontSize: '10px', fontWeight: 800, cursor: 'pointer' }}
                 >
-                    🗑️ ПРОДАТЬ ВЕСЬ ХЛАМ (COMMON)
+                    🗑️ ПРОДАТЬ ВЕСЬ ХЛАМ (ОБЫЧНЫЕ)
                 </button>
+
             </div>
 
-            {/* ИНСПЕКТОР ПРЕДМЕТА (POPUP) */}
-            <AnimatePresence>
-                {selectedItemId && selectedItemData && (
-                    <motion.div 
-                        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                        style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}
-                        onClick={() => setSelectedItemId(null)}
-                    >
-                        <motion.div 
-                            initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }}
-                            onClick={(e) => e.stopPropagation()}
-                            style={{
-                                width: '350px', background: '#1a1008', border: `2px solid ${RARITY_COLORS[selectedItemData.rarity as any].border}`,
-                                borderRadius: '20px', padding: '25px', position: 'relative', boxShadow: `0 0 50px ${RARITY_COLORS[selectedItemData.rarity as any].glow}`
-                            }}
-                        >
-                            <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-                                <div style={{ fontSize: '10px', fontWeight: 900, color: RARITY_COLORS[selectedItemData.rarity as any].border, letterSpacing: '2px', marginBottom: '5px' }}>{selectedItemData.rarity}</div>
-                                <h2 style={{ fontFamily: "'Cinzel', serif", fontSize: '20px', margin: 0, color: '#fff' }}>{selectedItemData.name}</h2>
-                            </div>
-
-                            <div style={{ display: 'flex', gap: '20px', marginBottom: '20px' }}>
-                                <div style={{ width: '100px', height: '100px', background: 'rgba(255,255,255,0.05)', borderRadius: '15px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(255,255,255,0.1)' }}>
-                                    <img src={selectedItemData.image} style={{ width: '80%', height: '80%', objectFit: 'contain' }} alt="" />
-                                </div>
-                                <div style={{ flex: 1 }}>
-                                    <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)', fontStyle: 'italic', marginBottom: '10px' }}>{selectedItemData.desc}</div>
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                                        {['attackBonus', 'defenseBonus', 'hpBonus'].map(statKey => {
-                                            const itemData = selectedItemData as any;
-                                            const val = itemData[statKey];
-                                            if (val === undefined) return null;
-                                            
-                                            // Сравнение
-                                            const subTab = itemData.subTab;
-                                            const equippedId = (equippedItems || {})[subTab];
-                                            const equippedItem = equippedId ? ITEMS_DATABASE[equippedId] as IEquipmentStats : null;
-                                            const equippedVal = equippedItem ? ((equippedItem as any)[statKey] || 0) : 0;
-                                            const diff = val - equippedVal;
-
-                                            const labels: any = { attackBonus: 'АТАКА', defenseBonus: 'ЗАЩИТА', hpBonus: 'ЗДОРОВЬЕ' };
-                                            const icons: any = { attackBonus: '⚔️', defenseBonus: '🛡️', hpBonus: '❤️' };
-
-                                            return <StatRow key={statKey} label={labels[statKey]} value={val} diff={diff} icon={icons[statKey]} />;
-                                        })}
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div style={{ display: 'flex', gap: '10px' }}>
-                                {getHeroByItemId(selectedItemId) === (selectedHeroId || 'panda') ? (
-                                    <button 
-                                        onClick={() => { unequipItem(selectedItemId); setSelectedItemId(null); }}
-                                        style={{ flex: 1, padding: '12px', background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '10px', color: '#fff', fontWeight: 900, cursor: 'pointer' }}
-                                    >
-                                        СНЯТЬ
-                                    </button>
-                                ) : (
-                                    <button 
-                                        onClick={() => { 
-                                            const otherHero = getHeroByItemId(selectedItemId);
-                                            if (otherHero && !confirm(`Этот предмет надет на ${otherHero}. Передать его текущему герою?`)) return;
-                                            
-                                            // Показываем профит
-                                            if (selectedItemData.attackBonus) addFloatingText(`+${selectedItemData.attackBonus} АТАКА`, '#f1c40f');
-                                            if (selectedItemData.hpBonus) addFloatingText(`+${selectedItemData.hpBonus} ХП`, '#22c55e');
-
-                                            equipItem(selectedItemId); 
-                                            setSelectedItemId(null); 
-                                        }}
-                                        style={{ flex: 1, padding: '12px', background: 'linear-gradient(180deg, #f0c040, #c87820)', border: 'none', borderRadius: '10px', color: '#1a1008', fontWeight: 900, cursor: 'pointer' }}
-                                    >
-                                        {getHeroByItemId(selectedItemId) ? 'ЗАБРАТЬ И НАДЕТЬ' : 'НАДЕТЬ'}
-                                    </button>
-                                )}
-                                <button 
-                                    onClick={() => { sellItem(selectedItemId); setSelectedItemId(null); }}
-                                    style={{ padding: '12px', background: 'rgba(239,68,68,0.1)', border: '1px solid #ef4444', borderRadius: '10px', color: '#ef4444', fontWeight: 800, cursor: 'pointer' }}
-                                >
-                                    🗑️
-                                </button>
-                            </div>
-                        </motion.div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
             {/* ВСПЛЫВАЮЩИЙ ТЕКСТ */}
             <div style={{ position: 'fixed', top: '40%', left: '50%', transform: 'translate(-50%, -50%)', pointerEvents: 'none', zIndex: 2000, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
                 <AnimatePresence>
@@ -306,20 +246,12 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ mode = 'FULL', o
                     ))}
                 </AnimatePresence>
             </div>
+
+            <UnderDevelopmentModal 
+                isOpen={devModalOpen} 
+                onClose={() => setDevModalOpen(false)} 
+                title="СЕКРЕТЫ АЛХИМИИ" 
+            />
         </div>
     );
 };
-
-const StatRow: React.FC<{ label: string, value: number, diff: number, icon: string }> = ({ label, value, diff, icon }) => (
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px', fontWeight: 800 }}>
-        <span style={{ color: 'rgba(255,255,255,0.4)' }}>{icon} {label}</span>
-        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-            <span style={{ color: '#fff' }}>+{value}</span>
-            {diff !== 0 && (
-                <span style={{ color: diff > 0 ? '#22c55e' : '#ef4444', fontSize: '10px' }}>
-                    ({diff > 0 ? `+${diff}` : diff})
-                </span>
-            )}
-        </div>
-    </div>
-);

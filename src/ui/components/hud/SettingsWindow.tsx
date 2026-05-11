@@ -5,9 +5,10 @@ import { requestNotifications } from '../../../utils/VKBridge';
 
 interface SettingsWindowProps {
     onClose: () => void;
+    onOpenAdmin?: () => void;
 }
 
-export const SettingsWindow: React.FC<SettingsWindowProps> = () => {
+export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenAdmin }) => {
     const { 
         showFps, setShowFps,
         musicVolume, setMusicVolume,
@@ -167,7 +168,19 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = () => {
             </div>
 
             {/* ВЕРСИЯ КЛИЕНТА */}
-            <div style={{ marginTop: 'auto', textAlign: 'center', padding: '20px 0', opacity: 0.3, fontSize: '11px', fontWeight: 800 }}>
+            <div 
+                onClick={() => {
+                    const userVkId = useGameStore.getState().vkUser?.id || useGameStore.getState().vkUser?.uid;
+                    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+                    
+                    if (Number(userVkId) === 212359386 || isLocal) {
+                        onOpenAdmin?.();
+                    } else {
+                        console.log("Current User ID:", userVkId); // Поможет отладить, если ID не совпадает
+                    }
+                }}
+                style={{ marginTop: 'auto', textAlign: 'center', padding: '20px 0', opacity: 0.3, fontSize: '11px', fontWeight: 800, cursor: 'pointer' }}
+            >
                 VERSION v1.1.0 • MASTERS OF THE WILD • 2026
                 <div style={{ marginTop: '5px', display: 'flex', justifyContent: 'center', gap: '15px', textDecoration: 'underline' }}>
                     <span style={{ cursor: 'pointer' }}>Privacy Policy</span>

@@ -1,46 +1,49 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useGameStore } from '../../../store/useGameStore';
 import { HEROES_DB } from '../../../configs/HeroesConfig';
+import { MOBS_DB } from '../../../configs/MobsConfig';
 import { BattleEngine, BattleState } from '../../../engine/core/BattleEngine';
 import { motion, AnimatePresence } from 'framer-motion';
 
-/**
- * BattleScene - Чистый UI-оверлей над игровым движком.
- * Теперь компонент не знает ничего о PixiJS и спрайтах,
- * он только отображает состояние боя.
- */
 export const BattleScene: React.FC = () => {
-    const { selectedHeroId, goToMainMenu, getCalculatedStats } = useGameStore();
+    const { selectedHeroId, selectedEnemyId, goToMainMenu, getCalculatedStats } = useGameStore();
     const containerRef = useRef<HTMLDivElement>(null);
     const engineRef = useRef<BattleEngine | null>(null);
     
-    // UI стейт (только то, что нужно для оверлея)
     const [battleState, setBattleState] = useState<BattleState>({
         playerHP: 100,
+        playerMaxHP: 100,
         enemyHP: 100,
+        enemyMaxHP: 100,
         log: 'ПОДГОТОВКА...'
     });
 
     const playerHero = HEROES_DB.find(h => h.id === selectedHeroId) || HEROES_DB[0];
-    const enemyHero = HEROES_DB.find(h => h.id === 'wild_boar') || HEROES_DB[1];
+    const enemyData = MOBS_DB.find(m => m.id === selectedEnemyId) || MOBS_DB[0];
 
     useEffect(() => {
         if (!containerRef.current) return;
 
-        // Собираем статы для боя
         const playerStats = getCalculatedStats(selectedHeroId);
-        const enemyStats = getCalculatedStats('wild_boar') || getCalculatedStats(HEROES_DB[1].id);
+        // Для врага создаем временные статы на основе базы монстров
+        const enemyStats = {
+            hp: enemyData.baseStats.hp,
+            attack: enemyData.baseStats.attack,
+            speed: enemyData.baseStats.speed,
+            critChance: enemyData.baseStats.crit,
+            defense: enemyData.baseStats.defense,
+            dodge: 0
+        };
 
-        if (!playerStats || !enemyStats) {
+        if (!playerStats) {
             setBattleState(prev => ({ ...prev, log: 'ОШИБКА: ГЕРОЙ НЕ НАЙДЕН' }));
             return;
         }
 
-        // Создаем и инициализируем движок
         const engine = new BattleEngine();
         engineRef.current = engine;
+        (window as any).__BATTLE_ENGINE__ = engine; // РЕГИСТРАЦИЯ ДЛЯ АДМИНКИ
         
-        // Подписываемся на изменения состояния в движке
         engine.onStateChange = (newState) => {
             setBattleState({ ...newState });
         };
@@ -49,61 +52,63 @@ export const BattleScene: React.FC = () => {
 
         return () => {
             engine.destroy();
+            (window as any).__BATTLE_ENGINE__ = null;
         };
-    }, [selectedHeroId, getCalculatedStats]);
+    }, [selectedHeroId, selectedEnemyId, getCalculatedStats, enemyData]);
 
     return (
-        <div className="absolute inset-0 bg-black z-[500] pointer-events-auto overflow-hidden">
-            {/* Игровой холст (управляется BattleEngine) */}
-            <div ref={containerRef} className="absolute inset-0 w-full h-full" />
+        <div style={{ position: 'absolute', inset: 0, background: '#000', zIndex: 500, overflow: 'hidden' }}>
+            <div ref={containerRef} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} />
             
-            {/* UI Оверлей (React) */}
-            <div className="absolute inset-0 pointer-events-none z-[100]">
-                {/* Верхняя панель со статами */}
-                <div className="p-[40px_100px] flex justify-between">
-                    {/* Игрок */}
-                    <div className="w-[500px]">
-                        <div className="text-white text-[28px] font-['Cinzel'] uppercase tracking-wider">{playerHero.name}</div>
-                        <div className="h-[24px] bg-black/60 border-2 border-[#f0c040] mt-[10px] relative overflow-hidden">
+            <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 100 }}>
+                <div style={{ padding: '40px 100px', display: 'flex', justifyContent: 'space-between' }}>
+                    {/* PLAYER */}
+                    <div style={{ width: '500px' }}>
+                        <div style={{ color: '#fff', fontSize: '28px', fontFamily: "'Cinzel', serif", textTransform: 'uppercase' }}>{playerHero.name}</div>
+                        <div style={{ height: '24px', background: 'rgba(0,0,0,0.6)', border: '2px solid #f0c040', marginTop: '10px', position: 'relative', overflow: 'hidden' }}>
                             <motion.div 
-                                animate={{ width: `${battleState.playerHP}%` }} 
+                                animate={{ width: `${(battleState.playerHP / battleState.playerMaxHP) * 100}%` }} 
                                 transition={{ duration: 0.3 }}
-                                className="h-full bg-gradient-to-r from-red-500 to-red-800 shadow-[0_0_15px_rgba(239,68,68,0.5)]" 
+                                style={{ height: '100%', background: 'linear-gradient(90deg, #ef4444, #991b1b)' }} 
                             />
                         </div>
                     </div>
 
-                    {/* Лог боя по центру */}
+                    {/* LOG */}
                     <AnimatePresence mode="wait">
                         <motion.div 
                             key={battleState.log}
                             initial={{ opacity: 0, y: -20 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: 20 }}
-                            className="text-[#f0c040] text-[36px] text-center font-['Cinzel'] font-bold drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]"
+                            style={{ color: '#f0c040', fontSize: '36px', textAlign: 'center', fontFamily: "'Cinzel', serif", fontWeight: 'bold' }}
                         >
                             {battleState.log}
                         </motion.div>
                     </AnimatePresence>
 
-                    {/* Противник */}
-                    <div className="w-[500px] text-right">
-                        <div className="text-white text-[28px] font-['Cinzel'] uppercase tracking-wider">{enemyHero.name}</div>
-                        <div className="h-[24px] bg-black/60 border-2 border-red-500 mt-[10px] relative overflow-hidden">
+                    {/* ENEMY */}
+                    <div style={{ width: '500px', textAlign: 'right' }}>
+                        <div style={{ color: '#fff', fontSize: '28px', fontFamily: "'Cinzel', serif", textTransform: 'uppercase' }}>{enemyData.name}</div>
+                        <div style={{ height: '24px', background: 'rgba(0,0,0,0.6)', border: '2px solid #ef4444', marginTop: '10px', position: 'relative', overflow: 'hidden' }}>
                             <motion.div 
-                                animate={{ width: `${battleState.enemyHP}%` }} 
+                                animate={{ width: `${(battleState.enemyHP / battleState.enemyMaxHP) * 100}%` }} 
                                 transition={{ duration: 0.3 }}
-                                className="h-full bg-gradient-to-r from-blue-500 to-blue-800 float-right shadow-[0_0_15px_rgba(59,130,246,0.5)]" 
+                                style={{ height: '100%', background: 'linear-gradient(90deg, #3b82f6, #1e40af)', float: 'right' }} 
                             />
                         </div>
                     </div>
                 </div>
             </div>
 
-            {/* Кнопка выхода */}
             <button 
                 onClick={goToMainMenu} 
-                className="absolute bottom-[40px] left-1/2 -translate-x-1/2 p-[15px_40px] bg-black/80 border-2 border-[#f0c040] text-[#f0c040] rounded-[10px] cursor-pointer pointer-events-auto z-[200] text-[20px] font-black font-['Cinzel'] hover:bg-[#f0c040] hover:text-black transition-all duration-300"
+                style={{
+                    position: 'absolute', bottom: '40px', left: '50%', transform: 'translateX(-50%)',
+                    padding: '15px 40px', background: 'rgba(0,0,0,0.8)', border: '2px solid #f0c040',
+                    color: '#f0c040', borderRadius: '10px', cursor: 'pointer', zIndex: 200,
+                    fontSize: '20px', fontWeight: 900, fontFamily: "'Cinzel', serif"
+                }}
             >
                 В ЦИТАДЕЛЬ
             </button>

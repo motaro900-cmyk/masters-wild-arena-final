@@ -30,6 +30,7 @@ export interface IBaseItem {
     amount?: number;
     flavor?: string;
     badge?: string;
+    spriteClass?: string;
 }
 
 /**
@@ -61,6 +62,7 @@ const rawItemsDatabase: Record<string, IEquipmentStats> = {
         rarity: ItemRarity.COMMON, textureKey: 'weapon_staff', 
         priceGold: 2500, priceGem: 45,
         image: '/assets/images/items/weapons/staff.png', mainTab: 'ARSENAL', subTab: 'WEAPONS',
+        spriteClass: 'sprite-item sprite-weapon pos-1',
         desc: 'Старый деревянный посох. Излучает едва заметное тепло.'
     },
     '2': { 
@@ -68,6 +70,7 @@ const rawItemsDatabase: Record<string, IEquipmentStats> = {
         rarity: ItemRarity.RARE, textureKey: 'weapon_bow', 
         priceGold: 18500, priceGem: 250,
         image: '/assets/images/items/weapons/bow.png', mainTab: 'ARSENAL', subTab: 'WEAPONS',
+        spriteClass: 'sprite-item sprite-weapon pos-2',
         desc: 'Гибкий лук из белого ясеня.'
     },
     '3': { 
@@ -75,6 +78,7 @@ const rawItemsDatabase: Record<string, IEquipmentStats> = {
         rarity: ItemRarity.EPIC, textureKey: 'weapon_daggers', 
         priceGold: 45000, priceGem: 550,
         image: '/assets/images/items/weapons/daggers.png', mainTab: 'ARSENAL', subTab: 'WEAPONS',
+        spriteClass: 'sprite-item sprite-weapon pos-3',
         desc: 'Пара зазубренных кинжалов, покрытых ядом.'
     },
     '4': { 
@@ -124,6 +128,7 @@ const rawItemsDatabase: Record<string, IEquipmentStats> = {
         rarity: ItemRarity.EPIC, textureKey: 'helm_crown', 
         priceGold: 65000, priceGem: 850,
         image: '/assets/images/items/helms/helm_crown.png', mainTab: 'ARSENAL', subTab: 'HELMETS',
+        spriteClass: 'sprite-item sprite-helm pos-1',
         desc: 'Символ власти и мудрости древних королей.'
     },
     'h2': { 
@@ -131,6 +136,7 @@ const rawItemsDatabase: Record<string, IEquipmentStats> = {
         rarity: ItemRarity.RARE, textureKey: 'helm_fire', 
         priceGold: 15500, priceGem: 180,
         image: '/assets/images/items/helms/helm_fire.png', mainTab: 'ARSENAL', subTab: 'HELMETS',
+        spriteClass: 'sprite-item sprite-helm pos-2',
         desc: 'Раскаленный металл, который не обжигает владельца.'
     },
     'h3': { 

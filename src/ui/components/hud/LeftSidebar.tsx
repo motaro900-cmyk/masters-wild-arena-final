@@ -5,8 +5,8 @@ import { AssetsMap } from '../../../configs/AssetsMap';
 interface MenuItem {
   id: string;
   label: string;
-  top: number;    
-  height: number; 
+  top: number;
+  height: number;
 }
 
 /**
@@ -84,12 +84,12 @@ const SideMenuItem: React.FC<{
     </span>
 
     {isActive && (
-      <div style={{ 
+      <div style={{
         position: 'absolute',
         right: 25,
-        width: 8, 
-        height: 8, 
-        backgroundColor: '#f0c040', 
+        width: 8,
+        height: 8,
+        backgroundColor: '#f0c040',
         borderRadius: '50%',
         boxShadow: '0 0 10px #f0c040'
       }} />

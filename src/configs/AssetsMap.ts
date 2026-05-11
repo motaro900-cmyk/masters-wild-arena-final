@@ -84,6 +84,7 @@ const rawAssetsMap = {
         SHOP_BANNER_BLACK: '/assets/images/ui/icons/ChatGPT Imaport.png',
         SHOP_DIVIDER: '/assets/images/ui/ChatGPT Image 5  213_457-Photoroom-export.png',
         BATTLE_PASS: '/assets/images/backgrounds/боевойпропуска.png',
+        CITY_HUB: '/assets/images/backgrounds/bg_city_hub.png',
     },
     CHARACTERS: {
         PANDA_AVATAR: '/assets/images/avatars/панда.png',
