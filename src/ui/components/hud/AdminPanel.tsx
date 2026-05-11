@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useGameStore } from '../../../store/useGameStore';
 import { ITEMS_DATABASE } from '../../../game/configs/ItemsConfig';
 import { MOBS_DB } from '../../../configs/MobsConfig';
+import { syncService } from '../../../services/SyncService';
 
 const ADMIN_VK_IDS = [212359386]; 
 
@@ -68,6 +69,8 @@ export const AdminPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     const [muteDuration, setMuteDuration] = useState('1h');
     const [modReason, setModReason] = useState('');
     const [filterStatus, setFilterStatus] = useState<'ALL' | 'ONLINE' | 'BANNED'>('ALL');
+    const [realPlayers, setRealPlayers] = useState<RealPlayer[]>([]);
+    const [isLoadingPlayers, setIsLoadingPlayers] = useState(false);
 
     // --- ЛОКАЛЬНЫЕ СОСТОЯНИЯ (СЕРВЕР - ПРАВКА ИГРОКА) ---
     const [serverPlayerGold, setServerPlayerGold] = useState('');
@@ -102,33 +105,49 @@ export const AdminPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
         if (activeTab === 'БОЙ') logEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [chatMessages, store.combatLogs, activeTab]);
 
+    const selectedPlayer = realPlayers.find(p => p.id === selectedPlayerId);
+
     useEffect(() => {
         if (selectedPlayer) {
             setServerPlayerGold(String(selectedPlayer.gold));
             setServerPlayerCrystals(String(selectedPlayer.crystals));
             setServerPlayerLevel(String(selectedPlayer.level));
         }
-    }, [selectedPlayerId]);
+    }, [selectedPlayerId, selectedPlayer]);
 
-    const realPlayers: RealPlayer[] = [
-        { 
-            id: store.playerId, vkId: store.vkUser?.id || 0,
-            name: store.vkUser?.first_name ? `${store.vkUser.first_name} ${store.vkUser.last_name}` : 'Администратор',
-            photo: store.vkUser?.photo_100 || 'https://vk.com/images/camera_100.png',
-            status: store.activeScreen === 'BATTLE' ? 'BATTLE' : 'ONLINE',
-            screen: store.activeScreen || 'MAP', level: store.level, gold: store.gold, crystals: store.crystals,
-            regDate: '10.05.2026', reports: 0, reportLogs: [],
-            gear: { weapon: 'Меч Новичка', helm: 'Кожаный Шлем', armor: 'Тканевая Роба' }
-        },
-        { 
-            id: 'MW-OFFLINE-TEST', vkId: 123456, name: 'Иван Иванов', photo: 'https://vk.com/images/camera_100.png',
-            status: 'OFFLINE', screen: 'MAIN_MENU', level: 15, gold: 5000, crystals: 100,
-            regDate: '01.05.2026', reports: 3, reportLogs: ['Мат в чате', 'Флуд', 'Подозрение на кликер'],
-            gear: { weapon: 'Топор Лесоруба', shield: 'Деревянный Щит' }
+    useEffect(() => {
+        if (activeTab === 'СЕРВЕР') {
+            refreshPlayers();
         }
-    ];
+    }, [activeTab]);
 
-    const selectedPlayer = realPlayers.find(p => p.id === selectedPlayerId);
+    const refreshPlayers = async () => {
+        setIsLoadingPlayers(true);
+        try {
+            const players = await syncService.getAllPlayers();
+            // Маппим данные из Firebase в формат RealPlayer
+            const mappedPlayers: RealPlayer[] = players.map(p => ({
+                id: p.id,
+                vkId: p.vkId || 0,
+                name: p.name || 'Unknown',
+                photo: p.photo || 'https://vk.com/images/camera_100.png',
+                status: p.activeScreen === 'BATTLE' ? 'BATTLE' : (Date.now() - (p.lastSeen?.toMillis?.() || 0) < 300000 ? 'ONLINE' : 'OFFLINE'),
+                screen: p.activeScreen || 'MAP',
+                level: p.лев || 1,
+                gold: p.золото || 0,
+                crystals: p.кристаллы || 0,
+                regDate: p.lastSeen?.toDate?.().toLocaleDateString() || '10.05.2026',
+                reports: p.reports || 0,
+                reportLogs: p.reportLogs || [],
+                gear: p.геройСнаряжение || {}
+            }));
+            setRealPlayers(mappedPlayers);
+        } catch (e) {
+            console.error('Failed to refresh players:', e);
+        } finally {
+            setIsLoadingPlayers(false);
+        }
+    };
 
     const applyMailTemplate = (type: 'REWARD' | 'LAG' | 'WELCOME') => {
         if (type === 'REWARD') { setMailSubject('🏆 НАГРАДА ЗА ИВЕНТ'); setMailBody('Поздравляем! Вы проявили невероятную отвагу и мастерство. Вот ваша награда!'); setMailAmount('1000'); }
@@ -233,25 +252,40 @@ export const AdminPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.6fr', gap: '20px', height: '700px' }}>
                         <div style={{ background: '#0a0a0a', border: '1px solid #222', borderRadius: '10px', display: 'flex', flexDirection: 'column' }}>
                             <div style={{ padding: '10px', borderBottom: '1px solid #222' }}>
-                                <input type="text" placeholder="Поиск по Имени/ID/VK..." style={inputStyle} value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
-                                <div style={{ display: 'flex', gap: '5px', marginTop: '10px' }}>
+                                <div style={{ display: 'flex', gap: '5px', marginBottom: '10px' }}>
+                                    <input type="text" placeholder="Поиск по Имени/ID/VK..." style={{ ...inputStyle, flex: 1 }} value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
+                                    <button onClick={refreshPlayers} style={{ ...applyBtn, padding: '0 10px' }} disabled={isLoadingPlayers}>
+                                        {isLoadingPlayers ? '...' : '🔄'}
+                                    </button>
+                                </div>
+                                <div style={{ display: 'flex', gap: '5px' }}>
                                     <button onClick={() => setFilterStatus('ALL')} style={{ ...smallBtnStyle, background: filterStatus === 'ALL' ? '#222' : '#111' }}>Все</button>
                                     <button onClick={() => setFilterStatus('ONLINE')} style={{ ...smallBtnStyle, background: filterStatus === 'ONLINE' ? '#1b4332' : '#111' }}>Online</button>
                                     <button onClick={() => setFilterStatus('BANNED')} style={{ ...smallBtnStyle, background: filterStatus === 'BANNED' ? '#431b1b' : '#111' }}>Banned</button>
                                 </div>
                             </div>
                             <div style={{ flex: 1, overflowY: 'auto' }}>
-                                {realPlayers.map(p => (
-                                    <div key={p.id} onClick={() => setSelectedPlayerId(p.id)} style={{ padding: '12px', borderBottom: '1px solid #111', cursor: 'pointer', background: selectedPlayerId === p.id ? '#1a1a1a' : 'transparent', display: 'flex', gap: '10px', alignItems: 'center' }}>
-                                        <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: p.status === 'ONLINE' ? '#4dff4d' : p.status === 'BATTLE' ? '#3b82f6' : '#555' }} />
-                                        <img src={p.photo} style={{ width: '24px', height: '24px', borderRadius: '50%', border: '1px solid #333' }} alt="" />
-                                        <div style={{ flex: 1 }}>
-                                            <div style={{ fontSize: '13px', fontWeight: 'bold' }}>{p.name}</div>
-                                            <div style={{ fontSize: '8px', color: '#444' }}>ID: {p.id}</div>
+                                {realPlayers
+                                    .filter(p => {
+                                        const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                                                            p.id.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                                                            String(p.vkId).includes(searchQuery);
+                                        const matchesStatus = filterStatus === 'ALL' || 
+                                                            (filterStatus === 'ONLINE' && p.status === 'ONLINE') || 
+                                                            (filterStatus === 'BANNED' && p.status === 'BANNED');
+                                        return matchesSearch && matchesStatus;
+                                    })
+                                    .map(p => (
+                                        <div key={p.id} onClick={() => setSelectedPlayerId(p.id)} style={{ padding: '12px', borderBottom: '1px solid #111', cursor: 'pointer', background: selectedPlayerId === p.id ? '#1a1a1a' : 'transparent', display: 'flex', gap: '10px', alignItems: 'center' }}>
+                                            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: p.status === 'ONLINE' ? '#4dff4d' : p.status === 'BATTLE' ? '#3b82f6' : '#555' }} />
+                                            <img src={p.photo} style={{ width: '24px', height: '24px', borderRadius: '50%', border: '1px solid #333' }} alt="" />
+                                            <div style={{ flex: 1 }}>
+                                                <div style={{ fontSize: '13px', fontWeight: 'bold' }}>{p.name}</div>
+                                                <div style={{ fontSize: '8px', color: '#444' }}>ID: {p.id}</div>
+                                            </div>
+                                            {p.reports > 0 && <div style={{ background: '#ff4d4d', color: '#fff', fontSize: '8px', padding: '1px 4px', borderRadius: '3px' }}>{p.reports}!</div>}
                                         </div>
-                                        {p.reports > 0 && <div style={{ background: '#ff4d4d', color: '#fff', fontSize: '8px', padding: '1px 4px', borderRadius: '3px' }}>{p.reports}!</div>}
-                                    </div>
-                                ))}
+                                    ))}
                             </div>
                         </div>
                         <div style={{ background: '#0a0a0a', border: '1px solid #222', borderRadius: '10px', padding: '20px', overflowY: 'auto' }}>

@@ -6,6 +6,7 @@ import { HEROES_DB } from '../configs/HeroesConfig';
 import { QUESTS_POOL } from '../configs/QuestsConfig';
 import { audioService } from '../services/AudioService';
 import { AssetsMap } from '../configs/AssetsMap';
+import { syncService } from '../services/SyncService';
 
 
 /**
@@ -604,6 +605,9 @@ export const useGameStore = create<any>()(
                 } else {
                     set({ activeScreen: 'CITY', activePveEnemy: null });
                 }
+                
+                // Синхронизируем прогресс с Firebase после боя
+                syncService.syncPlayerData();
             },
         }),
         {
