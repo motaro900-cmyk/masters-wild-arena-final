@@ -112,9 +112,9 @@ export const RankingWindow: React.FC = () => {
                     <motion.button 
                         whileHover={{ scale: 1.1, rotate: 5 }}
                         onClick={() => setShowRewards(true)}
-                        style={{ background: 'rgba(240,192,64,0.2)', border: '1px solid #f0c040', borderRadius: '10px', width: '45px', height: '45px', cursor: 'pointer', fontSize: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 15px rgba(240,192,64,0.2)' }}
+                        style={{ background: 'rgba(240,192,64,0.2)', border: '1px solid #f0c040', borderRadius: '10px', width: '45px', height: '45px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 15px rgba(240,192,64,0.2)', overflow: 'hidden' }}
                     >
-                        🎁
+                        <div className="sprite-gift" style={{ width: '32px', height: '32px', backgroundSize: '300% 100%' }} />
                     </motion.button>
                 </div>
             </div>
@@ -184,7 +184,7 @@ export const RankingWindow: React.FC = () => {
                         <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                 <span style={{ color: '#fff', fontSize: '24px', fontWeight: 900 }}>{rating.toLocaleString().replace(',', ' ')}</span>
-                                <span style={{ fontSize: '20px' }}>🏆</span>
+                                <div className="sprite-trophy" style={{ width: '28px', height: '28px', backgroundSize: '300% 100%' }} />
                             </div>
                         </div>
                     </motion.div>
@@ -362,7 +362,7 @@ const LeaderItem: React.FC<{ player: LeaderboardEntry, onClick: () => void }> = 
             {/* КУБКИ */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100px', justifyContent: 'flex-end' }}>
                 <span style={{ color: '#fff', fontSize: '18px', fontWeight: 800 }}>{player.trophies.toLocaleString().replace(',', ' ')}</span>
-                <span style={{ fontSize: '16px' }}>🏆</span>
+                <div className="sprite-trophy" style={{ width: '20px', height: '20px', backgroundSize: '300% 100%' }} />
             </div>
         </motion.div>
     );

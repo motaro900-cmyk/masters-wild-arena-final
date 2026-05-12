@@ -26,7 +26,7 @@ const DAILY_QUESTS: Quest[] = [
 ];
 
 const WEEKLY_QUESTS: Quest[] = [
-    { id: 'w1', title: 'Чемпион Арены', description: 'Победите в 20 сражениях', progress: 12, target: 20, rewardXp: 1000, icon: '🏆' },
+    { id: 'w1', title: 'Чемпион Арены', description: 'Победите в 20 сражениях', progress: 12, target: 20, rewardXp: 1000, icon: 'sprite-trophy' },
     { id: 'w2', title: 'Коллекционер', description: 'Откройте 10 любых сундуков', progress: 3, target: 10, rewardXp: 800, icon: '📦' },
     { id: 'w3', title: 'Мастер Стали', description: 'Улучшите любое оружие 3 раза', progress: 1, target: 3, rewardXp: 600, icon: '⚒️' },
 ];
@@ -50,7 +50,7 @@ const BATTLE_PASS_REWARDS: Reward[] = [
     { 
         level: 4, 
         free: { id: 'gold_1000', name: '1000 Золота', icon: '💰', amount: 1000, type: 'GOLD' },
-        premium: { id: 'chest_epic', name: 'Эпический Сундук', icon: '🎁', type: 'CHEST' }
+        premium: { id: 'chest_epic', name: 'Эпический Сундук', icon: 'sprite-gift', type: 'CHEST' }
     },
     { 
         level: 5, 
@@ -132,7 +132,7 @@ export const BattlePassScene: React.FC<{ onClose: () => void }> = ({ onClose }) 
 
                         {/* ПЕРЕКЛЮЧАТЕЛЬ ТАБОВ */}
                         <div style={{ display: 'flex', background: 'rgba(255,255,255,0.05)', padding: '4px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)' }}>
-                            <TabButton active={activeTab === 'REWARDS'} onClick={() => setActiveTab('REWARDS')} label="НАГРАДЫ" icon="🎁" />
+                            <TabButton active={activeTab === 'REWARDS'} onClick={() => setActiveTab('REWARDS')} label="НАГРАДЫ" icon="sprite-gift" />
                             <TabButton active={activeTab === 'QUESTS'} onClick={() => setActiveTab('QUESTS')} label="ЗАДАНИЯ" icon="📜" />
                         </div>
                     </div>
@@ -312,12 +312,18 @@ const RewardCard: React.FC<{
             )}
 
             <div style={{ 
-                fontSize: isMilestone ? '90px' : '64px', 
+                width: isMilestone ? '120px' : '90px',
+                height: isMilestone ? '120px' : '90px',
                 marginBottom: '15px', 
                 filter: isUnlocked ? 'drop-shadow(0 10px 20px rgba(0,0,0,0.5))' : 'blur(5px)',
-                transition: 'all 0.3s'
+                transition: 'all 0.3s',
+                display: 'flex', alignItems: 'center', justifyContent: 'center'
             }}>
-                {item.icon}
+                {item.icon.startsWith('sprite-') ? (
+                    <div className={item.icon} style={{ width: '100%', height: '100%', backgroundSize: '300% 100%' }} />
+                ) : (
+                    <span style={{ fontSize: isMilestone ? '90px' : '64px' }}>{item.icon}</span>
+                )}
             </div>
             
             <div style={{ textAlign: 'center', zIndex: 1 }}>
@@ -433,7 +439,11 @@ const TabButton: React.FC<{ active: boolean, onClick: () => void, label: string,
             display: 'flex', alignItems: 'center', gap: '10px', transition: 'all 0.2s'
         }}
     >
-        <span style={{ fontSize: '18px' }}>{icon}</span>
+        {icon.startsWith('sprite-') ? (
+            <div className={icon} style={{ width: '24px', height: '24px', backgroundSize: '300% 100%' }} />
+        ) : (
+            <span style={{ fontSize: '18px' }}>{icon}</span>
+        )}
         {label}
     </motion.button>
 );
@@ -450,7 +460,13 @@ const QuestSection: React.FC<{ title: string, quests: Quest[] }> = ({ title, que
                     border: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', gap: '25px'
                 }}
             >
-                <div style={{ fontSize: '40px', width: '60px', textAlign: 'center' }}>{quest.icon}</div>
+                <div style={{ width: '60px', height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {quest.icon.startsWith('sprite-') ? (
+                        <div className={quest.icon} style={{ width: '40px', height: '40px', backgroundSize: '300% 100%' }} />
+                    ) : (
+                        <span style={{ fontSize: '40px' }}>{quest.icon}</span>
+                    )}
+                </div>
                 <div style={{ flex: 1 }}>
                     <div style={{ fontSize: '20px', fontWeight: 900, marginBottom: '5px' }}>{quest.title}</div>
                     <div style={{ fontSize: '14px', color: 'rgba(255,255,255,0.5)', marginBottom: '15px' }}>{quest.description}</div>

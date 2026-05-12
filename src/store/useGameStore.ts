@@ -18,6 +18,7 @@ export const useGameStore = create<any>()(
         (set, get) => ({
             // --- СОСТОЯНИЕ ИГРОКА ---
             level: 1,
+            vipLevel: 5,
             exp: 0,
             gold: 50000,
             crystals: 5000,
@@ -30,6 +31,12 @@ export const useGameStore = create<any>()(
             bpLevel: 1,
             bpExp: 0,
             trophies: 0,
+            combatPower: 2450000,
+            buffs: [
+                { id: 'xp_x2', icon: '✨', label: 'XP x2' },
+                { id: 'vip_crown', icon: '👑', label: 'VIP' },
+                { id: 'gold_plus', icon: '💰', label: '+10%' }
+            ],
             isPremium: false,
             claimedRewards: [],
 
@@ -135,13 +142,14 @@ export const useGameStore = create<any>()(
             showFps: false,
             musicVolume: 70,
             soundVolume: 85,
-            graphicsQuality: 'ULTRA',
+            graphicsQuality: /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ? 'LOW' : 'ULTRA',
             notificationsEnabled: true,
             pveStage: 1,
             maxPveStage: 1,
             activePveEnemy: null,
 
             vkUser: null,
+            isMobile: /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent),
             isPowerSaving: false,
             isMuted: false,
             playerId: 'MW-' + Math.random().toString(36).substr(2, 9).toUpperCase(),

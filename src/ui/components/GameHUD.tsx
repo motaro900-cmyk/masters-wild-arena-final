@@ -10,6 +10,7 @@ import { DailyTaskPanel } from './hud/DailyTaskPanel';
 import { ChatPanel } from './hud/ChatPanel';
 import { ActionButtons } from './hud/ActionButtons';
 import { DailyGiftBanner } from './hud/DailyGiftBanner';
+import { ProfileHub } from './hud/ProfileHub';
 import { BattleScene } from './hud/BattleScene';
 
 
@@ -27,6 +28,7 @@ import { RanksListWindow } from './hud/RanksListWindow';
 import { InventoryPanel } from './hud/InventoryPanel';
 import { AdminPanel } from './hud/AdminPanel';
 import { UnderDevelopmentModal } from './hud/SharedUI';
+import { ProfileCustomizationWindow } from './hud/ProfileCustomizationWindow';
 
 export const GameHUD: React.FC = () => {
     const activeScreen = useGameStore(state => state.activeScreen);
@@ -42,7 +44,7 @@ export const GameHUD: React.FC = () => {
     }, []);
 
     const isFullScreenScene = activeScreen === 'SHOP' || activeScreen === 'HEROES' || activeScreen === 'CITY';
-    
+
     if (activeScreen === 'BATTLE') return <BattleScene />;
     if (activeScreen === 'INTRO') return null;
     if (activeScreen !== 'MAIN_MENU' && activeScreen !== 'ARENA' && !isFullScreenScene) return null;
@@ -50,15 +52,22 @@ export const GameHUD: React.FC = () => {
 
 
     return (
-        <div style={{ 
-            width: '1920px', 
-            height: '1080px', 
+        <div style={{
+            width: '1920px',
+            height: '1080px',
             position: 'absolute',
             top: 0,
             left: 0,
             pointerEvents: 'none',
             overflow: 'hidden'
         }}>
+            {/* 1. PLAYER PROFILE HUB */}
+            {!isFullScreenScene && (
+                <div className="absolute top-[30px] left-[5px] hud-interactive">
+                    <ProfileHub />
+                </div>
+            )}
+
             {/* 2. BATTLE PASS BAR */}
             {!isFullScreenScene && (
                 <div className="absolute top-[20px] left-1/2 -translate-x-1/2 hud-interactive">
@@ -92,7 +101,7 @@ export const GameHUD: React.FC = () => {
                     </div>
 
                     {/* CITY PORTAL HOTSPOT (Castle in the background) */}
-                    <div 
+                    <div
                         className="absolute top-[200px] right-[450px] hud-interactive"
                         style={{
                             width: '350px',
@@ -119,7 +128,7 @@ export const GameHUD: React.FC = () => {
                             opacity: 0,
                             transition: 'opacity 0.3s ease'
                         }}>
-                             <div style={{
+                            <div style={{
                                 padding: '8px 20px',
                                 background: 'rgba(20, 15, 10, 0.8)',
                                 border: '2px solid #f0c040',
@@ -130,17 +139,17 @@ export const GameHUD: React.FC = () => {
                                 fontWeight: 'bold',
                                 textShadow: '0 2px 10px rgba(0,0,0,1)',
                                 boxShadow: '0 0 20px rgba(240,192,64,0.4)'
-                             }}>
+                            }}>
                                 В ГОРОД
-                             </div>
-                             <div style={{
+                            </div>
+                            <div style={{
                                 width: '40px',
                                 height: '40px',
                                 border: '3px solid #f0c040',
                                 borderTopColor: 'transparent',
                                 borderRadius: '50%',
                                 animation: 'spin 2s linear infinite'
-                             }} />
+                            }} />
                         </div>
                         <style>{`
                             .hud-interactive:hover .city-portal-hover {
@@ -156,57 +165,67 @@ export const GameHUD: React.FC = () => {
                     <div className="absolute bottom-[30px] left-[-5px] hud-interactive">
                         <ChatPanel />
                     </div>
-                    
+
                     <div className="absolute bottom-[30px] left-1/2 -translate-x-1/2 hud-interactive">
-                        <ActionButtons 
-                            onStartBattle={() => setDevModal({ isOpen: true, title: 'РЕЙТИНГОВЫЙ БОЙ' })} 
+                        <ActionButtons
+                            onStartBattle={() => setDevModal({ isOpen: true, title: 'РЕЙТИНГОВЫЙ БОЙ' })}
                             onWarmup={() => setDevModal({ isOpen: true, title: 'РАЗМИНКА' })}
                             onOpenRanks={() => setActiveWindow('RANKS_LIST')}
                         />
                     </div>
 
                     {/* STANDALONE CITY BUTTON (100px further right) */}
-                    <button 
-                        className="absolute bottom-[40px] left-[calc(50%+420px)] hud-interactive"
+                    <button
+                        className="absolute bottom-[10px] left-[calc(50%+400px)] hud-interactive"
                         onClick={() => setDevModal({ isOpen: true, title: 'В ГОРОД' })}
                         style={{
-                            width: '120px',
-                            height: '110px',
-                            background: 'rgba(15, 10, 5, 0.8)',
-                            backdropFilter: 'blur(8px)',
-                            border: '2px solid #c8a870',
-                            borderRadius: '16px',
+                            width: '200px',
+                            height: '240px',
+                            background: 'none',
+                            border: 'none',
                             cursor: 'pointer',
                             display: 'flex',
                             flexDirection: 'column',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            gap: '5px',
-                            boxShadow: '0 8px 25px rgba(0,0,0,0.6)',
-                            transition: 'all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+                            gap: '15px',
+                            transition: 'all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
                             pointerEvents: 'auto'
                         }}
                         onMouseEnter={e => {
-                            e.currentTarget.style.transform = 'scale(1.1) translateY(-5px)';
-                            e.currentTarget.style.borderColor = '#f0c040';
+                            e.currentTarget.style.transform = 'scale(1.08) translateY(-10px)';
+                            const img = e.currentTarget.querySelector('img');
+                            if (img) img.style.filter = 'drop-shadow(0 0 35px rgba(240,192,64,0.7))';
                         }}
                         onMouseLeave={e => {
                             e.currentTarget.style.transform = 'scale(1) translateY(0)';
-                            e.currentTarget.style.borderColor = '#c8a870';
+                            const img = e.currentTarget.querySelector('img');
+                            if (img) img.style.filter = 'drop-shadow(0 0 15px rgba(240,192,64,0.4))';
                         }}
                     >
-                        <div style={{ fontSize: '32px', filter: 'drop-shadow(0 0 10px rgba(240,192,64,0.4))' }}>🏰</div>
+                        <img
+                            src="/assets/images/ui/icon_city.png"
+                            style={{
+                                width: '180px',
+                                height: '180px',
+                                objectFit: 'contain',
+                                filter: 'drop-shadow(0 0 15px rgba(240,192,64,0.4))',
+                                transition: 'all 0.3s ease'
+                            }}
+                            alt="City"
+                        />
                         <div style={{
                             fontFamily: "'Cinzel', serif",
-                            fontSize: '14px',
+                            fontSize: '18px',
                             fontWeight: 900,
                             color: '#f0c040',
-                            letterSpacing: '1px',
-                            textShadow: '0 2px 4px rgba(0,0,0,1)'
+                            letterSpacing: '4px',
+                            textShadow: '0 3px 12px rgba(0,0,0,1)',
+                            textTransform: 'uppercase'
                         }}>В ГОРОД</div>
                     </button>
-                    
-                    <div 
+
+                    <div
                         className="absolute bottom-[40px] right-[25px] hud-interactive"
                         style={{
                             display: 'flex',
@@ -220,101 +239,106 @@ export const GameHUD: React.FC = () => {
                             boxShadow: '0 10px 30px rgba(0,0,0,0.7)',
                         }}
                     >
-                {[
-                  { id: 'FRIENDS', sprite: AssetsMap.UI.ICON_FRIENDS },
-                  { id: 'MAIL', sprite: AssetsMap.UI.ICON_MAIL },
-                  { id: 'SETTINGS', sprite: AssetsMap.UI.ICON_SETTINGS }
-                ].map(win => (
-                    <button 
-                        key={win.id}
-                        onClick={() => setActiveWindow(win.id)}
-                        style={{
-                            width: 70,
-                            height: 70,
-                            backgroundImage: `url(${win.sprite})`,
-                            backgroundSize: '100% 100%',
-                            backgroundColor: 'transparent',
-                            border: 'none',
-                            cursor: 'pointer',
-                            transition: 'all 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
-                        }}
-                        onMouseEnter={e => (e.currentTarget.style.transform = 'scale(1.15) translateY(-5px)')}
-                        onMouseLeave={e => (e.currentTarget.style.transform = 'scale(1) translateY(0)')}
-                    />
-                ))}
+                        {[
+                            { id: 'FRIENDS', sprite: AssetsMap.UI.ICON_FRIENDS },
+                            { id: 'MAIL', sprite: AssetsMap.UI.ICON_MAIL },
+                            { id: 'SETTINGS', sprite: AssetsMap.UI.ICON_SETTINGS }
+                        ].map(win => (
+                            <button
+                                key={win.id}
+                                onClick={() => setActiveWindow(win.id)}
+                                style={{
+                                    width: 70,
+                                    height: 70,
+                                    backgroundImage: `url(${win.sprite})`,
+                                    backgroundSize: '100% 100%',
+                                    backgroundColor: 'transparent',
+                                    border: 'none',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+                                }}
+                                onMouseEnter={e => (e.currentTarget.style.transform = 'scale(1.15) translateY(-5px)')}
+                                onMouseLeave={e => (e.currentTarget.style.transform = 'scale(1) translateY(0)')}
+                            />
+                        ))}
                     </div>
                 </>
             )}
 
             {/* --- МОДАЛЬНЫЕ ОКНА --- */}
             {activeWindow && (
-              <div className="absolute inset-0 z-[100] pointer-events-none bg-black/60 backdrop-blur-sm">
-                <div className="absolute top-[540px] left-[960px] -translate-x-1/2 -translate-y-1/2 hud-interactive">
-                  {activeWindow === 'SANCTUARY' && (
-                      <BaseWindow title="ОБИТЕЛЬ ДРЕВНИХ" isOpen={true} onClose={() => setActiveWindow(null)} width="800px">
-                          <AncientsSanctuaryWindow />
-                      </BaseWindow>
-                  )}
-                  {activeWindow === 'FRIENDS' && (
-                      <BaseWindow title="ДРУЗЬЯ" isOpen={true} onClose={() => setActiveWindow(null)} width="800px">
-                          <FriendsWindow onClose={() => setActiveWindow(null)} />
-                      </BaseWindow>
-                  )}
-                  {activeWindow === 'MAIL' && (
-                      <BaseWindow title="ПОЧТА" isOpen={true} onClose={() => setActiveWindow(null)} width="900px">
-                          <MailWindow onClose={() => setActiveWindow(null)} />
-                      </BaseWindow>
-                  )}
-                  {activeWindow === 'SETTINGS' && (
-                      <BaseWindow title="НАСТРОЙКИ" isOpen={true} onClose={() => setActiveWindow(null)} width="650px">
-                          <SettingsWindow 
-                            onClose={() => setActiveWindow(null)} 
-                            onOpenAdmin={() => {
-                                setActiveWindow(null);
-                                setShowAdmin(true);
-                            }}
-                          />
-                      </BaseWindow>
-                  )}
-                  {activeWindow === 'GIFT' && (
-                      <BaseWindow title="ЕЖЕДНЕВНЫЙ ПОДАРОК" isOpen={true} onClose={() => setActiveWindow(null)} width="600px">
-                          <DailyGiftWindow onClose={() => setActiveWindow(null)} />
-                      </BaseWindow>
-                  )}
-                  {activeWindow === 'RANKING' && (
-                      <BaseWindow title="МИРОВОЙ РЕЙТИНГ" isOpen={true} onClose={() => setActiveWindow(null)} width="900px">
-                          <RankingWindow />
-                      </BaseWindow>
-                  )}
-                  {activeWindow === 'CLAN' && (
-                      <BaseWindow title="ИНФОРМАЦИЯ О КЛАНЕ" isOpen={true} onClose={() => setActiveWindow(null)} width="1000px">
-                          <ClanWindow />
-                      </BaseWindow>
-                  )}
-                  {activeWindow === 'RANKS_LIST' && (
-                      <BaseWindow title="ПУТЬ МАСТЕРА" isOpen={true} onClose={() => setActiveWindow(null)} width="850px">
-                          <RanksListWindow />
-                      </BaseWindow>
-                  )}
-                  {activeWindow === 'INVENTORY' && (
-                      <BaseWindow title="ИНВЕНТАРЬ" isOpen={true} onClose={() => setActiveWindow(null)} width="1100px">
-                          <div style={{ padding: '30px', display: 'flex', justifyContent: 'center' }}>
-                            <InventoryPanel 
-                                onItemClick={() => {}}
-                            />
-                          </div>
-                      </BaseWindow>
-                  )}
+                <div className="absolute inset-0 z-[100] pointer-events-none bg-black/60 backdrop-blur-sm">
+                    <div className="absolute top-[540px] left-[960px] -translate-x-1/2 -translate-y-1/2 hud-interactive">
+                        {activeWindow === 'SANCTUARY' && (
+                            <BaseWindow title="ОБИТЕЛЬ ДРЕВНИХ" isOpen={true} onClose={() => setActiveWindow(null)} width="800px">
+                                <AncientsSanctuaryWindow />
+                            </BaseWindow>
+                        )}
+                        {activeWindow === 'FRIENDS' && (
+                            <BaseWindow title="ДРУЗЬЯ" isOpen={true} onClose={() => setActiveWindow(null)} width="800px">
+                                <FriendsWindow onClose={() => setActiveWindow(null)} />
+                            </BaseWindow>
+                        )}
+                        {activeWindow === 'MAIL' && (
+                            <BaseWindow title="ПОЧТА" isOpen={true} onClose={() => setActiveWindow(null)} width="900px">
+                                <MailWindow onClose={() => setActiveWindow(null)} />
+                            </BaseWindow>
+                        )}
+                        {activeWindow === 'SETTINGS' && (
+                            <BaseWindow title="НАСТРОЙКИ" isOpen={true} onClose={() => setActiveWindow(null)} width="650px">
+                                <SettingsWindow
+                                    onClose={() => setActiveWindow(null)}
+                                    onOpenAdmin={() => {
+                                        setActiveWindow(null);
+                                        setShowAdmin(true);
+                                    }}
+                                />
+                            </BaseWindow>
+                        )}
+                        {activeWindow === 'GIFT' && (
+                            <BaseWindow title="ЕЖЕДНЕВНЫЙ ПОДАРОК" isOpen={true} onClose={() => setActiveWindow(null)} width="600px">
+                                <DailyGiftWindow onClose={() => setActiveWindow(null)} />
+                            </BaseWindow>
+                        )}
+                        {activeWindow === 'RANKING' && (
+                            <BaseWindow title="МИРОВОЙ РЕЙТИНГ" isOpen={true} onClose={() => setActiveWindow(null)} width="900px">
+                                <RankingWindow />
+                            </BaseWindow>
+                        )}
+                        {activeWindow === 'CLAN' && (
+                            <BaseWindow title="ИНФОРМАЦИЯ О КЛАНЕ" isOpen={true} onClose={() => setActiveWindow(null)} width="1000px">
+                                <ClanWindow />
+                            </BaseWindow>
+                        )}
+                        {activeWindow === 'RANKS_LIST' && (
+                            <BaseWindow title="ПУТЬ МАСТЕРА" isOpen={true} onClose={() => setActiveWindow(null)} width="850px">
+                                <RanksListWindow />
+                            </BaseWindow>
+                        )}
+                        {activeWindow === 'INVENTORY' && (
+                            <BaseWindow title="ИНВЕНТАРЬ" isOpen={true} onClose={() => setActiveWindow(null)} width="1100px">
+                                <div style={{ padding: '30px', display: 'flex', justifyContent: 'center' }}>
+                                    <InventoryPanel
+                                        onItemClick={() => { }}
+                                    />
+                                </div>
+                            </BaseWindow>
+                        )}
+                        {activeWindow === 'PROFILE_CUSTOM' && (
+                            <BaseWindow title="НАСТРОЙКИ ПРОФИЛЯ" isOpen={true} onClose={() => setActiveWindow(null)} width="900px">
+                                <ProfileCustomizationWindow />
+                            </BaseWindow>
+                        )}
+                    </div>
                 </div>
-              </div>
             )}
             {/* --- ADMIN PANEL (GLOBAL OVERLAY) --- */}
             {showAdmin && <AdminPanel onClose={() => setShowAdmin(false)} />}
 
-            <UnderDevelopmentModal 
-                isOpen={devModal.isOpen} 
-                title={devModal.title} 
-                onClose={() => setDevModal({ ...devModal, isOpen: false })} 
+            <UnderDevelopmentModal
+                isOpen={devModal.isOpen}
+                title={devModal.title}
+                onClose={() => setDevModal({ ...devModal, isOpen: false })}
             />
         </div>
     );

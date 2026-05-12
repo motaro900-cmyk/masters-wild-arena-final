@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-export type ModalType = 'friends' | 'mail' | 'settings' | null;
+export type ModalType = 'friends' | 'mail' | 'settings' | 'profile_customization' | null;
 
 interface ModalStore {
     activeModal: ModalType;

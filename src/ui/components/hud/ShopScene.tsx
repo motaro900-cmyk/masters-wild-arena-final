@@ -55,7 +55,8 @@ export const ShopScene: React.FC = () => {
         shopInitialTab,
         goToMainMenu,
         watchAdForReward,
-        buyCrystalsPack
+        buyCrystalsPack,
+        isMobile
     } = useGameStore();
 
     const [activeMainTab, setActiveMainTab] = useState<MainTab>((shopInitialTab as MainTab) || 'ARSENAL');
@@ -170,18 +171,16 @@ export const ShopScene: React.FC = () => {
                 zIndex: 1000, display: 'flex', flexDirection: 'column', overflow: 'hidden'
             }}
         >
-            {/* TOP BAR: Title & Resources Area */}
             <div style={{
                 width: '100%', height: '120px', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                 padding: '0 80px', pointerEvents: 'none'
             }}>
-                {/* THE BIG TITLE */}
                 <h2 style={{
                     margin: 0,
                     fontFamily: "'Cinzel', serif",
                     color: '#f0c040',
                     fontSize: '44px',
-                    textShadow: '0 0 20px #000, 0 4px 15px #000, 0 0 40px rgba(240,192,64,0.3)',
+                    textShadow: isMobile ? '0 2px 4px #000' : '0 0 20px #000, 0 4px 15px #000, 0 0 40px rgba(240,192,64,0.3)',
                     letterSpacing: '4px',
                     whiteSpace: 'nowrap',
                     textTransform: 'uppercase',
@@ -191,7 +190,6 @@ export const ShopScene: React.FC = () => {
                     {getSectionTitle(activeMainTab)}
                 </h2>
 
-                {/* SHOP CURRENCY (Full Trio: Energy, Gold, Gems) */}
                 <div style={{ display: 'flex', gap: '10px', pointerEvents: 'auto' }}>
                     <ResourceBadge
                         value={`${energy}/${maxEnergy}`}
@@ -213,10 +211,9 @@ export const ShopScene: React.FC = () => {
 
             <div style={{ display: 'flex', flex: 1, padding: '20px 80px 60px 80px', gap: '50px' }}>
 
-                {/* SIDEBAR NAVIGATION */}
                 <div style={{
                     width: '380px', height: '800px',
-                    background: 'rgba(0,0,0,0.6)',
+                    background: 'rgba(0,0,0,0.8)',
                     borderRadius: '12px',
                     border: '2px solid rgba(240, 192, 64, 0.2)',
                     padding: '30px', display: 'flex', flexDirection: 'column',
@@ -249,7 +246,6 @@ export const ShopScene: React.FC = () => {
                 </div>
 
                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '30px' }}>
-                    {/* SECTION HEADER & SUBTABS (v4.0 - Clean & Stable) */}
                     <div style={{
                         position: 'relative',
                         height: '60px',
@@ -258,14 +254,13 @@ export const ShopScene: React.FC = () => {
                         display: 'flex',
                         alignItems: 'center'
                     }}>
-                        {/* SUBTABS - LEFT ALIGNED */}
                         <div style={{
                             display: 'flex',
                             gap: '5px',
                             justifyContent: 'flex-start',
                             flex: 1,
                             background: 'rgba(0, 0, 0, 0.4)',
-                            backdropFilter: 'blur(8px)',
+                            backdropFilter: !isMobile ? 'blur(8px)' : 'none',
                             padding: '5px 15px',
                             borderRadius: '12px 12px 0 0',
                             border: '1px solid rgba(240, 192, 64, 0.15)',
@@ -277,12 +272,12 @@ export const ShopScene: React.FC = () => {
                                     active={activeSubTab === tab.id}
                                     onClick={() => setActiveSubTab(tab.id as SubTab)}
                                     label={tab.label}
+                                    isMobile={isMobile}
                                 />
                             ))}
                         </div>
                     </div>
 
-                    {/* ITEMS GRID WITH CUSTOM SCROLLBAR */}
                     <div
                         className="custom-scrollbar"
                         style={{
@@ -293,7 +288,7 @@ export const ShopScene: React.FC = () => {
                             gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
                             gap: '30px',
                             alignContent: 'start',
-                            maxHeight: '750px' // Hard limit to ensure scrollbar appears
+                            maxHeight: '750px'
                         }}
                     >
                         <AnimatePresence mode="popLayout">
@@ -310,6 +305,7 @@ export const ShopScene: React.FC = () => {
                                     onSelect={() => handleItemClick(item)}
                                     isProcessing={isProcessing}
                                     glowColor={getRarityColor(item.rarity)}
+                                    isMobile={isMobile}
                                 />
                             ))}
                         </AnimatePresence>
@@ -317,7 +313,6 @@ export const ShopScene: React.FC = () => {
                 </div>
             </div>
 
-            {/* CONFIRMATION MODAL (v1.0) */}
             <AnimatePresence>
                 {showConfirm && selectedItem && (
                     <motion.div
@@ -325,23 +320,26 @@ export const ShopScene: React.FC = () => {
                         style={{
                             position: 'fixed', inset: 0, zIndex: 3000,
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(10px)'
+                            background: 'rgba(0,0,0,0.85)', backdropFilter: !isMobile ? 'blur(10px)' : 'none'
                         }}
                         onClick={() => setShowConfirm(false)}
                     >
                         <motion.div
-                            initial={{ scale: 0.8, y: 50 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.8, y: 50 }}
+                            initial={isMobile ? { opacity: 0, y: 0 } : { scale: 0.8, y: 50 }} animate={{ scale: 1, y: 0, opacity: 1 }} exit={{ scale: 0.8, y: 50, opacity: 0 }}
                             onClick={(e) => e.stopPropagation()}
                             style={{
-                                width: '900px', height: '600px',
+                                width: isMobile ? '95vw' : '900px', 
+                                height: isMobile ? '80vh' : '600px',
                                 background: 'rgba(20,20,25,0.95)',
                                 borderRadius: '24px',
                                 border: `2px solid ${getRarityColor(selectedItem.rarity)}88`,
-                                boxShadow: `0 0 50px ${getRarityColor(selectedItem.rarity)}33, inset 0 0 30px rgba(0,0,0,0.8)`,
-                                display: 'flex', overflow: 'hidden', position: 'relative'
+                                boxShadow: isMobile ? 'none' : `0 0 50px ${getRarityColor(selectedItem.rarity)}33, inset 0 0 30px rgba(0,0,0,0.8)`,
+                                display: 'flex', 
+                                flexDirection: isMobile ? 'column' : 'row',
+                                overflow: 'hidden', 
+                                position: 'relative'
                             }}
                         >
-                            {/* LEFT SIDE: PREVIEW */}
                             <div style={{
                                 flex: 1, background: `radial-gradient(circle at center, ${getRarityColor(selectedItem.rarity)}22 0%, transparent 70%)`,
                                 display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative'
@@ -558,10 +556,11 @@ interface ShopItemCardProps {
     onSelect: () => void;
     isProcessing: boolean;
     glowColor: string;
+    isMobile: boolean;
 }
 
 const ShopItemCard = React.forwardRef((props: ShopItemCardProps, ref: React.ForwardedRef<HTMLDivElement>) => {
-    const { item, inventory, equippedWeaponId, equippedHelmId, equippedArmorId, equippedShieldId, onBuy, onSelect, isProcessing, glowColor } = props;
+    const { item, inventory, equippedWeaponId, equippedHelmId, equippedArmorId, equippedShieldId, onBuy, onSelect, isProcessing, glowColor, isMobile } = props;
     const isEquipped =
         (item.subTab === 'WEAPONS' && String(item.id) === String(equippedWeaponId)) ||
         (item.subTab === 'HELMETS' && String(item.id) === String(equippedHelmId)) ||
@@ -574,7 +573,6 @@ const ShopItemCard = React.forwardRef((props: ShopItemCardProps, ref: React.Forw
             return `+${(item.amount || 0).toLocaleString()} ${icon}`;
         }
         if (item.mainTab === 'ALCHEMY') {
-            // Short version for the badge
             if (item.id === 'p1') return '+500 HP';
             if (item.id === 'p2') return '+10% АТК';
             if (item.id === 'p3') return '+15% ЗАЩ';
@@ -596,16 +594,15 @@ const ShopItemCard = React.forwardRef((props: ShopItemCardProps, ref: React.Forw
         <motion.div
             ref={ref}
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            whileHover={{ y: -10, transition: { type: 'spring', stiffness: 400, damping: 20 } }}
+            whileHover={!isMobile ? { y: -10, transition: { type: 'spring', stiffness: 400, damping: 20 } } : {}}
             onClick={onSelect}
             style={{
                 width: '220px', height: '340px',
-                backgroundImage: `url("${AssetsMap.BACKGROUNDS.SHOP_ITEM_FRAME}")`, backgroundSize: '100% 100%',
                 padding: '15px', display: 'flex', flexDirection: 'column', alignItems: 'center',
                 position: 'relative',
                 background: `radial-gradient(circle at center, rgba(45, 45, 60, 0.8) 0%, rgba(10, 10, 15, 0.95) 100%)`,
                 border: `1px solid ${glowColor}33`, borderRadius: '12px',
-                boxShadow: `0 8px 20px rgba(0,0,0,0.6), 0 0 10px ${glowColor}11`,
+                boxShadow: isMobile ? 'none' : `0 8px 20px rgba(0,0,0,0.6), 0 0 10px ${glowColor}11`,
                 cursor: 'pointer', overflow: 'hidden'
             }}
         >
@@ -615,7 +612,7 @@ const ShopItemCard = React.forwardRef((props: ShopItemCardProps, ref: React.Forw
                     background: 'rgba(0,0,0,0.85)', border: `1px solid ${glowColor}aa`,
                     padding: '4px 10px', borderRadius: '4px',
                     color: '#fff', fontSize: '10px', fontWeight: 900, fontFamily: "'Cinzel', serif",
-                    boxShadow: `0 0 12px ${glowColor}66`,
+                    boxShadow: isMobile ? 'none' : `0 0 12px ${glowColor}66`,
                     display: 'flex', alignItems: 'center', gap: '5px',
                     textShadow: '0 0 5px rgba(0,0,0,0.5)',
                     maxWidth: '85px', textAlign: 'center'
@@ -623,75 +620,61 @@ const ShopItemCard = React.forwardRef((props: ShopItemCardProps, ref: React.Forw
                     {valueDisplay}
                 </div>
             )}
-            <div style={{ position: 'absolute', top: '-50%', left: '-50%', width: '200%', height: '200%', background: `radial-gradient(circle, ${glowColor}11 0%, transparent 50%)`, pointerEvents: 'none' }} />
-            <div style={{ position: 'absolute', top: '10px', right: '10px', display: 'flex', alignItems: 'center', gap: '4px', padding: '3px 8px', background: `linear-gradient(135deg, ${glowColor}dd, ${glowColor}88)`, borderRadius: '3px', boxShadow: `0 0 8px ${glowColor}66`, border: '1px solid rgba(255,255,255,0.3)', zIndex: 10 }}>
+            {!isMobile && <div style={{ position: 'absolute', top: '-50%', left: '-50%', width: '200%', height: '200%', background: `radial-gradient(circle, ${glowColor}11 0%, transparent 50%)`, pointerEvents: 'none' }} />}
+            <div style={{ position: 'absolute', top: '10px', right: '10px', display: 'flex', alignItems: 'center', gap: '4px', padding: '3px 8px', background: isMobile ? glowColor : `linear-gradient(135deg, ${glowColor}dd, ${glowColor}88)`, borderRadius: '3px', boxShadow: isMobile ? 'none' : `0 0 8px ${glowColor}66`, border: '1px solid rgba(255,255,255,0.3)', zIndex: 10 }}>
                 <div style={{ width: '4px', height: '4px', backgroundColor: '#fff', transform: 'rotate(45deg)', boxShadow: '0 0 5px #fff' }} />
                 <span style={{ fontSize: '9px', color: '#fff', fontFamily: "'Cinzel', serif", fontWeight: 900, letterSpacing: '1px', textTransform: 'uppercase' }}>{item.rarity}</span>
             </div>
-            <div style={{ width: '150px', height: '150px', marginTop: '10px', backgroundImage: `url("${AssetsMap.BACKGROUNDS.SHOP_GRID_FRAME}")`, backgroundSize: '100% 100%', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', background: `radial-gradient(circle, ${glowColor}55 0%, rgba(10,10,15,0.9) 100%)`, boxShadow: `inset 0 0 20px ${glowColor}33, 0 0 15px rgba(0,0,0,0.5)`, border: `1px solid ${glowColor}44`, borderRadius: '8px', overflow: 'hidden' }}>
-                <motion.div animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.6, 0.3] }} transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }} style={{ position: 'absolute', width: '120px', height: '120px', background: `radial-gradient(circle, ${glowColor}66 0%, transparent 70%)`, borderRadius: '50%', filter: 'blur(10px)' }} />
+            <div style={{ width: '150px', height: '150px', marginTop: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', background: `radial-gradient(circle, ${glowColor}55 0%, rgba(10,10,15,0.9) 100%)`, boxShadow: isMobile ? 'none' : `inset 0 0 20px ${glowColor}33, 0 0 15px rgba(0,0,0,0.5)`, border: `1px solid ${glowColor}44`, borderRadius: '8px', overflow: 'hidden' }}>
+                {!isMobile && <motion.div animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.6, 0.3] }} transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }} style={{ position: 'absolute', width: '120px', height: '120px', background: `radial-gradient(circle, ${glowColor}66 0%, transparent 70%)`, borderRadius: '50%', filter: 'blur(10px)' }} />}
                 {item.spriteClass ? (
                     <div className={item.spriteClass} style={{ 
                         width: '135px', height: '135px', 
                         zIndex: 2, 
-                        filter: `contrast(1.2) brightness(1.15) saturate(1.2) drop-shadow(0 0 5px ${glowColor}aa)` 
+                        filter: isMobile ? 'none' : `contrast(1.2) brightness(1.15) saturate(1.2) drop-shadow(0 0 5px ${glowColor}aa)` 
                     }} />
                 ) : (
-                    <img src={item.image} style={{ width: '135px', height: '135px', objectFit: 'contain', zIndex: 2, filter: `contrast(1.2) brightness(1.15) saturate(1.2) drop-shadow(0 0 5px ${glowColor}aa) drop-shadow(0 4px 8px rgba(0,0,0,0.8))` }} alt="" />
+                    <img src={item.image} style={{ width: '135px', height: '135px', objectFit: 'contain', zIndex: 2, filter: isMobile ? 'none' : `contrast(1.2) brightness(1.15) saturate(1.2) drop-shadow(0 0 5px ${glowColor}aa) drop-shadow(0 4px 8px rgba(0,0,0,0.8))` }} alt="" />
                 )}
             </div>
             <h3 style={{ fontFamily: "'Cinzel', serif", color: '#f0f0f0', fontSize: '15px', textAlign: 'center', margin: '15px 0 5px 0', textTransform: 'uppercase', letterSpacing: '1px', height: '40px', display: 'flex', alignItems: 'center' }}>{item.name}</h3>
             <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: '20px', marginTop: 'auto', width: '100%', paddingBottom: '5px' }}>
                 {item.priceGold !== undefined && (
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <span style={{ fontSize: '20px', fontWeight: 900, color: '#f0c040', fontFamily: "'Cinzel', serif", textShadow: '0 0 10px rgba(240,192,64,0.3)' }}>{item.priceGold}</span>
+                        <span style={{ fontSize: '20px', fontWeight: 900, color: '#f0c040', fontFamily: "'Cinzel', serif" }}>{item.priceGold}</span>
                         <img src={AssetsMap.UI.ICON_GOLD_FULL} style={{ width: 22 }} alt="" />
                     </div>
                 )}
                 {item.priceGem !== undefined && (
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <span style={{ fontSize: '20px', fontWeight: 900, color: '#00ffff', fontFamily: "'Cinzel', serif", textShadow: '0 0 10px rgba(0,255,255,0.3)' }}>{item.priceGem}</span>
+                        <span style={{ fontSize: '20px', fontWeight: 900, color: '#00ffff', fontFamily: "'Cinzel', serif" }}>{item.priceGem}</span>
                         <img src={AssetsMap.UI.ICON_ALMAZ_FULL} style={{ width: 22 }} alt="" />
-                    </div>
-                )}
-                {item.priceStars !== undefined && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <span style={{ fontSize: '20px', fontWeight: 900, color: '#5de2ff', fontFamily: "'Cinzel', serif", textShadow: '0 0 10px rgba(93,226,255,0.3)' }}>{item.priceStars}</span>
-                        <span style={{ fontSize: '18px' }}>⭐</span>
-                    </div>
-                )}
-                {item.isAd && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                         <span style={{ fontSize: '20px' }}>📺</span>
-                         <span style={{ fontSize: '16px', fontWeight: 900, color: '#4ade80', fontFamily: "'Cinzel', serif" }}>FREE</span>
                     </div>
                 )}
             </div>
             <motion.button
                 onClick={(e) => { e.stopPropagation(); onBuy(); }}
-                whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.95 }}
-                style={{ marginTop: '10px', width: '100%', height: '38px', background: 'linear-gradient(180deg, #f0c040 0%, #a67c00 100%)', border: '1px solid #ffdf00', borderRadius: '4px', cursor: 'pointer', fontFamily: "'Cinzel', serif", fontWeight: 900, color: '#1a0f00', fontSize: '13px', boxShadow: '0 4px 8px rgba(0,0,0,0.4)', textTransform: 'uppercase', position: 'relative', overflow: 'hidden' }}
+                whileHover={!isMobile ? { scale: 1.02 } : {}} whileTap={{ scale: 0.95 }}
+                style={{ marginTop: '10px', width: '100%', height: '38px', background: 'linear-gradient(180deg, #f0c040 0%, #a67c00 100%)', border: '1px solid #ffdf00', borderRadius: '4px', cursor: 'pointer', fontFamily: "'Cinzel', serif", fontWeight: 900, color: '#1a0f00', fontSize: '13px', textTransform: 'uppercase', position: 'relative', overflow: 'hidden' }}
             >
-                <motion.div animate={{ left: ['-100%', '200%'] }} transition={{ duration: 2, repeat: Infinity, ease: 'linear', repeatDelay: 1 }} style={{ position: 'absolute', top: 0, width: '30px', height: '100%', background: 'linear-gradient(to right, transparent, rgba(255,255,255,0.4), transparent)', transform: 'skewX(-25deg)' }} />
+                {!isMobile && <motion.div animate={{ left: ['-100%', '200%'] }} transition={{ duration: 2, repeat: Infinity, ease: 'linear', repeatDelay: 1 }} style={{ position: 'absolute', top: 0, width: '30px', height: '100%', background: 'linear-gradient(to right, transparent, rgba(255,255,255,0.4), transparent)', transform: 'skewX(-25deg)' }} />}
                 {isProcessing ? '...' : (inventory.some(i => String(i.id) === String(item.id)) ? (isEquipped ? 'OK' : 'ЭКИПИРОВАТЬ') : (item.isAd ? 'СМОТРЕТЬ' : 'КУПИТЬ'))}
             </motion.button>
         </motion.div>
     );
 });
 
-const SubTabBtn: React.FC<{ active: boolean, onClick: () => void, label: string }> = ({ active, onClick, label }) => (
+const SubTabBtn: React.FC<{ active: boolean, onClick: () => void, label: string, isMobile: boolean }> = ({ active, onClick, label, isMobile }) => (
     <div style={{ position: 'relative', width: '180px', height: '45px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <motion.button
             onClick={onClick}
-            whileHover={{ y: -2 }}
+            whileHover={!isMobile ? { y: -2 } : {}}
             style={{
                 width: '100%', height: '100%', background: 'transparent', border: 'none', cursor: 'pointer',
                 position: 'relative', zIndex: 10,
                 color: active ? '#ffd700' : '#e0d0b0',
                 fontFamily: "'Cinzel', serif", fontWeight: 900, fontSize: '15px', textTransform: 'uppercase',
-                textShadow: active
-                    ? '0px 1px 2px #000, 0px -1px 2px #000, 1px 0px 2px #000, -1px 0px 2px #000, 0 0 15px rgba(240,192,64,0.8)'
-                    : '0px 1px 2px #000, 0px -1px 2px #000, 1px 0px 2px #000, -1px 0px 2px #000',
+                textShadow: '0px 1px 2px #000, 0px -1px 2px #000, 1px 0px 2px #000, -1px 0px 2px #000',
                 letterSpacing: '1px',
                 transition: 'all 0.3s'
             }}
@@ -705,7 +688,7 @@ const SubTabBtn: React.FC<{ active: boolean, onClick: () => void, label: string 
                     position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
                     backgroundImage: `url("${AssetsMap.BACKGROUNDS.SHOP_BANNER_RED}")`,
                     backgroundSize: 'contain', backgroundPosition: 'center', backgroundRepeat: 'no-repeat',
-                    zIndex: 5, filter: 'brightness(1.3) drop-shadow(0 0 20px rgba(255,0,0,0.5))',
+                    zIndex: 5, filter: !isMobile ? 'brightness(1.3) drop-shadow(0 0 20px rgba(255,0,0,0.5))' : 'brightness(1.1)',
                 }}
             />
         )}

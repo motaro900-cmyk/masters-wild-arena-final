@@ -1,0 +1,60 @@
+/* Стили для модульной сборки профиля из атласа Profilebar.png */
+
+.profile-atlas-base {
+    background-image: url('/assets/images/ui/Profilebar.png');
+    background-repeat: no-repeat;
+    background-size: 1488px 960px; /* Размер оригинального атласа */
+    display: block;
+}
+
+/* 1. БАЗОВЫЕ ПАНЕЛИ (ОСНОВА) */
+.hub-panel-brown {
+    width: 465px; /* Увеличил ширину согласно твоей вырезке */
+    height: 98px;  /* Уменьшил высоту, чтобы не лезла красная панель */
+    background-position: -12px -522px;
+}
+
+/* 2. РАМКИ АВАТАРА */
+.hub-frame-gold {
+    width: 145px;
+    height: 145px;
+    background-position: -12px -250px;
+}
+
+/* 3. ШКАЛЫ ОПЫТА */
+.hub-xp-container {
+    width: 295px;
+    height: 25px;
+    background-position: -385px -235px;
+}
+
+.hub-xp-fill-blue {
+    height: 12px;
+    background-position: -385px -578px;
+}
+
+/* 4. VIP БЕЙДЖИ */
+.hub-vip-5 {
+    width: 50px;
+    height: 65px;
+    background-position: -508px -108px;
+}
+
+/* 5. ИКОНКИ */
+.hub-icon-settings {
+    width: 60px;
+    height: 60px;
+    background-position: -750px -532px;
+}
+
+.hub-icon-crown {
+    width: 55px;
+    height: 45px;
+    background-position: -788px -110px;
+}
+
+.hub-icon-level-badge {
+    width: 45px;
+    height: 45px;
+    background-position: -798px -532px;
+}

@@ -230,12 +230,21 @@ export const UnderDevelopmentModal: React.FC<{
     onClose: () => void;
     title?: string;
 }> = ({ isOpen, onClose, title = "РАЗДЕЛ В РАЗРАБОТКЕ" }) => {
+    const isMobile = useGameStore(state => state.isMobile);
     if (typeof document === 'undefined') return null;
 
     return createPortal(
         <AnimatePresence>
             {isOpen && (
-                <div style={{ position: 'fixed', inset: 0, zIndex: 10000000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ 
+                    position: 'fixed', 
+                    inset: 0, 
+                    zIndex: 10000000, 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center',
+                    padding: isMobile ? '20px' : '0' 
+                }}>
                     {/* BACKDROP */}
                     <motion.div 
                         initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
@@ -249,34 +258,35 @@ export const UnderDevelopmentModal: React.FC<{
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.9, y: 20 }}
                         style={{
-                            width: '580px',
+                            width: isMobile ? '100%' : '580px',
+                            maxWidth: '580px',
                             background: 'linear-gradient(135deg, #1a1512 0%, #0c0a09 100%)',
                             border: '2px solid #c48b3b',
-                            borderRadius: '32px',
-                            padding: '60px 40px',
+                            borderRadius: isMobile ? '24px' : '32px',
+                            padding: isMobile ? '40px 24px' : '60px 40px',
                             position: 'relative',
                             boxShadow: '0 30px 100px rgba(0,0,0,1), 0 0 50px rgba(196,139,59,0.2)',
                             display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center'
                         }}
                     >
                         {/* DECORATIVE CORNERS */}
-                        <div style={{ position: 'absolute', top: '-10px', left: '-10px', width: '40px', height: '40px', borderTop: '4px solid #f0c040', borderLeft: '4px solid #f0c040', borderRadius: '10px 0 0 0' }} />
-                        <div style={{ position: 'absolute', top: '-10px', right: '-10px', width: '40px', height: '40px', borderTop: '4px solid #f0c040', borderRight: '4px solid #f0c040', borderRadius: '0 10px 0 0' }} />
-                        <div style={{ position: 'absolute', bottom: '-10px', left: '-10px', width: '40px', height: '40px', borderBottom: '4px solid #f0c040', borderLeft: '4px solid #f0c040', borderRadius: '0 0 0 10px' }} />
-                        <div style={{ position: 'absolute', bottom: '-10px', right: '-10px', width: '40px', height: '40px', borderBottom: '4px solid #f0c040', borderRight: '4px solid #f0c040', borderRadius: '0 0 10px 0' }} />
+                        <div style={{ position: 'absolute', top: '-10px', left: '-10px', width: '30px', height: '30px', borderTop: '4px solid #f0c040', borderLeft: '4px solid #f0c040', borderRadius: '10px 0 0 0' }} />
+                        <div style={{ position: 'absolute', top: '-10px', right: '-10px', width: '30px', height: '30px', borderTop: '4px solid #f0c040', borderRight: '4px solid #f0c040', borderRadius: '0 10px 0 0' }} />
+                        <div style={{ position: 'absolute', bottom: '-10px', left: '-10px', width: '30px', height: '30px', borderBottom: '4px solid #f0c040', borderLeft: '4px solid #f0c040', borderRadius: '0 0 0 10px' }} />
+                        <div style={{ position: 'absolute', bottom: '-10px', right: '-10px', width: '30px', height: '30px', borderBottom: '4px solid #f0c040', borderRight: '4px solid #f0c040', borderRadius: '0 0 10px 0' }} />
 
                         {/* ICON */}
                         <motion.div 
                             animate={{ rotate: [0, 10, -10, 0] }}
                             transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                            style={{ fontSize: '80px', marginBottom: '30px', filter: 'drop-shadow(0 0 20px #f0c040)' }}
+                            style={{ fontSize: isMobile ? '60px' : '80px', marginBottom: isMobile ? '20px' : '30px', filter: 'drop-shadow(0 0 20px #f0c040)' }}
                         >
                             🛠️
                         </motion.div>
 
                         {/* HEADER */}
                         <h2 style={{ 
-                            color: '#f0c040', fontSize: '32px', margin: '0 0 20px 0', 
+                            color: '#f0c040', fontSize: isMobile ? '24px' : '32px', margin: '0 0 15px 0', 
                             fontFamily: "'Cinzel', serif", letterSpacing: '4px', textShadow: '0 4px 10px rgba(0,0,0,0.5)' 
                         }}>
                             {title}
@@ -284,8 +294,8 @@ export const UnderDevelopmentModal: React.FC<{
 
                         {/* TEXT */}
                         <p style={{ 
-                            color: 'rgba(255,255,255,0.7)', fontSize: '18px', lineHeight: '1.7', 
-                            margin: '0 0 40px 0', fontWeight: 600 
+                            color: 'rgba(255,255,255,0.7)', fontSize: isMobile ? '15px' : '18px', lineHeight: '1.6', 
+                            margin: '0 0 35px 0', fontWeight: 600 
                         }}>
                             Мастер, путь в этот раздел еще куётся нашими кузнецами. <br/>
                             <span style={{ color: '#c8a870' }}>Следите за обновлениями Закрытого Бета-Теста!</span>
@@ -297,12 +307,12 @@ export const UnderDevelopmentModal: React.FC<{
                             whileTap={{ scale: 0.95 }}
                             onClick={onClose}
                             style={{
-                                padding: '15px 50px',
+                                padding: isMobile ? '12px 40px' : '15px 50px',
                                 background: 'linear-gradient(180deg, #c48b3b 0%, #8a5a2a 100%)',
                                 border: '2px solid #f0c040',
                                 borderRadius: '15px',
                                 color: '#fff',
-                                fontSize: '16px',
+                                fontSize: isMobile ? '14px' : '16px',
                                 fontWeight: 900,
                                 cursor: 'pointer',
                                 letterSpacing: '2px',

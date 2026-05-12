@@ -49,7 +49,7 @@ const SHOP_ITEMS: ShopItem[] = [
     { id: 'c_gold_1', name: 'СУМКА ЗОЛОТА', description: 'Мгновенно дает 5,000 золота.', price: 300, icon: '💰', rarity: 'COMMON' },
 ];
 
-const EMBLEMS = ['🦁', '🐻', '🦅', '🐺', '🦊', '🐯', '🐍', '🐲'];
+const EMBLEMS = ['lion', 'bear', 'eagle', 'wolf', 'fox', 'tiger', 'dragon', 'owl'];
 
 const CurrencyIcon: React.FC<{ type: 'GOLD' | 'ALMAZ', size?: number }> = ({ type, size = 20 }) => (
     <img 
@@ -327,19 +327,19 @@ export const ClanWindow: React.FC = () => {
 
                         <div style={{ display: 'flex', gap: '40px' }}>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                                <div style={{ width: '150px', height: '150px', background: 'rgba(0,0,0,0.3)', borderRadius: '20px', border: `2px solid ${colors.accent}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '80px' }}>
-                                    {selectedEmblem}
+                                <div style={{ width: '150px', height: '150px', background: 'rgba(0,0,0,0.3)', borderRadius: '20px', border: `2px solid ${colors.accent}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                    <div className={`sprite-clan clan-${selectedEmblem}`} style={{ transform: 'scale(2)', filter: 'drop-shadow(0 0 20px rgba(0,0,0,0.5))' }} />
                                 </div>
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' }}>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px' }}>
                                     {EMBLEMS.map(e => (
                                         <button
                                             key={e}
                                             onClick={() => setSelectedEmblem(e)}
                                             style={{
-                                                width: '32px', height: '32px', padding: 0, background: selectedEmblem === e ? colors.accent : 'rgba(255,255,255,0.05)', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '20px'
+                                                width: '40px', height: '40px', padding: 0, background: selectedEmblem === e ? colors.accent : 'rgba(0,0,0,0.3)', border: `1px solid ${selectedEmblem === e ? colors.accent : 'rgba(255,255,255,0.1)'}`, borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden'
                                             }}
                                         >
-                                            {e}
+                                            <div className={`sprite-clan clan-${e}`} style={{ transform: 'scale(0.5)' }} />
                                         </button>
                                     ))}
                                 </div>
@@ -425,8 +425,8 @@ export const ClanWindow: React.FC = () => {
                             position: 'relative',
                             overflow: 'hidden'
                         }}>
-                            <div style={{ width: '100px', height: '120px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '50px', background: 'rgba(0,0,0,0.3)', borderRadius: '15px', border: `2px solid ${colors.accent}` }}>
-                                {clanData?.emblem || '🦁'}
+                            <div style={{ width: '120px', height: '120px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.3)', borderRadius: '15px', border: `2px solid ${colors.accent}` }}>
+                                <div className={`sprite-clan clan-${clanData?.emblem || selectedEmblem}`} style={{ transform: 'scale(1.5)' }} />
                             </div>
 
                             <div style={{ flex: 1 }}>
@@ -606,9 +606,9 @@ export const ClanWindow: React.FC = () => {
                             <motion.div 
                                 animate={{ rotate: [0, 10, -10, 0], scale: [1, 1.1, 1] }} 
                                 transition={{ repeat: Infinity, duration: 4 }}
-                                style={{ fontSize: '120px', filter: 'drop-shadow(0 0 30px rgba(240,192,64,0.5))' }}
+                                style={{ filter: 'drop-shadow(0 0 30px rgba(240,192,64,0.5))', display: 'flex', justifyContent: 'center' }}
                             >
-                                {selectedEmblem}
+                                <div className={`sprite-clan clan-${selectedEmblem}`} style={{ transform: 'scale(3)' }} />
                             </motion.div>
                             
                             <div>
@@ -687,8 +687,8 @@ const ClanCard: React.FC<{ clan: ClanData, onJoin: () => void, colors: any, play
                 gap: '20px'
             }}
         >
-            <div style={{ width: '60px', height: '60px', background: 'rgba(0,0,0,0.2)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '32px', border: `1px solid ${colors.accent}44` }}>
-                {clan.emblem}
+            <div style={{ width: '80px', height: '80px', background: 'rgba(0,0,0,0.2)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: `1px solid ${colors.accent}44` }}>
+                <div className={`sprite-clan clan-${clan.emblem}`} style={{ transform: 'scale(1)' }} />
             </div>
             <div style={{ flex: 1 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -702,8 +702,8 @@ const ClanCard: React.FC<{ clan: ClanData, onJoin: () => void, colors: any, play
                         Онлайн: {clan.onlineCount}
                     </div>
                     <div style={{ fontSize: '11px', opacity: 0.5 }}>•</div>
-                    <div style={{ fontSize: '11px', color: playerTrophies >= clan.minTrophies ? colors.text : colors.danger, fontWeight: 700 }}>
-                        🏆 Мин: {clan.minTrophies}
+                    <div style={{ fontSize: '11px', color: playerTrophies >= clan.minTrophies ? colors.text : colors.danger, fontWeight: 700, display: 'flex', alignItems: 'center', gap: '5px' }}>
+                        <div className="sprite-trophy" style={{ width: '14px', height: '14px', backgroundSize: '300% 100%' }} /> Мин: {clan.minTrophies}
                     </div>
                 </div>
             </div>

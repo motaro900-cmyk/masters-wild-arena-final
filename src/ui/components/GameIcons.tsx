@@ -179,3 +179,34 @@ export const GemIcon: React.FC<IconProps> = (props) => <RPGIcon icon="gem-pendan
 
 /** 🗺️ Карта мира / Рейтинг */
 export const RankIcon: React.FC<IconProps> = (props) => <RPGIcon icon="podium" {...props} color={props.color ?? '#f0c040'} />;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PREMIUM SPRITE ICONS (Custom Art)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** 🎁 Подарок (Премиум) */
+export const PremiumGiftIcon: React.FC<IconProps> = ({ size = 48, style, className, onClick }) => (
+    <div 
+        className={`sprite-gift ${className || ''}`} 
+        style={{ width: size, height: size, backgroundSize: '300% 100%', cursor: onClick ? 'pointer' : 'default', ...style }} 
+        onClick={onClick}
+    />
+);
+
+/** 🏆 Кубок (Премиум) */
+export const PremiumTrophyIcon: React.FC<IconProps> = ({ size = 48, style, className, onClick }) => (
+    <div 
+        className={`sprite-trophy ${className || ''}`} 
+        style={{ width: size, height: size, backgroundSize: '300% 100%', cursor: onClick ? 'pointer' : 'default', ...style }} 
+        onClick={onClick}
+    />
+);
+
+/** 🦁 Герб Клана (Премиум) */
+export const ClanEmblemIcon: React.FC<IconProps & { emblem: string }> = ({ emblem, size = 64, style, className, onClick }) => (
+    <div 
+        className={`sprite-clan clan-${emblem} ${className || ''}`} 
+        style={{ width: size, height: size, cursor: onClick ? 'pointer' : 'default', ...style }} 
+        onClick={onClick}
+    />
+);

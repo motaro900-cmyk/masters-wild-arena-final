@@ -9,7 +9,20 @@ const rawAssetsMap = {
         SIDEBAR_LEFT: '/assets/images/ui/sidebar_left1_full_v2.webp',
         PANEL_PARCHMENT: '/assets/images/ui/btn_panel_mis12c.webp',
         PANEL_TASK: '/assets/images/ui/panel_task.webp',
-        PANEL_PROFILE: '/assets/images/ui/profile_panel_full.webp',
+        PANEL_PROFILE: '/assets/images/ui/panel_profile.png',
+        PROFILE_PANEL_BASE: '/assets/images/ui/profilepanel.png',
+        AVATAR_FRAME_NEW: '/assets/images/ui/avatar_frame.png',
+        VIP_PLAQUE: '/assets/images/ui/vip.png',
+        LVL_BADGE: '/assets/images/ui/lvl.png',
+        EXP_BAR_BG: '/assets/images/ui/exp.png',
+        ICON_SETTINGS_PROFILE: '/assets/images/ui/settingprofile.png',
+        ICON_CROWN: '/assets/images/ui/ICON_CROWN.png',
+        HUB_BASE: '/assets/images/ui/hub_panel_base.png',
+        HUB_FRAME: '/assets/images/ui/hub_avatar_frame.png',
+        HUB_XP_EMPTY: '/assets/images/ui/hub_xp_bar_empty.png',
+        HUB_XP_FILL: '/assets/images/ui/hub_xp_fill.png',
+        HUB_VIP_BADGE: '/assets/images/ui/hub_vip_badge.png',
+        HUB_ICON_EDIT: '/assets/images/ui/hub_icon_edit.png',
         PANEL_CHAT: '/assets/images/ui/chat_panel_full.webp',
         PANEL_QUEST: '/assets/images/ui/Zadanie.webp',
         PROFILE_PLAQUE: '/assets/images/ui/profile_plaque.webp',
@@ -45,14 +58,14 @@ const rawAssetsMap = {
         SHOP_ITEM_BG: '/assets/images/ui/btn_panel_mis12c.webp',
         SHOP_TITLE_BG: '/assets/images/ui/btn_panel_mis12c.webp',
         BEAST_CARD_BG: '/assets/images/ui/btn_panel_mis12c.webp',
-        
+
         // Новые иконки вкладок
         TAB_ARSENAL: '/assets/images/ui/tab_arsenal.webp',
         TAB_ALCHEMY: '/assets/images/ui/tab_alchemy.webp',
         TAB_BANK: '/assets/images/ui/tab_bank.webp',
         TAB_SKINS: '/assets/images/ui/tab_skins.webp',
         ICON_EXIT: '/assets/images/ui/Exit.webp',
-        
+
         // Иконки Банка (Золото)
         BANK_GOLD_SMALL: '/assets/images/shop/bank_gold_small.webp',
         BANK_GOLD_MEDIUM: '/assets/images/shop/bank_gold_medium.webp',
@@ -65,7 +78,7 @@ const rawAssetsMap = {
         SLOT_BG: '/assets/images/ui/slot_bg.webp',
         EQUIPMENT_PANEL: '/assets/images/ui/equipment_panel.webp',
         HERO_PEDESTAL: '/assets/images/ui/hero_pedestal.webp',
-        
+
         // Blueprint icons
         BLUEPRINT_HELMET: '/assets/blueprint_helmet.webp',
         BLUEPRINT_ARMOR: '/assets/blueprint_armor.webp',

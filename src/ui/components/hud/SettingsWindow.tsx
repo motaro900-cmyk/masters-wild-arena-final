@@ -161,10 +161,19 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onOpenAdmin }) =
                     <button onClick={() => window.open('https://vk.com/beasts_arena', '_blank')} style={{ padding: '12px', borderRadius: '10px', background: '#0077FF', border: 'none', color: '#fff', fontSize: '12px', fontWeight: 900, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
                         🌐 МЫ ВКОНТАКТЕ
                     </button>
-                    <button onClick={handleClearCache} style={{ padding: '12px', borderRadius: '10px', background: 'rgba(255,255,255,0.05)', border: `1px solid ${colors.danger}44`, color: colors.danger, fontSize: '12px', fontWeight: 900, cursor: 'pointer' }}>
-                        🗑️ ОЧИСТИТЬ КЭШ
+                    <button 
+                        onClick={() => {
+                            useGameStore.setState({ activeScreen: 'INTRO', showIntro: true });
+                            onClose();
+                        }} 
+                        style={{ padding: '12px', borderRadius: '10px', background: 'rgba(240,192,64,0.1)', border: `1px solid ${colors.accent}`, color: colors.accent, fontSize: '12px', fontWeight: 900, cursor: 'pointer' }}
+                    >
+                        🎬 ПОВТОРИТЬ ИНТРО
                     </button>
                 </div>
+                <button onClick={handleClearCache} style={{ width: '100%', padding: '12px', borderRadius: '10px', background: 'rgba(255,255,255,0.05)', border: `1px solid ${colors.danger}44`, color: colors.danger, fontSize: '12px', fontWeight: 900, cursor: 'pointer' }}>
+                    🗑️ ОЧИСТИТЬ КЭШ И СБРОСИТЬ ПРОГРЕСС
+                </button>
             </div>
 
             {/* ВЕРСИЯ КЛИЕНТА */}

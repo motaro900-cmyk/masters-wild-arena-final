@@ -35,7 +35,7 @@ export const BottomRightNav: React.FC = () => {
             {activeModal === 'friends' && (
                 <ModalWindow title="ДРУЗЬЯ" onClose={closeModal}>
                     <div className="p-8 text-center text-[#a08b70] font-bold text-lg">
-                        У вас пока нет добавленных друзей.<br/>
+                        У вас пока нет добавленных друзей.<br />
                         <span className="text-sm font-normal mt-2 block text-[#5e4125]">Приглашайте союзников для совместных рейдов!</span>
                     </div>
                 </ModalWindow>

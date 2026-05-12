@@ -97,3 +97,42 @@
 .avatar-pos-8 { background-position: 50% 100%; }
 .avatar-pos-9 { background-position: 100% 100%; }
 
+/* Clans Sheet (8 icons, grid 4x2) */
+.sprite-clan {
+    width: 64px;
+    height: 64px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    mix-blend-mode: screen; /* Удаляем черный фон */
+    filter: brightness(1.2);
+}
+
+.clan-lion { background-image: url('/assets/images/ui/clan_lion.png'); }
+.clan-bear { background-image: url('/assets/images/ui/clan_bear.png'); }
+.clan-eagle { background-image: url('/assets/images/ui/clan_eagle.png'); }
+.clan-wolf { background-image: url('/assets/images/ui/clan_wolf.png'); }
+
+/* Fallback for others from the old sheet (Fox, Tiger, Dragon, Owl) */
+.clan-fox, .clan-tiger, .clan-dragon, .clan-owl {
+    background-image: url('/assets/images/sheets/clans_sheet.png');
+    background-size: 400% 400%; /* Fix squashing */
+}
+.clan-fox { background-position: 0% 50%; }
+.clan-tiger { background-position: 33.33% 50%; }
+.clan-dragon { background-position: 66.66% 50%; }
+.clan-owl { background-position: 100% 50%; }
+
+/* Misc UI Icons */
+.sprite-gift {
+    background-image: url('/assets/images/ui/gift_premium.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    mix-blend-mode: screen;
+}
+.sprite-trophy {
+    background-image: url('/assets/images/ui/trophy_premium.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    mix-blend-mode: screen;
+}
+
