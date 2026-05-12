@@ -42,8 +42,17 @@ const AVATARS: CustomItem[] = AVATAR_FILES.map(item => ({
 
 const FRAMES: CustomItem[] = [
     { id: 'frame_base', name: 'Стандартная', rarity: 'common', image: AssetsMap.UI.AVATAR_FRAME_NEW, locked: false },
-    { id: 'frame_gold', name: 'Золотое Величие', rarity: 'legendary', image: AssetsMap.UI.HUB_FRAME, locked: true, unlockCondition: 'VIP 5+' },
-    { id: 'frame_ornate', name: 'Венец Победителя', rarity: 'epic', image: '/assets/images/ui/hero_frame_ornate.webp', locked: true, unlockCondition: 'Топ-100 сезона' },
+    { id: 'frame_ice', name: 'Ледяной Осколок', rarity: 'epic', image: '/assets/images/frames/gem03-Photoroom-export.png', locked: true, unlockCondition: 'Зимний поход' },
+    { id: 'frame_silver', name: 'Священное Серебро', rarity: 'rare', image: '/assets/images/frames/gemini-2 (1)-Photoroom-export.png', locked: true, unlockCondition: 'Ранг: Рыцарь' },
+    { id: 'frame_ember', name: 'Ярость Вулкана', rarity: 'legendary', image: '/assets/images/frames/gemini-2)-Photoroom-export.png', locked: true, unlockCondition: 'Топ-10 арены' },
+    { id: 'frame_magic', name: 'Эфирное Пламя', rarity: 'epic', image: '/assets/images/frames/gemini-20002 (1)-Photoroom-export.png', locked: true, unlockCondition: 'Магистр стихий' },
+    { id: 'frame_sun', name: 'Солнечный Триумф', rarity: 'legendary', image: '/assets/images/frames/gemini-2026-01-Photoroom-export.png', locked: true, unlockCondition: 'VIP 10+' },
+    { id: 'frame_forest', name: 'Сердце Леса', rarity: 'epic', image: '/assets/images/frames/gemini-2026-05-12-002 (1)-Photoroom-export.png', locked: true, unlockCondition: 'Друид-мастер' },
+    { id: 'frame_guardian', name: 'Страж Порядка', rarity: 'rare', image: '/assets/images/frames/gemini-2026-05-12-003-Phooom (1)-export.png', locked: true, unlockCondition: '50 побед' },
+    { id: 'frame_ancient', name: 'Древний Камень', rarity: 'rare', image: '/assets/images/frames/gemini-2026-05-12-003-oom (1)-export.png', locked: true, unlockCondition: 'Уровень 50+' },
+    { id: 'frame_nature', name: 'Дыхание Природы', rarity: 'epic', image: '/assets/images/frames/gemini-2026-05-12-oom (1)-export.png', locked: true, unlockCondition: 'Боевой Пропуск' },
+    { id: 'frame_leaf', name: 'Изумрудный Лист', rarity: 'rare', image: '/assets/images/frames/gemini-2026-05-oom (1)-export.png', locked: true, unlockCondition: 'Лесной охотник' },
+    { id: 'frame_void', name: 'Око Пустоты', rarity: 'legendary', image: '/assets/images/frames/gemini-2026-12-001-Photoroom-export.png', locked: true, unlockCondition: 'Секретное достижение' },
 ];
 
 const TITLES: CustomItem[] = [
