@@ -134,7 +134,7 @@ export const useGameStore = create<any>()(
             lastDailyRefresh: 0,
 
             // --- ИНТЕРФЕЙС ---
-            activeScreen: 'INTRO', // Стартуем всегда с интро (внутри компонента решим, показывать ли его)
+            activeScreen: 'INTRO', // Стартуем всегда с интро
             showIntro: true,
 
             heroesInitialTab: 'LIST',

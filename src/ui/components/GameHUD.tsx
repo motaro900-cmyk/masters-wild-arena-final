@@ -114,7 +114,7 @@ export const GameHUD: React.FC = () => {
                             pointerEvents: 'auto',
                             borderRadius: '50%'
                         }}
-                        onClick={() => setDevModal({ isOpen: true, title: 'В ГОРОД' })}
+                        onClick={() => useGameStore.getState().goToCity()}
                     >
                         {/* Invisible area with hover effect */}
                         <div className="city-portal-hover" style={{
@@ -177,7 +177,7 @@ export const GameHUD: React.FC = () => {
                     {/* STANDALONE CITY BUTTON (100px further right) */}
                     <button
                         className="absolute bottom-[10px] left-[calc(50%+400px)] hud-interactive"
-                        onClick={() => setDevModal({ isOpen: true, title: 'В ГОРОД' })}
+                        onClick={() => useGameStore.getState().goToCity()}
                         style={{
                             width: '200px',
                             height: '240px',
