@@ -17,18 +17,18 @@ interface CustomItem {
 
 // Реальные аватары
 const AVATAR_FILES = [
-    { file: 'панда.webp', name: 'Боевой Панда', rarity: 'epic' },
-    { file: 'тигр.webp', name: 'Свирепый Тигр', rarity: 'legendary' },
-    { file: 'лев.webp', name: 'Царь Зверей', rarity: 'legendary' },
-    { file: 'кот.webp', name: 'Ловкий Кот', rarity: 'rare' },
-    { file: 'медведь.webp', name: 'Бурый Воитель', rarity: 'epic' },
-    { file: 'кабан.webp', name: 'Лесной Вепрь', rarity: 'common' },
-    { file: 'баран.webp', name: 'Горный Баран', rarity: 'common' },
-    { file: 'крокодил.webp', name: 'Болотный Охотник', rarity: 'rare' },
-    { file: 'носорог.webp', name: 'Железный Рог', rarity: 'epic' },
-    { file: 'лось.webp', name: 'Дух Тайги', rarity: 'common' },
-    { file: 'обезьяна.webp', name: 'Мастер Кунг-фу', rarity: 'epic' },
-    { file: 'пантера.webp', name: 'Тень Джунглей', rarity: 'legendary' }
+    { file: 'панда.webp', name: 'Мастер Панда', rarity: 'common', locked: false },
+    { file: 'лев.webp', name: 'Король Саванны', rarity: 'legendary', locked: true, condition: 'Топ-1 Арены' },
+    { file: 'тигр.webp', name: 'Полосатый Кошмар', rarity: 'epic', locked: true, condition: 'Уровень 40+' },
+    { file: 'пантера.webp', name: 'Тень Джунглей', rarity: 'epic', locked: true, condition: 'Ночной охотник' },
+    { file: 'медведь.webp', name: 'Горный Сокрушитель', rarity: 'epic', locked: true, condition: 'Мастер Силы' },
+    { file: 'крокодил.webp', name: 'Речной Ужас', rarity: 'rare', locked: true, condition: 'Победа над Боссом' },
+    { file: 'носорог.webp', name: 'Стальной Рог', rarity: 'rare', locked: true, condition: 'VIP 3+' },
+    { file: 'обезьяна.webp', name: 'Ловкий Трюкач', rarity: 'common', locked: true, condition: '10 побед подряд' },
+    { file: 'кабан.webp', name: 'Лесной Вепрь', rarity: 'common', locked: true, condition: 'Уровень 10+' },
+    { file: 'баран.webp', name: 'Горный Таран', rarity: 'common', locked: true, condition: 'Стартовый набор' },
+    { file: 'кот.webp', name: 'Хитрый Мяут', rarity: 'rare', locked: true, condition: 'Подарок за вход' },
+    { file: 'лось.webp', name: 'Лесной Исполин', rarity: 'rare', locked: true, condition: 'Топ-50 сезона' },
 ];
 
 const AVATARS: CustomItem[] = AVATAR_FILES.map(item => ({
@@ -36,8 +36,8 @@ const AVATARS: CustomItem[] = AVATAR_FILES.map(item => ({
     name: item.name,
     rarity: item.rarity as Rarity,
     image: `/assets/images/avatars/${item.file}`,
-    locked: item.rarity === 'legendary' && item.file !== 'лев.webp' && item.file !== 'пантера.webp',
-    unlockCondition: item.rarity === 'legendary' ? 'Достигните 50 уровня' : undefined
+    locked: item.locked,
+    unlockCondition: item.condition
 }));
 
 const FRAMES: CustomItem[] = [
