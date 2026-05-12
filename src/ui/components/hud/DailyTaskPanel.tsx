@@ -4,6 +4,12 @@ import { useGameStore } from '../../../store/useGameStore';
 import { QUESTS_POOL } from '../../../configs/QuestsConfig';
 import { AssetsMap } from '../../../configs/AssetsMap';
 
+interface IDailyQuest {
+    questId: string;
+    progress: number;
+    isClaimed: boolean;
+}
+
 export const DailyTaskPanel: React.FC = () => {
     const [isCollapsed, setIsCollapsed] = useState(false);
     const { dailyQuests, claimQuestReward, lastDailyRefresh } = useGameStore();
@@ -75,7 +81,7 @@ export const DailyTaskPanel: React.FC = () => {
                         style={{ display: 'flex', flexDirection: 'column', gap: '5px', flex: 1, overflowY: 'auto' }}
                         className="custom-scrollbar"
                     >
-                        {dailyQuests.filter(dq => dq.questId).map((dq, index) => {
+                        {dailyQuests?.filter((dq: IDailyQuest) => dq.questId).map((dq: IDailyQuest, index: number) => {
                             const qData = QUESTS_POOL.find(q => q.id === dq.questId);
                             if (!qData) return null;
 

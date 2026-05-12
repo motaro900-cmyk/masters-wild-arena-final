@@ -156,14 +156,14 @@ const rawHeroes: Hero[] = [
         unlockType: 'achievement', unlockAchievement: 'Топ-100 в рейтинге', reqLevel: 25
     },
 
-    // --- MYTHIC ---
+    // --- LEGENDARY ---
     {
         id: 'cat',
         name: 'ПОЛУНОЧНЫЙ ЖНЕЦ',
         title: 'УЛЫБКА СМЕРТИ',
         role: 'ASSASSIN',
         image: '/assets/images/avatars/кот.png',
-        rarity: 'MYTHIC',
+        rarity: 'LEGENDARY',
         baseStats: { hp: 2100, attack: 680, defense: 90, speed: 85, crit: 45, evasion: 20, resilience: 0, lifesteal: 8, penetration: 35, critDamage: 2.2 },
         displayStats: { attack: 95, defense: 30, speed: 90 },
         description: 'Мастер скрытности and критических ударов.',
@@ -176,7 +176,7 @@ const rawHeroes: Hero[] = [
         title: 'ЦАРЬ ЗВЕРЕЙ',
         role: 'WARRIOR',
         image: '/assets/images/avatars/лев.png',
-        rarity: 'MYTHIC',
+        rarity: 'LEGENDARY',
         baseStats: { hp: 4000, attack: 650, defense: 220, speed: 60, crit: 25, evasion: 10, resilience: 10, lifesteal: 15, penetration: 30, critDamage: 1.9 },
         displayStats: { attack: 85, defense: 50, speed: 65 },
         description: 'Благородный лидер and смертоносный боец.',
@@ -184,19 +184,19 @@ const rawHeroes: Hero[] = [
         unlockType: 'diamonds', unlockCost: 750, reqLevel: 30
     },
 
-    // --- LEGENDARY ---
+    // --- MYTHIC ---
     {
         id: 'tiger',
         name: 'НЕФРИТОВЫЙ ВЛАДЫКА',
         title: 'ПОЛОСАТЫЙ ТИРАН',
         role: 'ASSASSIN',
         image: '/assets/images/avatars/тигр.png',
-        rarity: 'LEGENDARY',
-        baseStats: { hp: 2800, attack: 850, defense: 150, speed: 100, crit: 50, evasion: 30, resilience: 0, lifesteal: 12, penetration: 50, critDamage: 2.5 },
-        displayStats: { attack: 100, defense: 40, speed: 95 },
-        description: 'Вершина пищевой цепочки.',
-        lore: 'Мастер идеального убийства.',
-        unlockType: 'diamonds', unlockCost: 1500, reqLevel: 40
+        rarity: 'MYTHIC',
+        baseStats: { hp: 3500, attack: 950, defense: 180, speed: 110, crit: 55, evasion: 35, resilience: 10, lifesteal: 15, penetration: 60, critDamage: 3.0 },
+        displayStats: { attack: 100, defense: 45, speed: 100 },
+        description: 'Вершина пищевой цепочки. Истинное воплощение смерти.',
+        lore: 'Мастер идеального убийства. Тот, чье имя боятся произносить.',
+        unlockType: 'diamonds', unlockCost: 2500, reqLevel: 45
     }
 ];
 

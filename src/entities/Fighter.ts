@@ -60,7 +60,7 @@ export class Fighter extends BaseEntity {
         this.maxHealth = fighterConfig.maxHealth || fighterConfig.health;
         
         // Применяем остальные свойства
-        if (fighterConfig.name) this.name = fighterConfig.name;
+        if (fighterConfig.name) this.label = fighterConfig.name;
         if (fighterConfig.color) this.color = fighterConfig.color;
         if (fighterConfig.position) {
             this.x = fighterConfig.position.x || this.x;
@@ -298,7 +298,7 @@ export class Fighter extends BaseEntity {
      * Получить имя бойца
      */
     public getFighterName(): string {
-        return this.name;
+        return (this as any).label || this.name;
     }
 
     /**

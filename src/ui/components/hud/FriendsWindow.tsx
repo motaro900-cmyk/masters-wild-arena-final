@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useGameStore } from '../../../store/useGameStore';
 import { resolveAssetPath } from '../../../utils/assetPath';
 import { showInviteBox } from '../../../utils/VKBridge';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 interface FriendsWindowProps {
     onClose: () => void;
@@ -11,7 +11,7 @@ interface FriendsWindowProps {
 /**
  * FriendsWindow (v2.2) — Интеграция с VK и Стором.
  */
-export const FriendsWindow: React.FC<FriendsWindowProps> = ({ onClose }) => {
+export const FriendsWindow: React.FC<FriendsWindowProps> = () => {
     const { uiTheme, friends, friendRequests, removeFriend, acceptFriendRequest, declineFriendRequest, sendGift, collectAllGifts } = useGameStore();
     const isLight = uiTheme === 'LIGHT';
 

@@ -23,12 +23,37 @@ export class AssetLoader {
     public async loadAssets(manifest: string[]): Promise<void> {
         if (manifest.length === 0) return;
         
-        console.log(`[AssetLoader] Loading ${manifest.length} assets...`);
+        // [Anti-Grey] Умное разрешение путей (Smart Resolver)
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        
+        const optimizedManifest = manifest.map(path => {
+            // 1. Заменяем .png/.jpg на .webp
+            let newPath = path.replace(/\.(png|jpg|jpeg)$/i, '.webp');
+            
+            // 2. Если это фон и мы на мобилке — добавляем суффикс _mobile
+            if (isMobile && (newPath.includes('backgrounds') || newPath.includes('Shop.webp') || newPath.includes('Shoping.webp'))) {
+                newPath = newPath.replace('.webp', '_mobile.webp');
+            }
+            return newPath;
+        });
+
+        console.log(`[AssetLoader] Loading ${optimizedManifest.length} optimized assets...`);
         try {
-            await PIXI.Assets.load(manifest);
+            if (!(PIXI.Assets as any)._initialized) {
+                await PIXI.Assets.init({
+                    preferences: {
+                        preferWorkers: true,
+                        preferCreateImageBitmap: true,
+                    }
+                });
+            }
+
+            await PIXI.Assets.load(optimizedManifest);
             console.log('✅ [AssetLoader] Assets loaded successfully');
         } catch (error) {
             console.error('❌ [AssetLoader] Failed to load assets:', error);
+            // Fallback: пробуем загрузить оригиналы если оптимизированные не нашлись
+            await PIXI.Assets.load(manifest);
         }
     }
 

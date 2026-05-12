@@ -1,9 +1,10 @@
 import React, { useState, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useGameStore } from '../../../store/useGameStore';
 import { ITEMS_DATABASE, calculateItemPower, ItemRarity } from '../../../game/configs/ItemsConfig';
 import { HEROES_DB } from '../../../configs/HeroesConfig';
 import { UnderDevelopmentModal } from './SharedUI';
+import { useDraggable } from '@dnd-kit/core';
 
 interface InventoryPanelProps {
     onItemClick?: (id: string) => void;
@@ -20,21 +21,10 @@ const RARITY_COLORS: any = {
 };
 
 export const InventoryPanel: React.FC<InventoryPanelProps> = ({ mode = 'FULL', onItemClick, setGlobalHoveredItem }) => {
-    const { inventory, sellItem, equippedItems, equipItem, unequipItem, getHeroByItemId, selectedHeroId } = useGameStore();
+    const { inventory, sellItem, equippedItems, getHeroByItemId, selectedHeroId } = useGameStore();
     const [activeTab, setActiveTab] = useState<'ALL' | 'EQUIPMENT' | 'POTIONS'>('ALL');
     const [sortBy, setSortBy] = useState<'POWER' | 'RARITY'>('POWER');
     const [devModalOpen, setDevModalOpen] = useState(false);
-    
-    // Всплывающие цифры
-    const [floatingTexts, setFloatingTexts] = useState<any[]>([]);
-
-    const addFloatingText = (text: string, color: string) => {
-        const id = Math.random().toString(36).substr(2, 9);
-        setFloatingTexts(prev => [...prev, { id, text, color }]);
-        setTimeout(() => {
-            setFloatingTexts(prev => prev.filter(t => t.id !== id));
-        }, 2000);
-    };
 
     // Лимит инвентаря (заглушка на 100)
     const MAX_SLOTS = 100;
@@ -137,6 +127,8 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ mode = 'FULL', o
             }} className="leaderboard-scroll">
                 {filteredItems.map((item: any, i: number) => {
                     const data = ITEMS_DATABASE[item.id] as any;
+                    if (!data) return null; // Защита от вылета, если предмета нет в базе
+                    
                     const equippedHeroId = getHeroByItemId(item.id);
                     const isEquippedOnCurrent = equippedHeroId === (selectedHeroId || 'panda');
                     const isEquippedOnOther = equippedHeroId && !isEquippedOnCurrent;
@@ -144,73 +136,17 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ mode = 'FULL', o
                     const rarity = RARITY_COLORS[data?.rarity || 'COMMON'];
                     
                     return (
-                        <motion.div 
+                        <DraggableItem
                             key={item.id + i}
-                            whileHover={{ scale: 1.05, zIndex: 10 }}
-                            whileTap={{ scale: 0.95 }}
-                            onMouseMove={(e) => setGlobalHoveredItem?.(item.id, e.clientX, e.clientY)}
-                            onMouseEnter={(e) => setGlobalHoveredItem?.(item.id, e.clientX, e.clientY)}
-                            onMouseLeave={() => setGlobalHoveredItem?.(null, 0, 0)}
-                            onClick={() => {
-                                if (isEquippedOnCurrent) {
-                                    unequipItem(item.id);
-                                    addFloatingText('СНЯТО', '#ef4444');
-                                } else {
-                                    const otherHero = getHeroByItemId(item.id);
-                                    if (otherHero && !confirm(`Этот предмет надет на ${otherHero}. Передать его текущему герою?`)) return;
-                                    
-                                    if (data.attackBonus) addFloatingText(`+${data.attackBonus} АТАКА`, '#f97316');
-                                    if (data.hpBonus) addFloatingText(`+${data.hpBonus} ХП`, '#ef4444');
-                                    if (data.defenseBonus) addFloatingText(`+${data.defenseBonus} ЗАЩИТА`, '#3b82f6');
-                                    
-                                    equipItem(item.id);
-                                }
-                                onItemClick?.(item.id);
-                            }}
-                            style={{
-                                background: rarity.bg, borderRadius: '8px', border: `2px solid ${isEquippedOnCurrent ? '#f0c040' : rarity.border}`,
-                                position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                boxShadow: isEquippedOnCurrent ? '0 0 15px rgba(240,192,64,0.3)' : '0 4px 10px rgba(0,0,0,0.3)',
-                                cursor: 'pointer'
-                            }}
-                        >
-                            {data.spriteClass ? (
-                                <div className={data.spriteClass} style={{ width: '80px', height: '80px', opacity: isEquippedOnOther ? 0.6 : 1 }} />
-                            ) : (
-                                <img src={data.image} style={{ width: '70%', height: '70%', objectFit: 'contain', opacity: isEquippedOnOther ? 0.6 : 1 }} alt="" />
-                            )}
-                            
-                            {/* МЕТКА ЭКИПИРОВКИ (ТЕКУЩИЙ ГЕРОЙ) */}
-                            {isEquippedOnCurrent && (
-                                <div style={{ position: 'absolute', top: '-5px', right: '-5px', width: '20px', height: '20px', background: '#f0c040', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', color: '#000', fontWeight: 900, border: '2px solid #1a1008' }}>
-                                    🛡️
-                                </div>
-                            )}
-
-                            {/* МЕТКА ЭКИПИРОВКИ (ДРУГОЙ ГЕРОЙ) */}
-                            {isEquippedOnOther && (
-                                <div style={{ position: 'absolute', top: '-5px', right: '-5px', width: '24px', height: '24px', background: '#1a1008', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #ef4444', overflow: 'hidden' }} title={`Надето на: ${equippedHeroId}`}>
-                                    <img 
-                                        src={HEROES_DB.find(h => h.id === equippedHeroId)?.image} 
-                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-                                        alt="" 
-                                    />
-                                    <div style={{ position: 'absolute', inset: 0, background: 'rgba(239,68,68,0.3)' }} />
-                                </div>
-                            )}
-
-                            {/* ГЕЙР СКОР (УРОВЕНЬ МОЩИ) */}
-                            <div style={{ position: 'absolute', bottom: '2px', right: '4px', fontSize: '9px', fontWeight: 900, color: '#f0c040', opacity: 0.8 }}>
-                                {calculateItemPower(data)}
-                            </div>
-
-                            {/* СТАК (для зелий) */}
-                            {item.amount > 1 && (
-                                <div style={{ position: 'absolute', top: '2px', left: '4px', fontSize: '10px', fontWeight: 900, color: '#fff', textShadow: '0 1px 2px #000' }}>
-                                    x{item.amount}
-                                </div>
-                            )}
-                        </motion.div>
+                            item={item}
+                            data={data}
+                            rarity={rarity}
+                            isEquippedOnCurrent={isEquippedOnCurrent}
+                            isEquippedOnOther={isEquippedOnOther}
+                            equippedHeroId={equippedHeroId}
+                            onItemClick={onItemClick}
+                            setGlobalHoveredItem={setGlobalHoveredItem}
+                        />
                     );
                 })}
                 {/* Пустые слоты */}
@@ -230,28 +166,81 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ mode = 'FULL', o
 
             </div>
 
-            {/* ВСПЛЫВАЮЩИЙ ТЕКСТ */}
-            <div style={{ position: 'fixed', top: '40%', left: '50%', transform: 'translate(-50%, -50%)', pointerEvents: 'none', zIndex: 2000, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
-                <AnimatePresence>
-                    {floatingTexts.map(t => (
-                        <motion.div 
-                            key={t.id}
-                            initial={{ y: 0, opacity: 0, scale: 0.5 }}
-                            animate={{ y: -100, opacity: 1, scale: 1.5 }}
-                            exit={{ opacity: 0 }}
-                            style={{ color: t.color, fontSize: '24px', fontWeight: 900, textShadow: '0 0 10px rgba(0,0,0,0.8)', fontFamily: "'Cinzel', serif" }}
-                        >
-                            {t.text}
-                        </motion.div>
-                    ))}
-                </AnimatePresence>
-            </div>
-
             <UnderDevelopmentModal 
                 isOpen={devModalOpen} 
                 onClose={() => setDevModalOpen(false)} 
                 title="СЕКРЕТЫ АЛХИМИИ" 
             />
         </div>
+    );
+};
+
+const DraggableItem = ({ item, data, isEquippedOnCurrent, isEquippedOnOther, equippedHeroId, rarity, onItemClick, setGlobalHoveredItem }: any) => {
+    const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
+        id: item.id,
+        data: item
+    });
+
+    return (
+        <motion.div 
+            ref={setNodeRef}
+            {...listeners}
+            {...attributes}
+            whileHover={{ scale: 1.05, zIndex: 10 }}
+            whileTap={{ scale: 0.95 }}
+            onMouseMove={(e: any) => setGlobalHoveredItem?.(item.id, e.clientX, e.clientY)}
+            onMouseEnter={(e: any) => setGlobalHoveredItem?.(item.id, e.clientX, e.clientY)}
+            onMouseLeave={() => setGlobalHoveredItem?.(null, 0, 0)}
+            onClick={() => {
+                if (isEquippedOnOther) {
+                    if (!confirm(`Этот предмет надет на ${equippedHeroId}. Передать его текущему герою?`)) return;
+                }
+                onItemClick?.(item.id);
+            }}
+            style={{
+                background: rarity.bg, borderRadius: '8px', border: `2px solid ${isEquippedOnCurrent ? '#f0c040' : rarity.border}`,
+                position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                boxShadow: isEquippedOnCurrent ? '0 0 15px rgba(240,192,64,0.3)' : '0 4px 10px rgba(0,0,0,0.3)',
+                cursor: isDragging ? 'grabbing' : 'grab',
+                opacity: isDragging ? 0.4 : 1
+            }}
+        >
+            {data.spriteClass ? (
+                <div className={data.spriteClass} style={{ width: '80px', height: '80px', opacity: isEquippedOnOther ? 0.6 : 1, pointerEvents: 'none' }} />
+            ) : (
+                <img src={data.image} style={{ width: '70%', height: '70%', objectFit: 'contain', opacity: isEquippedOnOther ? 0.6 : 1, pointerEvents: 'none' }} alt="" />
+            )}
+            
+            {/* МЕТКА ЭКИПИРОВКИ (ТЕКУЩИЙ ГЕРОЙ) */}
+            {isEquippedOnCurrent && (
+                <div style={{ position: 'absolute', top: '-5px', right: '-5px', width: '20px', height: '20px', background: '#f0c040', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', color: '#000', fontWeight: 900, border: '2px solid #1a1008', pointerEvents: 'none' }}>
+                    🛡️
+                </div>
+            )}
+
+            {/* МЕТКА ЭКИПИРОВКИ (ДРУГОЙ ГЕРОЙ) */}
+            {isEquippedOnOther && (
+                <div style={{ position: 'absolute', top: '-5px', right: '-5px', width: '24px', height: '24px', background: '#1a1008', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #ef4444', overflow: 'hidden', pointerEvents: 'none' }} title={`Надето на: ${equippedHeroId}`}>
+                    <img 
+                        src={HEROES_DB.find(h => h.id === equippedHeroId)?.image} 
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                        alt="" 
+                    />
+                    <div style={{ position: 'absolute', inset: 0, background: 'rgba(239,68,68,0.3)' }} />
+                </div>
+            )}
+
+            {/* ГЕЙР СКОР (УРОВЕНЬ МОЩИ) */}
+            <div style={{ position: 'absolute', bottom: '2px', right: '4px', fontSize: '9px', fontWeight: 900, color: '#f0c040', opacity: 0.8, pointerEvents: 'none' }}>
+                {calculateItemPower(data)}
+            </div>
+
+            {/* СТАК (для зелий) */}
+            {item.amount > 1 && (
+                <div style={{ position: 'absolute', top: '2px', left: '4px', fontSize: '10px', fontWeight: 900, color: '#fff', textShadow: '0 1px 2px #000', pointerEvents: 'none' }}>
+                    x{item.amount}
+                </div>
+            )}
+        </motion.div>
     );
 };

@@ -31,7 +31,8 @@ export class SceneManager {
         const app = PixiApp.getInstance().getApp();
 
         // Синхронизация с React Store (скрытие HUD если не Главный Экран)
-        const screenId = newScene.name === 'MainScreen' ? 'MAIN_MENU' : (newScene.name || 'OTHER').toUpperCase();
+        const sceneLabel = (newScene as any).label || newScene.name;
+        const screenId = sceneLabel === 'MainScreen' ? 'MAIN_MENU' : (sceneLabel || 'OTHER').toUpperCase();
         useGameStore.setState({ activeScreen: screenId });
 
         // 1. ЯДЕРНАЯ ОЧИСТКА
@@ -55,7 +56,7 @@ export class SceneManager {
             this.stage.addChild(newScene);
         }
 
-        console.log(`[SceneManager] Сцена переключена: ${newScene.name || 'unnamed'}`);
+        console.log(`[SceneManager] Сцена переключена: ${(newScene as any).label || newScene.name || 'unnamed'}`);
     }
 
     /**

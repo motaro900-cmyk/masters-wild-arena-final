@@ -15,19 +15,19 @@ export class BeastsScreen extends PIXI.Container {
     private titleContainer: PIXI.Container;
 
     private readonly beastList = [
-        { id: 'panda', name: 'ПАНДА', file: 'панда.png' },
-        { id: 'tiger', name: 'ТИГР', file: 'тигр.png' },
-        { id: 'lion', name: 'ЛЕВ', file: 'лев.png' },
-        { id: 'bear', name: 'МЕДВЕДЬ', file: 'медведь.png' },
-        { id: 'rhino', name: 'НОСОРОГ', file: 'носорог.png' },
-        { id: 'croc', name: 'КРОКОДИЛ', file: 'крокодил.png' },
-        { id: 'boar', name: 'КАБАН', file: 'кабан.png' },
-        { id: 'elk', name: 'ЛОСЬ', file: 'лось.png' }
+        { id: 'panda', name: 'ПАНДА', file: 'панда.webp' },
+        { id: 'tiger', name: 'ТИГР', file: 'тигр.webp' },
+        { id: 'lion', name: 'ЛЕВ', file: 'лев.webp' },
+        { id: 'bear', name: 'МЕДВЕДЬ', file: 'медведь.webp' },
+        { id: 'rhino', name: 'НОСОРОГ', file: 'носорог.webp' },
+        { id: 'croc', name: 'КРОКОДИЛ', file: 'крокодил.webp' },
+        { id: 'boar', name: 'КАБАН', file: 'кабан.webp' },
+        { id: 'elk', name: 'ЛОСЬ', file: 'лось.webp' }
     ];
 
     constructor() {
         super();
-        this.name = 'BEASTS'; // Для синхронизации с React HUD
+        this.label = 'BEASTS'; // Для синхронизации с React HUD
         
         this.bg = new PIXI.Graphics();
         this.content = new PIXI.Container();

@@ -92,3 +92,47 @@ export const showInviteBox = async (): Promise<boolean> => {
         return false;
     }
 };
+
+/**
+ * Показывает вознаграждаемую рекламу
+ * @returns true если реклама была просмотрена до конца
+ */
+export const showRewardedVideo = async (): Promise<boolean> => {
+    if (!bridge) {
+        console.warn('VK Bridge not available for Ads');
+        return false;
+    }
+    
+    try {
+        const result = await bridge.send('VKWebAppShowNativeAds', {
+            ad_format: 'reward'
+        });
+        return result.result === true;
+    } catch (error) {
+        console.warn('VKWebAppShowNativeAds failed:', error);
+        return false;
+    }
+};
+
+/**
+ * Вызывает окно оплаты VK Stars
+ * @param item Идентификатор товара (например, "gems_pack_1")
+ */
+export const purchaseStars = async (item: string): Promise<boolean> => {
+    if (!bridge) {
+        console.warn('VK Bridge not available for Payments');
+        return false;
+    }
+
+    try {
+        const result = await bridge.send('VKWebAppShowOrderBox', {
+            type: 'item',
+            item: item
+        });
+        return result.status === 'success';
+    } catch (error) {
+        console.warn('VKWebAppShowOrderBox failed:', error);
+        return false;
+    }
+};
+

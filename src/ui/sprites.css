@@ -16,7 +16,7 @@
 .sprite-stat {
     width: 32px;
     height: 32px;
-    background-image: url('/assets/images/sheets/stats_sheet.png');
+    background-image: url('/assets/images/sheets/stats_sheet.webp');
     background-size: 400% 200%; /* 4 columns, 2 rows */
 }
 
@@ -33,7 +33,7 @@
 .sprite-talent {
     width: 64px;
     height: 64px;
-    background-image: url('/assets/images/sheets/talents_sheet.png');
+    background-image: url('/assets/images/sheets/talents_sheet.webp');
     background-size: 400% 300%;
 }
 .talent-1 { background-position: 0% 0%; }
@@ -57,9 +57,9 @@
     filter: drop-shadow(0 5px 15px rgba(0,0,0,0.9));
 }
 
-.sprite-helm { background-image: url('/assets/images/sheets/helms_sheet.png'); }
-.sprite-weapon { background-image: url('/assets/images/sheets/weapons_sheet.png'); }
-.sprite-armor { background-image: url('/assets/images/sheets/armor_shields_sheet.png'); }
+.sprite-helm { background-image: url('/assets/images/sheets/helms_sheet.webp'); }
+.sprite-weapon { background-image: url('/assets/images/sheets/weapons_sheet.webp'); }
+.sprite-armor { background-image: url('/assets/images/sheets/armor_shields_sheet.webp'); }
 
 /* Positional helpers for 4x4 grid */
 .pos-1 { background-position: 0% 0%; }
@@ -83,7 +83,7 @@
 .sprite-avatar {
     width: 100px;
     height: 100px;
-    background-image: url('/assets/images/sheets/avatars_medallions.png');
+    background-image: url('/assets/images/sheets/avatars_medallions.webp');
     background-size: 300% 300%;
 }
 

@@ -79,10 +79,13 @@ export class PixiApp {
             await this.pixiApp.init({
                 width: 1920,
                 height: 1080,
-                resolution: window.devicePixelRatio || 1,
+                // [Anti-Grey] Limit resolution to 2 on mobile to save memory
+                resolution: Math.min(window.devicePixelRatio || 1, 2),
                 autoDensity: true,
                 backgroundColor: 0x000000,
-                antialias: true
+                antialias: true,
+                // [Anti-Grey] Prefer WebGL for better mobile stability in Pixi v8
+                preference: 'webgl'
             });
             PixiApp.canvas = this.pixiApp.canvas as HTMLCanvasElement;
 

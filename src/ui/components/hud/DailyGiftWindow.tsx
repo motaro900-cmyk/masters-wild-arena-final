@@ -11,7 +11,7 @@ interface DailyGiftWindowProps {
 type RewardType = 'GOLD' | 'CRYSTAL' | 'ENERGY';
 
 /**
- * DailyGiftWindow (v2.2) — Использование РЕАЛЬНОГО сундука (iconrgy.png).
+ * DailyGiftWindow (v2.2) — Использование РЕАЛЬНОГО сундука (iconrgy.webp).
  */
 export const DailyGiftWindow: React.FC<DailyGiftWindowProps> = ({ onClose }) => {
     const { addGold, addCrystals, addEnergy } = useGameStore();

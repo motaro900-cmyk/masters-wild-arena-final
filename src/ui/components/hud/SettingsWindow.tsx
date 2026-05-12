@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useGameStore } from '../../../store/useGameStore';
 import { requestNotifications } from '../../../utils/VKBridge';
 
@@ -8,7 +8,7 @@ interface SettingsWindowProps {
     onOpenAdmin?: () => void;
 }
 
-export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenAdmin }) => {
+export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onOpenAdmin }) => {
     const { 
         showFps, setShowFps,
         musicVolume, setMusicVolume,

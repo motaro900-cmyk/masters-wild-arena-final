@@ -129,6 +129,22 @@
     }, true);
   </script>
 
+  <script>
+    // [Debug] Mobile console integration
+    (function () {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('eruda') === 'true' || urlParams.get('debug') === '1') {
+            const script = document.createElement('script');
+            script.src = "//cdn.jsdelivr.net/npm/eruda";
+            document.body.appendChild(script);
+            script.onload = function () {
+                eruda.init();
+                console.log('[Debug] Eruda initialized');
+            }
+        }
+    })();
+  </script>
+
   <script type="module" src="/src/main.tsx"></script>
 </body>
 

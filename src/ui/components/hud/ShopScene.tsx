@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../../../store/useGameStore';
 import { AssetsMap } from '../../../configs/AssetsMap';
-import { ALL_SHOP_ITEMS, ShopItem } from '../../../configs/ShopConfig';
+import { getAllShopItems, ShopItem } from '../../../configs/ShopConfig';
 
 import { WEAPONS_DB, HELMS_DB, ARMOR_DB, SHIELDS_DB, IEquipmentStats } from '../../../game/configs/ItemsConfig';
 import { audioService } from '../../../services/AudioService';
@@ -53,11 +53,14 @@ export const ShopScene: React.FC = () => {
         equippedArmorId,
         equippedShieldId,
         shopInitialTab,
-        goToMainMenu
+        goToMainMenu,
+        watchAdForReward,
+        buyCrystalsPack
     } = useGameStore();
 
     const [activeMainTab, setActiveMainTab] = useState<MainTab>((shopInitialTab as MainTab) || 'ARSENAL');
-    const [activeSubTab, setActiveSubTab] = useState<SubTab>('ALL');
+    const subTabs = getSubTabs(activeMainTab);
+    const [activeSubTab, setActiveSubTab] = useState<string>(subTabs[0]?.id || 'WEAPONS');
     const [isProcessing, setIsProcessing] = useState(false);
     const [selectedItem, setSelectedItem] = useState<ShopItem | null>(null);
     const [showConfirm, setShowConfirm] = useState(false);
@@ -69,7 +72,10 @@ export const ShopScene: React.FC = () => {
     }, [shopInitialTab]);
 
     useEffect(() => {
-        setActiveSubTab('ALL');
+        const newSubTabs = getSubTabs(activeMainTab);
+        if (newSubTabs.length > 0) {
+            setActiveSubTab(newSubTabs[0].id);
+        }
     }, [activeMainTab]);
 
     const getSectionTitle = (main: MainTab) => {
@@ -82,10 +88,14 @@ export const ShopScene: React.FC = () => {
         }
     };
 
-    const filteredItems = ALL_SHOP_ITEMS.filter(item =>
-        item.mainTab === activeMainTab &&
-        (activeSubTab === 'ALL' || item.subTab === activeSubTab)
-    );
+    const filteredItems = getAllShopItems().filter(item => {
+        const matchesMain = item.mainTab === activeMainTab;
+        if (!matchesMain) return false;
+
+        if (activeSubTab === 'FREE') return item.isAd === true;
+        
+        return item.subTab === activeSubTab;
+    });
 
     const handleEquip = (item: ShopItem) => {
         const id = String(item.id);
@@ -106,32 +116,48 @@ export const ShopScene: React.FC = () => {
         setShowConfirm(true);
     };
 
-    const confirmPurchase = (currency: 'gold' | 'gem') => {
+    const confirmPurchase = async (currency: 'gold' | 'gem' | 'stars' | 'ad') => {
         if (!selectedItem) return;
         const item = selectedItem;
 
         setIsProcessing(true);
         setShowConfirm(false);
 
-        setTimeout(() => {
-            const success = useGameStore.getState().buyItem(String(item.id), currency);
-            
-            if (success) {
-                audioService.playSFX(AssetsMap.AUDIO.SFX_BUY);
-                // SPECIAL HANDLING FOR BANK (CURRENCY) ITEMS
-                if (item.mainTab === 'BANK') {
+        try {
+            let success = false;
+
+            if (currency === 'ad') {
+                let rewardType: 'GOLD' | 'ENERGY' | 'CRYSTAL' = 'GOLD';
+                if (item.subTab === 'ENERGY') rewardType = 'ENERGY';
+                else if (item.subTab === 'GEMS') rewardType = 'CRYSTAL';
+                
+                success = await watchAdForReward(rewardType);
+            } else if (currency === 'stars') {
+                success = await buyCrystalsPack(item.id);
+            } else {
+                // Обычная покупка за игровое золото/алмазы
+                success = useGameStore.getState().buyItem(String(item.id), currency);
+                
+                if (success && item.mainTab === 'BANK') {
                     const amount = item.amount || 0;
                     if (item.subTab === 'GOLD') addGold(amount);
                     else if (item.subTab === 'GEMS') addCrystals(amount);
                     else if (item.subTab === 'ENERGY') addEnergy(amount);
                 }
+            }
+
+            if (success) {
+                audioService.playSFX(AssetsMap.AUDIO.SFX_BUY);
             } else {
                 audioService.playSFX(AssetsMap.AUDIO.SFX_ERROR);
             }
-
+        } catch (error) {
+            console.error('Purchase error:', error);
+            audioService.playSFX(AssetsMap.AUDIO.SFX_ERROR);
+        } finally {
             setIsProcessing(false);
             setSelectedItem(null);
-        }, 800);
+        }
     };
 
 
@@ -237,7 +263,13 @@ export const ShopScene: React.FC = () => {
                             display: 'flex',
                             gap: '5px',
                             justifyContent: 'flex-start',
-                            flex: 1
+                            flex: 1,
+                            background: 'rgba(0, 0, 0, 0.4)',
+                            backdropFilter: 'blur(8px)',
+                            padding: '5px 15px',
+                            borderRadius: '12px 12px 0 0',
+                            border: '1px solid rgba(240, 192, 64, 0.15)',
+                            borderBottom: 'none'
                         }}>
                             {getSubTabs(activeMainTab).map(tab => (
                                 <SubTabBtn
@@ -314,14 +346,21 @@ export const ShopScene: React.FC = () => {
                                 flex: 1, background: `radial-gradient(circle at center, ${getRarityColor(selectedItem.rarity)}22 0%, transparent 70%)`,
                                 display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative'
                             }}>
-                                <img
-                                    src={selectedItem.image}
-                                    style={{
-                                        width: '400px', height: '400px', objectFit: 'contain',
-                                        filter: (selectedItem.id.toString().includes('starter') || ['pan', 'stick', 'broken_sword', 'rusty_dagger', 'sling', 'bandana', 'ragged_tunic', 'dented_buckler', 'iron_helm', 'forest_hood', 'bone_mask', 'chainmail', 'spiked_leather', 'hunter_furs', 'steel_shield', 'bone_shield', 'plank_shield'].includes(selectedItem.id.toString())) ? 'url(#remove-white)' : 'none'
-                                    }}
-                                    alt=""
-                                />
+                                {selectedItem.spriteClass ? (
+                                    <div className={selectedItem.spriteClass} style={{ 
+                                        width: '400px', height: '400px',
+                                        filter: `contrast(1.2) brightness(1.15) saturate(1.2) drop-shadow(0 0 15px ${getRarityColor(selectedItem.rarity)}aa)`
+                                    }} />
+                                ) : (
+                                    <img
+                                        src={selectedItem.image}
+                                        style={{
+                                            width: '400px', height: '400px', objectFit: 'contain',
+                                            filter: (selectedItem.id.toString().includes('starter') || ['pan', 'stick', 'broken_sword', 'rusty_dagger', 'sling', 'bandana', 'ragged_tunic', 'dented_buckler', 'iron_helm', 'forest_hood', 'bone_mask', 'chainmail', 'spiked_leather', 'hunter_furs', 'steel_shield', 'bone_shield', 'plank_shield'].includes(selectedItem.id.toString())) ? 'url(#remove-white)' : 'none'
+                                        }}
+                                        alt=""
+                                    />
+                                )}
 
                                 <div style={{ position: 'absolute', top: '30px', left: '30px' }}>
                                     <div style={{ padding: '5px 15px', background: getRarityColor(selectedItem.rarity), borderRadius: '4px', fontSize: '12px', fontWeight: 900, color: '#fff', fontFamily: "'Cinzel', serif" }}>
@@ -398,6 +437,38 @@ export const ShopScene: React.FC = () => {
                                             <img src={AssetsMap.UI.ICON_ALMAZ_FULL} style={{ width: 25 }} alt="" />
                                         </button>
                                     )}
+                                    {selectedItem.priceStars !== undefined && (
+                                        <button
+                                            onClick={() => confirmPurchase('stars')}
+                                            style={{
+                                                flex: 1.5, height: '60px',
+                                                background: 'linear-gradient(180deg, #5de2ff 0%, #0066ff 100%)',
+                                                border: 'none', borderRadius: '8px',
+                                                color: '#fff', fontWeight: 900, fontSize: '20px',
+                                                cursor: 'pointer', fontFamily: "'Cinzel', serif",
+                                                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px'
+                                            }}
+                                        >
+                                            {selectedItem.priceStars}
+                                            <span style={{ fontSize: '24px' }}>⭐</span>
+                                        </button>
+                                    )}
+                                    {selectedItem.isAd && (
+                                        <button
+                                            onClick={() => confirmPurchase('ad')}
+                                            style={{
+                                                flex: 1.5, height: '60px',
+                                                background: 'linear-gradient(180deg, #4ade80 0%, #166534 100%)',
+                                                border: 'none', borderRadius: '8px',
+                                                color: '#fff', fontWeight: 900, fontSize: '20px',
+                                                cursor: 'pointer', fontFamily: "'Cinzel', serif",
+                                                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px'
+                                            }}
+                                        >
+                                            СМОТРЕТЬ
+                                            <span style={{ fontSize: '24px' }}>📺</span>
+                                        </button>
+                                    )}
                                 </div>
                             </div>
                         </motion.div>
@@ -453,15 +524,23 @@ const SidebarBtn: React.FC<{ active: boolean, onClick: () => void, label: string
     </motion.button>
 );
 
-const getSubTabs = (main: MainTab) => {
-    switch (main) {
-        case 'ARSENAL': return [{ id: 'ALL', label: 'ВСЁ' }, { id: 'WEAPONS', label: 'ОРУЖИЕ' }, { id: 'HELMETS', label: 'ШЛЕМЫ' }, { id: 'ARMOR', label: 'БРОНЯ' }, { id: 'SHIELDS', label: 'ЩИТЫ' }];
-        case 'ALCHEMY': return [{ id: 'ALL', label: 'ВСЁ' }, { id: 'POTIONS', label: 'ЗЕЛЬЯ' }];
+const getSubTabs = (mainTab: MainTab) => {
+    switch (mainTab) {
+        case 'ARSENAL': return [
+            { id: 'WEAPONS', label: 'ОРУЖИЕ' },
+            { id: 'SHIELDS', label: 'ЩИТЫ' },
+            { id: 'HELMETS', label: 'ШЛЕМЫ' },
+            { id: 'SHOULDERS', label: 'НАПЛЕЧНИКИ' },
+            { id: 'ARMOR', label: 'ДОСПЕХИ' },
+            { id: 'PANTS', label: 'ПОНОЖИ' },
+            { id: 'BOOTS', label: 'САПОГИ' }
+        ];
+        case 'ALCHEMY': return [{ id: 'POTIONS', label: 'ЗЕЛЬЯ' }];
         case 'BANK': return [
-            { id: 'ALL', label: 'ВСЁ' },
             { id: 'GOLD', label: 'ЗОЛОТО' },
             { id: 'GEMS', label: 'АЛМАЗЫ' },
-            { id: 'ENERGY', label: 'ЭНЕРГИЯ' }
+            { id: 'ENERGY', label: 'ЭНЕРГИЯ' },
+            { id: 'FREE', label: 'БЕСПЛАТНО' }
         ];
         case 'SKINS': return [{ id: 'ALL', label: 'ОБЛИКИ' }];
         default: return [];
@@ -551,7 +630,15 @@ const ShopItemCard = React.forwardRef((props: ShopItemCardProps, ref: React.Forw
             </div>
             <div style={{ width: '150px', height: '150px', marginTop: '10px', backgroundImage: `url("${AssetsMap.BACKGROUNDS.SHOP_GRID_FRAME}")`, backgroundSize: '100% 100%', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', background: `radial-gradient(circle, ${glowColor}55 0%, rgba(10,10,15,0.9) 100%)`, boxShadow: `inset 0 0 20px ${glowColor}33, 0 0 15px rgba(0,0,0,0.5)`, border: `1px solid ${glowColor}44`, borderRadius: '8px', overflow: 'hidden' }}>
                 <motion.div animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.6, 0.3] }} transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }} style={{ position: 'absolute', width: '120px', height: '120px', background: `radial-gradient(circle, ${glowColor}66 0%, transparent 70%)`, borderRadius: '50%', filter: 'blur(10px)' }} />
-                <img src={item.image} style={{ width: '135px', height: '135px', objectFit: 'contain', zIndex: 2, filter: `contrast(1.2) brightness(1.15) saturate(1.2) drop-shadow(0 0 5px ${glowColor}aa) drop-shadow(0 4px 8px rgba(0,0,0,0.8))` }} alt="" />
+                {item.spriteClass ? (
+                    <div className={item.spriteClass} style={{ 
+                        width: '135px', height: '135px', 
+                        zIndex: 2, 
+                        filter: `contrast(1.2) brightness(1.15) saturate(1.2) drop-shadow(0 0 5px ${glowColor}aa)` 
+                    }} />
+                ) : (
+                    <img src={item.image} style={{ width: '135px', height: '135px', objectFit: 'contain', zIndex: 2, filter: `contrast(1.2) brightness(1.15) saturate(1.2) drop-shadow(0 0 5px ${glowColor}aa) drop-shadow(0 4px 8px rgba(0,0,0,0.8))` }} alt="" />
+                )}
             </div>
             <h3 style={{ fontFamily: "'Cinzel', serif", color: '#f0f0f0', fontSize: '15px', textAlign: 'center', margin: '15px 0 5px 0', textTransform: 'uppercase', letterSpacing: '1px', height: '40px', display: 'flex', alignItems: 'center' }}>{item.name}</h3>
             <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: '20px', marginTop: 'auto', width: '100%', paddingBottom: '5px' }}>
@@ -567,6 +654,18 @@ const ShopItemCard = React.forwardRef((props: ShopItemCardProps, ref: React.Forw
                         <img src={AssetsMap.UI.ICON_ALMAZ_FULL} style={{ width: 22 }} alt="" />
                     </div>
                 )}
+                {item.priceStars !== undefined && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ fontSize: '20px', fontWeight: 900, color: '#5de2ff', fontFamily: "'Cinzel', serif", textShadow: '0 0 10px rgba(93,226,255,0.3)' }}>{item.priceStars}</span>
+                        <span style={{ fontSize: '18px' }}>⭐</span>
+                    </div>
+                )}
+                {item.isAd && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                         <span style={{ fontSize: '20px' }}>📺</span>
+                         <span style={{ fontSize: '16px', fontWeight: 900, color: '#4ade80', fontFamily: "'Cinzel', serif" }}>FREE</span>
+                    </div>
+                )}
             </div>
             <motion.button
                 onClick={(e) => { e.stopPropagation(); onBuy(); }}
@@ -574,7 +673,7 @@ const ShopItemCard = React.forwardRef((props: ShopItemCardProps, ref: React.Forw
                 style={{ marginTop: '10px', width: '100%', height: '38px', background: 'linear-gradient(180deg, #f0c040 0%, #a67c00 100%)', border: '1px solid #ffdf00', borderRadius: '4px', cursor: 'pointer', fontFamily: "'Cinzel', serif", fontWeight: 900, color: '#1a0f00', fontSize: '13px', boxShadow: '0 4px 8px rgba(0,0,0,0.4)', textTransform: 'uppercase', position: 'relative', overflow: 'hidden' }}
             >
                 <motion.div animate={{ left: ['-100%', '200%'] }} transition={{ duration: 2, repeat: Infinity, ease: 'linear', repeatDelay: 1 }} style={{ position: 'absolute', top: 0, width: '30px', height: '100%', background: 'linear-gradient(to right, transparent, rgba(255,255,255,0.4), transparent)', transform: 'skewX(-25deg)' }} />
-                {isProcessing ? '...' : (inventory.some(i => String(i.id) === String(item.id)) ? (isEquipped ? 'OK' : 'ЭКИПИРОВАТЬ') : 'КУПИТЬ')}
+                {isProcessing ? '...' : (inventory.some(i => String(i.id) === String(item.id)) ? (isEquipped ? 'OK' : 'ЭКИПИРОВАТЬ') : (item.isAd ? 'СМОТРЕТЬ' : 'КУПИТЬ'))}
             </motion.button>
         </motion.div>
     );

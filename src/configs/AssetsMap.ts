@@ -6,89 +6,92 @@ import { resolveAssetPath } from '../utils/assetPath';
 
 const rawAssetsMap = {
     UI: {
-        SIDEBAR_LEFT: '/assets/images/ui/sidebar_left1_full_v2.png',
-        PANEL_PARCHMENT: '/assets/images/ui/btn_panel_mis12c.png',
-        PANEL_TASK: '/assets/images/ui/panel_task.png',
-        PANEL_PROFILE: '/assets/images/ui/profile_panel_full.png',
-        PANEL_CHAT: '/assets/images/ui/chat_panel_full.png',
-        PANEL_QUEST: '/assets/images/ui/Zadanie.png',
-        PROFILE_PLAQUE: '/assets/images/ui/profile_plaque.png',
+        SIDEBAR_LEFT: '/assets/images/ui/sidebar_left1_full_v2.webp',
+        PANEL_PARCHMENT: '/assets/images/ui/btn_panel_mis12c.webp',
+        PANEL_TASK: '/assets/images/ui/panel_task.webp',
+        PANEL_PROFILE: '/assets/images/ui/profile_panel_full.webp',
+        PANEL_CHAT: '/assets/images/ui/chat_panel_full.webp',
+        PANEL_QUEST: '/assets/images/ui/Zadanie.webp',
+        PROFILE_PLAQUE: '/assets/images/ui/profile_plaque.webp',
 
         // Кнопки
-        BTN_BATTLE_RANKED: '/assets/images/ui/btn_ranked_v2.png',
-        BTN_BATTLE_RANKED_HOVER: '/assets/images/ui/btn_ranked_v21.png',
-        BTN_BATTLE_NORMAL: '/assets/images/ui/btn_normal.png',
-        BTN_TRAINING: '/assets/images/ui/btn_training.png',
+        BTN_BATTLE_RANKED: '/assets/images/ui/btn_ranked_v2.webp',
+        BTN_BATTLE_RANKED_HOVER: '/assets/images/ui/btn_ranked_v21.webp',
+        BTN_BATTLE_NORMAL: '/assets/images/ui/btn_normal.webp',
+        BTN_TRAINING: '/assets/images/ui/btn_training.webp',
 
         // Ресурсы (Бары)
-        BAR_GOLD: '/assets/images/ui/bar_gold.png',
-        BAR_GEM: '/assets/images/ui/bar_gem.png',
-        BAR_ENERGY: '/assets/images/ui/bar_energy.png',
+        BAR_GOLD: '/assets/images/ui/bar_gold.webp',
+        BAR_GEM: '/assets/images/ui/bar_gem.webp',
+        BAR_ENERGY: '/assets/images/ui/bar_energy.webp',
 
         // Иконки ресурсов
-        ICON_GOLD_FULL: '/assets/images/ui/icons/Gold.png',
-        ICON_ALMAZ_FULL: '/assets/images/ui/icons/almaz.png',
-        ICON_ENERGY_FULL: '/assets/images/ui/icons/energy.png',
+        ICON_GOLD_FULL: '/assets/images/ui/icons/Gold.webp',
+        ICON_ALMAZ_FULL: '/assets/images/ui/icons/almaz.webp',
+        ICON_ENERGY_FULL: '/assets/images/ui/icons/energy.webp',
 
         // Сундук подарка (Новый!)
-        ICON_DAILY_CHEST: '/assets/images/ui/iconrgy.png',
+        ICON_DAILY_CHEST: '/assets/images/ui/iconrgy.webp',
 
         // Иконки HUD
-        ICON_FRIENDS: '/assets/images/ui/friends_icon.png',
-        ICON_MAIL: '/assets/images/ui/mail_icon.png',
-        ICON_SETTINGS: '/assets/images/ui/settings_icon.png',
-        ICON_GIFT: '/assets/images/ui/daily_gift_v2.png',
-        ICON_BEAST_PASS: '/assets/images/ui/battle_pass_full.png',
-        BTN_BATTLE_GROUP: '/assets/images/ui/battle_btn_group.png',
+        ICON_FRIENDS: '/assets/images/ui/friends_icon.webp',
+        ICON_MAIL: '/assets/images/ui/mail_icon.webp',
+        ICON_SETTINGS: '/assets/images/ui/settings_icon.webp',
+        ICON_GIFT: '/assets/images/ui/daily_gift_v2.webp',
+        ICON_BEAST_PASS: '/assets/images/ui/battle_pass_full.webp',
+        BTN_BATTLE_GROUP: '/assets/images/ui/battle_btn_group.webp',
 
         // Магазин / Звери
-        SHOP_ITEM_BG: '/assets/images/ui/btn_panel_mis12c.png',
-        SHOP_TITLE_BG: '/assets/images/ui/btn_panel_mis12c.png',
-        BEAST_CARD_BG: '/assets/images/ui/btn_panel_mis12c.png',
+        SHOP_ITEM_BG: '/assets/images/ui/btn_panel_mis12c.webp',
+        SHOP_TITLE_BG: '/assets/images/ui/btn_panel_mis12c.webp',
+        BEAST_CARD_BG: '/assets/images/ui/btn_panel_mis12c.webp',
         
         // Новые иконки вкладок
-        TAB_ARSENAL: '/assets/images/ui/tab_arsenal.png',
-        TAB_ALCHEMY: '/assets/images/ui/tab_alchemy.png',
-        TAB_BANK: '/assets/images/ui/tab_bank.png',
-        TAB_SKINS: '/assets/images/ui/tab_skins.png',
-        ICON_EXIT: '/assets/images/ui/Exit.png',
+        TAB_ARSENAL: '/assets/images/ui/tab_arsenal.webp',
+        TAB_ALCHEMY: '/assets/images/ui/tab_alchemy.webp',
+        TAB_BANK: '/assets/images/ui/tab_bank.webp',
+        TAB_SKINS: '/assets/images/ui/tab_skins.webp',
+        ICON_EXIT: '/assets/images/ui/Exit.webp',
         
         // Иконки Банка (Золото)
-        BANK_GOLD_SMALL: '/assets/images/shop/bank_gold_small.png',
-        BANK_GOLD_MEDIUM: '/assets/images/shop/bank_gold_medium.png',
-        BANK_GOLD_LARGE: '/assets/images/shop/bank_gold_large.png',
+        BANK_GOLD_SMALL: '/assets/images/shop/bank_gold_small.webp',
+        BANK_GOLD_MEDIUM: '/assets/images/shop/bank_gold_medium.webp',
+        BANK_GOLD_LARGE: '/assets/images/shop/bank_gold_large.webp',
 
         // Иконки Банка (Энергия)
-        BANK_ENERGY_SMALL: '/assets/images/shop/bank_energy_1.png',
-        BANK_ENERGY_MEDIUM: '/assets/images/shop/bank_energy_2.png',
-        BANK_ENERGY_LARGE: '/assets/images/shop/bank_energy_3.png',
-        SLOT_BG: '/assets/images/ui/slot_bg.png',
-        EQUIPMENT_PANEL: '/assets/images/ui/equipment_panel.png',
-        HERO_PEDESTAL: '/assets/images/ui/hero_pedestal.png',
+        BANK_ENERGY_SMALL: '/assets/images/shop/bank_energy_1.webp',
+        BANK_ENERGY_MEDIUM: '/assets/images/shop/bank_energy_2.webp',
+        BANK_ENERGY_LARGE: '/assets/images/shop/bank_energy_3.webp',
+        SLOT_BG: '/assets/images/ui/slot_bg.webp',
+        EQUIPMENT_PANEL: '/assets/images/ui/equipment_panel.webp',
+        HERO_PEDESTAL: '/assets/images/ui/hero_pedestal.webp',
         
         // Blueprint icons
-        BLUEPRINT_HELMET: '/assets/blueprint_helmet.png',
-        BLUEPRINT_ARMOR: '/assets/blueprint_armor.png',
-        BLUEPRINT_WEAPON: '/assets/blueprint_weapon.png',
-        BLUEPRINT_SHIELD: '/assets/blueprint_shield.png',
+        BLUEPRINT_HELMET: '/assets/blueprint_helmet.webp',
+        BLUEPRINT_ARMOR: '/assets/blueprint_armor.webp',
+        BLUEPRINT_WEAPON: '/assets/blueprint_weapon.webp',
+        BLUEPRINT_SHIELD: '/assets/blueprint_shield.webp',
+        BLUEPRINT_SHOULDERS: '/assets/blueprint_shoulders.png',
+        BLUEPRINT_PANTS: '/assets/blueprint_pants.png',
+        BLUEPRINT_BOOTS: '/assets/blueprint_boots.png',
     },
     BACKGROUNDS: {
-        MAIN_MENU: '/assets/images/backgrounds/bg_main.png',
-        BATTLE_ARENA: '/assets/images/backgrounds/battle/bg_1.png',
-        SHOP: '/assets/images/ui/Shop.png',
-        HEROES_HALL: '/assets/images/backgrounds/зал героев.png',
-        SHOP_NAV_BG: '/assets/images/ui/Shoping.png',
-        SHOP_GRID_FRAME: '/assets/images/ui/ChatGPT Image 5  4otoom-port.png',
-        SHOP_ITEM_FRAME: '/assets/images/ui/Shop phone.png',
-        SHOP_BANNER_RED: '/assets/images/ui/icons/banner_red_tab.png',
-        SHOP_BANNER_BLACK: '/assets/images/ui/icons/ChatGPT Imaport.png',
-        SHOP_DIVIDER: '/assets/images/ui/ChatGPT Image 5  213_457-Photoroom-export.png',
-        BATTLE_PASS: '/assets/images/backgrounds/боевойпропуска.png',
-        CITY_HUB: '/assets/images/backgrounds/bg_city_hub.png',
+        MAIN_MENU: '/assets/images/backgrounds/bg_main.webp',
+        BATTLE_ARENA: '/assets/images/backgrounds/battle/bg_1.webp',
+        SHOP: '/assets/images/ui/Shop.webp',
+        HEROES_HALL: '/assets/images/backgrounds/зал героев.webp',
+        SHOP_NAV_BG: '/assets/images/ui/Shoping.webp',
+        SHOP_GRID_FRAME: '/assets/images/ui/ChatGPT Image 5  4otoom-port.webp',
+        SHOP_ITEM_FRAME: '/assets/images/ui/Shop phone.webp',
+        SHOP_BANNER_RED: '/assets/images/ui/icons/banner_red_tab.webp',
+        SHOP_BANNER_BLACK: '/assets/images/ui/icons/ChatGPT Imaport.webp',
+        SHOP_DIVIDER: '/assets/images/ui/power_icon.webp',
+        BATTLE_PASS: '/assets/images/backgrounds/боевойпропуска.webp',
+        CITY_HUB: '/assets/images/backgrounds/bg_city_hub.webp',
     },
     CHARACTERS: {
-        PANDA_AVATAR: '/assets/images/avatars/панда.png',
-        PANDA_FULL: '/assets/images/avatars/панда.png',
+        PANDA_AVATAR: '/assets/images/avatars/панда.webp',
+        PANDA_FULL: '/assets/images/avatars/панда.webp',
         PANDA_ATLAS: '/assets/characters/panda/pandapanda_atlas.png',
         SKINS: {
             DEFAULT: '/assets/characters/panda/pandapanda_atlas.png',
@@ -96,13 +99,13 @@ const rawAssetsMap = {
         }
     },
     ITEMS: {
-        MOON_SWORD: '/assets/images/items/moon_sword.png',
-        MOON_SWORD_PREMIUM: '/assets/images/items/weapon_moon_sword.png',
-        AXE: '/assets/images/items/axe.png',
-        VOID_STAFF: '/assets/images/items/void_staff.png',
-        BONE_ARMOR: '/assets/images/items/armor_bone.png',
-        LION_ARMOR: '/assets/images/items/armor_lion.png',
-        PHOENIX_ARMOR: '/assets/images/items/armor_phoenix.png'
+        MOON_SWORD: '/assets/images/items/moon_sword.webp',
+        MOON_SWORD_PREMIUM: '/assets/images/items/weapon_moon_sword.webp',
+        AXE: '/assets/images/items/axe.webp',
+        VOID_STAFF: '/assets/images/items/void_staff.webp',
+        BONE_ARMOR: '/assets/images/items/armor_bone.webp',
+        LION_ARMOR: '/assets/images/items/armor_lion.webp',
+        PHOENIX_ARMOR: '/assets/images/items/armor_phoenix.webp'
     },
     AUDIO: {
         MUSIC_MAIN: '/assets/audio/music/Dawn_of_the_Siege.mp3',
@@ -113,6 +116,11 @@ const rawAssetsMap = {
         SFX_EQUIP: '/assets/audio/sfx/equip_item.mp3',
         SFX_ATTACK: '/assets/audio/sfx/attack_swing.mp3',
         SFX_HIT: '/assets/audio/sfx/impact_hit.mp3'
+    },
+    SHEETS: {
+        BOOTS: '/assets/images/sheets/boots_sprite.webp',
+        PANTS: '/assets/images/sheets/pants_sprite.webp',
+        WEAPONS: '/assets/images/sheets/weapons_sprite.webp'
     }
 };
 

@@ -7,6 +7,7 @@ import { QUESTS_POOL } from '../configs/QuestsConfig';
 import { audioService } from '../services/AudioService';
 import { AssetsMap } from '../configs/AssetsMap';
 import { syncService } from '../services/SyncService';
+import { showRewardedVideo, purchaseStars } from '../utils/VKBridge';
 
 
 /**
@@ -24,13 +25,44 @@ export const useGameStore = create<any>()(
             energy: 50,
             maxEnergy: 50,
             avatar: 'sprite:sprite-avatar avatar-pos-1',
-            frame: 'Рамка 6.png',
+            frame: 'Рамка 6.webp',
             title: 'НОВИЧОК',
             bpLevel: 1,
             bpExp: 0,
             trophies: 0,
             isPremium: false,
             claimedRewards: [],
+
+            // --- МОНЕТИЗАЦИЯ ---
+            watchAdForReward: async (type: 'GOLD' | 'ENERGY' | 'CRYSTAL') => {
+                const success = await showRewardedVideo();
+                if (success) {
+                    if (type === 'GOLD') get().addGold(1000);
+                    if (type === 'ENERGY') get().addEnergy(10);
+                    if (type === 'CRYSTAL') get().addCrystals(10);
+                    // Синхронизируем сразу после награды
+                    syncService.syncPlayerData();
+                    return true;
+                }
+                return false;
+            },
+
+            buyCrystalsPack: async (packId: string) => {
+                const success = await purchaseStars(packId);
+                if (success) {
+                    let amount = 0;
+                    if (packId === 'gems_100') amount = 100;
+                    if (packId === 'gems_500') amount = 500;
+                    if (packId === 'gems_1000') amount = 1200; // Бонус!
+                    
+                    if (amount > 0) {
+                        get().addCrystals(amount);
+                        syncService.syncPlayerData();
+                        return true;
+                    }
+                }
+                return false;
+            },
 
             // --- ИНВЕНТАРЬ (стартовые предметы) ---
             inventory: [
@@ -44,7 +76,10 @@ export const useGameStore = create<any>()(
                     WEAPONS: 'stick',
                     HELMETS: 'starter_helm',
                     ARMOR: 'starter_armor',
-                    SHIELDS: 'starter_shield'
+                    SHIELDS: 'starter_shield',
+                    SHOULDERS: null,
+                    BOOTS: null,
+                    PANTS: null
                 }
             },
             get equippedItems() {
@@ -88,6 +123,7 @@ export const useGameStore = create<any>()(
             },
 
             // --- КВЕСТЫ ---
+            dailyQuests: [],
             lastDailyRefresh: 0,
 
             // --- ИНТЕРФЕЙС ---
@@ -196,6 +232,9 @@ export const useGameStore = create<any>()(
                 if (subTab === 'HELMETS') set({ equippedHelmId: id });
                 if (subTab === 'ARMOR') set({ equippedArmorId: id });
                 if (subTab === 'SHIELDS') set({ equippedShieldId: id });
+                if (subTab === 'SHOULDERS') set({ equippedShouldersId: id });
+                if (subTab === 'BOOTS') set({ equippedBootsId: id });
+                if (subTab === 'PANTS') set({ equippedPantsId: id });
             },
             unequipItem: (id: string) => {
                 const state = get();
@@ -216,6 +255,9 @@ export const useGameStore = create<any>()(
                 if (data?.subTab === 'HELMETS') set({ equippedHelmId: null });
                 if (data?.subTab === 'ARMOR') set({ equippedArmorId: null });
                 if (data?.subTab === 'SHIELDS') set({ equippedShieldId: null });
+                if (data?.subTab === 'SHOULDERS') set({ equippedShouldersId: null });
+                if (data?.subTab === 'BOOTS') set({ equippedBootsId: null });
+                if (data?.subTab === 'PANTS') set({ equippedPantsId: null });
             },
             getHeroByItemId: (itemId: string) => {
                 const state = get();

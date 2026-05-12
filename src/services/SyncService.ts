@@ -110,6 +110,8 @@ export class SyncService {
             console.error('[SyncService] Failed to fetch players:', error);
             return [];
         }
+    }
+
     /**
      * Удаленно обновляет данные игрока в Firebase (для админки)
      */

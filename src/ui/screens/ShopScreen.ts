@@ -19,7 +19,7 @@ export class ShopScreen extends PIXI.Container {
 
     constructor() {
         super();
-        this.name = 'ShopScreen';
+        this.label = 'ShopScreen';
         
         this.panelsContainer = new PIXI.Container();
         this.addChild(this.panelsContainer);

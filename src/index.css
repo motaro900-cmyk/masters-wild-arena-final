@@ -99,3 +99,143 @@ canvas {
 .animate-shine {
   animation: shine 2.5s ease-in-out infinite;
 }
+
+/* SPRITE SYSTEM: BOOTS (4x2 Grid) */
+.sprite-boots {
+    background-image: url('/assets/images/items/boots/boots_sprite.webp');
+    background-size: 400% 200%;
+    width: 100%;
+    height: 100%;
+    background-repeat: no-repeat;
+    display: block;
+}
+
+.sprite-boots.boot-1 { background-position: 0% 0%; }
+.sprite-boots.boot-2 { background-position: 33.33% 0%; }
+.sprite-boots.boot-3 { background-position: 66.66% 0%; }
+.sprite-boots.boot-4 { background-position: 100% 0%; }
+.sprite-boots.boot-5 { background-position: 0% 100%; }
+.sprite-boots.boot-6 { background-position: 33.33% 100%; }
+.sprite-boots.boot-7 { background-position: 66.66% 100%; }
+
+/* SPRITE SYSTEM: PANTS (5x3 Grid) */
+.sprite-pants {
+    background-image: url('/assets/images/items/pants/pants_sprite.webp');
+    background-size: 500% 300%;
+    width: 100%;
+    height: 100%;
+    background-repeat: no-repeat;
+    display: block;
+}
+
+.sprite-pants.pants-1 { background-position: 0% 0%; }
+.sprite-pants.pants-2 { background-position: 25% 0%; }
+.sprite-pants.pants-3 { background-position: 50% 0%; }
+.sprite-pants.pants-4 { background-position: 75% 0%; }
+.sprite-pants.pants-5 { background-position: 100% 0%; }
+
+.sprite-pants.pants-6 { background-position: 0% 50%; }
+.sprite-pants.pants-7 { background-position: 25% 50%; }
+.sprite-pants.pants-8 { background-position: 50% 50%; }
+.sprite-pants.pants-9 { background-position: 75% 50%; }
+.sprite-pants.pants-10 { background-position: 100% 50%; }
+
+.sprite-pants.pants-11 { background-position: 0% 100%; }
+.sprite-pants.pants-12 { background-position: 25% 100%; }
+.sprite-pants.pants-13 { background-position: 50% 100%; }
+.sprite-pants.pants-14 { background-position: 75% 100%; }
+.sprite-pants.pants-15 { background-position: 100% 100%; }
+
+/* SPRITE SYSTEM: WEAPONS & SHIELDS (3x3 Grid) */
+.sprite-weapons {
+    background-image: url('/assets/images/items/weapons/weapons_sprite.webp');
+    background-size: 300% 300%;
+    width: 100%;
+    height: 100%;
+    background-repeat: no-repeat;
+    display: block;
+}
+
+.sprite-weapons.wpn-1 { background-position: 0% 0%; }   /* Огненный Топор */
+.sprite-weapons.wpn-2 { background-position: 50% 0%; }  /* Ядовитые Кинжалы */
+.sprite-weapons.wpn-3 { background-position: 100% 0%; } /* Череп-Булава */
+.sprite-weapons.wpn-4 { background-position: 0% 50%; }  /* Рунный Меч */
+.sprite-weapons.wpn-5 { background-position: 50% 50%; } /* Паровой Пистолет */
+.sprite-weapons.wpn-6 { background-position: 100% 50%; }/* Космический Посох */
+.sprite-weapons.wpn-7 { background-position: 0% 100%; } /* Тяжелый Арбалет */
+.sprite-weapons.wpn-8 { background-position: 50% 100%; }/* Щит Льва */
+.sprite-weapons.wpn-9 { background-position: 100% 100%; }/* Синие Когти */
+
+/* SPRITE SYSTEM: WEAPONS EXTENDED (4x4 Grid) */
+.sprite-weapons-ext {
+    background-image: url('/assets/images/items/weapons/weapons_sheet.webp');
+    background-size: 400% 400%;
+    width: 100%;
+    height: 100%;
+    background-repeat: no-repeat;
+    display: block;
+}
+
+.sprite-weapons-ext.ext-1 { background-position: 0% 0%; }
+.sprite-weapons-ext.ext-2 { background-position: 33.33% 0%; }
+.sprite-weapons-ext.ext-3 { background-position: 66.66% 0%; }
+.sprite-weapons-ext.ext-4 { background-position: 100% 0%; }
+.sprite-weapons-ext.ext-5 { background-position: 0% 33.33%; }
+.sprite-weapons-ext.ext-6 { background-position: 33.33% 33.33%; }
+.sprite-weapons-ext.ext-7 { background-position: 66.66% 33.33%; }
+.sprite-weapons-ext.ext-8 { background-position: 100% 33.33%; }
+.sprite-weapons-ext.ext-9 { background-position: 0% 66.66%; }
+.sprite-weapons-ext.ext-10 { background-position: 33.33% 66.66%; }
+.sprite-weapons-ext.ext-11 { background-position: 66.66% 66.66%; }
+.sprite-weapons-ext.ext-12 { background-position: 100% 66.66%; }
+.sprite-weapons-ext.ext-13 { background-position: 0% 100%; }
+.sprite-weapons-ext.ext-14 { background-position: 33.33% 100%; }
+.sprite-weapons-ext.ext-15 { background-position: 66.66% 100%; }
+.sprite-weapons-ext.ext-16 { background-position: 100% 100%; }
+
+/* SPRITE SYSTEM: HELMETS (4x4 Grid) */
+.sprite-helms {
+    background-image: url('/assets/images/items/helms/helms_sheet.webp');
+    background-size: 400% 400%;
+    width: 100%;
+    height: 100%;
+    background-repeat: no-repeat;
+    display: block;
+}
+
+.sprite-helms.helm-1 { background-position: 0% 0%; }
+.sprite-helms.helm-2 { background-position: 33.33% 0%; }
+.sprite-helms.helm-3 { background-position: 66.66% 0%; }
+.sprite-helms.helm-4 { background-position: 100% 0%; }
+.sprite-helms.helm-5 { background-position: 0% 33.33%; }
+.sprite-helms.helm-6 { background-position: 33.33% 33.33%; }
+.sprite-helms.helm-7 { background-position: 66.66% 33.33%; }
+.sprite-helms.helm-8 { background-position: 100% 33.33%; }
+.sprite-helms.helm-9 { background-position: 0% 66.66%; }
+.sprite-helms.helm-10 { background-position: 33.33% 66.66%; }
+.sprite-helms.helm-11 { background-position: 66.66% 66.66%; }
+.sprite-helms.helm-12 { background-position: 100% 66.66%; }
+.sprite-helms.helm-13 { background-position: 0% 100%; }
+.sprite-helms.helm-14 { background-position: 33.33% 100%; }
+.sprite-helms.helm-15 { background-position: 66.66% 100%; }
+.sprite-helms.helm-16 { background-position: 100% 100%; }
+
+/* SPRITE SYSTEM: SHOULDERS (3x3 Grid) */
+.sprite-shoulders {
+    background-image: url('/assets/images/items/shoulders/shoulders_sprite.webp');
+    background-size: 300% 300%;
+    width: 100%;
+    height: 100%;
+    background-repeat: no-repeat;
+    display: block;
+}
+
+.sprite-shoulders.sh-1 { background-position: 0% 0%; }
+.sprite-shoulders.sh-2 { background-position: 50% 0%; }
+.sprite-shoulders.sh-3 { background-position: 100% 0%; }
+.sprite-shoulders.sh-4 { background-position: 0% 50%; }
+.sprite-shoulders.sh-5 { background-position: 50% 50%; }
+.sprite-shoulders.sh-6 { background-position: 100% 50%; }
+.sprite-shoulders.sh-7 { background-position: 0% 100%; }
+.sprite-shoulders.sh-8 { background-position: 50% 100%; }
+.sprite-shoulders.sh-9 { background-position: 100% 100%; }

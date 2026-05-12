@@ -154,6 +154,14 @@ const Root = () => {
         initialized.current = true;
 
         const initApp = async () => {
+            // [Anti-Grey] Loading Timeout (20s)
+            const timeoutId = setTimeout(() => {
+                if (!initialized.current || (containerRef.current && containerRef.current.children.length === 0)) {
+                    console.error('❌ Loading Timeout: App failed to initialize in 20s');
+                    setInitError('Превышено время ожидания загрузки. Пожалуйста, проверьте интернет-соединение и попробуйте снова.');
+                }
+            }, 20000);
+
             try {
                 console.log('🏁 Root: Initializing App...');
 
@@ -173,6 +181,8 @@ const Root = () => {
                 console.log('🎮 Starting GameEngine...');
                 const game = new GameApp();
                 await game.init(containerRef.current!);
+                
+                clearTimeout(timeoutId); // [Anti-Grey] Success! Cancel timeout
                 console.log('✅ Game Ready!');
 
                 const state = useGameStore.getState();
@@ -180,6 +190,7 @@ const Root = () => {
                     state.refreshDailyQuests();
                 }
             } catch (err: any) {
+                clearTimeout(timeoutId);
                 console.error('❌ Critical Init Error:', err);
                 setInitError(err.message || 'Ошибка инициализации ядра игры');
             }

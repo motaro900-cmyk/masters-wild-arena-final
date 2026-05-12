@@ -12,7 +12,7 @@ export class MainScreen extends PIXI.Container {
 
     constructor() {
         super();
-        this.name = 'MainScreen';
+        this.label = 'MainScreen';
         
         this.rays = new PIXI.Graphics();
         this.uiContainer = new PIXI.Container();

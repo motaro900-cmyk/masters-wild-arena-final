@@ -41,7 +41,6 @@ export const HeroScene: React.FC = () => {
     const [tooltipHero, setTooltipHero] = useState<any>(null);
     const [viewingHero, setViewingHero] = useState<any>(null); // NEW: For Inspector mode
     const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-    const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
     const [confirmingHero, setConfirmingHero] = useState<any>(null);
     const [heroAction, setHeroAction] = useState<'IDLE' | 'VICTORY' | 'ULTIMATE'>('IDLE');
     const [globalHoveredItem, setGlobalHoveredItem] = useState<{ id: string, x: number, y: number } | null>(null);
@@ -69,9 +68,14 @@ export const HeroScene: React.FC = () => {
         const itemData = ITEMS_DATABASE[String(itemId)] as any;
         if (!itemData) return;
 
-        if (selectedItemId === itemId) {
-            // Вычисляем дельту перед экипировкой
-            const currentGear = (heroEquipment || {})[selectedHeroId || 'panda'] || {};
+        const currentGear = (heroEquipment || {})[selectedHeroId || 'panda'] || {};
+        const isEquippedOnCurrent = Object.values(currentGear).includes(itemId);
+
+        if (isEquippedOnCurrent) {
+            unequipItem(itemId);
+            addFloatingText('СНЯТО', '#ef4444');
+            audioService.playSFX('SFX_CLICK');
+        } else {
             const existingId = currentGear[itemData.subTab];
             const existingItem = existingId ? ITEMS_DATABASE[String(existingId)] as any : null;
 
@@ -85,8 +89,7 @@ export const HeroScene: React.FC = () => {
 
             triggerVictory();
             equipItem(itemId);
-        } else {
-            setSelectedItemId(itemId);
+            audioService.playSFX('SFX_EQUIP');
         }
     };
 
@@ -158,7 +161,7 @@ export const HeroScene: React.FC = () => {
             onDragStart={handleDragStart}
             onDragEnd={handleDragEnd}
         >
-            <div 
+            <div
                 id="hero-scene-root"
                 style={{
                     width: '1920px', height: '1080px', background: '#000', position: 'absolute', top: 0, left: 0, overflow: 'hidden', zIndex: 1000
@@ -194,10 +197,10 @@ export const HeroScene: React.FC = () => {
                     <div style={{ flex: 1, position: 'relative' }}>
                         <AnimatePresence mode="wait">
                             {activeTab === 'LIST' ? (
-                                <HeroList 
-                                    rarityColors={rarityColors} 
-                                    ownedHeroes={ownedHeroes} 
-                                    selectedHeroId={selectedHeroId} 
+                                <HeroList
+                                    rarityColors={rarityColors}
+                                    ownedHeroes={ownedHeroes}
+                                    selectedHeroId={selectedHeroId}
                                     activeFilter={activeFilter}
                                     setActiveFilter={setActiveFilter}
                                     setTooltipHero={setTooltipHero}
@@ -206,19 +209,19 @@ export const HeroScene: React.FC = () => {
                                     onInspect={(h: any) => setViewingHero(h)}
                                 />
                             ) : activeTab === 'HERO' ? (
-                                <GearView 
+                                <GearView
                                     hero={selectedHero}
                                     stats={stats}
                                     detailSubTab={detailSubTab}
                                     setDetailSubTab={setDetailSubTab}
                                     handleItemClick={handleItemClick}
                                     isEquipped={isEquipped}
-                                    equippedIds={stats.equippedIds}
+                                    equippedIds={(heroEquipment || {})[selectedHeroId || 'panda'] || {}}
                                     activeDraggingId={activeId}
                                     unequipItem={unequipItem}
                                     addFloatingText={addFloatingText}
                                     heroAction={heroAction}
-                                    setGlobalHoveredItem={(id: string | null, x: number, y: number) => setGlobalHoveredItem(id ? {id, x, y} : null)}
+                                    setGlobalHoveredItem={(id: string | null, x: number, y: number) => setGlobalHoveredItem(id ? { id, x, y } : null)}
                                     setDevModal={setDevModal}
                                 />
                             ) : (
@@ -246,9 +249,9 @@ export const HeroScene: React.FC = () => {
                             />
                         )}
                         {confirmingHero && (
-                            <PurchaseModal 
-                                hero={confirmingHero} 
-                                onClose={() => setConfirmingHero(null)} 
+                            <PurchaseModal
+                                hero={confirmingHero}
+                                onClose={() => setConfirmingHero(null)}
                                 rarityColors={rarityColors}
                             />
                         )}
@@ -287,7 +290,7 @@ export const HeroScene: React.FC = () => {
             <div style={{ position: 'absolute', bottom: '400px', left: '50%', transform: 'translateX(-50%)', pointerEvents: 'none', zIndex: 10000, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
                 <AnimatePresence>
                     {floatingTexts.map(t => (
-                        <motion.div 
+                        <motion.div
                             key={t.id}
                             initial={{ y: 0, opacity: 0, scale: 0.5 }}
                             animate={{ y: -150, opacity: 1, scale: 2 }}
@@ -303,19 +306,19 @@ export const HeroScene: React.FC = () => {
             {/* ГЛОБАЛЬНЫЙ ТУЛТИП ПРЕДМЕТА (ПОРТАЛ) */}
             {globalHoveredItem && ITEMS_DATABASE[globalHoveredItem.id] && createPortal(
                 <AnimatePresence>
-                    <motion.div 
+                    <motion.div
                         initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }}
-                        style={{ 
-                            position: 'fixed', 
-                            left: globalHoveredItem.x + 480 > window.innerWidth ? globalHoveredItem.x - 480 : globalHoveredItem.x + 20, 
-                            top: Math.max(10, Math.min(window.innerHeight - 450, globalHoveredItem.y - 100)), 
-                            zIndex: 2000000, pointerEvents: 'none' 
+                        style={{
+                            position: 'fixed',
+                            left: globalHoveredItem.x + 480 > window.innerWidth ? globalHoveredItem.x - 480 : globalHoveredItem.x + 20,
+                            top: Math.max(10, Math.min(window.innerHeight - 450, globalHoveredItem.y - 100)),
+                            zIndex: 2000000, pointerEvents: 'none'
                         }}
                     >
                         <div style={{
-                            width: '460px', background: 'rgba(12, 10, 8, 0.99)', 
+                            width: '460px', background: 'rgba(12, 10, 8, 0.99)',
                             border: `2px solid ${(rarityColors as any)[(ITEMS_DATABASE[globalHoveredItem.id] as any).rarity] || '#fff'}`,
-                            borderRadius: '20px', padding: '30px', 
+                            borderRadius: '20px', padding: '30px',
                             boxShadow: `0 25px 80px rgba(0,0,0,0.9), 0 0 40px ${(rarityColors as any)[(ITEMS_DATABASE[globalHoveredItem.id] as any).rarity] || '#fff'}33`,
                             backdropFilter: 'blur(20px)'
                         }}>
@@ -338,7 +341,7 @@ export const HeroScene: React.FC = () => {
                                     <div style={{ fontSize: '26px', fontWeight: 900, color: '#fff', fontFamily: "'Cinzel', serif", lineHeight: 1.1 }}>{(ITEMS_DATABASE[globalHoveredItem.id] as any).name}</div>
                                 </div>
                             </div>
-                            
+
                             <div style={{ fontSize: '16px', color: 'rgba(255,255,255,0.6)', fontStyle: 'italic', marginBottom: '25px', lineHeight: '1.6' }}>
                                 {(ITEMS_DATABASE[globalHoveredItem.id] as any).desc}
                             </div>
@@ -371,10 +374,10 @@ export const HeroScene: React.FC = () => {
                 document.body
             )}
 
-            <UnderDevelopmentModal 
-                isOpen={devModal.isOpen} 
-                title={devModal.title} 
-                onClose={() => setDevModal({ ...devModal, isOpen: false })} 
+            <UnderDevelopmentModal
+                isOpen={devModal.isOpen}
+                title={devModal.title}
+                onClose={() => setDevModal({ ...devModal, isOpen: false })}
             />
         </DndContext>
     );
@@ -467,11 +470,11 @@ const FilterBar = ({ activeFilter, onSelect }: any) => {
 };
 
 
-const HeroList = ({ 
-    rarityColors, 
-    ownedHeroes, 
-    selectedHeroId, 
-    activeFilter, 
+const HeroList = ({
+    rarityColors,
+    ownedHeroes,
+    selectedHeroId,
+    activeFilter,
     setActiveFilter,
     setTooltipHero,
     setMousePos,
@@ -490,7 +493,7 @@ const HeroList = ({
         const rect = root.getBoundingClientRect();
         const scaleX = rect.width / 1920;
         const scaleY = rect.height / 1080;
-        
+
         setMousePos({
             x: (e.clientX - rect.left) / scaleX,
             y: (e.clientY - rect.top) / scaleY
@@ -505,19 +508,19 @@ const HeroList = ({
             exit={{ opacity: 0, scale: 1.02 }}
             style={{
                 position: 'absolute',
-                inset: '20px 80px 40px 80px', 
+                inset: '20px 80px 40px 80px',
                 display: 'flex',
                 flexDirection: 'column'
             }}
         >
             <FilterBar activeFilter={activeFilter} onSelect={setActiveFilter} />
-            
-            <div 
+
+            <div
                 style={{
                     display: 'grid',
                     gridTemplateColumns: 'repeat(6, 1fr)',
                     gridAutoRows: 'min-content',
-                    gap: '25px', 
+                    gap: '25px',
                     overflowY: 'auto',
                     paddingRight: '20px',
                     flex: 1
@@ -553,27 +556,27 @@ const TALENTS_CONFIG = [
         icon: '⚔️',
         color: '#ef4444',
         tiers: [
-            { 
-                level: 1, 
+            {
+                level: 1,
                 requiredInBranch: 0,
                 talents: [
                     { id: 'atk_base', name: 'Сила Зверя', iconClass: 'sprite-talent talent-1', max: 5, desc: 'Увеличивает базовую силу атаки на {v}%.' }
-                ] 
+                ]
             },
-            { 
-                level: 2, 
+            {
+                level: 2,
                 requiredInBranch: 3,
                 talents: [
                     { id: 'atk_crit', name: 'Острый Коготь', iconClass: 'sprite-talent talent-2', max: 3, desc: 'Шанс критического удара +{v}%.' },
                     { id: 'atk_pen', name: 'Тяжелая Лапа', iconClass: 'sprite-talent talent-3', max: 3, desc: 'Пробивание брони +{v}%.' }
-                ] 
+                ]
             },
-            { 
-                level: 3, 
+            {
+                level: 3,
                 requiredInBranch: 10,
                 talents: [
                     { id: 'atk_ult', name: 'Ярость Грома', iconClass: 'sprite-talent talent-4', max: 1, desc: 'Критические удары вызывают разряд молнии.' }
-                ] 
+                ]
             }
         ]
     },
@@ -583,27 +586,27 @@ const TALENTS_CONFIG = [
         icon: '🛡️',
         color: '#3b82f6',
         tiers: [
-            { 
-                level: 1, 
+            {
+                level: 1,
                 requiredInBranch: 0,
                 talents: [
                     { id: 'def_base', name: 'Крепкая Шкура', iconClass: 'sprite-talent talent-5', max: 5, desc: 'Увеличивает объем здоровья на {v}%.' }
-                ] 
+                ]
             },
-            { 
-                level: 2, 
+            {
+                level: 2,
                 requiredInBranch: 3,
                 talents: [
                     { id: 'def_res', name: 'Каменная Стойка', iconClass: 'sprite-talent talent-6', max: 3, desc: 'Стойкость к критическим ударам +{v}.' },
                     { id: 'def_eva', name: 'Дух Предков', iconClass: 'sprite-talent talent-7', max: 3, desc: 'Шанс уклонения +{v}%.' }
-                ] 
+                ]
             },
-            { 
-                level: 3, 
+            {
+                level: 3,
                 requiredInBranch: 10,
                 talents: [
                     { id: 'def_ult', name: 'Неуязвимость', iconClass: 'sprite-talent talent-8', max: 1, desc: 'Весь входящий урон снижен на 20%.' }
-                ] 
+                ]
             }
         ]
     },
@@ -613,27 +616,27 @@ const TALENTS_CONFIG = [
         icon: '✨',
         color: '#f0c040',
         tiers: [
-            { 
-                level: 1, 
+            {
+                level: 1,
                 requiredInBranch: 0,
                 talents: [
                     { id: 'mas_base', name: 'Медитация', iconClass: 'sprite-talent talent-9', max: 5, desc: 'Восстановление энергии в бою +{v}.' }
-                ] 
+                ]
             },
-            { 
-                level: 2, 
+            {
+                level: 2,
                 requiredInBranch: 3,
                 talents: [
                     { id: 'mas_spd', name: 'Ловкость Тени', iconClass: 'sprite-talent talent-10', max: 3, desc: 'Скорость передвижения и атаки +{v}%.' },
                     { id: 'mas_focus', name: 'Взор Дракона', iconClass: 'sprite-talent talent-11', max: 3, desc: 'Точность и шанс попадания +{v}%.' }
-                ] 
+                ]
             },
-            { 
-                level: 3, 
+            {
+                level: 3,
                 requiredInBranch: 10,
                 talents: [
                     { id: 'mas_ult', name: 'Дзен-Мастер', iconClass: 'sprite-talent talent-12', max: 1, desc: 'Способности стоят на 25% меньше энергии.' }
-                ] 
+                ]
             }
         ]
     }
@@ -665,15 +668,15 @@ const TalentsView = ({ hero }: any) => {
     };
 
     return (
-        <motion.div 
+        <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 1.05 }}
-            style={{ 
-                position: 'absolute', 
+            style={{
+                position: 'absolute',
                 inset: '40px 80px',
-                display: 'flex', 
-                flexDirection: 'column', 
+                display: 'flex',
+                flexDirection: 'column',
                 zIndex: 10
             }}
         >
@@ -685,19 +688,19 @@ const TalentsView = ({ hero }: any) => {
                 </div>
 
                 {/* PREMIUM POINTS BLOCK */}
-                <motion.div 
+                <motion.div
                     initial={{ x: 50, opacity: 0 }}
                     animate={{ x: 0, opacity: 1 }}
-                    style={{ 
-                        background: 'linear-gradient(135deg, rgba(240, 192, 64, 0.3) 0%, rgba(20, 20, 25, 0.98) 100%)', 
-                        border: '2px solid #f0c040', 
+                    style={{
+                        background: 'linear-gradient(135deg, rgba(240, 192, 64, 0.3) 0%, rgba(20, 20, 25, 0.98) 100%)',
+                        border: '2px solid #f0c040',
                         padding: '15px 40px', borderRadius: '24px', display: 'flex', alignItems: 'center', gap: '25px',
                         boxShadow: '0 15px 50px rgba(0,0,0,0.9), inset 0 0 30px rgba(240,192,64,0.15)',
                         backdropFilter: 'blur(15px)'
                     }}
                 >
                     <div style={{ position: 'relative' }}>
-                        <motion.span 
+                        <motion.span
                             animate={{ scale: [1, 1.2, 1], filter: ['brightness(1)', 'brightness(1.5)', 'brightness(1)'] }}
                             transition={{ duration: 2, repeat: Infinity }}
                             style={{ fontSize: '50px', display: 'block' }}
@@ -718,8 +721,8 @@ const TalentsView = ({ hero }: any) => {
                 {TALENTS_CONFIG.map(branch => (
                     <div key={branch.id} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                         {/* BRANCH HEADER */}
-                        <div style={{ 
-                            display: 'flex', alignItems: 'center', gap: '15px', 
+                        <div style={{
+                            display: 'flex', alignItems: 'center', gap: '15px',
                             background: `linear-gradient(90deg, ${branch.color}88 0%, transparent 100%)`,
                             padding: '10px 20px', borderRadius: '10px',
                             borderLeft: `4px solid ${branch.color}`,
@@ -729,7 +732,7 @@ const TalentsView = ({ hero }: any) => {
                             <span style={{ fontSize: '24px', filter: `drop-shadow(0 0 8px ${branch.color})` }}>{branch.icon}</span>
                             <span style={{ color: '#fff', fontSize: '20px', fontWeight: 900, fontFamily: "'Cinzel', serif", letterSpacing: '2px', textShadow: `0 0 12px ${branch.color}` }}>{branch.title}</span>
                         </div>
-                        
+
                         <div style={{ display: 'flex', flexDirection: 'column', position: 'relative' }}>
                             {branch.tiers.map((tier, tIndex) => {
                                 const branchPoints = Object.entries(talents)
@@ -779,11 +782,11 @@ const TalentsView = ({ hero }: any) => {
                                             {tier.talents.map(talent => {
                                                 const lvl = talents[talent.id] || 0;
                                                 return (
-                                                    <TalentNode 
-                                                        key={talent.id} 
-                                                        talent={talent} 
-                                                        level={lvl} 
-                                                        branchColor={branch.color} 
+                                                    <TalentNode
+                                                        key={talent.id}
+                                                        talent={talent}
+                                                        level={lvl}
+                                                        branchColor={branch.color}
                                                         isUnlocked={isUnlocked}
                                                         canAfford={availablePoints > 0}
                                                         onClick={() => handleUpgrade(talent, branch.id)}
@@ -796,9 +799,9 @@ const TalentsView = ({ hero }: any) => {
                                                                 const x = (rect.right - rootRect.left) / scale + 20;
                                                                 const y = (rect.top - rootRect.top) / scale;
                                                                 // SMART POSITIONING: Lowered threshold and increased offset to ensure visibility
-                                                                setTooltipPos({ 
-                                                                    x: x > 1400 ? x - 520 : x, 
-                                                                    y: y > 420 ? y - 520 : y 
+                                                                setTooltipPos({
+                                                                    x: x > 1400 ? x - 520 : x,
+                                                                    y: y > 420 ? y - 520 : y
                                                                 });
                                                             }
                                                             setActiveTalent({ ...talent, branchPoints, required: tier.requiredInBranch, level: lvl });
@@ -840,10 +843,10 @@ const TalentsView = ({ hero }: any) => {
             {/* CONTEXTUAL TOOLTIP (ABSOLUTE) */}
             <AnimatePresence>
                 {activeTalent && (
-                    <TalentTooltip 
-                        talent={activeTalent} 
+                    <TalentTooltip
+                        talent={activeTalent}
                         pos={tooltipPos}
-                        color={TALENTS_CONFIG.find(b => b.tiers.some(t => t.talents.some(tt => tt.id === activeTalent.id)))?.color || '#fff'} 
+                        color={TALENTS_CONFIG.find(b => b.tiers.some(t => t.talents.some(tt => tt.id === activeTalent.id)))?.color || '#fff'}
                     />
                 )}
             </AnimatePresence>
@@ -873,7 +876,7 @@ const TalentNode = ({ talent, level, branchColor, isUnlocked, canAfford, onClick
             }}
         >
             <div className={talent.iconClass} style={{ width: '70px', height: '70px', filter: isUnlocked ? 'none' : 'grayscale(1) brightness(0.5)' }} />
-            
+
             <div style={{
                 position: 'absolute', bottom: '5px', right: '5px',
                 background: isMax ? 'linear-gradient(135deg, #f0c040, #d4a017)' : '#0a0a0a',
@@ -907,7 +910,7 @@ const TalentTooltip = ({ talent, pos, color }: any) => {
     let left = pos.x;
     let top = pos.y;
     // Bounds check within 1920x1080 (Hero Scene bounds)
-    const expectedHeight = 550; 
+    const expectedHeight = 550;
     if (left + 480 > 1910) left = pos.x - 520;
     if (top + expectedHeight > 1070) top = 1070 - expectedHeight;
     if (top < 10) top = 10;
@@ -926,8 +929,8 @@ const TalentTooltip = ({ talent, pos, color }: any) => {
             }}
         >
             <div style={{ display: 'flex', alignItems: 'center', gap: '25px', marginBottom: '25px' }}>
-                <div style={{ 
-                    width: '85px', height: '85px', background: 'rgba(255,255,255,0.05)', 
+                <div style={{
+                    width: '85px', height: '85px', background: 'rgba(255,255,255,0.05)',
                     borderRadius: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center',
                     border: `1px solid ${color}66`, boxShadow: `inset 0 0 15px ${color}22`
                 }}>
@@ -938,7 +941,7 @@ const TalentTooltip = ({ talent, pos, color }: any) => {
                     <div style={{ color: color, fontSize: '15px', fontWeight: 900, letterSpacing: '2px' }}>{isMax ? 'МАКС. УРОВЕНЬ' : `УРОВЕНЬ ${talent.level}/${talent.max}`}</div>
                 </div>
             </div>
-            
+
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                 <div style={{ background: 'rgba(255,255,255,0.04)', padding: '20px', borderRadius: '18px', border: '1px solid rgba(255,255,255,0.08)' }}>
                     <div style={{ color: color, fontSize: '12px', fontWeight: 900, marginBottom: '10px', letterSpacing: '2px', textTransform: 'uppercase' }}>Текущий Эффект</div>
@@ -954,9 +957,9 @@ const TalentTooltip = ({ talent, pos, color }: any) => {
             </div>
 
             {talent.branchPoints < talent.required && (
-                <div style={{ 
-                    marginTop: '25px', background: 'linear-gradient(90deg, rgba(239, 68, 68, 0.4), rgba(239, 68, 68, 0.1))', 
-                    padding: '15px', borderRadius: '14px', border: '1px solid #ef4444', color: '#fff', 
+                <div style={{
+                    marginTop: '25px', background: 'linear-gradient(90deg, rgba(239, 68, 68, 0.4), rgba(239, 68, 68, 0.1))',
+                    padding: '15px', borderRadius: '14px', border: '1px solid #ef4444', color: '#fff',
                     fontSize: '14px', fontWeight: 900, textAlign: 'center', letterSpacing: '1.5px',
                     fontFamily: "'Cinzel', serif", boxShadow: '0 10px 20px rgba(0,0,0,0.3)'
                 }}>
@@ -972,7 +975,7 @@ const HeroTooltip = ({ hero, mousePos, rarityColors }: any) => {
     const isLowGraphics = graphicsQuality === 'LOW';
     const isOwned = ownedHeroes.includes(hero.id);
     const color = rarityColors[hero.rarity];
-    const tooltipWidth = 280; 
+    const tooltipWidth = 280;
     const tooltipHeight = 240;
 
     let left = mousePos.x + 30;
@@ -992,26 +995,26 @@ const HeroTooltip = ({ hero, mousePos, rarityColors }: any) => {
                 top: top,
                 width: `${tooltipWidth}px`,
                 background: isLowGraphics ? 'rgba(5,3,2,1)' : 'rgba(10,6,3,0.98)',
-                border: `2px solid ${color}`, 
-                borderRadius: '16px', 
+                border: `2px solid ${color}`,
+                borderRadius: '16px',
                 padding: '20px',
-                zIndex: 10000, 
+                zIndex: 10000,
                 pointerEvents: 'none',
                 boxShadow: isLowGraphics ? 'none' : `0 20px 60px rgba(0,0,0,0.9), 0 0 40px ${color}44`,
                 backdropFilter: isLowGraphics ? 'none' : 'blur(16px)'
             }}
         >
             <div style={{ color: '#fff', fontSize: '20px', fontFamily: "'Cinzel', serif", marginBottom: '8px', textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>{hero.name}</div>
-            <div style={{ 
-                color: color, 
-                fontSize: '11px', 
-                fontWeight: 900, 
-                textTransform: 'uppercase', 
-                letterSpacing: '2px', 
-                marginBottom: '15px', 
-                background: `${color}33`, 
-                padding: '4px 12px', 
-                borderRadius: '6px', 
+            <div style={{
+                color: color,
+                fontSize: '11px',
+                fontWeight: 900,
+                textTransform: 'uppercase',
+                letterSpacing: '2px',
+                marginBottom: '15px',
+                background: `${color}33`,
+                padding: '4px 12px',
+                borderRadius: '6px',
                 display: 'inline-block'
             }}>
                 {hero.rarity}
@@ -1045,7 +1048,7 @@ const TooltipStat = ({ label, value, color, icon }: any) => (
 const PurchaseModal = ({ hero, onClose, rarityColors }: any) => {
     const { gold, crystals, unlockHero, spendGold, spendDiamonds } = useGameStore();
     const color = rarityColors[hero.rarity];
-    
+
     const price = hero.unlockCost;
     const isGold = hero.unlockType === 'gold';
     const hasEnough = isGold ? gold >= price : crystals >= price;
@@ -1128,7 +1131,7 @@ const PurchaseModal = ({ hero, onClose, rarityColors }: any) => {
                         onClick={handleConfirm}
                         disabled={!hasEnough}
                         style={{
-                            flex: 1, padding: '18px 0', borderRadius: '12px', 
+                            flex: 1, padding: '18px 0', borderRadius: '12px',
                             background: hasEnough ? (isGold ? 'linear-gradient(180deg, #f1c40f 0%, #f39c12 100%)' : 'linear-gradient(180deg, #a855f7 0%, #7c3aed 100%)') : 'rgba(255,255,255,0.02)',
                             border: 'none', color: hasEnough ? '#fff' : 'rgba(255,255,255,0.1)',
                             fontSize: '12px', fontWeight: 900, cursor: hasEnough ? 'pointer' : 'default', fontFamily: "'Cinzel', serif",
@@ -1299,9 +1302,9 @@ const SkillItem = ({ icon, name, desc }: any) => (
 
 
 const ROLE_ICONS: Record<string, { icon: string; label: string; color: string; bg: string }> = {
-    TANK:     { icon: '🛡️', label: 'ТАНК',    color: '#60a5fa', bg: 'rgba(30,60,120,0.9)' },
-    WARRIOR:  { icon: '⚔️', label: 'БОЕЦ',    color: '#fb923c', bg: 'rgba(120,50,10,0.9)' },
-    ASSASSIN: { icon: '🗡️', label: 'УБИЙЦА',  color: '#c084fc', bg: 'rgba(80,20,120,0.9)' },
+    TANK: { icon: '🛡️', label: 'ТАНК', color: '#60a5fa', bg: 'rgba(30,60,120,0.9)' },
+    WARRIOR: { icon: '⚔️', label: 'БОЕЦ', color: '#fb923c', bg: 'rgba(120,50,10,0.9)' },
+    ASSASSIN: { icon: '🗡️', label: 'УБИЙЦА', color: '#c084fc', bg: 'rgba(80,20,120,0.9)' },
 };
 
 const HeroCard = ({ hero, isOwned, isActive, onClick, onBuyClick, color, onMouseEnter, onMouseMove, onMouseLeave }: any) => {
@@ -1320,8 +1323,8 @@ const HeroCard = ({ hero, isOwned, isActive, onClick, onBuyClick, color, onMouse
     const achievementProgress = hero.unlockType === 'level'
         ? { current: Math.min(level, hero.unlockCost), max: hero.unlockCost }
         : hero.unlockType === 'achievement' && hero.unlockAchievement?.includes('50')
-        ? { current: Math.min(trophies % 50, 50), max: 50 }
-        : null;
+            ? { current: Math.min(trophies % 50, 50), max: 50 }
+            : null;
 
     return (
         <motion.div
@@ -1442,8 +1445,8 @@ const HeroCard = ({ hero, isOwned, isActive, onClick, onBuyClick, color, onMouse
                                     background: !canAfford
                                         ? 'rgba(50,50,55,0.9)'
                                         : isGold
-                                        ? 'linear-gradient(180deg, #f1c40f 0%, #d4a017 100%)'
-                                        : 'linear-gradient(180deg, #b060f8 0%, #7c3aed 100%)',
+                                            ? 'linear-gradient(180deg, #f1c40f 0%, #d4a017 100%)'
+                                            : 'linear-gradient(180deg, #b060f8 0%, #7c3aed 100%)',
                                     border: canAfford
                                         ? `2px solid ${isGold ? '#f1c40f' : '#c084fc'}`
                                         : '1px solid rgba(255,255,255,0.12)',
@@ -1533,14 +1536,21 @@ const HeroCard = ({ hero, isOwned, isActive, onClick, onBuyClick, color, onMouse
 
 const GearView = ({ hero, stats, detailSubTab, setDetailSubTab, handleItemClick, isEquipped, equippedIds = {}, activeDraggingId, unequipItem, addFloatingText, heroAction, setGlobalHoveredItem, setDevModal }: any) => {
     const { graphicsQuality } = useGameStore();
-    const isLowGraphics = graphicsQuality === 'LOW';
-    
+
     // stats теперь имеет структуру { base, total, weaponTexture }
     const currentStats = stats?.total || { hp: 0, attack: 0, defense: 0, speed: 0, critChance: 0, evasion: 0, resilience: 0, lifesteal: 0, penetration: 0, critDamage: 1.5 };
     const baseStats = stats?.base || currentStats;
-    
+
     let diffs: any = { hp: 0, attack: 0, defense: 0 };
     const [localSelectedId, setLocalSelectedId] = useState<string | null>(null);
+    const [showPowerTooltip, setShowPowerTooltip] = useState(false);
+
+    const gearPower = Object.values(equippedIds).reduce((acc: number, itemId: any) => {
+        if (!itemId) return acc;
+        const item = ITEMS_DATABASE[String(itemId)] as any;
+        if (!item) return acc;
+        return acc + (item.attackBonus || 0) * 2 + (item.defenseBonus || 0) * 1.5 + (item.hpBonus || 0) * 0.1;
+    }, 0);
 
     const onInternalItemClick = (id: string) => {
         setLocalSelectedId(id);
@@ -1572,50 +1582,111 @@ const GearView = ({ hero, stats, detailSubTab, setDetailSubTab, handleItemClick,
     }
 
     return (
-            <motion.div
-                key="hero"
-                initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 1.05 }}
-                style={{ position: 'absolute', inset: '20px 60px', display: 'flex', gap: '40px', alignItems: 'stretch' }}
-            >
+        <motion.div
+            key="hero"
+            initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 1.05 }}
+            style={{ position: 'absolute', inset: '20px 60px', display: 'flex', gap: '40px', alignItems: 'stretch' }}
+        >
+            {/* ЛЕВАЯ ПАНЕЛЬ: КУКЛА ПЕРСОНАЖА */}
             <div style={{
-                width: '380px', height: '100%', background: isLowGraphics ? 'rgba(20, 20, 25, 1)' : 'rgba(20, 20, 25, 0.7)', 
-                backdropFilter: isLowGraphics ? 'none' : 'blur(15px)',
-                borderRadius: '24px', border: '2px solid rgba(240, 192, 64, 0.3)',
-                boxShadow: isLowGraphics ? 'none' : '0 0 40px rgba(0,0,0,0.6), inset 0 0 20px rgba(240, 192, 64, 0.05)',
-                display: 'flex', flexDirection: 'column', padding: '40px 30px', gap: '30px', zIndex: 5
+                width: '420px', height: '100%',
+                background: 'radial-gradient(circle at 50% 30%, rgba(60, 40, 10, 0.4) 0%, rgba(10, 10, 15, 0.8) 70%)',
+                backdropFilter: 'blur(20px)',
+                borderRadius: '30px', border: '1px solid rgba(240, 192, 64, 0.2)',
+                display: 'flex', flexDirection: 'column', padding: '30px', gap: '20px', zIndex: 5,
+                boxShadow: 'inset 0 0 50px rgba(0,0,0,0.8), 0 20px 50px rgba(0,0,0,0.6)'
             }}>
-                <div style={{ textAlign: 'center', marginBottom: '10px' }}>
-                    <h3 style={{ color: '#c8a870', fontSize: '20px', fontFamily: "'Cinzel', serif", letterSpacing: '2px' }}>ЭКИПИРОВКА</h3>
-                    <div style={{ height: '1px', background: 'linear-gradient(90deg, transparent, #f0c040, transparent)', marginTop: '10px' }} />
+                <div style={{ textAlign: 'center' }}>
+                    <h3 style={{ color: '#f0c040', fontSize: '20px', fontFamily: "'Cinzel', serif", letterSpacing: '3px', margin: 0 }}>СНАРЯЖЕНИЕ</h3>
+                    <div style={{ height: '1px', background: 'linear-gradient(90deg, transparent, #f0c040, transparent)', marginTop: '10px', opacity: 0.5 }} />
                 </div>
-                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '35px', alignItems: 'center', justifyContent: 'center' }}>
-                    <EquipmentSlot id="HELMETS" label="ГОЛОВА" itemId={equippedIds.HELMETS} activeDraggingId={activeDraggingId} 
-                        onMouseEnter={(e: any) => setGlobalHoveredItem(equippedIds.HELMETS, e.clientX, e.clientY)}
-                        onMouseLeave={() => setGlobalHoveredItem(null, 0, 0)}
-                        onMouseMove={(e: any) => setGlobalHoveredItem(equippedIds.HELMETS, e.clientX, e.clientY)}
-                        onClick={() => { if(equippedIds.HELMETS) handleUnequip(equippedIds.HELMETS); }} 
-                    />
-                    <EquipmentSlot id="ARMOR" label="ТЕЛО" itemId={equippedIds.ARMOR} activeDraggingId={activeDraggingId} 
-                        onMouseEnter={(e: any) => setGlobalHoveredItem(equippedIds.ARMOR, e.clientX, e.clientY)}
-                        onMouseLeave={() => setGlobalHoveredItem(null, 0, 0)}
-                        onMouseMove={(e: any) => setGlobalHoveredItem(equippedIds.ARMOR, e.clientX, e.clientY)}
-                        onClick={() => { if(equippedIds.ARMOR) handleUnequip(equippedIds.ARMOR); }} 
-                    />
-                    <EquipmentSlot id="WEAPONS" label="ОРУЖИЕ" itemId={equippedIds.WEAPONS} activeDraggingId={activeDraggingId} 
-                        onMouseEnter={(e: any) => setGlobalHoveredItem(equippedIds.WEAPONS, e.clientX, e.clientY)}
-                        onMouseLeave={() => setGlobalHoveredItem(null, 0, 0)}
-                        onMouseMove={(e: any) => setGlobalHoveredItem(equippedIds.WEAPONS, e.clientX, e.clientY)}
-                        onClick={() => { if(equippedIds.WEAPONS) handleUnequip(equippedIds.WEAPONS); }} 
-                    />
-                    <EquipmentSlot id="SHIELDS" label="ЩИТ" itemId={equippedIds.SHIELDS} activeDraggingId={activeDraggingId} 
-                        onMouseEnter={(e: any) => setGlobalHoveredItem(equippedIds.SHIELDS, e.clientX, e.clientY)}
-                        onMouseLeave={() => setGlobalHoveredItem(null, 0, 0)}
-                        onMouseMove={(e: any) => setGlobalHoveredItem(equippedIds.SHIELDS, e.clientX, e.clientY)}
-                        onClick={() => { if(equippedIds.SHIELDS) handleUnequip(equippedIds.SHIELDS); }} 
-                    />
+
+                <div style={{
+                    flex: 1,
+                    position: 'relative',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                }}>
+                    <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(3, 110px)',
+                        gridTemplateRows: 'repeat(4, 110px)',
+                        gap: '15px',
+                        justifyContent: 'center',
+                        position: 'relative'
+                    }}>
+                        <motion.div animate={{ rotate: 360 }} transition={{ duration: 50, repeat: Infinity, ease: 'linear' }} style={{ position: 'absolute', top: '50%', left: '50%', width: '450px', height: '450px', marginLeft: '-225px', marginTop: '-225px', border: '1px dashed rgba(240,192,64,0.06)', borderRadius: '50%', pointerEvents: 'none', zIndex: 0 }} />
+                        <motion.div animate={{ rotate: -360 }} transition={{ duration: 70, repeat: Infinity, ease: 'linear' }} style={{ position: 'absolute', top: '50%', left: '50%', width: '350px', height: '350px', marginLeft: '-175px', marginTop: '-175px', border: '1px solid rgba(160,64,255,0.05)', borderRadius: '50%', pointerEvents: 'none', zIndex: 0 }} />
+
+                        {/* Ряд 1: Голова */}
+                        <div style={{ zIndex: 1 }} />
+                        <div style={{ zIndex: 1 }}>
+                            <EquipmentSlot id="HELMETS" label="ШЛЕМЫ" itemId={equippedIds.HELMETS} activeDraggingId={activeDraggingId}
+                                onClick={() => { if (equippedIds.HELMETS) handleUnequip(equippedIds.HELMETS); }}
+                            />
+                        </div>
+                        <div style={{ zIndex: 1 }} />
+
+                        {/* Ряд 2: Плечи и Доспех */}
+                        <div style={{ zIndex: 1 }}>
+                            <EquipmentSlot id="SHOULDERS" label="НАПЛЕЧНИКИ" itemId={equippedIds.SHOULDERS} activeDraggingId={activeDraggingId}
+                                onClick={() => { if (equippedIds.SHOULDERS) handleUnequip(equippedIds.SHOULDERS); }}
+                            />
+                        </div>
+                        <div style={{ zIndex: 1 }}>
+                            <EquipmentSlot id="ARMOR" label="ДОСПЕХИ" itemId={equippedIds.ARMOR} activeDraggingId={activeDraggingId}
+                                onClick={() => { if (equippedIds.ARMOR) handleUnequip(equippedIds.ARMOR); }}
+                            />
+                        </div>
+                        <div style={{ zIndex: 1 }} />
+
+                        {/* Ряд 3: Оружие, Поножи, Щит */}
+                        <div style={{ zIndex: 1 }}>
+                            <EquipmentSlot id="WEAPONS" label="ОРУЖИЕ" itemId={equippedIds.WEAPONS} activeDraggingId={activeDraggingId}
+                                onClick={() => { if (equippedIds.WEAPONS) handleUnequip(equippedIds.WEAPONS); }}
+                            />
+                        </div>
+                        <div style={{ zIndex: 1 }}>
+                            <EquipmentSlot id="PANTS" label="ПОНОЖИ" itemId={equippedIds.PANTS} activeDraggingId={activeDraggingId}
+                                onClick={() => { if (equippedIds.PANTS) handleUnequip(equippedIds.PANTS); }}
+                            />
+                        </div>
+                        <div style={{ zIndex: 1 }}>
+                            <EquipmentSlot id="SHIELDS" label="ЩИТЫ" itemId={equippedIds.SHIELDS} activeDraggingId={activeDraggingId}
+                                onClick={() => { if (equippedIds.SHIELDS) handleUnequip(equippedIds.SHIELDS); }}
+                            />
+                        </div>
+
+                        {/* Ряд 4: Сапоги */}
+                        <div style={{ zIndex: 1 }} />
+                        <div style={{ zIndex: 1 }}>
+                            <EquipmentSlot id="BOOTS" label="САПОГИ" itemId={equippedIds.BOOTS} activeDraggingId={activeDraggingId}
+                                onClick={() => { if (equippedIds.BOOTS) handleUnequip(equippedIds.BOOTS); }}
+                            />
+                        </div>
+                        <div style={{ zIndex: 1 }} />
+                    </div>
                 </div>
-                <div style={{ textAlign: 'center', opacity: 0.6, fontSize: '11px', color: '#c8a870', letterSpacing: '2px', fontWeight: 900 }}>
-                    КЛИКНИТЕ ПО ПРЕДМЕТУ В ИНВЕНТАРЕ
+
+                <div 
+                    onMouseEnter={() => setShowPowerTooltip(true)}
+                    onMouseLeave={() => setShowPowerTooltip(false)}
+                    style={{ position: 'relative', background: 'rgba(0,0,0,0.4)', padding: '15px', borderRadius: '20px', border: '1px solid rgba(240,192,64,0.15)', textAlign: 'center', marginTop: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'center', boxShadow: 'inset 0 0 20px rgba(0,0,0,0.8)', cursor: 'help' }}
+                >
+                    {showPowerTooltip && (
+                        <div style={{ position: 'absolute', bottom: '110%', left: '50%', transform: 'translateX(-50%)', background: 'rgba(0,0,0,0.95)', border: '1px solid #f0c040', padding: '12px', borderRadius: '12px', width: '220px', fontSize: '12px', color: '#fff', zIndex: 100, pointerEvents: 'none', boxShadow: '0 10px 30px rgba(0,0,0,0.5)' }}>
+                            <div style={{ color: '#f0c040', fontWeight: 900, marginBottom: '5px', letterSpacing: '1px' }}>БОЕВАЯ МОЩЬ</div>
+                            Суммарный показатель силы вашего снаряжения. Учитывает бонусы атаки, защиты и здоровья от всех надетых предметов.
+                        </div>
+                    )}
+                    <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '10px', fontWeight: 900, letterSpacing: '3px', marginBottom: '5px' }}>ОБЩАЯ МОЩЬ</div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                        <span style={{ background: 'linear-gradient(180deg, #ffffff 0%, #f0c040 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', fontSize: '36px', fontFamily: "'Inter', sans-serif", fontWeight: 900, letterSpacing: '1px', filter: 'drop-shadow(0 4px 10px rgba(0,0,0,0.5))' }}>
+                            {Math.floor(gearPower)}
+                        </span>
+                        <img src={AssetsMap.BACKGROUNDS.SHOP_DIVIDER} style={{ height: '35px', objectFit: 'contain', filter: 'drop-shadow(0 4px 10px rgba(0,0,0,0.6))' }} alt="Мощь" />
+                    </div>
                 </div>
             </div>
 
@@ -1637,41 +1708,47 @@ const GearView = ({ hero, stats, detailSubTab, setDetailSubTab, handleItemClick,
             <div style={{ width: '550px', display: 'flex', flexDirection: 'column' }}>
                 <div style={{ display: 'flex', background: 'rgba(0,0,0,0.5)', borderRadius: '10px', padding: '5px', marginBottom: '20px', gap: '5px' }}>
                     {['STATS', 'INVENTORY', 'LORE'].map(tab => (
-                        <button 
-                            key={tab} 
+                        <button
+                            key={tab}
                             onClick={() => {
                                 if (tab === 'LORE') {
-                                    setDevModal({ isOpen: true, title: 'ЛЕГЕНДА ГЕРОЯ' });
+                                    setDevModal({ isOpen: true, title: 'СКОРО' });
                                 } else {
                                     setDetailSubTab(tab as any);
                                 }
-                            }} 
+                            }}
                             style={{ flex: 1, padding: '10px', background: detailSubTab === tab ? '#f0c040' : 'transparent', color: detailSubTab === tab ? '#000' : '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 800, fontSize: '11px' }}
                         >
-                            {tab === 'STATS' ? 'СТАТЫ' : tab === 'INVENTORY' ? 'ИНВЕНТАРЬ' : 'ЛЕГЕНДА'}
+                            {tab === 'STATS' ? 'СТАТЫ' : tab === 'INVENTORY' ? 'РЮКЗАК' : 'ЛО?'}
                         </button>
                     ))}
                 </div>
-                <div style={{ flex: 1, background: 'rgba(12, 8, 8, 0.98)', borderRadius: '25px', border: '2px solid rgba(240,192,64,0.4)', padding: '25px', overflow: 'visible', boxShadow: '0 20px 60px rgba(0,0,0,1)', display: 'flex', flexDirection: 'column', position: 'relative' }}>
+                <div style={{ flex: 1, background: 'rgba(20, 20, 25, 0.6)', backdropFilter: 'blur(20px)', borderRadius: '30px', border: '1px solid rgba(240,192,64,0.3)', padding: '25px', overflow: 'visible', boxShadow: '0 20px 60px rgba(0,0,0,1)', display: 'flex', flexDirection: 'column', position: 'relative' }}>
                     {detailSubTab === 'INVENTORY' ? (
                         <InventoryPanel mode="COMPACT" onItemClick={onInternalItemClick} setGlobalHoveredItem={setGlobalHoveredItem} />
                     ) : detailSubTab === 'STATS' ? (
-                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '15px', overflowY: 'auto', paddingRight: '10px', paddingTop: '10px' }} className="custom-scrollbar">
-                            <StatLine label="ЗДОРОВЬЕ" value={currentStats.hp} base={baseStats.hp} diff={diffs.hp} iconClass="sprite-stat stat-hp" color="#ef4444" max={10000} tooltip="Общий запас жизненных сил героя." placement="bottom" />
-                            <StatLine label="АТАКА" value={currentStats.attack} base={baseStats.attack} diff={diffs.attack} iconClass="sprite-stat stat-attack" color="#f97316" max={2000} tooltip="Сила ваших ударов. Влияет на базовый урон." placement="bottom" />
-                            <StatLine label="ЗАЩИТА" value={currentStats.defense} base={baseStats.defense} diff={diffs.defense} iconClass="sprite-stat stat-defense" color="#3b82f6" max={1000} tooltip="Снижает входящий урон." />
-                            <StatLine label="СКОРОСТЬ" value={currentStats.speed} base={baseStats.speed} iconClass="sprite-stat stat-speed" color="#fcd34d" max={200} tooltip="Влияет на частоту ходов." />
-                            <StatLine label="КРИТ. ШАНС" value={`${Math.round(currentStats.critChance)}%`} base={`${Math.round(baseStats.critChance)}%`} iconClass="sprite-stat stat-crit" color="#a855f7" max={100} tooltip="Вероятность нанести критический удар." />
-                            <StatLine label="УКЛОНЕНИЕ" value={`${currentStats.evasion}%`} base={`${baseStats.evasion}%`} iconClass="sprite-stat stat-accuracy" color="#4ade80" max={100} tooltip="Шанс избежать атаки." />
-                            <StatLine label="ПРОБИТИЕ" value={currentStats.penetration} base={baseStats.penetration} iconClass="sprite-stat stat-penetration" color="#fbbf24" max={500} tooltip="Игнорирование брони цели." />
-                            <StatLine label="ВАМПИРИЗМ" value={`${currentStats.lifesteal}%`} base={`${baseStats.lifesteal}%`} iconClass="sprite-stat stat-lifesteal" color="#f43f5e" max={100} tooltip="Лечение от нанесенного урона." />
-                            <div style={{ marginTop: '30px', padding: '20px', background: 'rgba(240,192,64,0.05)', borderRadius: '15px', border: '1px dashed rgba(240,192,64,0.2)' }}>
-                                <p style={{ color: '#c8a870', fontSize: '14px', margin: 0, textAlign: 'center', fontStyle: 'italic', lineHeight: '1.6' }}>{hero.description}</p>
-                            </div>
+                        <div style={{ 
+                            flex: 1, 
+                            display: 'grid', 
+                            gridTemplateColumns: '1fr 1fr', 
+                            gridAutoRows: 'min-content',
+                            gap: '20px', 
+                            overflowY: 'auto', 
+                            paddingRight: '5px',
+                            paddingTop: '10px' 
+                        }} className="custom-scrollbar">
+                            <StatCard label="ЗДОРОВЬЕ" value={currentStats.hp} base={baseStats.hp} iconClass="sprite-stat stat-hp" color="#ef4444" max={10000} tooltip="Общий запас жизненных сил персонажа." />
+                            <StatCard label="СИЛА АТАКИ" value={currentStats.attack} base={baseStats.attack} iconClass="sprite-stat stat-attack" color="#f97316" max={2000} tooltip="Влияет на урон, наносимый противникам." />
+                            <StatCard label="ЗАЩИТА" value={currentStats.defense} base={baseStats.defense} iconClass="sprite-stat stat-defense" color="#3b82f6" max={1000} tooltip="Снижает получаемый физический урон." />
+                            <StatCard label="СКОРОСТЬ АТАКИ" value={currentStats.speed} base={baseStats.speed} iconClass="sprite-stat stat-speed" color="#22c55e" max={200} tooltip="Частота атак и скорость передвижения." />
+                            <StatCard label="КРИТ. ШАНС" value={currentStats.critChance} base={baseStats.critChance} iconClass="sprite-stat stat-crit" color="#a855f7" max={100} tooltip="Шанс нанести критический удар." />
+                            <StatCard label="ВАМПИРИЗМ" value={currentStats.lifesteal || 0} base={baseStats.lifesteal || 0} iconClass="sprite-stat stat-lifesteal" color="#e11d48" max={100} tooltip="Восстановление здоровья при атаке." />
+                            <StatCard label="ПРОБИТИЕ БРОНИ" value={currentStats.penetration || 0} base={baseStats.penetration || 0} iconClass="sprite-stat stat-penetration" color="#facc15" max={500} tooltip="Игнорирует часть защиты противника." />
+                            <StatCard label="ТОЧНОСТЬ" value={currentStats.accuracy || 100} base={baseStats.accuracy || 100} iconClass="sprite-stat stat-accuracy" color="#0ea5e9" max={200} tooltip="Шанс попасть по уклоняющемуся врагу." />
                         </div>
                     ) : (
-                        <div style={{ height: '100%', overflowY: 'auto' }} className="custom-scrollbar">
-                            <p style={{ color: '#fff', fontSize: '16px', lineHeight: '1.8', fontStyle: 'italic' }}>{hero.lore}</p>
+                        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0.3, fontWeight: 900 }}>
+                            LORE COMING SOON...
                         </div>
                     )}
                 </div>
@@ -1680,119 +1757,174 @@ const GearView = ({ hero, stats, detailSubTab, setDetailSubTab, handleItemClick,
     );
 };
 
-const EquipmentSlot = ({ id, label, itemId, activeDraggingId, onClick, onMouseEnter, onMouseLeave, onMouseMove }: any) => {
+const EquipmentSlot = ({ id, label, itemId, activeDraggingId, onClick }: any) => {
     const { isOver, setNodeRef } = useDroppable({ id });
-    const itemData = itemId ? ITEMS_DATABASE[String(itemId)] as any : null;
-    
-    const rarityColors: any = { COMMON: '#a0a0a0', RARE: '#3b82f6', EPIC: '#a855f7', MYTHIC: '#ef4444', LEGENDARY: '#f59e0b' };
-    const rarityMap: any = { COMMON: 'ОБЫЧНЫЙ', RARE: 'РЕДКИЙ', EPIC: 'ЭПИЧЕСКИЙ', MYTHIC: 'МИФИЧЕСКИЙ', LEGENDARY: 'ЛЕГЕНДАРНЫЙ' };
+    const { setGlobalHoveredItem } = useGameStore();
 
+    const itemData = itemId ? ITEMS_DATABASE[String(itemId)] as any : null;
+    const rarityColors: any = { COMMON: '#a0a0a0', RARE: '#3b82f6', EPIC: '#a855f7', MYTHIC: '#ef4444', LEGENDARY: '#f59e0b' };
     const rarityColor = itemData ? (rarityColors[itemData.rarity] || '#f0c040') : '#f0c040';
 
-    // DnD logic
     const draggingItemData = activeDraggingId ? ITEMS_DATABASE[String(activeDraggingId)] as any : null;
     const isCompatible = draggingItemData && draggingItemData.subTab === id;
-    const isOtherSlotDragging = activeDraggingId && !isCompatible;
 
     return (
-        <motion.div 
-            whileHover={itemId ? { scale: 1.05, x: 10 } : {}}
-            whileTap={itemId ? { scale: 0.95 } : {}}
-            onMouseEnter={onMouseEnter}
-            onMouseLeave={onMouseLeave}
-            onMouseMove={onMouseMove}
-            animate={isCompatible ? { 
-                scale: [1, 1.05, 1],
-                boxShadow: ['0 0 0px rgba(240,192,64,0)', '0 0 30px rgba(240,192,64,0.4)', '0 0 0px rgba(240,192,64,0)']
+        <motion.div
+            whileHover={itemId ? { scale: 1.05, zIndex: 10 } : {}}
+            onMouseEnter={(e: any) => itemId && setGlobalHoveredItem(itemId, e.clientX, e.clientY)}
+            onMouseLeave={() => setGlobalHoveredItem(null, 0, 0)}
+            onMouseMove={(e: any) => itemId && setGlobalHoveredItem(itemId, e.clientX, e.clientY)}
+            animate={isCompatible ? {
+                scale: [1, 1.1, 1],
+                boxShadow: ['0 0 0px rgba(240,192,64,0)', '0 0 30px rgba(240,192,64,0.6)', '0 0 0px rgba(240,192,64,0)']
             } : {}}
-            transition={isCompatible ? { duration: 1.5, repeat: Infinity } : {}}
+            transition={isCompatible ? { duration: 1, repeat: Infinity } : {}}
             onClick={onClick}
-            ref={setNodeRef} 
-            style={{ 
-                width: '220px', 
-                height: '110px', 
-                background: isOver ? 'rgba(240,192,64,0.2)' : 'rgba(0,0,0,0.6)', 
-                borderRadius: '16px', 
-                border: isOver ? `2px solid ${rarityColor}` : (isCompatible ? `2px solid rgba(240,192,64,0.6)` : '1px solid rgba(240,192,64,0.15)'), 
-                display: 'flex', 
-                alignItems: 'center', 
-                padding: '10px', 
-                gap: '15px', 
-                position: 'relative', 
-                transition: 'all 0.3s', 
-                boxShadow: itemData ? `0 0 25px ${rarityColor}33` : 'inset 0 0 15px rgba(0,0,0,0.6)', 
-                cursor: itemId ? 'pointer' : 'default',
-                opacity: isOtherSlotDragging ? 0.4 : 1,
-                filter: isOtherSlotDragging ? 'grayscale(0.5)' : 'none'
+            ref={setNodeRef}
+            style={{
+                width: '110px', height: '110px',
+                background: isOver ? 'rgba(240,192,64,0.2)' : 'rgba(0,0,0,0.4)',
+                borderRadius: '18px',
+                border: isOver ? '2px solid #fff' : (isCompatible ? '2px solid #f0c040' : '1px solid rgba(240,192,64,0.2)'),
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                position: 'relative', transition: 'all 0.3s',
+                boxShadow: itemData ? `0 0 25px ${rarityColor}44` : 'none',
+                cursor: itemId ? 'pointer' : 'default'
             }}>
-            <div style={{ width: '80px', height: '80px', background: 'rgba(0,0,0,0.5)', borderRadius: '12px', border: `2px solid ${itemData ? rarityColor : 'rgba(240,192,64,0.15)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
-                {itemData ? (
-                    itemData.spriteClass ? (
-                        <div className={itemData.spriteClass} style={{ width: '90px', height: '90px' }} />
-                    ) : (
-                        <img src={itemData.image} style={{ width: '85%', height: '85%', objectFit: 'contain', zIndex: 2 }} alt="" />
-                    )
+
+            {itemData ? (
+                itemData.spriteClass ? (
+                    <div className={itemData.spriteClass} style={{ width: '110px', height: '110px' }} />
                 ) : (
-                    <img 
-                        src={
-                            id === 'HELMETS' ? AssetsMap.UI.BLUEPRINT_HELMET :
-                            id === 'ARMOR' ? AssetsMap.UI.BLUEPRINT_ARMOR :
-                            id === 'WEAPONS' ? AssetsMap.UI.BLUEPRINT_WEAPON :
-                            AssetsMap.UI.BLUEPRINT_SHIELD
-                        }
-                        style={{ width: '70%', height: '70%', objectFit: 'contain', opacity: 0.15, filter: 'grayscale(1) brightness(2)' }} 
-                        alt="" 
-                    />
-                )}
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', flex: 1 }}>
-                <div style={{ color: '#c8a870', fontSize: '10px', fontWeight: 900, textTransform: 'uppercase', opacity: 0.5, letterSpacing: '1px' }}>{label}</div>
-                <div style={{ color: itemData ? '#fff' : 'rgba(255,255,255,0.2)', fontSize: '14px', fontWeight: 800, fontFamily: "'Cinzel', serif" }}>{itemData ? itemData.name.split(' ')[0] : 'ПУСТО'}</div>
-                {itemData && (
-                    <div style={{ color: rarityColor, fontSize: '9px', fontWeight: 900, marginTop: '4px' }}>{rarityMap[itemData.rarity] || itemData.rarity}</div>
-                )}
-            </div>
+                    <img src={itemData.image} style={{ width: '80%', height: '80%', objectFit: 'contain' }} alt="" />
+                )
+            ) : (
+                <div style={{ opacity: 0.4, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%' }}>
+                    {id === 'HELMETS' && <img src={AssetsMap.UI.BLUEPRINT_HELMET} style={{ width: '85%', height: '65%', objectFit: 'contain', filter: 'drop-shadow(0 0 8px rgba(240,192,64,0.5)) grayscale(0.5)' }} alt="" />}
+                    {id === 'ARMOR' && <img src={AssetsMap.UI.BLUEPRINT_ARMOR} style={{ width: '85%', height: '65%', objectFit: 'contain', filter: 'drop-shadow(0 0 8px rgba(240,192,64,0.5)) grayscale(0.5)' }} alt="" />}
+                    {id === 'WEAPONS' && <img src={AssetsMap.UI.BLUEPRINT_WEAPON} style={{ width: '85%', height: '65%', objectFit: 'contain', filter: 'drop-shadow(0 0 8px rgba(240,192,64,0.5)) grayscale(0.5)' }} alt="" />}
+                    {id === 'SHIELDS' && <img src={AssetsMap.UI.BLUEPRINT_SHIELD} style={{ width: '85%', height: '65%', objectFit: 'contain', filter: 'drop-shadow(0 0 8px rgba(240,192,64,0.5)) grayscale(0.5)' }} alt="" />}
+                    {id === 'SHOULDERS' && <img src={AssetsMap.UI.BLUEPRINT_SHOULDERS} style={{ width: '85%', height: '65%', objectFit: 'contain', filter: 'drop-shadow(0 0 8px rgba(240,192,64,0.5)) grayscale(0.5)' }} alt="" />}
+                    {id === 'PANTS' && <img src={AssetsMap.UI.BLUEPRINT_PANTS} style={{ width: '85%', height: '65%', objectFit: 'contain', filter: 'drop-shadow(0 0 8px rgba(240,192,64,0.5)) grayscale(0.5)' }} alt="" />}
+                    {id === 'BOOTS' && <img src={AssetsMap.UI.BLUEPRINT_BOOTS} style={{ width: '85%', height: '65%', objectFit: 'contain', filter: 'drop-shadow(0 0 8px rgba(240,192,64,0.5)) grayscale(0.5)' }} alt="" />}
+                    {id === 'RING' && <div style={{ fontSize: '40px', filter: 'drop-shadow(0 0 8px rgba(240,192,64,0.5)) grayscale(0.8)', opacity: 0.8 }}>💍</div>}
+                    {!['HELMETS', 'ARMOR', 'WEAPONS', 'SHIELDS', 'SHOULDERS', 'PANTS', 'BOOTS', 'RING'].includes(id) && (
+                        <div style={{ fontSize: '24px', opacity: 0.5, filter: 'grayscale(1)' }}>📦</div>
+                    )}
+                    <div style={{ fontSize: '9px', fontWeight: 900, marginTop: '5px', color: '#f0c040', letterSpacing: '1px', textShadow: '0 2px 4px rgba(0,0,0,0.8)', textTransform: 'uppercase' }}>{label}</div>
+                </div>
+            )}
+
+            {itemData && (
+                <div style={{ position: 'absolute', bottom: '-8px', background: rarityColor, padding: '2px 6px', borderRadius: '4px', fontSize: '8px', fontWeight: 900, color: '#000', boxShadow: '0 2px 5px rgba(0,0,0,0.5)' }}>
+                    {itemData.rarity}
+                </div>
+            )}
         </motion.div>
     );
 };
 
-const StatLine = ({ label, value, base, diff, iconClass, color, max, tooltip, placement = 'top' }: any) => {
+const StatCard = ({ label, value, base, iconClass, color, max, tooltip }: any) => {
     const [showTip, setShowTip] = useState(false);
-    
-    // Вычисляем бонус (разницу между итоговым и базовым значением)
     const getNum = (v: any) => parseFloat(String(v).replace(/[^0-9.]/g, '')) || 0;
     const valNum = getNum(value);
     const baseNum = getNum(base);
     const bonus = valNum - baseNum;
+    
+    const isPercentage = label.includes('КРИТ') || label === 'ВАМПИРИЗМ' || label === 'СКОРОСТЬ' || label === 'ТОЧНОСТЬ';
+    const displayVal = isPercentage ? (valNum < 5 ? Math.round(valNum * 100) : valNum) : valNum;
+    const bonusVal = isPercentage ? (bonus < 5 ? Math.round(bonus * 100) : bonus) : bonus;
+    const formattedValue = isPercentage ? `${displayVal}%` : displayVal.toLocaleString();
 
     return (
-        <div onMouseEnter={() => setShowTip(true)} onMouseLeave={() => setShowTip(false)} style={{ position: 'relative', cursor: 'help' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '14px', fontWeight: 900 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                    <div className={iconClass} style={{ width: '64px', height: '64px', backgroundSize: '400% 200%', flexShrink: 0, imageRendering: 'auto' }} />
-                    <span style={{ color: '#c8a870', letterSpacing: '2px', fontSize: '16px', fontWeight: 900, textTransform: 'uppercase' }}>{label}</span>
-                    {diff !== undefined && diff !== 0 && (
-                        <motion.span initial={{ opacity: 0, x: -5 }} animate={{ opacity: 1, x: 0 }} style={{ color: diff > 0 ? '#22c55e' : '#ef4444', fontSize: '12px', background: 'rgba(0,0,0,0.3)', padding: '2px 6px', borderRadius: '4px' }}>{diff > 0 ? `+${diff}` : diff}</motion.span>
-                    )}
+        <motion.div 
+            whileHover={{ scale: 1.02, backgroundColor: 'rgba(255,255,255,0.1)', borderColor: color }}
+            onMouseEnter={() => setShowTip(true)} 
+            onMouseLeave={() => setShowTip(false)} 
+            style={{ 
+                position: 'relative', 
+                background: 'linear-gradient(135deg, rgba(40,40,50,0.4) 0%, rgba(15,15,20,0.7) 100%)',
+                borderRadius: '24px',
+                padding: '20px',
+                border: '1px solid rgba(255,255,255,0.1)',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '12px',
+                cursor: 'help',
+                overflow: 'hidden',
+                boxShadow: '0 8px 25px rgba(0,0,0,0.4)',
+                transition: 'all 0.3s'
+            }}
+        >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '18px' }}>
+                {/* ИКОНКА - 90px */}
+                <div style={{ 
+                    width: '90px', height: '90px', 
+                    borderRadius: '20px', 
+                    background: 'linear-gradient(135deg, #333 0%, #000 100%)',
+                    border: `2px solid ${color}55`,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    flexShrink: 0,
+                    position: 'relative',
+                    boxShadow: `0 12px 30px rgba(0,0,0,0.6), inset 0 0 25px ${color}15`
+                }}>
+                    <div className={iconClass} style={{ 
+                        width: '75px', height: '75px', 
+                        backgroundSize: '400% 200%', 
+                        filter: `contrast(1.2) brightness(1.1) drop-shadow(0 0 15px ${color}aa)`,
+                        zIndex: 2,
+                        imageRendering: '-webkit-optimize-contrast'
+                    }} />
+                    <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(circle, ${color}44 0%, transparent 85%)` }} />
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ color: '#fff', fontSize: '18px' }}>{value.toLocaleString()}</span>
-                    {bonus > 0 && (
-                        <span style={{ color: '#22c55e', fontSize: '12px', fontWeight: 900 }}>+{bonus.toLocaleString()}</span>
-                    )}
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', overflow: 'hidden' }}>
+                    <span style={{ color: color, fontSize: '12px', fontWeight: 900, letterSpacing: '2px', textTransform: 'uppercase', opacity: 0.9 }}>{label}</span>
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px' }}>
+                        <span style={{ color: '#fff', fontSize: '28px', fontWeight: 900, fontFamily: "'Inter', sans-serif", textShadow: '0 2px 6px rgba(0,0,0,0.6)' }}>{formattedValue}</span>
+                        {bonus > 0 && (
+                            <span style={{ color: '#22c55e', fontSize: '14px', fontWeight: 900, filter: 'drop-shadow(0 0 5px rgba(34,197,94,0.4))' }}>+{bonusVal}{isPercentage ? '%' : ''}</span>
+                        )}
+                    </div>
                 </div>
             </div>
-            <div style={{ width: '100%', height: '6px', background: 'rgba(255,255,255,0.05)', borderRadius: '3px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.02)' }}>
-                <motion.div initial={{ width: 0 }} animate={{ width: `${Math.min(100, (parseFloat(String(value).replace(/[^0-9.]/g, '')) / max) * 100)}%` }} style={{ height: '100%', background: color, boxShadow: `0 0 10px ${color}88` }} />
+
+            {/* ПРОГРЕСС БАР */}
+            <div style={{ width: '100%', height: '8px', background: 'rgba(0,0,0,0.7)', borderRadius: '4px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)' }}>
+                <motion.div 
+                    initial={{ width: 0 }} 
+                    animate={{ width: `${Math.min(100, (valNum / max) * 100)}%` }} 
+                    style={{ 
+                        height: '100%', 
+                        background: `linear-gradient(90deg, ${color}aa 0%, ${color} 100%)`, 
+                        boxShadow: `0 0 20px ${color}99`
+                    }} 
+                />
             </div>
+
             <AnimatePresence>
-                {showTip && tooltip && (
-                    <motion.div initial={{ opacity: 0, y: placement === 'top' ? 10 : -10, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} style={{ position: 'absolute', bottom: placement === 'top' ? '110%' : 'auto', top: placement === 'bottom' ? '110%' : 'auto', left: '0', right: '0', background: 'rgba(30, 30, 40, 0.95)', backdropFilter: 'blur(10px)', padding: '12px 15px', borderRadius: '10px', border: `1px solid ${color}66`, boxShadow: '0 10px 30px rgba(0,0,0,0.8)', color: '#fff', fontSize: '12px', lineHeight: '1.5', zIndex: 1000, pointerEvents: 'none', fontWeight: 600 }}>
-                        <div style={{ color: color, fontWeight: 900, marginBottom: '5px', fontSize: '13px' }}>{label}</div>
-                        {tooltip}
+                {showTip && (
+                    <motion.div 
+                        initial={{ opacity: 0, scale: 1.1, y: 10 }} 
+                        animate={{ opacity: 1, scale: 1, y: 0 }} 
+                        exit={{ opacity: 0, scale: 1.1, y: 10 }} 
+                        style={{ 
+                            position: 'absolute', inset: 0, zIndex: 10,
+                            background: 'rgba(5,5,10,0.98)', backdropFilter: 'blur(20px)',
+                            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                            padding: '15px', textAlign: 'center', color: '#fff',
+                            borderRadius: '20px', border: `2px solid ${color}`,
+                            boxShadow: `0 0 30px ${color}44`
+                        }}
+                    >
+                        <div style={{ color: color, fontWeight: 900, fontSize: '13px', marginBottom: '5px', letterSpacing: '1px' }}>{label}</div>
+                        <div style={{ fontSize: '11px', opacity: 0.9, lineHeight: '1.4' }}>{tooltip}</div>
                     </motion.div>
                 )}
             </AnimatePresence>
-        </div>
+        </motion.div>
     );
 };
+
+// Legacy StatLine removed in favor of StatCard grid
+const StatLine = () => null;

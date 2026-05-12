@@ -40,7 +40,7 @@ export const GfxRoundButton: React.FC<{
         }} className="group-hover:border-[#c48b3b]" />
 
         <img
-            src={resolveAssetPath(`/assets/images/ui/${icon}.png`)}
+            src={resolveAssetPath(`/assets/images/ui/${icon}.webp`)}
             style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', padding: '18px', filter: isLow ? 'none' : 'drop-shadow(0 2px 4px black) sepia(0.2) brightness(1.1)' }}
             alt=""
         />
@@ -66,7 +66,7 @@ export const GfxGoldPanel: React.FC<{ children: React.ReactNode; className?: str
     <div
         className={cn("relative border-[16px] border-transparent", !isLow && "shadow-2xl", className)}
         style={{
-            borderImageSource: `url('${resolveAssetPath('/assets/images/ui/social_bar_bg.png')}')`,
+            borderImageSource: `url('${resolveAssetPath('/assets/images/ui/social_bar_bg.webp')}')`,
             borderImageSlice: '40 fill',
             filter: 'sepia(0.2) saturate(1.2) brightness(0.85) contrast(1.1)', // Эффект старого золота
             ...style
@@ -88,7 +88,7 @@ export const GfxWoodPanel: React.FC<{ children: React.ReactNode; className?: str
     <div
         className={cn("relative border-[18px] border-transparent", !isLow && "shadow-inner", className)}
         style={{
-            borderImageSource: `url('${resolveAssetPath('/assets/images/ui/panel_dark.png')}')`,
+            borderImageSource: `url('${resolveAssetPath('/assets/images/ui/panel_dark.webp')}')`,
             borderImageSlice: '40 fill',
             filter: 'brightness(0.7) contrast(1.2)', // Делаем дерево почти черным шоколадом
             ...style
@@ -126,7 +126,7 @@ export const GfxMenuButton: React.FC<{
             style={style}
         >
             <img
-                src={resolveAssetPath(`/assets/images/ui/${variant === 'red' || variant === 'gold' ? 'btn_battle_gold' : 'btn_bronze'}.png`)}
+                src={resolveAssetPath(`/assets/images/ui/${variant === 'red' || variant === 'gold' ? 'btn_battle_gold' : 'btn_bronze'}.webp`)}
                 style={{ 
                     position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'fill', 
                     filter: isLow ? 'none' : filterMap[variant] 
@@ -170,8 +170,8 @@ export const AvatarFrame: React.FC<{
     showGlow?: boolean;
 }> = ({ avatarFilename, frameFilename, size = 64, showGlow = false }) => {
     const isLow = useGameStore(state => state.graphicsQuality === 'LOW');
-    const avatarSrc = resolveAssetPath(`/assets/images/avatars/${avatarFilename}.png`);
-    const frameSrc = resolveAssetPath(`/assets/images/frames/${frameFilename}.png`);
+    const avatarSrc = resolveAssetPath(`/assets/images/avatars/${avatarFilename.replace(/\.(png|webp)$/, '')}.webp`);
+    const frameSrc = resolveAssetPath(`/assets/images/frames/${frameFilename.replace(/\.(png|webp)$/, '')}.webp`);
 
     return (
         <div
