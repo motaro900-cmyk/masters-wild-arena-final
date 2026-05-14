@@ -2,6 +2,8 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 import { useGameStore } from '../../../store/useGameStore';
+import { audioService } from '../../../services/AudioService';
+import { AssetsMap } from '../../../configs/AssetsMap';
 
 interface BaseWindowProps {
     title: string;
@@ -9,9 +11,10 @@ interface BaseWindowProps {
     onClose: () => void;
     children: React.ReactNode;
     width?: string;
+    headerExtra?: React.ReactNode;
 }
 
-export const BaseWindow: React.FC<BaseWindowProps> = ({ title, isOpen, onClose, children, width = '850px' }) => {
+export const BaseWindow: React.FC<BaseWindowProps> = ({ title, isOpen, onClose, children, width = '850px', headerExtra }) => {
     const uiTheme = useGameStore(state => state.uiTheme);
     const isLight = uiTheme === 'LIGHT';
 
@@ -59,17 +62,23 @@ export const BaseWindow: React.FC<BaseWindowProps> = ({ title, isOpen, onClose, 
                         justifyContent: 'space-between',
                         borderBottom: `2px solid ${theme.border}`
                     }}>
-                        <h2 style={{
-                            color: theme.titleColor,
-                            fontSize: '28px',
-                            fontFamily: "'Philosopher', serif",
-                            margin: 0,
-                            textTransform: 'uppercase',
-                            letterSpacing: '2px'
-                        }}>{title}</h2>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                            <h2 style={{
+                                color: theme.titleColor,
+                                fontSize: '28px',
+                                fontFamily: "'Philosopher', serif",
+                                margin: 0,
+                                textTransform: 'uppercase',
+                                letterSpacing: '2px'
+                            }}>{title}</h2>
+                            {headerExtra}
+                        </div>
                         
                         <button 
-                            onClick={onClose}
+                            onClick={() => {
+                                audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
+                                onClose();
+                            }}
                             style={{
                                 background: 'none',
                                 border: 'none',

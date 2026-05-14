@@ -1,6 +1,7 @@
 import React from 'react';
 import { useGameStore } from '../../../store/useGameStore';
 import { AssetsMap } from '../../../configs/AssetsMap';
+import { audioService } from '../../../services/AudioService';
 
 interface MenuItem {
   id: string;
@@ -13,11 +14,11 @@ interface MenuItem {
  * MENU_ITEMS (v5.4) — Финальная подтяжка вверх.
  */
 const MENU_ITEMS: MenuItem[] = [
-  { id: 'STORE',      label: 'МАГАЗИН',   top: 8,   height: 95 },
-  { id: 'INVENTORY', label: 'ИНВЕНТАРЬ', top: 104, height: 90 },
-  { id: 'HEROES',    label: 'ГЕРОИ',      top: 196, height: 90 },
-  { id: 'CLAN',      label: 'КЛАН',      top: 288, height: 90 },
-  { id: 'RANKING',   label: 'РЕЙТИНГ',   top: 382, height: 90 },
+  { id: 'STORE',      label: 'МАГАЗИН',   top: 10,  height: 102 },
+  { id: 'INVENTORY', label: 'ИНВЕНТАРЬ', top: 112, height: 96 },
+  { id: 'HEROES',    label: 'ГЕРОИ',      top: 212, height: 96 },
+  { id: 'CLAN',      label: 'КЛАН',      top: 312, height: 96 },
+  { id: 'RANKING',   label: 'РЕЙТИНГ',   top: 412, height: 96 },
 ];
 
 export const LeftSidebar: React.FC<{ onOpenWindow: (n: string) => void }> = ({ onOpenWindow }) => {
@@ -28,8 +29,8 @@ export const LeftSidebar: React.FC<{ onOpenWindow: (n: string) => void }> = ({ o
       backgroundImage: `url(${AssetsMap.UI.SIDEBAR_LEFT})`,
       backgroundSize: '100% 100%',
       backgroundRepeat: 'no-repeat',
-      width: 300,
-      height: 520,
+      width: 320,
+      height: 560,
       position: 'relative',
       pointerEvents: 'auto',
     }}>
@@ -38,7 +39,10 @@ export const LeftSidebar: React.FC<{ onOpenWindow: (n: string) => void }> = ({ o
           key={item.id}
           item={item}
           isActive={activeScreen === item.id}
-          onClick={() => onOpenWindow(item.id)}
+          onClick={() => {
+            audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
+            onOpenWindow(item.id);
+          }}
         />
       ))}
     </div>
@@ -60,7 +64,7 @@ const SideMenuItem: React.FC<{
       height: item.height,
       display: 'flex',
       alignItems: 'center',
-      paddingLeft: 135,
+      paddingLeft: 145,
       background: isActive
         ? 'linear-gradient(90deg, rgba(240,192,64,0.1) 0%, rgba(240,192,64,0) 100%)'
         : 'transparent',
@@ -72,7 +76,7 @@ const SideMenuItem: React.FC<{
   >
     <span style={{
       fontFamily: "'Cinzel', serif",
-      fontSize: 15,
+      fontSize: 17,
       fontWeight: 800,
       color: isActive ? '#f0c040' : '#c8a870',
       letterSpacing: '1.5px',

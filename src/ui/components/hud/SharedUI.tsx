@@ -185,7 +185,7 @@ export const AvatarFrame: React.FC<{
             {/* Внутренняя часть аватара - теперь без лишней обводки и большего размера */}
             <div style={{
                 position: 'absolute',
-                inset: '6%', // Было 12%, теперь аватар крупнее
+                inset: '8%', // Сделали чуть меньше, чтобы лучше сидело в рамке
                 borderRadius: '50%',
                 overflow: 'hidden',
                 background: 'radial-gradient(circle, #1a1a1a 0%, #050505 100%)',

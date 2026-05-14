@@ -83,9 +83,13 @@ export const requestNotifications = async (): Promise<boolean> => {
  * Вызывает окно приглашения друзей в игру
  */
 export const showInviteBox = async (): Promise<boolean> => {
-    if (!bridge) return false;
+    if (!bridge) {
+        console.warn('VK Bridge not available. Invite box skipped.');
+        return false;
+    }
     try {
-        await bridge.send('VKWebAppShowInviteBox');
+        const result = await bridge.send('VKWebAppShowInviteBox');
+        console.log('VKWebAppShowInviteBox result:', result);
         return true;
     } catch (error) {
         console.warn('VKWebAppShowInviteBox failed:', error);

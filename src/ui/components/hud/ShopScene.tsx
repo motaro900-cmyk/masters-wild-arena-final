@@ -53,6 +53,7 @@ export const ShopScene: React.FC = () => {
         equippedArmorId,
         equippedShieldId,
         shopInitialTab,
+        shopInitialSubTab,
         goToMainMenu,
         watchAdForReward,
         buyCrystalsPack,
@@ -75,9 +76,14 @@ export const ShopScene: React.FC = () => {
     useEffect(() => {
         const newSubTabs = getSubTabs(activeMainTab);
         if (newSubTabs.length > 0) {
-            setActiveSubTab(newSubTabs[0].id);
+            // Если есть начальная под-вкладка, используем её, иначе первую
+            if (shopInitialSubTab) {
+                setActiveSubTab(shopInitialSubTab);
+            } else {
+                setActiveSubTab(newSubTabs[0].id);
+            }
         }
-    }, [activeMainTab]);
+    }, [activeMainTab, shopInitialSubTab]);
 
     const getSectionTitle = (main: MainTab) => {
         switch (main) {
@@ -497,7 +503,10 @@ const StatItem: React.FC<{ label: string, value: any, icon: string, color: strin
 
 const SidebarBtn: React.FC<{ active: boolean, onClick: () => void, label: string, image: string }> = ({ active, onClick, label, image }) => (
     <motion.button
-        onClick={onClick}
+        onClick={() => {
+            audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
+            onClick();
+        }}
         whileHover={{ x: 5, color: '#fff' }}
         style={{
             width: '100%', height: '80px', background: 'transparent',
@@ -667,7 +676,10 @@ const ShopItemCard = React.forwardRef((props: ShopItemCardProps, ref: React.Forw
 const SubTabBtn: React.FC<{ active: boolean, onClick: () => void, label: string, isMobile: boolean }> = ({ active, onClick, label, isMobile }) => (
     <div style={{ position: 'relative', width: '180px', height: '45px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <motion.button
-            onClick={onClick}
+            onClick={() => {
+                audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
+                onClick();
+            }}
             whileHover={!isMobile ? { y: -2 } : {}}
             style={{
                 width: '100%', height: '100%', background: 'transparent', border: 'none', cursor: 'pointer',
@@ -708,7 +720,10 @@ const ResourceBadge: React.FC<{ value: number | string, bg: string, onPlusClick:
             {typeof value === 'number' ? value.toLocaleString() : value}
         </span>
         <div
-            onClick={onPlusClick}
+            onClick={() => {
+                audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
+                onPlusClick();
+            }}
             style={{
                 position: 'absolute', right: '0',
                 width: '45px', height: '100%', cursor: 'pointer',

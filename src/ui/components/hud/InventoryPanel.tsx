@@ -82,11 +82,7 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ mode = 'FULL', o
                         <button 
                             key={tab.id}
                             onClick={() => {
-                                if (tab.id === 'POTIONS') {
-                                    setDevModalOpen(true);
-                                } else {
-                                    setActiveTab(tab.id as any);
-                                }
+                                setActiveTab(tab.id as any);
                             }}
                             style={{
                                 padding: '8px 16px', borderRadius: '8px', border: '1px solid rgba(240,192,64,0.2)',
@@ -130,10 +126,10 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ mode = 'FULL', o
                     if (!data) return null; // Защита от вылета, если предмета нет в базе
                     
                     const equippedHeroId = getHeroByItemId(item.id);
-                    const isEquippedOnCurrent = equippedHeroId === (selectedHeroId || 'panda');
+                    const isEquippedOnCurrent = String(equippedHeroId) === String(selectedHeroId || 'panda');
                     const isEquippedOnOther = equippedHeroId && !isEquippedOnCurrent;
                     
-                    const rarity = RARITY_COLORS[data?.rarity || 'COMMON'];
+                    const rarity = RARITY_COLORS[String(data?.rarity || 'COMMON')];
                     
                     return (
                         <DraggableItem
@@ -183,37 +179,46 @@ const DraggableItem = ({ item, data, isEquippedOnCurrent, isEquippedOnOther, equ
 
     return (
         <motion.div 
-            ref={setNodeRef}
-            {...listeners}
-            {...attributes}
             whileHover={{ scale: 1.05, zIndex: 10 }}
             whileTap={{ scale: 0.95 }}
             onMouseMove={(e: any) => setGlobalHoveredItem?.(item.id, e.clientX, e.clientY)}
             onMouseEnter={(e: any) => setGlobalHoveredItem?.(item.id, e.clientX, e.clientY)}
             onMouseLeave={() => setGlobalHoveredItem?.(null, 0, 0)}
-            onClick={() => {
-                if (isEquippedOnOther) {
-                    if (!confirm(`Этот предмет надет на ${equippedHeroId}. Передать его текущему герою?`)) return;
-                }
-                onItemClick?.(item.id);
-            }}
             style={{
                 background: rarity.bg, borderRadius: '8px', border: `2px solid ${isEquippedOnCurrent ? '#f0c040' : rarity.border}`,
                 position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center',
                 boxShadow: isEquippedOnCurrent ? '0 0 15px rgba(240,192,64,0.3)' : '0 4px 10px rgba(0,0,0,0.3)',
-                cursor: isDragging ? 'grabbing' : 'grab',
+                cursor: 'pointer',
                 opacity: isDragging ? 0.4 : 1
             }}
         >
+            {/* DRAG HANDLE - Скрытая или маленькая зона для драга */}
+            <div 
+                ref={setNodeRef}
+                {...listeners} 
+                {...attributes}
+                onClick={(e: any) => {
+                    e.stopPropagation();
+                    if (isEquippedOnOther) {
+                        if (!confirm(`Этот предмет надет на ${equippedHeroId}. Передать его текущему герою?`)) return;
+                    }
+                    onItemClick?.(item.id);
+                }}
+                style={{ 
+                    position: 'absolute', inset: 0, zIndex: 5, 
+                    cursor: isDragging ? 'grabbing' : 'grab',
+                }} 
+            />
+
             {data.spriteClass ? (
-                <div className={data.spriteClass} style={{ width: '80px', height: '80px', opacity: isEquippedOnOther ? 0.6 : 1, pointerEvents: 'none' }} />
+                <div className={data.spriteClass} style={{ width: '80px', height: '80px', opacity: isEquippedOnOther ? 0.6 : 1, pointerEvents: 'none', zIndex: 1 }} />
             ) : (
-                <img src={data.image} style={{ width: '70%', height: '70%', objectFit: 'contain', opacity: isEquippedOnOther ? 0.6 : 1, pointerEvents: 'none' }} alt="" />
+                <img src={data.image} style={{ width: '70%', height: '70%', objectFit: 'contain', opacity: isEquippedOnOther ? 0.6 : 1, pointerEvents: 'none', zIndex: 1 }} alt="" />
             )}
             
             {/* МЕТКА ЭКИПИРОВКИ (ТЕКУЩИЙ ГЕРОЙ) */}
             {isEquippedOnCurrent && (
-                <div style={{ position: 'absolute', top: '-5px', right: '-5px', width: '20px', height: '20px', background: '#f0c040', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', color: '#000', fontWeight: 900, border: '2px solid #1a1008', pointerEvents: 'none' }}>
+                <div style={{ position: 'absolute', top: '-5px', right: '-5px', width: '20px', height: '20px', background: '#f0c040', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', color: '#000', fontWeight: 900, border: '2px solid #1a1008', pointerEvents: 'none', zIndex: 10 }}>
                     🛡️
                 </div>
             )}

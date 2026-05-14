@@ -51,6 +51,7 @@ export interface IEquipmentStats extends IBaseItem {
     penetration?: number;    // Пробитие брони
     critDamage?: number;     // Множитель крит. урона (базовый 1.5)
     textureKey?: string;
+    visualSocket?: 'MainHand' | 'OffHand' | 'Head' | 'Chest';
 }
 
 /**
@@ -58,15 +59,43 @@ export interface IEquipmentStats extends IBaseItem {
  * СИСТЕМА ДВОЙНОЙ ВАЛЮТЫ: Игрок сам выбирает способ оплаты.
  */
 const rawItemsDatabase: Record<string, IEquipmentStats> = {
+    'fire_magic_sword': { 
+        id: 'fire_magic_sword', 
+        name: 'Пламенный Магический Меч', 
+        priceGem: 2000, 
+        image: '/assets/images/items/weapons/fire_magic_sword.png', 
+        rarity: 'MYTHIC', 
+        mainTab: 'ARSENAL', 
+        subTab: 'WEAPONS', 
+        textureKey: 'weapon_fire_sword', 
+        visualSocket: 'MainHand',
+        attackBonus: 180, 
+        critBonus: 0.2,
+        desc: 'Меч, выкованный в недрах магического вулкана. Пылает вечным огнем.' 
+    },
+    'heavy_war_axe': { 
+        id: 'heavy_war_axe', 
+        name: 'Тяжелый Боевой Топор', 
+        priceGold: 45000, 
+        priceGem: 500,
+        image: '/assets/images/items/weapons/heavy_war_axe.png', 
+        rarity: 'EPIC', 
+        mainTab: 'ARSENAL', 
+        subTab: 'WEAPONS', 
+        textureKey: 'weapon_heavy_axe', 
+        visualSocket: 'MainHand',
+        attackBonus: 110, 
+        desc: 'Огромный топор, способный расколоть даже самый крепкий щит.' 
+    },
     // --- ОРУЖИЕ (WEAPONS) ---
-    'axe_fire': { id: 'axe_fire', name: 'Топор Огненной Гривы', attackBonus: 450, critBonus: 0.2, rarity: 'LEGENDARY', priceGem: 2500, image: '', spriteClass: 'sprite-weapons wpn-1', mainTab: 'ARSENAL', subTab: 'WEAPONS', desc: 'Легендарное оружие, выкованное в сердце вулкана.' },
-    'dagger_poison': { id: 'dagger_poison', name: 'Ядовитые Клыки', attackBonus: 180, speedBonus: 0.15, rarity: 'EPIC', priceGem: 800, image: '', spriteClass: 'sprite-weapons wpn-2', mainTab: 'ARSENAL', subTab: 'WEAPONS', desc: 'Клинки, пропитанные смертоносным ядом древней кобры.' },
-    'mace_skull': { id: 'mace_skull', name: 'Жезл Некроманта', attackBonus: 320, hpBonus: 500, rarity: 'MYTHIC', priceGem: 1500, image: '', spriteClass: 'sprite-weapons wpn-3', mainTab: 'ARSENAL', subTab: 'WEAPONS', desc: 'Дарует власть над тенями и душами павших.' },
-    'sword_rune': { id: 'sword_rune', name: 'Меч Лунного Руна', attackBonus: 210, critBonus: 0.1, rarity: 'EPIC', priceGem: 750, image: '', spriteClass: 'sprite-weapons wpn-4', mainTab: 'ARSENAL', subTab: 'WEAPONS', desc: 'Светится мягким светом, когда рядом враги.' },
-    'gun_steam': { id: 'gun_steam', name: 'Паровой Карабин', attackBonus: 120, speedBonus: 0.05, rarity: 'RARE', priceGold: 15000, image: '', spriteClass: 'sprite-weapons wpn-5', mainTab: 'ARSENAL', subTab: 'WEAPONS', desc: 'Шедевр инженерной мысли гномов.' },
-    'staff_cosmic': { id: 'staff_cosmic', name: 'Посох Галактики', attackBonus: 500, critBonus: 0.25, rarity: 'LEGENDARY', priceGem: 3000, image: '', spriteClass: 'sprite-weapons wpn-6', mainTab: 'ARSENAL', subTab: 'WEAPONS', desc: 'Содержит в себе энергию рождающихся звезд.' },
-    'crossbow_heavy': { id: 'crossbow_heavy', name: 'Механический Арбалет', attackBonus: 140, rarity: 'RARE', priceGold: 12000, image: '', spriteClass: 'sprite-weapons wpn-7', mainTab: 'ARSENAL', subTab: 'WEAPONS', desc: 'Стреляет болтами, пробивающими любую броню.' },
-    'claws_blue': { id: 'claws_blue', name: 'Когти Синего Пламени', attackBonus: 350, speedBonus: 0.2, rarity: 'MYTHIC', priceGem: 1200, image: '', spriteClass: 'sprite-weapons wpn-9', mainTab: 'ARSENAL', subTab: 'WEAPONS', desc: 'Призрачное пламя сжигает врагов изнутри.' },
+    'axe_fire': { id: 'axe_fire', name: 'Топор Огненной Гривы', attackBonus: 450, critBonus: 0.2, rarity: 'LEGENDARY', priceGem: 2500, image: '/assets/images/items/weapons/axe.webp', spriteClass: 'sprite-weapons wpn-1', mainTab: 'ARSENAL', subTab: 'WEAPONS', desc: 'Легендарное оружие, выкованное в сердце вулкана.' },
+    'dagger_poison': { id: 'dagger_poison', name: 'Ядовитые Клыки', attackBonus: 180, speedBonus: 0.15, rarity: 'EPIC', priceGem: 800, image: '/assets/images/items/weapons/rusty_dagger.webp', spriteClass: 'sprite-weapons wpn-2', mainTab: 'ARSENAL', subTab: 'WEAPONS', desc: 'Клинки, пропитанные смертоносным ядом древней кобры.' },
+    'mace_skull': { id: 'mace_skull', name: 'Жезл Некроманта', attackBonus: 320, hpBonus: 500, rarity: 'MYTHIC', priceGem: 1500, image: '/assets/images/items/weapons/void_staff.webp', spriteClass: 'sprite-weapons wpn-3', mainTab: 'ARSENAL', subTab: 'WEAPONS', desc: 'Дарует власть над тенями и душами павших.' },
+    'sword_rune': { id: 'sword_rune', name: 'Меч Лунного Руна', attackBonus: 210, critBonus: 0.1, rarity: 'EPIC', priceGem: 750, image: '/assets/images/items/weapons/moon_sword.webp', spriteClass: 'sprite-weapons wpn-4', mainTab: 'ARSENAL', subTab: 'WEAPONS', desc: 'Светится мягким светом, когда рядом враги.' },
+    'gun_steam': { id: 'gun_steam', name: 'Паровой Карабин', attackBonus: 120, speedBonus: 0.05, rarity: 'RARE', priceGold: 15000, image: '/assets/images/items/weapons/broken_sword.webp', spriteClass: 'sprite-weapons wpn-5', mainTab: 'ARSENAL', subTab: 'WEAPONS', desc: 'Шедевр инженерной мысли гномов.' },
+    'staff_cosmic': { id: 'staff_cosmic', name: 'Посох Галактики', attackBonus: 500, critBonus: 0.25, rarity: 'LEGENDARY', priceGem: 3000, image: '/assets/images/items/weapons/staff.webp', spriteClass: 'sprite-weapons wpn-6', mainTab: 'ARSENAL', subTab: 'WEAPONS', desc: 'Содержит в себе энергию рождающихся звезд.' },
+    'crossbow_heavy': { id: 'crossbow_heavy', name: 'Механический Арбалет', attackBonus: 140, rarity: 'RARE', priceGold: 12000, image: '/assets/images/items/weapons/bow.webp', spriteClass: 'sprite-weapons wpn-7', mainTab: 'ARSENAL', subTab: 'WEAPONS', desc: 'Стреляет болтами, пробивающими любую броню.' },
+    'claws_blue': { id: 'claws_blue', name: 'Когти Синего Пламени', attackBonus: 350, speedBonus: 0.2, rarity: 'MYTHIC', priceGem: 1200, image: '/assets/images/items/weapons/daggers.webp', spriteClass: 'sprite-weapons wpn-9', mainTab: 'ARSENAL', subTab: 'WEAPONS', desc: 'Призрачное пламя сжигает врагов изнутри.' },
 
     '1': {
         id: '1', name: 'Посох Ученика', attackBonus: 25, critBonus: 0.1, speedBonus: -0.05,
@@ -134,22 +163,22 @@ const rawItemsDatabase: Record<string, IEquipmentStats> = {
     },
 
     // --- ДОПОЛНИТЕЛЬНОЕ ОРУЖИЕ (EXTENDED) ---
-    'ext_1': { id: 'ext_1', name: 'Меч Звездного Сияния', attackBonus: 280, critBonus: 0.15, rarity: 'EPIC', priceGold: 55000, image: '', spriteClass: 'sprite-weapons-ext ext-1', mainTab: 'ARSENAL', subTab: 'WEAPONS', desc: 'Клинок, выкованный из упавшей звезды.' },
-    'ext_2': { id: 'ext_2', name: 'Лук Кровавой Охоты', attackBonus: 160, speedBonus: 0.1, rarity: 'RARE', priceGold: 18000, image: '', spriteClass: 'sprite-weapons-ext ext-2', mainTab: 'ARSENAL', subTab: 'WEAPONS', desc: 'Никогда не промахивается, если почует запах крови.' },
-    'ext_3': { id: 'ext_3', name: 'Посох Древних Тайн', attackBonus: 420, hpBonus: 800, rarity: 'MYTHIC', priceGem: 1600, image: '', spriteClass: 'sprite-weapons-ext ext-3', mainTab: 'ARSENAL', subTab: 'WEAPONS', desc: 'Хранит мудрость тысячи ушедших поколений.' },
-    'ext_4': { id: 'ext_4', name: 'Кинжалы Теневого Танца', attackBonus: 240, speedBonus: 0.2, rarity: 'EPIC', priceGem: 950, image: '', spriteClass: 'sprite-weapons-ext ext-4', mainTab: 'ARSENAL', subTab: 'WEAPONS', desc: 'Владелец движется быстрее самой тени.' },
-    'ext_5': { id: 'ext_5', name: 'Молот Сокрушитель Небес', attackBonus: 550, rarity: 'LEGENDARY', priceGem: 3200, image: '', spriteClass: 'sprite-weapons-ext ext-5', mainTab: 'ARSENAL', subTab: 'WEAPONS', desc: 'Один удар может вызвать землетрясение.' },
-    'ext_6': { id: 'ext_6', name: 'Топор Ледяного Шторма', attackBonus: 190, rarity: 'RARE', priceGold: 22000, image: '', spriteClass: 'sprite-weapons-ext ext-6', mainTab: 'ARSENAL', subTab: 'WEAPONS', desc: 'Покрыт коркой льда, который никогда не тает.' },
-    'ext_7': { id: 'ext_7', name: 'Арбалет Погибели', attackBonus: 210, critBonus: 0.2, rarity: 'EPIC', priceGold: 48000, image: '', spriteClass: 'sprite-weapons-ext ext-7', mainTab: 'ARSENAL', subTab: 'WEAPONS', desc: 'Стрелы этого арбалета пронзают любую броню.' },
-    'ext_8': { id: 'ext_8', name: 'Клинок Пустоты', attackBonus: 600, rarity: 'LEGENDARY', priceGem: 4500, image: '', spriteClass: 'sprite-weapons-ext ext-8', mainTab: 'ARSENAL', subTab: 'WEAPONS', desc: 'Лезвие, состоящее из чистой тьмы.' },
-    'ext_9': { id: 'ext_9', name: 'Посох Природного Гнева', attackBonus: 380, hpBonus: 600, rarity: 'EPIC', priceGold: 75000, image: '', spriteClass: 'sprite-weapons-ext ext-9', mainTab: 'ARSENAL', subTab: 'WEAPONS', desc: 'Сила джунглей подчиняется владельцу.' },
-    'ext_10': { id: 'ext_10', name: 'Копье Солнечного Луча', attackBonus: 250, critBonus: 0.1, rarity: 'RARE', priceGold: 25000, image: '', spriteClass: 'sprite-weapons-ext ext-10', mainTab: 'ARSENAL', subTab: 'WEAPONS', desc: 'Ослепляет врагов при каждом ударе.' },
-    'ext_11': { id: 'ext_11', name: 'Секира Кровавого Жнеца', attackBonus: 480, hpBonus: 400, rarity: 'MYTHIC', priceGem: 2000, image: '', spriteClass: 'sprite-weapons-ext ext-11', mainTab: 'ARSENAL', subTab: 'WEAPONS', desc: 'Жаждет битвы больше, чем ее владелец.' },
-    'ext_12': { id: 'ext_12', name: 'Эфирный Клинок', attackBonus: 320, speedBonus: 0.1, rarity: 'EPIC', priceGem: 1100, image: '', spriteClass: 'sprite-weapons-ext ext-12', mainTab: 'ARSENAL', subTab: 'WEAPONS', desc: 'Существует одновременно в двух мирах.' },
-    'ext_13': { id: 'ext_13', name: 'Жезл Повелителя Грома', attackBonus: 500, critBonus: 0.3, rarity: 'LEGENDARY', priceGem: 3800, image: '', spriteClass: 'sprite-weapons-ext ext-13', mainTab: 'ARSENAL', subTab: 'WEAPONS', desc: 'Повелитель молний всегда находит свою цель.' },
-    'ext_14': { id: 'ext_14', name: 'Лук Лесного Призрака', attackBonus: 180, speedBonus: 0.15, rarity: 'RARE', priceGold: 21000, image: '', spriteClass: 'sprite-weapons-ext ext-14', mainTab: 'ARSENAL', subTab: 'WEAPONS', desc: 'Выстрелы тихи, как шелест листвы.' },
-    'ext_15': { id: 'ext_15', name: 'Меч Драконьего Пламени', attackBonus: 450, rarity: 'EPIC', priceGold: 90000, image: '', spriteClass: 'sprite-weapons-ext ext-15', mainTab: 'ARSENAL', subTab: 'WEAPONS', desc: 'Горит огнем ярости великих драконов.' },
-    'ext_16': { id: 'ext_16', name: 'Коса Жнеца Душ', attackBonus: 580, hpBonus: 1000, rarity: 'MYTHIC', priceGem: 2800, image: '', spriteClass: 'sprite-weapons-ext ext-16', mainTab: 'ARSENAL', subTab: 'WEAPONS', desc: 'Забирает частицу души у каждого сраженного врага.' },
+    'ext_1': { id: 'ext_1', name: 'Меч Звездного Сияния', attackBonus: 280, critBonus: 0.15, rarity: 'EPIC', priceGold: 55000, image: '/assets/images/items/weapons/moon_sword.webp', spriteClass: 'sprite-weapons-ext ext-1', mainTab: 'ARSENAL', subTab: 'WEAPONS', desc: 'Клинок, выкованный из упавшей звезды.' },
+    'ext_2': { id: 'ext_2', name: 'Лук Кровавой Охоты', attackBonus: 160, speedBonus: 0.1, rarity: 'RARE', priceGold: 18000, image: '/assets/images/items/weapons/bow.webp', spriteClass: 'sprite-weapons-ext ext-2', mainTab: 'ARSENAL', subTab: 'WEAPONS', desc: 'Никогда не промахивается, если почует запах крови.' },
+    'ext_3': { id: 'ext_3', name: 'Посох Древних Тайн', attackBonus: 420, hpBonus: 800, rarity: 'MYTHIC', priceGem: 1600, image: '/assets/images/items/weapons/void_staff.webp', spriteClass: 'sprite-weapons-ext ext-3', mainTab: 'ARSENAL', subTab: 'WEAPONS', desc: 'Хранит мудрость тысячи ушедших поколений.' },
+    'ext_4': { id: 'ext_4', name: 'Кинжалы Теневого Танца', attackBonus: 240, speedBonus: 0.2, rarity: 'EPIC', priceGem: 950, image: '/assets/images/items/weapons/daggers.webp', spriteClass: 'sprite-weapons-ext ext-4', mainTab: 'ARSENAL', subTab: 'WEAPONS', desc: 'Владелец движется быстрее самой тени.' },
+    'ext_5': { id: 'ext_5', name: 'Молот Сокрушитель Небес', attackBonus: 550, rarity: 'LEGENDARY', priceGem: 3200, image: '/assets/images/items/weapons/phoenix_hammer.webp', spriteClass: 'sprite-weapons-ext ext-5', mainTab: 'ARSENAL', subTab: 'WEAPONS', desc: 'Один удар может вызвать землетрясение.' },
+    'ext_6': { id: 'ext_6', name: 'Топор Ледяного Шторма', attackBonus: 190, rarity: 'RARE', priceGold: 22000, image: '/assets/images/items/weapons/axe.webp', spriteClass: 'sprite-weapons-ext ext-6', mainTab: 'ARSENAL', subTab: 'WEAPONS', desc: 'Покрыт коркой льда, который никогда не тает.' },
+    'ext_7': { id: 'ext_7', name: 'Арбалет Погибели', attackBonus: 210, critBonus: 0.2, rarity: 'EPIC', priceGold: 48000, image: '/assets/images/items/weapons/bow.webp', spriteClass: 'sprite-weapons-ext ext-7', mainTab: 'ARSENAL', subTab: 'WEAPONS', desc: 'Стрелы этого арбалета пронзают любую броню.' },
+    'ext_8': { id: 'ext_8', name: 'Клинок Пустоты', attackBonus: 600, rarity: 'LEGENDARY', priceGem: 4500, image: '/assets/images/items/weapons/fire_magic_sword.png', spriteClass: 'sprite-weapons-ext ext-8', mainTab: 'ARSENAL', subTab: 'WEAPONS', desc: 'Лезвие, состоящее из чистой тьмы.' },
+    'ext_9': { id: 'ext_9', name: 'Посох Природного Гнева', attackBonus: 380, hpBonus: 600, rarity: 'EPIC', priceGold: 75000, image: '/assets/images/items/weapons/staff.webp', spriteClass: 'sprite-weapons-ext ext-9', mainTab: 'ARSENAL', subTab: 'WEAPONS', desc: 'Сила джунглей подчиняется владельцу.' },
+    'ext_10': { id: 'ext_10', name: 'Копье Солнечного Луча', attackBonus: 250, critBonus: 0.1, rarity: 'RARE', priceGold: 25000, image: '/assets/images/items/weapons/void_staff.webp', spriteClass: 'sprite-weapons-ext ext-10', mainTab: 'ARSENAL', subTab: 'WEAPONS', desc: 'Ослепляет врагов при каждом ударе.' },
+    'ext_11': { id: 'ext_11', name: 'Секира Кровавого Жнеца', attackBonus: 480, hpBonus: 400, rarity: 'MYTHIC', priceGem: 2000, image: '/assets/images/items/weapons/heavy_war_axe.png', spriteClass: 'sprite-weapons-ext ext-11', mainTab: 'ARSENAL', subTab: 'WEAPONS', desc: 'Жаждет битвы больше, чем ее владелец.' },
+    'ext_12': { id: 'ext_12', name: 'Эфирный Клинок', attackBonus: 320, speedBonus: 0.1, rarity: 'EPIC', priceGem: 1100, image: '/assets/images/items/weapons/moon_sword.webp', spriteClass: 'sprite-weapons-ext ext-12', mainTab: 'ARSENAL', subTab: 'WEAPONS', desc: 'Существует одновременно в двух мирах.' },
+    'ext_13': { id: 'ext_13', name: 'Жезл Повелителя Грома', attackBonus: 500, critBonus: 0.3, rarity: 'LEGENDARY', priceGem: 3800, image: '/assets/images/items/weapons/staff.webp', spriteClass: 'sprite-weapons-ext ext-13', mainTab: 'ARSENAL', subTab: 'WEAPONS', desc: 'Повелитель молний всегда находит свою цель.' },
+    'ext_14': { id: 'ext_14', name: 'Лук Лесного Призрака', attackBonus: 180, speedBonus: 0.15, rarity: 'RARE', priceGold: 21000, image: '/assets/images/items/weapons/bow.webp', spriteClass: 'sprite-weapons-ext ext-14', mainTab: 'ARSENAL', subTab: 'WEAPONS', desc: 'Выстрелы тихи, как шелест листвы.' },
+    'ext_15': { id: 'ext_15', name: 'Меч Драконьего Пламени', attackBonus: 450, rarity: 'EPIC', priceGold: 90000, image: '/assets/images/items/weapons/fire_magic_sword.png', spriteClass: 'sprite-weapons-ext ext-15', mainTab: 'ARSENAL', subTab: 'WEAPONS', desc: 'Горит огнем ярости великих драконов.' },
+    'ext_16': { id: 'ext_16', name: 'Коса Жнеца Душ', attackBonus: 580, hpBonus: 1000, rarity: 'MYTHIC', priceGem: 2800, image: '/assets/images/items/weapons/void_staff.webp', spriteClass: 'sprite-weapons-ext ext-16', mainTab: 'ARSENAL', subTab: 'WEAPONS', desc: 'Забирает частицу души у каждого сраженного врага.' },
 
 
     // --- ШЛЕМЫ (HELMETS) ---

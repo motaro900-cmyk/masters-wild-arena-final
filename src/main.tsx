@@ -8,12 +8,25 @@ import { AppConfig } from './configs/AppConfig';
 import { useGameStore } from './store/useGameStore';
 import { ShopScene } from './ui/components/hud/ShopScene';
 import { BattlePassScene } from './ui/components/hud/BattlePassScene';
-import { HeroScene } from './ui/components/hud/HeroScene';
+import { HeroScene } from './ui/components/hud/HeroScene/index';
 import { AnimatePresence } from 'framer-motion';
 import { FpsCounter } from './ui/components/hud/FpsCounter';
 import { IntroScreen } from './ui/components/screens/IntroScreen';
 import { CityScreen } from './ui/components/screens/CityScreen';
+import { BattleScene } from './ui/components/hud/BattleScene';
 import { initVK, getVkUserInfo } from './utils/VKBridge';
+import * as PIXI from 'pixi.js';
+import { AssetsMap } from './configs/AssetsMap';
+import { audioService } from './services/AudioService';
+
+// Глобальный доступ для отладки
+(window as any).audioService = audioService;
+(window as any).AssetsMap = AssetsMap;
+
+// [Optimization] Immediate background preload to satisfy browser 'preload' check
+// This ensures the preloaded asset in index.html is "used" by the game logic immediately.
+PIXI.Assets.backgroundLoad([AssetsMap.BACKGROUNDS.MAIN_MENU]);
+
 
 // [VK] Global Error Handler
 if (typeof window !== 'undefined') {
@@ -74,8 +87,16 @@ const SafeGameLayout = ({ containerRef }: { containerRef: React.RefObject<HTMLDi
             const gw = AppConfig.GAME_WIDTH;
             const gh = AppConfig.GAME_HEIGHT;
 
+            // [Lead Architect]: Adaptive Scaling. 
+            // On very narrow screens (mobile), we prioritize width and allow some height cropping if necessary,
+            // or we use a slightly more aggressive scale to fill the screen better.
             const s = Math.min(sw / gw, sh / gh);
+
+            // If the screen is very small, we might want a minimum scale to keep buttons tappable,
+            // but that would cause overflow. Instead, we'll rely on the scale but improve HUD styles.
             setScale(s);
+
+            // [Mobile Fix]: Force scroll to top to hide address bar
             window.scrollTo(0, 0);
         };
 
@@ -100,13 +121,16 @@ const SafeGameLayout = ({ containerRef }: { containerRef: React.RefObject<HTMLDi
         <div style={{
             width: '100vw', height: '100vh',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            backgroundColor: '#000', overflow: 'hidden',
+            backgroundColor: 'transparent', overflow: 'hidden',
             position: 'fixed', top: 0, left: 0 // Prevent scrolling of body
         }}>
             <div style={{
                 width: `${AppConfig.GAME_WIDTH}px`, height: `${AppConfig.GAME_HEIGHT}px`,
                 transform: `scale(${scale})`, transformOrigin: 'center center',
                 position: 'relative', flexShrink: 0,
+                backgroundImage: `url(${AssetsMap.BACKGROUNDS.MAIN_MENU})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
                 backgroundColor: '#0c0c0c', boxShadow: '0 0 100px rgba(0,0,0,0.5)',
                 overflow: 'hidden'
             }}>
@@ -138,6 +162,7 @@ const SceneSwitcher = () => {
                 {activeScreen === 'HEROES' && <div key="scene-heroes" style={{ position: 'absolute', inset: 0, zIndex: 400 }}><HeroScene /></div>}
                 {activeScreen === 'SHOP' && <div key="scene-shop" style={{ position: 'absolute', inset: 0, zIndex: 500 }}><ShopScene /></div>}
                 {activeScreen === 'BATTLE_PASS' && <div key="scene-bp" style={{ position: 'absolute', inset: 0, zIndex: 600 }}><BattlePassScene onClose={() => useGameStore.getState().setScreen('MAIN_MENU')} /></div>}
+                {activeScreen === 'BATTLE' && <div key="scene-battle" style={{ position: 'absolute', inset: 0, zIndex: 12000 }}><BattleScene /></div>}
             </AnimatePresence>
         </>
     );
@@ -181,14 +206,58 @@ const Root = () => {
                 console.log('🎮 Starting GameEngine...');
                 const game = new GameApp();
                 await game.init(containerRef.current!);
-                
+
                 clearTimeout(timeoutId); // [Anti-Grey] Success! Cancel timeout
                 console.log('✅ Game Ready!');
 
+                const MSK_OFFSET = 3 * 60 * 60 * 1000;
+                const DAY_MS = 24 * 60 * 60 * 1000;
+
+                const isNewDayMSK = (last: number) => {
+                    const nowMSK = Date.now() + MSK_OFFSET;
+                    const lastMSK = last + MSK_OFFSET;
+                    return Math.floor(nowMSK / DAY_MS) > Math.floor(lastMSK / DAY_MS);
+                };
+
                 const state = useGameStore.getState();
-                if (Date.now() - state.lastDailyRefresh > 86_400_000 || !state.dailyQuests || state.dailyQuests.length === 0) {
+                
+                // [FORCE RESET] Принудительный сброс для версии 18
+                if (state.level === 80 || state.rating === 11000) {
+                    console.log('🧹 Force Resetting legacy test data...');
+                    useGameStore.setState({
+                        level: 1,
+                        rating: 0,
+                        exp: 0,
+                        gold: 100000,
+                        crystals: 100000,
+                        title: 'Странник'
+                    });
+                }
+
+                if (isNewDayMSK(state.lastDailyRefresh) || !state.dailyQuests || state.dailyQuests.length === 0) {
                     state.refreshDailyQuests();
                 }
+                
+                // Триггер квеста на вход в игру
+                state.updateQuestProgress('LOGIN', 1);
+
+                // Очистка тестовых сообщений
+                if (state.messages.some((m: any) => m.author === 'Мастер' && m.text === 'Привет')) {
+                    useGameStore.setState({
+                        messages: state.messages.filter((m: any) => !(m.author === 'Мастер' && m.text === 'Привет'))
+                    });
+                }
+
+                // [Optimization] Background refresh check every minute (MSK Aligned)
+                const refreshInterval = setInterval(() => {
+                    const currentState = useGameStore.getState();
+                    if (isNewDayMSK(currentState.lastDailyRefresh)) {
+                        console.log('🔄 MSK Midnight: Auto-refreshing daily quests...');
+                        currentState.refreshDailyQuests();
+                    }
+                }, 60000);
+
+                return () => clearInterval(refreshInterval);
             } catch (err: any) {
                 clearTimeout(timeoutId);
                 console.error('❌ Critical Init Error:', err);
@@ -248,7 +317,13 @@ const Root = () => {
 
 // ─── ТОЧКА ВХОДА ─────────────────────────────────────────────────────────────
 
+
 const rootEl = document.getElementById('root');
 if (rootEl) {
-    ReactDOM.createRoot(rootEl).render(<Root />);
+    // [HMR Fix] Сохраняем root в window, чтобы не создавать его дважды при обновлении кода
+    const g = window as any;
+    if (!g.__REACT_ROOT__) {
+        g.__REACT_ROOT__ = ReactDOM.createRoot(rootEl);
+    }
+    g.__REACT_ROOT__.render(<Root />);
 }

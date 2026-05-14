@@ -1,3 +1,4 @@
+
 import * as PIXI from 'pixi.js';
 import { HeroUnit } from '../entities/HeroUnit';
 import { AssetsMap } from '../../configs/AssetsMap';
@@ -22,10 +23,22 @@ export interface ICombatStats {
     dodge: number;
 }
 
+/**
+ * БОЕВОЙ ДВИЖОК (v2.0 - Hybrid Snapshot Architecture)
+ * Управляет логикой боя, используя динамические текстуры героев.
+ */
 export class BattleEngine {
+    private static instance: BattleEngine | null = null;
+    
+    public static getInstance(): BattleEngine {
+        if (!BattleEngine.instance) {
+            BattleEngine.instance = new BattleEngine();
+        }
+        return BattleEngine.instance;
+    }
+
     private player: HeroUnit | null = null;
     private enemy: HeroUnit | null = null;
-    private atlasTexture: PIXI.Texture | null = null;
     
     private playerStats: ICombatStats | null = null;
     private enemyStats: ICombatStats | null = null;
@@ -33,7 +46,9 @@ export class BattleEngine {
     private playerAttackTimer: number = 0;
     private enemyAttackTimer: number = 0;
     private isCombatRunning: boolean = false;
-    private battleTime: number = 0; // Внутреннее время боя
+    public isInitialized: boolean = false;
+    private isDestroyed: boolean = false;
+    private battleTime: number = 0;
     
     public onStateChange: (state: BattleState) => void = () => {};
     private state: BattleState = { playerHP: 100, playerMaxHP: 100, enemyHP: 100, enemyMaxHP: 100, log: 'ПОДГОТОВКА...' };
@@ -41,67 +56,109 @@ export class BattleEngine {
     private updateCallback: ((dt: number) => void) | null = null;
     private storeUnsubscribe: (() => void) | null = null;
 
-    constructor() {}
+    private constructor() {}
 
-    async init(_container: HTMLElement, _heroId: string, playerStats: ICombatStats, enemyStats: ICombatStats) {
+    async init(_container: HTMLElement, heroId: string, enemyId: string, playerStats: any, enemyStats: any) {
+        if (this.isInitialized) return;
+        this.isInitialized = true;
+        this.isDestroyed = false;
+
+        console.log('1. init started');
+        console.log('playerStats:', JSON.stringify(playerStats));
+        console.log('enemyStats:', JSON.stringify(enemyStats));
+
         try {
-            this.playerStats = playerStats;
-            this.enemyStats = enemyStats;
+            // [Lead Architect]: Safe fallbacks for missing stats using Number() || to prevent NaN
+            this.playerStats = {
+                hp:         (Number(playerStats?.hp)         || 100),
+                attack:     (Number(playerStats?.attack)     || 10),
+                defense:    (Number(playerStats?.defense)    || 5),
+                speed:      (Number(playerStats?.speed)      || 50),
+                critChance: (Number(playerStats?.critChance) || 0.1),
+                dodge:      (Number(playerStats?.dodge)      || 0.05)
+            };
+            this.enemyStats = {
+                hp:         (Number(enemyStats?.hp)         || 100),
+                attack:     (Number(enemyStats?.attack)     || 8),
+                defense:    (Number(enemyStats?.defense)    || 3),
+                speed:      (Number(enemyStats?.speed)      || 40),
+                critChance: (Number(enemyStats?.critChance) || 0.1),
+                dodge:      (Number(enemyStats?.dodge)      || 0.05)
+            };
 
+            // 1. ПОДГОТОВКА СЦЕНЫ
             const pixiApp = PixiApp.getInstance();
+            await pixiApp.init({}, _container);
+            pixiApp.clearAllLayers();
 
-            // Загрузка ассетов
-            const [bgTex, atlasTex] = await Promise.all([
-                PIXI.Assets.load(AssetsMap.BACKGROUNDS.BATTLE_ARENA).catch(_ => PIXI.Texture.WHITE),
-                PIXI.Assets.load(AssetsMap.CHARACTERS.PANDA_ATLAS).catch(_ => PIXI.Texture.WHITE)
-            ]);
-            this.atlasTexture = atlasTex;
-
+            // 2. ЗАГРУЗКА ФОНА
+            const arenas = AssetsMap.BACKGROUNDS.BATTLE_ARENAS;
+            const randomBg = arenas[Math.floor(Math.random() * arenas.length)];
+            console.log(`[BattleEngine] Loading background: ${randomBg}`);
+            const bgTex = await PIXI.Assets.load(randomBg).catch(_ => PIXI.Texture.WHITE);
             const background = new PIXI.Sprite(bgTex);
-            background.width = 1920; 
-            background.height = 1080;
-            pixiApp.backgroundLayer.addChild(background);
-
-            // Создание бойцов
-            this.player = new HeroUnit(this.getFrame(0));
-            this.player.x = 480; this.player.y = 860;
-            this.player.scale.set(0.42);
             
-            this.enemy = new HeroUnit(this.atlasTexture!);
-            this.enemy.x = 1440; this.enemy.y = 860;
-            this.enemy.scale.set(-0.42, 0.42);
-            this.enemy.mainSprite.tint = 0x9999ff;
+            const W = 1920;
+            const H = 1080;
 
+            background.width = W; 
+            background.height = H;
+            pixiApp.backgroundLayer.addChild(background);
+            console.log('2. background ready');
+
+            // 3. ЗАГРУЗКА БОЙЦОВ
+            const { heroEquipment } = useGameStore.getState();
+            
+            // Игрок
+            this.player = new HeroUnit();
+            await this.player.loadHero(heroId);
+            console.log('3. player hero loaded');
+
+            await this.player.updateEquipment(heroEquipment[heroId] || {});
+            console.log('4. player weapon equipped');
+
+            // Враг
+            this.enemy = new HeroUnit();
+            await this.enemy.loadHero(enemyId);
+            console.log('5. enemy loaded');
+
+            await this.enemy.updateEquipment({}); 
+            
+            // ЯВНОЕ ПОЗИЦИОНИРОВАНИЕ (1920x1080)
+            this.player.position.set(W * 0.25, H * 0.82); 
+            this.player.scale.set(0.9);
+            this.player.alpha = 1;
+            this.player.visible = true;
+            
+            this.enemy.position.set(W * 0.75, H * 0.82); 
+            this.enemy.scale.set(-0.9, 0.9); 
+            this.enemy.alpha = 1;
+            this.enemy.visible = true;
+            
+            // 4. ОТОБРАЖЕНИЕ (Только когда всё загружено!)
             pixiApp.gameLayer.addChild(this.player, this.enemy);
+            console.log('6. ALL UNITS ON STAGE ← должен появиться этот лог');
 
-            // Инициализация HP
+            // 4. ИНИЦИАЛИЗАЦИЯ СОСТОЯНИЯ
             this.updateState({
-                playerHP: playerStats.hp,
-                playerMaxHP: playerStats.hp,
-                enemyHP: enemyStats.hp,
-                enemyMaxHP: enemyStats.hp,
+                playerHP: this.playerStats.hp,
+                playerMaxHP: this.playerStats.hp,
+                enemyHP: this.enemyStats.hp,
+                enemyMaxHP: this.enemyStats.hp,
                 log: 'БИТВА НАЧИНАЕТСЯ!'
             });
             useGameStore.getState().addCombatLog('--- НАЧАЛО БОЯ ---');
 
-            // Подписка на стор для отладочных команд
-            this.storeUnsubscribe = useGameStore.subscribe((state: any, prevState: any) => {
-                if (state.combatLogs.length === 0 && prevState.combatLogs.length > 0) {
-                    // Логи очищены
-                }
-            });
-
-            // Игровой цикл
+            // 5. ИГРОВОЙ ЦИКЛ
             this.updateCallback = (dt: number) => {
                 const { timeScale } = useGameStore.getState();
-                const delta = dt * timeScale; // ПРИМЕНЯЕМ TIME SCALE
+                const delta = dt * timeScale;
                 this.battleTime += delta;
                 
-                // Анимация дыхания (тоже зависит от скорости)
-                if (this.player) this.player.y = 860 + Math.sin(this.battleTime / 500) * 5;
-                if (this.enemy) this.enemy.y = 860 + Math.sin(this.battleTime / 500 + 1) * 5;
+                // АНИМАЦИЯ ДЫХАНИЯ (Delegated to units)
+                if (this.player) this.player.update(delta);
+                if (this.enemy) this.enemy.update(delta);
 
-                // Логика боя (автобой по таймерам)
                 if (this.isCombatRunning) {
                     this.updateTimers(delta);
                 }
@@ -110,7 +167,7 @@ export class BattleEngine {
 
             setTimeout(() => {
                 this.isCombatRunning = true;
-                this.playerAttackTimer = 500; // Быстрый старт
+                this.playerAttackTimer = 500;
                 this.enemyAttackTimer = 800;
             }, 1000);
 
@@ -125,7 +182,14 @@ export class BattleEngine {
             this.isCombatRunning = false;
             const isWin = this.state.playerHP > 0;
             this.updateState({ log: isWin ? 'ПОБЕДА!' : 'ПОРАЖЕНИЕ...' });
-            useGameStore.getState().addCombatLog(isWin ? '🏁 БОЙ ЗАВЕРШЕН: ПОБЕДА' : '🏁 БОЙ ЗАВЕРШЕН: ПОРАЖЕНИЕ');
+            
+            const store = useGameStore.getState();
+            store.addCombatLog(isWin ? '🏁 БОЙ ЗАВЕРШЕН: ПОБЕДА' : '🏁 БОЙ ЗАВЕРШЕН: ПОРАЖЕНИЕ');
+            
+            // [Quest] Track match progress
+            store.updateQuestProgress('PLAY', 1);
+            if (isWin) store.updateQuestProgress('WIN', 1);
+
             return;
         }
 
@@ -134,23 +198,16 @@ export class BattleEngine {
 
         if (this.playerAttackTimer <= 0) {
             this.executeAttack(this.player!, this.enemy!, true);
-            this.playerAttackTimer = (2000 / this.playerStats!.speed);
+            const speed = Math.max(0.1, this.playerStats!.speed);
+            this.playerAttackTimer = (2000 / speed);
         }
 
-        if (this.enemyAttackTimer <= 0 && this.state.enemyHP > 0) {
+        const { isEnemyFrozen } = useGameStore.getState();
+        if (!isEnemyFrozen && this.enemyAttackTimer <= 0 && this.state.enemyHP > 0) {
             this.executeAttack(this.enemy!, this.player!, false);
-            this.enemyAttackTimer = (2000 / this.enemyStats!.speed);
+            const speed = Math.max(0.1, this.enemyStats!.speed);
+            this.enemyAttackTimer = (2000 / speed);
         }
-    }
-
-    private getFrame(index: number) {
-        if (!this.atlasTexture) return PIXI.Texture.EMPTY;
-        const FRAME_W = 568; const FRAME_H = 941;
-        const col = index % 4; const row = Math.floor(index / 4);
-        return new PIXI.Texture({
-            source: this.atlasTexture.source,
-            frame: new PIXI.Rectangle(col * FRAME_W + 10, row * FRAME_H + 10, FRAME_W - 20, FRAME_H - 20)
-        });
     }
 
     private async executeAttack(attacker: HeroUnit, victim: HeroUnit, isPlayer: boolean) {
@@ -158,19 +215,18 @@ export class BattleEngine {
 
         const { timeScale, addCombatLog } = useGameStore.getState();
         const startX = attacker.x;
-        const targetX = victim.x - (120 * (isPlayer ? 1 : -1));
+        const targetX = victim.x - (150 * (isPlayer ? 1 : -1));
         
-        // Анимация прыжка
-        attacker.setFrame(this.getFrame(1), 1);
-        const duration = 300 / timeScale;
+        const duration = 250 / timeScale;
         
-        // Прыжок вперед
+        // 1. РЫВОК ВПЕРЕД (Attack Lunge)
         await this.animateTo(attacker, startX, targetX, duration);
 
-        // УДАР
-        attacker.setFrame(this.getFrame(6), 6);
+        // 2. МОМЕНТ УДАРА
         audioService.playSFX(AssetsMap.AUDIO.SFX_HIT);
-        this.applyShake(10);
+        this.applyShake(8);
+        attacker.playAttackAnimation();
+        victim.playHitEffect();
         
         // Расчет урона
         const stats = isPlayer ? this.playerStats! : this.enemyStats!;
@@ -186,32 +242,40 @@ export class BattleEngine {
         if (!isPlayer && isGodMode) mitigated = 0;
         
         const finalDamage = Math.ceil(mitigated);
-        const logMsg = `[Раунд] ${isPlayer ? 'Вы' : 'Враг'} ${isCrit ? 'КРИТУЕТ' : 'бьет'} на ${finalDamage}!`;
+        
+        let logMsg = '';
+        if (isCrit) {
+            logMsg = `[Раунд] ${isPlayer ? 'Вы наносите' : 'Враг наносит'} КРИТИЧЕСКИЙ УДАР на ${finalDamage}!`;
+        } else {
+            logMsg = `[Раунд] ${isPlayer ? 'Вы бьете' : 'Враг бьет'} на ${finalDamage}!`;
+        }
+        
         this.updateState({ log: logMsg });
         addCombatLog(logMsg);
         
-        if (isPlayer) this.updateState({ enemyHP: Math.max(0, this.state.enemyHP - finalDamage) });
-        else this.updateState({ playerHP: Math.max(0, this.state.playerHP - finalDamage) });
+        if (isPlayer) {
+            this.updateState({ enemyHP: Math.max(0, this.state.enemyHP - finalDamage) });
+            // [Quest] Track damage progress
+            useGameStore.getState().updateQuestProgress('DAMAGE', finalDamage);
+        } else {
+            this.updateState({ playerHP: Math.max(0, this.state.playerHP - finalDamage) });
+        }
 
-        victim.mainSprite.tint = 0xFF4444;
-        setTimeout(() => { if(victim.mainSprite) victim.mainSprite.tint = isPlayer ? 0x9999ff : 0xFFFFFF; }, 150 / timeScale);
-        victim.setFrame(this.getFrame(2), 2);
-
-        await new Promise(r => setTimeout(r, 200 / timeScale));
-        
-        // Возврат
-        attacker.setFrame(this.getFrame(1), 1);
+        // 3. ВОЗВРАТ НА ПОЗИЦИЮ
+        await new Promise(r => setTimeout(r, 100 / timeScale));
         await this.animateTo(attacker, targetX, startX, duration);
         
         attacker.x = startX;
-        attacker.setFrame(this.getFrame(0), 0);
-        victim.setFrame(this.getFrame(0), 0);
     }
 
     private animateTo(unit: HeroUnit, start: number, end: number, duration: number): Promise<void> {
         return new Promise(resolve => {
             const startTime = Date.now();
             const animate = () => {
+                if (this.isDestroyed || (unit as any).destroyed) {
+                    resolve();
+                    return;
+                }
                 const now = Date.now();
                 const t = Math.min(1, (now - startTime) / duration);
                 unit.x = start + (end - start) * (t * (2 - t)); // Ease out
@@ -222,7 +286,6 @@ export class BattleEngine {
         });
     }
 
-    // Мгновенные команды из Админки
     public instantWin() {
         this.updateState({ enemyHP: 0 });
         useGameStore.getState().addCombatLog('⚡ ADMIN: Мгновенная победа');
@@ -243,10 +306,12 @@ export class BattleEngine {
     }
 
     public destroy() {
+        this.isDestroyed = true;
         if (this.storeUnsubscribe) this.storeUnsubscribe();
         const pixiApp = PixiApp.getInstance();
         if (this.updateCallback) pixiApp.removeUpdateLoop(this.updateCallback);
-        pixiApp.backgroundLayer.removeChildren().forEach(child => child.destroy({ children: true, texture: true }));
-        pixiApp.gameLayer.removeChildren().forEach(child => child.destroy({ children: true, texture: true }));
+        pixiApp.backgroundLayer.removeChildren().forEach(child => { if (!child.destroyed) child.destroy({ children: true, texture: false }); });
+        pixiApp.gameLayer.removeChildren().forEach(child => { if (!child.destroyed) child.destroy({ children: true, texture: false }); });
+        this.isInitialized = false;
     }
 }

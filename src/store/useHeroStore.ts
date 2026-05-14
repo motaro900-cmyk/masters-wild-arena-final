@@ -62,11 +62,11 @@ export const useHeroStore = create<IHeroState>()(
 
                 const allItems = [weapon, helm, armor, shield].filter(Boolean) as IEquipmentStats[];
 
-                let hp = heroData.baseStats.hp;
-                let attack = heroData.baseStats.attack;
-                let speed = heroData.baseStats.speed * 0.1;
-                let crit = heroData.baseStats.crit * 0.01;
-                let defense = heroData.baseStats.defense;
+                let hp = heroData.stats.stamina * 10;
+                let attack = heroData.stats.strength * 2;
+                let speed = 1 + (heroData.stats.agility * 0.05);
+                let crit = (heroData.stats.agility * 0.5) / 100;
+                let defense = heroData.stats.stamina * 0.5;
 
                 allItems.forEach(item => {
                     if (item.hpBonus) hp += item.hpBonus;

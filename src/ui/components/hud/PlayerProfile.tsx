@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { useGameStore } from '../../../store/useGameStore';
 import { AvatarFrame } from './SharedUI';
+import { EquippedHeroView } from '../EquippedHeroView';
 
 interface PlayerProfileProps {
     onOpenProfile?: () => void;
@@ -10,10 +11,11 @@ interface PlayerProfileProps {
 
 /**
  * PlayerProfile — HUD компонент (кнопка в углу).
- * Теперь корректно вызывает системное окно через пропсы.
+ * Теперь использует динамическую систему сокетов для отображения экипировки.
  */
 export const PlayerProfile: React.FC<PlayerProfileProps> = ({ onOpenProfile }) => {
     const store = useGameStore();
+    const selectedHeroId = store.selectedHeroId || 'panda_warrior';
     const avatar = store.avatar || 'панда.png';
     const frame = store.frame || 'Рамка 1.png';
     const title = store.title || 'СТРАННИК';
@@ -41,13 +43,21 @@ export const PlayerProfile: React.FC<PlayerProfileProps> = ({ onOpenProfile }) =
                 boxShadow: '0 10px 30px rgba(0,0,0,0.8)'
             }}
         >
-            {/* Avatar Section */}
-            <div className="ml-3 relative">
-                <AvatarFrame
-                    avatarFilename={avatar.replace('.png', '')}
-                    frameFilename={frame.replace('.png', '')}
-                    size={85}
-                />
+            {/* Avatar Section — ТЕПЕРЬ ЖИВОЙ ПЕРСОНАЖ */}
+            <div className="ml-3 relative w-[100px] h-[100px] flex items-center justify-center">
+                <div className="absolute inset-0 z-20">
+                    <AvatarFrame
+                        avatarFilename={avatar.replace('.png', '')}
+                        frameFilename={frame.replace('.png', '')}
+                        size={85}
+                    />
+                </div>
+                
+                {/* Наш новый динамический вид с сокетами */}
+                <div className="absolute z-10 scale-[0.3] translate-y-1">
+                     <EquippedHeroView heroId={selectedHeroId} size={280} />
+                </div>
+
                 <div className="absolute -bottom-1 -left-1 bg-[#8b5e2b] border-2 border-[#f0c040] rounded px-1.5 shadow-lg z-30">
                     <span className="text-white font-black text-[11px]">{level}</span>
                 </div>

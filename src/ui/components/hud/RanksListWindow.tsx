@@ -49,16 +49,23 @@ export const RanksListWindow: React.FC = () => {
                         >
                             {/* ИКОНКА */}
                             <div style={{
-                                width: '60px',
-                                height: '60px',
+                                width: '80px',
+                                height: '80px',
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
-                                fontSize: '40px',
                                 marginRight: '25px',
-                                filter: isReached ? `drop-shadow(0 0 10px ${rank.glow})` : 'none'
+                                filter: isReached ? `drop-shadow(0 0 15px ${rank.glow})` : 'none'
                             }}>
-                                {rank.icon}
+                                <img 
+                                    src={rank.icon} 
+                                    alt={rank.name} 
+                                    style={{ 
+                                        width: '100%', 
+                                        height: '100%', 
+                                        objectFit: 'contain' 
+                                    }} 
+                                />
                             </div>
 
                             {/* ИНФОРМАЦИЯ */}

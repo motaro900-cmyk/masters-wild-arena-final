@@ -1,260 +1,34 @@
-/**
- * @module BattleCanvas
- * Компонент отрисовки боевой сцены на PixiJS
- */
-
-import { useEffect, useRef, useState } from 'react';
-import { useBattleStore } from '../../store/useBattleStore';
+import { useEffect, useRef } from 'react';
 import { PixiApp } from '../../engine/core/PixiApp';
-import { Fighter } from '../../entities/Fighter';
-import { BattleEngine } from '@engine/core/BattleEngine';
-import { getHeroConfig } from '../../data/heroes';
-import * as PIXI from 'pixi.js';
-
-interface BattleUnit {
-    fighter: Fighter;
-    sprite: PIXI.Sprite;
-    healthBar: PIXI.Graphics;
-    updateHealthBar: () => void;
-}
+import { BattleEngine } from '../../engine/core/BattleEngine';
 
 export function BattleCanvas() {
     const canvasRef = useRef<HTMLCanvasElement>(null);
-    const pixiAppRef = useRef<PixiApp | null>(null);
-    const battleEngineRef = useRef<BattleEngine | null>(null);
-    const unitsRef = useRef<Map<string, BattleUnit>>(new Map());
-    const [battleLog, setBattleLog] = useState<string[]>([]);
-    const [roundNumber] = useState(1);
+    const engineRef = useRef<BattleEngine | null>(null);
 
-    const battlePhase = useBattleStore((s) => s.battlePhase);
-    const battleActive = useBattleStore((s) => s.battleActive);
-
-    // Инициализация PixiJS и боевого движка
     useEffect(() => {
         if (!canvasRef.current) return;
 
         let isMounted = true;
         const app = PixiApp.getInstance();
-        
-        // Асинхронная инициализация PixiJS v8
+        const engine = new BattleEngine();
+        engineRef.current = engine;
+
+        // Инициализация PixiJS
         app.init({ width: 1920, height: 1080 }, canvasRef.current).then(() => {
             if (!isMounted) return;
-            pixiAppRef.current = app;
 
-            // Создаём контейнер для бойцов
-            const fightersContainer = new PIXI.Container();
-            app.stage.addChild(fightersContainer);
-
-            // Создаём контейнер для фона
-            const backgroundContainer = new PIXI.Container();
-            app.stage.addChildAt(backgroundContainer, 0);
-
-            // EMERGENCY RESTORATION: Disable placeholder background overriding the scene
-
-            battleEngineRef.current = new BattleEngine();
-            battleEngineRef.current.setContainer(fightersContainer);
+            // Инициализация Боя (Approach E)
+            const testStats = { hp: 1000, attack: 50, speed: 10, critChance: 0.1, defense: 20, dodge: 0.05 };
+            engine.init(canvasRef.current!, 'panda', testStats, testStats);
         });
 
         return () => {
             isMounted = false;
+            engine.destroy();
             app.destroy();
-            pixiAppRef.current = null;
-            battleEngineRef.current = null;
-            unitsRef.current.clear();
         };
     }, []);
-
-    // Запуск боя
-    useEffect(() => {
-        if (!battleActive || !battleEngineRef.current || !pixiAppRef.current) return;
-        if (battlePhase !== 'start') return;
-
-        const engine = battleEngineRef.current;
-        const app = pixiAppRef.current;
-        const container = app.stage.children[0] as PIXI.Container;
-
-        // Создаём бойцов из выбранных героев
-        const hero1Config = getHeroConfig('panda');
-        const hero2Config = getHeroConfig('cat');
-
-        if (!hero1Config || !hero2Config) return;
-
-        // Создаём бойца 1 (слева)
-        const fighter1 = new Fighter({
-            name: hero1Config.name,
-            health: hero1Config.stats.strength * 5,
-            maxHealth: hero1Config.stats.strength * 5,
-            attack: hero1Config.stats.strength,
-            defense: hero1Config.stats.stamina,
-            speed: hero1Config.stats.agility,
-            critChance: 0.1,
-            color: hero1Config.color,
-            position: { x: 250, y: 300 },
-        });
-
-        // Создаём бойца 2 (справа)
-        const fighter2 = new Fighter({
-            name: hero2Config.name,
-            health: hero2Config.stats.strength * 5,
-            maxHealth: hero2Config.stats.strength * 5,
-            attack: hero2Config.stats.strength,
-            defense: hero2Config.stats.stamina,
-            speed: hero2Config.stats.agility,
-            critChance: 0.1,
-            color: hero2Config.color,
-            position: { x: 550, y: 300 },
-        });
-
-        // Добавляем бойцов в движок
-        engine.addFighter(fighter1, 250, 300);
-        engine.addFighter(fighter2, 550, 300);
-
-        // Создаём спрайты
-        const createUnit = (fighter: Fighter, side: 'left' | 'right') => {
-            const group = new PIXI.Container();
-
-            // Тело (круг)
-            const body = new PIXI.Graphics();
-            body.circle(0, 0, 40).fill(fighter.color);
-            body.circle(0, 0, 40).stroke({ width: 3, color: 0xffffff });
-            group.addChild(body);
-
-            // Имя
-            const nameText = new PIXI.Text(fighter.name, {
-                fontFamily: 'Arial',
-                fontSize: 14,
-                fill: 0xffffff,
-                align: 'center',
-            });
-            nameText.anchor.set(0.5);
-            nameText.y = -55;
-            group.addChild(nameText);
-
-            // Полоска здоровья
-            const healthBarBg = new PIXI.Graphics();
-            healthBarBg.rect(-40, -70, 80, 8).fill(0x333333);
-            group.addChild(healthBarBg);
-
-            const healthBarFill = new PIXI.Graphics();
-            group.addChild(healthBarFill);
-
-            // Обновление полоски здоровья
-            const updateHealthBar = () => {
-                healthBarFill.clear();
-                const healthPercent = fighter.health / fighter.maxHealth;
-                healthBarFill.rect(-40, -70, 80 * healthPercent, 8).fill(healthPercent > 0.5 ? 0x00ff00 : healthPercent > 0.25 ? 0xffff00 : 0xff0000);
-            };
-
-            // Позиционирование
-            group.x = side === 'left' ? 250 : 550;
-            group.y = 300;
-
-            container.addChild(group);
-
-            return {
-                fighter,
-                sprite: group as unknown as PIXI.Sprite,
-                healthBar: healthBarFill,
-                updateHealthBar,
-            };
-        };
-
-        const unit1 = createUnit(fighter1, 'left');
-        const unit2 = createUnit(fighter2, 'right');
-
-        unitsRef.current.set(fighter1.id, unit1);
-        unitsRef.current.set(fighter2.id, unit2);
-
-        // Запуск боя
-        engine.start();
-
-        // === HUD 4 СКИЛЛА СНИЗУ ПО ЦЕНТРУ ===
-        const skillsContainer = new PIXI.Container();
-        const skillIcons = ['🗡️', '🛡️', '⚡', '💊'];
-        for (let i = 0; i < 4; i++) {
-            const btn = new PIXI.Graphics().roundRect(0, 0, 70, 70, 12).fill(0x2a2a3e).stroke({width: 2, color: 0x4a4a6a});
-            btn.x = i * 90;
-            
-            const icon = new PIXI.Text({ text: skillIcons[i], style: { fontSize: 36 }});
-            icon.anchor.set(0.5);
-            icon.position.set(35, 35);
-            
-            btn.addChild(icon);
-            skillsContainer.addChild(btn);
-        }
-        skillsContainer.position.set(400 - (4 * 90) / 2 + 10, 500);
-        app.stage.addChild(skillsContainer);
-
-        // Игровой цикл
-        const gameLoop = (ticker: PIXI.Ticker) => {
-            const deltaTimeSec = ticker.deltaTime / 60; // Примерный перевод в секунды
-            engine.update(deltaTimeSec);
-
-            // Обновляем позиции и состояния бойцов
-            unitsRef.current.forEach((unit) => {
-                // Анимация здоровья
-                unit.updateHealthBar();
-
-            // EMERGENCY RESTORATION: Disable jumping/wobbling placeholder
-            // unit.sprite.rotation = Math.sin(Date.now() * 0.003) * 0.05;
-            });
-
-            // Проверка окончания боя
-            if (engine.phase === 'end') {
-                const winner = engine.getWinner();
-                if (winner) {
-                    setBattleLog((prev) => [...prev, `🏆 ${winner.name} побеждает!`]);
-                    useBattleStore.getState().setBattlePhase('end');
-                }
-            }
-        };
-
-        app.ticker.add(gameLoop);
-
-        return () => {
-            app.ticker.remove(gameLoop);
-        };
-    }, [battleActive, battlePhase]);
-
-    // Обработка нажатий для атаки
-    useEffect(() => {
-        const handleClick = (e: MouseEvent) => {
-            if (battlePhase !== 'combat') return;
-
-            const engine = battleEngineRef.current;
-            if (!engine) return;
-
-            // Получаем координаты клика
-            const rect = canvasRef.current?.getBoundingClientRect();
-            if (!rect) return;
-
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-
-            // Проверяем клик по врагу
-            const enemyX = 550;
-            const enemyY = 300;
-            const distance = Math.sqrt((x - enemyX) ** 2 + (y - enemyY) ** 2);
-
-            if (distance < 60) {
-                // Атака по врагу
-                const attacker = engine.getCurrentTurnFighter();
-                if (attacker) {
-                    const target = engine.getOpponent(attacker);
-                    if (target) {
-                        engine.attack(attacker, target);
-                        setBattleLog((prev) => [...prev, `${attacker.name} атакует ${target.name}!`]);
-                    }
-                }
-            }
-        };
-
-        canvasRef.current?.addEventListener('click', handleClick);
-
-        return () => {
-            canvasRef.current?.removeEventListener('click', handleClick);
-        };
-    }, [battlePhase]);
 
     return (
         <div style={{
@@ -265,52 +39,17 @@ export function BattleCanvas() {
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
+            background: '#000'
         }}>
             <canvas
                 ref={canvasRef}
-                width={800}
-                height={600}
                 style={{
-                    border: '2px solid #333',
-                    borderRadius: '8px',
-                    cursor: battlePhase === 'combat' ? 'pointer' : 'default',
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'contain',
+                    cursor: 'default',
                 }}
             />
-
-            {/* Информация о раунде */}
-            <div style={{
-                position: 'absolute',
-                top: '10px',
-                left: '50%',
-                transform: 'translateX(-50%)',
-                color: '#fff',
-                fontFamily: 'Arial, sans-serif',
-                fontSize: '18px',
-                fontWeight: 'bold',
-                textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
-            }}>
-                Раунд: {roundNumber} | Фаза: {battlePhase}
-            </div>
-
-            {/* Лог боя */}
-            <div style={{
-                position: 'absolute',
-                bottom: '10px',
-                left: '10px',
-                right: '10px',
-                height: '100px',
-                background: 'rgba(0,0,0,0.7)',
-                borderRadius: '8px',
-                padding: '10px',
-                overflow: 'auto',
-                fontFamily: 'monospace',
-                fontSize: '14px',
-                color: '#fff',
-            }}>
-                {battleLog.map((log, i) => (
-                    <div key={i}>{log}</div>
-                ))}
-            </div>
         </div>
     );
 }

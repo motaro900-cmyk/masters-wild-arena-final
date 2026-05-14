@@ -2,14 +2,15 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { useGameStore } from '../../../store/useGameStore';
 import { requestNotifications } from '../../../utils/VKBridge';
+import { ServerTime } from './ServerTime';
 
 interface SettingsWindowProps {
     onClose: () => void;
     onOpenAdmin?: () => void;
 }
 
-export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onOpenAdmin }) => {
-    const { 
+export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenAdmin }) => {
+    const {
         showFps, setShowFps,
         musicVolume, setMusicVolume,
         soundVolume, setSoundVolume,
@@ -55,22 +56,119 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onOpenAdmin }) =
             display: 'flex', flexDirection: 'column', gap: '20px',
             padding: '10px 30px', color: colors.text, overflowY: 'auto'
         }} className="leaderboard-scroll">
-            
+
             {/* БЛОК: ЗВУК */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: `1px solid ${colors.border}`, paddingBottom: '10px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <span style={{ fontSize: '18px' }}>🔊</span>
-                        <span style={{ fontFamily: "'Cinzel', serif", fontSize: '16px', fontWeight: 800, color: colors.accent, letterSpacing: '1px' }}>АУДИО</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <span style={{ fontSize: '18px' }}>🔊</span>
+                            <span style={{ fontFamily: "'Cinzel', serif", fontSize: '16px', fontWeight: 800, color: colors.accent, letterSpacing: '1px' }}>АУДИО</span>
+                        </div>
+                        
+                        {/* MUSIC PLAYER WIDGET */}
+                        {!isMuted && (
+                            <div style={{ 
+                                display: 'flex', 
+                                alignItems: 'center', 
+                                gap: '8px', 
+                                background: 'rgba(0,0,0,0.4)', 
+                                padding: '4px 12px', 
+                                borderRadius: '12px', 
+                                border: '1px solid rgba(240,192,64,0.2)',
+                                marginLeft: '10px'
+                            }}>
+                                <motion.span 
+                                    whileHover={{ scale: 1.2, color: '#fff' }}
+                                    whileTap={{ scale: 0.9 }}
+                                    onClick={() => {
+                                        const { audioService } = window as any;
+                                        audioService.prevTrack();
+                                        setMusicVolume(musicVolume); 
+                                    }}
+                                    style={{ cursor: 'pointer', fontSize: '14px', color: colors.accent, opacity: 0.8, padding: '5px', textShadow: `0 0 10px ${colors.accent}` }}
+                                >⏮</motion.span>
+                                
+                                <div 
+                                    onClick={() => {
+                                        const { audioService } = window as any;
+                                        audioService.toggleMusic();
+                                        setMusicVolume(musicVolume);
+                                    }}
+                                    style={{ 
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '12px',
+                                        cursor: 'pointer',
+                                        minWidth: '180px',
+                                        justifyContent: 'center',
+                                        padding: '0 10px'
+                                    }}
+                                >
+                                    {/* VISUALIZER BARS */}
+                                    {(window as any).audioService?.isPlaying() && (
+                                        <div style={{ display: 'flex', gap: '2px', alignItems: 'flex-end', height: '12px' }}>
+                                            {[1,2,3].map(i => (
+                                                <motion.div 
+                                                    key={i}
+                                                    animate={{ height: [4, 12, 6, 10, 4] }}
+                                                    transition={{ repeat: Infinity, duration: 0.5 + i * 0.1, ease: "easeInOut" }}
+                                                    style={{ width: '2px', background: colors.accent, borderRadius: '1px' }}
+                                                />
+                                            ))}
+                                        </div>
+                                    )}
+
+                                    <motion.span 
+                                        animate={(window as any).audioService?.isPlaying() ? { scale: [1, 1.1, 1] } : {}}
+                                        transition={{ repeat: Infinity, duration: 2 }}
+                                        style={{ fontSize: '16px', color: colors.accent, textShadow: (window as any).audioService?.isPlaying() ? `0 0 15px ${colors.accent}` : 'none' }}
+                                    >
+                                        {(window as any).audioService?.isPlaying() ? '⏸' : '▶️'}
+                                    </motion.span>
+
+                                    <div style={{ 
+                                        fontSize: '11px', 
+                                        fontWeight: 900, 
+                                        color: (window as any).audioService?.isPlaying() ? '#fff' : 'rgba(255,255,255,0.4)', 
+                                        fontFamily: "'Cinzel', serif",
+                                        maxWidth: '120px',
+                                        overflow: 'hidden',
+                                        whiteSpace: 'nowrap',
+                                        textOverflow: 'ellipsis',
+                                        transition: 'all 0.3s'
+                                    }}>
+                                        {(window as any).audioService?.getCurrentTrackName() === 'Тишина' ? 'ЗАПУСТИТЬ' : (window as any).audioService?.getCurrentTrackName()}
+                                    </div>
+                                </div>
+
+                                <motion.span 
+                                    whileHover={{ scale: 1.2, color: '#fff' }}
+                                    whileTap={{ scale: 0.9 }}
+                                    onClick={() => {
+                                        const { audioService } = window as any;
+                                        audioService.nextTrack();
+                                        setMusicVolume(musicVolume);
+                                    }}
+                                    style={{ cursor: 'pointer', fontSize: '14px', color: colors.accent, opacity: 0.8, padding: '5px', textShadow: `0 0 10px ${colors.accent}` }}
+                                >⏭</motion.span>
+                            </div>
+                        )}
                     </div>
-                    <div 
-                        onClick={() => setIsMuted(!isMuted)}
+
+                    <div
+                        onClick={() => {
+                            setIsMuted(!isMuted);
+                            if (!isMuted) {
+                                (window as any).audioService?.stopAllMusic();
+                            }
+                        }}
                         style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', background: isMuted ? 'rgba(239, 68, 68, 0.1)' : 'transparent', padding: '5px 12px', borderRadius: '20px', border: `1px solid ${isMuted ? colors.danger : 'transparent'}`, transition: 'all 0.2s' }}
                     >
                         <span style={{ fontSize: '14px' }}>{isMuted ? '🔇 ВЫКЛ' : '🔊 ВКЛ'}</span>
                     </div>
                 </div>
-                
+
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px', opacity: isMuted ? 0.3 : 1, pointerEvents: isMuted ? 'none' : 'auto' }}>
                     {[
                         { label: 'МУЗЫКА', val: musicVolume, set: setMusicVolume, icon: '🎵' },
@@ -83,8 +181,8 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onOpenAdmin }) =
                             </div>
                             <div style={{ position: 'relative', height: '6px', background: 'rgba(0,0,0,0.3)', borderRadius: '3px', border: '1px solid rgba(255,255,255,0.05)' }}>
                                 <div style={{ width: `${s.val}%`, height: '100%', background: `linear-gradient(90deg, #8a5a10, ${colors.accent})`, borderRadius: '3px' }} />
-                                <input 
-                                    type="range" min="0" max="100" value={s.val} 
+                                <input
+                                    type="range" min="0" max="100" value={s.val}
                                     onChange={(e) => s.set(parseInt(e.target.value))}
                                     style={{ position: 'absolute', top: '-10px', left: 0, width: '100%', height: '30px', opacity: 0, cursor: 'pointer' }}
                                 />
@@ -100,13 +198,13 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onOpenAdmin }) =
                     <span style={{ fontSize: '18px' }}>👁️</span>
                     <span style={{ fontFamily: "'Cinzel', serif", fontSize: '16px', fontWeight: 800, color: colors.accent, letterSpacing: '1px' }}>ГРАФИКА И ДИСПЛЕЙ</span>
                 </div>
-                
+
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
                     {/* Качество */}
                     <div style={{ gridColumn: 'span 2', display: 'flex', gap: '10px' }}>
                         {['LOW', 'MEDIUM', 'ULTRA'].map(g => (
-                            <button 
-                                key={g} 
+                            <button
+                                key={g}
                                 onClick={() => setGraphicsQuality(g)}
                                 style={{
                                     flex: 1, padding: '12px 0', borderRadius: '10px', cursor: 'pointer', transition: 'all 0.2s',
@@ -142,13 +240,13 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onOpenAdmin }) =
                     <span style={{ fontSize: '18px' }}>👤</span>
                     <span style={{ fontFamily: "'Cinzel', serif", fontSize: '16px', fontWeight: 800, color: colors.accent, letterSpacing: '1px' }}>АККАУНТ</span>
                 </div>
-                
+
                 <div style={{ background: 'rgba(0,0,0,0.2)', borderRadius: '15px', padding: '15px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid rgba(255,255,255,0.05)' }}>
                     <div>
                         <div style={{ fontSize: '10px', opacity: 0.5, fontWeight: 800 }}>ID ИГРОКА</div>
                         <div style={{ fontSize: '16px', fontWeight: 900, fontFamily: 'monospace', letterSpacing: '1px' }}>{playerId}</div>
                     </div>
-                    <motion.button 
+                    <motion.button
                         whileTap={{ scale: 0.9 }}
                         onClick={copyPlayerId}
                         style={{ padding: '8px 15px', borderRadius: '8px', background: 'rgba(240,192,64,0.1)', border: `1px solid ${colors.accent}`, color: colors.accent, fontSize: '12px', fontWeight: 800, cursor: 'pointer' }}
@@ -161,11 +259,11 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onOpenAdmin }) =
                     <button onClick={() => window.open('https://vk.com/beasts_arena', '_blank')} style={{ padding: '12px', borderRadius: '10px', background: '#0077FF', border: 'none', color: '#fff', fontSize: '12px', fontWeight: 900, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
                         🌐 МЫ ВКОНТАКТЕ
                     </button>
-                    <button 
+                    <button
                         onClick={() => {
                             useGameStore.setState({ activeScreen: 'INTRO', showIntro: true });
                             onClose();
-                        }} 
+                        }}
                         style={{ padding: '12px', borderRadius: '10px', background: 'rgba(240,192,64,0.1)', border: `1px solid ${colors.accent}`, color: colors.accent, fontSize: '12px', fontWeight: 900, cursor: 'pointer' }}
                     >
                         🎬 ПОВТОРИТЬ ИНТРО
@@ -177,11 +275,11 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onOpenAdmin }) =
             </div>
 
             {/* ВЕРСИЯ КЛИЕНТА */}
-            <div 
+            <div
                 onClick={() => {
                     const userVkId = useGameStore.getState().vkUser?.id || useGameStore.getState().vkUser?.uid;
                     const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-                    
+
                     if (Number(userVkId) === 212359386 || isLocal) {
                         onOpenAdmin?.();
                     } else {
@@ -201,10 +299,10 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onOpenAdmin }) =
 };
 
 const ToggleItem: React.FC<{ label: string, icon: string, active: boolean, onToggle: () => void, colors: any }> = ({ label, icon, active, onToggle, colors }) => (
-    <div 
+    <div
         onClick={onToggle}
-        style={{ 
-            display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 15px', 
+        style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 15px',
             background: 'rgba(255,255,255,0.02)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)',
             cursor: 'pointer', transition: 'all 0.2s'
         }}

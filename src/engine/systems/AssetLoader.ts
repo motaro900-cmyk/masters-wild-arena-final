@@ -62,7 +62,6 @@ export class AssetLoader {
      */
     public static createGameManifest(): string[] {
         return [
-            AssetsMap.BACKGROUNDS.MAIN_MENU,
             AssetsMap.UI.SIDEBAR_LEFT,
             AssetsMap.UI.PANEL_PARCHMENT,
             AssetsMap.UI.BAR_GOLD,

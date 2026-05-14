@@ -6,7 +6,7 @@ import { AssetsMap } from '../../configs/AssetsMap';
  * Переписано для поддержки адаптивной верстки.
  */
 export class MainScreen extends PIXI.Container {
-    private bg: PIXI.Sprite | null = null;
+    private bg: PIXI.Sprite;
     private rays: PIXI.Graphics;
     private uiContainer: PIXI.Container;
 
@@ -14,31 +14,62 @@ export class MainScreen extends PIXI.Container {
         super();
         this.label = 'MainScreen';
         
+        // [Lead Architect]: Сначала создаем спрайт с пустой текстурой, 
+        // чтобы он сразу был в дереве объектов.
+        this.bg = new PIXI.Sprite(PIXI.Texture.EMPTY);
+        this.bg.anchor.set(0.5);
+        this.bg.width = 1920;
+        this.bg.height = 1080;
+        this.bg.position.set(1920 / 2, 1080 / 2);
+        
         this.rays = new PIXI.Graphics();
         this.uiContainer = new PIXI.Container();
-        this.addChild(this.rays, this.uiContainer);
+        
+        this.addChild(this.bg, this.rays, this.uiContainer);
 
+        console.log('[MainScreen] Constructor called, starting init...');
         this.init();
     }
 
     private async init() {
         try {
-            // ФОН
-            const bgTex = await PIXI.Assets.load(AssetsMap.BACKGROUNDS.MAIN_MENU);
-            this.bg = new PIXI.Sprite(bgTex);
-            this.bg.anchor.set(0.5);
+            // [Lead Architect]: High-res background is already preloaded in index.html 
+            // and displayed as a placeholder in main.tsx (React). 
+            // We just need to load it into PixiJS textures now.
+            console.log('[MainScreen] Loading high-res background:', AssetsMap.BACKGROUNDS.MAIN_MENU);
             
-            // [Fix]: Принудительно растягиваем на весь экран 1920x1080
+            // 2. Load High-Res background
+            const bgAsset = await PIXI.Assets.load(AssetsMap.BACKGROUNDS.MAIN_MENU);
+            const bgTex = bgAsset instanceof PIXI.Texture ? bgAsset : null;
+            if (!bgTex) {
+                throw new Error('Invalid background texture loaded');
+            }
+            
+            console.log('[MainScreen] Background loaded successfully:', bgTex.width, 'x', bgTex.height);
+            
+            this.bg.texture = bgTex;
             this.bg.width = 1920;
             this.bg.height = 1080;
-            this.bg.position.set(1920 / 2, 1080 / 2);
             
-            this.addChildAt(this.bg, 0);
+            // Плавное появление (только если до этого был пустой фон или мобильный был слишком прозрачным)
+            const startAlpha = this.bg.alpha;
+            this.bg.alpha = startAlpha; 
+            
+            const fadeIn = () => {
+                if (this.bg.alpha < 1) {
+                    this.bg.alpha += 0.05;
+                    requestAnimationFrame(fadeIn);
+                }
+            };
+            fadeIn();
+            
             this.render();
         } catch (e) {
-            console.error('Lobby assets loading error', e);
-            const fallbackBg = new PIXI.Graphics().rect(0, 0, 1920, 1080).fill(0x0a0a1a);
-            this.addChildAt(fallbackBg, 0);
+            console.error('[MainScreen] Lobby assets loading error:', e);
+            const fallback = new PIXI.Graphics()
+                .rect(0, 0, 1920, 1080)
+                .fill({ color: 0x0a0a1a });
+            this.addChildAt(fallback, 0);
         }
     }
 
@@ -46,10 +77,8 @@ export class MainScreen extends PIXI.Container {
         const sw = 1920;
         const sh = 1080;
 
-        if (this.bg) {
-            this.bg.position.set(sw / 2, sh / 2);
-        }
-
+        console.log('[MainScreen] Rendering rays...');
+        
         // Отрисовка лучей света
         this.rays.clear();
         for (let i = 0; i < 5; i++) {
@@ -61,12 +90,8 @@ export class MainScreen extends PIXI.Container {
         }
     }
 
-
-
-    // [Lead Architect]: Вспомогательный метод создания кнопок удален, 
-    // так как мы переходим на использование оригинальных спрайтов меню.
-
     public destroy(options?: any) {
+        console.log('[MainScreen] Destroying...');
         super.destroy(options);
     }
 }

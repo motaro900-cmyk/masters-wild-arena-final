@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { audioService } from '../../../services/AudioService';
+import { AssetsMap } from '../../../configs/AssetsMap';
 // @ts-ignore
 import mainBg from '../../../assets/backgrounds/main-bg.jpg';
 
@@ -13,6 +15,10 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
   const nextStep = () => {
     // Request fullscreen on first interaction (CBA requirement)
     if (step === 1) {
+      console.log("🖱️ First click detected");
+      // Start audio context only
+      audioService.resumeContext();
+
       const doc = document.documentElement;
       if (doc.requestFullscreen && !document.fullscreenElement) {
         doc.requestFullscreen().catch(() => {

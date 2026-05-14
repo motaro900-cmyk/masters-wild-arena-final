@@ -12,6 +12,7 @@ import { ActionButtons } from './hud/ActionButtons';
 import { DailyGiftBanner } from './hud/DailyGiftBanner';
 import { ProfileHub } from './hud/ProfileHub';
 import { BattleScene } from './hud/BattleScene';
+import { ServerTime } from './hud/ServerTime';
 
 
 
@@ -27,6 +28,7 @@ import { ClanWindow } from './hud/ClanWindow';
 import { RanksListWindow } from './hud/RanksListWindow';
 import { InventoryPanel } from './hud/InventoryPanel';
 import { AdminPanel } from './hud/AdminPanel';
+import { VIPWindow } from './hud/VIPWindow';
 import { UnderDevelopmentModal } from './hud/SharedUI';
 import { ProfileCustomizationWindow } from './hud/ProfileCustomizationWindow';
 
@@ -36,7 +38,11 @@ export const GameHUD: React.FC = () => {
     const [showAdmin, setShowAdmin] = useState(false);
     const [devModal, setDevModal] = useState({ isOpen: false, title: '' });
     const goToShop = useGameStore(state => state.goToShop);
-    // goToCity is now handled via devModal state
+
+    // Автоматически закрываем любые окна при смене основного экрана
+    React.useEffect(() => {
+        setActiveWindow(null);
+    }, [activeScreen]);
 
     // Expose to window for external screen communication (like CityScreen)
     React.useEffect(() => {
@@ -87,7 +93,7 @@ export const GameHUD: React.FC = () => {
             {/* 4. SIDEBARS & PANELS */}
             {!isFullScreenScene && (
                 <>
-                    <div className="absolute top-[480px] left-[-10px] -translate-y-1/2 hud-interactive">
+                    <div className="absolute top-[455px] left-[-10px] -translate-y-1/2 hud-interactive">
                         <LeftSidebar onOpenWindow={(id) => {
                             if (id === 'STORE') useGameStore.getState().goToShop();
                             else if (id === 'HEROES') useGameStore.getState().goToHeroes('LIST');
@@ -162,14 +168,14 @@ export const GameHUD: React.FC = () => {
                         `}</style>
                     </div>
 
-                    <div className="absolute bottom-[30px] left-[-5px] hud-interactive">
+                    <div className="absolute bottom-[15px] left-[5px] hud-interactive">
                         <ChatPanel />
                     </div>
 
                     <div className="absolute bottom-[30px] left-1/2 -translate-x-1/2 hud-interactive">
                         <ActionButtons
-                            onStartBattle={() => setDevModal({ isOpen: true, title: 'РЕЙТИНГОВЫЙ БОЙ' })}
-                            onWarmup={() => setDevModal({ isOpen: true, title: 'РАЗМИНКА' })}
+                            onStartBattle={() => useGameStore.getState().setScreen('BATTLE')}
+                            onWarmup={() => useGameStore.getState().setScreen('BATTLE')}
                             onOpenRanks={() => setActiveWindow('RANKS_LIST')}
                         />
                     </div>
@@ -268,14 +274,14 @@ export const GameHUD: React.FC = () => {
             {/* --- МОДАЛЬНЫЕ ОКНА --- */}
             {activeWindow && (
                 <div className="absolute inset-0 z-[100] pointer-events-none bg-black/60 backdrop-blur-sm">
-                    <div className="absolute top-[540px] left-[960px] -translate-x-1/2 -translate-y-1/2 hud-interactive">
+                    <div className="absolute top-[515px] left-[960px] -translate-x-1/2 -translate-y-1/2 hud-interactive">
                         {activeWindow === 'SANCTUARY' && (
                             <BaseWindow title="ОБИТЕЛЬ ДРЕВНИХ" isOpen={true} onClose={() => setActiveWindow(null)} width="800px">
                                 <AncientsSanctuaryWindow />
                             </BaseWindow>
                         )}
                         {activeWindow === 'FRIENDS' && (
-                            <BaseWindow title="ДРУЗЬЯ" isOpen={true} onClose={() => setActiveWindow(null)} width="800px">
+                            <BaseWindow title="ДРУЗЬЯ" isOpen={true} onClose={() => setActiveWindow(null)} width="860px">
                                 <FriendsWindow onClose={() => setActiveWindow(null)} />
                             </BaseWindow>
                         )}
@@ -284,8 +290,13 @@ export const GameHUD: React.FC = () => {
                                 <MailWindow onClose={() => setActiveWindow(null)} />
                             </BaseWindow>
                         )}
+                        {activeWindow === 'VIP' && (
+                            <BaseWindow title="VIP СТАТУС" isOpen={true} onClose={() => setActiveWindow(null)} width="800px">
+                                <VIPWindow onClose={() => setActiveWindow(null)} />
+                            </BaseWindow>
+                        )}
                         {activeWindow === 'SETTINGS' && (
-                            <BaseWindow title="НАСТРОЙКИ" isOpen={true} onClose={() => setActiveWindow(null)} width="650px">
+                            <BaseWindow title="НАСТРОЙКИ" isOpen={true} onClose={() => setActiveWindow(null)} width="650px" headerExtra={<ServerTime />}>
                                 <SettingsWindow
                                     onClose={() => setActiveWindow(null)}
                                     onOpenAdmin={() => {
@@ -325,7 +336,7 @@ export const GameHUD: React.FC = () => {
                             </BaseWindow>
                         )}
                         {activeWindow === 'PROFILE_CUSTOM' && (
-                            <BaseWindow title="НАСТРОЙКИ ПРОФИЛЯ" isOpen={true} onClose={() => setActiveWindow(null)} width="900px">
+                            <BaseWindow title="НАСТРОЙКИ ПРОФИЛЯ" isOpen={true} onClose={() => setActiveWindow(null)} width="1050px">
                                 <ProfileCustomizationWindow />
                             </BaseWindow>
                         )}

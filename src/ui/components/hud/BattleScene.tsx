@@ -40,7 +40,7 @@ export const BattleScene: React.FC = () => {
             return;
         }
 
-        const engine = new BattleEngine();
+        const engine = BattleEngine.getInstance();
         engineRef.current = engine;
         (window as any).__BATTLE_ENGINE__ = engine; // РЕГИСТРАЦИЯ ДЛЯ АДМИНКИ
         
@@ -48,9 +48,21 @@ export const BattleScene: React.FC = () => {
             setBattleState({ ...newState });
         };
 
-        engine.init(containerRef.current, selectedHeroId, playerStats, enemyStats);
+        let destroyed = false;
+        const run = async () => {
+            if (engineRef.current?.isInitialized) return;
+            console.log('[BattleScene] Starting async run...');
+            if (containerRef.current) {
+                await engine.init(containerRef.current, selectedHeroId, selectedEnemyId, playerStats, enemyStats).catch((err) => {
+                    console.error('[BattleScene] Критическая ошибка инициализации боя:', err);
+                });
+                if (!destroyed) console.log('Battle ready — units on stage');
+            }
+        };
+        run();
 
         return () => {
+            destroyed = true;
             engine.destroy();
             (window as any).__BATTLE_ENGINE__ = null;
         };
@@ -58,7 +70,7 @@ export const BattleScene: React.FC = () => {
 
     return (
         <div style={{ position: 'absolute', inset: 0, background: '#000', zIndex: 500, overflow: 'hidden' }}>
-            <div ref={containerRef} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} />
+            <div ref={containerRef} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', zIndex: 1 }} />
             
             <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 100 }}>
                 <div style={{ padding: '40px 100px', display: 'flex', justifyContent: 'space-between' }}>
@@ -110,7 +122,7 @@ export const BattleScene: React.FC = () => {
                     fontSize: '20px', fontWeight: 900, fontFamily: "'Cinzel', serif"
                 }}
             >
-                В ЦИТАДЕЛЬ
+                В ГОРОД
             </button>
         </div>
     );

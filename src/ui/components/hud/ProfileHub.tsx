@@ -3,12 +3,27 @@ import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../../../store/useGameStore';
 import { AssetsMap } from '../../../configs/AssetsMap';
+import { audioService } from '../../../services/AudioService';
 import '../../styles/profile-hub.css';
 
 type TabType = 'avatar' | 'frame' | 'title';
 
 export const ProfileHub: React.FC = () => {
-    const { level, vipLevel, exp } = useGameStore();
+    const { level, vipLevel, exp, vkUser, title } = useGameStore();
+
+    const getBadgeColor = (lvl: number) => {
+        if (lvl >= 72) return 'from-[#8c6a3d] to-[#1a150f]'; // Эфир (Золотое сияние)
+        if (lvl >= 64) return 'from-[#4a2a5d] to-[#120a1a]'; // Аметист
+        if (lvl >= 56) return 'from-[#6d1a1a] to-[#1a0a0a]'; // Рубин
+        if (lvl >= 48) return 'from-[#1a3a5d] to-[#0a121a]'; // Сапфир
+        if (lvl >= 40) return 'from-[#1a4d2a] to-[#0a1a0d]'; // Изумруд
+        if (lvl >= 32) return 'from-[#b38b3b] to-[#2d1f0a]'; // Золото
+        if (lvl >= 24) return 'from-[#7a7a7a] to-[#1a1a1a]'; // Серебро
+        if (lvl >= 16) return 'from-[#8c4a2a] to-[#2d150a]'; // Бронза
+        if (lvl >= 8)  return 'from-[#454d55] to-[#1a1c1e]'; // Железо
+        return 'from-[#3d2b1f] to-[#1a0f0a]'; // Странник
+    };
+
     const [isCustomizationOpen, setIsCustomizationOpen] = useState(false);
     const [activeTab, setActiveTab] = useState<TabType>('avatar');
     const maxExp = level * 600;
@@ -20,6 +35,10 @@ export const ProfileHub: React.FC = () => {
                 initial={{ x: -200, opacity: 0 }}
                 animate={{ x: 15, opacity: 1 }}
                 className="relative pointer-events-auto cursor-pointer"
+                onClick={() => {
+                    audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
+                    setIsCustomizationOpen(true);
+                }}
                 style={{
                     width: '465px',
                     height: '112px',
@@ -34,10 +53,10 @@ export const ProfileHub: React.FC = () => {
                 {/* ШАГ 3: АВАТАР И НОВАЯ РАМКА */}
                 <div className="absolute left-[-18px] top-[-20px] w-[160px] h-[160px] flex items-center justify-center">
                     {/* 1. Само изображение (Круг под рамкой) */}
-                    <div className="w-[110px] h-[110px] rounded-full overflow-hidden bg-black/40 z-10 flex items-center justify-center relative translate-y-[2px] translate-x-[2px]">
+                    <div className="w-[108px] h-[108px] rounded-full overflow-hidden bg-black/40 z-10 flex items-center justify-center relative translate-y-[1px]">
                         <img
-                            src="/assets/images/avatars/панда.webp"
-                            className="w-full h-full object-cover scale-110"
+                            src={vkUser?.photo_200 || "/assets/images/avatars/панда.webp"}
+                            className="w-full h-full object-cover scale-105"
                             alt="avatar"
                         />
                     </div>
@@ -49,9 +68,9 @@ export const ProfileHub: React.FC = () => {
                     />
 
                     {/* 3. Элемент уровня (LVL BADGE) */}
-                    <div className="absolute bottom-[35px] left-[150px] w-[40px] h-[40px] z-30 flex items-center justify-center">
+                    <div className="absolute bottom-[8px] left-[112px] w-[40px] h-[40px] z-30 flex items-center justify-center">
                         {/* Подложка круга */}
-                        <div className="absolute inset-[4px] rounded-full bg-gradient-to-b from-[#2a221a] to-[#0f0a07] shadow-inner border border-white/5" />
+                        <div className={`absolute inset-[4px] rounded-full bg-gradient-to-b ${getBadgeColor(level)} shadow-[inset_0_2px_4px_rgba(255,255,255,0.3)] border border-white/10`} />
 
                         <img
                             src={AssetsMap.UI.LVL_BADGE}
@@ -73,8 +92,18 @@ export const ProfileHub: React.FC = () => {
                     </div>
                 </div>
 
-                {/* VIP ПЛАШКА */}
-                <div className="absolute left-[350px] top-[10px] flex items-center justify-center" style={{ width: '100px', height: '40px' }}>
+                {/* VIP ПЛАШКА (ОРИГИНАЛЬНЫЙ СПРАЙТ + ФУНКЦИОНАЛ) */}
+                <button
+                    className="absolute left-[345px] top-[10px] flex items-center justify-center group z-[101] outline-none bg-transparent border-none p-0 cursor-pointer"
+                    style={{ width: '105px', height: '38px' }}
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
+                        if ((window as any).setActiveHUDWindow) {
+                            (window as any).setActiveHUDWindow('VIP');
+                        }
+                    }}
+                >
                     <img
                         src={AssetsMap.UI.VIP_PLAQUE}
                         className="absolute inset-0 w-full h-full object-contain"
@@ -91,64 +120,65 @@ export const ProfileHub: React.FC = () => {
                     }}>
                         VIP {vipLevel}
                     </span>
-                </div>
+                </button>
 
                 {/* ИМЯ И ЗВАНИЕ */}
-                <div className="absolute left-[185px] top-[7px] flex flex-col items-start gap-0">
-                    <div className="flex items-center gap-3">
-                        <img
-                            src={AssetsMap.UI.ICON_CROWN}
-                            className="w-[40px] h-[40px] object-contain relative"
-                            style={{
-                                left: '-25px',
-                                top: '5px',
-                                filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))'
-                            }}
-                            alt="crown"
-                        />
+                <div className="absolute left-[140px] top-[15px] flex items-center gap-0">
+                    <img
+                        src={AssetsMap.UI.ICON_CROWN}
+                        className="w-[40px] h-[40px] object-contain relative"
+                        style={{
+                            left: '0px',
+                            top: '3px',
+                            filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))'
+                        }}
+                        alt="crown"
+                    />
+                    <div className="flex flex-col items-start" style={{ marginLeft: '5px' }}>
                         <span style={{
                             fontFamily: "'Cinzel', serif",
-                            fontSize: '26px',
+                            fontSize: '24px',
                             fontWeight: 900,
                             color: '#fff',
                             textShadow: '0 2px 4px rgba(0,0,0,1)',
-                            letterSpacing: '4px',
-                            lineHeight: '1'
+                            letterSpacing: '2px',
+                            lineHeight: '1.1'
                         }}>
-                            Motaro
+                            {vkUser?.first_name || 'Мастер'}
+                        </span>
+                        <span style={{
+                            fontFamily: "'Cinzel', serif",
+                            fontSize: '11px',
+                            fontWeight: 500,
+                            color: '#a0a0a0',
+                            textShadow: '0 1px 2px rgba(0,0,0,1)',
+                            letterSpacing: '1px',
+                            marginTop: '-1px'
+                        }}>
+                            {title}
                         </span>
                     </div>
-                    <span style={{
-                        fontFamily: "'Cinzel', serif",
-                        fontSize: '11px',
-                        fontWeight: 500,
-                        color: '#a0a0a0',
-                        textShadow: '0 1px 2px rgba(0,0,0,1)',
-                        letterSpacing: '0.5px',
-                        marginTop: '2px',
-                        marginLeft: '45px'
-                    }}>
-                        Masters of the Wild
-                    </span>
                 </div>
 
                 {/* ПОЛОСКА ОПЫТА */}
-                <div className="absolute left-[135px] bottom-[9px] w-[280px] h-[35px] flex items-center justify-center">
+                <div className="absolute left-[130px] bottom-[11px] w-[280px] h-[35px] flex items-center justify-center">
                     <img
                         src={AssetsMap.UI.EXP_BAR_BG}
-                        className="absolute inset-0 w-full h-full object-contain scale-x-110"
+                        className="absolute inset-0 w-full h-full object-fill"
                         alt="exp-bg"
                     />
 
                     {/* Внутренняя полоска (заполнение) */}
-                    <div className="absolute left-[10px] right-[10px] h-[14px] bg-black/40 rounded-full overflow-hidden border border-white/5">
+                    <div className="absolute left-[15px] right-[50px] h-[22px] bg-black/50 rounded-full overflow-hidden border border-white/5" style={{ top: '50%', transform: 'translateY(-50%)' }}>
                         <motion.div
                             initial={{ width: 0 }}
                             animate={{ width: `${expPct}%` }}
                             style={{
                                 height: '100%',
-                                background: 'linear-gradient(90deg, #0095ff, #00d4ff)',
-                                boxShadow: '0 0 10px rgba(0,212,255,0.6)'
+                                background: 'linear-gradient(90deg, #001144 0%, #0044bb 100%)',
+                                boxShadow: 'inset 0 0 10px rgba(0,0,0,0.6), 0 0 15px rgba(0,30,120,0.4)',
+                                borderRight: '1px solid rgba(255,255,255,0.2)',
+                                borderRadius: '9999px'
                             }}
                         />
                     </div>

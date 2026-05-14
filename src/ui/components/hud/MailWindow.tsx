@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../../../store/useGameStore';
+import { AssetsMap } from '../../../configs/AssetsMap';
 
 interface MailWindowProps {
     onClose: () => void;
@@ -20,10 +21,26 @@ export const MailWindow: React.FC<MailWindowProps> = () => {
     } = useGameStore();
 
     const [view, setView] = useState<'LIST' | 'READ' | 'WRITE'>('LIST');
-    const [activeTab, setActiveTab] = useState<'INBOX' | 'NEWS' | 'ARCHIVE' | 'SUPPORT'>('INBOX');
+    const [activeTab, setActiveTab] = useState<'INBOX' | 'NEWS' | 'ARCHIVE' | 'SUPPORT' | 'PROMO'>('INBOX');
     const [selectedMail, setSelectedMail] = useState<any>(null);
     const [feedbackCategory, setFeedbackCategory] = useState<'BUG' | 'IDEA' | 'QUESTION'>('BUG');
     const [feedbackText, setFeedbackText] = useState('');
+    const [promoInput, setPromoInput] = useState('');
+    const [promoStatus, setPromoStatus] = useState<{ msg: string, type: 'SUCCESS' | 'ERROR' | 'IDLE' }>({ msg: '', type: 'IDLE' });
+
+    const { redeemPromoCode } = useGameStore();
+
+    const handleRedeem = () => {
+        if (!promoInput.trim()) return;
+        const result = redeemPromoCode(promoInput);
+        if (result.success) {
+            setPromoStatus({ msg: result.message, type: 'SUCCESS' });
+            setPromoInput('');
+        } else {
+            setPromoStatus({ msg: result.message, type: 'ERROR' });
+        }
+        setTimeout(() => setPromoStatus({ msg: '', type: 'IDLE' }), 3000);
+    };
 
     const colors = {
         text: '#e8d8a8',
@@ -31,6 +48,7 @@ export const MailWindow: React.FC<MailWindowProps> = () => {
         card: 'rgba(255,255,255,0.03)',
         border: 'rgba(240,192,64,0.15)',
         danger: '#ef4444',
+        success: '#22c55e',
         input: 'rgba(0,0,0,0.3)'
     };
 
@@ -64,9 +82,9 @@ export const MailWindow: React.FC<MailWindowProps> = () => {
             {/* ВКЛАДКИ */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
                 <div style={{ display: 'flex', gap: '10px' }}>
-                    {['INBOX', 'NEWS', 'ARCHIVE', 'SUPPORT'].map(tab => {
+                    {['INBOX', 'NEWS', 'ARCHIVE', 'SUPPORT', 'PROMO'].map(tab => {
                         const unread = getUnreadCount(tab);
-                        const labels = { INBOX: 'ВХОДЯЩИЕ', NEWS: 'НОВОСТИ', ARCHIVE: 'АРХИВ', SUPPORT: 'СВЯЗЬ' };
+                        const labels = { INBOX: 'ВХОДЯЩИЕ', NEWS: 'НОВОСТИ', ARCHIVE: 'АРХИВ', SUPPORT: 'СВЯЗЬ', PROMO: 'ПРОМОКОД' };
                         return (
                             <button 
                                 key={tab} 
@@ -80,7 +98,7 @@ export const MailWindow: React.FC<MailWindowProps> = () => {
                                 }}
                             >
                                 {(labels as any)[tab]}
-                                {unread > 0 && tab !== 'ARCHIVE' && (
+                                {unread > 0 && tab !== 'ARCHIVE' && tab !== 'PROMO' && (
                                     <div style={{ position: 'absolute', top: -5, right: -5, width: '18px', height: '18px', background: colors.danger, color: '#fff', fontSize: '10px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, border: '2px solid #1a1008' }}>
                                         {unread}
                                     </div>
@@ -103,6 +121,7 @@ export const MailWindow: React.FC<MailWindowProps> = () => {
                     {view === 'LIST' ? (
                         activeTab === 'SUPPORT' ? (
                             <motion.div 
+                                key="support"
                                 initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
                                 style={{ display: 'flex', flexDirection: 'column', gap: '20px', padding: '20px', background: 'rgba(0,0,0,0.2)', borderRadius: '15px', border: `1px solid ${colors.border}` }}
                             >
@@ -168,6 +187,82 @@ export const MailWindow: React.FC<MailWindowProps> = () => {
                                     </button>
                                 </div>
                             </motion.div>
+                        ) : activeTab === 'PROMO' ? (
+                            <motion.div 
+                                key="promo"
+                                initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
+                                style={{ 
+                                    display: 'flex', flexDirection: 'column', alignItems: 'center', 
+                                    justifyContent: 'center', gap: '30px', padding: '60px 20px',
+                                    background: 'rgba(0,0,0,0.2)', borderRadius: '20px', border: `1px solid ${colors.border}`
+                                }}
+                            >
+                                <div style={{ textAlign: 'center' }}>
+                                    <div style={{ width: 70, height: 70, margin: '0 auto 10px auto' }}>
+                                        <img 
+                                            src={AssetsMap.UI.ICON_PROMO} 
+                                            alt="promo" 
+                                            style={{ 
+                                                width: '100%', 
+                                                height: '100%', 
+                                                objectFit: 'contain', 
+                                                filter: 'contrast(1.15) brightness(1.1) drop-shadow(0 0 15px rgba(240,192,64,0.3))' 
+                                            }} 
+                                        />
+                                    </div>
+                                    <h3 style={{ fontFamily: "'Cinzel', serif", fontSize: '24px', color: colors.accent, marginBottom: '10px', letterSpacing: '2px' }}>АКТИВАЦИЯ КОДА</h3>
+                                    <p style={{ fontSize: '13px', opacity: 0.6, maxWidth: '350px' }}>
+                                        Введите секретный шифр, чтобы получить ценные дары от Духов Леса.
+                                    </p>
+                                </div>
+
+                                <div style={{ width: '100%', maxWidth: '400px', display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                                    <div style={{ position: 'relative' }}>
+                                        <input 
+                                            type="text"
+                                            value={promoInput}
+                                            onChange={(e) => setPromoInput(e.target.value.toUpperCase())}
+                                            placeholder="ПРОМОКОД"
+                                            style={{
+                                                width: '100%', padding: '18px 25px', background: 'rgba(0,0,0,0.4)',
+                                                border: `2px solid ${promoStatus.type === 'ERROR' ? colors.danger : promoStatus.type === 'SUCCESS' ? colors.success : colors.border}`,
+                                                borderRadius: '12px', color: '#fff', fontSize: '18px', fontWeight: 900,
+                                                textAlign: 'center', letterSpacing: '4px', outline: 'none', transition: '0.3s'
+                                            }}
+                                        />
+                                        <AnimatePresence>
+                                            {promoStatus.msg && (
+                                                <motion.div 
+                                                    initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                                                    style={{ 
+                                                        position: 'absolute', bottom: '-25px', left: 0, width: '100%', 
+                                                        textAlign: 'center', fontSize: '11px', fontWeight: 900,
+                                                        color: promoStatus.type === 'SUCCESS' ? colors.success : colors.danger 
+                                                    }}
+                                                >
+                                                    {promoStatus.msg}
+                                                </motion.div>
+                                            )}
+                                        </AnimatePresence>
+                                    </div>
+
+                                    <button 
+                                        onClick={handleRedeem}
+                                        style={{ 
+                                            padding: '18px', background: 'linear-gradient(180deg, #f0c040, #c87820)', 
+                                            border: 'none', borderRadius: '12px', fontWeight: 900, color: '#1a1008', 
+                                            cursor: 'pointer', fontFamily: "'Cinzel', serif", fontSize: '16px',
+                                            boxShadow: '0 6px 20px rgba(200, 120, 32, 0.4)', marginTop: '10px'
+                                        }}
+                                    >
+                                        АКТИВИРОВАТЬ
+                                    </button>
+                                </div>
+
+                                <div style={{ fontSize: '11px', opacity: 0.4, fontStyle: 'italic' }}>
+                                    Следите за новостями в группе, чтобы не пропустить новые коды!
+                                </div>
+                            </motion.div>
                         ) : (
                             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                                 {filteredMails.length > 0 ? (
@@ -221,7 +316,11 @@ export const MailWindow: React.FC<MailWindowProps> = () => {
                                     <div style={{ display: 'flex', gap: '15px' }}>
                                         {selectedMail.rewards.map((r: any, idx: number) => (
                                             <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                <span style={{ fontSize: '20px' }}>{r.type === 'GOLD' ? '💰' : '💎'}</span>
+                                                <img 
+                                                    src={r.type === 'GOLD' ? AssetsMap.UI.ICON_GOLD_FULL : r.type === 'ENERGY' ? AssetsMap.UI.ICON_ENERGY_FULL : AssetsMap.UI.ICON_ALMAZ_FULL} 
+                                                    style={{ width: 22, height: 22, objectFit: 'contain' }} 
+                                                    alt="reward" 
+                                                />
                                                 <span style={{ fontWeight: 900, color: colors.accent }}>{r.amount.toLocaleString()}</span>
                                             </div>
                                         ))}
@@ -259,7 +358,7 @@ export const MailWindow: React.FC<MailWindowProps> = () => {
             </div>
 
             {/* ДИНАМИЧЕСКИЙ ФУТЕР */}
-            {view === 'LIST' && activeTab !== 'SUPPORT' && (
+            {view === 'LIST' && activeTab !== 'SUPPORT' && activeTab !== 'PROMO' && (
                 <motion.div 
                     initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
                     style={{ marginTop: '20px', display: 'flex', gap: '10px' }}

@@ -1,63 +1,200 @@
 import * as PIXI from 'pixi.js';
-import { WEAPON_SOCKETS } from '../../configs/WeaponSockets';
-import { resolveAssetPath } from '../../utils/assetPath';
+import { HEROES_DB, IHeroConfig, IHeroAnchors } from '../../configs/HeroesConfig';
+import { SpriteValidator } from '../../utils/SpriteValidator';
+import { ITEMS_DATABASE } from '../../game/configs/ItemsConfig';
 
+const SLOT_CONFIG = {
+  WEAPON: { baseSize: 256, anchorX: 0.5, anchorY: 0.9, socketKey: 'rightHand' as keyof IHeroAnchors, zIndex: 20 }
+} as const;
+
+/**
+ * HeroUnit — Ядро визуализации героя (Approach E).
+ * Специализирован на сборке тела и оружия с использованием "Железной математики".
+ */
 export class HeroUnit extends PIXI.Container {
-    mainSprite: PIXI.Sprite;
-    weaponSprite: PIXI.Sprite;
-    layers: PIXI.Container;
-    weaponTextures: Record<number, PIXI.Texture> = {};
+  public baseSize = 512;
+  public bodySprite!: PIXI.Sprite;
+  private weaponSprite: PIXI.Sprite | null = null;
+  private config!: IHeroConfig;
+  public heroInstanceId: string = Math.random().toString(36).substr(2, 9);
 
-    constructor(texture: PIXI.Texture) {
-        super();
-        this.layers = new PIXI.Container();
-        this.addChild(this.layers);
+  constructor() {
+    super();
+    this.sortableChildren = true;
+  }
 
-        this.mainSprite = new PIXI.Sprite(texture);
-        this.mainSprite.anchor.set(0.5, 0.9);
-        this.layers.addChild(this.mainSprite);
+  /**
+   * Загрузка тела героя
+   */
+  async loadHero(heroId: string) {
+    this.config = HEROES_DB.find(h => h.id === heroId) || HEROES_DB[0];
+    console.log(`[HeroUnit] Starting load for: ${this.config.id}`);
+    
+    const tex = await PIXI.Assets.load(this.config.image);
+    console.log(`[HeroUnit] Texture loaded: ${this.config.id} (${tex.width}x${tex.height})`);
 
-        this.weaponSprite = new PIXI.Sprite();
-        this.weaponSprite.anchor.set(0.5, 0.5);
-        this.weaponSprite.visible = false; 
-        this.addChild(this.weaponSprite);
+    // Очистка старого тела
+    if (this.bodySprite) {
+      this.removeChild(this.bodySprite);
+      this.bodySprite.destroy({ children: true, texture: false });
     }
 
-    async loadWeapon(weaponId: string) {
-        try {
-            const p1 = await PIXI.Assets.load(resolveAssetPath(`/assets/images/items/${weaponId}.png`)).catch(() => null);
-            const p2 = await PIXI.Assets.load(resolveAssetPath(`/assets/images/items/${weaponId}_alt.png`)).catch(() => p1); 
-            const p3 = await PIXI.Assets.load(resolveAssetPath(`/assets/images/items/${weaponId}_impact.png`)).catch(() => p1);
+    this.bodySprite = new PIXI.Sprite(tex);
+    this.bodySprite.sortableChildren = true;
+    
+    // Нормализация под 512px (фикс кривых размеров)
+    const safeWidth = tex.width || 512;
+    const safeHeight = tex.height || 512;
+    const scaleFactor = this.baseSize / Math.max(safeWidth, safeHeight, 512);
+    console.log(`[HeroUnit] Scaling ${this.config.id} by factor: ${scaleFactor}`);
+    this.bodySprite.scale.set(scaleFactor);
+    
+    // Установка точки опоры (Feet)
+    this.bodySprite.anchor.set(this.config.anchors.feet.x, this.config.anchors.feet.y);
+    this.bodySprite.zIndex = 10;
+    
+    this.addChild(this.bodySprite);
+    this.createShadow();
+    console.log(`[HeroUnit] Hero ${this.config.id} added to container.`);
+  }
 
-            this.weaponTextures = {
-                1: p1,
-                2: p2,
-                3: p3
-            };
+  private createShadow() {
+    const shadow = new PIXI.Graphics();
+    shadow.ellipse(0, 0, 60, 20).fill({ color: 0x000000, alpha: 0.3 });
+    shadow.zIndex = 1;
+    this.addChild(shadow);
+  }
 
-            if (p1) {
-                this.weaponSprite.texture = p1;
-                this.weaponSprite.visible = true;
-            }
-        } catch (e) {
-            console.warn("Error loading weapon poses:", e);
-        }
+  /**
+   * Экипировка оружия
+   */
+  async equipWeapon(itemId: string | null) {
+    // 1. Снять старое
+    if (this.weaponSprite) {
+      if (this.weaponSprite.parent) this.weaponSprite.parent.removeChild(this.weaponSprite);
+      this.weaponSprite.destroy({ children: true, texture: false });
+      this.weaponSprite = null;
     }
+    if (!itemId || !this.config) return;
 
-    setFrame(texture: PIXI.Texture, frameIndex: number) {
-        this.mainSprite.texture = texture;
-        // Используем сокеты для конкретного героя (по умолчанию панда)
-        const heroSockets = WEAPON_SOCKETS['panda']; // В будущем можно передавать ключ героя
-        const socket = heroSockets[String(frameIndex)];
+    const itemData = ITEMS_DATABASE[itemId];
+    if (!itemData) return;
 
-        if (this.weaponSprite.visible && socket) {
-            this.weaponSprite.x = socket.x * (this.scale.x > 0 ? 1 : -1);
-            this.weaponSprite.y = socket.y;
-            this.weaponSprite.rotation = socket.rotation * (this.scale.x > 0 ? 1 : -1);
+    const cfg    = SLOT_CONFIG.WEAPON;
+    const socket = this.config.anchors.rightHand;
+    const feet   = this.config.anchors.feet;
+    
+    const tex = await PIXI.Assets.load(itemData.image);
+    console.log(`[HeroUnit] Weapon loaded: ${itemId} (${tex.width}x${tex.height})`);
+    SpriteValidator.validate(tex, 'WEAPONS');
 
-            if (frameIndex === 5) this.weaponSprite.texture = this.weaponTextures[2] || this.weaponSprite.texture;
-            else if (frameIndex === 6) this.weaponSprite.texture = this.weaponTextures[3] || this.weaponSprite.texture;
-            else this.weaponSprite.texture = this.weaponTextures[1] || this.weaponSprite.texture;
-        }
+    const s = new PIXI.Sprite(tex);
+    s.anchor.set(cfg.anchorX, cfg.anchorY);
+    
+    const texWidth = this.bodySprite.texture.width || 1;
+    const texHeight = this.bodySprite.texture.height || 1;
+    const weaponScale = cfg.baseSize / Math.max(texWidth, texHeight, 256);
+    const socketScale = socket.scale ?? 1.0;
+    const parentScaleX = this.bodySprite.scale.x || 1;
+    s.scale.set((weaponScale * socketScale) / parentScaleX);
+    s.angle = socket.angle ?? 0;
+
+    s.position.set(
+      (socket.x - feet.x) * texWidth,
+      (socket.y - feet.y) * texHeight
+    );
+    
+    s.zIndex = cfg.zIndex;
+    this.bodySprite.addChild(s);
+    this.weaponSprite = s;
+    console.log(`[HeroUnit] Weapon ${itemId} attached to body.`);
+  }
+
+  /**
+   * Массовое обновление (для совместимости с BattleEngine)
+   */
+  async updateEquipment(equipment: Record<string, string | null>) {
+    await this.equipWeapon(equipment['WEAPONS'] || null);
+  }
+
+  /**
+   * Процедурная анимация атаки
+   */
+  public playAttackAnimation() {
+    if (!this.weaponSprite) return;
+    const originalAngle = this.weaponSprite.angle;
+    this.weaponSprite.angle -= 30;
+    setTimeout(() => { if (this.weaponSprite) this.weaponSprite.angle += 90; }, 100);
+    setTimeout(() => { if (this.weaponSprite) this.weaponSprite.angle = originalAngle; }, 300);
+  }
+
+  /**
+   * Эффект получения урона
+   */
+  public playHitEffect() {
+    if (!this.bodySprite) return;
+    const originalTint = this.bodySprite.tint;
+    this.bodySprite.tint = 0xFF0000;
+    setTimeout(() => { if (this.bodySprite) this.bodySprite.tint = originalTint; }, 150);
+  }
+
+  /**
+   * Дебаг-оверлей сокетов
+   */
+  public drawDebugSockets(): void {
+    const g = new PIXI.Graphics();
+    const anchors = this.config.anchors;
+    const sockets = {
+      rightHand: { color: 0xff4444 },
+      leftHand:  { color: 0x4444ff },
+      head:      { color: 0xffff00 },
+      center:    { color: 0x44ff44 },
+    };
+
+    for (const [key, cfg] of Object.entries(sockets)) {
+      const s = (anchors as any)[key];
+      if (!s) continue;
+      const px = (s.x - anchors.feet.x) * this.baseSize;
+      const py = (s.y - anchors.feet.y) * this.baseSize;
+      g.circle(px, py, 6).fill({ color: cfg.color, alpha: 0.8 });
+      
+      const label = new PIXI.Text(key, { 
+        fontSize: 12, 
+        fill: cfg.color,
+        stroke: { color: 0x000000, width: 2 }
+      });
+      label.position.set(px + 8, py - 6);
+      this.addChild(label);
     }
+    g.zIndex = 100;
+    this.addChild(g);
+  }
+
+  private animTime: number = 0;
+  
+  /**
+   * Обновление анимации (Idle дыхание)
+   */
+  public update(dt: number) {
+    if (!this.bodySprite || !this.bodySprite.texture) return;
+    
+    this.animTime += dt * 0.05;
+    const breath = Math.sin(this.animTime) * 0.02;
+    
+    // Плавное дыхание
+    const tex = this.bodySprite.texture;
+    const texDim = Math.max(tex.width, tex.height, 512);
+    const baseScale = this.baseSize / texDim;
+    this.bodySprite.scale.y = baseScale + breath;
+    
+    // Качание оружия (теперь оно дочернее, так что y-offset добавляется к его локальной позиции)
+    if (this.weaponSprite) {
+        // Мы не меняем y напрямую постоянно, а добавляем микро-оффсет
+        // Для простоты можно оставить как было, но теперь оно будет "дышать" вместе с телом
+    }
+  }
+
+  public destroy(options?: any) {
+    super.destroy(options);
+  }
 }

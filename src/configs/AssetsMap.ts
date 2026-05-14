@@ -24,6 +24,7 @@ const rawAssetsMap = {
         HUB_VIP_BADGE: '/assets/images/ui/hub_vip_badge.png',
         HUB_ICON_EDIT: '/assets/images/ui/hub_icon_edit.png',
         PANEL_CHAT: '/assets/images/ui/chat_panel_full.webp',
+        PANEL_CHAT_CLEAN: '/assets/images/ui/chat_panel_clean.png',
         PANEL_QUEST: '/assets/images/ui/Zadanie.webp',
         PROFILE_PLAQUE: '/assets/images/ui/profile_plaque.webp',
 
@@ -45,6 +46,10 @@ const rawAssetsMap = {
 
         // Сундук подарка (Новый!)
         ICON_DAILY_CHEST: '/assets/images/ui/iconrgy.webp',
+        ICON_PROMO: '/assets/images/ui/icons/promo_coin.webp',
+        ICON_XP: '/assets/images/ui/exp_icon.png',
+        TROPHY_PREMIUM: '/assets/images/ui/trophy_premium.png',
+        BTN_BATTLE_GROUP: '/assets/images/ui/battle_btn_group.webp',
 
         // Иконки HUD
         ICON_FRIENDS: '/assets/images/ui/friends_icon.webp',
@@ -52,7 +57,6 @@ const rawAssetsMap = {
         ICON_SETTINGS: '/assets/images/ui/settings_icon.webp',
         ICON_GIFT: '/assets/images/ui/daily_gift_v2.webp',
         ICON_BEAST_PASS: '/assets/images/ui/battle_pass_full.webp',
-        BTN_BATTLE_GROUP: '/assets/images/ui/battle_btn_group.webp',
 
         // Магазин / Звери
         SHOP_ITEM_BG: '/assets/images/ui/btn_panel_mis12c.webp',
@@ -91,6 +95,14 @@ const rawAssetsMap = {
     BACKGROUNDS: {
         MAIN_MENU: '/assets/images/backgrounds/bg_main.webp',
         BATTLE_ARENA: '/assets/images/backgrounds/battle/bg_1.webp',
+        BATTLE_ARENAS: [
+            '/assets/images/backgrounds/battle/bg_1.webp',
+            '/assets/images/backgrounds/battle/bg_2.webp',
+            '/assets/images/backgrounds/battle/bg_3.webp',
+            '/assets/images/backgrounds/battle/bg_4.webp',
+            '/assets/images/backgrounds/battle/bg_5.webp',
+            '/assets/images/backgrounds/battle/bg_6.webp',
+        ],
         SHOP: '/assets/images/ui/Shop.webp',
         HEROES_HALL: '/assets/images/backgrounds/зал героев.webp',
         SHOP_NAV_BG: '/assets/images/ui/Shoping.webp',
@@ -122,13 +134,23 @@ const rawAssetsMap = {
     },
     AUDIO: {
         MUSIC_MAIN: '/assets/audio/music/Dawn_of_the_Siege.mp3',
+        MUSIC_LIST: [
+            '/assets/audio/music/A_Long_Road_Alone.mp3',
+            '/assets/audio/music/Dawn_of_the_Siege.mp3',
+            '/assets/audio/music/Scrolls_of_the_Mountain_Pass.mp3',
+            '/assets/audio/music/Silent_Plains_of_Honor.mp3',
+            '/assets/audio/music/Snow_on_the_Cedar_Path.mp3',
+            '/assets/audio/music/The_Ironwood_Threshold.mp3',
+            '/assets/audio/music/Where_the_Canopy_Weeps.mp3',
+            '/assets/audio/music/Where_the_Steel_Rests.mp3'
+        ],
         SFX_CLICK: '/assets/audio/sfx/click.mp3',
         SFX_BUY: '/assets/audio/sfx/buy_success.mp3',
-        SFX_ERROR: '/assets/audio/sfx/error.mp3',
-        SFX_LEVEL_UP: '/assets/audio/sfx/level_up.mp3',
-        SFX_EQUIP: '/assets/audio/sfx/equip_item.mp3',
-        SFX_ATTACK: '/assets/audio/sfx/attack_swing.mp3',
-        SFX_HIT: '/assets/audio/sfx/impact_hit.mp3'
+        SFX_ERROR: '/assets/audio/sfx/click.mp3',   // Fallback
+        SFX_LEVEL_UP: '/assets/audio/sfx/click.mp3', // Fallback
+        SFX_EQUIP: '/assets/audio/sfx/click.mp3',    // Fallback
+        SFX_ATTACK: '/assets/audio/sfx/click.mp3',   // Fallback
+        SFX_HIT: '/assets/audio/sfx/impact_hit.mp3'  // Exists!
     },
     SHEETS: {
         BOOTS: '/assets/images/sheets/boots_sprite.webp',

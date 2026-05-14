@@ -64,54 +64,73 @@ export class PixiApp {
         return PixiApp.instance;
     }
 
+    public async destroy(): Promise<void> {
+        if (this.pixiApp) {
+            console.log('[PixiApp] Destroying application...');
+            // [Lead Architect]: texture: false is CRITICAL here to avoid 
+            // "Texture managed by Assets was destroyed instead of unloaded" warning.
+            this.pixiApp.destroy(true, { children: true, texture: false });
+            this.pixiApp = null;
+            PixiApp.canvas = null;
+            PixiApp.instance = null;
+        }
+    }
+
     public async init(config?: IPixiAppConfig, container?: HTMLElement): Promise<void> {
         try {
-            if (this.pixiApp) {
-                if (container && container !== this.pixiApp.canvas.parentElement && !(container instanceof HTMLCanvasElement)) {
-                    container.appendChild(this.pixiApp.canvas as HTMLCanvasElement);
+            // [Fix]: Если приложение уже есть, но контейнер сменился, переносим канвас
+            if (this.pixiApp && container) {
+                const canvas = this.pixiApp.canvas;
+                if (canvas && canvas.parentElement !== container) {
+                    container.appendChild(canvas);
+                    this.applyCanvasStyles(canvas);
                 }
-                return;
             }
 
-            if (config) this.config = { ...this.config, ...config };
+            if (!this.pixiApp) {
+                if (config) this.config = { ...this.config, ...config };
 
-            this.pixiApp = new PIXI.Application();
-            await this.pixiApp.init({
-                width: 1920,
-                height: 1080,
-                // [Anti-Grey] Limit resolution to 2 on mobile to save memory
-                resolution: Math.min(window.devicePixelRatio || 1, 2),
-                autoDensity: true,
-                backgroundColor: 0x000000,
-                antialias: true,
-                // [Anti-Grey] Prefer WebGL for better mobile stability in Pixi v8
-                preference: 'webgl'
-            });
-            PixiApp.canvas = this.pixiApp.canvas as HTMLCanvasElement;
+                this.pixiApp = new PIXI.Application();
+                await this.pixiApp.init({
+                    width: this.config.width,
+                    height: this.config.height,
+                    backgroundColor: this.config.background || 0x000000,
+                    backgroundAlpha: 0, // [Optimization] Transparent canvas for seamless loading
+                    antialias: this.config.antialias,
+                    resolution: Math.min(window.devicePixelRatio || 1, 2),
+                    autoDensity: true,
+                    preference: 'webgl'
+                });
+                
+                (window as any).__PIXI_APP__ = this.pixiApp;
+                PixiApp.canvas = this.pixiApp.canvas;
 
-            const canvas = this.pixiApp.canvas as HTMLCanvasElement;
-            // [Fix]: Убираем ограничения vw/vh, которые ломают масштаб на маленьких экранах.
-            // Холст должен просто заполнять свой контейнер (1920x1080), 
-            // который уже масштабируется внешним SafeGameLayout.
-            canvas.style.width = '100%';
-            canvas.style.height = '100%';
-            canvas.style.display = 'block';
-
-            if (container && !(container instanceof HTMLCanvasElement)) {
-                container.appendChild(this.pixiApp.canvas as HTMLCanvasElement);
+                this.pixiApp.ticker.add((ticker: PIXI.Ticker) => this.update(ticker));
             }
 
-            this.pixiApp.stage.addChild(
-                this.backgroundLayer,
-                this.gameLayer,
-                this.effectsLayer,
-                this.uiLayer,
-                this.debugLayer
-            );
+            if (container && this.pixiApp.canvas) {
+                const canvas = this.pixiApp.canvas;
+                this.applyCanvasStyles(canvas);
+                
+                if (canvas.parentElement !== container) {
+                    container.appendChild(canvas);
+                }
+            }
 
-            this.pixiApp.ticker.add((ticker: PIXI.Ticker) => this.update(ticker));
-            
-            console.log('✅ PixiApp initialized: Fixed 1920x1080 Mode Active');
+            // Пересобираем сцену
+            if (this.pixiApp) {
+                this.pixiApp.stage.removeChildren();
+                this.pixiApp.stage.addChild(
+                    this._backgroundLayer,
+                    this._gameLayer,
+                    this._effectsLayer,
+                    this._uiLayer,
+                    this._debugLayer
+                );
+                
+                this.pixiApp.ticker.start();
+                console.log('✅ PixiApp initialized/reset successfully');
+            }
 
         } catch (error) {
             console.error('❌ PixiApp initialization failed:', error);
@@ -119,9 +138,21 @@ export class PixiApp {
         }
     }
 
+    private applyCanvasStyles(canvas: HTMLCanvasElement): void {
+        canvas.style.width = '100%';
+        canvas.style.height = '100%';
+        canvas.style.display = 'block';
+        canvas.style.position = 'absolute';
+        canvas.style.top = '0';
+        canvas.style.left = '0';
+        canvas.style.zIndex = '0';
+    }
+
     private update(ticker: PIXI.Ticker): void {
         try {
             if (!this.pixiApp?.canvas) return;
+            
+            // [Lead Architect]: Update loop for all registered systems
             for (const loop of this.updateLoops) {
                 loop(ticker.deltaTime);
             }
@@ -204,15 +235,20 @@ export class PixiApp {
 
     public clearAllLayers(): void {
         [this.backgroundLayer, this.gameLayer, this.effectsLayer, this.uiLayer, this.debugLayer].forEach(l => {
-            // [Lead Architect]: Используем { children: true } для полной очистки памяти и текстур
-            l.removeChildren().forEach(child => child.destroy({ children: true, texture: true }));
+            l.removeChildren().forEach(child => {
+                if (!child.destroyed) {
+                    child.destroy({ children: true, texture: false });
+                }
+            });
         });
         this.updateLoops = [];
+        console.log('[PixiApp] All layers cleared safely.');
     }
 
-    public destroy(): void {
-        if (this.pixiApp) this.pixiApp.destroy(true, { children: true, texture: true });
-        PixiApp.canvas = null;
-        PixiApp.instance = null;
+    public static destroy(): void {
+        const instance = PixiApp.instance;
+        if (instance) {
+            instance.destroy();
+        }
     }
 }

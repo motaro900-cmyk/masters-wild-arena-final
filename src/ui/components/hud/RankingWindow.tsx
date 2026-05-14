@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../../../store/useGameStore';
 import { resolveAssetPath } from '../../../utils/assetPath';
 import { getRankInfo } from '../../../configs/RankSystem';
+import { audioService } from '../../../services/AudioService';
+import { AssetsMap } from '../../../configs/AssetsMap';
 
 interface LeaderboardEntry {
     rank: number;
@@ -27,10 +29,10 @@ export const RankingWindow: React.FC = () => {
     const leaders: LeaderboardEntry[] = React.useMemo(() => [
         { 
             rank: 1, 
-            name: vkUser?.first_name || 'Motar', 
-            level: 1, 
+            name: (vkUser?.first_name || 'Мастер') + ' (ВЫ)', 
+            level: useGameStore.getState().level, 
             trophies: rating, 
-            avatar: playerAvatar || '🐺', 
+            avatar: vkUser?.photo_200 || playerAvatar || '🐺', 
             change: 'stable', 
             isMe: true 
         }
@@ -69,7 +71,10 @@ export const RankingWindow: React.FC = () => {
                 {['GLOBAL', 'CLAN', 'FRIENDS'].map((tab) => (
                     <button
                         key={tab}
-                        onClick={() => setActiveTab(tab as any)}
+                        onClick={() => {
+                            audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
+                            setActiveTab(tab as any);
+                        }}
                         style={{
                             padding: '10px 25px',
                             background: activeTab === tab ? 'linear-gradient(180deg, #f0c040 0%, #a88020 100%)' : 'rgba(255,255,255,0.05)',
@@ -173,11 +178,18 @@ export const RankingWindow: React.FC = () => {
                                 <span style={{ color: '#f0c040', fontSize: '20px', fontWeight: 900 }}>#1</span>
                                 <div style={{ position: 'absolute', top: -10, left: -10, fontSize: '20px' }}>👑</div>
                             </div>
-                            <div style={{ width: '45px', height: '45px', background: '#333', borderRadius: '12px', border: '2px solid #f0c040', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px' }}>{playerAvatar || '🐺'}</div>
+                            <div style={{ width: '45px', height: '45px', background: '#333', borderRadius: '12px', border: '2px solid #f0c040', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <img src={vkUser?.photo_200 || playerAvatar || '🐺'} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="avatar" />
+                            </div>
                             <div>
-                                <div style={{ color: '#fff', fontSize: '16px', fontWeight: 800 }}>{vkUser?.first_name || 'Motar'} <span style={{ fontSize: '10px', opacity: 0.5 }}>(ВЫ)</span></div>
+                                <div style={{ color: '#fff', fontSize: '16px', fontWeight: 800 }}>{vkUser?.first_name || 'Мастер'} <span style={{ fontSize: '10px', opacity: 0.5 }}>(ВЫ)</span></div>
                                 <div style={{ color: getRankInfo(rating).color, fontSize: '11px', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                    {getRankInfo(rating).icon} {getRankInfo(rating).name}
+                                    <img 
+                                        src={getRankInfo(rating).icon} 
+                                        alt="rank" 
+                                        style={{ width: '18px', height: '18px', objectFit: 'contain' }} 
+                                    /> 
+                                    {getRankInfo(rating).name}
                                 </div>
                             </div>
                         </div>
@@ -196,7 +208,9 @@ export const RankingWindow: React.FC = () => {
                 {selectedPlayer && (
                     <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.8)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(10px)' }}>
                         <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} style={{ width: '400px', background: '#1a1510', border: '2px solid #f0c040', borderRadius: '24px', padding: '30px', textAlign: 'center' }}>
-                            <div style={{ fontSize: '60px', marginBottom: '10px' }}>{selectedPlayer.avatar}</div>
+                            <div style={{ width: '100px', height: '100px', margin: '0 auto 15px', borderRadius: '20px', border: '3px solid #f0c040', overflow: 'hidden' }}>
+                                <img src={selectedPlayer.avatar} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="avatar" />
+                            </div>
                             <h3 style={{ color: '#fff', fontSize: '24px', margin: 0, fontFamily: "'Cinzel', serif" }}>{selectedPlayer.name}</h3>
                             <div style={{ color: '#f0c040', fontWeight: 800, marginBottom: '20px' }}>Уровень {selectedPlayer.level}</div>
                             
@@ -326,9 +340,12 @@ const LeaderItem: React.FC<{ player: LeaderboardEntry, onClick: () => void }> = 
                 alignItems: 'center',
                 justifyContent: 'center',
                 fontSize: '24px',
-                boxShadow: isTop3 ? `0 0 15px ${rankColor}33` : 'none'
+                boxShadow: isTop3 ? `0 0 15px ${rankColor}33` : 'none',
+                overflow: 'hidden'
             }}>
-                {player.avatar}
+                {player.avatar.includes('sprite') ? (
+                    <div className={player.avatar.replace('sprite:', '')} style={{ transform: 'scale(0.8)' }} />
+                ) : player.avatar}
             </div>
 
             {/* ИМЯ И УРОВЕНЬ */}
@@ -352,10 +369,14 @@ const LeaderItem: React.FC<{ player: LeaderboardEntry, onClick: () => void }> = 
                 marginRight: '20px',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '5px',
+                gap: '8px',
                 boxShadow: `inset 0 0 10px ${getRankInfo(player.trophies).glow}`
             }}>
-                <span>{getRankInfo(player.trophies).icon}</span>
+                <img 
+                    src={getRankInfo(player.trophies).icon} 
+                    alt="rank" 
+                    style={{ width: '16px', height: '16px', objectFit: 'contain' }} 
+                />
                 {getRankInfo(player.trophies).name}
             </div>
 

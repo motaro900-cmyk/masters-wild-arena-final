@@ -3,19 +3,13 @@ import { useGameStore } from '../../../store/useGameStore';
 import { ITEMS_DATABASE } from '../../../game/configs/ItemsConfig';
 import { MOBS_DB } from '../../../configs/MobsConfig';
 import { syncService } from '../../../services/SyncService';
+import { audioService } from '../../../services/AudioService';
+import { AssetsMap } from '../../../configs/AssetsMap';
+import { BattleEngine } from '../../../engine/core/BattleEngine';
 
 const ADMIN_VK_IDS = [212359386]; 
 
 type AdminTab = 'ИГРОК' | 'БОЙ' | 'СЕРВЕР' | 'ПОЧТА' | 'ЧАТ' | 'СИСТЕМА';
-
-interface ChatMessage {
-    id: string;
-    senderId: string;
-    senderName: string;
-    text: string;
-    timestamp: string;
-    isAdmin?: boolean;
-}
 
 interface RealPlayer {
     id: string;
@@ -88,10 +82,6 @@ export const AdminPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
 
     // --- ЛОКАЛЬНЫЕ СОСТОЯНИЯ (ЧАТ) ---
     const [adminChatMessage, setAdminChatMessage] = useState('');
-    const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
-        { id: '1', senderId: 'MW-OFFLINE-TEST', senderName: 'Иван Иванов', text: 'Как получить легендарный меч?', timestamp: '23:45' },
-        { id: '2', senderId: 'ADMIN-01', senderName: 'SYSTEM', text: 'Добро пожаловать в Админ-Центр v3.0!', timestamp: '23:46', isAdmin: true }
-    ]);
 
     useEffect(() => {
         setCustomGold(String(store.gold));
@@ -103,7 +93,7 @@ export const AdminPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     useEffect(() => {
         if (activeTab === 'ЧАТ') chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
         if (activeTab === 'БОЙ') logEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, [chatMessages, store.combatLogs, activeTab]);
+    }, [store.messages, store.combatLogs, activeTab]);
 
     const selectedPlayer = realPlayers.find(p => p.id === selectedPlayerId);
 
@@ -170,10 +160,8 @@ export const AdminPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
 
     const sendAdminChatMessage = () => {
         if (!adminChatMessage.trim()) return;
-        setChatMessages([...chatMessages, {
-            id: Date.now().toString(), senderId: 'ADMIN', senderName: 'SYSTEM', text: adminChatMessage,
-            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), isAdmin: true
-        }]);
+        audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
+        store.addMessage(adminChatMessage, 'СИСТЕМА', 'system');
         setAdminChatMessage('');
     };
 
@@ -191,19 +179,23 @@ export const AdminPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                         <Section title="РЕДАКТОР РЕСУРСОВ (Direct Input)">
                             <div style={editRow}>
                                 <div style={{ flex: 1 }}><div style={statLabel}>ЗОЛОТО</div><input type="number" style={inputStyle} value={customGold} onChange={e => setCustomGold(e.target.value)} /></div>
-                                <button onClick={() => store.setGold(Number(customGold))} style={applyBtn}>OK</button>
+                                <button onClick={() => { audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK); store.setGold(Number(customGold)); }} style={applyBtn}>OK</button>
                             </div>
                             <div style={editRow}>
                                 <div style={{ flex: 1 }}><div style={statLabel}>КРИСТАЛЛЫ</div><input type="number" style={inputStyle} value={customCrystals} onChange={e => setCustomCrystals(e.target.value)} /></div>
-                                <button onClick={() => store.setCrystals(Number(customCrystals))} style={applyBtn}>OK</button>
+                                <button onClick={() => { audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK); store.setCrystals(Number(customCrystals)); }} style={applyBtn}>OK</button>
                             </div>
                             <div style={editRow}>
                                 <div style={{ flex: 1 }}><div style={statLabel}>УРОВЕНЬ</div><input type="number" style={inputStyle} value={customLevel} onChange={e => setCustomLevel(e.target.value)} /></div>
-                                <button onClick={() => store.setLevel(Number(customLevel))} style={applyBtn}>OK</button>
+                                <button onClick={() => { audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK); store.setLevel(Number(customLevel)); }} style={applyBtn}>OK</button>
                             </div>
                             <div style={editRow}>
                                 <div style={{ flex: 1 }}><div style={statLabel}>ТАЛАНТЫ</div><input type="number" style={inputStyle} value={customPoints} onChange={e => setCustomPoints(e.target.value)} /></div>
-                                <button onClick={() => store.setTalentPoints(Number(customPoints))} style={applyBtn}>OK</button>
+                                <button onClick={() => { audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK); store.setTalentPoints(Number(customPoints)); }} style={applyBtn}>OK</button>
+                            </div>
+                            <div style={{ display: 'flex', gap: '8px' }}>
+                                <button onClick={() => { audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK); store.addExp(store.level * 600); }} style={{ ...smallBtnStyle, flex: 1 }}>LVL UP (+1)</button>
+                                <button onClick={() => { audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK); store.setLevel(store.level + 10); }} style={{ ...smallBtnStyle, flex: 1, color: '#f0c040' }}>LVL +10</button>
                             </div>
                         </Section>
                         <Section title="ИНВЕНТАРЬ & ТЕЛЕПОРТ">
@@ -212,18 +204,40 @@ export const AdminPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                                 <option value="">Выбрать предмет...</option>
                                 {Object.keys(ITEMS_DATABASE).map(id => <option key={id} value={id}>{id}</option>)}
                             </select>
-                            <button onClick={() => selectedItemId && store.addItemToInventory({ id: selectedItemId, level: 1 })} style={{ ...bigBtnStyle, marginTop: '10px' }}>ДОБАВИТЬ В ИНВЕНТАРЬ</button>
-                            <button onClick={() => confirm('Очистить инвентарь?') && store.clearInventory()} style={{ ...bigBtnStyle, marginTop: '5px', background: '#301010', color: '#ff4d4d' }}>WIPE INVENTORY</button>
+                            <button onClick={() => { 
+                                audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
+                                selectedItemId && store.addItemToInventory({ id: selectedItemId, level: 1 });
+                            }} style={{ ...bigBtnStyle, marginTop: '10px' }}>ДОБАВИТЬ В ИНВЕНТАРЬ</button>
+                            <button onClick={() => {
+                                audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
+                                confirm('Очистить инвентарь?') && store.clearInventory();
+                            }} style={{ ...bigBtnStyle, marginTop: '5px', background: '#301010', color: '#ff4d4d' }}>WIPE INVENTORY</button>
+                            <button onClick={() => {
+                                audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
+                                Object.keys(ITEMS_DATABASE).forEach(id => store.addItemToInventory({ id, level: 1 }));
+                                alert('ВЕСЬ АРСЕНАЛ ВЫДАН!');
+                            }} style={{ ...bigBtnStyle, marginTop: '5px', background: '#1a1a2e', color: '#8888ff' }}>ВЫДАТЬ ВЕСЬ АРСЕНАЛ (Unlock All)</button>
                             
                             <div style={{ marginTop: '20px' }}>
                                 <div style={statLabel}>МГНОВЕННЫЙ ПЕРЕХОД (Screens)</div>
                                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '5px' }}>
                                     {['MAP', 'BOSS', 'ARENA', 'SHOP', 'HEROES', 'CLAN'].map(s => (
-                                        <button key={s} onClick={() => store.setScreen(s)} style={{ ...btnStyle, background: store.activeScreen === s ? '#222' : '#111' }}>{s}</button>
+                                        <button key={s} onClick={() => { audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK); store.setScreen(s); }} style={{ ...btnStyle, background: store.activeScreen === s ? '#222' : '#111' }}>{s}</button>
                                     ))}
                                 </div>
                             </div>
-                            <button onClick={() => { store.setGold(999999); store.setCrystals(99999); store.setLevel(100); }} style={{ ...bigBtnStyle, marginTop: '20px', background: '#1b4332', color: '#4dff4d' }}>БОЖЕСТВЕННЫЙ СТАРТ (Full Max Out)</button>
+                            <button onClick={() => { 
+                                audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
+                                store.setGold(999999); 
+                                store.setCrystals(99999); 
+                                store.setLevel(100); 
+                                store.setTalentPoints(500);
+                            }} style={{ ...bigBtnStyle, marginTop: '20px', background: '#1b4332', color: '#4dff4d' }}>БОЖЕСТВЕННЫЙ СТАРТ (Full Max Out)</button>
+                            <button onClick={() => { 
+                                audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
+                                confirm('ВЫПОЛНИТЬ ПОЛНЫЙ СБРОС ИГРОВОГО ПРОГРЕССА?') && store.resetAllProgress();
+                            }} style={{ ...bigBtnStyle, marginTop: '10px', background: '#431b1b', color: '#ff4d4d' }}>СБРОСИТЬ ВЕСЬ ПРОГРЕСС (Wipe Progress)</button>
+                            <ToggleRow label="БЕСКОНЕЧНАЯ ЭНЕРГИЯ" active={store.hasInfiniteEnergy} onToggle={() => store.setHasInfiniteEnergy && store.setHasInfiniteEnergy(!store.hasInfiniteEnergy)} />
                         </Section>
                     </div>
                 );
@@ -240,9 +254,10 @@ export const AdminPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                             <ToggleRow label="БЕССМЕРТИЕ (God Mode)" active={store.isGodMode} onToggle={() => store.setGodMode(!store.isGodMode)} />
                             <ToggleRow label="ONE-SHOT KILL" active={store.isOneShot} onToggle={() => store.setOneShot(!store.isOneShot)} />
                             <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
-                                <button onClick={() => alert('WIN')} style={{ ...btnStyle, flex: 1, background: '#1b4332', padding: '12px' }}>МГНОВЕННАЯ ПОБЕДА 🏆</button>
-                                <button onClick={() => alert('FAIL')} style={{ ...btnStyle, flex: 1, background: '#431b1b', padding: '12px' }}>ПРОВАЛ БИТВЫ 💀</button>
+                                <button onClick={() => { audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK); BattleEngine.getInstance().instantWin(); }} style={{ ...btnStyle, flex: 1, background: '#1b4332', padding: '12px' }}>МГНОВЕННАЯ ПОБЕДА 🏆</button>
+                                <button onClick={() => { audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK); BattleEngine.getInstance().instantLose(); }} style={{ ...btnStyle, flex: 1, background: '#431b1b', padding: '12px' }}>ПРОВАЛ БИТВЫ 💀</button>
                             </div>
+                            <ToggleRow label="ЗАМОРОЗИТЬ ВРАГА (Freeze)" active={store.isEnemyFrozen} onToggle={() => store.setIsEnemyFrozen && store.setIsEnemyFrozen(!store.isEnemyFrozen)} />
                         </Section>
                         <Section title="СПАВНЕР МОБОВ (Database Check)">
                             <div style={editRow}>
@@ -252,8 +267,8 @@ export const AdminPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                                 <button onClick={() => store.addCombatLog(`ВЫЗВАН: ${MOBS_DB.find(m => m.id === selectedMobId)?.name}`)} style={applyBtn}>SPAWN</button>
                             </div>
                             <div style={statLabel}>ЛОГИ ТЕКУЩЕГО БОЯ:</div>
-                            <div style={terminalStyle}>
-                                {store.combatLogs.map((log: string, i: number) => <div key={i}>&gt; {log}</div>)}
+                             <div style={terminalStyle}>
+                                {store.combatLogs?.map((log: string, i: number) => <div key={i}>&gt; {log}</div>) || <div>Логи пусты</div>}
                                 <div ref={logEndRef} />
                             </div>
                             <button onClick={() => store.clearCombatLogs()} style={{ ...btnStyle, width: '100%', marginTop: '5px' }}>ОЧИСТИТЬ ТЕРМИНАЛ</button>
@@ -373,21 +388,67 @@ export const AdminPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                                                 <select value={banDuration} onChange={e => setBanDuration(e.target.value)} style={{ ...inputStyle, flex: 1 }}>
                                                     <option value="1h">1 Час</option><option value="24h">1 День</option><option value="7d">7 Дней</option><option value="perm">Перманент</option>
                                                 </select>
-                                                <button onClick={() => alert('BANNED')} style={{ ...btnStyle, background: '#431b1b', color: '#ff4d4d', padding: '0 15px' }}>БАН</button>
+                                                <button onClick={async () => {
+                                                    audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
+                                                    if (!selectedPlayer) return;
+                                                    try {
+                                                        await syncService.updateRemotePlayerData(selectedPlayer.id, { status: 'BANNED', banReason: modReason, banUntil: banDuration });
+                                                        alert(`Игрок ${selectedPlayer.name} ЗАБАНЕН`);
+                                                        refreshPlayers();
+                                                    } catch (e) { alert('Ошибка при бане'); }
+                                                }} style={{ ...btnStyle, background: '#431b1b', color: '#ff4d4d', padding: '0 15px' }}>БАН</button>
                                             </div>
                                             <div style={{ display: 'flex', gap: '5px' }}>
                                                 <select value={muteDuration} onChange={e => setMuteDuration(e.target.value)} style={{ ...inputStyle, flex: 1 }}>
                                                     <option value="1h">1 Час</option><option value="24h">1 День</option>
                                                 </select>
-                                                <button onClick={() => alert('MUTED')} style={{ ...btnStyle, padding: '0 15px' }}>МУТ</button>
+                                                <button onClick={async () => {
+                                                    audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
+                                                    if (!selectedPlayer) return;
+                                                    try {
+                                                        await syncService.updateRemotePlayerData(selectedPlayer.id, { isMuted: true, muteReason: modReason, muteUntil: muteDuration });
+                                                        alert(`Игрок ${selectedPlayer.name} получил МУТ`);
+                                                        refreshPlayers();
+                                                    } catch (e) { alert('Ошибка при муте'); }
+                                                }} style={{ ...btnStyle, padding: '0 15px' }}>МУТ</button>
                                             </div>
                                         </div>
                                         <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
-                                            <button onClick={() => alert('KICKED')} style={{ ...btnStyle, flex: 1, background: '#301010', color: '#fff' }}>КИКНУТЬ (Disconnect)</button>
-                                            <button onClick={() => alert('RESET RATING')} style={{ ...btnStyle, flex: 1 }}>СБРОСИТЬ РЕЙТИНГ</button>
+                                            <button onClick={async () => {
+                                                audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
+                                                if (!selectedPlayer) return;
+                                                if (confirm(`Кикнуть игрока ${selectedPlayer.name}?`)) {
+                                                    try {
+                                                        await syncService.updateRemotePlayerData(selectedPlayer.id, { status: 'KICKED' });
+                                                        alert('Игрок кикнут');
+                                                        refreshPlayers();
+                                                    } catch (e) { alert('Ошибка при кике'); }
+                                                }
+                                            }} style={{ ...btnStyle, flex: 1, background: '#301010', color: '#fff' }}>КИКНУТЬ (Disconnect)</button>
+                                            <button onClick={async () => {
+                                                audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
+                                                if (!selectedPlayer) return;
+                                                if (confirm('Сбросить рейтинг игрока?')) {
+                                                    try {
+                                                        await syncService.updateRemotePlayerData(selectedPlayer.id, { rating: 0 });
+                                                        alert('Рейтинг сброшен');
+                                                        refreshPlayers();
+                                                    } catch (e) { alert('Ошибка сброса'); }
+                                                }
+                                            }} style={{ ...btnStyle, flex: 1 }}>СБРОСИТЬ РЕЙТИНГ</button>
                                         </div>
                                         <div style={{ display: 'flex', gap: '8px' }}>
-                                            <button onClick={() => confirm('WIPE EVERYTHING?') && alert('WIPED')} style={{ ...btnStyle, flex: 1.5, background: '#601010', color: '#fff', fontWeight: 'bold' }}>ПОЛНЫЙ ВАЙП АККАУНТА 🔥</button>
+                                            <button onClick={async () => {
+                                                audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
+                                                if (!selectedPlayer) return;
+                                                if (confirm(`ВНИМАНИЕ: Выполнить полный вайп игрока ${selectedPlayer.name}?`)) {
+                                                    try {
+                                                        await syncService.updateRemotePlayerData(selectedPlayer.id, { золото: 0, кристаллы: 0, лев: 1, рейтинг: 0, инвентарь: [] });
+                                                        alert('Аккаунт полностью очищен');
+                                                        refreshPlayers();
+                                                    } catch (e) { alert('Ошибка при вайпе'); }
+                                                }
+                                            }} style={{ ...btnStyle, flex: 1.5, background: '#601010', color: '#fff', fontWeight: 'bold' }}>ПОЛНЫЙ ВАЙП АККАУНТА 🔥</button>
                                             <button onClick={() => { setMailRecipient(selectedPlayer.id); setActiveTab('ПОЧТА'); }} style={{ ...btnStyle, flex: 1, background: '#1b4332', color: '#4dff4d' }}>ОТПРАВИТЬ ПИСЬМО ✉️</button>
                                         </div>
                                     </Section>
@@ -460,17 +521,17 @@ export const AdminPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                 return (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', height: '700px' }}>
                         <div style={{ flex: 1, background: '#0a0a0a', border: '1px solid #222', borderRadius: '10px', padding: '20px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                            {chatMessages.map(msg => (
-                                <div key={msg.id} style={{ background: msg.isAdmin ? 'rgba(255, 77, 77, 0.05)' : '#000', padding: '12px', borderRadius: '10px', border: msg.isAdmin ? '1px solid rgba(255, 77, 77, 0.2)' : '1px solid #111' }}>
+                            {store.messages.map((msg: any) => (
+                                <div key={msg.id} style={{ background: msg.type === 'system' ? 'rgba(255, 77, 77, 0.05)' : '#000', padding: '12px', borderRadius: '10px', border: msg.type === 'system' ? '1px solid rgba(255, 77, 77, 0.2)' : '1px solid #111' }}>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '5px' }}>
-                                        <span style={{ color: msg.isAdmin ? '#ff4d4d' : '#3b82f6', fontSize: '12px', fontWeight: 'bold' }}>{msg.senderName} {msg.isAdmin && '🛡️'}</span>
-                                        <span style={{ color: '#333', fontSize: '10px' }}>{msg.timestamp}</span>
+                                        <span style={{ color: msg.type === 'system' ? '#ff4d4d' : '#3b82f6', fontSize: '12px', fontWeight: 'bold' }}>{msg.author} {msg.type === 'system' && '🛡️'}</span>
+                                        <span style={{ color: '#333', fontSize: '10px' }}>{new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                                     </div>
                                     <div style={{ fontSize: '14px', color: '#eee', lineHeight: '1.4' }}>{msg.text}</div>
                                     <div style={{ display: 'flex', gap: '15px', marginTop: '10px', borderTop: '1px solid #111', paddingTop: '8px' }}>
-                                        <button onClick={() => { setSelectedPlayerId(msg.senderId); setActiveTab('СЕРВЕР'); }} style={{ background: 'none', border: 'none', color: '#555', fontSize: '10px', cursor: 'pointer', padding: 0 }}>[ПРОФИЛЬ]</button>
-                                        <button onClick={() => alert('MESSAGE DELETED')} style={{ background: 'none', border: 'none', color: '#431b1b', fontSize: '10px', cursor: 'pointer', padding: 0 }}>[УДАЛИТЬ]</button>
-                                        <button onClick={() => { setModReason('Нарушение в чате'); setSelectedPlayerId(msg.senderId); setActiveTab('СЕРВЕР'); }} style={{ background: 'none', border: 'none', color: '#555', fontSize: '10px', cursor: 'pointer', padding: 0 }}>[МУТ]</button>
+                                        <button onClick={() => { setSelectedPlayerId(msg.id); setActiveTab('СЕРВЕР'); }} style={{ background: 'none', border: 'none', color: '#555', fontSize: '10px', cursor: 'pointer', padding: 0 }}>[ПРОФИЛЬ]</button>
+                                        <button onClick={() => { audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK); store.removeMessage(msg.id); }} style={{ background: 'none', border: 'none', color: '#431b1b', fontSize: '10px', cursor: 'pointer', padding: 0 }}>[УДАЛИТЬ]</button>
+                                        <button onClick={() => { setModReason('Нарушение в чате'); setSelectedPlayerId(msg.id); setActiveTab('СЕРВЕР'); }} style={{ background: 'none', border: 'none', color: '#555', fontSize: '10px', cursor: 'pointer', padding: 0 }}>[МУТ]</button>
                                     </div>
                                 </div>
                             ))}
@@ -544,10 +605,10 @@ export const AdminPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                 </div>
                 <div style={{ display: 'flex', gap: '25px' }}>
                     {(['ИГРОК', 'БОЙ', 'СЕРВЕР', 'ПОЧТА', 'ЧАТ', 'СИСТЕМА'] as AdminTab[]).map(tab => (
-                        <button key={tab} onClick={() => setActiveTab(tab)} style={{ ...tabButtonStyle, borderBottom: activeTab === tab ? '2px solid #ff4d4d' : 'none', color: activeTab === tab ? '#fff' : '#444' }}>{tab}</button>
+                        <button key={tab} onClick={() => { audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK); setActiveTab(tab); }} style={{ ...tabButtonStyle, borderBottom: activeTab === tab ? '2px solid #ff4d4d' : 'none', color: activeTab === tab ? '#fff' : '#444' }}>{tab}</button>
                     ))}
                 </div>
-                <button onClick={onClose} style={closeButtonStyle}>ЗАКРЫТЬ</button>
+                <button onClick={() => { audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK); onClose(); }} style={closeButtonStyle}>ЗАКРЫТЬ</button>
             </div>
             <div style={scrollAreaStyle}>{renderTabContent()}</div>
         </div>

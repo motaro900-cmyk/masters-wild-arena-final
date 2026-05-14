@@ -150,7 +150,10 @@ export const NewHUD: React.FC = () => {
 
                 {/* Нижний центр (Кнопка "В БОЙ") */}
                 <EditorPanel id="NewBattleButton" className="absolute bottom-16 left-1/2 -translate-x-1/2 z-30 pointer-events-auto">
-                    <button className="relative group w-[580px] h-[170px] transition-transform hover:scale-105 active:scale-95 duration-200 ease-out">
+                    <button 
+                        onClick={() => useGameStore.getState().setScreen('BATTLE')}
+                        className="relative group w-[580px] h-[170px] transition-transform hover:scale-105 active:scale-95 duration-200 ease-out"
+                    >
                         
                         {/* Тень и 3D грань */}
                         <div className="absolute inset-0 bg-orange-950 rounded-[50px] translate-y-6 blur-[10px] opacity-80"></div>
