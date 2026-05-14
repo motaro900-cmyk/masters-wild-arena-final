@@ -8,7 +8,7 @@ import { useGameStore } from '../../../store/useGameStore';
 export const ChatPanel: React.FC = () => {
     const [isOpen, setIsOpen] = useState(true);
     const [inputText, setInputText] = useState('');
-    const { messages, addMessage, vkUser } = useGameStore();
+    const { messages, addMessage, name } = useGameStore();
     const [showEmoji, setShowEmoji] = useState(false);
     const [activeTab, setActiveTab] = useState('general');
     const [activeChatTab, setActiveChatTab] = useState<'all' | 'system' | 'clan' | 'private'>('all');
@@ -97,7 +97,7 @@ export const ChatPanel: React.FC = () => {
     const handleSendMessage = () => {
         if (!inputText.trim()) return;
         
-        const userName = vkUser?.first_name ? `${vkUser.first_name} ${vkUser.last_name}` : 'Мастер';
+        const userName = name || 'Мастер';
         
         let finalType = 'common';
         let finalText = inputText;
@@ -712,7 +712,7 @@ export const ChatPanel: React.FC = () => {
                                          onMouseEnter={e => { if(msg.type !== 'system') e.currentTarget.style.background = 'rgba(255,255,255,0.05)' }}
                                          onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                                      >
-                                        {msg.author}:
+                                        {(msg.author || 'Мастер').split(' ')[0]}:
                                     </span>
                                     
                                     <span style={{ 

@@ -16,8 +16,11 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
     // Request fullscreen on first interaction (CBA requirement)
     if (step === 1) {
       console.log("🖱️ First click detected");
-      // Start audio context only
+      // Start audio context and music
       audioService.resumeContext();
+      if (AssetsMap?.AUDIO?.MUSIC_LIST && !audioService.isPlaying()) {
+        audioService.playPlaylist(AssetsMap.AUDIO.MUSIC_LIST);
+      }
 
       const doc = document.documentElement;
       if (doc.requestFullscreen && !document.fullscreenElement) {

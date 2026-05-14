@@ -15,7 +15,7 @@ type RewardType = 'GOLD' | 'CRYSTAL' | 'ENERGY';
  * DailyGiftWindow (v2.2) — Использование РЕАЛЬНОГО сундука (iconrgy.webp).
  */
 export const DailyGiftWindow: React.FC<DailyGiftWindowProps> = ({ onClose }) => {
-    const { addGold, addCrystals, addEnergy } = useGameStore();
+    const { addGold, addCrystals, addEnergy, setCanClaimDailyGift } = useGameStore();
     
     const [status, setStatus] = useState<'READY' | 'OPENING' | 'CLAIMED'>('READY');
     const [reward, setReward] = useState<{ type: RewardType, amount: number } | null>(null);
@@ -44,8 +44,10 @@ export const DailyGiftWindow: React.FC<DailyGiftWindowProps> = ({ onClose }) => 
 
             if (isSameDay) {
                 setStatus('CLAIMED');
+                setCanClaimDailyGift(false);
             } else {
                 setStatus('READY');
+                setCanClaimDailyGift(true);
             }
         };
 
@@ -98,6 +100,7 @@ export const DailyGiftWindow: React.FC<DailyGiftWindowProps> = ({ onClose }) => 
             setReward({ type, amount });
             setStatus('CLAIMED');
             safeSetItem('lastGiftClaim', Date.now().toString());
+            setCanClaimDailyGift(false);
 
             if (type === 'GOLD') addGold(amount);
             else if (type === 'CRYSTAL') addCrystals(amount);
@@ -301,21 +304,9 @@ export const DailyGiftWindow: React.FC<DailyGiftWindowProps> = ({ onClose }) => 
                                 {timeLeft}
                             </span>
                         </div>
-
-                        <button 
-                            onClick={() => {
-                                audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
-                                onClose();
-                            }}
-                            onMouseEnter={e => e.currentTarget.style.background = 'rgba(240,192,64,0.05)'}
-                            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-                        >
-                            ЗАКРЫТЬ
-                        </button>
                     </motion.div>
                 )}
             </AnimatePresence>
-
         </div>
     );
 };

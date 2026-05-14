@@ -347,26 +347,32 @@ export const ShopScene: React.FC = () => {
                             }}
                         >
                             <div style={{
-                                flex: 1, background: `radial-gradient(circle at center, ${getRarityColor(selectedItem.rarity)}22 0%, transparent 70%)`,
-                                display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative'
+                                height: isMobile ? '250px' : 'auto',
+                                flex: isMobile ? 'none' : 1, 
+                                background: `radial-gradient(circle at center, ${getRarityColor(selectedItem.rarity)}22 0%, transparent 70%)`,
+                                display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative',
+                                borderBottom: isMobile ? '1px solid rgba(255,255,255,0.1)' : 'none'
                             }}>
                                 {selectedItem.spriteClass ? (
                                     <div className={selectedItem.spriteClass} style={{ 
-                                        width: '400px', height: '400px',
+                                        width: isMobile ? '200px' : '400px', 
+                                        height: isMobile ? '200px' : '400px',
                                         filter: `contrast(1.2) brightness(1.15) saturate(1.2) drop-shadow(0 0 15px ${getRarityColor(selectedItem.rarity)}aa)`
                                     }} />
                                 ) : (
                                     <img
                                         src={selectedItem.image}
                                         style={{
-                                            width: '400px', height: '400px', objectFit: 'contain',
+                                            width: isMobile ? '200px' : '400px', 
+                                            height: isMobile ? '200px' : '400px', 
+                                            objectFit: 'contain',
                                             filter: (selectedItem.id.toString().includes('starter') || ['pan', 'stick', 'broken_sword', 'rusty_dagger', 'sling', 'bandana', 'ragged_tunic', 'dented_buckler', 'iron_helm', 'forest_hood', 'bone_mask', 'chainmail', 'spiked_leather', 'hunter_furs', 'steel_shield', 'bone_shield', 'plank_shield'].includes(selectedItem.id.toString())) ? 'url(#remove-white)' : 'none'
                                         }}
                                         alt=""
                                     />
                                 )}
 
-                                <div style={{ position: 'absolute', top: '30px', left: '30px' }}>
+                                <div style={{ position: 'absolute', top: isMobile ? '15px' : '30px', left: isMobile ? '15px' : '30px' }}>
                                     <div style={{ padding: '5px 15px', background: getRarityColor(selectedItem.rarity), borderRadius: '4px', fontSize: '12px', fontWeight: 900, color: '#fff', fontFamily: "'Cinzel', serif" }}>
                                         {selectedItem.rarity}
                                     </div>
@@ -374,9 +380,15 @@ export const ShopScene: React.FC = () => {
                             </div>
 
                             {/* RIGHT SIDE: INFO */}
-                            <div style={{ flex: 1.2, padding: '50px', display: 'flex', flexDirection: 'column' }}>
-                                <h2 style={{ margin: '0 0 10px 0', fontSize: '36px', color: '#fff', fontFamily: "'Cinzel', serif", textTransform: 'uppercase' }}>{selectedItem.name}</h2>
-                                <p style={{ color: '#c8a870', fontSize: '18px', margin: '0 0 30px 0', fontFamily: "'Cinzel', serif", fontWeight: 700 }}>{selectedItem.desc}</p>
+                            <div style={{ 
+                                flex: 1.2, 
+                                padding: isMobile ? '20px' : '50px', 
+                                display: 'flex', 
+                                flexDirection: 'column',
+                                overflowY: 'auto'
+                            }}>
+                                <h2 style={{ margin: '0 0 5px 0', fontSize: isMobile ? '24px' : '36px', color: '#fff', fontFamily: "'Cinzel', serif", textTransform: 'uppercase' }}>{selectedItem.name}</h2>
+                                <p style={{ color: '#c8a870', fontSize: isMobile ? '14px' : '18px', margin: '0 0 15px 0', fontFamily: "'Cinzel', serif", fontWeight: 700 }}>{selectedItem.desc}</p>
 
                                 {/* STATS AREA */}
                                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '15px' }}>
@@ -402,10 +414,15 @@ export const ShopScene: React.FC = () => {
                                 )}
 
                                 {/* ACTION BUTTONS */}
-                                <div style={{ display: 'flex', gap: '20px', marginTop: 'auto' }}>
+                                <div style={{ 
+                                    display: 'flex', 
+                                    gap: isMobile ? '10px' : '20px', 
+                                    marginTop: isMobile ? '20px' : 'auto',
+                                    flexShrink: 0
+                                }}>
                                     <button
                                         onClick={() => setShowConfirm(false)}
-                                        style={{ flex: 1, height: '60px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: '#fff', fontWeight: 900, cursor: 'pointer', fontFamily: "'Cinzel', serif" }}
+                                        style={{ flex: 1, height: isMobile ? '50px' : '60px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: '#fff', fontWeight: 900, cursor: 'pointer', fontFamily: "'Cinzel', serif", fontSize: isMobile ? '12px' : '14px' }}
                                     >
                                         ОТМЕНА
                                     </button>
@@ -413,64 +430,64 @@ export const ShopScene: React.FC = () => {
                                         <button
                                             onClick={() => confirmPurchase('gold')}
                                             style={{
-                                                flex: 1.5, height: '60px',
+                                                flex: 1.5, height: isMobile ? '50px' : '60px',
                                                 background: 'linear-gradient(180deg, #f0c040 0%, #a67c00 100%)',
                                                 border: 'none', borderRadius: '8px',
-                                                color: '#1a0f00', fontWeight: 900, fontSize: '20px',
+                                                color: '#1a0f00', fontWeight: 900, fontSize: isMobile ? '16px' : '20px',
                                                 cursor: 'pointer', fontFamily: "'Cinzel', serif",
-                                                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px'
+                                                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'
                                             }}
                                         >
                                             {selectedItem.priceGold}
-                                            <img src={AssetsMap.UI.ICON_GOLD_FULL} style={{ width: 25 }} alt="" />
+                                            <img src={AssetsMap.UI.ICON_GOLD_FULL} style={{ width: isMobile ? 18 : 25 }} alt="" />
                                         </button>
                                     )}
                                     {selectedItem.priceGem !== undefined && (
                                         <button
                                             onClick={() => confirmPurchase('gem')}
                                             style={{
-                                                flex: 1.5, height: '60px',
+                                                flex: 1.5, height: isMobile ? '50px' : '60px',
                                                 background: 'linear-gradient(180deg, #00ffff 0%, #008888 100%)',
                                                 border: 'none', borderRadius: '8px',
-                                                color: '#000', fontWeight: 900, fontSize: '20px',
+                                                color: '#000', fontWeight: 900, fontSize: isMobile ? '16px' : '20px',
                                                 cursor: 'pointer', fontFamily: "'Cinzel', serif",
-                                                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px'
+                                                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'
                                             }}
                                         >
                                             {selectedItem.priceGem}
-                                            <img src={AssetsMap.UI.ICON_ALMAZ_FULL} style={{ width: 25 }} alt="" />
+                                            <img src={AssetsMap.UI.ICON_ALMAZ_FULL} style={{ width: isMobile ? 18 : 25 }} alt="" />
                                         </button>
                                     )}
                                     {selectedItem.priceStars !== undefined && (
                                         <button
                                             onClick={() => confirmPurchase('stars')}
                                             style={{
-                                                flex: 1.5, height: '60px',
+                                                flex: 1.5, height: isMobile ? '50px' : '60px',
                                                 background: 'linear-gradient(180deg, #5de2ff 0%, #0066ff 100%)',
                                                 border: 'none', borderRadius: '8px',
-                                                color: '#fff', fontWeight: 900, fontSize: '20px',
+                                                color: '#fff', fontWeight: 900, fontSize: isMobile ? '16px' : '20px',
                                                 cursor: 'pointer', fontFamily: "'Cinzel', serif",
-                                                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px'
+                                                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'
                                             }}
                                         >
                                             {selectedItem.priceStars}
-                                            <span style={{ fontSize: '24px' }}>⭐</span>
+                                            <span style={{ fontSize: isMobile ? '18px' : '24px' }}>⭐</span>
                                         </button>
                                     )}
                                     {selectedItem.isAd && (
                                         <button
                                             onClick={() => confirmPurchase('ad')}
                                             style={{
-                                                flex: 1.5, height: '60px',
+                                                flex: 1.5, height: isMobile ? '50px' : '60px',
                                                 background: 'linear-gradient(180deg, #4ade80 0%, #166534 100%)',
                                                 border: 'none', borderRadius: '8px',
-                                                color: '#fff', fontWeight: 900, fontSize: '20px',
+                                                color: '#fff', fontWeight: 900, fontSize: isMobile ? '16px' : '20px',
                                                 cursor: 'pointer', fontFamily: "'Cinzel', serif",
-                                                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px'
+                                                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'
                                             }}
                                         >
-                                            СМОТРЕТЬ
-                                            <span style={{ fontSize: '24px' }}>📺</span>
+                                            {isMobile ? 'AD' : 'СМОТРЕТЬ'}
+                                            <span style={{ fontSize: isMobile ? '18px' : '24px' }}>📺</span>
                                         </button>
                                     )}
                                 </div>

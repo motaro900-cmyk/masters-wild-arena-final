@@ -42,12 +42,17 @@ export const useGameStore = create<any>()(
             energy: 50,
             maxEnergy: 50,
             lastEnergyUpdate: Date.now(),
+            updateProfile: (data: any) => set((state: any) => ({ ...state, ...data })),
+            name: 'Мастер',
+            lastNameChange: 0,
             avatar: 'sprite:sprite-avatar avatar-pos-1',
             frame: 'Рамка 1.webp',
             title: 'Странник',
             bpLevel: 1,
             bpExp: 0,
             trophies: 0,
+            wins: 0,
+            totalBattles: 0,
             combatPower: 2450000,
             buffs: [
                 { id: 'xp_x2', icon: '✨', label: 'XP x2' },
@@ -56,12 +61,23 @@ export const useGameStore = create<any>()(
             ],
             isPremium: false,
             claimedRewards: [],
+            claimedSocialRewards: [] as string[], // 'group', 'favorites'
             messages: [
                 { 
                     id: 'welcome-1', 
                     author: 'СИСТЕМА', 
                     avatar: '/assets/images/ui/system_icon.png',
-                    text: 'Приветствуем в Masters of the Wild! 🐉⚔️', 
+                    text: 'Приветствуем в Masters of the Wild! Твой путь к величию начинается здесь. 🐉⚔️', 
+                    type: 'system', 
+                    timestamp: Date.now() - 1000,
+                    level: 1,
+                    rankIcon: ''
+                },
+                { 
+                    id: 'codex-1', 
+                    author: 'КОДЕКС ЧЕСТИ', 
+                    avatar: '/assets/images/ui/system_icon.png',
+                    text: 'Истинная сила — в уважении. Будьте вежливы, не используйте оскорбления и мат. Пусть в чате царит дух честной игры! 🛡️🤝', 
                     type: 'system', 
                     timestamp: Date.now(),
                     level: 1,
@@ -73,30 +89,58 @@ export const useGameStore = create<any>()(
             addGold: (amount: number) => set((state: any) => ({ gold: state.gold + amount })),
             addCrystals: (amount: number) => set((state: any) => ({ crystals: state.crystals + amount })),
             addEnergy: (amount: number) => set((state: any) => ({ energy: state.energy + amount })),
-            addMessage: (text: string, author = 'Motar', type = 'common') => {
+            setMessages: (newMessages: any[]) => {
+                set((state: any) => {
+                    const allMessages = [...state.messages, ...newMessages];
+                    // Фильтруем по уникальному ID, чтобы избежать дублей
+                    const uniqueMessages = Array.from(new Map(allMessages.map(m => [m.id, m])).values());
+                    // Сортируем по времени и берем последние 100
+                    return { 
+                        messages: uniqueMessages
+                            .sort((a: any, b: any) => a.timestamp - b.timestamp)
+                            .slice(-100) 
+                    };
+                });
+            },
+            setMail: (newMail: any[]) => {
+                set((state: any) => {
+                    const allMail = [...state.mail, ...newMail];
+                    // Уникальные по ID
+                    const uniqueMail = Array.from(new Map(allMail.map(m => [m.id, m])).values());
+                    return { mail: uniqueMail };
+                });
+            },
+            setFriendRequests: (requests: any[]) => set({ friendRequests: requests }),
+            addMessage: async (text: string, author = 'Motar', type = 'common') => {
                 const state = get();
                 const currentRating = state.rating || 0;
                 const rankInfo = getRankInfo(currentRating);
                 
-                // Сначала определяем реальное имя
-                const finalAuthor = (author === 'Игрок' || author === 'Мастер' || author === 'Motar' || !author) ? (state.vkUser?.first_name || 'Мастер') : author;
-                const finalAvatar = state.vkUser?.photo_200 || "/assets/images/avatars/панда.webp";
+                const finalAuthor = (author === 'Игрок' || author === 'Мастер' || author === 'Motar' || !author) 
+                    ? state.name 
+                    : author;
+                    
+                const finalAvatar = state.vkUser?.photo_200 || state.vkUser?.photo || "/assets/images/avatars/панда.webp";
                 
                 const newMessage = {
-                    id: Math.random().toString(36).substr(2, 9),
                     author: finalAuthor,
-                    avatar: finalAvatar, // Добавляем аватар
+                    avatar: finalAvatar,
                     text,
                     type,
                     timestamp: Date.now(),
                     level: state.level || 1,
                     rankIcon: rankInfo.icon,
                     vipLevel: state.vipLevel || 0,
-                    isTop1: finalAuthor === (state.vkUser?.first_name || 'Мастер')
+                    isTop1: finalAuthor === (state.vkUser?.first_name || state.vkUser?.firstName || 'Мастер')
                 };
-                set((state: any) => ({
-                    messages: [...state.messages.slice(-49), newMessage]
-                }));
+
+                if (type === 'system' && author === 'СИСТЕМА') {
+                    // Локальные системные сообщения просто добавляем в стор
+                    set({ messages: [...state.messages, { ...newMessage, id: Math.random().toString(36).substr(2, 9) }] });
+                } else {
+                    // Глобальные сообщения отправляем в Firebase
+                    await syncService.sendChatMessage(newMessage);
+                }
             },
             removeMessage: (id: string) => set((state: any) => ({
                 messages: state.messages.filter((m: any) => m.id !== id)
@@ -171,9 +215,9 @@ export const useGameStore = create<any>()(
             watchAdForReward: async (type: 'GOLD' | 'ENERGY' | 'CRYSTAL') => {
                 const success = await showRewardedVideo();
                 if (success) {
-                    if (type === 'GOLD') get().addGold(1000);
-                    if (type === 'ENERGY') get().addEnergy(10);
-                    if (type === 'CRYSTAL') get().addCrystals(10);
+                    if (type === 'GOLD') get().addGold(5000);
+                    if (type === 'ENERGY') get().addEnergy(25);
+                    if (type === 'CRYSTAL') get().addCrystals(25);
                     // Синхронизируем сразу после награды
                     syncService.syncPlayerData();
                     return true;
@@ -197,6 +241,35 @@ export const useGameStore = create<any>()(
                     }
                 }
                 return false;
+            },
+
+            checkSocialRewards: async () => {
+                const { isGroupMember } = await import('../utils/VKBridge');
+                const state = get() as any;
+                const rewards = state.claimedSocialRewards || [];
+                
+                // 1. Проверка группы
+                if (!rewards.includes('group')) {
+                    const isMember = await isGroupMember();
+                    if (isMember) {
+                        state.addCrystals(50);
+                        set({ claimedSocialRewards: [...rewards, 'group'] });
+                        alert('Награда за вступление в группу: 50 кристаллов! 💎');
+                    }
+                }
+
+                // 2. Проверка избранного (обычно вызывается вручную)
+                // Мы не можем легко проверить "в избранном ли мы", 
+                // поэтому награду даем за сам факт вызова окна добавления (один раз)
+            },
+
+            claimFavoriteReward: () => {
+                const state = get() as any;
+                const rewards = state.claimedSocialRewards || [];
+                if (!rewards.includes('favorites')) {
+                    state.addCrystals(50);
+                    set({ claimedSocialRewards: [...rewards, 'favorites'] });
+                }
             },
 
             // Логика восстановления энергии (1 ед / 5 мин)
@@ -363,6 +436,8 @@ export const useGameStore = create<any>()(
             // --- КВЕСТЫ ---
             dailyQuests: [],
             lastDailyRefresh: 0,
+            canClaimDailyGift: false,
+            setCanClaimDailyGift: (val: boolean) => set({ canClaimDailyGift: val }),
 
             // --- ИНТЕРФЕЙС ---
             activeScreen: 'INTRO', // Стартуем всегда с интро
@@ -810,6 +885,9 @@ export const useGameStore = create<any>()(
                         if (r.type === 'GOLD') get().addGold(r.amount);
                         if (r.type === 'CRYSTALS') get().addCrystals(r.amount);
                         if (r.type === 'ENERGY') get().addEnergy(r.amount);
+                        if (r.type === 'ITEM' && r.itemId) {
+                            get().addItemToInventory({ id: r.itemId, level: 1 });
+                        }
                     });
                     set((state: any) => ({
                         mail: state.mail.map((m: any) => m.id === id ? { ...m, rewards: null, isRead: true } : m)
@@ -848,27 +926,35 @@ export const useGameStore = create<any>()(
                     category,
                     text,
                     userId: state.playerId,
+                    userName: state.vkUser ? `${state.vkUser.first_name} ${state.vkUser.last_name}` : 'Мастер',
                     level: state.level,
                     platform: navigator.platform,
                     version: 'v1.1.0',
                     timestamp: Date.now()
                 };
-                console.log('🚀 Feedback Sent:', feedbackData);
+                syncService.sendFeedback(feedbackData);
             },
             removeFriend: (id: string) => set((state: any) => ({
                 friends: state.friends.filter((f: any) => f.id !== id)
             })),
-            acceptFriendRequest: (id: string) => set((state: any) => {
+            acceptFriendRequest: (id: string) => {
+                const state = get();
                 const request = state.friendRequests.find((r: any) => r.id === id);
-                if (!request) return state;
-                return {
+                if (!request) return;
+                
+                syncService.deleteFriendRequest(state.playerId, id);
+                
+                set((state: any) => ({
                     friends: [...state.friends, request],
                     friendRequests: state.friendRequests.filter((r: any) => r.id !== id)
-                };
-            }),
-            declineFriendRequest: (id: string) => set((state: any) => ({
-                friendRequests: state.friendRequests.filter((r: any) => r.id !== id)
-            })),
+                }));
+            },
+            declineFriendRequest: (id: string) => {
+                syncService.deleteFriendRequest(get().playerId, id);
+                set((state: any) => ({
+                    friendRequests: state.friendRequests.filter((r: any) => r.id !== id)
+                }));
+            },
             sendGift: (friendId: string) => set((state: any) => ({
                 friends: state.friends.map((f: any) => f.id === friendId ? { ...f, giftSent: true } : f)
             })),
@@ -887,7 +973,50 @@ export const useGameStore = create<any>()(
             setRating: (rating: number) => set({ rating: Math.max(0, rating) }),
             joinClan: (id: string, data: any) => set({ clanId: id, clanData: data }),
             leaveClan: () => set({ clanId: null, clanData: null }),
-            setVkUser: (user: any) => set({ vkUser: user }),
+            setVkUser: (user: any) => {
+                const state = get() as any;
+                // При первой привязке ВК, если имя еще дефолтное, берем только Имя из ВК
+                const currentName = state.name;
+                const newName = (currentName === 'Мастер' || !currentName) ? user.first_name : currentName;
+                
+                set({ 
+                    vkUser: user, 
+                    name: newName,
+                    avatar: user.photo_200 || state.avatar 
+                });
+            },
+            changeName: (newName: string) => {
+                const state = get() as any;
+                const now = Date.now();
+                const thirtyDays = 30 * 24 * 60 * 60 * 1000;
+                
+                if (now - state.lastNameChange < thirtyDays && state.lastNameChange !== 0) {
+                    const remainingDays = Math.ceil((thirtyDays - (now - state.lastNameChange)) / (24 * 60 * 60 * 1000));
+                    return { success: false, message: `Смена будет доступна через ${remainingDays} дн.` };
+                }
+
+                const cleanName = newName.trim();
+                if (cleanName.length < 2 || cleanName.length > 15) {
+                    return { success: false, message: 'Имя должно быть от 2 до 15 символов' };
+                }
+
+                // Простая проверка на запрещенные слова (мат)
+                const forbidden = ['хуй', 'пизд', 'еблан', 'сука', 'бля', 'админ', 'gm', 'admin', 'moder'];
+                const lowerName = cleanName.toLowerCase();
+                if (forbidden.some(word => lowerName.includes(word))) {
+                    return { success: false, message: 'Имя содержит недопустимые слова' };
+                }
+
+                // Проверка на разрешенные символы (буквы, цифры, пробел)
+                const nameRegex = /^[a-zA-Zа-яА-Я0-9\s]+$/;
+                if (!nameRegex.test(cleanName)) {
+                    return { success: false, message: 'Только буквы и цифры' };
+                }
+
+                set({ name: cleanName, lastNameChange: now });
+                syncService.syncPlayerData();
+                return { success: true };
+            },
             setAvatar: (avatar: string) => set({ avatar }),
             setFrame: (frame: string) => set({ frame }),
             setTitle: (title: string) => set({ title }),
@@ -936,6 +1065,8 @@ export const useGameStore = create<any>()(
                         pveStage: nextStage,
                         maxPveStage: Math.max(maxPveStage, nextStage),
                         winStreak: newStreak,
+                        wins: (state.wins || 0) + 1,
+                        totalBattles: (state.totalBattles || 0) + 1,
                         activeScreen: 'CITY',
                         activePveEnemy: null
                     }));
@@ -945,11 +1076,12 @@ export const useGameStore = create<any>()(
                     get().updateQuestProgress('WIN_STREAK', newStreak);
                     get().updateQuestProgress('PLAY', 1);
                 } else {
-                    set({ 
+                    set((state: any) => ({ 
                         winStreak: 0, 
+                        totalBattles: (state.totalBattles || 0) + 1,
                         activeScreen: 'CITY', 
                         activePveEnemy: null 
-                    });
+                    }));
                     // Сбрасываем прогресс серии в квестах
                     get().updateQuestProgress('WIN_STREAK', 0);
                     get().updateQuestProgress('PLAY', 1);
@@ -962,7 +1094,7 @@ export const useGameStore = create<any>()(
         {
             name: 'game-storage',
             storage: createJSONStorage(() => getStorage()),
-            version: 19, // Поднято до 19: Добавлено 100к ресурсов
+            version: 20, // Поднято до 20: Добавлена статистика побед
         }
     )
 );

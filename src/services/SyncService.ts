@@ -1,5 +1,5 @@
 import { db } from '../utils/firebase';
-import { doc, setDoc, serverTimestamp, collection, getDocs, query, orderBy, limit } from 'firebase/firestore';
+import { doc, setDoc, getDoc, serverTimestamp, collection, getDocs, query, orderBy, limit, onSnapshot, deleteDoc } from 'firebase/firestore';
 import { useGameStore } from '../store/useGameStore';
 import { getVkUserInfo } from '../utils/VKBridge';
 
@@ -45,8 +45,9 @@ export class SyncService {
             const syncData = {
                 id: userId,
                 vkId: vkUser ? Number(vkUser.id) : 0,
-                name: vkUser ? `${vkUser.firstName} ${vkUser.lastName}` : 'Guest',
-                photo: vkUser ? vkUser.photo : '',
+                name: state.name || 'Мастер',
+                photo: state.avatar || (vkUser ? vkUser.photo : ''),
+                avatar: state.avatar, // Added explicit avatar field just in case
                 лев: state.level || 1,
                 золото: state.gold || 0,
                 кристаллы: state.crystals || 0,
@@ -124,6 +125,214 @@ export class SyncService {
             console.error('[SyncService] Remote update failed:', error);
             throw error;
         }
+    }
+
+    /**
+     * Отправляет отзыв/баг-репорт в Firebase
+     */
+    public async sendFeedback(data: any): Promise<void> {
+        try {
+            const feedbackRef = doc(collection(db, 'отзывы'));
+            await setDoc(feedbackRef, {
+                ...data,
+                serverTimestamp: serverTimestamp()
+            });
+            console.log('[SyncService] Feedback sent successfully');
+        } catch (error) {
+            console.error('[SyncService] Failed to send feedback:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Получает все отзывы для админ-панели
+     */
+    public async getAllFeedback(): Promise<any[]> {
+        try {
+            const feedbackRef = collection(db, 'отзывы');
+            const q = query(feedbackRef, orderBy('timestamp', 'desc'), limit(50));
+            const querySnapshot = await getDocs(q);
+            
+            return querySnapshot.docs.map(doc => ({
+                ...doc.data(),
+                id: doc.id
+            }));
+        } catch (error) {
+            console.error('[SyncService] Failed to fetch feedback:', error);
+            return [];
+        }
+    }
+
+    /**
+     * Ищет игрока по его ID в Firebase
+     */
+    public async searchPlayerById(playerId: string): Promise<any | null> {
+        try {
+            // Убираем префикс MW-, если он есть
+            const id = playerId.toUpperCase().startsWith('MW-') ? playerId.substring(3) : playerId;
+            const playerRef = doc(db, 'пользователи', id);
+            const playerSnap = await getDoc(playerRef);
+            
+            if (playerSnap.exists()) {
+                return {
+                    id: playerSnap.id,
+                    ...playerSnap.data()
+                };
+            }
+            return null;
+        } catch (error) {
+            console.error('[SyncService] Player search failed:', error);
+            return null;
+        }
+    }
+
+    /**
+     * Возвращает список последних активных игроков (Глобальный чат/Мир)
+     */
+    public async getGlobalPlayers(limitCount: number = 20): Promise<any[]> {
+        try {
+            const playersRef = collection(db, 'пользователи');
+            const q = query(playersRef, orderBy('lastSeen', 'desc'), limit(limitCount));
+            const snapshot = await getDocs(q);
+            return snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            }));
+        } catch (error) {
+            console.error('[SyncService] Failed to get global players:', error);
+            return [];
+        }
+    }
+
+    /**
+     * Отправляет запрос в друзья другому игроку
+     */
+    public async sendFriendRequest(targetId: string, senderData: any): Promise<boolean> {
+        try {
+            const requestsRef = collection(db, 'пользователи', targetId, 'запросы');
+            const requestDoc = doc(requestsRef, senderData.id);
+            await setDoc(requestDoc, {
+                ...senderData,
+                timestamp: Date.now()
+            });
+            return true;
+        } catch (error) {
+            console.error('[SyncService] Failed to send friend request:', error);
+            return false;
+        }
+    }
+
+    /**
+     * Подписывается на входящие запросы в друзья
+     */
+    public subscribeToFriendRequests(userId: string, callback: (requests: any[]) => void): () => void {
+        const requestsRef = collection(db, 'пользователи', userId, 'запросы');
+        
+        return onSnapshot(requestsRef, (snapshot: any) => {
+            const requests = snapshot.docs.map((doc: any) => ({
+                ...doc.data(),
+                id: doc.id
+            }));
+            callback(requests);
+        }, (error: any) => {
+            console.error('[SyncService] Requests subscription error:', error);
+        });
+    }
+
+    /**
+     * Удаляет запрос в друзья
+     */
+    public async deleteFriendRequest(userId: string, requestId: string): Promise<void> {
+        try {
+            const requestRef = doc(db, 'пользователи', userId, 'запросы', requestId);
+            await deleteDoc(requestRef);
+        } catch (error) {
+            console.error('[SyncService] Failed to delete friend request:', error);
+        }
+    }
+
+    /**
+     * Отправляет сообщение в глобальный чат Firebase
+     */
+    public async sendChatMessage(message: any): Promise<void> {
+        try {
+            const chatRef = doc(collection(db, 'чат'));
+            await setDoc(chatRef, {
+                ...message,
+                serverTimestamp: serverTimestamp()
+            });
+        } catch (error) {
+            console.error('[SyncService] Failed to send chat message:', error);
+        }
+    }
+
+    /**
+     * Подписывается на обновления чата
+     */
+    public subscribeToChat(callback: (messages: any[]) => void): () => void {
+        const chatRef = collection(db, 'чат');
+        const q = query(chatRef, orderBy('serverTimestamp', 'desc'), limit(50));
+        
+        return onSnapshot(q, (snapshot: any) => {
+            const messages = snapshot.docs.map((doc: any) => ({
+                ...doc.data(),
+                id: doc.id
+            })).reverse();
+            callback(messages);
+        }, (error: any) => {
+            console.error('[SyncService] Chat subscription error:', error);
+        });
+    }
+
+    /**
+     * Отправляет письмо конкретному игроку
+     */
+    public async sendMail(userId: string, mailData: any): Promise<void> {
+        try {
+            const mailRef = doc(collection(db, 'пользователи', userId, 'почта'));
+            await setDoc(mailRef, {
+                ...mailData,
+                timestamp: serverTimestamp(),
+                isRead: false
+            });
+            console.log(`[SyncService] Mail sent to ${userId}`);
+        } catch (error) {
+            console.error('[SyncService] Failed to send mail:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Отправляет письмо всем игрокам (Broadcast)
+     */
+    public async sendBroadcastMail(mailData: any): Promise<void> {
+        try {
+            const players = await this.getAllPlayers();
+            const promises = players.map(p => this.sendMail(p.id, mailData));
+            await Promise.all(promises);
+            console.log(`[SyncService] Broadcast mail sent to ${players.length} players`);
+        } catch (error) {
+            console.error('[SyncService] Broadcast mail failed:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Подписывается на входящую почту игрока
+     */
+    public subscribeToMail(userId: string, callback: (mails: any[]) => void): () => void {
+        const mailRef = collection(db, 'пользователи', userId, 'почта');
+        const q = query(mailRef, orderBy('timestamp', 'desc'), limit(50));
+        
+        return onSnapshot(q, (snapshot: any) => {
+            const mails = snapshot.docs.map((doc: any) => ({
+                ...doc.data(),
+                id: doc.id
+            }));
+            callback(mails);
+        }, (error: any) => {
+            console.error('[SyncService] Mail subscription error:', error);
+        });
     }
 }
 

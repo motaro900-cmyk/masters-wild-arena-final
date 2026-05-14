@@ -1,5 +1,6 @@
-import React from 'react';
 import { resolveAssetPath } from '../../../utils/assetPath';
+import { useGameStore } from '../../../store/useGameStore';
+import { getRankInfo } from '../../../configs/RankSystem';
 
 interface RankingPanelProps {
     onClose: () => void;
@@ -7,6 +8,13 @@ interface RankingPanelProps {
 }
 
 export const RankingPanel: React.FC<RankingPanelProps> = ({ onClose, onStartSearch }) => {
+    const { rating, wins, totalBattles } = useGameStore();
+    const rankInfo = getRankInfo(rating);
+    const winrate = totalBattles > 0 ? Math.round((wins / totalBattles) * 100) : 0;
+    
+    // Порог следующего ранга (условно +1000 к текущему или по системе)
+    const nextRankTrophies = (Math.floor(rating / 1000) + 1) * 1000;
+
     return (
         <div style={{
             position: 'absolute',
@@ -38,17 +46,24 @@ export const RankingPanel: React.FC<RankingPanelProps> = ({ onClose, onStartSear
                     
                     <div style={{ width: '100%', color: '#451a03', fontSize: '20px', fontWeight: 'bold', display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
                         <span>ТЕКУЩИЙ РАНГ:</span>
-                        <span style={{ color: '#c48b3b' }}>ЗОЛОТО II</span>
+                        <span style={{ color: rankInfo.color, textShadow: '1px 1px 0 rgba(0,0,0,0.2)' }}>{rankInfo.name.toUpperCase()}</span>
                     </div>
 
                     <div style={{ width: '100%', color: '#451a03', fontSize: '20px', fontWeight: 'bold', display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
                         <span>КУБКИ:</span>
-                        <span style={{ color: '#c48b3b' }}>1240 / 2000</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span style={{ color: '#c48b3b' }}>{rating} / {nextRankTrophies}</span>
+                            <img 
+                                src={resolveAssetPath('/assets/images/ui/trophy_premium.png')} 
+                                alt="trophy" 
+                                style={{ width: '24px', height: '24px', objectFit: 'contain' }} 
+                            />
+                        </div>
                     </div>
 
                     <div style={{ width: '100%', color: '#451a03', fontSize: '20px', fontWeight: 'bold', display: 'flex', justifyContent: 'space-between', marginBottom: '60px' }}>
                         <span>ВИНРЕЙТ:</span>
-                        <span style={{ color: '#c48b3b' }}>64%</span>
+                        <span style={{ color: '#c48b3b' }}>{winrate}%</span>
                     </div>
 
                     <button 

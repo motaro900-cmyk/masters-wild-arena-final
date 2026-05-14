@@ -1,8 +1,8 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useGameStore } from '../../../store/useGameStore';
-import { requestNotifications } from '../../../utils/VKBridge';
-import { ServerTime } from './ServerTime';
+import { requestNotifications, addToFavorites, joinGroup } from '../../../utils/VKBridge';
+
 
 interface SettingsWindowProps {
     onClose: () => void;
@@ -76,7 +76,7 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
                                 padding: '4px 12px', 
                                 borderRadius: '12px', 
                                 border: '1px solid rgba(240,192,64,0.2)',
-                                marginLeft: '10px'
+                                marginLeft: '55px'
                             }}>
                                 <motion.span 
                                     whileHover={{ scale: 1.2, color: '#fff' }}
@@ -256,8 +256,28 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
                 </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                    <button onClick={() => window.open('https://vk.com/beasts_arena', '_blank')} style={{ padding: '12px', borderRadius: '10px', background: '#0077FF', border: 'none', color: '#fff', fontSize: '12px', fontWeight: 900, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-                        🌐 МЫ ВКОНТАКТЕ
+                    <button 
+                        onClick={async () => {
+                            const success = await joinGroup();
+                            if (success) {
+                                setTimeout(() => (useGameStore.getState() as any).checkSocialRewards(), 3000);
+                            }
+                        }} 
+                        style={{ padding: '12px', borderRadius: '10px', background: '#0077FF', border: 'none', color: '#fff', fontSize: '12px', fontWeight: 900, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                    >
+                        🌐 МЫ ВКОНТАКТЕ (+50 💎)
+                    </button>
+                    <button
+                        onClick={async () => {
+                            const success = await addToFavorites();
+                            if (success) {
+                                (useGameStore.getState() as any).claimFavoriteReward();
+                                alert('Спасибо! Награда в 50 кристаллов начислена! ⭐');
+                            }
+                        }}
+                        style={{ padding: '12px', borderRadius: '10px', background: 'linear-gradient(180deg, #f0c040, #c87820)', border: 'none', color: '#000', fontSize: '12px', fontWeight: 900, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                    >
+                        ⭐ В ИЗБРАННОЕ (+50 💎)
                     </button>
                     <button
                         onClick={() => {

@@ -9,7 +9,7 @@ import { BattleEngine } from '../../../engine/core/BattleEngine';
 
 const ADMIN_VK_IDS = [212359386]; 
 
-type AdminTab = 'ИГРОК' | 'БОЙ' | 'СЕРВЕР' | 'ПОЧТА' | 'ЧАТ' | 'СИСТЕМА';
+type AdminTab = 'ИГРОК' | 'БОЙ' | 'СЕРВЕР' | 'ПОЧТА' | 'ЧАТ' | 'ОТЗЫВЫ' | 'СИСТЕМА';
 
 interface RealPlayer {
     id: string;
@@ -83,6 +83,10 @@ export const AdminPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     // --- ЛОКАЛЬНЫЕ СОСТОЯНИЯ (ЧАТ) ---
     const [adminChatMessage, setAdminChatMessage] = useState('');
 
+    // --- ЛОКАЛЬНЫЕ СОСТОЯНИЯ (ОТЗЫВЫ) ---
+    const [feedbackList, setFeedbackList] = useState<any[]>([]);
+    const [isLoadingFeedback, setIsLoadingFeedback] = useState(false);
+
     useEffect(() => {
         setCustomGold(String(store.gold));
         setCustomCrystals(String(store.crystals));
@@ -106,10 +110,21 @@ export const AdminPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     }, [selectedPlayerId, selectedPlayer]);
 
     useEffect(() => {
-        if (activeTab === 'СЕРВЕР') {
-            refreshPlayers();
-        }
+        if (activeTab === 'СЕРВЕР') refreshPlayers();
+        if (activeTab === 'ОТЗЫВЫ') refreshFeedback();
     }, [activeTab]);
+
+    const refreshFeedback = async () => {
+        setIsLoadingFeedback(true);
+        try {
+            const list = await syncService.getAllFeedback();
+            setFeedbackList(list);
+        } catch (e) {
+            console.error('Failed to refresh feedback:', e);
+        } finally {
+            setIsLoadingFeedback(false);
+        }
+    };
 
     const refreshPlayers = async () => {
         setIsLoadingPlayers(true);
@@ -152,10 +167,48 @@ export const AdminPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
         }
     };
 
-    const applyMailTemplate = (type: 'REWARD' | 'LAG' | 'WELCOME') => {
+    const applyMailTemplate = (type: 'REWARD' | 'LAG' | 'WELCOME' | 'MAINTENANCE' | 'GIFT' | 'UPDATE') => {
         if (type === 'REWARD') { setMailSubject('🏆 НАГРАДА ЗА ИВЕНТ'); setMailBody('Поздравляем! Вы проявили невероятную отвагу и мастерство. Вот ваша награда!'); setMailAmount('1000'); }
         if (type === 'LAG') { setMailSubject('⚙️ КОМПЕНСАЦИЯ'); setMailBody('Приносим извинения за временные неудобства на сервере. Примите этот небольшой подарок.'); setMailAmount('250'); }
         if (type === 'WELCOME') { setMailSubject('🐼 ДОБРО ПОЖАЛОВАТЬ!'); setMailBody('Рады видеть тебя в Masters of the Wild! Удачи в первых сражениях!'); setMailAmount('50'); }
+        if (type === 'MAINTENANCE') { setMailSubject('🛠️ ТЕХНИЧЕСКИЕ РАБОТЫ'); setMailBody('Сервер был обновлен. Мы исправили ошибки и добавили новый контент. Приятной игры!'); setMailAmount('500'); }
+        if (type === 'GIFT') { setMailSubject('🎁 ПОДАРОК ОТ РАЗРАБОТЧИКОВ'); setMailBody('Просто так! Потому что вы — лучший игрок. Увидимся в лесу!'); setMailAmount('100'); }
+        if (type === 'UPDATE') { setMailSubject('🆕 ГЛОБАЛЬНОЕ ОБНОВЛЕНИЕ'); setMailBody('Мастера! Мир изменился. Новые герои, новые враги и новые сокровища ждут вас!'); setMailAmount('300'); }
+    };
+
+    const handleSendMail = async () => {
+        if (!mailSubject || !mailBody) return alert('Заполните тему и текст!');
+        setIsSendingMail(true);
+        try {
+            const mailData = {
+                from: 'GOD HUB',
+                subject: mailSubject,
+                body: mailBody,
+                date: new Date().toLocaleDateString(),
+                tab: 'INBOX',
+                rewards: mailAttachments.map(a => ({
+                    type: a.name.toUpperCase() === 'ENERGY' ? 'ENERGY' : a.name.toUpperCase() === 'GEMS' ? 'CRYSTALS' : a.name.toUpperCase() === 'GOLD' ? 'GOLD' : 'ITEM',
+                    amount: a.amount,
+                    itemId: a.id.startsWith('I') ? a.name : undefined
+                }))
+            };
+
+            if (mailRecipient === 'ALL') {
+                await syncService.sendBroadcastMail(mailData);
+            } else {
+                await syncService.sendMail(mailRecipient, mailData);
+            }
+
+            alert('Письма успешно отправлены! 🚀');
+            setMailSubject('');
+            setMailBody('');
+            setMailAttachments([]);
+        } catch (e) {
+            console.error('Mail send error:', e);
+            alert('Ошибка при отправке почты');
+        } finally {
+            setIsSendingMail(false);
+        }
     };
 
     const sendAdminChatMessage = () => {
@@ -462,21 +515,35 @@ export const AdminPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                     <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: '20px', height: '700px' }}>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                             <Section title="ПОЛУЧАТЕЛЬ">
-                                <div style={{ display: 'flex', gap: '10px' }}>
+                                <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
                                     <button onClick={() => setMailRecipient('ALL')} style={{ ...btnStyle, border: mailRecipient === 'ALL' ? '1px solid #ff4d4d' : '1px solid #222', flex: 1 }}>ВСЕМ ИГРОКАМ (Broadcast)</button>
                                     <input type="text" placeholder="MW-ID игрока..." style={{ ...inputStyle, flex: 1.2 }} value={mailRecipient === 'ALL' ? '' : mailRecipient} onChange={e => setMailRecipient(e.target.value)} />
                                 </div>
+                                <div style={statLabel}>БЫСТРЫЙ ВЫБОР ИЗ ОНЛАЙНА:</div>
+                                <select 
+                                    style={inputStyle} 
+                                    value={mailRecipient} 
+                                    onChange={e => setMailRecipient(e.target.value)}
+                                >
+                                    <option value="ALL">-- ВЫБРАТЬ ИГРОКА --</option>
+                                    {realPlayers.map(p => (
+                                        <option key={p.id} value={p.id}>{p.name} (LVL {p.level})</option>
+                                    ))}
+                                </select>
                             </Section>
                             <Section title="СОДЕРЖАНИЕ ПИСЬМА">
                                 <input type="text" placeholder="Тема письма..." style={{ ...inputStyle, marginBottom: '10px' }} value={mailSubject} onChange={e => setMailSubject(e.target.value)} />
                                 <textarea placeholder="Текст сообщения..." style={{ ...inputStyle, height: '220px' }} value={mailBody} onChange={e => setMailBody(e.target.value)} />
-                                <div style={{ display: 'flex', gap: '5px', marginTop: '10px' }}>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '5px', marginTop: '10px' }}>
                                     <button onClick={() => applyMailTemplate('LAG')} style={smallBtnStyle}>⚙️ Шаблон: Лаги</button>
                                     <button onClick={() => applyMailTemplate('REWARD')} style={smallBtnStyle}>🏆 Шаблон: Награда</button>
                                     <button onClick={() => applyMailTemplate('WELCOME')} style={smallBtnStyle}>🐼 Шаблон: Welcome</button>
+                                    <button onClick={() => applyMailTemplate('MAINTENANCE')} style={smallBtnStyle}>🛠️ Шаблон: Техработы</button>
+                                    <button onClick={() => applyMailTemplate('GIFT')} style={smallBtnStyle}>🎁 Шаблон: Подарок</button>
+                                    <button onClick={() => applyMailTemplate('UPDATE')} style={smallBtnStyle}>🆕 Шаблон: Обнова</button>
                                 </div>
                             </Section>
-                            <button onClick={() => { setIsSendingMail(true); setTimeout(() => { setIsSendingMail(false); alert('Письма отправлены!'); }, 1000); }} disabled={isSendingMail} style={{ ...bigBtnStyle, height: '60px', background: '#ff4d4d', fontSize: '16px' }}>
+                            <button onClick={handleSendMail} disabled={isSendingMail} style={{ ...bigBtnStyle, height: '60px', background: '#ff4d4d', fontSize: '16px' }}>
                                 {isSendingMail ? 'В ПРОЦЕССЕ ОТПРАВКИ...' : 'ОТПРАВИТЬ РАССЫЛКУ 🚀'}
                             </button>
                         </div>
@@ -486,6 +553,7 @@ export const AdminPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                                     <input type="number" style={{ ...inputStyle, flex: 1 }} value={mailAmount} onChange={e => setMailAmount(e.target.value)} />
                                     <button onClick={() => setMailAttachments([...mailAttachments, { id: 'G'+Date.now(), name: 'Gold', icon: '🪙', amount: Number(mailAmount) }])} style={applyBtn}>+ GOLD</button>
                                     <button onClick={() => setMailAttachments([...mailAttachments, { id: 'C'+Date.now(), name: 'Gems', icon: '💎', amount: Number(mailAmount) }])} style={applyBtn}>+ GEMS</button>
+                                    <button onClick={() => setMailAttachments([...mailAttachments, { id: 'E'+Date.now(), name: 'Energy', icon: '⚡', amount: Number(mailAmount) }])} style={applyBtn}>+ ENERGY</button>
                                 </div>
                                 <div style={{ marginTop: '10px' }}>
                                     <select value={selectedMailItem} onChange={e => setSelectedMailItem(e.target.value)} style={inputStyle}>
@@ -593,6 +661,46 @@ export const AdminPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                         </Section>
                     </div>
                 );
+            case 'ОТЗЫВЫ':
+                return (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', height: '700px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div style={statLabel}>ПОСЛЕДНИЕ СООБЩЕНИЯ ОТ ИГРОКОВ (Limit 50)</div>
+                            <button onClick={refreshFeedback} style={{ ...applyBtn, padding: '5px 15px' }} disabled={isLoadingFeedback}>
+                                {isLoadingFeedback ? 'ЗАГРУЗКА...' : 'ОБНОВИТЬ 🔄'}
+                            </button>
+                        </div>
+                        <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '10px' }} className="leaderboard-scroll">
+                            {feedbackList.length > 0 ? feedbackList.map((f: any) => (
+                                <div key={f.id} style={{ background: '#0a0a0a', border: '1px solid #222', borderRadius: '12px', padding: '20px' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px', borderBottom: '1px solid #111', paddingBottom: '8px' }}>
+                                        <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+                                            <span style={{ 
+                                                background: f.category === 'BUG' ? '#ef4444' : f.category === 'IDEA' ? '#3b82f6' : '#f0c040',
+                                                color: '#fff', fontSize: '9px', fontWeight: 900, padding: '2px 8px', borderRadius: '4px'
+                                            }}>
+                                                {f.category}
+                                            </span>
+                                            <span style={{ color: '#f0c040', fontWeight: 'bold', fontSize: '13px' }}>{f.userName || 'Мастер'}</span>
+                                            <span style={{ color: '#444', fontSize: '10px' }}>ID: {f.userId}</span>
+                                        </div>
+                                        <span style={{ color: '#333', fontSize: '11px' }}>{new Date(f.timestamp).toLocaleString()}</span>
+                                    </div>
+                                    <div style={{ color: '#ccc', fontSize: '14px', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>
+                                        {f.text}
+                                    </div>
+                                    <div style={{ marginTop: '12px', display: 'flex', gap: '15px' }}>
+                                        <div style={{ fontSize: '10px', color: '#444' }}>LVL: {f.level} | OS: {f.platform} | VER: {f.version}</div>
+                                        <div style={{ flex: 1 }} />
+                                        <button onClick={() => { setSelectedPlayerId(f.userId); setActiveTab('СЕРВЕР'); }} style={{ background: 'transparent', border: 'none', color: '#3b82f6', fontSize: '10px', cursor: 'pointer', padding: 0 }}>[ПЕРЕЙТИ К ИГРОКУ]</button>
+                                    </div>
+                                </div>
+                            )) : (
+                                <div style={{ textAlign: 'center', marginTop: '200px', opacity: 0.2, fontSize: '40px' }}>🦉</div>
+                            )}
+                        </div>
+                    </div>
+                );
         }
     };
 
@@ -604,7 +712,7 @@ export const AdminPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                     <div style={{ background: '#111', padding: '4px 10px', borderRadius: '4px', fontSize: '10px', color: '#666', border: '1px solid #222' }}>INDUSTRIAL BUILD</div>
                 </div>
                 <div style={{ display: 'flex', gap: '25px' }}>
-                    {(['ИГРОК', 'БОЙ', 'СЕРВЕР', 'ПОЧТА', 'ЧАТ', 'СИСТЕМА'] as AdminTab[]).map(tab => (
+                    {(['ИГРОК', 'БОЙ', 'СЕРВЕР', 'ПОЧТА', 'ЧАТ', 'ОТЗЫВЫ', 'СИСТЕМА'] as AdminTab[]).map(tab => (
                         <button key={tab} onClick={() => { audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK); setActiveTab(tab); }} style={{ ...tabButtonStyle, borderBottom: activeTab === tab ? '2px solid #ff4d4d' : 'none', color: activeTab === tab ? '#fff' : '#444' }}>{tab}</button>
                     ))}
                 </div>

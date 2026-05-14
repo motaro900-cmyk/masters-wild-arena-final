@@ -140,3 +140,85 @@ export const purchaseStars = async (item: string): Promise<boolean> => {
     }
 };
 
+/**
+ * Отправляет игровой запрос другу (сообщение в ЛС ВК)
+ * @param uid ID друга в ВК (если пусто - откроет список выбора)
+ * @param message Сообщение для друга
+ */
+export const sendGameRequest = async (uid?: string, message: string = "Прими мой подарок!"): Promise<boolean> => {
+    if (!bridge) return false;
+    try {
+        const params: any = {
+            type: 'request',
+            message: message
+        };
+        if (uid) params.uid = Number(uid);
+
+        const result = await bridge.send('VKWebAppShowRequestBox', params);
+        return !!result.requestKey;
+    } catch (error) {
+        console.warn('VKWebAppShowRequestBox failed:', error);
+        return false;
+    }
+};
+
+/**
+ * Вызывает окно добавления игры в "Избранное" ВК
+ */
+export const addToFavorites = async (): Promise<boolean> => {
+    if (!bridge || window.location.hostname === 'localhost') {
+        console.log("Mock: Add to Favorites");
+        return true;
+    }
+    try {
+        const result = await bridge.send('VKWebAppAddToFavorites');
+        return result.result === true;
+    } catch (error) {
+        console.warn('VKWebAppAddToFavorites failed:', error);
+        return false;
+    }
+};
+
+/**
+ * Вызывает окно подписки на официальную группу игры
+ * @param groupId ID группы ВК (числовой)
+ */
+export const joinGroup = async (groupId: number = 212359386): Promise<boolean> => {
+    const groupUrl = `https://vk.com/public${groupId}`;
+    
+    if (!bridge || window.location.hostname === 'localhost') {
+        window.open(groupUrl, '_blank');
+        return true;
+    }
+
+    try {
+        const result = await bridge.send('VKWebAppJoinGroup', { group_id: groupId });
+        return result.result === true;
+    } catch (error) {
+        // Если нативный метод не сработал (например, десктопная версия ВК), открываем ссылку
+        window.open(groupUrl, '_blank');
+        console.warn('VKWebAppJoinGroup failed, falling back to window.open');
+        return false;
+    }
+};
+
+/**
+ * Проверяет, состоит ли пользователь в группе
+ */
+export const isGroupMember = async (groupId: number = 212359386): Promise<boolean> => {
+    if (!bridge || window.location.hostname === 'localhost') return false;
+    try {
+        const result = await bridge.send('VKWebAppCallAPIMethod', {
+            method: 'groups.isMember',
+            params: {
+                group_id: groupId,
+                v: '5.131',
+                access_token: '' // Будет запрошен автоматически если нужно, или можно использовать сервисную проверку
+            }
+        });
+        return result.response === 1;
+    } catch (error) {
+        console.warn('isGroupMember check failed:', error);
+        return false;
+    }
+};

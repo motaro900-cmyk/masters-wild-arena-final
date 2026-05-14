@@ -30,7 +30,7 @@ import { InventoryPanel } from './hud/InventoryPanel';
 import { AdminPanel } from './hud/AdminPanel';
 import { VIPWindow } from './hud/VIPWindow';
 import { UnderDevelopmentModal } from './hud/SharedUI';
-import { ProfileCustomizationWindow } from './hud/ProfileCustomizationWindow';
+
 
 export const GameHUD: React.FC = () => {
     const activeScreen = useGameStore(state => state.activeScreen);
@@ -296,7 +296,7 @@ export const GameHUD: React.FC = () => {
                             </BaseWindow>
                         )}
                         {activeWindow === 'SETTINGS' && (
-                            <BaseWindow title="НАСТРОЙКИ" isOpen={true} onClose={() => setActiveWindow(null)} width="650px" headerExtra={<ServerTime />}>
+                            <BaseWindow title="НАСТРОЙКИ" isOpen={true} onClose={() => setActiveWindow(null)} width="650px" headerExtra={<div style={{ marginLeft: '30px' }}><ServerTime /></div>}>
                                 <SettingsWindow
                                     onClose={() => setActiveWindow(null)}
                                     onOpenAdmin={() => {
@@ -312,7 +312,7 @@ export const GameHUD: React.FC = () => {
                             </BaseWindow>
                         )}
                         {activeWindow === 'RANKING' && (
-                            <BaseWindow title="МИРОВОЙ РЕЙТИНГ" isOpen={true} onClose={() => setActiveWindow(null)} width="900px">
+                            <BaseWindow title="РЕЙТИНГ" isOpen={true} onClose={() => setActiveWindow(null)} width="900px">
                                 <RankingWindow />
                             </BaseWindow>
                         )}
@@ -335,16 +335,13 @@ export const GameHUD: React.FC = () => {
                                 </div>
                             </BaseWindow>
                         )}
-                        {activeWindow === 'PROFILE_CUSTOM' && (
-                            <BaseWindow title="НАСТРОЙКИ ПРОФИЛЯ" isOpen={true} onClose={() => setActiveWindow(null)} width="1050px">
-                                <ProfileCustomizationWindow />
-                            </BaseWindow>
-                        )}
                     </div>
                 </div>
             )}
             {/* --- ADMIN PANEL (GLOBAL OVERLAY) --- */}
             {showAdmin && <AdminPanel onClose={() => setShowAdmin(false)} />}
+
+
 
             <UnderDevelopmentModal
                 isOpen={devModal.isOpen}

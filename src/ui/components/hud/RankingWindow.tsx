@@ -24,27 +24,47 @@ export const RankingWindow: React.FC = () => {
     const [showFooter, setShowFooter] = React.useState(false);
     const [selectedPlayer, setSelectedPlayer] = React.useState<LeaderboardEntry | null>(null);
     const [showRewards, setShowRewards] = React.useState(false);
-
-    // Формируем список лидеров: только текущий игрок (так как игра еще не вышла)
-    const leaders: LeaderboardEntry[] = React.useMemo(() => [
-        { 
-            rank: 1, 
-            name: (vkUser?.first_name || 'Мастер') + ' (ВЫ)', 
-            level: useGameStore.getState().level, 
-            trophies: rating, 
-            avatar: vkUser?.photo_200 || playerAvatar || '🐺', 
-            change: 'stable', 
-            isMe: true 
-        }
-    ], [rating, vkUser, playerAvatar]);
+    const [globalLeaders, setGlobalLeaders] = React.useState<LeaderboardEntry[]>([]);
+    const [isLoading, setIsLoading] = React.useState(false);
     
     const scrollRef = React.useRef<HTMLDivElement>(null);
 
     React.useEffect(() => {
+        const fetchLeaders = async () => {
+            setIsLoading(true);
+            try {
+                const { syncService } = await import('../../../services/SyncService');
+                const players = await syncService.getGlobalPlayers(50);
+                
+                const mappedLeaders: LeaderboardEntry[] = players.map((p, index) => {
+                    // Оставляем только имя (первое слово) для приватности
+                    const firstName = (p.name || 'Мастер').split(' ')[0];
+                    
+                    return {
+                        rank: index + 1,
+                        name: firstName,
+                        level: p.лев || 1,
+                        trophies: p.rating || 0,
+                        avatar: p.photo || '🐺',
+                        change: 'stable',
+                        isMe: p.id === useGameStore.getState().playerId || String(p.vkId) === String(vkUser?.id)
+                    };
+                });
+
+                setGlobalLeaders(mappedLeaders);
+            } catch (e) {
+                console.error('Failed to fetch real leaders:', e);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchLeaders();
+    }, [rating, vkUser, playerAvatar]);
+
+    React.useEffect(() => {
         const handleScroll = () => {
             if (scrollRef.current) {
-                // Если прокрутили больше чем на 100px - показываем футер (как пример логики)
-                // В идеале тут проверка видимости строки игрока через IntersectionObserver
                 setShowFooter(scrollRef.current.scrollTop > 100);
             }
         };
@@ -52,6 +72,19 @@ export const RankingWindow: React.FC = () => {
         el?.addEventListener('scroll', handleScroll);
         return () => el?.removeEventListener('scroll', handleScroll);
     }, []);
+
+    // Динамический расчет времени до конца сезона (до конца месяца)
+    const getRemainingTime = () => {
+        const now = new Date();
+        const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+        const diff = endOfMonth.getTime() - now.getTime();
+        
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        
+        return `${days}д : ${hours}ч : ${mins}м`;
+    };
 
     return (
         <div style={{
@@ -111,7 +144,7 @@ export const RankingWindow: React.FC = () => {
                 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
                     <div style={{ textAlign: 'right' }}>
-                        <div style={{ color: '#f0c040', fontWeight: 800, fontSize: '14px' }}>04д : 12ч : 45м</div>
+                        <div style={{ color: '#f0c040', fontWeight: 800, fontSize: '14px' }}>{getRemainingTime()}</div>
                         <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '10px' }}>ДО КОНЦА СЕЗОНА</div>
                     </div>
                     <motion.button 
@@ -145,9 +178,13 @@ export const RankingWindow: React.FC = () => {
                     paddingRight: '10px'
                 }}
             >
-                {leaders.map((player) => (
-                    <LeaderItem key={player.rank} player={player} onClick={() => setSelectedPlayer(player)} />
-                ))}
+                {isLoading ? (
+                    <div style={{ textAlign: 'center', padding: '100px', color: '#f0c040', fontWeight: 900, fontFamily: "'Cinzel', serif" }}>ЗАГРУЗКА ЛИДЕРОВ...</div>
+                ) : (
+                    globalLeaders.map((player) => (
+                        <LeaderItem key={player.rank} player={player} onClick={() => setSelectedPlayer(player)} />
+                    ))
+                )}
             </div>
 
             {/* ВАША ПОЗИЦИЯ (SMART FOOTER) */}
@@ -196,7 +233,11 @@ export const RankingWindow: React.FC = () => {
                         <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                 <span style={{ color: '#fff', fontSize: '24px', fontWeight: 900 }}>{rating.toLocaleString().replace(',', ' ')}</span>
-                                <div className="sprite-trophy" style={{ width: '28px', height: '28px', backgroundSize: '300% 100%' }} />
+                                <img 
+                                    src={resolveAssetPath('/assets/images/ui/trophy_premium.png')} 
+                                    alt="trophy" 
+                                    style={{ width: '32px', height: '32px', objectFit: 'contain' }} 
+                                />
                             </div>
                         </div>
                     </motion.div>
@@ -345,7 +386,9 @@ const LeaderItem: React.FC<{ player: LeaderboardEntry, onClick: () => void }> = 
             }}>
                 {player.avatar.includes('sprite') ? (
                     <div className={player.avatar.replace('sprite:', '')} style={{ transform: 'scale(0.8)' }} />
-                ) : player.avatar}
+                ) : (
+                    <img src={player.avatar} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="avatar" />
+                )}
             </div>
 
             {/* ИМЯ И УРОВЕНЬ */}
@@ -383,7 +426,11 @@ const LeaderItem: React.FC<{ player: LeaderboardEntry, onClick: () => void }> = 
             {/* КУБКИ */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100px', justifyContent: 'flex-end' }}>
                 <span style={{ color: '#fff', fontSize: '18px', fontWeight: 800 }}>{player.trophies.toLocaleString().replace(',', ' ')}</span>
-                <div className="sprite-trophy" style={{ width: '20px', height: '20px', backgroundSize: '300% 100%' }} />
+                <img 
+                    src={resolveAssetPath('/assets/images/ui/trophy_premium.png')} 
+                    alt="trophy" 
+                    style={{ width: '24px', height: '24px', objectFit: 'contain' }} 
+                />
             </div>
         </motion.div>
     );

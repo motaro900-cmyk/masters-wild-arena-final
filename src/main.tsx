@@ -104,15 +104,26 @@ const SafeGameLayout = ({ containerRef }: { containerRef: React.RefObject<HTMLDi
             if (e.code === 'F8') setShowFps(!showFps);
         };
 
+        const handleFirstInteraction = () => {
+            audioService.resumeContext();
+            if (AssetsMap?.AUDIO?.MUSIC_LIST && !audioService.isPlaying()) {
+                audioService.playPlaylist(AssetsMap.AUDIO.MUSIC_LIST);
+            }
+            // Remove listener after first interaction
+            window.removeEventListener('pointerdown', handleFirstInteraction);
+        };
+
         window.addEventListener('resize', handleResize);
         window.addEventListener('orientationchange', handleResize);
         window.addEventListener('keydown', handleKey);
+        window.addEventListener('pointerdown', handleFirstInteraction);
         handleResize();
 
         return () => {
             window.removeEventListener('resize', handleResize);
             window.removeEventListener('orientationchange', handleResize);
             window.removeEventListener('keydown', handleKey);
+            window.removeEventListener('pointerdown', handleFirstInteraction);
         };
     }, [showFps, setShowFps]);
 
@@ -210,6 +221,46 @@ const Root = () => {
                 clearTimeout(timeoutId); // [Anti-Grey] Success! Cancel timeout
                 console.log('✅ Game Ready!');
 
+                const state = useGameStore.getState();
+                const { syncService } = await import('./services/SyncService');
+                
+                // 3. Audio & Sync Initialization
+                audioService.setMusicVolume(state.musicVolume / 100);
+                audioService.setSFXVolume(state.soundVolume / 100);
+                
+                syncService.startAutoSync(60000);
+                syncService.subscribeToChat((messages) => {
+                    useGameStore.getState().setMessages(messages);
+                });
+                syncService.subscribeToFriendRequests(state.playerId, (requests) => {
+                    useGameStore.getState().setFriendRequests(requests);
+                });
+                syncService.subscribeToMail(state.playerId, (mails) => {
+                    useGameStore.getState().setMail(mails);
+                });
+
+                // Гарантируем наличие приветственных сообщений
+                const hasWelcome = state.messages.some((m: any) => m.id === 'welcome-1');
+                const hasCodex = state.messages.some((m: any) => m.id === 'codex-1');
+                
+                if (!hasWelcome || !hasCodex) {
+                    const welcomeMsgs = [];
+                    if (!hasWelcome) welcomeMsgs.push({ 
+                        id: 'welcome-1', author: 'СИСТЕМА', avatar: '/assets/images/ui/system_icon.png',
+                        text: 'Приветствуем в Masters of the Wild! Твой путь к величию начинается здесь. 🐉⚔️', 
+                        type: 'system', timestamp: Date.now() - 2000, level: 1, rankIcon: ''
+                    });
+                    if (!hasCodex) welcomeMsgs.push({ 
+                        id: 'codex-1', author: 'КОДЕКС ЧЕСТИ', avatar: '/assets/images/ui/system_icon.png',
+                        text: 'Истинная сила — в уважении. Будьте вежливы, не используйте оскорбления и мат. Пусть в чате царит дух честной игры! 🛡️🤝', 
+                        type: 'system', timestamp: Date.now() - 1000, level: 1, rankIcon: ''
+                    });
+                    
+                    const merged = [...welcomeMsgs, ...state.messages];
+                    const unique = Array.from(new Map(merged.map(m => [m.id, m])).values());
+                    useGameStore.setState({ messages: unique.sort((a: any, b: any) => a.timestamp - b.timestamp).slice(-100) });
+                }
+
                 const MSK_OFFSET = 3 * 60 * 60 * 1000;
                 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -219,18 +270,11 @@ const Root = () => {
                     return Math.floor(nowMSK / DAY_MS) > Math.floor(lastMSK / DAY_MS);
                 };
 
-                const state = useGameStore.getState();
-                
                 // [FORCE RESET] Принудительный сброс для версии 18
                 if (state.level === 80 || state.rating === 11000) {
                     console.log('🧹 Force Resetting legacy test data...');
                     useGameStore.setState({
-                        level: 1,
-                        rating: 0,
-                        exp: 0,
-                        gold: 100000,
-                        crystals: 100000,
-                        title: 'Странник'
+                        level: 1, rating: 0, exp: 0, gold: 100000, crystals: 100000, title: 'Странник'
                     });
                 }
 
@@ -238,7 +282,6 @@ const Root = () => {
                     state.refreshDailyQuests();
                 }
                 
-                // Триггер квеста на вход в игру
                 state.updateQuestProgress('LOGIN', 1);
 
                 // Очистка тестовых сообщений
@@ -246,6 +289,33 @@ const Root = () => {
                     useGameStore.setState({
                         messages: state.messages.filter((m: any) => !(m.author === 'Мастер' && m.text === 'Привет'))
                     });
+                }
+
+                // ─── ОБРАБОТКА ПАРАМЕТРОВ ЗАПУСКА (РЕФЕРАЛЫ, ПОДАРКИ) ───
+                const urlParams = new URLSearchParams(window.location.search);
+                const startParam = urlParams.get('vk_start_params') || urlParams.get('start_parameter');
+                const requestId = urlParams.get('request_id');
+
+                if (requestId) {
+                    console.log('🎁 Game launched via Request Link:', requestId);
+                    setTimeout(() => {
+                        useGameStore.getState().addGold(5000);
+                        alert('Вы получили подарок от друга: 5,000 золота! 💰');
+                    }, 3000);
+                }
+
+                if (startParam) {
+                    console.log('🔗 Game launched via Referral Link:', startParam);
+                    // startParam обычно содержит ID пригласившего, например "ref_12345"
+                    if (startParam.startsWith('ref_')) {
+                        const inviterId = startParam.split('_')[1];
+                        if (inviterId !== state.playerId) {
+                            setTimeout(() => {
+                                useGameStore.getState().addCrystals(100);
+                                alert('Вы зашли по приглашению друга! Вам начислено 100 кристаллов. 💎');
+                            }, 4000);
+                        }
+                    }
                 }
 
                 // [Optimization] Background refresh check every minute (MSK Aligned)
