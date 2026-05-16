@@ -1,4 +1,3 @@
-
 import { motion } from 'framer-motion';
 import { HEROES_DB } from '../../../../../../configs/HeroesConfig';
 import { FilterBar } from './FilterBar';
@@ -13,9 +12,9 @@ export const HeroList = ({
     setTooltipHero,
     setMousePos,
     onBuyClick,
-    onHeroClick
+    onHeroClick,
 }: any) => {
-    const filteredHeroes = HEROES_DB.filter(hero => {
+    const filteredHeroes = HEROES_DB.filter((hero) => {
         if (activeFilter === 'ВСЕ') return true;
         if (activeFilter === 'ДОСТУПНЫЕ') return ownedHeroes.includes(hero.id);
         return hero.unlockType === activeFilter;
@@ -30,7 +29,7 @@ export const HeroList = ({
 
         setMousePos({
             x: (e.clientX - rect.left) / scaleX,
-            y: (e.clientY - rect.top) / scaleY
+            y: (e.clientY - rect.top) / scaleY,
         });
     };
 
@@ -44,7 +43,7 @@ export const HeroList = ({
                 position: 'absolute',
                 inset: '20px 80px 40px 80px',
                 display: 'flex',
-                flexDirection: 'column'
+                flexDirection: 'column',
             }}
         >
             <FilterBar activeFilter={activeFilter} onSelect={setActiveFilter} />
@@ -57,7 +56,7 @@ export const HeroList = ({
                     gap: '25px',
                     overflowY: 'auto',
                     paddingRight: '20px',
-                    flex: 1
+                    flex: 1,
                 }}
                 className="custom-scrollbar"
             >

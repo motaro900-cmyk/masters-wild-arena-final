@@ -1,14 +1,24 @@
-
 import { motion } from 'framer-motion';
 import { useGameStore } from '../../../../../../store/useGameStore';
 
 export const TooltipStat = ({ label, value, color, icon }: any) => (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'rgba(255,255,255,0.6)', fontSize: '12px', fontWeight: 600 }}>
+        <div
+            style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                color: 'rgba(255,255,255,0.6)',
+                fontSize: '12px',
+                fontWeight: 600,
+            }}
+        >
             <span style={{ fontSize: '14px' }}>{icon}</span>
             <span>{label}</span>
         </div>
-        <div style={{ color: '#fff', fontWeight: 900, fontSize: '13px', textShadow: `0 0 10px ${color}44` }}>{value.toLocaleString()}</div>
+        <div style={{ color: '#fff', fontWeight: 900, fontSize: '13px', textShadow: `0 0 10px ${color}44` }}>
+            {value.toLocaleString()}
+        </div>
     </div>
 );
 
@@ -43,22 +53,34 @@ export const HeroTooltip = ({ hero, mousePos, rarityColors }: any) => {
                 zIndex: 10000,
                 pointerEvents: 'none',
                 boxShadow: isLowGraphics ? 'none' : `0 20px 60px rgba(0,0,0,0.9), 0 0 40px ${color}44`,
-                backdropFilter: isLowGraphics ? 'none' : 'blur(16px)'
+                backdropFilter: isLowGraphics ? 'none' : 'blur(16px)',
             }}
         >
-            <div style={{ color: '#fff', fontSize: '20px', fontFamily: "'Cinzel', serif", marginBottom: '8px', textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>{hero.name}</div>
-            <div style={{
-                color: color,
-                fontSize: '11px',
-                fontWeight: 900,
-                textTransform: 'uppercase',
-                letterSpacing: '2px',
-                marginBottom: '15px',
-                background: `${color}33`,
-                padding: '4px 12px',
-                borderRadius: '6px',
-                display: 'inline-block'
-            }}>
+            <div
+                style={{
+                    color: '#fff',
+                    fontSize: '20px',
+                    fontFamily: "'Cinzel', serif",
+                    marginBottom: '8px',
+                    textShadow: '0 2px 4px rgba(0,0,0,0.5)',
+                }}
+            >
+                {hero.name}
+            </div>
+            <div
+                style={{
+                    color: color,
+                    fontSize: '11px',
+                    fontWeight: 900,
+                    textTransform: 'uppercase',
+                    letterSpacing: '2px',
+                    marginBottom: '15px',
+                    background: `${color}33`,
+                    padding: '4px 12px',
+                    borderRadius: '6px',
+                    display: 'inline-block',
+                }}
+            >
                 {hero.rarity}
             </div>
 
@@ -69,7 +91,19 @@ export const HeroTooltip = ({ hero, mousePos, rarityColors }: any) => {
             </div>
 
             {!isOwned && (
-                <div style={{ marginTop: '20px', paddingTop: '15px', borderTop: '1px solid rgba(255,255,255,0.1)', color: '#ff4444', fontSize: '12px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '1px', textAlign: 'center' }}>
+                <div
+                    style={{
+                        marginTop: '20px',
+                        paddingTop: '15px',
+                        borderTop: '1px solid rgba(255,255,255,0.1)',
+                        color: '#ff4444',
+                        fontSize: '12px',
+                        fontWeight: 900,
+                        textTransform: 'uppercase',
+                        letterSpacing: '1px',
+                        textAlign: 'center',
+                    }}
+                >
                     ТРЕБУЕТСЯ РАЗБЛОКИРОВКА
                 </div>
             )}

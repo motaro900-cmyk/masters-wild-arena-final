@@ -1,10 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { getStorage } from '../utils/SafeStorage';
-import { ITEMS_DATABASE as BASE_ITEMS, calculateItemPower, IEquipmentStats } from '../game/configs/ItemsConfig';
-import { ITEMS_DATABASE as HARDCORE_ITEMS } from '../game/configs/ItemsConfig_Hardcore';
-
-const ITEMS_DATABASE = { ...BASE_ITEMS, ...HARDCORE_ITEMS };
+import { ITEMS_DATABASE, calculateItemPower, IEquipmentStats } from '../game/configs/ItemsConfig';
 import { HEROES_DB } from '../configs/HeroesConfig';
 import { QUESTS_POOL } from '../configs/QuestsConfig';
 import { audioService } from '../services/AudioService';
@@ -12,7 +9,6 @@ import { AssetsMap } from '../configs/AssetsMap';
 import { syncService } from '../services/SyncService';
 import { showRewardedVideo, purchaseStars } from '../utils/VKBridge';
 import { getRankInfo } from '../configs/RankSystem';
-
 
 const getPlayerTitle = (level: number): string => {
     if (level >= 72) return 'Хранитель Равновесия';
@@ -57,32 +53,32 @@ export const useGameStore = create<any>()(
             buffs: [
                 { id: 'xp_x2', icon: '✨', label: 'XP x2' },
                 { id: 'vip_crown', icon: '👑', label: 'VIP' },
-                { id: 'gold_plus', icon: '💰', label: '+10%' }
+                { id: 'gold_plus', icon: '💰', label: '+10%' },
             ],
             isPremium: false,
             claimedRewards: [],
             claimedSocialRewards: [] as string[], // 'group', 'favorites'
             messages: [
-                { 
-                    id: 'welcome-1', 
-                    author: 'СИСТЕМА', 
+                {
+                    id: 'welcome-1',
+                    author: 'СИСТЕМА',
                     avatar: '/assets/images/ui/system_icon.png',
-                    text: 'Приветствуем в Masters of the Wild! Твой путь к величию начинается здесь. 🐉⚔️', 
-                    type: 'system', 
+                    text: 'Приветствуем в Masters of the Wild! Твой путь к величию начинается здесь. 🐉⚔️',
+                    type: 'system',
                     timestamp: Date.now() - 1000,
                     level: 1,
-                    rankIcon: ''
+                    rankIcon: '',
                 },
-                { 
-                    id: 'codex-1', 
-                    author: 'КОДЕКС ЧЕСТИ', 
+                {
+                    id: 'codex-1',
+                    author: 'КОДЕКС ЧЕСТИ',
                     avatar: '/assets/images/ui/system_icon.png',
-                    text: 'Истинная сила — в уважении. Будьте вежливы, не используйте оскорбления и мат. Пусть в чате царит дух честной игры! 🛡️🤝', 
-                    type: 'system', 
+                    text: 'Истинная сила — в уважении. Будьте вежливы, не используйте оскорбления и мат. Пусть в чате царит дух честной игры! 🛡️🤝',
+                    type: 'system',
                     timestamp: Date.now(),
                     level: 1,
-                    rankIcon: ''
-                }
+                    rankIcon: '',
+                },
             ],
 
             // --- ЭКШЕНЫ РЕСУРСОВ ---
@@ -93,12 +89,10 @@ export const useGameStore = create<any>()(
                 set((state: any) => {
                     const allMessages = [...state.messages, ...newMessages];
                     // Фильтруем по уникальному ID, чтобы избежать дублей
-                    const uniqueMessages = Array.from(new Map(allMessages.map(m => [m.id, m])).values());
+                    const uniqueMessages = Array.from(new Map(allMessages.map((m) => [m.id, m])).values());
                     // Сортируем по времени и берем последние 100
-                    return { 
-                        messages: uniqueMessages
-                            .sort((a: any, b: any) => a.timestamp - b.timestamp)
-                            .slice(-100) 
+                    return {
+                        messages: uniqueMessages.sort((a: any, b: any) => a.timestamp - b.timestamp).slice(-100),
                     };
                 });
             },
@@ -106,7 +100,7 @@ export const useGameStore = create<any>()(
                 set((state: any) => {
                     const allMail = [...state.mail, ...newMail];
                     // Уникальные по ID
-                    const uniqueMail = Array.from(new Map(allMail.map(m => [m.id, m])).values());
+                    const uniqueMail = Array.from(new Map(allMail.map((m) => [m.id, m])).values());
                     return { mail: uniqueMail };
                 });
             },
@@ -115,13 +109,13 @@ export const useGameStore = create<any>()(
                 const state = get();
                 const currentRating = state.rating || 0;
                 const rankInfo = getRankInfo(currentRating);
-                
-                const finalAuthor = (author === 'Игрок' || author === 'Мастер' || author === 'Motar' || !author) 
-                    ? state.name 
-                    : author;
-                    
-                const finalAvatar = state.vkUser?.photo_200 || state.vkUser?.photo || "/assets/images/avatars/панда.webp";
-                
+
+                const finalAuthor =
+                    author === 'Игрок' || author === 'Мастер' || author === 'Motar' || !author ? state.name : author;
+
+                const finalAvatar =
+                    state.vkUser?.photo_200 || state.vkUser?.photo || '/assets/images/avatars/панда.webp';
+
                 const newMessage = {
                     author: finalAuthor,
                     avatar: finalAvatar,
@@ -131,66 +125,71 @@ export const useGameStore = create<any>()(
                     level: state.level || 1,
                     rankIcon: rankInfo.icon,
                     vipLevel: state.vipLevel || 0,
-                    isTop1: finalAuthor === (state.vkUser?.first_name || state.vkUser?.firstName || 'Мастер')
+                    isTop1: finalAuthor === (state.vkUser?.first_name || state.vkUser?.firstName || 'Мастер'),
                 };
 
                 if (type === 'system' && author === 'СИСТЕМА') {
                     // Локальные системные сообщения просто добавляем в стор
-                    set({ messages: [...state.messages, { ...newMessage, id: Math.random().toString(36).substr(2, 9) }] });
+                    set({
+                        messages: [...state.messages, { ...newMessage, id: Math.random().toString(36).substr(2, 9) }],
+                    });
                 } else {
                     // Глобальные сообщения отправляем в Firebase
                     await syncService.sendChatMessage(newMessage);
                 }
             },
-            removeMessage: (id: string) => set((state: any) => ({
-                messages: state.messages.filter((m: any) => m.id !== id)
-            })),
+            removeMessage: (id: string) =>
+                set((state: any) => ({
+                    messages: state.messages.filter((m: any) => m.id !== id),
+                })),
             resetChat: () => {
                 set({
                     messages: [
-                        { 
-                            id: 'welcome-1', 
-                            author: 'СИСТЕМА', 
+                        {
+                            id: 'welcome-1',
+                            author: 'СИСТЕМА',
                             avatar: '/assets/images/ui/system_icon.png',
-                            text: 'Чат очищен. Приятного общения! ✨', 
-                            type: 'system', 
+                            text: 'Чат очищен. Приятного общения! ✨',
+                            type: 'system',
                             timestamp: Date.now(),
                             level: 1,
-                            rankIcon: ''
-                        }
-                    ]
+                            rankIcon: '',
+                        },
+                    ],
                 });
             },
-            addExp: (amount: number) => set((state: any) => {
-                let newExp = state.exp + amount;
-                let newLevel = state.level;
-                let maxExp = newLevel * 600;
+            addExp: (amount: number) =>
+                set((state: any) => {
+                    let newExp = state.exp + amount;
+                    let newLevel = state.level;
+                    let maxExp = newLevel * 600;
 
-                while (newExp >= maxExp) {
-                    newExp -= maxExp;
-                    newLevel += 1;
-                    maxExp = newLevel * 600;
-                }
+                    while (newExp >= maxExp) {
+                        newExp -= maxExp;
+                        newLevel += 1;
+                        maxExp = newLevel * 600;
+                    }
 
-                return { 
-                    exp: newExp, 
-                    level: newLevel,
-                    title: getPlayerTitle(newLevel)
-                };
-            }),
+                    return {
+                        exp: newExp,
+                        level: newLevel,
+                        title: getPlayerTitle(newLevel),
+                    };
+                }),
 
-            addRating: (amount: number) => set((state: any) => {
-                const newRating = state.rating + amount;
-                const oldRank = getRankInfo(state.rating).name;
-                const newRank = getRankInfo(newRating).name;
-                
-                // Если подняли ранг до Легенды
-                if (newRank === 'ЛЕГЕНДА' && oldRank !== 'ЛЕГЕНДА') {
-                    get().broadcastEvent('RANK_UP', { playerName: 'Motar', rankName: 'ЛЕГЕНДА' });
-                }
-                
-                return { rating: newRating };
-            }),
+            addRating: (amount: number) =>
+                set((state: any) => {
+                    const newRating = state.rating + amount;
+                    const oldRank = getRankInfo(state.rating).name;
+                    const newRank = getRankInfo(newRating).name;
+
+                    // Если подняли ранг до Легенды
+                    if (newRank === 'ЛЕГЕНДА' && oldRank !== 'ЛЕГЕНДА') {
+                        get().broadcastEvent('RANK_UP', { playerName: 'Motar', rankName: 'ЛЕГЕНДА' });
+                    }
+
+                    return { rating: newRating };
+                }),
 
             // --- ГЛОБАЛЬНЫЕ СОБЫТИЯ (АНОНСЫ) ---
             broadcastEvent: (type: 'RANK_UP' | 'LEVEL_UP' | 'ITEM_DROP', payload: any) => {
@@ -199,14 +198,14 @@ export const useGameStore = create<any>()(
                     addMessage(
                         `🌟 ВЕЛИКОЕ СОБЫТИЕ: Мастер ${payload.playerName} достиг ранга ЛЕГЕНДА! Весь мир склоняется перед его силой! 🐉`,
                         'ГЕРОЛЬД',
-                        'system'
+                        'system',
                     );
                 }
                 if (type === 'LEVEL_UP' && payload.level >= 80) {
                     addMessage(
                         `⚔️ ТРИУМФ: ${payload.playerName} достиг 80 уровня! Его мощь не знает границ! 🛡️`,
                         'ГЕРОЛЬД',
-                        'system'
+                        'system',
                     );
                 }
             },
@@ -247,7 +246,7 @@ export const useGameStore = create<any>()(
                 const { isGroupMember } = await import('../utils/VKBridge');
                 const state = get() as any;
                 const rewards = state.claimedSocialRewards || [];
-                
+
                 // 1. Проверка группы
                 if (!rewards.includes('group')) {
                     const isMember = await isGroupMember();
@@ -259,7 +258,7 @@ export const useGameStore = create<any>()(
                 }
 
                 // 2. Проверка избранного (обычно вызывается вручную)
-                // Мы не можем легко проверить "в избранном ли мы", 
+                // Мы не можем легко проверить "в избранном ли мы",
                 // поэтому награду даем за сам факт вызова окна добавления (один раз)
             },
 
@@ -273,27 +272,28 @@ export const useGameStore = create<any>()(
             },
 
             // Логика восстановления энергии (1 ед / 5 мин)
-            restoreEnergy: () => set((state: any) => {
-                if (state.energy >= state.maxEnergy) {
-                    return { lastEnergyUpdate: Date.now() };
-                }
+            restoreEnergy: () =>
+                set((state: any) => {
+                    if (state.energy >= state.maxEnergy) {
+                        return { lastEnergyUpdate: Date.now() };
+                    }
 
-                const now = Date.now();
-                const diff = now - state.lastEnergyUpdate;
-                const FIVE_MIN = 5 * 60 * 1000;
+                    const now = Date.now();
+                    const diff = now - state.lastEnergyUpdate;
+                    const FIVE_MIN = 5 * 60 * 1000;
 
-                if (diff >= FIVE_MIN) {
-                    const energyToAdd = Math.floor(diff / FIVE_MIN);
-                    const newEnergy = Math.min(state.maxEnergy, state.energy + energyToAdd);
-                    const leftover = diff % FIVE_MIN;
-                    
-                    return {
-                        energy: newEnergy,
-                        lastEnergyUpdate: now - leftover
-                    };
-                }
-                return {};
-            }),
+                    if (diff >= FIVE_MIN) {
+                        const energyToAdd = Math.floor(diff / FIVE_MIN);
+                        const newEnergy = Math.min(state.maxEnergy, state.energy + energyToAdd);
+                        const leftover = diff % FIVE_MIN;
+
+                        return {
+                            energy: newEnergy,
+                            lastEnergyUpdate: now - leftover,
+                        };
+                    }
+                    return {};
+                }),
 
             usedPromoCodes: [] as string[],
             redeemPromoCode: (code: string) => {
@@ -305,11 +305,11 @@ export const useGameStore = create<any>()(
                 }
 
                 // Список доступных промокодов
-                const promoCodes: Record<string, { gold?: number, crystals?: number, energy?: number }> = {
-                    'START': { gold: 1000, crystals: 10 },
-                    'WILD': { energy: 10 },
-                    'DIAMONDS': { crystals: 25 },
-                    'MOTAR': { gold: 5000, crystals: 100, energy: 50 },
+                const promoCodes: Record<string, { gold?: number; crystals?: number; energy?: number }> = {
+                    START: { gold: 1000, crystals: 10 },
+                    WILD: { energy: 10 },
+                    DIAMONDS: { crystals: 25 },
+                    MOTAR: { gold: 5000, crystals: 100, energy: 50 },
                 };
 
                 const reward = promoCodes[normalizedCode];
@@ -329,12 +329,12 @@ export const useGameStore = create<any>()(
                         date: new Date().toLocaleDateString(),
                         isRead: false,
                         tab: 'INBOX',
-                        rewards: mailRewards
+                        rewards: mailRewards,
                     };
 
                     set((s: any) => ({
                         usedPromoCodes: [...s.usedPromoCodes, normalizedCode],
-                        mail: [newMail, ...s.mail]
+                        mail: [newMail, ...s.mail],
                     }));
 
                     return { success: true, message: 'ПИСЬМО С ПОДАРКОМ ОТПРАВЛЕНО ВО ВХОДЯЩИЕ!' };
@@ -343,21 +343,22 @@ export const useGameStore = create<any>()(
                 return { success: false, message: 'НЕВЕРНЫЙ ПРОМОКОД' };
             },
 
-            addVipExp: (amount: number) => set((state: any) => {
-                let newExp = state.vipExp + amount;
-                let newLevel = state.vipLevel;
-                
-                // Простая прогрессия: уровень 0 требует 1000, уровень 1 требует 2000 и т.д.
-                let expNeeded = (newLevel + 1) * 1000;
-                
-                while (newExp >= expNeeded) {
-                    newExp -= expNeeded;
-                    newLevel += 1;
-                    expNeeded = (newLevel + 1) * 1000;
-                }
-                
-                return { vipExp: newExp, vipLevel: newLevel };
-            }),
+            addVipExp: (amount: number) =>
+                set((state: any) => {
+                    let newExp = state.vipExp + amount;
+                    let newLevel = state.vipLevel;
+
+                    // Простая прогрессия: уровень 0 требует 1000, уровень 1 требует 2000 и т.д.
+                    let expNeeded = (newLevel + 1) * 1000;
+
+                    while (newExp >= expNeeded) {
+                        newExp -= expNeeded;
+                        newLevel += 1;
+                        expNeeded = (newLevel + 1) * 1000;
+                    }
+
+                    return { vipExp: newExp, vipLevel: newLevel };
+                }),
 
             // --- ИНВЕНТАРЬ (стартовые предметы) ---
             inventory: [
@@ -367,24 +368,24 @@ export const useGameStore = create<any>()(
                 { id: 'starter_shield', type: 'SHIELDS', rarity: 'COMMON', level: 1 },
             ],
             heroEquipment: {
-                'panda': {
+                panda: {
                     WEAPONS: 'stick',
                     HELMETS: 'starter_helm',
                     ARMOR: 'starter_armor',
                     SHIELDS: 'starter_shield',
                     SHOULDERS: null,
                     BOOTS: null,
-                    PANTS: null
+                    PANTS: null,
                 },
-                'wolf_knight': {
+                wolf_knight: {
                     WEAPONS: null,
                     HELMETS: null,
                     ARMOR: null,
                     SHIELDS: null,
                     SHOULDERS: null,
                     BOOTS: null,
-                    PANTS: null
-                }
+                    PANTS: null,
+                },
             },
             get equippedItems() {
                 const currentHeroId = this.selectedHeroId || 'panda';
@@ -393,6 +394,7 @@ export const useGameStore = create<any>()(
 
             // --- ГЕРОИ ---
             selectedHeroId: 'panda',
+            selectedEnemyId: 'wolf_scout',
             heroGalleryId: 'panda',
             ownedHeroes: ['panda'],
             tutorialStep: 0,
@@ -410,9 +412,9 @@ export const useGameStore = create<any>()(
                     expiresAt: Date.now() + 30 * 24 * 60 * 60 * 1000, // 30 дней
                     rewards: [
                         { type: 'GOLD', amount: 1000 },
-                        { type: 'CRYSTALS', amount: 50 }
-                    ]
-                }
+                        { type: 'CRYSTALS', amount: 50 },
+                    ],
+                },
             ],
             friends: [],
             friendRequests: [],
@@ -420,22 +422,35 @@ export const useGameStore = create<any>()(
             clanData: null,
             clanCoins: 0,
             heroes: {
-                'panda': { strength: 52, agility: 20, stamina: 32 },
-                'wolf_knight': { strength: 65, agility: 25, stamina: 45 }
+                panda: { strength: 52, agility: 20, stamina: 32 },
+                wolf_knight: { strength: 65, agility: 25, stamina: 45 },
             },
             heroTalents: {
-                'panda': {},
-                'wolf_knight': {}
+                panda: {},
+                wolf_knight: {},
             },
             combatLogs: [],
-            addCombatLog: (msg: string) => set((state: any) => ({
-                combatLogs: [...state.combatLogs.slice(-49), `${new Date().toLocaleTimeString()} - ${msg}`]
-            })),
+            addCombatLog: (msg: string) =>
+                set((state: any) => ({
+                    combatLogs: [...state.combatLogs.slice(-49), `${new Date().toLocaleTimeString()} - ${msg}`],
+                })),
             clearCombatLogs: () => set({ combatLogs: [] }),
 
             // --- КВЕСТЫ ---
             dailyQuests: [],
             lastDailyRefresh: 0,
+
+            // PET SYSTEM
+            pet: {
+                id: 'baby_dragon',
+                name: 'Дракоша',
+                level: 1,
+                exp: 0,
+                hunger: 100,
+                happiness: 100,
+                lastFed: Date.now(),
+            },
+
             canClaimDailyGift: false,
             setCanClaimDailyGift: (val: boolean) => set({ canClaimDailyGift: val }),
 
@@ -448,7 +463,9 @@ export const useGameStore = create<any>()(
             showFps: false,
             musicVolume: 70,
             soundVolume: 85,
-            graphicsQuality: /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ? 'LOW' : 'ULTRA',
+            graphicsQuality: /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+                ? 'LOW'
+                : 'ULTRA',
             notificationsEnabled: true,
             pveStage: 1,
             maxPveStage: 1,
@@ -460,6 +477,7 @@ export const useGameStore = create<any>()(
             activePveEnemy: null,
 
             vkUser: null,
+            isVkEnvironment: window.location.search.includes('vk_app_id') || window.location.search.includes('vk_'),
             isMobile: /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent),
             isPowerSaving: false,
             isMuted: false,
@@ -467,6 +485,18 @@ export const useGameStore = create<any>()(
             playerId: 'MW-' + Math.random().toString(36).substr(2, 9).toUpperCase(),
 
             // --- ЭКШЕНЫ ИГРОКА ---
+            setScreen: (screen: string) => set({ activeScreen: screen }),
+            goToShop: (tab = 'ARSENAL', subTab = null) =>
+                set({
+                    activeScreen: 'SHOP',
+                    shopInitialTab: tab,
+                    shopInitialSubTab: subTab,
+                }),
+            goToHeroes: (tab = 'LIST') => set({ activeScreen: 'HEROES', heroesInitialTab: tab }),
+            goToCity: () => set({ activeScreen: 'CITY' }),
+            goToForge: () => set({ activeScreen: 'FORGE' }),
+            goToArena: () => set({ activeScreen: 'BATTLE' }),
+            goToMainMenu: () => set({ activeScreen: 'MAIN_MENU' }),
             setGodMode: (val: boolean) => set({ isGodMode: val }),
             setOneShot: (val: boolean) => set({ isOneShot: val }),
             setIsEnemyFrozen: (val: boolean) => set({ isEnemyFrozen: val }),
@@ -475,9 +505,10 @@ export const useGameStore = create<any>()(
             setLevel: (val: number) => set({ level: val, title: getPlayerTitle(val) }),
             setGold: (val: number) => set({ gold: val }),
             setCrystals: (val: number) => set({ crystals: val }),
-            setTalentPoints: (val: number) => set((state: any) => ({
-                heroTalents: { ...state.heroTalents, panda: { ...state.heroTalents.panda, points: val } }
-            })),
+            setTalentPoints: (val: number) =>
+                set((state: any) => ({
+                    heroTalents: { ...state.heroTalents, panda: { ...state.heroTalents.panda, points: val } },
+                })),
             resetAllProgress: () => {
                 const state = get();
                 set({
@@ -487,10 +518,10 @@ export const useGameStore = create<any>()(
                     dailyQuests: (state.dailyQuests || []).map((q: any) => ({
                         ...q,
                         progress: 0,
-                        isClaimed: false
+                        isClaimed: false,
                     })),
                     lastDailyRefresh: Date.now(), // Обновляем время, чтобы не сработало авто-обновление
-                    title: getPlayerTitle(1)
+                    title: getPlayerTitle(1),
                 });
             },
             addClanCoins: (amount: number) => set((state: any) => ({ clanCoins: state.clanCoins + amount })),
@@ -505,28 +536,49 @@ export const useGameStore = create<any>()(
             },
 
             // --- ЭКШЕНЫ ИНВЕНТАРЯ ---
-            addItemToInventory: (item: any) => set((state: any) => {
-                const itemObj = typeof item === 'string' ? { id: item } : item;
-                const itemId = String(itemObj.id);
-                if (!ITEMS_DATABASE[itemId]) return state;
-                if (state.inventory.some((i: any) => String(i.id) === itemId)) return state;
-                return { inventory: [...state.inventory, itemObj] };
-            }),
-            clearInventory: () => set({ 
-                inventory: [], 
-                heroEquipment: {
-                    'panda': { WEAPONS: null, HELMETS: null, ARMOR: null, SHIELDS: null, SHOULDERS: null, BOOTS: null, PANTS: null },
-                    'wolf_knight': { WEAPONS: null, HELMETS: null, ARMOR: null, SHIELDS: null, SHOULDERS: null, BOOTS: null, PANTS: null }
-                },
-                equippedWeaponId: null, equippedHelmId: null, equippedArmorId: null, equippedShieldId: null
-            }),
+            addItemToInventory: (item: any) =>
+                set((state: any) => {
+                    const itemObj = typeof item === 'string' ? { id: item } : item;
+                    const itemId = String(itemObj.id);
+                    if (!ITEMS_DATABASE[itemId]) return state;
+                    if (state.inventory.some((i: any) => String(i.id) === itemId)) return state;
+                    return { inventory: [...state.inventory, itemObj] };
+                }),
+            clearInventory: () =>
+                set({
+                    inventory: [],
+                    heroEquipment: {
+                        panda: {
+                            WEAPONS: null,
+                            HELMETS: null,
+                            ARMOR: null,
+                            SHIELDS: null,
+                            SHOULDERS: null,
+                            BOOTS: null,
+                            PANTS: null,
+                        },
+                        wolf_knight: {
+                            WEAPONS: null,
+                            HELMETS: null,
+                            ARMOR: null,
+                            SHIELDS: null,
+                            SHOULDERS: null,
+                            BOOTS: null,
+                            PANTS: null,
+                        },
+                    },
+                    equippedWeaponId: null,
+                    equippedHelmId: null,
+                    equippedArmorId: null,
+                    equippedShieldId: null,
+                }),
             sellItem: (id: string) => {
                 const state = get();
                 const itemInInv = state.inventory.find((i: any) => i.id === id);
                 if (!itemInInv) return;
 
                 // Нельзя продать экипированное
-                const isEquipped = Object.values(state.equippedItems).some(val => val === id);
+                const isEquipped = Object.values(state.equippedItems).some((val) => val === id);
                 if (isEquipped) {
                     alert('Нельзя продать экипированный предмет!');
                     return;
@@ -537,7 +589,7 @@ export const useGameStore = create<any>()(
 
                 state.addGold(sellPrice);
                 set({
-                    inventory: state.inventory.filter((i: any) => i.id !== id)
+                    inventory: state.inventory.filter((i: any) => i.id !== id),
                 });
             },
 
@@ -555,7 +607,7 @@ export const useGameStore = create<any>()(
                     if (Object.values(gear).includes(id)) {
                         // Снимаем с предыдущего
                         const updatedGear = { ...gear };
-                        Object.keys(updatedGear).forEach(slot => {
+                        Object.keys(updatedGear).forEach((slot) => {
                             if (updatedGear[slot] === id) delete updatedGear[slot];
                         });
                         newHeroEquipment[hId] = updatedGear;
@@ -584,7 +636,7 @@ export const useGameStore = create<any>()(
                 const newHeroEquipment = { ...state.heroEquipment };
                 const currentGear = { ...(newHeroEquipment[heroId] || {}) };
 
-                Object.keys(currentGear).forEach(slot => {
+                Object.keys(currentGear).forEach((slot) => {
                     if (currentGear[slot] === id) delete currentGear[slot];
                 });
 
@@ -637,7 +689,7 @@ export const useGameStore = create<any>()(
                     equippedWeaponId: bestWeapon?.id || state.equippedWeaponId,
                     equippedHelmId: bestHelm?.id || state.equippedHelmId,
                     equippedArmorId: bestArmor?.id || state.equippedArmorId,
-                    equippedShieldId: bestShield?.id || state.equippedShieldId
+                    equippedShieldId: bestShield?.id || state.equippedShieldId,
                 });
             },
 
@@ -650,7 +702,7 @@ export const useGameStore = create<any>()(
 
                 // Проверка: для обычных вещей — нет ли уже такого предмета
                 if (!isBankItem && state.inventory.some((i: any) => String(i.id) === itemId)) {
-                    console.warn("[Shop] Item already owned");
+                    console.warn('[Shop] Item already owned');
                     return false;
                 }
 
@@ -676,7 +728,10 @@ export const useGameStore = create<any>()(
                         // Обычный предмет в инвентарь
                         set({
                             [newBalanceKey]: balance - price,
-                            inventory: [...state.inventory, { id: itemId, type: itemData.subTab, rarity: itemData.rarity, level: 1 }]
+                            inventory: [
+                                ...state.inventory,
+                                { id: itemId, type: itemData.subTab, rarity: itemData.rarity, level: 1 },
+                            ],
                         });
                     }
 
@@ -693,37 +748,86 @@ export const useGameStore = create<any>()(
             // --- ЭКШЕНЫ ГЕРОЕВ ---
             setSelectedHeroId: (id: string) => set({ selectedHeroId: id }),
             setHeroGalleryId: (id: string) => set({ heroGalleryId: id }),
-            unlockHero: (heroId: string) => set((state: any) => {
-                if (state.ownedHeroes.includes(heroId)) return state;
-                return { ownedHeroes: [...state.ownedHeroes, heroId] };
-            }),
+            unlockHero: (heroId: string) =>
+                set((state: any) => {
+                    if (state.ownedHeroes.includes(heroId)) return state;
+                    return { ownedHeroes: [...state.ownedHeroes, heroId] };
+                }),
             spendGold: (amount: number) => set((state: any) => ({ gold: Math.max(0, state.gold - amount) })),
-            spendDiamonds: (amount: number) => set((state: any) => ({ crystals: Math.max(0, state.crystals - amount) })),
-            upgradeTalent: (heroId: string, talentId: string) => set((state: any) => {
-                const currentHeroTalents = state.heroTalents[heroId] || {};
-                const currentLevel = currentHeroTalents[talentId] || 0;
+            spendDiamonds: (amount: number) =>
+                set((state: any) => ({ crystals: Math.max(0, state.crystals - amount) })),
+            upgradeTalent: (heroId: string, talentId: string) =>
+                set((state: any) => {
+                    const currentHeroTalents = state.heroTalents[heroId] || {};
+                    const currentLevel = currentHeroTalents[talentId] || 0;
 
-                // [Quest] Track progress for upgrading
-                get().updateQuestProgress('UPGRADE', 1);
+                    // [Quest] Track progress for upgrading
+                    get().updateQuestProgress('UPGRADE', 1);
 
-                return {
-                    heroTalents: {
-                        ...state.heroTalents,
-                        [heroId]: {
-                            ...currentHeroTalents,
-                            [talentId]: currentLevel + 1
-                        }
+                    return {
+                        heroTalents: {
+                            ...state.heroTalents,
+                            [heroId]: {
+                                ...currentHeroTalents,
+                                [talentId]: currentLevel + 1,
+                            },
+                        },
+                    };
+                }),
+            upgradeItem: (itemId: string) => {
+                const state = get();
+                const invItemIndex = state.inventory.findIndex((i: any) => String(i.id) === itemId);
+                if (invItemIndex === -1) return false;
+
+                const invItem = state.inventory[invItemIndex];
+                const currentLevel = invItem.level || 1;
+                if (currentLevel >= 10) return false;
+
+                const itemData = ITEMS_DATABASE[itemId];
+                if (!itemData) return false;
+
+                const isDiamondItem = itemData.priceGem && itemData.priceGem > 0;
+                let upgradeCostGold = 0;
+                let upgradeCostGem = 0;
+
+                if (!isDiamondItem) {
+                    const basePrice = itemData.priceGold || 0;
+                    if (currentLevel === 1) upgradeCostGold = Math.round(basePrice * 0.5);
+                    else if (currentLevel === 2) upgradeCostGold = basePrice;
+                } else {
+                    if (currentLevel === 1) {
+                        upgradeCostGold = 50000;
+                        upgradeCostGem = 50;
+                    } else if (currentLevel === 2) {
+                        upgradeCostGold = 100000;
+                        upgradeCostGem = 100;
                     }
-                };
-            }),
-            resetTalents: (heroId: string) => set((state: any) => {
-                const talents = { ...state.heroTalents };
-                talents[heroId] = {};
-                return { heroTalents: talents };
-            }),
+                }
+
+                if (state.gold < upgradeCostGold || (state.gems || 0) < upgradeCostGem) return false;
+
+                const newInventory = [...state.inventory];
+                newInventory[invItemIndex] = { ...invItem, level: currentLevel + 1 };
+
+                set({
+                    gold: state.gold - upgradeCostGold,
+                    gems: (state.gems || 0) - upgradeCostGem,
+                    inventory: newInventory,
+                });
+
+                // [Quest] Track progress
+                get().updateQuestProgress('UPGRADE', 1);
+                return true;
+            },
+            resetTalents: (heroId: string) =>
+                set((state: any) => {
+                    const talents = { ...state.heroTalents };
+                    talents[heroId] = {};
+                    return { heroTalents: talents };
+                }),
             getCalculatedStats: (heroId: string) => {
                 const state = get() as any;
-                const heroData = HEROES_DB.find(h => h.id === heroId);
+                const heroData = HEROES_DB.find((h) => h.id === heroId);
                 if (!heroData) return null;
 
                 const equipment = state.heroEquipment[heroId] || {};
@@ -731,21 +835,27 @@ export const useGameStore = create<any>()(
                 const helm = equipment.HELMETS ? ITEMS_DATABASE[equipment.HELMETS] : null;
                 const armor = equipment.ARMOR ? ITEMS_DATABASE[equipment.ARMOR] : null;
                 const shield = equipment.SHIELDS ? ITEMS_DATABASE[equipment.SHIELDS] : null;
+                const shoulders = equipment.SHOULDERS ? ITEMS_DATABASE[equipment.SHOULDERS] : null;
+                const boots = equipment.BOOTS ? ITEMS_DATABASE[equipment.BOOTS] : null;
+                const pants = equipment.PANTS ? ITEMS_DATABASE[equipment.PANTS] : null;
 
-                const allItems = [weapon, helm, armor, shield].filter(Boolean) as IEquipmentStats[];
+                const allItems = [weapon, helm, armor, shield, shoulders, boots, pants].filter(
+                    Boolean,
+                ) as IEquipmentStats[];
 
                 // Базовые статы героя (конвертация из RPG-характеристик)
                 const base = {
                     hp: heroData.stats.stamina * 10,
                     attack: heroData.stats.strength * 2,
                     defense: heroData.stats.stamina * 0.5,
-                    speed: 1 + (heroData.stats.agility * 0.05),
+                    speed: 1 + heroData.stats.agility * 0.05,
                     critChance: heroData.stats.agility * 0.5,
                     evasion: heroData.stats.agility * 0.2,
                     resilience: heroData.stats.stamina * 0.1,
                     lifesteal: 0,
                     penetration: 0,
-                    critDamage: 1.5
+                    accuracy: 100, // Базовая точность 100%
+                    critDamage: 1.5,
                 };
 
                 // Итоговые статы
@@ -758,72 +868,86 @@ export const useGameStore = create<any>()(
                     if (level <= 0) return;
 
                     // Логика бонусов талантов
-                    if (tId === 'atk_base') total.attack *= (1 + (level * 0.05)); // +5% за уровень
-                    if (tId === 'atk_crit') total.critChance += (level * 2);      // +2% за уровень
-                    if (tId === 'atk_pen') total.penetration += (level * 10);    // +10 за уровень
+                    if (tId === 'atk_base') total.attack *= 1 + level * 0.05; // +5% за уровень
+                    if (tId === 'atk_crit') total.critChance += level * 2; // +2% за уровень
+                    if (tId === 'atk_pen') total.penetration += level * 10; // +10 за уровень
 
-                    if (tId === 'def_base') total.hp *= (1 + (level * 0.05));    // +5% за уровень
-                    if (tId === 'def_res') total.resilience += (level * 5);      // +5 за уровень
-                    if (tId === 'def_eva') total.evasion += (level * 2);         // +2% за уровень
+                    if (tId === 'def_base') total.hp *= 1 + level * 0.05; // +5% за уровень
+                    if (tId === 'def_res') total.resilience += level * 5; // +5 за уровень
+                    if (tId === 'def_eva') total.evasion += level * 2; // +2% за уровень
 
-                    if (tId === 'mas_base') total.speed += (level * 2);          // +2 скорости за уровень
-                    if (tId === 'mas_spd') total.speed *= (1 + (level * 0.03));  // +3% скорости за уровень
-                    if (tId === 'mas_ult') total.critDamage += 0.2;              // Пример бонуса для ульты
+                    if (tId === 'mas_base') total.speed += level * 0.1; // +0.1 скорости за уровень
+                    if (tId === 'mas_spd') total.speed *= 1 + level * 0.03; // +3% скорости за уровень
+                    if (tId === 'mas_ult') total.critDamage += level * 0.1;
                 });
 
-                // Добавляем бонусы от предметов
-                allItems.forEach(item => {
-                    if (item.hpBonus) total.hp += item.hpBonus;
-                    if (item.attackBonus) total.attack += item.attackBonus;
-                    if (item.defenseBonus) total.defense += item.defenseBonus;
-                    if (item.critBonus) total.critChance += (item.critBonus * 100);
-                    if (item.speedBonus) total.speed += (item.speedBonus * 10);
-                    if (item.evasion) total.evasion += item.evasion;
-                    if (item.resilience) total.resilience += item.resilience;
-                    if (item.lifesteal) total.lifesteal += item.lifesteal;
-                    if (item.penetration) total.penetration += item.penetration;
-                    if (item.critDamage) total.critDamage += item.critDamage;
+                // Добавляем бонусы от предметов с учетом уровня
+                allItems.forEach((item) => {
+                    const invItem = state.inventory.find((i: any) => String(i.id) === item.id);
+                    const lvl = invItem?.level || 1;
+                    const mult = 1 + (lvl - 1) * 0.5; // +50% за уровень (Lvl 1 = 1x, Lvl 2 = 1.5x, Lvl 3 = 2x)
+
+                    if (item.hpBonus) total.hp += item.hpBonus * mult;
+                    if (item.attackBonus) total.attack += item.attackBonus * mult;
+                    if (item.defenseBonus) total.defense += item.defenseBonus * mult;
+
+                    // Крит. шанс
+                    const cChance = item.critChance || item.critBonus || 0;
+                    if (cChance) total.critChance += cChance * 100 * mult;
+
+                    // Скорость
+                    const aSpeed = item.attackSpeed || item.speedBonus || 0;
+                    if (aSpeed) total.speed += aSpeed * mult;
+
+                    if (item.evasion) total.evasion += item.evasion * mult;
+                    if (item.resilience) total.resilience += item.resilience * mult;
+                    if (item.lifesteal) total.lifesteal += item.lifesteal * mult;
+                    if (item.penetration) total.penetration += item.penetration * mult;
+                    if (item.critDamage) total.critDamage += item.critDamage * mult;
+                    if (item.accuracy) total.accuracy += item.accuracy * mult;
                 });
 
                 return {
                     base,
                     total,
-                    weaponTexture: (weapon as IEquipmentStats)?.textureKey || null
+                    weaponTexture: (weapon as IEquipmentStats)?.textureKey || null,
                 };
             },
 
             // --- ЭКШЕНЫ КВЕСТОВ ---
             refreshDailyQuests: () => {
                 const shuffled = [...QUESTS_POOL].sort(() => 0.5 - Math.random());
-                const selected = shuffled.slice(0, 4).map(q => ({
-                    questId: q.id, progress: 0, isClaimed: false
+                const selected = shuffled.slice(0, 4).map((q) => ({
+                    questId: q.id,
+                    progress: 0,
+                    isClaimed: false,
                 }));
                 set({ dailyQuests: selected, lastDailyRefresh: Date.now() });
             },
-            updateQuestProgress: (type: string, amount: number) => set((state: any) => {
-                const newQuests = state.dailyQuests.map((dq: any) => {
-                    const questData = QUESTS_POOL.find(q => q.id === dq.questId);
-                    if (questData && questData.type === type && !dq.isClaimed) {
-                        // Для серий (WIN_STREAK) мы устанавливаем значение напрямую
-                        const newProgress = type === 'WIN_STREAK' 
-                            ? amount 
-                            : Math.min(questData.target, dq.progress + amount);
-                        return { ...dq, progress: newProgress };
-                    }
-                    return dq;
-                });
-                return { dailyQuests: newQuests };
-            }),
+            updateQuestProgress: (type: string, amount: number) =>
+                set((state: any) => {
+                    const newQuests = state.dailyQuests.map((dq: any) => {
+                        const questData = QUESTS_POOL.find((q) => q.id === dq.questId);
+                        if (questData && questData.type === type && !dq.isClaimed) {
+                            // Для серий (WIN_STREAK) мы устанавливаем значение напрямую
+                            const newProgress =
+                                type === 'WIN_STREAK' ? amount : Math.min(questData.target, dq.progress + amount);
+                            return { ...dq, progress: newProgress };
+                        }
+                        return dq;
+                    });
+                    return { dailyQuests: newQuests };
+                }),
             claimQuestReward: (questId: string) => {
                 const state = get() as any;
                 const dq = state.dailyQuests.find((q: any) => q.questId === questId);
-                const qData = QUESTS_POOL.find(q => q.id === questId);
+                const qData = QUESTS_POOL.find((q) => q.id === questId);
 
                 if (dq && qData && dq.progress >= qData.target && !dq.isClaimed) {
                     const newQuests = state.dailyQuests.map((q: any) =>
-                        q.questId === questId ? { ...q, isClaimed: true } : q
+                        q.questId === questId ? { ...q, isClaimed: true } : q,
                     );
-                    
+
                     // Начисляем все награды
                     state.addGold(qData.rewardGold);
                     state.addCrystals(qData.rewardGems);
@@ -860,24 +984,28 @@ export const useGameStore = create<any>()(
                 if (!get().isMuted) audioService.setSFXVolume(vol / 100);
             },
             setGraphicsQuality: (val: string) => set({ graphicsQuality: val }),
-            markMailAsRead: (id: string) => set((state: any) => ({
-                mail: state.mail.map((m: any) => m.id === id ? { ...m, isRead: true } : m)
-            })),
-            deleteMail: (id: string) => set((state: any) => {
-                const mailItem = state.mail.find((m: any) => m.id === id);
-                // Нельзя удалять приветствие и новости
-                if (mailItem?.id === 'welcome-mail' || mailItem?.tab === 'NEWS') return state;
+            markMailAsRead: (id: string) =>
+                set((state: any) => ({
+                    mail: state.mail.map((m: any) => (m.id === id ? { ...m, isRead: true } : m)),
+                })),
+            deleteMail: (id: string) =>
+                set((state: any) => {
+                    const mailItem = state.mail.find((m: any) => m.id === id);
+                    // Нельзя удалять приветствие и новости
+                    if (mailItem?.id === 'welcome-mail' || mailItem?.tab === 'NEWS') return state;
 
-                return {
-                    mail: state.mail.filter((m: any) => m.id !== id)
-                };
-            }),
-            archiveMail: (id: string) => set((state: any) => ({
-                mail: state.mail.map((m: any) => m.id === id ? { ...m, tab: 'ARCHIVE' } : m)
-            })),
-            toggleMailStar: (id: string) => set((state: any) => ({
-                mail: state.mail.map((m: any) => m.id === id ? { ...m, isStarred: !m.isStarred } : m)
-            })),
+                    return {
+                        mail: state.mail.filter((m: any) => m.id !== id),
+                    };
+                }),
+            archiveMail: (id: string) =>
+                set((state: any) => ({
+                    mail: state.mail.map((m: any) => (m.id === id ? { ...m, tab: 'ARCHIVE' } : m)),
+                })),
+            toggleMailStar: (id: string) =>
+                set((state: any) => ({
+                    mail: state.mail.map((m: any) => (m.id === id ? { ...m, isStarred: !m.isStarred } : m)),
+                })),
             claimMailReward: (id: string) => {
                 const mail = get().mail.find((m: any) => m.id === id);
                 if (mail && mail.rewards) {
@@ -890,7 +1018,7 @@ export const useGameStore = create<any>()(
                         }
                     });
                     set((state: any) => ({
-                        mail: state.mail.map((m: any) => m.id === id ? { ...m, rewards: null, isRead: true } : m)
+                        mail: state.mail.map((m: any) => (m.id === id ? { ...m, rewards: null, isRead: true } : m)),
                     }));
                 }
             },
@@ -915,9 +1043,7 @@ export const useGameStore = create<any>()(
                 if (totalEnergy > 0) get().addEnergy(totalEnergy);
 
                 set((state: any) => ({
-                    mail: state.mail.map((m: any) =>
-                        m.tab === 'INBOX' ? { ...m, rewards: null, isRead: true } : m
-                    )
+                    mail: state.mail.map((m: any) => (m.tab === 'INBOX' ? { ...m, rewards: null, isRead: true } : m)),
                 }));
             },
             sendFeedback: (category: string, text: string) => {
@@ -930,46 +1056,50 @@ export const useGameStore = create<any>()(
                     level: state.level,
                     platform: navigator.platform,
                     version: 'v1.1.0',
-                    timestamp: Date.now()
+                    timestamp: Date.now(),
                 };
                 syncService.sendFeedback(feedbackData);
             },
-            removeFriend: (id: string) => set((state: any) => ({
-                friends: state.friends.filter((f: any) => f.id !== id)
-            })),
+            removeFriend: (id: string) =>
+                set((state: any) => ({
+                    friends: state.friends.filter((f: any) => f.id !== id),
+                })),
             acceptFriendRequest: (id: string) => {
                 const state = get();
                 const request = state.friendRequests.find((r: any) => r.id === id);
                 if (!request) return;
-                
+
                 syncService.deleteFriendRequest(state.playerId, id);
-                
+
                 set((state: any) => ({
                     friends: [...state.friends, request],
-                    friendRequests: state.friendRequests.filter((r: any) => r.id !== id)
+                    friendRequests: state.friendRequests.filter((r: any) => r.id !== id),
                 }));
             },
             declineFriendRequest: (id: string) => {
                 syncService.deleteFriendRequest(get().playerId, id);
                 set((state: any) => ({
-                    friendRequests: state.friendRequests.filter((r: any) => r.id !== id)
+                    friendRequests: state.friendRequests.filter((r: any) => r.id !== id),
                 }));
             },
-            sendGift: (friendId: string) => set((state: any) => ({
-                friends: state.friends.map((f: any) => f.id === friendId ? { ...f, giftSent: true } : f)
-            })),
-            collectAllGifts: () => set((state: any) => {
-                const hasGifts = state.friends.some((f: any) => f.hasGift);
-                if (!hasGifts) return state;
-                return {
-                    friends: state.friends.map((f: any) => ({ ...f, hasGift: false, giftSent: true })),
-                    gold: state.gold + (state.friends.filter((f: any) => f.hasGift).length * 100)
-                };
-            }),
-            addFriend: (friend: any) => set((state: any) => ({
-                friends: [...state.friends, friend],
-                friendRequests: state.friendRequests.filter((r: any) => r.id !== friend.id)
-            })),
+            sendGift: (friendId: string) =>
+                set((state: any) => ({
+                    friends: state.friends.map((f: any) => (f.id === friendId ? { ...f, giftSent: true } : f)),
+                })),
+            collectAllGifts: () =>
+                set((state: any) => {
+                    const hasGifts = state.friends.some((f: any) => f.hasGift);
+                    if (!hasGifts) return state;
+                    return {
+                        friends: state.friends.map((f: any) => ({ ...f, hasGift: false, giftSent: true })),
+                        gold: state.gold + state.friends.filter((f: any) => f.hasGift).length * 100,
+                    };
+                }),
+            addFriend: (friend: any) =>
+                set((state: any) => ({
+                    friends: [...state.friends, friend],
+                    friendRequests: state.friendRequests.filter((r: any) => r.id !== friend.id),
+                })),
             setRating: (rating: number) => set({ rating: Math.max(0, rating) }),
             joinClan: (id: string, data: any) => set({ clanId: id, clanData: data }),
             leaveClan: () => set({ clanId: null, clanData: null }),
@@ -977,21 +1107,23 @@ export const useGameStore = create<any>()(
                 const state = get() as any;
                 // При первой привязке ВК, если имя еще дефолтное, берем только Имя из ВК
                 const currentName = state.name;
-                const newName = (currentName === 'Мастер' || !currentName) ? user.first_name : currentName;
-                
-                set({ 
-                    vkUser: user, 
+                const newName = currentName === 'Мастер' || !currentName ? user.firstName : currentName;
+
+                set({
+                    vkUser: user,
                     name: newName,
-                    avatar: user.photo_200 || state.avatar 
+                    avatar: user.photo || state.avatar,
                 });
             },
             changeName: (newName: string) => {
                 const state = get() as any;
                 const now = Date.now();
                 const thirtyDays = 30 * 24 * 60 * 60 * 1000;
-                
+
                 if (now - state.lastNameChange < thirtyDays && state.lastNameChange !== 0) {
-                    const remainingDays = Math.ceil((thirtyDays - (now - state.lastNameChange)) / (24 * 60 * 60 * 1000));
+                    const remainingDays = Math.ceil(
+                        (thirtyDays - (now - state.lastNameChange)) / (24 * 60 * 60 * 1000),
+                    );
                     return { success: false, message: `Смена будет доступна через ${remainingDays} дн.` };
                 }
 
@@ -1003,7 +1135,7 @@ export const useGameStore = create<any>()(
                 // Простая проверка на запрещенные слова (мат)
                 const forbidden = ['хуй', 'пизд', 'еблан', 'сука', 'бля', 'админ', 'gm', 'admin', 'moder'];
                 const lowerName = cleanName.toLowerCase();
-                if (forbidden.some(word => lowerName.includes(word))) {
+                if (forbidden.some((word) => lowerName.includes(word))) {
                     return { success: false, message: 'Имя содержит недопустимые слова' };
                 }
 
@@ -1023,22 +1155,10 @@ export const useGameStore = create<any>()(
             shopInitialTab: null as string | null,
             shopInitialSubTab: null as string | null,
 
-            // --- НАВИГАЦИЯ ---
-            setScreen: (screen: any) => set({ activeScreen: screen }),
-            goToMainMenu: () => set({ activeScreen: 'MAIN_MENU' }),
-            goToCity: () => set({ activeScreen: 'CITY' }),
-            goToArena: () => set({ activeScreen: 'BATTLE' }), // Или 'ARENA', если есть такой экран
-            goToShop: (tab = 'ARSENAL', subTab = null) => set({ 
-                activeScreen: 'SHOP', 
-                shopInitialTab: tab,
-                shopInitialSubTab: subTab
-            }),
-            goToHeroes: (tab = 'LIST') => set({ activeScreen: 'HEROES', heroesInitialTab: tab }),
-
             // --- PVE ЛОГИКА ---
             startPveBattle: (stage: number) => {
                 const isBoss = stage % 5 === 0;
-                const difficultyMult = 1 + (stage * 0.15);
+                const difficultyMult = 1 + stage * 0.15;
                 const enemy = {
                     id: `pve_mob_${stage}`,
                     name: isBoss ? `СТРАЖ ОБИТЕЛИ (Этаж ${stage})` : `ДРЕВНИЙ ДУХ (Этаж ${stage})`,
@@ -1047,7 +1167,7 @@ export const useGameStore = create<any>()(
                     attack: Math.floor(15 * difficultyMult * (isBoss ? 1.5 : 1)),
                     defense: Math.floor(10 * difficultyMult),
                     image: AssetsMap.CHARACTERS.PANDA_FULL,
-                    isBoss
+                    isBoss,
                 };
                 set({ activeScreen: 'BATTLE', activePveEnemy: enemy });
             },
@@ -1058,9 +1178,9 @@ export const useGameStore = create<any>()(
                     const nextStage = pveStage + 1;
                     const isBoss = pveStage % 5 === 0;
                     const newStreak = winStreak + 1;
-                    
+
                     set((state: any) => ({
-                        gold: state.gold + (pveStage * 100),
+                        gold: state.gold + pveStage * 100,
                         crystals: isBoss ? state.crystals + 20 : state.crystals,
                         pveStage: nextStage,
                         maxPveStage: Math.max(maxPveStage, nextStage),
@@ -1068,7 +1188,7 @@ export const useGameStore = create<any>()(
                         wins: (state.wins || 0) + 1,
                         totalBattles: (state.totalBattles || 0) + 1,
                         activeScreen: 'CITY',
-                        activePveEnemy: null
+                        activePveEnemy: null,
                     }));
 
                     // Обновляем квесты на победы и серии
@@ -1076,11 +1196,11 @@ export const useGameStore = create<any>()(
                     get().updateQuestProgress('WIN_STREAK', newStreak);
                     get().updateQuestProgress('PLAY', 1);
                 } else {
-                    set((state: any) => ({ 
-                        winStreak: 0, 
+                    set((state: any) => ({
+                        winStreak: 0,
                         totalBattles: (state.totalBattles || 0) + 1,
-                        activeScreen: 'CITY', 
-                        activePveEnemy: null 
+                        activeScreen: 'CITY',
+                        activePveEnemy: null,
                     }));
                     // Сбрасываем прогресс серии в квестах
                     get().updateQuestProgress('WIN_STREAK', 0);
@@ -1094,7 +1214,18 @@ export const useGameStore = create<any>()(
         {
             name: 'game-storage',
             storage: createJSONStorage(() => getStorage()),
-            version: 20, // Поднято до 20: Добавлена статистика побед
-        }
-    )
+            version: 21, // v21: Обновление имен героев и фикс экранов
+            migrate: (persistedState: any, version: number) => {
+                if (version < 21) {
+                    console.log('🔄 Migrating store to v21...');
+                    // Принудительно сбрасываем activeScreen в MAIN_MENU при обновлении,
+                    // чтобы избежать застревания на черных экранах 'ARENA'
+                    if (persistedState.activeScreen === 'ARENA' || persistedState.activeScreen === 'OTHER') {
+                        persistedState.activeScreen = 'MAIN_MENU';
+                    }
+                }
+                return persistedState;
+            },
+        },
+    ),
 );

@@ -17,15 +17,13 @@ export class HeroSyncSystem {
 
         // 2. Подписываемся на изменения экипировки
         // Используем селектор, чтобы срабатывало только при смене шмота конкретного героя
-            const unsubscribe = useGameStore.subscribe(
-                (state: any) => {
-                    const newEquipment = state.heroEquipment[heroId];
-                    if (newEquipment) {
-                        console.log(`[HeroSync] Updating equipment for ${heroId}`);
-                        heroUnit.updateEquipment(newEquipment);
-                    }
-                }
-            );
+        const unsubscribe = useGameStore.subscribe((state: any) => {
+            const newEquipment = state.heroEquipment[heroId];
+            if (newEquipment) {
+                console.log(`[HeroSync] Updating equipment for ${heroId}`);
+                heroUnit.updateEquipment(newEquipment);
+            }
+        });
 
         // Сохраняем подписку для последующей очистки
         const subKey = `${heroId}_${heroUnit.heroInstanceId}`;
@@ -38,7 +36,7 @@ export class HeroSyncSystem {
      * Очистка всех подписок (вызывать при смене сцены)
      */
     public static clearAll() {
-        this.activeSubscriptions.forEach(unsub => unsub());
+        this.activeSubscriptions.forEach((unsub) => unsub());
         this.activeSubscriptions.clear();
     }
 }

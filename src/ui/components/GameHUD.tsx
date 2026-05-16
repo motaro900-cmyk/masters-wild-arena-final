@@ -11,10 +11,7 @@ import { ChatPanel } from './hud/ChatPanel';
 import { ActionButtons } from './hud/ActionButtons';
 import { DailyGiftBanner } from './hud/DailyGiftBanner';
 import { ProfileHub } from './hud/ProfileHub';
-import { BattleScene } from './hud/BattleScene';
 import { ServerTime } from './hud/ServerTime';
-
-
 
 // Window Components
 import { AncientsSanctuaryWindow } from './hud/AncientsSanctuaryWindow';
@@ -30,43 +27,50 @@ import { InventoryPanel } from './hud/InventoryPanel';
 import { AdminPanel } from './hud/AdminPanel';
 import { VIPWindow } from './hud/VIPWindow';
 import { UnderDevelopmentModal } from './hud/SharedUI';
-
+import { BestiaryWindow } from './hud/BestiaryWindow';
 
 export const GameHUD: React.FC = () => {
-    const activeScreen = useGameStore(state => state.activeScreen);
+    const activeScreen = useGameStore((state) => state.activeScreen);
     const [activeWindow, setActiveWindow] = useState<string | null>(null);
     const [showAdmin, setShowAdmin] = useState(false);
     const [devModal, setDevModal] = useState({ isOpen: false, title: '' });
-    const goToShop = useGameStore(state => state.goToShop);
+    const goToShop = useGameStore((state) => state.goToShop);
+    const [prevScreen, setPrevScreen] = useState(activeScreen);
 
-    // Автоматически закрываем любые окна при смене основного экрана
-    React.useEffect(() => {
+    // Автоматически закрываем любые окна при смене основного экрана (Pattern: Adjusting state during render)
+    if (activeScreen !== prevScreen) {
+        setPrevScreen(activeScreen);
         setActiveWindow(null);
-    }, [activeScreen]);
+    }
 
     // Expose to window for external screen communication (like CityScreen)
     React.useEffect(() => {
         (window as any).setActiveHUDWindow = (win: string | null) => setActiveWindow(win);
     }, []);
 
-    const isFullScreenScene = activeScreen === 'SHOP' || activeScreen === 'HEROES' || activeScreen === 'CITY';
+    const isFullScreenScene =
+        activeScreen === 'SHOP' ||
+        activeScreen === 'HEROES' ||
+        activeScreen === 'CITY' ||
+        activeScreen === 'BATTLE' ||
+        activeScreen === 'FORGE';
 
-    if (activeScreen === 'BATTLE') return <BattleScene />;
     if (activeScreen === 'INTRO') return null;
-    if (activeScreen !== 'MAIN_MENU' && activeScreen !== 'ARENA' && !isFullScreenScene) return null;
-
-
+    if (activeScreen !== 'MAIN_MENU' && !isFullScreenScene) return null;
 
     return (
-        <div style={{
-            width: '1920px',
-            height: '1080px',
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            pointerEvents: 'none',
-            overflow: 'hidden'
-        }}>
+        <div
+            className="game-hud-root"
+            style={{
+                width: '100%',
+                height: '100%',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                pointerEvents: 'none',
+                overflow: 'hidden',
+            }}
+        >
             {/* 1. PLAYER PROFILE HUB */}
             {!isFullScreenScene && (
                 <div className="absolute top-[30px] left-[5px] hud-interactive">
@@ -82,11 +86,13 @@ export const GameHUD: React.FC = () => {
             )}
 
             {/* 3. RESOURCES */}
-            {!isFullScreenScene && (
-                <div className="absolute top-[25px] right-[25px] hud-interactive">
-                    <ResourceBar onOpenShop={(tab) => {
-                        goToShop(tab === 'RESOURCES' ? 'BANK' : 'ALCHEMY');
-                    }} />
+            {activeScreen !== 'BATTLE' && (
+                <div className="absolute top-[20px] right-[25px] hud-interactive">
+                    <ResourceBar
+                        onOpenShop={(tab) => {
+                            goToShop(tab === 'RESOURCES' ? 'BANK' : 'ALCHEMY');
+                        }}
+                    />
                 </div>
             )}
 
@@ -94,11 +100,13 @@ export const GameHUD: React.FC = () => {
             {!isFullScreenScene && (
                 <>
                     <div className="absolute top-[455px] left-[-10px] -translate-y-1/2 hud-interactive">
-                        <LeftSidebar onOpenWindow={(id) => {
-                            if (id === 'STORE') useGameStore.getState().goToShop();
-                            else if (id === 'HEROES') useGameStore.getState().goToHeroes('LIST');
-                            else setActiveWindow(id);
-                        }} />
+                        <LeftSidebar
+                            onOpenWindow={(id) => {
+                                if (id === 'STORE') useGameStore.getState().goToShop();
+                                else if (id === 'HEROES') useGameStore.getState().goToHeroes('LIST');
+                                else setActiveWindow(id);
+                            }}
+                        />
                     </div>
 
                     <div className="absolute top-[160px] right-[25px] flex flex-col gap-3 items-end hud-interactive">
@@ -118,44 +126,51 @@ export const GameHUD: React.FC = () => {
                             alignItems: 'center',
                             justifyContent: 'center',
                             pointerEvents: 'auto',
-                            borderRadius: '50%'
+                            borderRadius: '50%',
                         }}
                         onClick={() => useGameStore.getState().goToCity()}
                     >
                         {/* Invisible area with hover effect */}
-                        <div className="city-portal-hover" style={{
-                            width: '100%',
-                            height: '100%',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            flexDirection: 'column',
-                            gap: '10px',
-                            opacity: 0,
-                            transition: 'opacity 0.3s ease'
-                        }}>
-                            <div style={{
-                                padding: '8px 20px',
-                                background: 'rgba(20, 15, 10, 0.8)',
-                                border: '2px solid #f0c040',
-                                borderRadius: '10px',
-                                color: '#f0c040',
-                                fontFamily: "'Cinzel', serif",
-                                fontSize: '20px',
-                                fontWeight: 'bold',
-                                textShadow: '0 2px 10px rgba(0,0,0,1)',
-                                boxShadow: '0 0 20px rgba(240,192,64,0.4)'
-                            }}>
+                        <div
+                            className="city-portal-hover"
+                            style={{
+                                width: '100%',
+                                height: '100%',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                flexDirection: 'column',
+                                gap: '10px',
+                                opacity: 0,
+                                transition: 'opacity 0.3s ease',
+                            }}
+                        >
+                            <div
+                                style={{
+                                    padding: '8px 20px',
+                                    background: 'rgba(20, 15, 10, 0.8)',
+                                    border: '2px solid #f0c040',
+                                    borderRadius: '10px',
+                                    color: '#f0c040',
+                                    fontFamily: "'Cinzel', serif",
+                                    fontSize: '20px',
+                                    fontWeight: 'bold',
+                                    textShadow: '0 2px 10px rgba(0,0,0,1)',
+                                    boxShadow: '0 0 20px rgba(240,192,64,0.4)',
+                                }}
+                            >
                                 В ГОРОД
                             </div>
-                            <div style={{
-                                width: '40px',
-                                height: '40px',
-                                border: '3px solid #f0c040',
-                                borderTopColor: 'transparent',
-                                borderRadius: '50%',
-                                animation: 'spin 2s linear infinite'
-                            }} />
+                            <div
+                                style={{
+                                    width: '40px',
+                                    height: '40px',
+                                    border: '3px solid #f0c040',
+                                    borderTopColor: 'transparent',
+                                    borderRadius: '50%',
+                                    animation: 'spin 2s linear infinite',
+                                }}
+                            />
                         </div>
                         <style>{`
                             .hud-interactive:hover .city-portal-hover {
@@ -196,14 +211,14 @@ export const GameHUD: React.FC = () => {
                             justifyContent: 'center',
                             gap: '15px',
                             transition: 'all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
-                            pointerEvents: 'auto'
+                            pointerEvents: 'auto',
                         }}
-                        onMouseEnter={e => {
+                        onMouseEnter={(e) => {
                             e.currentTarget.style.transform = 'scale(1.08) translateY(-10px)';
                             const img = e.currentTarget.querySelector('img');
                             if (img) img.style.filter = 'drop-shadow(0 0 35px rgba(240,192,64,0.7))';
                         }}
-                        onMouseLeave={e => {
+                        onMouseLeave={(e) => {
                             e.currentTarget.style.transform = 'scale(1) translateY(0)';
                             const img = e.currentTarget.querySelector('img');
                             if (img) img.style.filter = 'drop-shadow(0 0 15px rgba(240,192,64,0.4))';
@@ -216,19 +231,23 @@ export const GameHUD: React.FC = () => {
                                 height: '180px',
                                 objectFit: 'contain',
                                 filter: 'drop-shadow(0 0 15px rgba(240,192,64,0.4))',
-                                transition: 'all 0.3s ease'
+                                transition: 'all 0.3s ease',
                             }}
                             alt="City"
                         />
-                        <div style={{
-                            fontFamily: "'Cinzel', serif",
-                            fontSize: '18px',
-                            fontWeight: 900,
-                            color: '#f0c040',
-                            letterSpacing: '4px',
-                            textShadow: '0 3px 12px rgba(0,0,0,1)',
-                            textTransform: 'uppercase'
-                        }}>В ГОРОД</div>
+                        <div
+                            style={{
+                                fontFamily: "'Cinzel', serif",
+                                fontSize: '18px',
+                                fontWeight: 900,
+                                color: '#f0c040',
+                                letterSpacing: '4px',
+                                textShadow: '0 3px 12px rgba(0,0,0,1)',
+                                textTransform: 'uppercase',
+                            }}
+                        >
+                            В ГОРОД
+                        </div>
                     </button>
 
                     <div
@@ -248,8 +267,8 @@ export const GameHUD: React.FC = () => {
                         {[
                             { id: 'FRIENDS', sprite: AssetsMap.UI.ICON_FRIENDS },
                             { id: 'MAIL', sprite: AssetsMap.UI.ICON_MAIL },
-                            { id: 'SETTINGS', sprite: AssetsMap.UI.ICON_SETTINGS }
-                        ].map(win => (
+                            { id: 'SETTINGS', sprite: AssetsMap.UI.ICON_SETTINGS },
+                        ].map((win) => (
                             <button
                                 key={win.id}
                                 onClick={() => setActiveWindow(win.id)}
@@ -263,8 +282,8 @@ export const GameHUD: React.FC = () => {
                                     cursor: 'pointer',
                                     transition: 'all 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
                                 }}
-                                onMouseEnter={e => (e.currentTarget.style.transform = 'scale(1.15) translateY(-5px)')}
-                                onMouseLeave={e => (e.currentTarget.style.transform = 'scale(1) translateY(0)')}
+                                onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.15) translateY(-5px)')}
+                                onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1) translateY(0)')}
                             />
                         ))}
                     </div>
@@ -273,15 +292,31 @@ export const GameHUD: React.FC = () => {
 
             {/* --- МОДАЛЬНЫЕ ОКНА --- */}
             {activeWindow && (
-                <div className="absolute inset-0 z-[100] pointer-events-none bg-black/60 backdrop-blur-sm">
-                    <div className="absolute top-[515px] left-[960px] -translate-x-1/2 -translate-y-1/2 hud-interactive">
+                <div
+                    className="absolute inset-0 z-[100] pointer-events-auto bg-black/60 backdrop-blur-sm"
+                    onClick={() => setActiveWindow(null)}
+                >
+                    <div
+                        className="absolute top-[515px] left-[960px] -translate-x-1/2 -translate-y-1/2 hud-interactive"
+                        onClick={(e) => e.stopPropagation()}
+                    >
                         {activeWindow === 'SANCTUARY' && (
-                            <BaseWindow title="ОБИТЕЛЬ ДРЕВНИХ" isOpen={true} onClose={() => setActiveWindow(null)} width="800px">
+                            <BaseWindow
+                                title="ОБИТЕЛЬ ДРЕВНИХ"
+                                isOpen={true}
+                                onClose={() => setActiveWindow(null)}
+                                width="800px"
+                            >
                                 <AncientsSanctuaryWindow />
                             </BaseWindow>
                         )}
                         {activeWindow === 'FRIENDS' && (
-                            <BaseWindow title="ДРУЗЬЯ" isOpen={true} onClose={() => setActiveWindow(null)} width="860px">
+                            <BaseWindow
+                                title="ДРУЗЬЯ"
+                                isOpen={true}
+                                onClose={() => setActiveWindow(null)}
+                                width="860px"
+                            >
                                 <FriendsWindow onClose={() => setActiveWindow(null)} />
                             </BaseWindow>
                         )}
@@ -291,12 +326,27 @@ export const GameHUD: React.FC = () => {
                             </BaseWindow>
                         )}
                         {activeWindow === 'VIP' && (
-                            <BaseWindow title="VIP СТАТУС" isOpen={true} onClose={() => setActiveWindow(null)} width="800px">
+                            <BaseWindow
+                                title="VIP СТАТУС"
+                                isOpen={true}
+                                onClose={() => setActiveWindow(null)}
+                                width="800px"
+                            >
                                 <VIPWindow onClose={() => setActiveWindow(null)} />
                             </BaseWindow>
                         )}
                         {activeWindow === 'SETTINGS' && (
-                            <BaseWindow title="НАСТРОЙКИ" isOpen={true} onClose={() => setActiveWindow(null)} width="650px" headerExtra={<div style={{ marginLeft: '30px' }}><ServerTime /></div>}>
+                            <BaseWindow
+                                title="НАСТРОЙКИ"
+                                isOpen={true}
+                                onClose={() => setActiveWindow(null)}
+                                width="650px"
+                                headerExtra={
+                                    <div style={{ marginLeft: '30px' }}>
+                                        <ServerTime />
+                                    </div>
+                                }
+                            >
                                 <SettingsWindow
                                     onClose={() => setActiveWindow(null)}
                                     onOpenAdmin={() => {
@@ -307,32 +357,65 @@ export const GameHUD: React.FC = () => {
                             </BaseWindow>
                         )}
                         {activeWindow === 'GIFT' && (
-                            <BaseWindow title="ЕЖЕДНЕВНЫЙ ПОДАРОК" isOpen={true} onClose={() => setActiveWindow(null)} width="600px">
+                            <BaseWindow
+                                title="ЕЖЕДНЕВНЫЙ ПОДАРОК"
+                                isOpen={true}
+                                onClose={() => setActiveWindow(null)}
+                                width="600px"
+                            >
                                 <DailyGiftWindow onClose={() => setActiveWindow(null)} />
                             </BaseWindow>
                         )}
                         {activeWindow === 'RANKING' && (
-                            <BaseWindow title="РЕЙТИНГ" isOpen={true} onClose={() => setActiveWindow(null)} width="900px">
+                            <BaseWindow
+                                title="РЕЙТИНГ"
+                                isOpen={true}
+                                onClose={() => setActiveWindow(null)}
+                                width="900px"
+                            >
                                 <RankingWindow />
                             </BaseWindow>
                         )}
                         {activeWindow === 'CLAN' && (
-                            <BaseWindow title="ИНФОРМАЦИЯ О КЛАНЕ" isOpen={true} onClose={() => setActiveWindow(null)} width="1000px">
+                            <BaseWindow
+                                title="ИНФОРМАЦИЯ О КЛАНЕ"
+                                isOpen={true}
+                                onClose={() => setActiveWindow(null)}
+                                width="1000px"
+                            >
                                 <ClanWindow />
                             </BaseWindow>
                         )}
                         {activeWindow === 'RANKS_LIST' && (
-                            <BaseWindow title="ПУТЬ МАСТЕРА" isOpen={true} onClose={() => setActiveWindow(null)} width="850px">
+                            <BaseWindow
+                                title="ПУТЬ МАСТЕРА"
+                                isOpen={true}
+                                onClose={() => setActiveWindow(null)}
+                                width="850px"
+                            >
                                 <RanksListWindow />
                             </BaseWindow>
                         )}
                         {activeWindow === 'INVENTORY' && (
-                            <BaseWindow title="ИНВЕНТАРЬ" isOpen={true} onClose={() => setActiveWindow(null)} width="1100px">
+                            <BaseWindow
+                                title="ИНВЕНТАРЬ"
+                                isOpen={true}
+                                onClose={() => setActiveWindow(null)}
+                                width="1100px"
+                            >
                                 <div style={{ padding: '30px', display: 'flex', justifyContent: 'center' }}>
-                                    <InventoryPanel
-                                        onItemClick={() => { }}
-                                    />
+                                    <InventoryPanel onItemClick={() => {}} />
                                 </div>
+                            </BaseWindow>
+                        )}
+                        {activeWindow === 'BESTIARY' && (
+                            <BaseWindow
+                                title="ЗВЕРИНЕЦ"
+                                isOpen={true}
+                                onClose={() => setActiveWindow(null)}
+                                width="950px"
+                            >
+                                <BestiaryWindow />
                             </BaseWindow>
                         )}
                     </div>
@@ -340,8 +423,6 @@ export const GameHUD: React.FC = () => {
             )}
             {/* --- ADMIN PANEL (GLOBAL OVERLAY) --- */}
             {showAdmin && <AdminPanel onClose={() => setShowAdmin(false)} />}
-
-
 
             <UnderDevelopmentModal
                 isOpen={devModal.isOpen}

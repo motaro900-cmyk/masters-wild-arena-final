@@ -1,9 +1,9 @@
 import React from 'react';
 
 interface TintedSpriteProps extends React.HTMLAttributes<HTMLDivElement> {
-    src: string;          // Путь к Grayscale спрайту
-    tint: string;         // Hex-код цвета (например, из ThemeConfig)
-    className?: string;   // Дополнительные Tailwind классы
+    src: string; // Путь к Grayscale спрайту
+    tint: string; // Hex-код цвета (например, из ThemeConfig)
+    className?: string; // Дополнительные Tailwind классы
     blendMode?: 'color' | 'overlay' | 'multiply'; // Режим наложения
 }
 
@@ -13,12 +13,12 @@ interface TintedSpriteProps extends React.HTMLAttributes<HTMLDivElement> {
  * и сохраняет яркость (Luminosity) оригинального спрайта.
  * Блики остаются светлыми, тени — темными.
  */
-export const TintedSprite: React.FC<TintedSpriteProps> = ({ 
-    src, 
-    tint, 
-    className = '', 
+export const TintedSprite: React.FC<TintedSpriteProps> = ({
+    src,
+    tint,
+    className = '',
     blendMode = 'color',
-    ...props 
+    ...props
 }) => {
     return (
         <div
@@ -29,21 +29,21 @@ export const TintedSprite: React.FC<TintedSpriteProps> = ({
                 WebkitMaskSize: 'contain',
                 WebkitMaskRepeat: 'no-repeat',
                 WebkitMaskPosition: 'center',
-                ...props.style
+                ...props.style,
             }}
             {...props}
         >
             {/* Базовый черно-белый спрайт (Grayscale), формирующий объем */}
             <img src={src} className="block w-full h-full object-contain pointer-events-none" alt="tinted-sprite" />
-            
+
             {/* Слой перекрашивания (Tint) */}
-            <div 
-                className="absolute inset-0 pointer-events-none" 
-                style={{ 
-                    backgroundColor: tint, 
+            <div
+                className="absolute inset-0 pointer-events-none"
+                style={{
+                    backgroundColor: tint,
                     // 'color' сохраняет Luminosity нижнего слоя, заменяя Hue и Saturation.
-                    mixBlendMode: blendMode 
-                }} 
+                    mixBlendMode: blendMode,
+                }}
             />
         </div>
     );

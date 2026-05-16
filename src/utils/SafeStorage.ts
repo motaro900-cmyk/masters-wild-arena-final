@@ -11,7 +11,7 @@ const memoryStore = new Map<string, string>();
 
 const fallbackStorage: IStorageLike = {
     getItem(key: string) {
-        return memoryStore.has(key) ? memoryStore.get(key) ?? null : null;
+        return memoryStore.has(key) ? (memoryStore.get(key) ?? null) : null;
     },
     setItem(key: string, value: string) {
         memoryStore.set(key, String(value));
@@ -27,7 +27,7 @@ const fallbackStorage: IStorageLike = {
     },
     get length() {
         return memoryStore.size;
-    }
+    },
 };
 
 const canUseLocalStorage = (): boolean => {

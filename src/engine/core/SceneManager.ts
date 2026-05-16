@@ -36,11 +36,11 @@ export class SceneManager {
         console.log(`[SceneManager] Switching to: ${sceneLabel}`);
 
         // 1. Очистка gameLayer от других сцен
-        gameLayer.children.forEach(child => {
+        gameLayer.children.forEach((child) => {
             if (child !== newScene) {
                 child.visible = false;
                 if (destroyOld) {
-                    // [Lead Architect]: Мы не уничтожаем здесь сразу, 
+                    // [Lead Architect]: Мы не уничтожаем здесь сразу,
                     // чтобы дать время на анимации перехода если они будут.
                 }
             }
@@ -57,7 +57,7 @@ export class SceneManager {
         // 3. Добавляем новую сцену в Game Layer
         this.currentScene = newScene;
         this.currentScene.visible = true;
-        
+
         if (newScene.parent !== gameLayer) {
             gameLayer.addChild(newScene);
         }

@@ -9,12 +9,12 @@ interface IPlayerState {
     crystals: number;
     energy: number;
     maxEnergy: number;
-    
+
     // Профиль
     avatar: string;
     frame: string;
     title: string;
-    
+
     // Battle Pass
     bpLevel: number;
     bpExp: number;
@@ -26,7 +26,7 @@ interface IPlayerState {
     addCrystals: (amount: number) => void;
     addExp: (amount: number) => void;
     consumeEnergy: () => boolean;
-    updateProfile: (data: { avatar?: string, frame?: string, title?: string }) => void;
+    updateProfile: (data: { avatar?: string; frame?: string; title?: string }) => void;
     claimReward: (id: string) => void;
     addBpExp: (amount: number) => void;
     setPremium: (val: boolean) => void;
@@ -51,16 +51,17 @@ export const usePlayerStore = create<IPlayerState>()(
 
             addGold: (amount) => set((state) => ({ gold: state.gold + amount })),
             addCrystals: (amount) => set((state) => ({ crystals: state.crystals + amount })),
-            addExp: (amount) => set((state) => {
-                let newExp = state.exp + amount;
-                let newLevel = state.level;
-                const expNeeded = newLevel * 600;
-                if (newExp >= expNeeded) {
-                    newExp -= expNeeded;
-                    newLevel += 1;
-                }
-                return { exp: newExp, level: newLevel };
-            }),
+            addExp: (amount) =>
+                set((state) => {
+                    let newExp = state.exp + amount;
+                    let newLevel = state.level;
+                    const expNeeded = newLevel * 600;
+                    if (newExp >= expNeeded) {
+                        newExp -= expNeeded;
+                        newLevel += 1;
+                    }
+                    return { exp: newExp, level: newLevel };
+                }),
             consumeEnergy: () => {
                 const state = get();
                 if (state.energy > 0) {
@@ -70,26 +71,28 @@ export const usePlayerStore = create<IPlayerState>()(
                 return false;
             },
             updateProfile: (data) => set((state) => ({ ...state, ...data })),
-            claimReward: (id) => set((state) => ({ 
-                claimedRewards: state.claimedRewards.includes(id) 
-                    ? state.claimedRewards 
-                    : [...state.claimedRewards, id] 
-            })),
-            addBpExp: (amount) => set((state) => {
-                let newExp = state.bpExp + amount;
-                let newLevel = state.bpLevel;
-                const expPerLevel = 1000;
-                while (newExp >= expPerLevel) {
-                    newExp -= expPerLevel;
-                    newLevel += 1;
-                }
-                return { bpExp: newExp, bpLevel: newLevel };
-            }),
+            claimReward: (id) =>
+                set((state) => ({
+                    claimedRewards: state.claimedRewards.includes(id)
+                        ? state.claimedRewards
+                        : [...state.claimedRewards, id],
+                })),
+            addBpExp: (amount) =>
+                set((state) => {
+                    let newExp = state.bpExp + amount;
+                    let newLevel = state.bpLevel;
+                    const expPerLevel = 1000;
+                    while (newExp >= expPerLevel) {
+                        newExp -= expPerLevel;
+                        newLevel += 1;
+                    }
+                    return { bpExp: newExp, bpLevel: newLevel };
+                }),
             setPremium: (val) => set({ isPremium: val }),
         }),
         {
             name: 'player-storage',
             storage: createJSONStorage(() => getStorage()),
-        }
-    )
+        },
+    ),
 );

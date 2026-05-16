@@ -7,14 +7,14 @@ export const UI_SIZES = {
     SIDEBAR_WIDTH: 250,
     PANEL_PADDING: 30,
     SPACING: 15,
-    GRID_COLS: 4
+    GRID_COLS: 4,
 };
 
 export const UI_COLORS = {
-    GOLD: 0xDAA520,
-    GOLD_LIGHT: 0xFFD700,
+    GOLD: 0xdaa520,
+    GOLD_LIGHT: 0xffd700,
     DARK_BG: 0x111111,
     PANEL_BG: 0x1a1a1a,
     ERROR_RED: 0x8b0000,
-    TEXT_MAIN: 0xF5E6C3
+    TEXT_MAIN: 0xf5e6c3,
 };

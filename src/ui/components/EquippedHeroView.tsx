@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useAvatarRenderer } from '../../hooks/useAvatarRenderer';
@@ -16,7 +15,7 @@ export const EquippedHeroView: React.FC<EquippedHeroViewProps> = ({ heroId, size
     const { layers, dimensions, heroConfig } = useAvatarRenderer(heroId, size);
 
     return (
-        <div 
+        <div
             className="relative overflow-hidden flex items-center justify-center pointer-events-none"
             style={{ width: size, height: size }}
         >
@@ -25,27 +24,29 @@ export const EquippedHeroView: React.FC<EquippedHeroViewProps> = ({ heroId, size
                 const isBody = layer.type === 'body';
                 const isWeapon = layer.id === 'item-WEAPONS';
                 const isItem = layer.type === 'item';
-                
-                const style: any = isBody ? {
-                    left: layer.x,
-                    top: layer.y,
-                    width: 512 * dimensions.scaleFactor,
-                    height: 512 * dimensions.scaleFactor,
-                    zIndex: layer.zIndex,
-                } : {
-                    position: 'absolute',
-                    left: layer.x,
-                    top: layer.y,
-                    width: isWeapon ? (512 * dimensions.scaleFactor) : (512 * layer.scale),
-                    height: isWeapon ? (512 * dimensions.scaleFactor) : 'auto',
-                    zIndex: layer.zIndex,
-                    filter: `brightness(1.1) contrast(1.1)`,
-                    x: '-50%',
-                    y: isWeapon ? '-90%' : '-50%',
-                    scale: layer.scale,
-                    rotate: layer.rotation,
-                    transformOrigin: isWeapon ? '50% 90%' : '50% 50%',
-                };
+
+                const style: any = isBody
+                    ? {
+                          left: layer.x,
+                          top: layer.y,
+                          width: 512 * dimensions.scaleFactor,
+                          height: 512 * dimensions.scaleFactor,
+                          zIndex: layer.zIndex,
+                      }
+                    : {
+                          position: 'absolute',
+                          left: layer.x,
+                          top: layer.y,
+                          width: isWeapon ? 512 * dimensions.scaleFactor : 512 * layer.scale,
+                          height: isWeapon ? 512 * dimensions.scaleFactor : 'auto',
+                          zIndex: layer.zIndex,
+                          filter: `brightness(1.1) contrast(1.1)`,
+                          x: '-50%',
+                          y: isWeapon ? '-90%' : '-50%',
+                          scale: layer.scale,
+                          rotate: layer.rotation,
+                          transformOrigin: isWeapon ? '50% 90%' : '50% 50%',
+                      };
 
                 // Поддержка спрайт-листов для героев (если остались такие)
                 if (isBody && heroConfig.sheet) {
@@ -55,7 +56,7 @@ export const EquippedHeroView: React.FC<EquippedHeroViewProps> = ({ heroId, size
                             className="absolute pointer-events-none"
                             style={{
                                 ...style,
-                                overflow: 'hidden'
+                                overflow: 'hidden',
                             }}
                         >
                             <motion.img
@@ -66,7 +67,7 @@ export const EquippedHeroView: React.FC<EquippedHeroViewProps> = ({ heroId, size
                                     objectFit: 'fill',
                                     position: 'absolute',
                                     left: 0,
-                                    top: 0
+                                    top: 0,
                                 }}
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
@@ -83,7 +84,7 @@ export const EquippedHeroView: React.FC<EquippedHeroViewProps> = ({ heroId, size
                             className={`sprite-icon ${layer.spriteClass} absolute pointer-events-none`}
                             style={{
                                 ...style,
-                                backgroundSize: '400% 400%', 
+                                backgroundSize: '400% 400%',
                             }}
                             initial={{ opacity: 0, scale: 0.8 }}
                             animate={{ opacity: 1, scale: layer.scale }}

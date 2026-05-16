@@ -12,7 +12,7 @@ export const DebugStats: React.FC = () => {
         const update = () => {
             frames++;
             const currentTime = performance.now();
-            
+
             if (currentTime - lastTime >= 1000) {
                 // Пытаемся получить FPS из Pixi, если он готов, иначе считаем сами
                 try {
@@ -32,18 +32,20 @@ export const DebugStats: React.FC = () => {
     }, []);
 
     return (
-        <div style={{ 
-            position: 'absolute', 
-            top: '5px', 
-            right: '10px', 
-            color: fps > 50 ? '#4ade80' : '#f87171', 
-            fontSize: '12px', 
-            fontFamily: 'monospace',
-            fontWeight: 'bold',
-            textShadow: '1px 1px 2px black',
-            zIndex: 1000,
-            pointerEvents: 'none'
-        }}>
+        <div
+            style={{
+                position: 'absolute',
+                top: '5px',
+                right: '10px',
+                color: fps > 50 ? '#4ade80' : '#f87171',
+                fontSize: '12px',
+                fontFamily: 'monospace',
+                fontWeight: 'bold',
+                textShadow: '1px 1px 2px black',
+                zIndex: 1000,
+                pointerEvents: 'none',
+            }}
+        >
             FPS: {fps}
         </div>
     );

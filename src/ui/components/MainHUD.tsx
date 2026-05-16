@@ -7,7 +7,7 @@ const MainHUD: React.FC = () => {
 
     useEffect(() => {
         const updateScale = () => {
-            const widthScale  = window.innerWidth  / 1920;
+            const widthScale = window.innerWidth / 1920;
             const heightScale = window.innerHeight / 1080;
             setScale(Math.min(widthScale, heightScale));
         };

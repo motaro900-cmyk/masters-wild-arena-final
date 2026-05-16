@@ -1,4 +1,3 @@
-
 /**
  * ЦЕНТРАЛЬНАЯ БАЗА ГЕРОЕВ
  * Содержит визуальные данные, статы и метаданные для рендеринга (анкоры).
@@ -57,10 +56,10 @@ export const HEROES_DB: IHeroConfig[] = [
         anchors: {
             feet: { x: 0.5, y: 0.95 },
             head: { x: 0.48, y: 0.22 },
-            rightHand: { x: 0.74, y: 0.40, angle: -45, scale: 1.1 },
-            leftHand: { x: 0.26, y: 0.40, angle: 45, scale: 1.0 },
-            center: { x: 0.5, y: 0.5 }
-        }
+            rightHand: { x: 0.74, y: 0.4, angle: -45, scale: 1.1 },
+            leftHand: { x: 0.26, y: 0.4, angle: 45, scale: 1.0 },
+            center: { x: 0.5, y: 0.5 },
+        },
     },
     {
         id: 'cat',
@@ -79,8 +78,8 @@ export const HEROES_DB: IHeroConfig[] = [
             head: { x: 0.5, y: 0.15, scale: 0.8 },
             rightHand: { x: 0.35, y: 0.52, angle: -65, scale: 1.0 },
             leftHand: { x: 0.65, y: 0.55, angle: 20, scale: 1.0 },
-            center: { x: 0.5, y: 0.45 }
-        }
+            center: { x: 0.5, y: 0.45 },
+        },
     },
     {
         id: 'lion_knight',
@@ -97,9 +96,9 @@ export const HEROES_DB: IHeroConfig[] = [
         anchors: {
             feet: { x: 0.5, y: 0.95 },
             head: { x: 0.52, y: 0.18 },
-            rightHand: { x: 0.88, y: 0.40, angle: -40, scale: 0.9 },
-            center: { x: 0.5, y: 0.5 }
-        }
+            rightHand: { x: 0.88, y: 0.4, angle: -40, scale: 0.9 },
+            center: { x: 0.5, y: 0.5 },
+        },
     },
     {
         id: 'wolf_knight',
@@ -119,9 +118,9 @@ export const HEROES_DB: IHeroConfig[] = [
             head: { x: 0.5, y: 0.18, scale: 1.1 },
             rightHand: { x: 0.32, y: 0.55, angle: -20, scale: 1.2 },
             leftHand: { x: 0.68, y: 0.55, angle: 20, scale: 1.2 },
-            center: { x: 0.5, y: 0.5 }
-        }
-    }
+            center: { x: 0.5, y: 0.5 },
+        },
+    },
 ];
 
-export const getHeroConfig = (id: string) => HEROES_DB.find(h => h.id === id) || HEROES_DB[0];
+export const getHeroConfig = (id: string) => HEROES_DB.find((h) => h.id === id) || HEROES_DB[0];

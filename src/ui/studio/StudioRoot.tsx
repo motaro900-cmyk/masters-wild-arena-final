@@ -2,10 +2,23 @@ import React from 'react';
 import { StudioLayout } from './StudioLayout';
 import { StudioTheme } from './StudioTheme';
 import { cn } from '../../utils/cn';
-import { 
-    Save, CloudUpload, Play, Eye, RotateCcw, RotateCw, 
-    Layers, Search, Package, ChevronDown, 
-    Box, Activity, DollarSign, Globe, LogOut, Layout
+import {
+    Save,
+    CloudUpload,
+    Play,
+    Eye,
+    RotateCcw,
+    RotateCw,
+    Layers,
+    Search,
+    Package,
+    ChevronDown,
+    Box,
+    Activity,
+    DollarSign,
+    Globe,
+    LogOut,
+    Layout,
 } from 'lucide-react';
 
 /**
@@ -53,10 +66,7 @@ const TopBar: React.FC<{ onExit: () => void }> = ({ onExit }) => (
                 PLAYTEST
             </button>
             <div className="w-[1px] h-6 bg-white/10" />
-            <button 
-                onClick={onExit}
-                className="text-stone-500 hover:text-red-400 p-1 transition-colors"
-            >
+            <button onClick={onExit} className="text-stone-500 hover:text-red-400 p-1 transition-colors">
                 <LogOut size={18} />
             </button>
         </div>
@@ -74,11 +84,11 @@ const Hierarchy: React.FC = () => (
         </div>
         <div className="flex-1 overflow-y-auto p-2">
             <Folder name="Lobby Scene" open>
-                <Item name="Background_Main" type="sprite" />
-                <Item name="Character_Panda" type="unit" active />
+                <Item name="Background_Main" />
+                <Item name="Character_Panda" active />
                 <Folder name="HUD_Layer">
-                    <Item name="TopBar" type="ui" />
-                    <Item name="RightPanel_Tasks" type="ui" />
+                    <Item name="TopBar" />
+                    <Item name="RightPanel_Tasks" />
                 </Folder>
             </Folder>
             <Folder name="Battle Arena" />
@@ -133,7 +143,10 @@ const AssetBrowser: React.FC = () => (
             </div>
             <div className="flex items-center gap-2 bg-stone-800 px-2 py-1 rounded">
                 <Search size={12} className="text-stone-500" />
-                <input className="bg-transparent border-none text-[10px] outline-none w-32" placeholder="Search assets..." />
+                <input
+                    className="bg-transparent border-none text-[10px] outline-none w-32"
+                    placeholder="Search assets..."
+                />
             </div>
         </div>
         <div className="flex-1 overflow-x-auto p-4 flex gap-4 bg-[#0d0d0d]">
@@ -150,17 +163,17 @@ const AssetBrowser: React.FC = () => (
 const Viewport: React.FC = () => (
     <div className="w-full h-full relative flex items-center justify-center">
         {/* Grid Background */}
-        <div 
+        <div
             className="absolute inset-0"
-            style={{ 
+            style={{
                 backgroundImage: `radial-gradient(${StudioTheme.colors.border} 1px, transparent 0)`,
-                backgroundSize: '40px 40px'
+                backgroundSize: '40px 40px',
             }}
         />
-        
+
         {/* Placeholder Scene Content */}
         <div className="text-stone-800 font-black text-8xl uppercase select-none opacity-20">VIEWPORT</div>
-        
+
         {/* Safe Zones Overlay */}
         <div className="absolute inset-10 border border-blue-500/20 rounded-xl pointer-events-none">
             <div className="absolute top-2 left-2 text-[10px] text-blue-500/40 font-bold">DESKTOP SAFE ZONE (16:9)</div>
@@ -170,8 +183,15 @@ const Viewport: React.FC = () => (
 
 // ─── HELPERS ─────────────────────────────────────────────────────────────────
 
-const ToolBtn: React.FC<{ icon: React.ReactNode; label: string; active?: boolean; className?: string }> = ({ icon, label, className }) => (
-    <button title={label} className={cn("p-1.5 hover:bg-white/10 rounded transition-colors text-stone-400 hover:text-white", className)}>
+const ToolBtn: React.FC<{ icon: React.ReactNode; label: string; active?: boolean; className?: string }> = ({
+    icon,
+    label,
+    className,
+}) => (
+    <button
+        title={label}
+        className={cn('p-1.5 hover:bg-white/10 rounded transition-colors text-stone-400 hover:text-white', className)}
+    >
         {icon}
     </button>
 );
@@ -179,7 +199,7 @@ const ToolBtn: React.FC<{ icon: React.ReactNode; label: string; active?: boolean
 const Folder: React.FC<{ name: string; open?: boolean; children?: React.ReactNode }> = ({ name, open, children }) => (
     <div className="mb-1">
         <div className="flex items-center gap-1 py-1 px-1 hover:bg-white/5 rounded cursor-pointer transition-colors group">
-            <ChevronDown size={14} className={cn("text-stone-600 group-hover:text-stone-400", !open && "-rotate-90")} />
+            <ChevronDown size={14} className={cn('text-stone-600 group-hover:text-stone-400', !open && '-rotate-90')} />
             <Package size={14} className="text-blue-500" />
             <span className="text-[11px] font-bold text-stone-300">{name}</span>
         </div>
@@ -187,17 +207,23 @@ const Folder: React.FC<{ name: string; open?: boolean; children?: React.ReactNod
     </div>
 );
 
-const Item: React.FC<{ name: string; type: string; active?: boolean }> = ({ name, type, active }) => (
-    <div className={cn(
-        "flex items-center gap-2 py-1 px-2 rounded cursor-pointer transition-all mb-0.5",
-        active ? "bg-blue-600 text-white" : "hover:bg-white/5 text-stone-400"
-    )}>
+const Item: React.FC<{ name: string; active?: boolean }> = ({ name, active }) => (
+    <div
+        className={cn(
+            'flex items-center gap-2 py-1 px-2 rounded cursor-pointer transition-all mb-0.5',
+            active ? 'bg-blue-600 text-white' : 'hover:bg-white/5 text-stone-400',
+        )}
+    >
         <Box size={12} />
         <span className="text-[11px] font-medium truncate">{name}</span>
     </div>
 );
 
-const Section: React.FC<{ icon: React.ReactNode; title: string; children: React.ReactNode }> = ({ icon, title, children }) => (
+const Section: React.FC<{ icon: React.ReactNode; title: string; children: React.ReactNode }> = ({
+    icon,
+    title,
+    children,
+}) => (
     <div className="flex flex-col gap-2">
         <div className="flex items-center gap-2 border-b border-white/5 pb-1">
             <div className="text-amber-500">{icon}</div>
@@ -228,10 +254,12 @@ const PropRow: React.FC<{ label: string; x?: any; y?: any; value?: any }> = ({ l
 );
 
 const Tab: React.FC<{ label: string; active?: boolean }> = ({ label, active }) => (
-    <div className={cn(
-        "text-[10px] font-black uppercase tracking-widest px-2 py-1 cursor-pointer transition-all border-b-2",
-        active ? "text-amber-500 border-amber-500" : "text-stone-500 border-transparent hover:text-stone-300"
-    )}>
+    <div
+        className={cn(
+            'text-[10px] font-black uppercase tracking-widest px-2 py-1 cursor-pointer transition-all border-b-2',
+            active ? 'text-amber-500 border-amber-500' : 'text-stone-500 border-transparent hover:text-stone-300',
+        )}
+    >
         {label}
     </div>
 );

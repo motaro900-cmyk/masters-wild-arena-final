@@ -31,7 +31,7 @@ export class Fighter extends BaseEntity {
         // 1. new Fighter({ name, health, attack, ... }) - для React UI
         // 2. new Fighter(texture, stats) - для PixiJS
         let fighterConfig: any;
-        
+
         if (config && typeof config === 'object' && 'name' in config && 'health' in config && !('texture' in config)) {
             // Формат config объекта
             fighterConfig = config;
@@ -45,20 +45,20 @@ export class Fighter extends BaseEntity {
                 position: { x: 0, y: 0 },
             };
         }
-        
+
         // Создаём временную текстуру если нужно
         const tempTexture = config && config['texture'] ? config['texture'] : PIXI.Texture.WHITE;
         const tempStats = {
             health: fighterConfig.health,
             strength: fighterConfig.attack || fighterConfig.strength || 10,
         };
-        
+
         super(tempTexture, tempStats);
-        
+
         this.id = `fighter_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
         this.health = fighterConfig.health;
         this.maxHealth = fighterConfig.maxHealth || fighterConfig.health;
-        
+
         // Применяем остальные свойства
         if (fighterConfig.name) this.label = fighterConfig.name;
         if (fighterConfig.color) this.color = fighterConfig.color;
@@ -66,11 +66,18 @@ export class Fighter extends BaseEntity {
             this.x = fighterConfig.position.x || this.x;
             this.y = fighterConfig.position.y || this.y;
         }
-        
+
         // Сохраняем characterConfig для TextureGenerator
-        if (fighterConfig.bodyColor || fighterConfig.eyeColor || fighterConfig.weaponType ||
-            fighterConfig.bodyType || fighterConfig.eyeType || fighterConfig.hatType || 
-            fighterConfig.mouthType || fighterConfig.shieldColor) {
+        if (
+            fighterConfig.bodyColor ||
+            fighterConfig.eyeColor ||
+            fighterConfig.weaponType ||
+            fighterConfig.bodyType ||
+            fighterConfig.eyeType ||
+            fighterConfig.hatType ||
+            fighterConfig.mouthType ||
+            fighterConfig.shieldColor
+        ) {
             this._characterConfig = {
                 bodyColor: fighterConfig.bodyColor || 0xffaa88,
                 eyeColor: fighterConfig.eyeColor || 0x222222,
@@ -96,7 +103,7 @@ export class Fighter extends BaseEntity {
      * Получить доступные навыки
      */
     public getAvailableSkills(): Skill[] {
-        return this.skills.filter(s => s.isReady);
+        return this.skills.filter((s) => s.isReady);
     }
 
     /**
@@ -104,7 +111,7 @@ export class Fighter extends BaseEntity {
      */
     public useSkill(skillIndex: number): boolean {
         if (skillIndex < 0 || skillIndex >= this.skills.length) return false;
-        
+
         const skill = this.skills[skillIndex];
         if (!skill.isReady) return false;
 
@@ -245,7 +252,7 @@ export class Fighter extends BaseEntity {
     /**
      * Принять урон (для BattleEngine)
      */
-    public takeDamage(amount: number): { isCrit: boolean, finalDamage: number } {
+    public takeDamage(amount: number): { isCrit: boolean; finalDamage: number } {
         const defense = this.getDefense();
         const finalDamage = Math.max(1, amount - defense * 0.5);
         this.health = Math.max(0, this.health - finalDamage);
@@ -267,11 +274,11 @@ export class Fighter extends BaseEntity {
     public useAbility(ability: any, target: Fighter): any {
         const baseDamage = this.getAttackDamage() * (ability.multiplier || 1.0);
         const result = target.takeDamage(baseDamage);
-        
+
         if (ability.onHit) {
             ability.onHit(target);
         }
-        
+
         return {
             damage: result.finalDamage,
             isCrit: result.isCrit,
@@ -284,7 +291,7 @@ export class Fighter extends BaseEntity {
      * Проверить готовность навыка
      */
     public hasAvailableSkills(): boolean {
-        return this.skills.some(s => s.isReady);
+        return this.skills.some((s) => s.isReady);
     }
 
     /**

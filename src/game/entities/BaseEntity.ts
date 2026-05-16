@@ -7,7 +7,7 @@ export enum EntityState {
     WALK = 'WALK',
     ATTACK = 'ATTACK',
     TAKE_DAMAGE = 'TAKE_DAMAGE',
-    DIE = 'DIE'
+    DIE = 'DIE',
 }
 
 /**
@@ -33,7 +33,7 @@ export class BaseEntity extends PIXI.Container {
     protected weaponSprite: PIXI.Sprite | null = null;
     protected shadow: PIXI.Graphics;
     public currentState: EntityState = EntityState.IDLE;
-    
+
     public stats: any; // IEntityStats
     private animationTimeline: gsap.core.Timeline | null = null;
 
@@ -59,18 +59,18 @@ export class BaseEntity extends PIXI.Container {
             this.weaponSprite = new PIXI.Sprite(weaponTexture);
             this.weaponSprite.anchor.set(0.5, 0.9);
             // Позиционируем в "руку" (цифры зависят от спрайта)
-            this.weaponSprite.position.set(30, -60); 
+            this.weaponSprite.position.set(30, -60);
             this.addChild(this.weaponSprite);
-            
+
             // Анимация покачивания оружия на Idle
             gsap.to(this.weaponSprite, {
                 rotation: 0.1,
                 duration: 1.2,
                 repeat: -1,
                 yoyo: true,
-                ease: "sine.inOut"
+                ease: 'sine.inOut',
             });
-            
+
             // Эпичное свечение вокруг оружия
             const glow = new GlowFilter({ distance: 15, outerStrength: 2, color: 0xffaa00 });
             this.weaponSprite.filters = [glow];
@@ -89,7 +89,7 @@ export class BaseEntity extends PIXI.Container {
             duration: 0.8 + Math.random() * 0.4,
             repeat: -1,
             yoyo: true,
-            ease: "sine.inOut"
+            ease: 'sine.inOut',
         });
     }
 
@@ -121,9 +121,15 @@ export class BaseEntity extends PIXI.Container {
      */
     private playAttackAnimation(): void {
         // Замах
-        gsap.to(this.view, { rotation: -0.2, duration: 0.1, yoyo: true, repeat: 1, onComplete: () => {
-            if (this.currentState === EntityState.ATTACK) this.setState(EntityState.IDLE);
-        }});
+        gsap.to(this.view, {
+            rotation: -0.2,
+            duration: 0.1,
+            yoyo: true,
+            repeat: 1,
+            onComplete: () => {
+                if (this.currentState === EntityState.ATTACK) this.setState(EntityState.IDLE);
+            },
+        });
         if (this.weaponSprite) {
             gsap.to(this.weaponSprite, { rotation: -0.5, duration: 0.1, yoyo: true, repeat: 1 });
         }
@@ -143,7 +149,7 @@ export class BaseEntity extends PIXI.Container {
                 if (this.stats.hp > 0 && this.currentState === EntityState.TAKE_DAMAGE) {
                     this.setState(EntityState.IDLE);
                 }
-            }
+            },
         });
 
         this.animationTimeline = tl;
@@ -153,10 +159,14 @@ export class BaseEntity extends PIXI.Container {
         this.view.filters = [filter];
         filter.brightness(3, false);
 
-        tl.to(filter, {
-            brightness: 1,
-            duration: 0.15
-        }, 0);
+        tl.to(
+            filter,
+            {
+                brightness: 1,
+                duration: 0.15,
+            },
+            0,
+        );
 
         // Тряска влево-вправо
         tl.to(this.view, { x: -8, duration: 0.05 }, 0);
@@ -176,7 +186,7 @@ export class BaseEntity extends PIXI.Container {
         const tl = gsap.timeline({
             onComplete: () => {
                 this.destroy({ children: true });
-            }
+            },
         });
 
         this.animationTimeline = tl;
@@ -184,7 +194,7 @@ export class BaseEntity extends PIXI.Container {
         tl.to(this, {
             alpha: 0,
             y: this.y + 40,
-            duration: 0.6
+            duration: 0.6,
         });
     }
 

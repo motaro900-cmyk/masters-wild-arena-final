@@ -10,22 +10,24 @@ export type ShopItem = IBaseItem;
  * Сортируем по редкости от худшего к лучшему.
  */
 const RARITY_ORDER: Record<string, number> = {
-    'COMMON': 1,
-    'UNCOMMON': 2,
-    'RARE': 3,
-    'EPIC': 4,
-    'LEGENDARY': 5,
-    'MYTHIC': 6
+    COMMON: 1,
+    UNCOMMON: 2,
+    RARE: 3,
+    EPIC: 4,
+    LEGENDARY: 5,
+    MYTHIC: 6,
 };
 
 export const getAllShopItems = (): ShopItem[] => {
     return Object.values(ITEMS_DATABASE)
-        .filter(item => 
-            (item.priceGold !== undefined && item.priceGold > 0) || 
-            (item.priceGem !== undefined && item.priceGem > 0) ||
-            item.priceStars !== undefined ||
-            item.isAd === true ||
-            item.id === 'pan' || item.id === 'stick'
+        .filter(
+            (item) =>
+                (item.priceGold !== undefined && item.priceGold > 0) ||
+                (item.priceGem !== undefined && item.priceGem > 0) ||
+                item.priceStars !== undefined ||
+                item.isAd === true ||
+                item.id === 'pan' ||
+                item.id === 'stick',
         )
         .sort((a, b) => {
             const orderA = RARITY_ORDER[a.rarity as string] || 0;
@@ -34,7 +36,7 @@ export const getAllShopItems = (): ShopItem[] => {
         });
 };
 
-export const getArsenalItems = () => getAllShopItems().filter(i => i.mainTab === 'ARSENAL');
-export const getAlchemyItems = () => getAllShopItems().filter(i => i.mainTab === 'ALCHEMY');
-export const getBankItems = () => getAllShopItems().filter(i => i.mainTab === 'BANK');
-export const getSkinsItems = () => getAllShopItems().filter(i => i.mainTab === 'SKINS');
+export const getArsenalItems = () => getAllShopItems().filter((i) => i.mainTab === 'ARSENAL');
+export const getAlchemyItems = () => getAllShopItems().filter((i) => i.mainTab === 'ALCHEMY');
+export const getBankItems = () => getAllShopItems().filter((i) => i.mainTab === 'BANK');
+export const getSkinsItems = () => getAllShopItems().filter((i) => i.mainTab === 'SKINS');

@@ -134,7 +134,9 @@
     cursor: pointer;
     text-transform: uppercase;
     text-shadow: 0 4px 4px rgba(0, 0, 0, 0.8);
-    transition: transform 0.1s ease, filter 0.2s ease;
+    transition:
+        transform 0.1s ease,
+        filter 0.2s ease;
     box-shadow: 0 10px 20px rgba(234, 179, 8, 0.4);
 }
 

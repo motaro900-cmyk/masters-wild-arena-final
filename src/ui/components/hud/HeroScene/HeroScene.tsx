@@ -45,27 +45,25 @@ export const HeroScene: React.FC = () => {
     const [viewingHero, setViewingHero] = useState<any>(null);
     const [confirmingHero, setConfirmingHero] = useState<any>(null);
     const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-    const [globalHoveredItem, setGlobalHoveredItem] = useState<{ id: string, x: number, y: number } | null>(null);
+    const [globalHoveredItem, setGlobalHoveredItem] = useState<{ id: string; x: number; y: number } | null>(null);
     const [devModal, setDevModal] = useState({ isOpen: false, title: '' });
 
     // -- Logic Hooks --
-    const {
-        handleItemClick,
-        isEquipped,
-        addFloatingText,
-        floatingTexts,
-        triggerVictory,
-        heroAction
-    } = useHeroActions(selectedHeroId || 'panda', heroEquipment, equipItem, unequipItem);
+    const { handleItemClick, isEquipped, addFloatingText, floatingTexts, triggerVictory, heroAction } = useHeroActions(
+        selectedHeroId || 'panda',
+        heroEquipment,
+        equipItem,
+        unequipItem,
+    );
 
-    const {
-        sensors,
-        handleDragStart,
-        handleDragEnd,
-        activeId,
-        activeItemData,
-        collisionDetection
-    } = useHeroDnd(selectedHeroId || 'panda', heroEquipment, inventory, equipItem, addFloatingText, triggerVictory);
+    const { sensors, handleDragStart, handleDragEnd, activeId, activeItemData, collisionDetection } = useHeroDnd(
+        selectedHeroId || 'panda',
+        heroEquipment,
+        inventory,
+        equipItem,
+        addFloatingText,
+        triggerVictory,
+    );
 
     // -- Sync Tab from Store --
     useEffect(() => {
@@ -80,8 +78,10 @@ export const HeroScene: React.FC = () => {
     }, [activeTab]);
 
     // -- Data --
-    const selectedHero = HEROES_DB.find(h => h.id === selectedHeroId) || HEROES_DB[0];
+    const selectedHero = HEROES_DB.find((h) => h.id === selectedHeroId) || HEROES_DB[0];
     const stats = getCalculatedStats(selectedHero.id);
+
+    const isMobile = useGameStore((state) => state.isMobile);
 
     return (
         <DndContext
@@ -90,20 +90,44 @@ export const HeroScene: React.FC = () => {
             onDragStart={handleDragStart}
             onDragEnd={handleDragEnd}
         >
-            <div id="hero-scene-root" style={{ width: '1920px', height: '1080px', background: '#000', position: 'absolute', top: 0, left: 0, overflow: 'hidden', zIndex: 1000 }}>
+            <div
+                id="hero-scene-root"
+                style={{
+                    width: isMobile ? '100%' : '1920px',
+                    height: isMobile ? '100%' : '1080px',
+                    background: '#000',
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    overflow: 'hidden',
+                    pointerEvents: 'auto',
+                }}
+            >
                 <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     style={{
-                        width: '1920px', height: '1080px',
+                        width: isMobile ? '100%' : '1920px',
+                        height: isMobile ? '100%' : '1080px',
                         backgroundImage: `url("${AssetsMap.BACKGROUNDS.HEROES_HALL}")`,
-                        backgroundSize: 'cover', backgroundPosition: 'center',
-                        display: 'flex', flexDirection: 'column', overflow: 'hidden',
-                        position: 'relative'
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        overflow: 'hidden',
+                        position: 'relative',
                     }}
                 >
-                    <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.3)', pointerEvents: 'none', zIndex: 1 }} />
-                    <HeroSceneHeader activeTab={activeTab} setActiveTab={setActiveTab} onExit={goToMainMenu} />
+                    <div
+                        style={{
+                            position: 'absolute',
+                            inset: 0,
+                            background: 'rgba(0,0,0,0.3)',
+                            pointerEvents: 'none',
+                            zIndex: 1,
+                        }}
+                    />
+                    <HeroSceneHeader activeTab={activeTab} setActiveTab={setActiveTab} />
 
                     <div style={{ flex: 1, position: 'relative' }}>
                         <AnimatePresence mode="wait">
@@ -135,7 +159,9 @@ export const HeroScene: React.FC = () => {
                                     unequipItem={unequipItem}
                                     addFloatingText={addFloatingText}
                                     heroAction={heroAction}
-                                    setGlobalHoveredItem={(id: string | null, x: number, y: number) => setGlobalHoveredItem(id ? { id, x, y } : null)}
+                                    setGlobalHoveredItem={(id: string | null, x: number, y: number) =>
+                                        setGlobalHoveredItem(id ? { id, x, y } : null)
+                                    }
                                     setDevModal={setDevModal}
                                 />
                             ) : activeTab === 'TALENTS' ? (
@@ -144,26 +170,40 @@ export const HeroScene: React.FC = () => {
                                 <div style={{ color: '#fff' }}>Таланты в разработке...</div>
                             )}
                         </AnimatePresence>
-                        
+
                         {/* [TUTORIAL] Simple hint for first-time users */}
                         {activeTab === 'LIST' && ownedHeroes.length === 1 && (
                             <motion.div
-                                initial={{ opacity: 0, y: 20 }}
+                                initial={{ opacity: 0, y: -10 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 style={{
-                                    position: 'absolute', bottom: '40px', left: '50%', transform: 'translateX(-50%)',
-                                    background: 'rgba(0,0,0,0.85)', border: '2px solid #f0c040', borderRadius: '15px',
-                                    padding: '15px 30px', color: '#f0c040', fontFamily: "'Cinzel', serif",
-                                    fontSize: '18px', zIndex: 2000, textAlign: 'center', pointerEvents: 'none'
+                                    position: 'absolute',
+                                    top: '25px',
+                                    left: '50%',
+                                    transform: 'translateX(-50%)',
+                                    background: 'rgba(20, 15, 10, 0.9)',
+                                    border: '1px solid rgba(240, 192, 64, 0.5)',
+                                    borderRadius: '8px',
+                                    padding: '6px 20px',
+                                    color: '#f0c040',
+                                    fontFamily: "'Cinzel', serif",
+                                    fontSize: '14px',
+                                    zIndex: 2000,
+                                    textAlign: 'center',
+                                    pointerEvents: 'none',
+                                    boxShadow: '0 4px 10px rgba(0,0,0,0.5)',
+                                    whiteSpace: 'nowrap',
                                 }}
                             >
-                                ☝️ ВЫБЕРИТЕ ГЕРОЯ, ЧТОБЫ УПРАВЛЯТЬ ЕГО СНАРЯЖЕНИЕМ
+                                👇 ВЫБЕРИТЕ ГЕРОЯ, ЧТОБЫ УПРАВЛЯТЬ ЕГО СНАРЯЖЕНИЕМ
                             </motion.div>
                         )}
                     </div>
 
                     <AnimatePresence>
-                        {tooltipHero && <HeroTooltip hero={tooltipHero} mousePos={mousePos} rarityColors={rarityColors} />}
+                        {tooltipHero && (
+                            <HeroTooltip hero={tooltipHero} mousePos={mousePos} rarityColors={rarityColors} />
+                        )}
 
                         {viewingHero && (
                             <HeroDetailsModal
@@ -203,6 +243,45 @@ export const HeroScene: React.FC = () => {
                 heroEquipment={heroEquipment}
                 selectedHeroId={selectedHeroId || 'panda'}
             />
+
+            {/* --- КНОПКА ВЫХОДА (СПРАВА ВНИЗУ) --- */}
+            <motion.button
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                whileHover={{ scale: 1.05, filter: 'brightness(1.2)' }}
+                whileTap={{ scale: 0.95 }}
+                onClick={goToMainMenu}
+                style={{
+                    position: 'absolute',
+                    bottom: '40px',
+                    right: '40px',
+                    background: 'rgba(20, 15, 10, 0.8)',
+                    border: '2px solid #f0c040',
+                    borderRadius: '12px',
+                    padding: '12px 24px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px',
+                    cursor: 'pointer',
+                    zIndex: 2000,
+                    boxShadow: '0 5px 15px rgba(0,0,0,0.5), inset 0 0 10px rgba(240,192,64,0.2)',
+                    pointerEvents: 'auto',
+                }}
+            >
+                <img src={AssetsMap.UI.ICON_EXIT} style={{ width: '40px', height: '40px' }} alt="" />
+                <span
+                    style={{
+                        color: '#f0c040',
+                        fontSize: '22px',
+                        fontWeight: 900,
+                        fontFamily: "'Cinzel', serif",
+                        textShadow: '0 2px 4px #000',
+                        letterSpacing: '2px',
+                    }}
+                >
+                    ВЫХОД
+                </span>
+            </motion.button>
 
             <UnderDevelopmentModal
                 isOpen={devModal.isOpen}

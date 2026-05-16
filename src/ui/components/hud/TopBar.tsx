@@ -19,31 +19,39 @@ export const TopBar: React.FC<TopBarProps> = ({ onOpenWindow, mode }) => {
                 onClick={() => onOpenWindow('PROFILE')}
             >
                 <img src={AssetsMap.UI.PANEL_PROFILE} className="w-full h-full object-contain" alt="" />
-                
+
                 {/* АВАТАР - сдвигаем внутрь рамки */}
                 <div className="absolute top-[28px] left-[42px] z-10">
-                    <AvatarFrame 
-                        avatarFilename={avatar.replace('.png','')} 
-                        frameFilename={(useGameStore.getState().frame || 'Рамка 1.png').replace('.png','')} 
-                        size={92} 
+                    <AvatarFrame
+                        avatarFilename={avatar.replace('.png', '')}
+                        frameFilename={(useGameStore.getState().frame || 'Рамка 1.png').replace('.png', '')}
+                        size={92}
                     />
                 </div>
 
                 <div className="absolute top-[35px] left-[155px] flex flex-col gap-0">
-                    <h1 className="font-header text-[28px] font-black text-white leading-tight uppercase tracking-tight truncate w-[180px]" style={textShadow}>
-                        {vkUser?.firstName ? `${vkUser.firstName} ${vkUser.lastName}` : "ИГРОК ВК"}
+                    <h1
+                        className="font-header text-[28px] font-black text-white leading-tight uppercase tracking-tight truncate w-[180px]"
+                        style={textShadow}
+                    >
+                        {vkUser?.firstName ? `${vkUser.firstName} ${vkUser.lastName}` : 'ИГРОК ВК'}
                     </h1>
                     <span className="font-ui text-amber-400 text-[11px] font-black tracking-[0.2em] uppercase">
-                        {title || "МАСТЕР АРЕНЫ"}
+                        {title || 'МАСТЕР АРЕНЫ'}
                     </span>
                     <div className="mt-3 w-[180px] h-3 bg-black/80 rounded-full border border-white/10 overflow-hidden relative">
-                        <div className="h-full bg-gradient-to-r from-amber-600 via-amber-400 to-amber-600 animate-shimmer" style={{ width: `${exp}%` }} />
+                        <div
+                            className="h-full bg-gradient-to-r from-amber-600 via-amber-400 to-amber-600 animate-shimmer"
+                            style={{ width: `${exp}%` }}
+                        />
                     </div>
                 </div>
-                
+
                 {/* УРОВЕНЬ */}
                 <div className="absolute top-[50px] left-[320px] w-10 h-10 flex items-center justify-center">
-                    <span className="text-2xl font-black text-white italic drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]">{level}</span>
+                    <span className="text-2xl font-black text-white italic drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]">
+                        {level}
+                    </span>
                 </div>
             </div>
         );
@@ -55,14 +63,20 @@ export const TopBar: React.FC<TopBarProps> = ({ onOpenWindow, mode }) => {
                 {[
                     { img: AssetsMap.UI.BAR_ENERGY, val: `${energy}/50`, color: 'text-white' },
                     { img: AssetsMap.UI.BAR_GOLD, val: gold.toLocaleString(), color: 'text-amber-400' },
-                    { img: AssetsMap.UI.BAR_GEM, val: crystals, color: 'text-purple-400' }
+                    { img: AssetsMap.UI.BAR_GEM, val: crystals, color: 'text-purple-400' },
                 ].map((item, i) => (
-                    <div key={i} className="relative w-[180px] h-[55px] flex items-center group transition-all hover:brightness-125">
+                    <div
+                        key={i}
+                        className="relative w-[180px] h-[55px] flex items-center group transition-all hover:brightness-125"
+                    >
                         <img src={item.img} className="absolute inset-0 w-full h-full object-contain" alt="" />
-                        
+
                         {/* ЗНАЧЕНИЕ: Увеличенное пространство и центровка */}
                         <div className="absolute inset-0 flex items-center justify-center pl-10 pr-6">
-                            <span className={`font-ui font-black text-[16px] ${item.color} tracking-tight drop-shadow-lg truncate`} style={textShadow}>
+                            <span
+                                className={`font-ui font-black text-[16px] ${item.color} tracking-tight drop-shadow-lg truncate`}
+                                style={textShadow}
+                            >
                                 {item.val}
                             </span>
                         </div>

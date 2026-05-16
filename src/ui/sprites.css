@@ -1,4 +1,3 @@
-
 /* Sprite Sheets Mapping */
 
 .sprite-icon {
@@ -7,9 +6,8 @@
     background-size: auto;
     image-rendering: auto; /* Smoother rendering for high-res assets */
     vertical-align: middle;
-    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.8));
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.8));
 }
-
 
 /* Stats Sheet (8 icons: Attack, Defense, Speed, HP, Accuracy, Armor Pen, Lifesteal, Crit) */
 /* Grid 4x2 assumed */
@@ -20,14 +18,30 @@
     background-size: 400% 200%; /* 4 columns, 2 rows */
 }
 
-.stat-attack { background-position: 0% 0%; }
-.stat-defense { background-position: 33.33% 0%; }
-.stat-speed { background-position: 66.66% 0%; }
-.stat-hp { background-position: 100% 0%; }
-.stat-accuracy { background-position: 0% 100%; }
-.stat-penetration { background-position: 33.33% 100%; }
-.stat-lifesteal { background-position: 66.66% 100%; }
-.stat-crit { background-position: 100% 100%; }
+.stat-attack {
+    background-position: 0% 0%;
+}
+.stat-defense {
+    background-position: 33.33% 0%;
+}
+.stat-speed {
+    background-position: 66.66% 0%;
+}
+.stat-hp {
+    background-position: 100% 0%;
+}
+.stat-accuracy {
+    background-position: 0% 100%;
+}
+.stat-penetration {
+    background-position: 33.33% 100%;
+}
+.stat-lifesteal {
+    background-position: 66.66% 100%;
+}
+.stat-crit {
+    background-position: 100% 100%;
+}
 
 /* Talents Sheet (12 icons, grid 4x3) */
 .sprite-talent {
@@ -36,48 +50,110 @@
     background-image: url('/assets/images/sheets/talents_sheet.webp');
     background-size: 400% 300%;
 }
-.talent-1 { background-position: 0% 0%; }
-.talent-2 { background-position: 33.33% 0%; }
-.talent-3 { background-position: 66.66% 0%; }
-.talent-4 { background-position: 100% 0%; }
-.talent-5 { background-position: 0% 50%; }
-.talent-6 { background-position: 33.33% 50%; }
-.talent-7 { background-position: 66.66% 50%; }
-.talent-8 { background-position: 100% 50%; }
-.talent-9 { background-position: 0% 100%; }
-.talent-10 { background-position: 33.33% 100%; }
-.talent-11 { background-position: 66.66% 100%; }
-.talent-12 { background-position: 100% 100%; }
+.talent-1 {
+    background-position: 0% 0%;
+}
+.talent-2 {
+    background-position: 33.33% 0%;
+}
+.talent-3 {
+    background-position: 66.66% 0%;
+}
+.talent-4 {
+    background-position: 100% 0%;
+}
+.talent-5 {
+    background-position: 0% 50%;
+}
+.talent-6 {
+    background-position: 33.33% 50%;
+}
+.talent-7 {
+    background-position: 66.66% 50%;
+}
+.talent-8 {
+    background-position: 100% 50%;
+}
+.talent-9 {
+    background-position: 0% 100%;
+}
+.talent-10 {
+    background-position: 33.33% 100%;
+}
+.talent-11 {
+    background-position: 66.66% 100%;
+}
+.talent-12 {
+    background-position: 100% 100%;
+}
 
 /* Equipment Master Sheets (16 icons each, grid 4x4) */
 .sprite-item {
     width: 100px;
     height: 100px;
     background-size: 400% 400%;
-    filter: drop-shadow(0 5px 15px rgba(0,0,0,0.9));
+    filter: drop-shadow(0 5px 15px rgba(0, 0, 0, 0.9));
 }
 
-.sprite-helm { background-image: url('/assets/images/sheets/helms_sheet.webp'); }
-.sprite-weapon { background-image: url('/assets/images/sheets/weapons_sheet.webp'); }
-.sprite-armor { background-image: url('/assets/images/sheets/armor_shields_sheet.webp'); }
+.sprite-helm {
+    background-image: url('/assets/images/items/helms/helms_sheet.webp');
+}
+.sprite-weapon {
+    background-image: url('/assets/images/items/weapons/weapons_sheet.webp');
+}
+.sprite-armor {
+    background-image: url('/assets/images/sheets/armor_shields_sheet.webp');
+}
 
 /* Positional helpers for 4x4 grid */
-.pos-1 { background-position: 0% 0%; }
-.pos-2 { background-position: 33.33% 0%; }
-.pos-3 { background-position: 66.66% 0%; }
-.pos-4 { background-position: 100% 0%; }
-.pos-5 { background-position: 0% 33.33%; }
-.pos-6 { background-position: 33.33% 33.33%; }
-.pos-7 { background-position: 66.66% 33.33%; }
-.pos-8 { background-position: 100% 33.33%; }
-.pos-9 { background-position: 0% 66.66%; }
-.pos-10 { background-position: 33.33% 66.66%; }
-.pos-11 { background-position: 66.66% 66.66%; }
-.pos-12 { background-position: 100% 66.66%; }
-.pos-13 { background-position: 0% 100%; }
-.pos-14 { background-position: 33.33% 100%; }
-.pos-15 { background-position: 66.66% 100%; }
-.pos-16 { background-position: 100% 100%; }
+.pos-1 {
+    background-position: 0% 0%;
+}
+.pos-2 {
+    background-position: 33.33% 0%;
+}
+.pos-3 {
+    background-position: 66.66% 0%;
+}
+.pos-4 {
+    background-position: 100% 0%;
+}
+.pos-5 {
+    background-position: 0% 33.33%;
+}
+.pos-6 {
+    background-position: 33.33% 33.33%;
+}
+.pos-7 {
+    background-position: 66.66% 33.33%;
+}
+.pos-8 {
+    background-position: 100% 33.33%;
+}
+.pos-9 {
+    background-position: 0% 66.66%;
+}
+.pos-10 {
+    background-position: 33.33% 66.66%;
+}
+.pos-11 {
+    background-position: 66.66% 66.66%;
+}
+.pos-12 {
+    background-position: 100% 66.66%;
+}
+.pos-13 {
+    background-position: 0% 100%;
+}
+.pos-14 {
+    background-position: 33.33% 100%;
+}
+.pos-15 {
+    background-position: 66.66% 100%;
+}
+.pos-16 {
+    background-position: 100% 100%;
+}
 
 /* Avatar Medallions (9 icons, grid 3x3) */
 .sprite-avatar {
@@ -87,15 +163,33 @@
     background-size: 300% 300%;
 }
 
-.avatar-pos-1 { background-position: 0% 0%; }
-.avatar-pos-2 { background-position: 50% 0%; }
-.avatar-pos-3 { background-position: 100% 0%; }
-.avatar-pos-4 { background-position: 0% 50%; }
-.avatar-pos-5 { background-position: 50% 50%; }
-.avatar-pos-6 { background-position: 100% 50%; }
-.avatar-pos-7 { background-position: 0% 100%; }
-.avatar-pos-8 { background-position: 50% 100%; }
-.avatar-pos-9 { background-position: 100% 100%; }
+.avatar-pos-1 {
+    background-position: 0% 0%;
+}
+.avatar-pos-2 {
+    background-position: 50% 0%;
+}
+.avatar-pos-3 {
+    background-position: 100% 0%;
+}
+.avatar-pos-4 {
+    background-position: 0% 50%;
+}
+.avatar-pos-5 {
+    background-position: 50% 50%;
+}
+.avatar-pos-6 {
+    background-position: 100% 50%;
+}
+.avatar-pos-7 {
+    background-position: 0% 100%;
+}
+.avatar-pos-8 {
+    background-position: 50% 100%;
+}
+.avatar-pos-9 {
+    background-position: 100% 100%;
+}
 
 /* Clans Sheet (8 icons, grid 4x2) */
 .sprite-clan {
@@ -107,20 +201,39 @@
     filter: brightness(1.2);
 }
 
-.clan-lion { background-image: url('/assets/images/ui/clan_lion.png'); }
-.clan-bear { background-image: url('/assets/images/ui/clan_bear.png'); }
-.clan-eagle { background-image: url('/assets/images/ui/clan_eagle.png'); }
-.clan-wolf { background-image: url('/assets/images/ui/clan_wolf.png'); }
+.clan-lion {
+    background-image: url('/assets/images/ui/clan_lion.png');
+}
+.clan-bear {
+    background-image: url('/assets/images/ui/clan_bear.png');
+}
+.clan-eagle {
+    background-image: url('/assets/images/ui/clan_eagle.png');
+}
+.clan-wolf {
+    background-image: url('/assets/images/ui/clan_wolf.png');
+}
 
 /* Fallback for others from the old sheet (Fox, Tiger, Dragon, Owl) */
-.clan-fox, .clan-tiger, .clan-dragon, .clan-owl {
+.clan-fox,
+.clan-tiger,
+.clan-dragon,
+.clan-owl {
     background-image: url('/assets/images/sheets/clans_sheet.png');
     background-size: 400% 400%; /* Fix squashing */
 }
-.clan-fox { background-position: 0% 50%; }
-.clan-tiger { background-position: 33.33% 50%; }
-.clan-dragon { background-position: 66.66% 50%; }
-.clan-owl { background-position: 100% 50%; }
+.clan-fox {
+    background-position: 0% 50%;
+}
+.clan-tiger {
+    background-position: 33.33% 50%;
+}
+.clan-dragon {
+    background-position: 66.66% 50%;
+}
+.clan-owl {
+    background-position: 100% 50%;
+}
 
 /* Misc UI Icons */
 .sprite-gift {
@@ -135,4 +248,3 @@
     background-repeat: no-repeat;
     mix-blend-mode: screen;
 }
-

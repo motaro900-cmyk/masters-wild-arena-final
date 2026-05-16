@@ -27,5 +27,5 @@ export const Layout = {
         const app = PixiApp.getInstance().getApp();
         container.x = app.screen.width / 2;
         container.y = app.screen.height / 2;
-    }
+    },
 };

@@ -33,7 +33,7 @@ export class InventoryScreen extends PIXI.Container {
 
         const title = new PIXI.Text({
             text: 'ИНВЕНТАРЬ',
-            style: { ...headerTextStyle, fontSize: 36, fill: '#ffffff' }
+            style: { ...headerTextStyle, fontSize: 36, fill: '#ffffff' },
         });
         title.anchor.set(0.5, 0);
         title.position.set(640, SAFE_MARGIN);
@@ -46,24 +46,24 @@ export class InventoryScreen extends PIXI.Container {
             const isActive = index === 0; // Пока активна только первая
             const tabBg = new PIXI.Graphics();
             const bgColor = isActive ? 0xffcc00 : 0x2a2f45;
-            
+
             tabBg.roundRect(0, 0, 200, 50, 12).fill(bgColor);
             tabBg.position.set(300 + index * 220, 100);
 
             const tabText = new PIXI.Text({
                 text: tab,
-                style: { 
-                    ...baseTextStyle, 
-                    fontSize: 20, 
-                    fill: isActive ? '#1a1a1a' : '#ffffff', 
+                style: {
+                    ...baseTextStyle,
+                    fontSize: 20,
+                    fill: isActive ? '#1a1a1a' : '#ffffff',
                     stroke: isActive ? { width: 0 } : { color: '#000000', width: 5 },
-                    dropShadow: isActive ? { alpha: 0 } : baseTextStyle.dropShadow 
-                }
+                    dropShadow: isActive ? { alpha: 0 } : baseTextStyle.dropShadow,
+                },
             });
             tabText.anchor.set(0.5);
             tabText.position.set(100, 25);
             tabBg.addChild(tabText);
-            
+
             makeDraggable(tabBg, `inv_tab_${index}`);
             this.screenContainer.addChild(tabBg);
         });
@@ -75,20 +75,25 @@ export class InventoryScreen extends PIXI.Container {
 
         // 4. Сетка инвентаря
         const slotBgTex = createGradientTexture(140, 160, ['#2a2b36', '#0f1016']);
-        
+
         const rarityColors: Record<string, number> = {
-            'COMMON': 0xaaaaaa,
-            'RARE': 0x00aaff,
-            'EPIC': 0xcc00ff,
-            'LEGENDARY': 0xffaa00
-        };
-        
-        const itemEmojis: Record<string, string> = {
-            'flip_flop': '🩴', 'pan': '🍳', 'dumbell': '🏋️', 
-            'shovel': '🪜', 'fish': '🐟', 'stick': '🦯', 'tapok': '🩴'
+            COMMON: 0xaaaaaa,
+            RARE: 0x00aaff,
+            EPIC: 0xcc00ff,
+            LEGENDARY: 0xffaa00,
         };
 
-        store.inventory.forEach((item, index) => {
+        const itemEmojis: Record<string, string> = {
+            flip_flop: '🩴',
+            pan: '🍳',
+            dumbell: '🏋️',
+            shovel: '🪜',
+            fish: '🐟',
+            stick: '🦯',
+            tapok: '🩴',
+        };
+
+        store.inventory.forEach((item: any, index: number) => {
             const weaponDef = WEAPONS_DB[item.id];
             if (!weaponDef) return;
 
@@ -105,19 +110,30 @@ export class InventoryScreen extends PIXI.Container {
             bg.roundRect(4, 4, 140, 160, 16).fill({ color: 0x000000, alpha: 0.4 });
             // Фон
             bg.roundRect(0, 0, 140, 160, 16).fill({ texture: slotBgTex });
-            
+
             // Highlight
             bg.roundRect(2, 2, 136, 4, 14).fill({ color: 0xffffff, alpha: 0.1 });
-            
-            // Рамка (если надето - зеленая, иначе цвет редкости)
+
+            // Рамка (если надето - ярко-зеленая с эффектом свечения, иначе цвет редкости)
             const color = rarityColors[weaponDef.rarity] || 0xffffff;
-            bg.roundRect(0, 0, 140, 160, 16).stroke({ width: 6, color: isEquipped ? 0x00ff00 : color });
+            const isEquippedSlot = isEquipped;
+
+            bg.roundRect(0, 0, 140, 160, 16).stroke({
+                width: isEquippedSlot ? 8 : 4,
+                color: isEquippedSlot ? 0x00ff88 : color,
+                alpha: 1,
+            });
+
+            if (isEquippedSlot) {
+                // Внутреннее свечение для надетых
+                bg.roundRect(4, 4, 132, 152, 12).stroke({ width: 2, color: 0x00ff88, alpha: 0.3 });
+            }
             slot.addChild(bg);
 
             // Эмодзи предмета
             const emoji = new PIXI.Text({
                 text: itemEmojis[weaponDef.id] || '🎁',
-                style: { fontSize: 64, dropShadow: { color: '#000000', alpha: 1, blur: 4, distance: 4 } }
+                style: { fontSize: 64, dropShadow: { color: '#000000', alpha: 1, blur: 4, distance: 4 } },
             });
             emoji.anchor.set(0.5);
             emoji.position.set(70, 70);
@@ -126,27 +142,36 @@ export class InventoryScreen extends PIXI.Container {
             // Название
             const nameText = new PIXI.Text({
                 text: weaponDef.name,
-                style: { ...baseTextStyle, fontSize: 14, align: 'center', wordWrap: true, wordWrapWidth: 130 }
+                style: { ...baseTextStyle, fontSize: 14, align: 'center', wordWrap: true, wordWrapWidth: 130 },
             });
             nameText.anchor.set(0.5, 0);
             nameText.position.set(70, 110);
             slot.addChild(nameText);
-            
+
             // Уровень
             const lvlText = new PIXI.Text({
                 text: `Ур. ${item.level}`,
-                style: { ...baseTextStyle, fontSize: 12, fill: '#888899', dropShadow: { alpha: 0 } }
+                style: { ...baseTextStyle, fontSize: 12, fill: '#888899', dropShadow: { alpha: 0 } },
             });
             lvlText.anchor.set(0.5, 0);
             lvlText.position.set(70, 135);
             slot.addChild(lvlText);
 
             // Плашка "НАДЕТО"
-            if (isEquipped) {
-                const eqBadge = new PIXI.Graphics().roundRect(35, -10, 70, 20, 10).fill(0x00ff00);
+            if (isEquippedSlot) {
+                const eqBadge = new PIXI.Graphics()
+                    .roundRect(20, -12, 100, 24, 12)
+                    .fill(0x00ff88)
+                    .stroke({ width: 2, color: 0xffffff });
                 const eqText = new PIXI.Text({
-                    text: 'НАДЕТО',
-                    style: { ...baseTextStyle, fontSize: 10, fill: '#1a1a1a', stroke: { width: 0 }, dropShadow: { alpha: 0 } }
+                    text: 'ЭКИПИРОВАНО',
+                    style: {
+                        ...baseTextStyle,
+                        fontSize: 10,
+                        fill: '#000000',
+                        fontWeight: 'bold',
+                        dropShadow: { alpha: 0 },
+                    },
                 });
                 eqText.anchor.set(0.5);
                 eqText.position.set(70, 0);

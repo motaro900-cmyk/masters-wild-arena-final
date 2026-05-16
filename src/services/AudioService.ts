@@ -10,7 +10,16 @@ class AudioService {
     private sfxVolume: number = 0.85;
 
     constructor() {
-        // Инициализация при создании
+        // [BUGFIX] Исправление бага игры музыки при сворачивании приложения
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                console.log('🤫 App hidden - Muting audio');
+                Howler.mute(true);
+            } else {
+                console.log('🔊 App visible - Unmuting audio');
+                Howler.mute(false);
+            }
+        });
     }
 
     /**
@@ -19,7 +28,7 @@ class AudioService {
     public resumeContext() {
         if (Howler.ctx && Howler.ctx.state === 'suspended') {
             Howler.ctx.resume().then(() => {
-                console.log("🔊 AudioContext Resumed Successfully");
+                console.log('🔊 AudioContext Resumed Successfully');
             });
         }
     }
@@ -38,7 +47,7 @@ class AudioService {
             loop: true,
             volume: this.musicVolume,
             html5: true,
-            onloaderror: (_id, err) => console.warn(`❌ Music Load Error: ${url}`, err)
+            onloaderror: (_id, err) => console.warn(`❌ Music Load Error: ${url}`, err),
         });
 
         this.music.play();
@@ -49,7 +58,7 @@ class AudioService {
      */
     public stopAllMusic() {
         if (this.music) {
-            console.log("⏹️ AudioService: Stopping and unloading music");
+            console.log('⏹️ AudioService: Stopping and unloading music');
             this.music.stop();
             this.music.unload();
             this.music = null;
@@ -60,9 +69,9 @@ class AudioService {
      * Запуск случайного плейлиста
      */
     public playPlaylist(urls: string[]) {
-        console.log("📁 AudioService: Setting up playlist with", urls.length, "tracks");
+        console.log('📁 AudioService: Setting up playlist with', urls.length, 'tracks');
         if (urls.length === 0) {
-            console.error("❌ AudioService: Playlist is empty!");
+            console.error('❌ AudioService: Playlist is empty!');
             return;
         }
         // Перемешиваем список
@@ -120,17 +129,19 @@ class AudioService {
      * Получить название текущего трека
      */
     public getCurrentTrackName(): string {
-        if (this.currentTrackIndex === -1 || this.playlist.length === 0) return "Тишина";
+        if (this.currentTrackIndex === -1 || this.playlist.length === 0) return 'Тишина';
         const url = this.playlist[this.currentTrackIndex];
-        const fileName = url.split('/').pop() || "";
+        const fileName = url.split('/').pop() || '';
         return fileName.replace('.mp3', '').replace(/_/g, ' ');
     }
 
     private playNextInPlaylist() {
         if (this.playlist.length === 0) return;
-        
+
         const url = this.playlist[this.currentTrackIndex];
-        console.log(`🎵 AudioService: Attempting to play [${this.currentTrackIndex + 1}/${this.playlist.length}]: ${url}`);
+        console.log(
+            `🎵 AudioService: Attempting to play [${this.currentTrackIndex + 1}/${this.playlist.length}]: ${url}`,
+        );
 
         this.stopAllMusic();
 
@@ -155,7 +166,7 @@ class AudioService {
             onplayerror: (_id, err) => {
                 console.error(`❌ AudioService: Play Error for ${url}:`, err);
                 this.resumeContext();
-            }
+            },
         });
 
         this.music.play();
@@ -166,12 +177,12 @@ class AudioService {
      */
     public playSFX(url: string) {
         let sound = this.sfx.get(url);
-        
+
         if (!sound) {
             sound = new Howl({
                 src: [url],
                 volume: this.sfxVolume,
-                onloaderror: (_id, err) => console.warn(`❌ SFX Load Error: ${url}`, err)
+                onloaderror: (_id, err) => console.warn(`❌ SFX Load Error: ${url}`, err),
             });
             this.sfx.set(url, sound);
         }
@@ -196,7 +207,7 @@ class AudioService {
      */
     public setSFXVolume(volume: number) {
         this.sfxVolume = volume;
-        this.sfx.forEach(sound => sound.volume(volume));
+        this.sfx.forEach((sound) => sound.volume(volume));
     }
 }
 

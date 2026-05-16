@@ -1,7 +1,6 @@
 import React from 'react';
 import { StudioTheme } from './StudioTheme';
 
-
 /**
  * STUDIO LAYOUT SHELL
  * Grid-based layout for the professional game editor.
@@ -14,21 +13,21 @@ export const StudioLayout: React.FC<{
     assets?: React.ReactNode;
 }> = ({ topBar, hierarchy, viewport, inspector, assets }) => {
     return (
-        <div 
+        <div
             className="fixed inset-0 w-full h-full flex flex-col overflow-hidden select-none pointer-events-auto"
-            style={{ 
+            style={{
                 backgroundColor: StudioTheme.colors.bg_primary,
                 fontFamily: StudioTheme.font.ui,
                 color: StudioTheme.colors.text_primary,
-                zIndex: 100000 
+                zIndex: 100000,
             }}
         >
             {/* ── TOP BAR (Figma Style) ───────────────────────────────────── */}
-            <div 
+            <div
                 className="h-12 w-full flex items-center px-4 border-b shrink-0"
-                style={{ 
+                style={{
                     backgroundColor: StudioTheme.colors.bg_secondary,
-                    borderColor: StudioTheme.colors.border 
+                    borderColor: StudioTheme.colors.border,
                 }}
             >
                 {topBar}
@@ -36,29 +35,26 @@ export const StudioLayout: React.FC<{
 
             {/* ── MIDDLE AREA (Hierarchy | Viewport | Inspector) ───────────── */}
             <div className="flex-1 flex min-h-0 overflow-hidden">
-                
                 {/* LEFT: HIERARCHY */}
-                <div 
+                <div
                     className="w-64 border-r flex flex-col shrink-0"
-                    style={{ 
+                    style={{
                         backgroundColor: StudioTheme.colors.bg_secondary,
-                        borderColor: StudioTheme.colors.border 
+                        borderColor: StudioTheme.colors.border,
                     }}
                 >
                     {hierarchy}
                 </div>
 
                 {/* CENTER: VIEWPORT */}
-                <div className="flex-1 relative bg-[#0a0a0a] overflow-hidden">
-                    {viewport}
-                </div>
+                <div className="flex-1 relative bg-[#0a0a0a] overflow-hidden">{viewport}</div>
 
                 {/* RIGHT: INSPECTOR */}
-                <div 
+                <div
                     className="w-72 border-l flex flex-col shrink-0"
-                    style={{ 
+                    style={{
                         backgroundColor: StudioTheme.colors.bg_secondary,
-                        borderColor: StudioTheme.colors.border 
+                        borderColor: StudioTheme.colors.border,
                     }}
                 >
                     {inspector}
@@ -66,11 +62,11 @@ export const StudioLayout: React.FC<{
             </div>
 
             {/* ── BOTTOM AREA (Asset Browser) ─────────────────────────────── */}
-            <div 
+            <div
                 className="h-64 w-full border-t flex flex-col shrink-0"
-                style={{ 
+                style={{
                     backgroundColor: StudioTheme.colors.bg_secondary,
-                    borderColor: StudioTheme.colors.border 
+                    borderColor: StudioTheme.colors.border,
                 }}
             >
                 {assets}

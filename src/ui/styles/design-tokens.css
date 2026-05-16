@@ -4,61 +4,76 @@
 */
 
 :root {
-  /* Typography */
-  --font-fantasy: 'Cinzel', 'Palatino Linotype', serif;
-  --font-ui: 'Nunito', 'Segoe UI', sans-serif;
+    /* Typography */
+    --font-fantasy: 'Cinzel', 'Palatino Linotype', serif;
+    --font-ui: 'Nunito', 'Segoe UI', sans-serif;
 
-  /* Colors: Panels (Dark, semi-transparent) */
-  --panel-dark: rgba(15, 10, 5, 0.88);
-  --panel-darker: rgba(8, 5, 2, 0.92);
-  --panel-parchment: rgba(235, 215, 155, 0.93);
+    /* Colors: Panels (Dark, semi-transparent) */
+    --panel-dark: rgba(15, 10, 5, 0.88);
+    --panel-darker: rgba(8, 5, 2, 0.92);
+    --panel-parchment: rgba(235, 215, 155, 0.93);
 
-  /* Colors: Borders (Gold) */
-  --border-gold-dim: rgba(200, 160, 60, 0.35);
-  --border-gold-mid: rgba(200, 160, 60, 0.55);
-  --border-gold-bright: rgba(200, 160, 60, 0.80);
+    /* Colors: Borders (Gold) */
+    --border-gold-dim: rgba(200, 160, 60, 0.35);
+    --border-gold-mid: rgba(200, 160, 60, 0.55);
+    --border-gold-bright: rgba(200, 160, 60, 0.8);
 
-  /* Colors: Text */
-  --text-gold: #f0c040;
-  --text-parchment: #e8d8a8;
-  --text-muted: #a08860;
-  --text-on-parchment: #3d2a10;
+    /* Colors: Text */
+    --text-gold: #f0c040;
+    --text-parchment: #e8d8a8;
+    --text-muted: #a08860;
+    --text-on-parchment: #3d2a10;
 
-  /* Colors: Accents */
-  --accent-crimson: #c03030;
-  --accent-blue: #30a0f0;
-  --accent-purple: #9040d0;
+    /* Colors: Accents */
+    --accent-crimson: #c03030;
+    --accent-blue: #30a0f0;
+    --accent-purple: #9040d0;
 }
 
 /* --- Global Utilities --- */
-.font-header { font-family: var(--font-fantasy); }
-.font-body { font-family: var(--font-ui); }
+.font-header {
+    font-family: var(--font-fantasy);
+}
+.font-body {
+    font-family: var(--font-ui);
+}
 
 /* --- Animations --- */
 
 /* Battle Pass Shimmer */
 @keyframes bpShimmer {
-  0%   { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+    0% {
+        background-position: 200% 0;
+    }
+    100% {
+        background-position: -200% 0;
+    }
 }
 
 .animate-bp-shimmer {
-  background-size: 200% 100%;
-  animation: bpShimmer 2.5s linear infinite;
+    background-size: 200% 100%;
+    animation: bpShimmer 2.5s linear infinite;
 }
 
 /* Primary Button Pulse */
 @keyframes primaryPulse {
-  0%, 100% { 
-    box-shadow: 0 4px 20px rgba(180,30,30,0.55), 0 0 30px rgba(180,30,30,0.2), inset 0 1px 0 rgba(255,255,255,0.12); 
-    filter: brightness(1);
-  }
-  50% { 
-    box-shadow: 0 4px 28px rgba(180,30,30,0.75), 0 0 45px rgba(180,30,30,0.35), inset 0 1px 0 rgba(255,255,255,0.15); 
-    filter: brightness(1.1);
-  }
+    0%,
+    100% {
+        box-shadow:
+            0 4px 20px rgba(180, 30, 30, 0.55),
+            0 0 30px rgba(180, 30, 30, 0.2),
+            inset 0 1px 0 rgba(255, 255, 255, 0.12);
+        filter: brightness(1);
+    }
+    50% {
+        box-shadow:
+            0 4px 28px rgba(180, 30, 30, 0.75),
+            0 0 45px rgba(180, 30, 30, 0.35),
+            inset 0 1px 0 rgba(255, 255, 255, 0.15);
+        filter: brightness(1.1);
+    }
 }
 
 .animate-primary-pulse {
-  animation: primaryPulse 2s ease-in-out infinite;
+    animation: primaryPulse 2s ease-in-out infinite;
 }

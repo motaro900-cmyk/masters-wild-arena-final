@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useUIStore } from '../../store/useUIStore';
-import { useDebugStore } from '../../store/useDebugStore';
+import { useDebugStore } from '@store/useDebugStore';
 
 interface Props {
     id: string;
@@ -9,16 +9,16 @@ interface Props {
 
 export const EditableWidget: React.FC<Props> = ({ id, children }) => {
     const isEditMode = useDebugStore((state: any) => state.isEditorMode);
-    const element = useUIStore(state => state.elements[id]) as any;
-    const updateProps = useUIStore(state => (state as any).updateElementProps);
-    
-    const setSelected = useDebugStore(state => state.setSelected);
-    const selectedId = useDebugStore(state => state.selectedId);
+    const element = useUIStore((state) => state.elements[id]) as any;
+    const updateProps = useUIStore((state) => (state as any).updateElementProps);
+
+    const setSelected = useDebugStore((state: any) => state.setSelected);
+    const selectedId = useDebugStore((state: any) => state.selectedId);
 
     const [isDragging, setIsDragging] = useState(false);
     const [isEditingText, setIsEditingText] = useState(false);
     const [textValue, setTextValue] = useState('');
-    
+
     const widgetRef = useRef<HTMLDivElement>(null);
     const dragStart = useRef({ x: 0, y: 0, initialX: 0, initialY: 0 });
     const currentDragPos = useRef({ x: 0, y: 0 });
@@ -28,7 +28,7 @@ export const EditableWidget: React.FC<Props> = ({ id, children }) => {
     const handlePointerDown = (e: React.PointerEvent) => {
         if (!isEditMode || isEditingText) return;
         e.stopPropagation();
-        
+
         setSelected(id, { ...element, type: 'ui-widget' });
 
         setIsDragging(true);
@@ -36,7 +36,7 @@ export const EditableWidget: React.FC<Props> = ({ id, children }) => {
             x: e.clientX,
             y: e.clientY,
             initialX: element.x || 0,
-            initialY: element.y || 0
+            initialY: element.y || 0,
         };
         currentDragPos.current = { x: element.x || 0, y: element.y || 0 };
         (e.target as HTMLElement).setPointerCapture(e.pointerId);
@@ -44,7 +44,7 @@ export const EditableWidget: React.FC<Props> = ({ id, children }) => {
 
     const handlePointerMove = (e: React.PointerEvent) => {
         if (!isDragging || !isEditMode) return;
-        
+
         const wrapper = document.getElementById('game-wrapper') || document.body;
         const zoom = wrapper ? wrapper.getBoundingClientRect().width / 1920 : 1;
 
@@ -76,12 +76,14 @@ export const EditableWidget: React.FC<Props> = ({ id, children }) => {
         const getChildrenIds = (parentId: string): string[] => {
             const children = Object.values(allElements).filter((el: any) => el.parentId === parentId);
             let ids = children.map((c: any) => c.id);
-            children.forEach((c: any) => { ids = [...ids, ...getChildrenIds(c.id)]; });
+            children.forEach((c: any) => {
+                ids = [...ids, ...getChildrenIds(c.id)];
+            });
             return ids;
         };
 
         const childIds = getChildrenIds(id);
-        childIds.forEach(childId => {
+        childIds.forEach((childId) => {
             const childDOM = document.getElementById(childId);
             const childEl = allElements[childId];
             if (childDOM && childEl) {
@@ -99,7 +101,7 @@ export const EditableWidget: React.FC<Props> = ({ id, children }) => {
         // Сохраняем итоговую позицию в Zustand один раз при отпускании
         const newX = currentDragPos.current.x;
         const newY = currentDragPos.current.y;
-        
+
         const dx = newX - dragStart.current.initialX;
         const dy = newY - dragStart.current.initialY;
 
@@ -112,12 +114,14 @@ export const EditableWidget: React.FC<Props> = ({ id, children }) => {
             const getChildrenIds = (parentId: string): string[] => {
                 const children = Object.values(allElements).filter((el: any) => el.parentId === parentId);
                 let ids = children.map((c: any) => c.id);
-                children.forEach((c: any) => { ids = [...ids, ...getChildrenIds(c.id)]; });
+                children.forEach((c: any) => {
+                    ids = [...ids, ...getChildrenIds(c.id)];
+                });
                 return ids;
             };
 
             const childIds = getChildrenIds(id);
-            childIds.forEach(childId => {
+            childIds.forEach((childId) => {
                 const childEl = allElements[childId];
                 if (childEl) {
                     updateProps(childId, { x: childEl.x + dx, y: childEl.y + dy });
@@ -171,17 +175,17 @@ export const EditableWidget: React.FC<Props> = ({ id, children }) => {
         zIndex: element.zIndex ?? 50,
         color: element.color || element.tint,
         touchAction: 'none',
-        pointerEvents: isEditMode ? 'auto' : 'none'
+        pointerEvents: isEditMode ? 'auto' : 'none',
     };
 
     return (
-        <div 
+        <div
             id={id}
             ref={widgetRef}
-            style={dragStyle} 
-            onPointerDown={handlePointerDown} 
-            onPointerMove={handlePointerMove} 
-            onPointerUp={handlePointerUp} 
+            style={dragStyle}
+            onPointerDown={handlePointerDown}
+            onPointerMove={handlePointerMove}
+            onPointerUp={handlePointerUp}
             onPointerCancel={handlePointerUp}
             onWheel={handleWheel}
             onDoubleClick={handleDoubleClick}
@@ -189,8 +193,8 @@ export const EditableWidget: React.FC<Props> = ({ id, children }) => {
         >
             <div className={isEditMode && !isEditingText ? 'pointer-events-none' : 'pointer-events-auto'}>
                 {isEditingText ? (
-                    <input 
-                        type="text" 
+                    <input
+                        type="text"
                         autoFocus
                         value={textValue}
                         onChange={(e) => setTextValue(e.target.value)}
@@ -198,9 +202,15 @@ export const EditableWidget: React.FC<Props> = ({ id, children }) => {
                         onKeyDown={(e) => e.key === 'Enter' && handleTextSave()}
                         className="bg-black/80 text-white border-2 border-cyan-400 rounded px-2 py-1 text-center font-bold outline-none shadow-[0_0_10px_rgba(34,211,238,0.5)]"
                     />
-                ) : children}
+                ) : (
+                    children
+                )}
             </div>
-            {isSelected && <div className="absolute -top-6 left-0 bg-cyan-500 text-black text-[10px] px-2 py-0.5 rounded font-black whitespace-nowrap shadow-md pointer-events-none">{id}</div>}
+            {isSelected && (
+                <div className="absolute -top-6 left-0 bg-cyan-500 text-black text-[10px] px-2 py-0.5 rounded font-black whitespace-nowrap shadow-md pointer-events-none">
+                    {id}
+                </div>
+            )}
         </div>
     );
 };

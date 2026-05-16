@@ -14,10 +14,18 @@ export const InventoryUI = () => {
                     </button>
                 </div>
                 <div className="grid grid-cols-6 gap-4">
-                    <div className="aspect-square bg-[#131726] border-2 border-purple-500 rounded-xl flex items-center justify-center text-6xl cursor-pointer hover:scale-105 transition-transform">🍳</div>
-                    <div className="aspect-square bg-[#131726] border-2 border-blue-500 rounded-xl flex items-center justify-center text-6xl cursor-pointer hover:scale-105 transition-transform">🩴</div>
-                    <div className="aspect-square bg-[#131726] border-2 border-green-500 rounded-xl flex items-center justify-center text-6xl cursor-pointer hover:scale-105 transition-transform">🐟</div>
-                    <div className="aspect-square bg-[#131726] border-2 border-gray-400 rounded-xl flex items-center justify-center text-6xl cursor-pointer hover:scale-105 transition-transform">🦯</div>
+                    <div className="aspect-square bg-[#131726] border-2 border-purple-500 rounded-xl flex items-center justify-center text-6xl cursor-pointer hover:scale-105 transition-transform">
+                        🍳
+                    </div>
+                    <div className="aspect-square bg-[#131726] border-2 border-blue-500 rounded-xl flex items-center justify-center text-6xl cursor-pointer hover:scale-105 transition-transform">
+                        🩴
+                    </div>
+                    <div className="aspect-square bg-[#131726] border-2 border-green-500 rounded-xl flex items-center justify-center text-6xl cursor-pointer hover:scale-105 transition-transform">
+                        🐟
+                    </div>
+                    <div className="aspect-square bg-[#131726] border-2 border-gray-400 rounded-xl flex items-center justify-center text-6xl cursor-pointer hover:scale-105 transition-transform">
+                        🦯
+                    </div>
                     {[...Array(14)].map((_, i) => (
                         <div key={i} className="aspect-square bg-[#131726] border-2 border-[#2a314a]/50 rounded-xl" />
                     ))}

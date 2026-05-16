@@ -29,18 +29,19 @@ export interface IPixiAppConfig {
 export class PixiApp {
     private static instance: PixiApp | null = null;
     public static canvas: HTMLCanvasElement | null = null;
-    
+
     private pixiApp: PIXI.Application | null = null;
     private config: Required<IPixiAppConfig>;
     private updateLoops: Array<(dt: number) => void> = [];
     private screenShakeIntensity: number = 0;
     private screenShakeDamping: number = 0.9;
-    
+
     private _backgroundLayer: PIXI.Container;
     private _gameLayer: PIXI.Container;
     private _effectsLayer: PIXI.Container;
     private _uiLayer: PIXI.Container;
     private _debugLayer: PIXI.Container;
+    private homeContainer: HTMLElement | null = null;
 
     private constructor() {
         this._backgroundLayer = new PIXI.Container();
@@ -55,7 +56,7 @@ export class PixiApp {
             resolution: ResolutionType.MEDIUM,
             background: '#000000',
             antialias: true,
-            powerPreference: 'high-performance'
+            powerPreference: 'high-performance',
         };
     }
 
@@ -67,7 +68,7 @@ export class PixiApp {
     public async destroy(): Promise<void> {
         if (this.pixiApp) {
             console.log('[PixiApp] Destroying application...');
-            // [Lead Architect]: texture: false is CRITICAL here to avoid 
+            // [Lead Architect]: texture: false is CRITICAL here to avoid
             // "Texture managed by Assets was destroyed instead of unloaded" warning.
             this.pixiApp.destroy(true, { children: true, texture: false });
             this.pixiApp = null;
@@ -82,6 +83,7 @@ export class PixiApp {
             if (this.pixiApp && container) {
                 const canvas = this.pixiApp.canvas;
                 if (canvas && canvas.parentElement !== container) {
+                    if (!this.homeContainer) this.homeContainer = canvas.parentElement;
                     container.appendChild(canvas);
                     this.applyCanvasStyles(canvas);
                 }
@@ -94,14 +96,14 @@ export class PixiApp {
                 await this.pixiApp.init({
                     width: this.config.width,
                     height: this.config.height,
-                    backgroundColor: this.config.background || 0x000000,
-                    backgroundAlpha: 0, // [Optimization] Transparent canvas for seamless loading
+                    backgroundColor: this.config.background || 0x0c0c0c,
+                    backgroundAlpha: 1, // [Fix] Set to 1 to avoid black screens if BG fails
                     antialias: this.config.antialias,
                     resolution: Math.min(window.devicePixelRatio || 1, 2),
                     autoDensity: true,
-                    preference: 'webgl'
+                    preference: 'webgl',
                 });
-                
+
                 (window as any).__PIXI_APP__ = this.pixiApp;
                 PixiApp.canvas = this.pixiApp.canvas;
 
@@ -111,7 +113,7 @@ export class PixiApp {
             if (container && this.pixiApp.canvas) {
                 const canvas = this.pixiApp.canvas;
                 this.applyCanvasStyles(canvas);
-                
+
                 if (canvas.parentElement !== container) {
                     container.appendChild(canvas);
                 }
@@ -125,13 +127,12 @@ export class PixiApp {
                     this._gameLayer,
                     this._effectsLayer,
                     this._uiLayer,
-                    this._debugLayer
+                    this._debugLayer,
                 );
-                
+
                 this.pixiApp.ticker.start();
                 console.log('✅ PixiApp initialized/reset successfully');
             }
-
         } catch (error) {
             console.error('❌ PixiApp initialization failed:', error);
             throw error;
@@ -145,13 +146,23 @@ export class PixiApp {
         canvas.style.position = 'absolute';
         canvas.style.top = '0';
         canvas.style.left = '0';
-        canvas.style.zIndex = '0';
+        canvas.style.zIndex = '1'; // Ensure it's above parent background
+    }
+
+    public returnToHomeContainer(): void {
+        if (this.pixiApp && this.pixiApp.canvas && this.homeContainer) {
+            if (this.pixiApp.canvas.parentElement !== this.homeContainer) {
+                this.homeContainer.appendChild(this.pixiApp.canvas);
+                this.applyCanvasStyles(this.pixiApp.canvas);
+                console.log('[PixiApp] Canvas returned to home container');
+            }
+        }
     }
 
     private update(ticker: PIXI.Ticker): void {
         try {
             if (!this.pixiApp?.canvas) return;
-            
+
             // [Lead Architect]: Update loop for all registered systems
             for (const loop of this.updateLoops) {
                 loop(ticker.deltaTime);
@@ -178,12 +189,12 @@ export class PixiApp {
 
     private ySort(container: PIXI.Container): void {
         if (container.children.length < 2) return; // Пропускаем, если сортировать нечего
-        
+
         container.children.sort((a, b) => {
-                const aY = (a.position?.y ?? 0) + ((a as any).height ?? 0);
-                const bY = (b.position?.y ?? 0) + ((b as any).height ?? 0);
-                return aY - bY;
-            });
+            const aY = (a.position?.y ?? 0) + ((a as any).height ?? 0);
+            const bY = (b.position?.y ?? 0) + ((b as any).height ?? 0);
+            return aY - bY;
+        });
     }
 
     public addUpdateLoop(callback: (dt: number) => void): void {
@@ -210,7 +221,7 @@ export class PixiApp {
     }
 
     public resize(): void {
-        // [Lead Architect]: Динамический ресайз отключен. 
+        // [Lead Architect]: Динамический ресайз отключен.
         // Мы используем фиксированный 1920x1080 и CSS-масштабирование в SafeGameLayout.
         if (!this.pixiApp) return;
         this.pixiApp.renderer.resize(1920, 1080);
@@ -225,17 +236,29 @@ export class PixiApp {
         return this.pixiApp;
     }
 
-    public get stage(): PIXI.Container { return this.getApp().stage; }
+    public get stage(): PIXI.Container {
+        return this.getApp().stage;
+    }
 
-    get backgroundLayer(): PIXI.Container { return this._backgroundLayer; }
-    get gameLayer(): PIXI.Container { return this._gameLayer; }
-    get effectsLayer(): PIXI.Container { return this._effectsLayer; }
-    get uiLayer(): PIXI.Container { return this._uiLayer; }
-    get debugLayer(): PIXI.Container { return this._debugLayer; }
+    get backgroundLayer(): PIXI.Container {
+        return this._backgroundLayer;
+    }
+    get gameLayer(): PIXI.Container {
+        return this._gameLayer;
+    }
+    get effectsLayer(): PIXI.Container {
+        return this._effectsLayer;
+    }
+    get uiLayer(): PIXI.Container {
+        return this._uiLayer;
+    }
+    get debugLayer(): PIXI.Container {
+        return this._debugLayer;
+    }
 
     public clearAllLayers(): void {
-        [this.backgroundLayer, this.gameLayer, this.effectsLayer, this.uiLayer, this.debugLayer].forEach(l => {
-            l.removeChildren().forEach(child => {
+        [this.backgroundLayer, this.gameLayer, this.effectsLayer, this.uiLayer, this.debugLayer].forEach((l) => {
+            l.removeChildren().forEach((child) => {
                 if (!child.destroyed) {
                     child.destroy({ children: true, texture: false });
                 }

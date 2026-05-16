@@ -94,6 +94,8 @@ const rawAssetsMap = {
     },
     BACKGROUNDS: {
         MAIN_MENU: '/assets/images/backgrounds/bg_main.webp',
+        MAIN_MENU_MOBILE: '/assets/images/backgrounds/bg_main_mobile.webp',
+        FORGE: '/assets/images/backgrounds/bg_forge.png',
         BATTLE_ARENA: '/assets/images/backgrounds/battle/bg_1.webp',
         BATTLE_ARENAS: [
             '/assets/images/backgrounds/battle/bg_1.webp',
@@ -103,8 +105,17 @@ const rawAssetsMap = {
             '/assets/images/backgrounds/battle/bg_5.webp',
             '/assets/images/backgrounds/battle/bg_6.webp',
         ],
+        BATTLE_ARENAS_MOBILE: [
+            '/assets/images/backgrounds/battle/bg_1_mobile.webp',
+            '/assets/images/backgrounds/battle/bg_2_mobile.webp',
+            '/assets/images/backgrounds/battle/bg_3_mobile.webp',
+            '/assets/images/backgrounds/battle/bg_4_mobile.webp',
+            '/assets/images/backgrounds/battle/bg_5_mobile.webp',
+            '/assets/images/backgrounds/battle/bg_6_mobile.webp',
+        ],
         SHOP: '/assets/images/ui/Shop.webp',
         HEROES_HALL: '/assets/images/backgrounds/зал героев.webp',
+        HEROES_HALL_MOBILE: '/assets/images/backgrounds/зал героев_mobile.webp',
         SHOP_NAV_BG: '/assets/images/ui/Shoping.webp',
         SHOP_GRID_FRAME: '/assets/images/ui/ChatGPT Image 5  4otoom-port.webp',
         SHOP_ITEM_FRAME: '/assets/images/ui/Shop phone.webp',
@@ -112,7 +123,9 @@ const rawAssetsMap = {
         SHOP_BANNER_BLACK: '/assets/images/ui/icons/ChatGPT Imaport.webp',
         SHOP_DIVIDER: '/assets/images/ui/power_icon.webp',
         BATTLE_PASS: '/assets/images/backgrounds/боевойпропуска.webp',
+        BATTLE_PASS_MOBILE: '/assets/images/backgrounds/боевойпропуска_mobile.webp',
         CITY_HUB: '/assets/images/backgrounds/bg_city_hub.webp',
+        CITY_HUB_MOBILE: '/assets/images/backgrounds/bg_city_hub_mobile.webp',
     },
     CHARACTERS: {
         PANDA_AVATAR: '/assets/images/avatars/панда.webp',
@@ -120,8 +133,8 @@ const rawAssetsMap = {
         PANDA_ATLAS: '/assets/characters/panda/pandapanda_atlas.png',
         SKINS: {
             DEFAULT: '/assets/characters/panda/pandapanda_atlas.png',
-            FROST: '/assets/characters/panda/frost_panda_atlas.png'
-        }
+            FROST: '/assets/characters/panda/frost_panda_atlas.png',
+        },
     },
     ITEMS: {
         MOON_SWORD: '/assets/images/items/moon_sword.webp',
@@ -130,7 +143,7 @@ const rawAssetsMap = {
         VOID_STAFF: '/assets/images/items/void_staff.webp',
         BONE_ARMOR: '/assets/images/items/armor_bone.webp',
         LION_ARMOR: '/assets/images/items/armor_lion.webp',
-        PHOENIX_ARMOR: '/assets/images/items/armor_phoenix.webp'
+        PHOENIX_ARMOR: '/assets/images/items/armor_phoenix.webp',
     },
     AUDIO: {
         MUSIC_MAIN: '/assets/audio/music/Dawn_of_the_Siege.mp3',
@@ -142,21 +155,21 @@ const rawAssetsMap = {
             '/assets/audio/music/Snow_on_the_Cedar_Path.mp3',
             '/assets/audio/music/The_Ironwood_Threshold.mp3',
             '/assets/audio/music/Where_the_Canopy_Weeps.mp3',
-            '/assets/audio/music/Where_the_Steel_Rests.mp3'
+            '/assets/audio/music/Where_the_Steel_Rests.mp3',
         ],
         SFX_CLICK: '/assets/audio/sfx/click.mp3',
         SFX_BUY: '/assets/audio/sfx/buy_success.mp3',
-        SFX_ERROR: '/assets/audio/sfx/click.mp3',   // Fallback
+        SFX_ERROR: '/assets/audio/sfx/click.mp3', // Fallback
         SFX_LEVEL_UP: '/assets/audio/sfx/click.mp3', // Fallback
-        SFX_EQUIP: '/assets/audio/sfx/click.mp3',    // Fallback
-        SFX_ATTACK: '/assets/audio/sfx/click.mp3',   // Fallback
-        SFX_HIT: '/assets/audio/sfx/impact_hit.mp3'  // Exists!
+        SFX_EQUIP: '/assets/audio/sfx/click.mp3', // Fallback
+        SFX_ATTACK: '/assets/audio/sfx/click.mp3', // Fallback
+        SFX_HIT: '/assets/audio/sfx/impact_hit.mp3', // Exists!
     },
     SHEETS: {
         BOOTS: '/assets/images/sheets/boots_sprite.webp',
         PANTS: '/assets/images/sheets/pants_sprite.webp',
-        WEAPONS: '/assets/images/sheets/weapons_sprite.webp'
-    }
+        WEAPONS: '/assets/images/sheets/weapons_sprite.webp',
+    },
 };
 
 const resolvePaths = (value: unknown): unknown => {
@@ -168,7 +181,7 @@ const resolvePaths = (value: unknown): unknown => {
     }
     if (value && typeof value === 'object') {
         return Object.fromEntries(
-            Object.entries(value as Record<string, unknown>).map(([key, val]) => [key, resolvePaths(val)])
+            Object.entries(value as Record<string, unknown>).map(([key, val]) => [key, resolvePaths(val)]),
         );
     }
     return value;

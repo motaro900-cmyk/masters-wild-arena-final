@@ -32,29 +32,29 @@ export const ServerTime: React.FC = () => {
     }, []);
 
     return (
-        <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '15px',
-            fontFamily: "'Montserrat', sans-serif",
-            color: '#fff',
-            fontSize: '14px',
-            fontWeight: 800,
-            letterSpacing: '1px',
-            padding: '4px 12px',
-            background: 'rgba(0,0,0,0.3)',
-            borderRadius: '20px',
-            border: '1px solid rgba(240, 192, 64, 0.2)'
-        }}>
+        <div
+            style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '15px',
+                fontFamily: "'Montserrat', sans-serif",
+                color: '#fff',
+                fontSize: '14px',
+                fontWeight: 800,
+                letterSpacing: '1px',
+                padding: '4px 12px',
+                background: 'rgba(0,0,0,0.3)',
+                borderRadius: '20px',
+                border: '1px solid rgba(240, 192, 64, 0.2)',
+            }}
+        >
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <span style={{ fontSize: '14px', opacity: 0.8 }}>🌐</span>
                 <span style={{ fontFamily: 'monospace', fontSize: '16px' }}>{time}</span>
                 <span style={{ fontSize: '10px', color: '#f0c040', opacity: 0.9 }}>MSK</span>
             </div>
             <div style={{ width: '1px', height: '12px', background: 'rgba(255,255,255,0.2)' }} />
-            <div style={{ fontSize: '12px', opacity: 0.6, fontWeight: 500 }}>
-                {date}
-            </div>
+            <div style={{ fontSize: '12px', opacity: 0.6, fontWeight: 500 }}>{date}</div>
         </div>
     );
 };

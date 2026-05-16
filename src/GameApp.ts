@@ -10,7 +10,7 @@ export class GameApp {
     private pixiApp: PixiApp;
     private assetLoader: AssetLoader;
     private storeUnsubscribe?: () => void;
-    
+
     constructor() {
         this.pixiApp = PixiApp.getInstance();
         this.assetLoader = AssetLoader.getInstance();
@@ -27,10 +27,15 @@ export class GameApp {
             const config: IPixiAppConfig = {
                 width: 1920,
                 height: 1080,
-                resolution: quality === 'ULTRA' ? ResolutionType.HIGH : (quality === 'MEDIUM' ? ResolutionType.MEDIUM : ResolutionType.LOW),
+                resolution:
+                    quality === 'ULTRA'
+                        ? ResolutionType.HIGH
+                        : quality === 'MEDIUM'
+                          ? ResolutionType.MEDIUM
+                          : ResolutionType.LOW,
                 background: '#000000',
                 antialias: quality !== 'LOW',
-                powerPreference: 'high-performance'
+                powerPreference: 'high-performance',
             };
 
             this.storeUnsubscribe = useGameStore.subscribe((state: any, prevState: any) => {
@@ -53,7 +58,6 @@ export class GameApp {
             syncService.startAutoSync();
 
             console.log('✅ Game Engine Ready!');
-
         } catch (error) {
             console.error('❌ Engine Initialization Error:', error);
             throw error;

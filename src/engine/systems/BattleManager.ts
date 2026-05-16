@@ -11,7 +11,7 @@ export enum BattlePhase {
     AI_TURN,
     CHECK_END,
     VICTORY,
-    DEFEAT
+    DEFEAT,
 }
 
 /**
@@ -36,10 +36,10 @@ export class BattleManager {
     public initBattle() {
         console.log('⚔️ [BattleManager] Инициализация боя...');
         const stats = useGameStore.getState().getCalculatedStats('panda');
-        
+
         this.playerHP = stats?.hp || 1000;
         this.enemyHP = 1000; // Пример для врага
-        
+
         this.phase = BattlePhase.PLAYER_TURN;
         this.broadcastPhase();
     }
@@ -51,7 +51,7 @@ export class BattleManager {
         if (this.phase !== BattlePhase.PLAYER_TURN) return;
 
         this.phase = BattlePhase.ACTION_CALCULATION;
-        
+
         // 1. Расчет урона (Логика)
         const stats = useGameStore.getState().getCalculatedStats('panda');
         const damage = (stats?.attack || 10) * (type === 'skill' ? 1.5 : 1);
@@ -101,7 +101,7 @@ export class BattleManager {
     public getHPPercents() {
         return {
             player: (this.playerHP / 1000) * 100,
-            enemy: (this.enemyHP / 1000) * 100
+            enemy: (this.enemyHP / 1000) * 100,
         };
     }
 }

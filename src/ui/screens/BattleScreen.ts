@@ -29,7 +29,7 @@ export class BattleScreen extends Container {
     private playerMaxHp = 100;
     private enemyHp = 100;
     private enemyMaxHp = 100;
-    
+
     private playerStats: any = null;
     private enemyStats: any = null;
 
@@ -59,7 +59,7 @@ export class BattleScreen extends Container {
             const store = useGameStore.getState();
             const calcStats = store.getCalculatedStats(store.selectedHeroId);
             this.playerStats = calcStats;
-            
+
             this.playerHp = calcStats.hp;
             this.playerMaxHp = calcStats.hp;
 
@@ -69,7 +69,8 @@ export class BattleScreen extends Container {
                 attack: Math.floor(calcStats.attack * (0.7 + Math.random() * 0.3)),
                 speed: calcStats.speed * (0.8 + Math.random() * 0.4),
                 critChance: 0.1,
-                defense: Math.floor(calcStats.defense * 0.5)
+                defense: Math.floor(calcStats.defense * 0.5),
+                dodge: 0.15, // Шанс уворота
             };
             this.enemyHp = this.enemyStats.hp;
             this.enemyMaxHp = this.enemyStats.hp;
@@ -97,6 +98,20 @@ export class BattleScreen extends Container {
             this.enemy.position.set(1520, 720);
             this.enemy.scale.set(1.0);
             this.enemy.scale.x = -1.0; // Смотрит влево
+
+            // Создаем круглую маску, чтобы картинка выглядела как аватар
+            const mask = new Graphics();
+            mask.circle(0, 0, 200).fill({ color: 0xffffff });
+            mask.position.set(1520, 720);
+            this.addChild(mask);
+            this.enemy.mask = mask;
+
+            // Добавляем красивую красную рамку вокруг аватара
+            const frame = new Graphics();
+            frame.circle(0, 0, 200).stroke({ color: 0xef4444, width: 6 });
+            frame.position.set(1520, 720);
+            this.addChild(frame);
+
             this.addChildAt(this.enemy, 2);
 
             // UI поверх всего
@@ -106,7 +121,6 @@ export class BattleScreen extends Container {
             // Задержка перед стартом — драматичность
             await this.delay(800);
             this.startBattleLoop();
-
         } catch (e) {
             console.error('[BattleScreen] Failed to load assets:', e);
         }
@@ -134,14 +148,14 @@ export class BattleScreen extends Container {
         const store = useGameStore.getState();
         const playerName = new Text({
             text: store.selectedHeroId === 'panda' ? 'ПАНДА' : 'БОЕЦ',
-            style: { fill: '#ffffff', fontSize: 20, fontWeight: 'bold', letterSpacing: 2 }
+            style: { fill: '#ffffff', fontSize: 20, fontWeight: 'bold', letterSpacing: 2 },
         });
         playerName.position.set(70, 33);
         this.uiLayer.addChild(playerName);
 
         const enemyName = new Text({
             text: (ENEMY_NAMES[this.enemyFileName] ?? 'ВРАГ').toUpperCase(),
-            style: { fill: '#ffffff', fontSize: 20, fontWeight: 'bold', letterSpacing: 2 }
+            style: { fill: '#ffffff', fontSize: 20, fontWeight: 'bold', letterSpacing: 2 },
         });
         enemyName.anchor.set(1, 0);
         enemyName.position.set(1855, 33);
@@ -150,14 +164,14 @@ export class BattleScreen extends Container {
         // HP ЛЕЙБЛЫ
         this.playerHpLabel = new Text({
             text: `${Math.ceil(this.playerHp)}/${this.playerMaxHp}`,
-            style: { fill: '#ffffff', fontSize: 16, fontWeight: 'bold' }
+            style: { fill: '#ffffff', fontSize: 16, fontWeight: 'bold' },
         });
         this.playerHpLabel.position.set(70, 58);
         this.uiLayer.addChild(this.playerHpLabel);
 
         this.enemyHpLabel = new Text({
             text: `${Math.ceil(this.enemyHp)}/${this.enemyMaxHp}`,
-            style: { fill: '#ffffff', fontSize: 16, fontWeight: 'bold' }
+            style: { fill: '#ffffff', fontSize: 16, fontWeight: 'bold' },
         });
         this.enemyHpLabel.anchor.set(1, 0);
         this.enemyHpLabel.position.set(1855, 58);
@@ -171,8 +185,8 @@ export class BattleScreen extends Container {
                 fontSize: 72,
                 fontWeight: 'bold',
                 stroke: { color: '#000', width: 8 },
-                dropShadow: { color: '#000', blur: 10, distance: 4 }
-            }
+                dropShadow: { color: '#000', blur: 10, distance: 4 },
+            },
         });
         vsText.anchor.set(0.5);
         vsText.position.set(960, 55);
@@ -206,10 +220,21 @@ export class BattleScreen extends Container {
 
             const baseDmg = this.playerStats.attack;
             const isCrit = Math.random() < this.playerStats.critChance;
-            const rawDmg = baseDmg * (0.9 + Math.random() * 0.2) * (isCrit ? 1.8 : 1);
-            const finalDmg = Math.ceil(Math.max(1, rawDmg - (this.enemyStats.defense * 0.3)));
+            const isDodge = Math.random() < (this.enemyStats.dodge || 0);
+            
+            let finalDmg;
+            let actionText: string;
+            
+            if (isDodge) {
+                finalDmg = 0;
+                actionText = 'УВОРОТ';
+            } else {
+                const rawDmg = baseDmg * (0.9 + Math.random() * 0.2) * (isCrit ? 1.8 : 1);
+                finalDmg = Math.ceil(Math.max(1, rawDmg - this.enemyStats.defense * 0.3));
+                actionText = isCrit ? `💥 ${finalDmg}!` : `-${finalDmg}`;
+            }
 
-            await this.attack(this.player, this.enemy, finalDmg, isCrit, 'PLAYER');
+            await this.attack(this.player, this.enemy, actionText, isCrit, 'PLAYER');
             this.enemyHp -= finalDmg;
             this.totalDamageDealt += finalDmg;
             this.updateHpBars();
@@ -228,10 +253,21 @@ export class BattleScreen extends Container {
 
             const enemyBaseDmg = this.enemyStats.attack;
             const enemyCrit = Math.random() < this.enemyStats.critChance;
-            const rawEnemyDmg = enemyBaseDmg * (0.9 + Math.random() * 0.2) * (enemyCrit ? 1.6 : 1);
-            const finalEnemyDmg = Math.ceil(Math.max(1, rawEnemyDmg - (this.playerStats.defense * 0.3)));
+            const isPlayerDodge = Math.random() < (this.playerStats.dodge || 0.1); // У игрока тоже есть уворот
+            
+            let finalEnemyDmg;
+            let enemyActionText: string;
+            
+            if (isPlayerDodge) {
+                finalEnemyDmg = 0;
+                enemyActionText = 'УВОРОТ';
+            } else {
+                const rawEnemyDmg = enemyBaseDmg * (0.9 + Math.random() * 0.2) * (enemyCrit ? 1.6 : 1);
+                finalEnemyDmg = Math.ceil(Math.max(1, rawEnemyDmg - this.playerStats.defense * 0.3));
+                enemyActionText = enemyCrit ? `💥 ${finalEnemyDmg}!` : `-${finalEnemyDmg}`;
+            }
 
-            await this.attack(this.enemy, this.player, finalEnemyDmg, enemyCrit, 'ENEMY');
+            await this.attack(this.enemy, this.player, enemyActionText, enemyCrit, 'ENEMY');
             this.playerHp -= finalEnemyDmg;
             this.updateHpBars();
 
@@ -246,7 +282,7 @@ export class BattleScreen extends Container {
         }
     }
 
-    private attack(attacker: Sprite, target: Sprite, damage: number, isCrit: boolean, side: string): Promise<void> {
+    private attack(attacker: Sprite, target: Sprite, damageText: string, isCrit: boolean, side: string): Promise<void> {
         return new Promise((resolve) => {
             const dir = side === 'PLAYER' ? 1 : -1;
             const startX = attacker.x;
@@ -257,7 +293,7 @@ export class BattleScreen extends Container {
                 .to(attacker, { x: startX, duration: 0.25, ease: 'power2.out' }, '+=0.05')
                 .add(() => {
                     this.shake(target);
-                    this.showDamageNumber(target, damage, isCrit);
+                    this.showDamageNumber(target, damageText, isCrit);
                     if (isCrit) this.screenFlash();
                 }, '-=0.25');
         });
@@ -270,7 +306,9 @@ export class BattleScreen extends Container {
             duration: 0.06,
             repeat: 5,
             yoyo: true,
-            onComplete: () => { obj.x = startX; }
+            onComplete: () => {
+                obj.x = startX;
+            },
         });
     }
 
@@ -281,16 +319,16 @@ export class BattleScreen extends Container {
         gsap.to(flash, { alpha: 0, duration: 0.3, onComplete: () => flash.destroy() });
     }
 
-    private showDamageNumber(target: Sprite, damage: number, isCrit: boolean) {
+    private showDamageNumber(target: Sprite, textStr: string, isCrit: boolean) {
         const text = new Text({
-            text: isCrit ? `💥 ${damage}!` : `-${damage}`,
+            text: textStr,
             style: {
-                fill: isCrit ? '#fbbf24' : '#f87171',
+                fill: isCrit ? '#fbbf24' : textStr === 'УВОРОТ' ? '#60a5fa' : '#f87171',
                 fontSize: isCrit ? 56 : 40,
                 fontWeight: 'bold',
                 stroke: { color: '#000', width: 5 },
-                dropShadow: { color: '#000', blur: 5, distance: 2 }
-            }
+                dropShadow: { color: '#000', blur: 5, distance: 2 },
+            },
         });
         text.anchor.set(0.5);
         text.position.set(target.x + (Math.random() - 0.5) * 60, target.y - 80);
@@ -301,7 +339,7 @@ export class BattleScreen extends Container {
             alpha: 0,
             duration: 1.2,
             ease: 'power2.out',
-            onComplete: () => text.destroy()
+            onComplete: () => text.destroy(),
         });
 
         if (isCrit) {
@@ -325,5 +363,7 @@ export class BattleScreen extends Container {
         }
     }
 
-    private delay(ms: number) { return new Promise(r => setTimeout(r, ms)); }
+    private delay(ms: number) {
+        return new Promise((r) => setTimeout(r, ms));
+    }
 }

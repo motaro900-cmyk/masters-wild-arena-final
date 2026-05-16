@@ -13,7 +13,7 @@ export enum EffectType {
     PARTICLE_BURST = 'PARTICLE_BURST',
     SLOW_MOTION = 'SLOW_MOTION',
     FADE_IN = 'FADE_IN',
-    FADE_OUT = 'FADE_OUT'
+    FADE_OUT = 'FADE_OUT',
 }
 
 /**
@@ -31,7 +31,7 @@ export interface IEffectConfig {
 /**
  * @class EffectsManager
  * Singleton для управления игровыми эффектами
- * 
+ *
  * Функции:
  * - Screen Shake (тряска камеры)
  * - Color Flash (вспышка цвета)
@@ -39,12 +39,12 @@ export interface IEffectConfig {
  * - Slow Motion (замедление времени)
  * - Fade In/Out (плавное появление/исчезновение)
  * - Lerp интерполяция
- * 
+ *
  * AAA-инди стандарт:
  * - Все эффекты плавные (Lerp, GSAP)
  * - Стекируются (можно применить несколько)
  * - Object Pooling для частиц
- * 
+ *
  * @example
  * const fx = EffectsManager.getInstance();
  * fx.screenShake(10, 0.95);
@@ -121,16 +121,12 @@ export class EffectsManager {
     /**
      * Тряска экрана (Screen Shake)
      * Применяет случайное смещение с затуханием
-     * 
+     *
      * @param intensity Интенсивность (1-100)
      * @param damping Коэффициент затухания (0-1)
      * @param duration Длительность в мс
      */
-    public screenShake(
-        intensity: number = 5,
-        damping: number = 0.95,
-        duration: number = 500
-    ): void {
+    public screenShake(intensity: number = 5, damping: number = 0.95, duration: number = 500): void {
         try {
             const effectId = `shake_${this.effectCounter++}`;
 
@@ -144,14 +140,13 @@ export class EffectsManager {
 
             // Автоматически отключаем через длительность
             const timeline = gsap.timeline({
-                onComplete: () => this.activeEffects.delete(effectId)
+                onComplete: () => this.activeEffects.delete(effectId),
             });
 
             timeline.to({}, { duration: duration / 1000, onUpdate: () => {} });
             this.activeEffects.set(effectId, timeline);
 
             console.log(`⚡ Screen shake: intensity=${intensity}, duration=${duration}ms`);
-
         } catch (error) {
             console.error('❌ Screen shake error:', error);
         }
@@ -160,7 +155,7 @@ export class EffectsManager {
     /**
      * Вспышка цвета на целевом объекте
      * Полезно для показания урона персонажу
-     * 
+     *
      * @param target Целевой объект PIXI
      * @param color Цвет вспышки (0xRRGGBB)
      * @param duration Длительность вспышки
@@ -177,25 +172,28 @@ export class EffectsManager {
                 onComplete: () => {
                     target.filters = [];
                     this.activeEffects.delete(effectId);
-                }
+                },
             });
 
             timeline.to(filter, {
                 brightness: 2,
                 duration: duration * 0.3,
-                ease: 'power2.out'
+                ease: 'power2.out',
             });
 
-            timeline.to(filter, {
-                brightness: 1,
-                duration: duration * 0.7,
-                ease: 'power2.in'
-            }, `-=${duration * 0.3}`);
+            timeline.to(
+                filter,
+                {
+                    brightness: 1,
+                    duration: duration * 0.7,
+                    ease: 'power2.in',
+                },
+                `-=${duration * 0.3}`,
+            );
 
             this.activeEffects.set(effectId, timeline);
 
             console.log(`🔴 Color flash: color=${color.toString(16)}, duration=${duration}s`);
-
         } catch (error) {
             console.error('❌ Color flash error:', error);
         }
@@ -204,7 +202,7 @@ export class EffectsManager {
     /**
      * Взрыв частиц в точке
      * AAA-инди эффект: использует пул частиц
-     * 
+     *
      * @param x Позиция X
      * @param y Позиция Y
      * @param particleCount Количество частиц
@@ -216,7 +214,7 @@ export class EffectsManager {
         y: number,
         particleCount: number = 10,
         color: number = 0xffff00,
-        force: number = 200
+        force: number = 200,
     ): void {
         try {
             for (let i = 0; i < particleCount; i++) {
@@ -242,12 +240,11 @@ export class EffectsManager {
                     alpha: 0,
                     duration: 0.8 + Math.random() * 0.4,
                     ease: 'power2.out',
-                    onComplete: () => this.releaseParticle(particle)
+                    onComplete: () => this.releaseParticle(particle),
                 });
             }
 
             console.log(`💥 Particle burst: ${particleCount} particles at (${x}, ${y})`);
-
         } catch (error) {
             console.error('❌ Particle burst error:', error);
         }
@@ -256,7 +253,7 @@ export class EffectsManager {
     /**
      * Замедление времени (Slow Motion / Bullet Time)
      * Полезно для критических ударов
-     * 
+     *
      * @param speedMultiplier Множитель скорости (0.1 = 10% скорости)
      * @param duration Длительность эффекта
      */
@@ -272,26 +269,25 @@ export class EffectsManager {
                 onComplete: () => {
                     pixiApp.ticker.speed = originalSpeed;
                     this.activeEffects.delete(effectId);
-                }
+                },
             });
 
             timeline.to(pixiApp.ticker, {
                 speed: speedMultiplier,
                 duration: 0.1,
-                ease: 'power2.out'
+                ease: 'power2.out',
             });
 
             timeline.to(pixiApp.ticker, {
                 speed: originalSpeed,
                 duration: 0.1,
                 ease: 'power2.in',
-                delay: duration
+                delay: duration,
             });
 
             this.activeEffects.set(effectId, timeline);
 
             console.log(`⏱️ Slow motion: ${speedMultiplier * 100}% speed for ${duration}s`);
-
         } catch (error) {
             console.error('❌ Slow motion error:', error);
         }
@@ -299,16 +295,12 @@ export class EffectsManager {
 
     /**
      * Плавное появление (Fade In)
-     * 
+     *
      * @param target Целевой объект
      * @param duration Длительность
      * @param onComplete Callback при завершении
      */
-    public fadeIn(
-        target: PIXI.Container,
-        duration: number = 0.5,
-        onComplete?: () => void
-    ): void {
+    public fadeIn(target: PIXI.Container, duration: number = 0.5, onComplete?: () => void): void {
         try {
             const effectId = `fadein_${this.effectCounter++}`;
 
@@ -321,11 +313,10 @@ export class EffectsManager {
                 onComplete: () => {
                     this.activeEffects.delete(effectId);
                     onComplete?.();
-                }
+                },
             });
 
             this.activeEffects.set(effectId, tween);
-
         } catch (error) {
             console.error('❌ Fade in error:', error);
         }
@@ -333,16 +324,12 @@ export class EffectsManager {
 
     /**
      * Плавное исчезновение (Fade Out)
-     * 
+     *
      * @param target Целевой объект
      * @param duration Длительность
      * @param onComplete Callback при завершении
      */
-    public fadeOut(
-        target: PIXI.Container,
-        duration: number = 0.5,
-        onComplete?: () => void
-    ): void {
+    public fadeOut(target: PIXI.Container, duration: number = 0.5, onComplete?: () => void): void {
         try {
             const effectId = `fadeout_${this.effectCounter++}`;
 
@@ -353,11 +340,10 @@ export class EffectsManager {
                 onComplete: () => {
                     this.activeEffects.delete(effectId);
                     onComplete?.();
-                }
+                },
             });
 
             this.activeEffects.set(effectId, tween);
-
         } catch (error) {
             console.error('❌ Fade out error:', error);
         }
@@ -365,7 +351,7 @@ export class EffectsManager {
 
     /**
      * Lerp интерполяция (плавное движение между двумя точками)
-     * 
+     *
      * @param target Целевой объект
      * @param fromX Начальная X
      * @param fromY Начальная Y
@@ -381,7 +367,7 @@ export class EffectsManager {
         toX: number,
         toY: number,
         duration: number = 0.5,
-        ease: string = 'power2.inOut'
+        ease: string = 'power2.inOut',
     ): void {
         try {
             const effectId = `lerp_${this.effectCounter++}`;
@@ -393,11 +379,10 @@ export class EffectsManager {
                 y: toY,
                 duration,
                 ease,
-                onComplete: () => this.activeEffects.delete(effectId)
+                onComplete: () => this.activeEffects.delete(effectId),
             });
 
             this.activeEffects.set(effectId, tween);
-
         } catch (error) {
             console.error('❌ Lerp error:', error);
         }
@@ -406,14 +391,14 @@ export class EffectsManager {
     /**
      * Комбо эффект: Screen Shake + Color Flash + Particle Burst
      * Используется для критических ударов
-     * 
+     *
      * @param target Целевой объект
      * @param intensity Интенсивность эффекта
      */
     public criticalHit(target: PIXI.Sprite, intensity: number = 1.5): void {
         try {
             console.log(`🌟 CRITICAL HIT EFFECT!`);
-            
+
             // Звук критического удара
             SoundManager.getInstance().playCrit();
 
@@ -424,17 +409,10 @@ export class EffectsManager {
             this.colorFlash(target, 0xffff00, 0.3);
 
             // Взрыв золотых частиц
-            this.particleBurst(
-                target.position.x,
-                target.position.y,
-                20,
-                0xffdd00,
-                250 * intensity
-            );
+            this.particleBurst(target.position.x, target.position.y, 20, 0xffdd00, 250 * intensity);
 
             // Замедление времени
             this.slowMotion(0.4, 0.3);
-
         } catch (error) {
             console.error('❌ Critical hit error:', error);
         }
@@ -522,7 +500,7 @@ export class EffectsManager {
      * Получить количество активных частиц
      */
     public getActiveParticleCount(): number {
-        return this.particlePool.filter(p => p.visible).length;
+        return this.particlePool.filter((p) => p.visible).length;
     }
 
     /**

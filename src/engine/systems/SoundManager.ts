@@ -36,7 +36,7 @@ export class SoundManager {
 
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
-        
+
         osc.type = type;
         osc.connect(gain);
         gain.connect(this.ctx.destination);

@@ -10,7 +10,13 @@ interface JuicyButtonProps {
     className?: string;
 }
 
-export const JuicyButton: React.FC<JuicyButtonProps> = ({ icon, label, notificationCount = 0, onClick, className = '' }) => {
+export const JuicyButton: React.FC<JuicyButtonProps> = ({
+    icon,
+    label,
+    notificationCount = 0,
+    onClick,
+    className = '',
+}) => {
     const btnRef = useRef<HTMLButtonElement>(null);
     const { contextSafe } = useGSAP({ scope: btnRef });
 
@@ -46,8 +52,12 @@ export const JuicyButton: React.FC<JuicyButtonProps> = ({ icon, label, notificat
                     {notificationCount > 99 ? '99+' : notificationCount}
                 </div>
             )}
-            <div className="text-3xl drop-shadow-md mb-1 transition-transform group-hover:scale-110 duration-300">{icon}</div>
-            <span className="text-[#d4b483] font-black text-[9px] tracking-widest uppercase group-hover:text-white transition-colors">{label}</span>
+            <div className="text-3xl drop-shadow-md mb-1 transition-transform group-hover:scale-110 duration-300">
+                {icon}
+            </div>
+            <span className="text-[#d4b483] font-black text-[9px] tracking-widest uppercase group-hover:text-white transition-colors">
+                {label}
+            </span>
         </button>
     );
 };

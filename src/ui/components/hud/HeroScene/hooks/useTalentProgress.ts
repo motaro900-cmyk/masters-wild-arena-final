@@ -12,7 +12,9 @@ export const useTalentProgress = (heroId: string, talents: any, availablePoints:
             .filter(([id]) => id.startsWith(branchId.substring(0, 3)))
             .reduce((a, [_, v]) => a + (v as number), 0);
 
-        const tier = TALENTS_CONFIG.find(b => b.id === branchId)?.tiers.find(t => t.talents.some(tt => tt.id === talent.id));
+        const tier = TALENTS_CONFIG.find((b) => b.id === branchId)?.tiers.find((t) =>
+            t.talents.some((tt) => tt.id === talent.id),
+        );
         if (tier && branchPoints < tier.requiredInBranch) return;
 
         upgradeTalent(heroId, talent.id);

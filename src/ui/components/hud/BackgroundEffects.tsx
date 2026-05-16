@@ -5,5 +5,5 @@ import React from 'react';
  * Этот компонент теперь пустой, чтобы не создавать нагрузку на CPU.
  */
 export const BackgroundEffects: React.FC = () => {
-    return null; 
+    return null;
 };

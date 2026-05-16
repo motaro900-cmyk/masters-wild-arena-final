@@ -1,4 +1,3 @@
-
 import { useGameStore } from '../store/useGameStore';
 import { ITEMS_DATABASE as BASE_ITEMS } from '../game/configs/ItemsConfig';
 import { ITEMS_DATABASE as HARDCORE_ITEMS } from '../game/configs/ItemsConfig_Hardcore';
@@ -22,7 +21,7 @@ export interface IAvatarLayer {
 
 /**
  * АВАТАРНАЯ СИСТЕМА ПРИВЯЗОК (Attachment System)
- * 
+ *
  * Стандарты:
  * - Pivot Point: feet_center (ноги персонажа всегда на линии земли)
  * - Coordinate Space: Normalized (0.0 to 1.0)
@@ -31,9 +30,11 @@ export interface IAvatarLayer {
 
 export const useAvatarRenderer = (heroId: string, size: number = 512) => {
     const { heroEquipment } = useGameStore();
-    const heroConfig = HEROES_DB.find(h => h.id === heroId) || HEROES_DB[0];
-    
-    console.log(`[AvatarRenderer] Rendering Hero: ${heroId}, Found Config: ${heroConfig.id}, Image: ${heroConfig.image}`);
+    const heroConfig = HEROES_DB.find((h) => h.id === heroId) || HEROES_DB[0];
+
+    console.log(
+        `[AvatarRenderer] Rendering Hero: ${heroId}, Found Config: ${heroConfig.id}, Image: ${heroConfig.image}`,
+    );
 
     const currentEquipment = heroEquipment[heroId] || {};
 
@@ -47,8 +48,8 @@ export const useAvatarRenderer = (heroId: string, size: number = 512) => {
     const centerX = size * 0.5;
 
     // Расчет корневой точки (Root/Pivot)
-    const rootX = centerX - (heroConfig.anchors.feet.x * BASE_SIZE * scaleFactor);
-    const rootY = groundY - (heroConfig.anchors.feet.y * BASE_SIZE * scaleFactor);
+    const rootX = centerX - heroConfig.anchors.feet.x * BASE_SIZE * scaleFactor;
+    const rootY = groundY - heroConfig.anchors.feet.y * BASE_SIZE * scaleFactor;
 
     const layers: IAvatarLayer[] = [];
 
@@ -61,22 +62,22 @@ export const useAvatarRenderer = (heroId: string, size: number = 512) => {
         y: rootY,
         rotation: 0,
         scale: scaleFactor,
-        zIndex: 10
+        zIndex: 10,
     });
 
     // 2. СОКЕТЫ
     const socketMap: Record<string, string> = {
-        'WEAPONS': 'rightHand',
-        'SHIELDS': 'leftHand',
-        'HELMETS': 'head',
-        'ARMOR': 'center'
+        WEAPONS: 'rightHand',
+        SHIELDS: 'leftHand',
+        HELMETS: 'head',
+        ARMOR: 'center',
     };
 
     const socketAliases: Record<string, string> = {
-        'MainHand': 'rightHand',
-        'OffHand': 'leftHand',
-        'Head': 'head',
-        'Chest': 'center'
+        MainHand: 'rightHand',
+        OffHand: 'leftHand',
+        Head: 'head',
+        Chest: 'center',
     };
 
     Object.entries(socketMap).forEach(([slot, socketKey]) => {
@@ -96,8 +97,9 @@ export const useAvatarRenderer = (heroId: string, size: number = 512) => {
         // 2. Если её нет, пытаемся собрать путь из textureKey
         let itemImage = item.image;
         if ((!itemImage || itemImage === '') && item.textureKey) {
-            const fileName = item.textureKey.replace('weapon_', '').replace('helm_', '').replace('armor_', '') + '.webp';
-            const folder = isWeapon ? 'weapons' : (slot === 'HELMETS' ? 'helms' : 'armor');
+            const fileName =
+                item.textureKey.replace('weapon_', '').replace('helm_', '').replace('armor_', '') + '.webp';
+            const folder = isWeapon ? 'weapons' : slot === 'HELMETS' ? 'helms' : 'armor';
             itemImage = `/assets/images/items/${folder}/${fileName}`;
         }
 
@@ -114,10 +116,10 @@ export const useAvatarRenderer = (heroId: string, size: number = 512) => {
         const WEAPON_BASE = 256;
         const HERO_BASE = 512;
 
-        const itemScale = (socket.scale || 1.0) * (isWeapon ? (WEAPON_BASE / HERO_BASE) : 0.8) * scaleFactor;
+        const itemScale = (socket.scale || 1.0) * (isWeapon ? WEAPON_BASE / HERO_BASE : 0.8) * scaleFactor;
 
-        const itemX = rootX + (socket.x * BASE_SIZE * scaleFactor);
-        const itemY = rootY + (socket.y * BASE_SIZE * scaleFactor);
+        const itemX = rootX + socket.x * BASE_SIZE * scaleFactor;
+        const itemY = rootY + socket.y * BASE_SIZE * scaleFactor;
 
         layers.push({
             id: `item-${slot}`,
@@ -126,17 +128,17 @@ export const useAvatarRenderer = (heroId: string, size: number = 512) => {
             spriteClass: item.spriteClass, // Передаем класс спрайта
             x: itemX,
             y: itemY,
-            offsetY: (heroConfig.anchors.feet.y - socket.y),
+            offsetY: heroConfig.anchors.feet.y - socket.y,
             rotation: socket.angle || 0,
             scale: itemScale,
             zIndex: socketKey === 'head' ? 30 : 20,
-            rarity: item.rarity
+            rarity: item.rarity,
         });
     });
 
     return {
         layers,
         heroConfig,
-        dimensions: { size, groundY, centerX, rootX, rootY, scaleFactor }
+        dimensions: { size, groundY, centerX, rootX, rootY, scaleFactor },
     };
 };

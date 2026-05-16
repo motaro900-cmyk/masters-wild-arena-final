@@ -3,23 +3,44 @@ import { motion } from 'framer-motion';
 import { useGameStore } from '../../../store/useGameStore';
 
 export const AncientsSanctuaryWindow: React.FC = () => {
-    const { pveStage, maxPveStage, startPveBattle } = useGameStore();
+    const { pveStage, startPveBattle } = useGameStore();
 
     const floors = Array.from({ length: 5 }, (_, i) => pveStage + i);
 
     return (
         <div style={{ padding: '20px', color: '#fff' }}>
             {/* ТЕКУЩИЙ СТАТУС */}
-            <div style={{ 
-                textAlign: 'center', 
-                marginBottom: '30px', 
-                background: 'rgba(0,0,0,0.3)', 
-                padding: '15px', 
-                borderRadius: '12px',
-                border: '1px solid rgba(240,192,64,0.2)'
-            }}>
-                <div style={{ fontSize: '14px', color: '#f0c040', fontWeight: 900, letterSpacing: '2px', marginBottom: '5px' }}>ВАШ ТЕКУЩИЙ ЭТАЖ</div>
-                <div style={{ fontSize: '48px', fontFamily: "'Cinzel', serif", fontWeight: 900, textShadow: '0 0 20px rgba(240,192,64,0.4)' }}>{pveStage}</div>
+            <div
+                style={{
+                    textAlign: 'center',
+                    marginBottom: '30px',
+                    background: 'rgba(0,0,0,0.3)',
+                    padding: '15px',
+                    borderRadius: '12px',
+                    border: '1px solid rgba(240,192,64,0.2)',
+                }}
+            >
+                <div
+                    style={{
+                        fontSize: '14px',
+                        color: '#f0c040',
+                        fontWeight: 900,
+                        letterSpacing: '2px',
+                        marginBottom: '5px',
+                    }}
+                >
+                    ВАШ ТЕКУЩИЙ ЭТАЖ
+                </div>
+                <div
+                    style={{
+                        fontSize: '48px',
+                        fontFamily: "'Cinzel', serif",
+                        fontWeight: 900,
+                        textShadow: '0 0 20px rgba(240,192,64,0.4)',
+                    }}
+                >
+                    {pveStage}
+                </div>
             </div>
 
             {/* СПИСОК ПРЕДСТОЯЩИХ ЭТАЖЕЙ */}
@@ -42,21 +63,23 @@ export const AncientsSanctuaryWindow: React.FC = () => {
                                 background: isCurrent ? 'rgba(240,192,64,0.1)' : 'rgba(255,255,255,0.05)',
                                 border: isCurrent ? '2px solid #f0c040' : '1px solid rgba(255,255,255,0.1)',
                                 borderRadius: '10px',
-                                opacity: isCurrent ? 1 : 0.6
+                                opacity: isCurrent ? 1 : 0.6,
                             }}
                         >
                             <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                                <div style={{ 
-                                    width: '40px', 
-                                    height: '40px', 
-                                    background: isBoss ? '#ef4444' : '#333',
-                                    borderRadius: '8px',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    fontWeight: 900,
-                                    fontSize: '18px'
-                                }}>
+                                <div
+                                    style={{
+                                        width: '40px',
+                                        height: '40px',
+                                        background: isBoss ? '#ef4444' : '#333',
+                                        borderRadius: '8px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        fontWeight: 900,
+                                        fontSize: '18px',
+                                    }}
+                                >
                                     {isBoss ? '💀' : floor}
                                 </div>
                                 <div>
@@ -69,7 +92,14 @@ export const AncientsSanctuaryWindow: React.FC = () => {
                                 </div>
                             </div>
                             {isCurrent && (
-                                <div style={{ fontSize: '12px', color: '#f0c040', fontWeight: 900, animation: 'pulse 1.5s infinite' }}>
+                                <div
+                                    style={{
+                                        fontSize: '12px',
+                                        color: '#f0c040',
+                                        fontWeight: 900,
+                                        animation: 'pulse 1.5s infinite',
+                                    }}
+                                >
                                     ТЕКУЩИЙ ЦЕЛЬ
                                 </div>
                             )}
@@ -93,10 +123,10 @@ export const AncientsSanctuaryWindow: React.FC = () => {
                     fontFamily: "'Cinzel', serif",
                     cursor: 'pointer',
                     boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
-                    transition: 'transform 0.2s'
+                    transition: 'transform 0.2s',
                 }}
-                onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.02)'}
-                onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+                onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.02)')}
+                onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1)')}
             >
                 ВСТУПИТЬ В БОЙ
             </button>

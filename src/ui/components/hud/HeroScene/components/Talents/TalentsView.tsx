@@ -27,14 +27,46 @@ export const TalentsView = ({ hero }: any) => {
                 inset: '40px 80px',
                 display: 'flex',
                 flexDirection: 'column',
-                zIndex: 10
+                zIndex: 10,
             }}
         >
             {/* HEADER */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
-                <div style={{ background: 'rgba(0,0,0,0.6)', padding: '15px 35px', borderRadius: '20px', backdropFilter: 'blur(10px)', border: '2px solid rgba(240,192,64,0.3)', boxShadow: '0 0 35px rgba(0,0,0,0.6)' }}>
-                    <h2 style={{ color: '#fff', fontSize: '36px', margin: 0, fontFamily: "'Cinzel', serif", textShadow: '0 4px 15px rgba(0,0,0,0.8)', letterSpacing: '2px' }}>ДРЕВО ТАЛАНТОВ</h2>
-                    <p style={{ color: 'rgba(255,255,255,0.7)', margin: 0, fontSize: '14px', fontWeight: 600, letterSpacing: '1px' }}>Улучшайте способности вашего героя</p>
+            <div
+                style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}
+            >
+                <div
+                    style={{
+                        background: 'rgba(0,0,0,0.6)',
+                        padding: '15px 35px',
+                        borderRadius: '20px',
+                        backdropFilter: 'blur(10px)',
+                        border: '2px solid rgba(240,192,64,0.3)',
+                        boxShadow: '0 0 35px rgba(0,0,0,0.6)',
+                    }}
+                >
+                    <h2
+                        style={{
+                            color: '#fff',
+                            fontSize: '36px',
+                            margin: 0,
+                            fontFamily: "'Cinzel', serif",
+                            textShadow: '0 4px 15px rgba(0,0,0,0.8)',
+                            letterSpacing: '2px',
+                        }}
+                    >
+                        ДРЕВО ТАЛАНТОВ
+                    </h2>
+                    <p
+                        style={{
+                            color: 'rgba(255,255,255,0.7)',
+                            margin: 0,
+                            fontSize: '14px',
+                            fontWeight: 600,
+                            letterSpacing: '1px',
+                        }}
+                    >
+                        Улучшайте способности вашего героя
+                    </p>
                 </div>
 
                 {/* PREMIUM POINTS BLOCK */}
@@ -44,27 +76,41 @@ export const TalentsView = ({ hero }: any) => {
                     style={{
                         background: 'linear-gradient(135deg, rgba(20, 20, 25, 0.95) 0%, rgba(30, 30, 45, 0.98) 100%)',
                         border: '2px solid rgba(240, 192, 64, 0.6)',
-                        padding: '10px 35px', borderRadius: '18px', display: 'flex', alignItems: 'center',
+                        padding: '10px 35px',
+                        borderRadius: '18px',
+                        display: 'flex',
+                        alignItems: 'center',
                         boxShadow: '0 10px 40px rgba(0,0,0,0.8), inset 0 0 25px rgba(240,192,64,0.1)',
                         backdropFilter: 'blur(20px)',
                         minWidth: '220px',
-                        justifyContent: 'center'
+                        justifyContent: 'center',
                     }}
                 >
                     <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                        <span style={{ 
-                            color: '#fff', fontSize: '48px', fontWeight: 950, 
-                            fontFamily: "'Cinzel', serif", textShadow: '0 0 25px rgba(240,192,64,0.6)',
-                            lineHeight: 1
-                        }}>
+                        <span
+                            style={{
+                                color: '#fff',
+                                fontSize: '48px',
+                                fontWeight: 950,
+                                fontFamily: "'Cinzel', serif",
+                                textShadow: '0 0 25px rgba(240,192,64,0.6)',
+                                lineHeight: 1,
+                            }}
+                        >
                             {String(availablePoints ?? 0)}
                         </span>
-                        <span style={{ 
-                            color: '#f0c040', fontSize: '15px', fontWeight: 900, letterSpacing: '1px', 
-                            fontFamily: "'Cinzel', serif", textShadow: '0 2px 4px rgba(0,0,0,0.5)',
-                            textTransform: 'uppercase',
-                            marginTop: '4px'
-                        }}>
+                        <span
+                            style={{
+                                color: '#f0c040',
+                                fontSize: '15px',
+                                fontWeight: 900,
+                                letterSpacing: '1px',
+                                fontFamily: "'Cinzel', serif",
+                                textShadow: '0 2px 4px rgba(0,0,0,0.5)',
+                                textTransform: 'uppercase',
+                                marginTop: '4px',
+                            }}
+                        >
                             {(() => {
                                 const n = availablePoints ?? 0;
                                 let m = Math.abs(n) % 100;
@@ -81,19 +127,37 @@ export const TalentsView = ({ hero }: any) => {
 
             {/* TREE COLUMNS */}
             <div style={{ flex: 1, display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '30px' }}>
-                {TALENTS_CONFIG.map(branch => (
+                {TALENTS_CONFIG.map((branch) => (
                     <div key={branch.id} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                         {/* BRANCH HEADER */}
-                        <div style={{
-                            display: 'flex', alignItems: 'center', gap: '15px',
-                            background: `linear-gradient(90deg, ${branch.color}aa 0%, transparent 100%)`,
-                            padding: '12px 25px', borderRadius: '12px',
-                            borderLeft: `5px solid ${branch.color}`,
-                            boxShadow: '0 4px 15px rgba(0,0,0,0.4)',
-                            backdropFilter: 'blur(4px)'
-                        }}>
-                            <span style={{ fontSize: '32px', filter: `drop-shadow(0 0 10px ${branch.color})` }}>{branch.icon}</span>
-                            <span style={{ color: '#fff', fontSize: '24px', fontWeight: 900, fontFamily: "'Cinzel', serif", letterSpacing: '3px', textShadow: `0 0 15px ${branch.color}` }}>{branch.title}</span>
+                        <div
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '15px',
+                                background: `linear-gradient(90deg, ${branch.color}aa 0%, transparent 100%)`,
+                                padding: '12px 25px',
+                                borderRadius: '12px',
+                                borderLeft: `5px solid ${branch.color}`,
+                                boxShadow: '0 4px 15px rgba(0,0,0,0.4)',
+                                backdropFilter: 'blur(4px)',
+                            }}
+                        >
+                            <span style={{ fontSize: '32px', filter: `drop-shadow(0 0 10px ${branch.color})` }}>
+                                {branch.icon}
+                            </span>
+                            <span
+                                style={{
+                                    color: '#fff',
+                                    fontSize: '24px',
+                                    fontWeight: 900,
+                                    fontFamily: "'Cinzel', serif",
+                                    letterSpacing: '3px',
+                                    textShadow: `0 0 15px ${branch.color}`,
+                                }}
+                            >
+                                {branch.title}
+                            </span>
                         </div>
 
                         <div style={{ display: 'flex', flexDirection: 'column', position: 'relative' }}>
@@ -104,45 +168,158 @@ export const TalentsView = ({ hero }: any) => {
                                 const isUnlocked = branchPoints >= tier.requiredInBranch;
 
                                 return (
-                                    <div key={tIndex} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative', width: '100%' }}>
+                                    <div
+                                        key={tIndex}
+                                        style={{
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            alignItems: 'center',
+                                            position: 'relative',
+                                            width: '100%',
+                                        }}
+                                    >
                                         {/* CONNECTORS (DYNAMIC GEOMETRY) */}
                                         {tIndex > 0 && (
-                                            <div style={{ position: 'relative', height: '50px', width: '100%', display: 'flex', justifyContent: 'center' }}>
+                                            <div
+                                                style={{
+                                                    position: 'relative',
+                                                    height: '50px',
+                                                    width: '100%',
+                                                    display: 'flex',
+                                                    justifyContent: 'center',
+                                                }}
+                                            >
                                                 {/* CASE A: 1 Parent -> 2 Children (Branching) */}
-                                                {branch.tiers[tIndex - 1].talents.length === 1 && tier.talents.length > 1 && (
-                                                    <>
-                                                        {/* Spine UP */}
-                                                        <div style={{ position: 'absolute', top: 0, width: '6px', height: '25px', background: isUnlocked ? branch.color : '#0a0a0a', border: `1px solid ${isUnlocked ? branch.color + '88' : 'rgba(255,255,255,0.15)'}` }} />
-                                                        {/* Bridge */}
-                                                        <div style={{ position: 'absolute', top: '25px', width: '170px', height: '6px', background: isUnlocked ? branch.color : '#0a0a0a', border: `1px solid ${isUnlocked ? branch.color + '88' : 'rgba(255,255,255,0.15)'}`, borderRadius: '3px' }} />
-                                                        {/* 2 Legs DOWN */}
-                                                        <div style={{ position: 'absolute', top: '25px', left: 'calc(50% - 85px)', width: '6px', height: '25px', background: isUnlocked ? branch.color : '#0a0a0a', border: `1px solid ${isUnlocked ? branch.color + '88' : 'rgba(255,255,255,0.15)'}` }} />
-                                                        <div style={{ position: 'absolute', top: '25px', left: 'calc(50% + 85px)', width: '6px', height: '25px', background: isUnlocked ? branch.color : '#0a0a0a', border: `1px solid ${isUnlocked ? branch.color + '88' : 'rgba(255,255,255,0.15)'}` }} />
-                                                    </>
-                                                )}
+                                                {branch.tiers[tIndex - 1].talents.length === 1 &&
+                                                    tier.talents.length > 1 && (
+                                                        <>
+                                                            {/* Spine UP */}
+                                                            <div
+                                                                style={{
+                                                                    position: 'absolute',
+                                                                    top: 0,
+                                                                    width: '6px',
+                                                                    height: '25px',
+                                                                    background: isUnlocked ? branch.color : '#0a0a0a',
+                                                                    border: `1px solid ${isUnlocked ? branch.color + '88' : 'rgba(255,255,255,0.15)'}`,
+                                                                }}
+                                                            />
+                                                            {/* Bridge */}
+                                                            <div
+                                                                style={{
+                                                                    position: 'absolute',
+                                                                    top: '25px',
+                                                                    width: '170px',
+                                                                    height: '6px',
+                                                                    background: isUnlocked ? branch.color : '#0a0a0a',
+                                                                    border: `1px solid ${isUnlocked ? branch.color + '88' : 'rgba(255,255,255,0.15)'}`,
+                                                                    borderRadius: '3px',
+                                                                }}
+                                                            />
+                                                            {/* 2 Legs DOWN */}
+                                                            <div
+                                                                style={{
+                                                                    position: 'absolute',
+                                                                    top: '25px',
+                                                                    left: 'calc(50% - 85px)',
+                                                                    width: '6px',
+                                                                    height: '25px',
+                                                                    background: isUnlocked ? branch.color : '#0a0a0a',
+                                                                    border: `1px solid ${isUnlocked ? branch.color + '88' : 'rgba(255,255,255,0.15)'}`,
+                                                                }}
+                                                            />
+                                                            <div
+                                                                style={{
+                                                                    position: 'absolute',
+                                                                    top: '25px',
+                                                                    left: 'calc(50% + 85px)',
+                                                                    width: '6px',
+                                                                    height: '25px',
+                                                                    background: isUnlocked ? branch.color : '#0a0a0a',
+                                                                    border: `1px solid ${isUnlocked ? branch.color + '88' : 'rgba(255,255,255,0.15)'}`,
+                                                                }}
+                                                            />
+                                                        </>
+                                                    )}
 
                                                 {/* CASE B: 2 Parents -> 1 Child (Merging) */}
-                                                {branch.tiers[tIndex - 1].talents.length > 1 && tier.talents.length === 1 && (
-                                                    <>
-                                                        {/* Bridge MIDDLE */}
-                                                        <div style={{ position: 'absolute', top: '25px', width: '170px', height: '6px', background: isUnlocked ? branch.color : '#0a0a0a', border: `1px solid ${isUnlocked ? branch.color + '88' : 'rgba(255,255,255,0.15)'}`, borderRadius: '3px' }} />
-                                                        {/* 2 Legs UP (Connect to parents above) */}
-                                                        <div style={{ position: 'absolute', top: 0, left: 'calc(50% - 85px)', width: '6px', height: '25px', background: isUnlocked ? branch.color : '#0a0a0a', border: `1px solid ${isUnlocked ? branch.color + '88' : 'rgba(255,255,255,0.15)'}` }} />
-                                                        <div style={{ position: 'absolute', top: 0, left: 'calc(50% + 85px)', width: '6px', height: '25px', background: isUnlocked ? branch.color : '#0a0a0a', border: `1px solid ${isUnlocked ? branch.color + '88' : 'rgba(255,255,255,0.15)'}` }} />
-                                                        {/* Spine DOWN (Connect to child below) */}
-                                                        <div style={{ position: 'absolute', top: '25px', width: '6px', height: '25px', background: isUnlocked ? branch.color : '#0a0a0a', border: `1px solid ${isUnlocked ? branch.color + '88' : 'rgba(255,255,255,0.15)'}` }} />
-                                                    </>
-                                                )}
+                                                {branch.tiers[tIndex - 1].talents.length > 1 &&
+                                                    tier.talents.length === 1 && (
+                                                        <>
+                                                            {/* Bridge MIDDLE */}
+                                                            <div
+                                                                style={{
+                                                                    position: 'absolute',
+                                                                    top: '25px',
+                                                                    width: '170px',
+                                                                    height: '6px',
+                                                                    background: isUnlocked ? branch.color : '#0a0a0a',
+                                                                    border: `1px solid ${isUnlocked ? branch.color + '88' : 'rgba(255,255,255,0.15)'}`,
+                                                                    borderRadius: '3px',
+                                                                }}
+                                                            />
+                                                            {/* 2 Legs UP (Connect to parents above) */}
+                                                            <div
+                                                                style={{
+                                                                    position: 'absolute',
+                                                                    top: 0,
+                                                                    left: 'calc(50% - 85px)',
+                                                                    width: '6px',
+                                                                    height: '25px',
+                                                                    background: isUnlocked ? branch.color : '#0a0a0a',
+                                                                    border: `1px solid ${isUnlocked ? branch.color + '88' : 'rgba(255,255,255,0.15)'}`,
+                                                                }}
+                                                            />
+                                                            <div
+                                                                style={{
+                                                                    position: 'absolute',
+                                                                    top: 0,
+                                                                    left: 'calc(50% + 85px)',
+                                                                    width: '6px',
+                                                                    height: '25px',
+                                                                    background: isUnlocked ? branch.color : '#0a0a0a',
+                                                                    border: `1px solid ${isUnlocked ? branch.color + '88' : 'rgba(255,255,255,0.15)'}`,
+                                                                }}
+                                                            />
+                                                            {/* Spine DOWN (Connect to child below) */}
+                                                            <div
+                                                                style={{
+                                                                    position: 'absolute',
+                                                                    top: '25px',
+                                                                    width: '6px',
+                                                                    height: '25px',
+                                                                    background: isUnlocked ? branch.color : '#0a0a0a',
+                                                                    border: `1px solid ${isUnlocked ? branch.color + '88' : 'rgba(255,255,255,0.15)'}`,
+                                                                }}
+                                                            />
+                                                        </>
+                                                    )}
 
                                                 {/* CASE C: 1 Parent -> 1 Child (Straight) */}
-                                                {branch.tiers[tIndex - 1].talents.length === 1 && tier.talents.length === 1 && (
-                                                    <div style={{ width: '6px', height: '100%', background: isUnlocked ? branch.color : '#0a0a0a', border: `1px solid ${isUnlocked ? branch.color + '88' : 'rgba(255,255,255,0.15)'}` }} />
-                                                )}
+                                                {branch.tiers[tIndex - 1].talents.length === 1 &&
+                                                    tier.talents.length === 1 && (
+                                                        <div
+                                                            style={{
+                                                                width: '6px',
+                                                                height: '100%',
+                                                                background: isUnlocked ? branch.color : '#0a0a0a',
+                                                                border: `1px solid ${isUnlocked ? branch.color + '88' : 'rgba(255,255,255,0.15)'}`,
+                                                            }}
+                                                        />
+                                                    )}
                                             </div>
                                         )}
 
-                                        <div style={{ display: 'flex', gap: '60px', justifyContent: 'center', width: '100%', zIndex: 2 }}>
-                                            {tier.talents.map(talent => {
+                                        <div
+                                            style={{
+                                                display: 'flex',
+                                                gap: '60px',
+                                                justifyContent: 'center',
+                                                width: '100%',
+                                                zIndex: 2,
+                                            }}
+                                        >
+                                            {tier.talents.map((talent) => {
                                                 const lvl = talents[talent.id] || 0;
                                                 return (
                                                     <TalentNode
@@ -164,10 +341,15 @@ export const TalentsView = ({ hero }: any) => {
                                                                 // SMART POSITIONING: Lowered threshold and increased offset to ensure visibility
                                                                 setTooltipPos({
                                                                     x: x > 1400 ? x - 520 : x,
-                                                                    y: y > 420 ? y - 520 : y
+                                                                    y: y > 420 ? y - 520 : y,
                                                                 });
                                                             }
-                                                            setActiveTalent({ ...talent, branchPoints, required: tier.requiredInBranch, level: lvl });
+                                                            setActiveTalent({
+                                                                ...talent,
+                                                                branchPoints,
+                                                                required: tier.requiredInBranch,
+                                                                level: lvl,
+                                                            });
                                                         }}
                                                         onMouseLeave={() => setActiveTalent(null)}
                                                     />
@@ -194,9 +376,17 @@ export const TalentsView = ({ hero }: any) => {
                         }
                     }}
                     style={{
-                        padding: '18px 50px', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)',
-                        borderRadius: '15px', color: 'rgba(255,255,255,0.8)', fontSize: '16px', fontWeight: 900,
-                        cursor: 'pointer', fontFamily: "'Cinzel', serif", letterSpacing: '2px', backdropFilter: 'blur(10px)'
+                        padding: '18px 50px',
+                        background: 'rgba(0,0,0,0.5)',
+                        border: '1px solid rgba(255,255,255,0.2)',
+                        borderRadius: '15px',
+                        color: 'rgba(255,255,255,0.8)',
+                        fontSize: '16px',
+                        fontWeight: 900,
+                        cursor: 'pointer',
+                        fontFamily: "'Cinzel', serif",
+                        letterSpacing: '2px',
+                        backdropFilter: 'blur(10px)',
                     }}
                 >
                     🔄 СБРОСИТЬ ТАЛАНТЫ
@@ -209,7 +399,11 @@ export const TalentsView = ({ hero }: any) => {
                     <TalentTooltip
                         talent={activeTalent}
                         pos={tooltipPos}
-                        color={TALENTS_CONFIG.find(b => b.tiers.some(t => t.talents.some(tt => tt.id === activeTalent.id)))?.color || '#fff'}
+                        color={
+                            TALENTS_CONFIG.find((b) =>
+                                b.tiers.some((t) => t.talents.some((tt) => tt.id === activeTalent.id)),
+                            )?.color || '#fff'
+                        }
                     />
                 )}
             </AnimatePresence>

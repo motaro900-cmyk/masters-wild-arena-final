@@ -9,20 +9,67 @@
 @import './ui/styles/animations.css'; */
 
 :root {
-  background-color: #000;
-  margin: 0;
-  padding: 0;
+    background-color: #000;
+    margin: 0;
+    padding: 0;
 }
 
 body,
 html,
 #root {
-  margin: 0;
-  padding: 0;
-  width: 100vw;
-  height: 100vh;
-  overflow: hidden;
-  background-color: #000;
+    margin: 0;
+    padding: 0;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    background-color: #000;
+}
+
+/* ─── MOBILE ADAPTATION ─────────────────────────────────────────────────── */
+
+/* Global scaling for mobile */
+.is-mobile {
+    --ui-scale: 1.25;
+}
+
+.is-mobile .hud-interactive {
+    transform-origin: center;
+    scale: var(--ui-scale);
+    pointer-events: auto;
+}
+
+/* Adjustments for specific panels on mobile */
+.is-mobile .ChatPanel {
+    scale: 1; /* Keep chat readable but not too huge */
+    max-height: 25vh;
+}
+
+.is-mobile .ActionButtons {
+    scale: 1.3;
+    bottom: 40px !important;
+}
+
+/* Fullscreen windows on mobile */
+.is-mobile .BaseWindow {
+    width: 96vw !important;
+    height: 90vh !important;
+    max-width: none !important;
+    max-height: none !important;
+}
+
+/* Safe areas for notched phones */
+@supports (padding: env(safe-area-inset-top)) {
+    .is-mobile .game-hud-root {
+        padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom)
+            env(safe-area-inset-left);
+    }
+}
+
+/* Tappable targets size increase */
+.is-mobile button,
+.is-mobile [role='button'] {
+    min-width: 44px;
+    min-height: 44px;
 }
 
 /* 
@@ -31,465 +78,489 @@ html,
   Стиль contain гарантирует, что он впишется в 16:9 контейнер без искажений.
 */
 canvas {
-  width: 100% !important;
-  height: 100% !important;
-  object-fit: contain;
-  display: block;
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain;
+    display: block;
 }
 
 .hud-interactive {
-  pointer-events: auto;
+    pointer-events: auto;
 }
 
 /* Premium Custom Scrollbar */
 .custom-scrollbar::-webkit-scrollbar {
-  width: 8px;
+    width: 8px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 4px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, #f0c040 0%, #c87820 100%);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 4px;
-  box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.5);
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: linear-gradient(180deg, #f0c040 0%, #c87820 100%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.5);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 /* CUSTOM PREMIUM SCROLLBAR */
 .custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
+    width: 6px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 10px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, #f0c040 0%, #a67c00 100%);
-  border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+    background: linear-gradient(180deg, #f0c040 0%, #a67c00 100%);
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #ffd700;
+    background: #ffd700;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(180deg, #ffd700 0%, #daa520 100%);
+    background: linear-gradient(180deg, #ffd700 0%, #daa520 100%);
 }
 
 @keyframes shimmer {
-  0% {
-    background-position: -200% 0;
-  }
+    0% {
+        background-position: -200% 0;
+    }
 
-  100% {
-    background-position: 200% 0;
-  }
+    100% {
+        background-position: 200% 0;
+    }
 }
 
 @keyframes shine {
-  from {
-    transform: translateX(-100%) skewX(-15deg);
-  }
+    from {
+        transform: translateX(-100%) skewX(-15deg);
+    }
 
-  to {
-    transform: translateX(200%) skewX(-15deg);
-  }
+    to {
+        transform: translateX(200%) skewX(-15deg);
+    }
 }
 
 .animate-shimmer {
-  animation: shimmer 3s linear infinite;
+    animation: shimmer 3s linear infinite;
 }
 
 .animate-shine {
-  animation: shine 2.5s ease-in-out infinite;
+    animation: shine 2.5s ease-in-out infinite;
 }
 
 /* SPRITE SYSTEM: BOOTS (4x2 Grid) */
 .sprite-boots {
-  background-image: url('/assets/images/items/boots/boots_sprite.webp');
-  background-size: 400% 200%;
-  width: 100%;
-  height: 100%;
-  background-repeat: no-repeat;
-  display: block;
+    background-image: url('/assets/images/items/boots/boots_sprite.webp');
+    background-size: 400% 200%;
+    width: 100%;
+    height: 100%;
+    background-repeat: no-repeat;
+    display: block;
 }
 
 .sprite-boots.boot-1 {
-  background-position: 0% 0%;
+    background-position: 0% 0%;
 }
 
 .sprite-boots.boot-2 {
-  background-position: 33.33% 0%;
+    background-position: 33.33% 0%;
 }
 
 .sprite-boots.boot-3 {
-  background-position: 66.66% 0%;
+    background-position: 66.66% 0%;
 }
 
 .sprite-boots.boot-4 {
-  background-position: 100% 0%;
+    background-position: 100% 0%;
 }
 
 .sprite-boots.boot-5 {
-  background-position: 0% 100%;
+    background-position: 0% 100%;
 }
 
 .sprite-boots.boot-6 {
-  background-position: 33.33% 100%;
+    background-position: 33.33% 100%;
 }
 
 .sprite-boots.boot-7 {
-  background-position: 66.66% 100%;
+    background-position: 66.66% 100%;
 }
 
 /* SPRITE SYSTEM: PANTS (5x3 Grid) */
 .sprite-pants {
-  background-image: url('/assets/images/items/pants/pants_sprite.webp');
-  background-size: 500% 300%;
-  width: 100%;
-  height: 100%;
-  background-repeat: no-repeat;
-  display: block;
+    background-image: url('/assets/images/items/pants/pants_sprite.webp');
+    background-size: 500% 300%;
+    width: 100%;
+    height: 100%;
+    background-repeat: no-repeat;
+    display: block;
 }
 
 .sprite-pants.pants-1 {
-  background-position: 0% 0%;
+    background-position: 0% 0%;
 }
 
 .sprite-pants.pants-2 {
-  background-position: 25% 0%;
+    background-position: 25% 0%;
 }
 
 .sprite-pants.pants-3 {
-  background-position: 50% 0%;
+    background-position: 50% 0%;
 }
 
 .sprite-pants.pants-4 {
-  background-position: 75% 0%;
+    background-position: 75% 0%;
 }
 
 .sprite-pants.pants-5 {
-  background-position: 100% 0%;
+    background-position: 100% 0%;
 }
 
 .sprite-pants.pants-6 {
-  background-position: 0% 50%;
+    background-position: 0% 50%;
 }
 
 .sprite-pants.pants-7 {
-  background-position: 25% 50%;
+    background-position: 25% 50%;
 }
 
 .sprite-pants.pants-8 {
-  background-position: 50% 50%;
+    background-position: 50% 50%;
 }
 
 .sprite-pants.pants-9 {
-  background-position: 75% 50%;
+    background-position: 75% 50%;
 }
 
 .sprite-pants.pants-10 {
-  background-position: 100% 50%;
+    background-position: 100% 50%;
 }
 
 .sprite-pants.pants-11 {
-  background-position: 0% 100%;
+    background-position: 0% 100%;
 }
 
 .sprite-pants.pants-12 {
-  background-position: 25% 100%;
+    background-position: 25% 100%;
 }
 
 .sprite-pants.pants-13 {
-  background-position: 50% 100%;
+    background-position: 50% 100%;
 }
 
 .sprite-pants.pants-14 {
-  background-position: 75% 100%;
+    background-position: 75% 100%;
 }
 
 .sprite-pants.pants-15 {
-  background-position: 100% 100%;
+    background-position: 100% 100%;
 }
 
 /* SPRITE SYSTEM: WEAPONS & SHIELDS (3x3 Grid) */
 .sprite-weapons {
-  background-image: url('/assets/images/items/weapons/weapons_sprite.webp');
-  background-size: 300% 300%;
-  width: 100%;
-  height: 100%;
-  background-repeat: no-repeat;
-  display: block;
+    background-image: url('/assets/images/items/weapons/weapons_sprite.webp');
+    background-size: 300% 300%;
+    width: 100%;
+    height: 100%;
+    background-repeat: no-repeat;
+    display: block;
 }
 
 .sprite-weapons.wpn-1 {
-  background-position: 0% 0%;
+    background-position: 0% 0%;
 }
 
 /* Огненный Топор */
 .sprite-weapons.wpn-2 {
-  background-position: 50% 0%;
+    background-position: 50% 0%;
 }
 
 /* Ядовитые Кинжалы */
 .sprite-weapons.wpn-3 {
-  background-position: 100% 0%;
+    background-position: 100% 0%;
 }
 
 /* Череп-Булава */
 .sprite-weapons.wpn-4 {
-  background-position: 0% 50%;
+    background-position: 0% 50%;
 }
 
 /* Рунный Меч */
 .sprite-weapons.wpn-5 {
-  background-position: 50% 50%;
+    background-position: 50% 50%;
 }
 
 /* Паровой Пистолет */
 .sprite-weapons.wpn-6 {
-  background-position: 100% 50%;
+    background-position: 100% 50%;
 }
 
 /* Космический Посох */
 .sprite-weapons.wpn-7 {
-  background-position: 0% 100%;
+    background-position: 0% 100%;
 }
 
 /* Тяжелый Арбалет */
 .sprite-weapons.wpn-8 {
-  background-position: 50% 100%;
+    background-position: 50% 100%;
 }
 
 /* Щит Льва */
 .sprite-weapons.wpn-9 {
-  background-position: 100% 100%;
+    background-position: 100% 100%;
 }
 
 /* Синие Когти */
 
 /* SPRITE SYSTEM: WEAPONS EXTENDED (4x4 Grid) */
 .sprite-weapons-ext {
-  background-image: url('/assets/images/items/weapons/weapons_sheet.webp');
-  background-size: 400% 400%;
-  width: 100%;
-  height: 100%;
-  background-repeat: no-repeat;
-  display: block;
+    background-image: url('/assets/images/items/weapons/weapons_sheet.webp');
+    background-size: 400% 400%;
+    width: 100%;
+    height: 100%;
+    background-repeat: no-repeat;
+    display: block;
 }
 
 .sprite-weapons-ext.ext-1 {
-  background-position: 0% 0%;
+    background-position: 0% 0%;
 }
 
 .sprite-weapons-ext.ext-2 {
-  background-position: 33.33% 0%;
+    background-position: 33.33% 0%;
 }
 
 .sprite-weapons-ext.ext-3 {
-  background-position: 66.66% 0%;
+    background-position: 66.66% 0%;
 }
 
 .sprite-weapons-ext.ext-4 {
-  background-position: 100% 0%;
+    background-position: 100% 0%;
 }
 
 .sprite-weapons-ext.ext-5 {
-  background-position: 0% 33.33%;
+    background-position: 0% 33.33%;
 }
 
 .sprite-weapons-ext.ext-6 {
-  background-position: 33.33% 33.33%;
+    background-position: 33.33% 33.33%;
 }
 
 .sprite-weapons-ext.ext-7 {
-  background-position: 66.66% 33.33%;
+    background-position: 66.66% 33.33%;
 }
 
 .sprite-weapons-ext.ext-8 {
-  background-position: 100% 33.33%;
+    background-position: 100% 33.33%;
 }
 
 .sprite-weapons-ext.ext-9 {
-  background-position: 0% 66.66%;
+    background-position: 0% 66.66%;
 }
 
 .sprite-weapons-ext.ext-10 {
-  background-position: 33.33% 66.66%;
+    background-position: 33.33% 66.66%;
 }
 
 .sprite-weapons-ext.ext-11 {
-  background-position: 66.66% 66.66%;
+    background-position: 66.66% 66.66%;
 }
 
 .sprite-weapons-ext.ext-12 {
-  background-position: 100% 66.66%;
+    background-position: 100% 66.66%;
 }
 
 .sprite-weapons-ext.ext-13 {
-  background-position: 0% 100%;
+    background-position: 0% 100%;
 }
 
 .sprite-weapons-ext.ext-14 {
-  background-position: 33.33% 100%;
+    background-position: 33.33% 100%;
 }
 
 .sprite-weapons-ext.ext-15 {
-  background-position: 66.66% 100%;
+    background-position: 66.66% 100%;
 }
 
 .sprite-weapons-ext.ext-16 {
-  background-position: 100% 100%;
+    background-position: 100% 100%;
 }
 
 /* SPRITE SYSTEM: HELMETS (4x4 Grid) */
 .sprite-helms {
-  background-image: url('/assets/images/items/helms/helms_sheet.webp');
-  background-size: 400% 400%;
-  width: 100%;
-  height: 100%;
-  background-repeat: no-repeat;
-  display: block;
+    background-image: url('/assets/images/items/helms/helms_sheet.webp');
+    background-size: 400% 400%;
+    width: 100%;
+    height: 100%;
+    background-repeat: no-repeat;
+    display: block;
 }
 
 .sprite-helms.helm-1 {
-  background-position: 0% 0%;
+    background-position: 0% 0%;
 }
 
 .sprite-helms.helm-2 {
-  background-position: 33.33% 0%;
+    background-position: 33.33% 0%;
 }
 
 .sprite-helms.helm-3 {
-  background-position: 66.66% 0%;
+    background-position: 66.66% 0%;
 }
 
 .sprite-helms.helm-4 {
-  background-position: 100% 0%;
+    background-position: 100% 0%;
 }
 
 .sprite-helms.helm-5 {
-  background-position: 0% 33.33%;
+    background-position: 0% 33.33%;
 }
 
 .sprite-helms.helm-6 {
-  background-position: 33.33% 33.33%;
+    background-position: 33.33% 33.33%;
 }
 
 .sprite-helms.helm-7 {
-  background-position: 66.66% 33.33%;
+    background-position: 66.66% 33.33%;
 }
 
 .sprite-helms.helm-8 {
-  background-position: 100% 33.33%;
+    background-position: 100% 33.33%;
 }
 
 .sprite-helms.helm-9 {
-  background-position: 0% 66.66%;
+    background-position: 0% 66.66%;
 }
 
 .sprite-helms.helm-10 {
-  background-position: 33.33% 66.66%;
+    background-position: 33.33% 66.66%;
 }
 
 .sprite-helms.helm-11 {
-  background-position: 66.66% 66.66%;
+    background-position: 66.66% 66.66%;
 }
 
 .sprite-helms.helm-12 {
-  background-position: 100% 66.66%;
+    background-position: 100% 66.66%;
 }
 
 .sprite-helms.helm-13 {
-  background-position: 0% 100%;
+    background-position: 0% 100%;
 }
 
 .sprite-helms.helm-14 {
-  background-position: 33.33% 100%;
+    background-position: 33.33% 100%;
 }
 
 .sprite-helms.helm-15 {
-  background-position: 66.66% 100%;
+    background-position: 66.66% 100%;
 }
 
 .sprite-helms.helm-16 {
-  background-position: 100% 100%;
+    background-position: 100% 100%;
 }
 
 /* SPRITE SYSTEM: SHOULDERS (3x3 Grid) */
 .sprite-shoulders {
-  background-image: url('/assets/images/items/shoulders/shoulders_sprite.webp');
-  background-size: 300% 300%;
-  width: 100%;
-  height: 100%;
-  background-repeat: no-repeat;
-  display: block;
+    background-image: url('/assets/images/items/shoulders/shoulders_sprite.webp');
+    background-size: 300% 300%;
+    width: 100%;
+    height: 100%;
+    background-repeat: no-repeat;
+    display: block;
 }
 
 .sprite-shoulders.sh-1 {
-  background-position: 0% 0%;
+    background-position: 0% 0%;
 }
 
 .sprite-shoulders.sh-2 {
-  background-position: 50% 0%;
+    background-position: 50% 0%;
 }
 
 .sprite-shoulders.sh-3 {
-  background-position: 100% 0%;
+    background-position: 100% 0%;
 }
 
 .sprite-shoulders.sh-4 {
-  background-position: 0% 50%;
+    background-position: 0% 50%;
 }
 
 .sprite-shoulders.sh-5 {
-  background-position: 50% 50%;
+    background-position: 50% 50%;
 }
 
 .sprite-shoulders.sh-6 {
-  background-position: 100% 50%;
+    background-position: 100% 50%;
 }
 
 .sprite-shoulders.sh-7 {
-  background-position: 0% 100%;
+    background-position: 0% 100%;
 }
 
 .sprite-shoulders.sh-8 {
-  background-position: 50% 100%;
+    background-position: 50% 100%;
 }
 
 .sprite-shoulders.sh-9 {
-  background-position: 100% 100%;
+    background-position: 100% 100%;
 }
 
 /* SPRITE SYSTEM: TALENTS (4x3 Grid) */
 .sprite-talent {
-  background-image: url('/assets/images/sheets/talents_sheet.webp');
-  background-size: 400% 300%;
-  width: 100%;
-  height: 100%;
-  background-repeat: no-repeat;
-  display: block;
+    background-image: url('/assets/images/sheets/talents_sheet.webp');
+    background-size: 400% 300%;
+    width: 100%;
+    height: 100%;
+    background-repeat: no-repeat;
+    display: block;
 }
 
-.sprite-talent.talent-1 { background-position: 2% 2%; }
-.sprite-talent.talent-2 { background-position: 33.8% 2%; }
-.sprite-talent.talent-3 { background-position: 66.2% 2%; }
-.sprite-talent.talent-4 { background-position: 98% 2%; }
+.sprite-talent.talent-1 {
+    background-position: 2% 2%;
+}
+.sprite-talent.talent-2 {
+    background-position: 33.8% 2%;
+}
+.sprite-talent.talent-3 {
+    background-position: 66.2% 2%;
+}
+.sprite-talent.talent-4 {
+    background-position: 98% 2%;
+}
 
-.sprite-talent.talent-5 { background-position: 2% 50%; }
-.sprite-talent.talent-6 { background-position: 33.8% 50%; }
-.sprite-talent.talent-7 { background-position: 66.2% 50%; }
-.sprite-talent.talent-8 { background-position: 98% 50%; }
+.sprite-talent.talent-5 {
+    background-position: 2% 50%;
+}
+.sprite-talent.talent-6 {
+    background-position: 33.8% 50%;
+}
+.sprite-talent.talent-7 {
+    background-position: 66.2% 50%;
+}
+.sprite-talent.talent-8 {
+    background-position: 98% 50%;
+}
 
-.sprite-talent.talent-9 { background-position: 2% 98%; }
-.sprite-talent.talent-10 { background-position: 33.8% 98%; }
-.sprite-talent.talent-11 { background-position: 66.2% 98%; }
-.sprite-talent.talent-12 { background-position: 98% 98%; }
+.sprite-talent.talent-9 {
+    background-position: 2% 98%;
+}
+.sprite-talent.talent-10 {
+    background-position: 33.8% 98%;
+}
+.sprite-talent.talent-11 {
+    background-position: 66.2% 98%;
+}
+.sprite-talent.talent-12 {
+    background-position: 98% 98%;
+}

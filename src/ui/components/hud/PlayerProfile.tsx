@@ -24,7 +24,7 @@ export const PlayerProfile: React.FC<PlayerProfileProps> = ({ onOpenProfile }) =
     const exp = store.exp || 0;
     const vkUser = store.vkUser;
 
-    const playerName = vkUser?.firstName || "DRAGONSLAYER";
+    const playerName = vkUser?.firstName || 'DRAGONSLAYER';
     const expNeeded = level * 600;
     const xpPercent = Math.min(100, (exp / expNeeded) * 100);
 
@@ -40,7 +40,7 @@ export const PlayerProfile: React.FC<PlayerProfileProps> = ({ onOpenProfile }) =
                 background: 'rgba(20, 10, 10, 0.95)',
                 border: '3px solid #5a0e0e',
                 borderRadius: '12px',
-                boxShadow: '0 10px 30px rgba(0,0,0,0.8)'
+                boxShadow: '0 10px 30px rgba(0,0,0,0.8)',
             }}
         >
             {/* Avatar Section — ТЕПЕРЬ ЖИВОЙ ПЕРСОНАЖ */}
@@ -52,10 +52,10 @@ export const PlayerProfile: React.FC<PlayerProfileProps> = ({ onOpenProfile }) =
                         size={85}
                     />
                 </div>
-                
+
                 {/* Наш новый динамический вид с сокетами */}
                 <div className="absolute z-10 scale-[0.3] translate-y-1">
-                     <EquippedHeroView heroId={selectedHeroId} size={280} />
+                    <EquippedHeroView heroId={selectedHeroId} size={280} />
                 </div>
 
                 <div className="absolute -bottom-1 -left-1 bg-[#8b5e2b] border-2 border-[#f0c040] rounded px-1.5 shadow-lg z-30">
@@ -65,8 +65,17 @@ export const PlayerProfile: React.FC<PlayerProfileProps> = ({ onOpenProfile }) =
 
             {/* Stats Section */}
             <div className="flex-1 flex flex-col pl-6">
-                <h2 className="text-[28px] font-black uppercase text-white" style={{ fontFamily: "'Cinzel', serif", textShadow: '0 2px 10px #000' }}>
-                    <span style={{ background: 'linear-gradient(180deg, #fff 0%, #ffd700 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                <h2
+                    className="text-[28px] font-black uppercase text-white"
+                    style={{ fontFamily: "'Cinzel', serif", textShadow: '0 2px 10px #000' }}
+                >
+                    <span
+                        style={{
+                            background: 'linear-gradient(180deg, #fff 0%, #ffd700 100%)',
+                            WebkitBackgroundClip: 'text',
+                            WebkitTextFillColor: 'transparent',
+                        }}
+                    >
                         {playerName}
                     </span>
                 </h2>

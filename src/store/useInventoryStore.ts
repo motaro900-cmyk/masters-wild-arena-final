@@ -40,13 +40,14 @@ export const useInventoryStore = create<IInventoryState>()(
             equippedArmorId: null,
             equippedShieldId: null,
 
-            addItemToInventory: (item) => set((state) => {
-                const itemObj = typeof item === 'string' ? { id: item } : item;
-                const itemId = String(itemObj.id);
-                if (!ITEMS_DATABASE[itemId]) return state;
-                if (state.inventory.some(i => String(i.id) === itemId)) return state;
-                return { inventory: [...state.inventory, itemObj] };
-            }),
+            addItemToInventory: (item) =>
+                set((state) => {
+                    const itemObj = typeof item === 'string' ? { id: item } : item;
+                    const itemId = String(itemObj.id);
+                    if (!ITEMS_DATABASE[itemId]) return state;
+                    if (state.inventory.some((i) => String(i.id) === itemId)) return state;
+                    return { inventory: [...state.inventory, itemObj] };
+                }),
             equipWeapon: (id) => set({ equippedWeaponId: id }),
             equipHelm: (id) => set({ equippedHelmId: id }),
             equipArmor: (id) => set({ equippedArmorId: id }),
@@ -55,6 +56,6 @@ export const useInventoryStore = create<IInventoryState>()(
         {
             name: 'inventory-storage',
             storage: createJSONStorage(() => getStorage()),
-        }
-    )
+        },
+    ),
 );

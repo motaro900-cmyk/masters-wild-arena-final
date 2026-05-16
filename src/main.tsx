@@ -13,6 +13,7 @@ import { AnimatePresence } from 'framer-motion';
 import { FpsCounter } from './ui/components/hud/FpsCounter';
 import { IntroScreen } from './ui/components/screens/IntroScreen';
 import { CityScreen } from './ui/components/screens/CityScreen';
+import { ForgeScreen } from './ui/components/screens/ForgeScreen';
 import { BattleScene } from './ui/components/hud/BattleScene';
 import { initVK, getVkUserInfo } from './utils/VKBridge';
 import * as PIXI from 'pixi.js';
@@ -27,7 +28,6 @@ import { audioService } from './services/AudioService';
 // This ensures the preloaded asset in index.html is "used" by the game logic immediately.
 PIXI.Assets.backgroundLoad([AssetsMap.BACKGROUNDS.MAIN_MENU]);
 
-
 // [VK] Global Error Handler
 if (typeof window !== 'undefined') {
     window.addEventListener('error', (e) => {
@@ -40,7 +40,7 @@ if (typeof window !== 'undefined') {
 // ─── КОМПОНЕНТЫ ──────────────────────────────────────────────────────────────
 
 // ─── ERROR BOUNDARY ──────────────────────────────────────────────────────────
-class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean, error: any }> {
+class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean; error: any }> {
     constructor(props: any) {
         super(props);
         this.state = { hasError: false, error: null };
@@ -51,16 +51,36 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { has
     render() {
         if (this.state.hasError) {
             return (
-                <div style={{
-                    width: '100vw', height: '100vh', backgroundColor: '#000',
-                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                    color: '#ff4444', textAlign: 'center', padding: '20px', fontFamily: 'sans-serif'
-                }}>
+                <div
+                    style={{
+                        width: '100vw',
+                        height: '100vh',
+                        backgroundColor: '#000',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: '#ff4444',
+                        textAlign: 'center',
+                        padding: '20px',
+                        fontFamily: 'sans-serif',
+                    }}
+                >
                     <h2>Произошла критическая ошибка интерфейса</h2>
-                    <p style={{ color: '#aaa', maxWidth: '600px' }}>{this.state.error?.message || 'Неизвестная ошибка'}</p>
+                    <p style={{ color: '#aaa', maxWidth: '600px' }}>
+                        {this.state.error?.message || 'Неизвестная ошибка'}
+                    </p>
                     <button
                         onClick={() => window.location.reload()}
-                        style={{ padding: '12px 24px', marginTop: '20px', cursor: 'pointer', background: '#333', color: '#fff', border: 'none', borderRadius: '8px' }}
+                        style={{
+                            padding: '12px 24px',
+                            marginTop: '20px',
+                            cursor: 'pointer',
+                            background: '#333',
+                            color: '#fff',
+                            border: 'none',
+                            borderRadius: '8px',
+                        }}
                     >
                         Перезагрузить игру
                     </button>
@@ -73,11 +93,11 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { has
 
 // ─── КОМПОНЕНТЫ ──────────────────────────────────────────────────────────────
 
-const SafeGameLayout = ({ containerRef }: { containerRef: React.RefObject<HTMLDivElement> }) => {
+export const SafeGameLayout = ({ containerRef }: { containerRef: React.RefObject<HTMLDivElement> }) => {
     const [scale, setScale] = React.useState(1);
-    const { showFps, setShowFps } = useGameStore(state => ({
+    const { showFps, setShowFps } = useGameStore((state) => ({
         showFps: state.showFps,
-        setShowFps: state.setShowFps
+        setShowFps: state.setShowFps,
     }));
 
     React.useEffect(() => {
@@ -87,7 +107,7 @@ const SafeGameLayout = ({ containerRef }: { containerRef: React.RefObject<HTMLDi
             const gw = AppConfig.GAME_WIDTH;
             const gh = AppConfig.GAME_HEIGHT;
 
-            // [Lead Architect]: Adaptive Scaling. 
+            // [Lead Architect]: Adaptive Scaling.
             // On very narrow screens (mobile), we prioritize width and allow some height cropping if necessary,
             // or we use a slightly more aggressive scale to fill the screen better.
             const s = Math.min(sw / gw, sh / gh);
@@ -127,60 +147,136 @@ const SafeGameLayout = ({ containerRef }: { containerRef: React.RefObject<HTMLDi
         };
     }, [showFps, setShowFps]);
 
+    const isMobile = useGameStore((state) => state.isMobile);
 
     return (
-        <div style={{
-            width: '100vw', height: '100vh',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            backgroundColor: 'transparent', overflow: 'hidden',
-            position: 'fixed', top: 0, left: 0 // Prevent scrolling of body
-        }}>
-            <div style={{
-                width: `${AppConfig.GAME_WIDTH}px`, height: `${AppConfig.GAME_HEIGHT}px`,
-                transform: `scale(${scale})`, transformOrigin: 'center center',
-                position: 'relative', flexShrink: 0,
-                backgroundImage: `url(${AssetsMap.BACKGROUNDS.MAIN_MENU})`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                backgroundColor: '#0c0c0c', boxShadow: '0 0 100px rgba(0,0,0,0.5)',
-                overflow: 'hidden'
-            }}>
-                <div ref={containerRef} style={{ position: 'absolute', inset: 0, zIndex: 1, pointerEvents: 'auto' }} />
-                <div style={{ position: 'absolute', inset: 0, zIndex: 10000, pointerEvents: 'none' }}>
-                    <GameHUD />
-                </div>
+        <div
+            className={isMobile ? 'is-mobile' : 'is-pc'}
+            style={{
+                width: '100vw',
+                height: '100vh',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: '#000',
+                overflow: 'hidden',
+                position: 'fixed',
+                top: 0,
+                left: 0,
+            }}
+        >
+            {/* 1. GAME LAYER (PIXI + SCALED CONTENT) */}
+            <div
+                className="game-container"
+                style={{
+                    width: `${AppConfig.GAME_WIDTH}px`,
+                    height: `${AppConfig.GAME_HEIGHT}px`,
+                    transform: `scale(${scale})`,
+                    transformOrigin: 'center center',
+                    position: 'absolute',
+                    flexShrink: 0,
+                    backgroundImage: `url(${
+                        isMobile ? AssetsMap.BACKGROUNDS.MAIN_MENU_MOBILE : AssetsMap.BACKGROUNDS.MAIN_MENU
+                    })`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    backgroundColor: '#0c0c0c',
+                    boxShadow: '0 0 100px rgba(0,0,0,0.5)',
+                    overflow: 'hidden',
+                    zIndex: 1,
+                }}
+            >
+                <div ref={containerRef} style={{ position: 'absolute', inset: 0, pointerEvents: 'auto' }} />
                 {showFps && <FpsCounter />}
-                <SceneSwitcher />
             </div>
 
+            {/* 2. HUD LAYER (LIQUID / ADAPTIVE) */}
+            <div
+                className="hud-layer"
+                style={{
+                    position: 'absolute',
+                    inset: 0,
+                    zIndex: 100,
+                    pointerEvents: 'none',
+                    // On PC we can still use a subtle scale if the window is huge,
+                    // but on Mobile we want 1:1 liquid layout.
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                }}
+            >
+                <div
+                    style={{
+                        width: isMobile ? '100%' : `${AppConfig.GAME_WIDTH}px`,
+                        height: isMobile ? '100%' : `${AppConfig.GAME_HEIGHT}px`,
+                        transform: isMobile ? 'none' : `scale(${scale})`,
+                        transformOrigin: 'center center',
+                        position: 'relative',
+                        pointerEvents: 'none',
+                    }}
+                >
+                    <div style={{ position: 'absolute', inset: 0, zIndex: 10, pointerEvents: 'none' }}>
+                        <SceneSwitcher />
+                    </div>
+                    <div style={{ position: 'absolute', inset: 0, zIndex: 100, pointerEvents: 'none' }}>
+                        <GameHUD />
+                    </div>
+                </div>
+            </div>
         </div>
     );
 };
 
-const SceneSwitcher = () => {
-    const activeScreen = useGameStore(state => state.activeScreen);
+export const SceneSwitcher = () => {
+    const activeScreen = useGameStore((state) => state.activeScreen);
     return (
         <>
             {activeScreen === 'INTRO' && (
                 <div style={{ position: 'absolute', inset: 0, zIndex: 11000 }}>
-                    <IntroScreen onComplete={() => {
-                        useGameStore.setState({ activeScreen: 'MAIN_MENU', showIntro: false });
-                    }} />
+                    <IntroScreen
+                        onComplete={() => {
+                            useGameStore.setState({ activeScreen: 'MAIN_MENU', showIntro: false });
+                        }}
+                    />
                 </div>
             )}
-            {activeScreen === 'CITY' && <div style={{ position: 'absolute', inset: 0, zIndex: 9000 }}><CityScreen /></div>}
+            {activeScreen === 'CITY' && (
+                <div style={{ position: 'absolute', inset: 0, zIndex: 9000 }}>
+                    <CityScreen />
+                </div>
+            )}
             <AnimatePresence>
-                {activeScreen === 'HEROES' && <div key="scene-heroes" style={{ position: 'absolute', inset: 0, zIndex: 400 }}><HeroScene /></div>}
-                {activeScreen === 'SHOP' && <div key="scene-shop" style={{ position: 'absolute', inset: 0, zIndex: 500 }}><ShopScene /></div>}
-                {activeScreen === 'BATTLE_PASS' && <div key="scene-bp" style={{ position: 'absolute', inset: 0, zIndex: 600 }}><BattlePassScene onClose={() => useGameStore.getState().setScreen('MAIN_MENU')} /></div>}
-                {activeScreen === 'BATTLE' && <div key="scene-battle" style={{ position: 'absolute', inset: 0, zIndex: 12000 }}><BattleScene /></div>}
+                {activeScreen === 'HEROES' && (
+                    <div key="scene-heroes" style={{ position: 'absolute', inset: 0, zIndex: 400 }}>
+                        <HeroScene />
+                    </div>
+                )}
+                {activeScreen === 'SHOP' && (
+                    <div key="scene-shop" style={{ position: 'absolute', inset: 0, zIndex: 500 }}>
+                        <ShopScene />
+                    </div>
+                )}
+                {activeScreen === 'BATTLE_PASS' && (
+                    <div key="scene-bp" style={{ position: 'absolute', inset: 0, zIndex: 600 }}>
+                        <BattlePassScene onClose={() => useGameStore.getState().setScreen('MAIN_MENU')} />
+                    </div>
+                )}
+                {activeScreen === 'BATTLE' && (
+                    <div key="scene-battle" style={{ position: 'absolute', inset: 0, zIndex: 12000 }}>
+                        <BattleScene />
+                    </div>
+                )}
+                {activeScreen === 'FORGE' && (
+                    <div key="scene-forge" style={{ position: 'absolute', inset: 0, zIndex: 9500 }}>
+                        <ForgeScreen />
+                    </div>
+                )}
             </AnimatePresence>
         </>
     );
 };
 
-
-const Root = () => {
+export const Root = () => {
     const containerRef = React.useRef<HTMLDivElement>(null);
     const initialized = React.useRef(false);
     const [initError, setInitError] = React.useState<string | null>(null);
@@ -194,7 +290,9 @@ const Root = () => {
             const timeoutId = setTimeout(() => {
                 if (!initialized.current || (containerRef.current && containerRef.current.children.length === 0)) {
                     console.error('❌ Loading Timeout: App failed to initialize in 20s');
-                    setInitError('Превышено время ожидания загрузки. Пожалуйста, проверьте интернет-соединение и попробуйте снова.');
+                    setInitError(
+                        'Превышено время ожидания загрузки. Пожалуйста, проверьте интернет-соединение и попробуйте снова.',
+                    );
                 }
             }, 20000);
 
@@ -223,11 +321,11 @@ const Root = () => {
 
                 const state = useGameStore.getState();
                 const { syncService } = await import('./services/SyncService');
-                
+
                 // 3. Audio & Sync Initialization
                 audioService.setMusicVolume(state.musicVolume / 100);
                 audioService.setSFXVolume(state.soundVolume / 100);
-                
+
                 syncService.startAutoSync(60000);
                 syncService.subscribeToChat((messages) => {
                     useGameStore.getState().setMessages(messages);
@@ -242,23 +340,37 @@ const Root = () => {
                 // Гарантируем наличие приветственных сообщений
                 const hasWelcome = state.messages.some((m: any) => m.id === 'welcome-1');
                 const hasCodex = state.messages.some((m: any) => m.id === 'codex-1');
-                
+
                 if (!hasWelcome || !hasCodex) {
                     const welcomeMsgs = [];
-                    if (!hasWelcome) welcomeMsgs.push({ 
-                        id: 'welcome-1', author: 'СИСТЕМА', avatar: '/assets/images/ui/system_icon.png',
-                        text: 'Приветствуем в Masters of the Wild! Твой путь к величию начинается здесь. 🐉⚔️', 
-                        type: 'system', timestamp: Date.now() - 2000, level: 1, rankIcon: ''
-                    });
-                    if (!hasCodex) welcomeMsgs.push({ 
-                        id: 'codex-1', author: 'КОДЕКС ЧЕСТИ', avatar: '/assets/images/ui/system_icon.png',
-                        text: 'Истинная сила — в уважении. Будьте вежливы, не используйте оскорбления и мат. Пусть в чате царит дух честной игры! 🛡️🤝', 
-                        type: 'system', timestamp: Date.now() - 1000, level: 1, rankIcon: ''
-                    });
-                    
+                    if (!hasWelcome)
+                        welcomeMsgs.push({
+                            id: 'welcome-1',
+                            author: 'СИСТЕМА',
+                            avatar: '/assets/images/ui/system_icon.png',
+                            text: 'Приветствуем в Masters of the Wild! Твой путь к величию начинается здесь. 🐉⚔️',
+                            type: 'system',
+                            timestamp: Date.now() - 2000,
+                            level: 1,
+                            rankIcon: '',
+                        });
+                    if (!hasCodex)
+                        welcomeMsgs.push({
+                            id: 'codex-1',
+                            author: 'КОДЕКС ЧЕСТИ',
+                            avatar: '/assets/images/ui/system_icon.png',
+                            text: 'Истинная сила — в уважении. Будьте вежливы, не используйте оскорбления и мат. Пусть в чате царит дух честной игры! 🛡️🤝',
+                            type: 'system',
+                            timestamp: Date.now() - 1000,
+                            level: 1,
+                            rankIcon: '',
+                        });
+
                     const merged = [...welcomeMsgs, ...state.messages];
-                    const unique = Array.from(new Map(merged.map(m => [m.id, m])).values());
-                    useGameStore.setState({ messages: unique.sort((a: any, b: any) => a.timestamp - b.timestamp).slice(-100) });
+                    const unique = Array.from(new Map(merged.map((m) => [m.id, m])).values());
+                    useGameStore.setState({
+                        messages: unique.sort((a: any, b: any) => a.timestamp - b.timestamp).slice(-100),
+                    });
                 }
 
                 const MSK_OFFSET = 3 * 60 * 60 * 1000;
@@ -274,20 +386,25 @@ const Root = () => {
                 if (state.level === 80 || state.rating === 11000) {
                     console.log('🧹 Force Resetting legacy test data...');
                     useGameStore.setState({
-                        level: 1, rating: 0, exp: 0, gold: 100000, crystals: 100000, title: 'Странник'
+                        level: 1,
+                        rating: 0,
+                        exp: 0,
+                        gold: 100000,
+                        crystals: 100000,
+                        title: 'Странник',
                     });
                 }
 
                 if (isNewDayMSK(state.lastDailyRefresh) || !state.dailyQuests || state.dailyQuests.length === 0) {
                     state.refreshDailyQuests();
                 }
-                
+
                 state.updateQuestProgress('LOGIN', 1);
 
                 // Очистка тестовых сообщений
                 if (state.messages.some((m: any) => m.author === 'Мастер' && m.text === 'Привет')) {
                     useGameStore.setState({
-                        messages: state.messages.filter((m: any) => !(m.author === 'Мастер' && m.text === 'Привет'))
+                        messages: state.messages.filter((m: any) => !(m.author === 'Мастер' && m.text === 'Привет')),
                     });
                 }
 
@@ -340,16 +457,32 @@ const Root = () => {
 
     if (initError) {
         return (
-            <div style={{
-                width: '100vw', height: '100vh', backgroundColor: '#0c0c0c',
-                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                color: '#ff4444', textAlign: 'center', padding: '40px', fontFamily: 'sans-serif'
-            }}>
+            <div
+                style={{
+                    width: '100vw',
+                    height: '100vh',
+                    backgroundColor: '#0c0c0c',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#ff4444',
+                    textAlign: 'center',
+                    padding: '40px',
+                    fontFamily: 'sans-serif',
+                }}
+            >
                 <h2 style={{ fontSize: '24px', marginBottom: '15px' }}>Критическая ошибка запуска</h2>
-                <div style={{
-                    background: 'rgba(255,0,0,0.1)', padding: '20px', borderRadius: '12px',
-                    border: '1px solid rgba(255,0,0,0.2)', marginBottom: '30px', maxWidth: '500px'
-                }}>
+                <div
+                    style={{
+                        background: 'rgba(255,0,0,0.1)',
+                        padding: '20px',
+                        borderRadius: '12px',
+                        border: '1px solid rgba(255,0,0,0.2)',
+                        marginBottom: '30px',
+                        maxWidth: '500px',
+                    }}
+                >
                     <code style={{ fontSize: '14px', color: '#ff7777', wordBreak: 'break-all' }}>{initError}</code>
                 </div>
                 <button
@@ -363,7 +496,7 @@ const Root = () => {
                         cursor: 'pointer',
                         fontWeight: 'bold',
                         fontSize: '16px',
-                        transition: 'transform 0.2s'
+                        transition: 'transform 0.2s',
                     }}
                     onMouseOver={(e) => (e.currentTarget.style.transform = 'scale(1.05)')}
                     onMouseOut={(e) => (e.currentTarget.style.transform = 'scale(1)')}
@@ -384,9 +517,7 @@ const Root = () => {
     );
 };
 
-
 // ─── ТОЧКА ВХОДА ─────────────────────────────────────────────────────────────
-
 
 const rootEl = document.getElementById('root');
 if (rootEl) {

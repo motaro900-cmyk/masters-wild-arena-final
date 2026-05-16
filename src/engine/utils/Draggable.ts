@@ -15,9 +15,9 @@ import { getStorage, safeGetItem, safeSetItem, safeRemoveItem } from '../../util
             exportData[name] = JSON.parse(storage.getItem(key) || '{}');
         }
     }
-    
+
     exportData['animations'] = JSON.parse(storage.getItem('HUD_ANIMATIONS') || '[]');
-    
+
     console.log('%c🎨 UI STUDIO EXPORT (Скопируй в конфиг):', 'color: #4ade80; font-size: 18px; font-weight: bold;');
     console.log(JSON.stringify(exportData, null, 4));
     return exportData;
@@ -26,7 +26,7 @@ import { getStorage, safeGetItem, safeSetItem, safeRemoveItem } from '../../util
 /**
  * Превращает любой Pixi-объект в перетаскиваемый (работает только при isEditorMode = true)
  * С сохранением координат в localStorage и визуальным Juice-эффектом.
- * 
+ *
  * @param obj Целевой объект (Container, Sprite, Text, и т.д.)
  * @param name Уникальное имя объекта для сохранения в localStorage
  */
@@ -37,7 +37,7 @@ export function makeDraggable(obj: PIXI.Container, name: string): void {
     const findText = (container: PIXI.Container): any | null => {
         let textNode: any | null = null;
         if (container.children) {
-            container.children.forEach(child => {
+            container.children.forEach((child) => {
                 if (child instanceof PIXI.Text || child instanceof PIXI.BitmapText) {
                     textNode = child; // Берем последний добавленный текст (избегая иконок/эмодзи)
                 } else if (child instanceof PIXI.Container) {
@@ -48,16 +48,16 @@ export function makeDraggable(obj: PIXI.Container, name: string): void {
         }
         return textNode || (container instanceof PIXI.Text || container instanceof PIXI.BitmapText ? container : null);
     };
-    
+
     if (savedPos) {
         try {
             const parsed = JSON.parse(savedPos);
-            const safeX = (parsed.x >= -3000 && parsed.x <= 5000) ? parsed.x : obj.x;
-            const safeY = (parsed.y >= -3000 && parsed.y <= 5000) ? parsed.y : obj.y;
-            
+            const safeX = parsed.x >= -3000 && parsed.x <= 5000 ? parsed.x : obj.x;
+            const safeY = parsed.y >= -3000 && parsed.y <= 5000 ? parsed.y : obj.y;
+
             obj.position.set(safeX, safeY);
             if (parsed.scale !== undefined && parsed.scale > 0.05 && parsed.scale < 10) obj.scale.set(parsed.scale);
-            
+
             if (parsed.rotation !== undefined) obj.rotation = parsed.rotation;
             if (parsed.anchorX !== undefined && (obj as any).anchor) (obj as any).anchor.x = parsed.anchorX;
             if (parsed.anchorY !== undefined && (obj as any).anchor) (obj as any).anchor.y = parsed.anchorY;
@@ -92,24 +92,25 @@ export function makeDraggable(obj: PIXI.Container, name: string): void {
     let selectionBox: PIXI.Graphics | null = null;
 
     const saveState = () => {
-        const state: any = { 
-            x: Math.round(obj.x), 
-            y: Math.round(obj.y), 
+        const state: any = {
+            x: Math.round(obj.x),
+            y: Math.round(obj.y),
             scale: Number(obj.scale.x.toFixed(3)),
             rotation: Number(obj.rotation.toFixed(3)),
             anchorX: (obj as any).anchor ? (obj as any).anchor.x : 0,
-            anchorY: (obj as any).anchor ? (obj as any).anchor.y : 0
+            anchorY: (obj as any).anchor ? (obj as any).anchor.y : 0,
         };
-        
+
         const textNode = findText(obj);
         if (textNode) state.text = textNode.text;
         if (textNode) state.color = getTextColorHex(textNode);
-        
+
         safeSetItem(storageKey, JSON.stringify(state));
     };
 
     const handleUpdate = (e: any) => {
-        if (e.detail.id === name && !isDragging) { // Защита от конфликта во время перетаскивания
+        if (e.detail.id === name && !isDragging) {
+            // Защита от конфликта во время перетаскивания
             const props = e.detail.props;
             obj.position.set(props.x, props.y);
             obj.scale.set(props.scale);
@@ -124,7 +125,7 @@ export function makeDraggable(obj: PIXI.Container, name: string): void {
         }
     };
     window.addEventListener('hud_editor_update', handleUpdate);
-    
+
     const onKeyDown = (e: KeyboardEvent) => {
         if (!useDebugStore.getState().isEditorMode) return;
         if (useDebugStore.getState().selectedId === name) {
@@ -148,7 +149,7 @@ export function makeDraggable(obj: PIXI.Container, name: string): void {
         }
     };
     window.addEventListener('keydown', onKeyDown);
-    
+
     obj.on('destroyed', () => {
         window.removeEventListener('hud_editor_update', handleUpdate);
         window.removeEventListener('keydown', onKeyDown);
@@ -162,10 +163,10 @@ export function makeDraggable(obj: PIXI.Container, name: string): void {
             (selectionBox as any).interactive = false;
             obj.addChild(selectionBox);
         }
-        
+
         selectionBox.clear();
         selectionBox.removeChildren();
-        
+
         // ВАЖНО: Скрываем рамку перед вычислением границ, чтобы объект не "раздувался" бесконечно!
         selectionBox.visible = false;
         const bounds = obj.getLocalBounds();
@@ -174,30 +175,41 @@ export function makeDraggable(obj: PIXI.Container, name: string): void {
         const absScaleX = Math.abs(obj.scale.x) || 1;
         const absScaleY = Math.abs(obj.scale.y) || 1;
         const strokeWidth = 2 / absScaleX;
-        
+
         // Зеленая рамка (bounding box) с прозрачностью, как в ТЗ
-        selectionBox.rect(bounds.minX, bounds.minY, bounds.width, bounds.height).stroke({ width: Math.max(2, strokeWidth), color: 0x00ff00, alpha: 0.8 });
-        
+        selectionBox
+            .rect(bounds.minX, bounds.minY, bounds.width, bounds.height)
+            .stroke({ width: Math.max(2, strokeWidth), color: 0x00ff00, alpha: 0.8 });
+
         // Pivot точка (красная)
-        selectionBox.circle(0, 0, 5 / absScaleX).fill(0xff0000).stroke({ width: 1 / absScaleX, color: 0xffffff });
-        
+        selectionBox
+            .circle(0, 0, 5 / absScaleX)
+            .fill(0xff0000)
+            .stroke({ width: 1 / absScaleX, color: 0xffffff });
+
         // Имя, координаты и размер
         const infoText = new PIXI.Text({
             text: `${name}\nX: ${Math.round(obj.x)} Y: ${Math.round(obj.y)} | S: ${obj.scale.x.toFixed(2)}\nSize: ${Math.round(bounds.width)}x${Math.round(bounds.height)}`,
-            style: { fontFamily: 'monospace', fontSize: 14 / absScaleX, fill: 0x00ff00, stroke: { color: 0x000000, width: 3 / absScaleX }, align: 'left' }
+            style: {
+                fontFamily: 'monospace',
+                fontSize: 14 / absScaleX,
+                fill: 0x00ff00,
+                stroke: { color: 0x000000, width: 3 / absScaleX },
+                align: 'left',
+            },
         });
-        infoText.position.set(bounds.minX, bounds.minY - (60 / absScaleY));
-        
+        infoText.position.set(bounds.minX, bounds.minY - 60 / absScaleY);
+
         // Фикс перевернутого текста, если родитель отражен
         infoText.scale.set(Math.sign(obj.scale.x) || 1, Math.sign(obj.scale.y) || 1);
-        
+
         selectionBox.addChild(infoText);
         obj.addChild(selectionBox);
     };
 
     const onPointerDown = (e: PIXI.FederatedPointerEvent) => {
         if (!useDebugStore.getState().isEditorMode) return;
-        
+
         const now = Date.now();
         const textNode = findText(obj);
         if (now - lastClickTime < 300 && textNode) {
@@ -212,7 +224,7 @@ export function makeDraggable(obj: PIXI.Container, name: string): void {
         lastClickTime = now;
 
         isDragging = true;
-        
+
         // Убеждаемся, что stage ловит pointermove (даже если объект добавлен после вызова makeDraggable)
         let root = obj;
         while (root.parent) {
@@ -225,17 +237,20 @@ export function makeDraggable(obj: PIXI.Container, name: string): void {
 
         dragOffset.x = pos.x - obj.x;
         dragOffset.y = pos.y - obj.y;
-        
+
         initialScale = obj.scale.x;
         startGlobalY = e.global.y;
 
         const textNodeForSelect = findText(obj);
         useDebugStore.getState().setSelected(name, {
-            x: obj.x, y: obj.y, scale: obj.scale.x, 
+            x: obj.x,
+            y: obj.y,
+            scale: obj.scale.x,
             rotation: obj.rotation,
             anchorX: (obj as any).anchor ? (obj as any).anchor.x : 0,
             anchorY: (obj as any).anchor ? (obj as any).anchor.y : 0,
-            text: textNodeForSelect?.text, color: getTextColorHex(textNodeForSelect)
+            text: textNodeForSelect?.text,
+            color: getTextColorHex(textNodeForSelect),
         });
 
         // Быстрый тест: проверяем, что именно мы тащим (должно быть Container, Sprite, Text и т.д.)
@@ -247,7 +262,7 @@ export function makeDraggable(obj: PIXI.Container, name: string): void {
 
     const onPointerMove = (e: PIXI.FederatedPointerEvent) => {
         if (!isDragging) return;
-    
+
         if (e.shiftKey) {
             // Оставляем возможность масштабирования с зажатым shift (с учетом отраженных спрайтов)
             const dy = e.global.y - startGlobalY;
@@ -255,7 +270,7 @@ export function makeDraggable(obj: PIXI.Container, name: string): void {
             const signY = obj.scale.y < 0 ? -1 : 1;
             const newScale = Math.max(0.1, Math.abs(initialScale) - dy * 0.005);
             obj.scale.set(newScale * signX, newScale * signY);
-            
+
             // Обновляем debug данные live
             useDebugStore.getState().updateSelected({ scale: newScale });
         } else {
@@ -264,20 +279,20 @@ export function makeDraggable(obj: PIXI.Container, name: string): void {
 
             let newX = pos.x - dragOffset.x;
             let newY = pos.y - dragOffset.y;
-            
+
             if (useDebugStore.getState().snapToGrid && !e.shiftKey) {
                 newX = Math.round(newX / 10) * 10;
                 newY = Math.round(newY / 10) * 10;
             }
-            
+
             // 1. Двигаем PIXI объект
             obj.x = newX;
             obj.y = newY;
-            
+
             // 2. Обновляем debug данные (Zustand Store)
             useDebugStore.getState().updateSelected({ x: newX, y: newY });
         }
-        
+
         // 3. Обновляем рамку (следует за элементом)
         updateBoxBounds();
         e.stopPropagation();
@@ -286,12 +301,16 @@ export function makeDraggable(obj: PIXI.Container, name: string): void {
     const onPointerUp = () => {
         if (!isDragging) return;
         isDragging = false;
-        
+
         const textNodeForSelect = findText(obj);
         useDebugStore.getState().setSelected(name, {
-            x: obj.x, y: obj.y, scale: obj.scale.x, text: textNodeForSelect?.text, color: getTextColorHex(textNodeForSelect)
+            x: obj.x,
+            y: obj.y,
+            scale: obj.scale.x,
+            text: textNodeForSelect?.text,
+            color: getTextColorHex(textNodeForSelect),
         });
-        
+
         saveState();
     };
 

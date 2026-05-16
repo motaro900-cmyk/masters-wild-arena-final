@@ -7,7 +7,7 @@ import { createPortal } from 'react-dom';
 
 // Реестр экранов для легкой расширяемости (добавляйте сюда новые окна)
 const SCREEN_REGISTRY: Record<string, React.FC> = {
-    'beasts': BeastsScreen,
+    beasts: BeastsScreen,
 };
 
 export const ModalManager: React.FC = () => {
@@ -15,7 +15,7 @@ export const ModalManager: React.FC = () => {
 
     // Получаем текущий экран из Zustand
     const activeScreen = useGameStore((state: any) => state.activeScreen);
-    
+
     const overlayRef = useRef<HTMLDivElement>(null);
     const safeZoneRef = useRef<HTMLDivElement>(null);
     const contentRef = useRef<HTMLDivElement>(null);
@@ -36,25 +36,23 @@ export const ModalManager: React.FC = () => {
                 safeZoneRef.current.style.transformOrigin = 'center center';
             }
         };
-        
+
         if (activeScreen) {
             updateScale();
             window.addEventListener('resize', updateScale);
         }
-        
+
         return () => window.removeEventListener('resize', updateScale);
     }, [activeScreen]);
 
     // Анимация GSAP при открытии
     useGSAP(() => {
         if (activeScreen && overlayRef.current && contentRef.current) {
-            gsap.fromTo(overlayRef.current, 
-                { opacity: 0 }, 
-                { opacity: 1, duration: 0.3, ease: 'power2.out' }
-            );
-            gsap.fromTo(contentRef.current,
+            gsap.fromTo(overlayRef.current, { opacity: 0 }, { opacity: 1, duration: 0.3, ease: 'power2.out' });
+            gsap.fromTo(
+                contentRef.current,
                 { scale: 0.9, opacity: 0, y: 30 },
-                { scale: 1, opacity: 1, y: 0, duration: 0.4, ease: 'back.out(1.2)' }
+                { scale: 1, opacity: 1, y: 0, duration: 0.4, ease: 'back.out(1.2)' },
             );
         }
     }, [activeScreen]);
@@ -70,26 +68,25 @@ export const ModalManager: React.FC = () => {
     return createPortal(
         // ЗАДАЧА 1: ПРОЗРАЧНЫЙ КОРЕНЬ ПОРТАЛА (Именно none!)
         <div className="fixed inset-0 z-[99999] pointer-events-none flex items-center justify-center">
-            
             {/* Затемняющий фон (тоже пропускает клики, не блокирует пустые зоны) */}
-            <div 
-                ref={overlayRef}
-                className="absolute inset-0 bg-black/60 backdrop-blur-sm pointer-events-none"
-            />
+            <div ref={overlayRef} className="absolute inset-0 bg-black/60 backdrop-blur-sm pointer-events-none" />
 
             {/* ЗАДАЧА 2: ИЗОЛЯЦИЯ СКЕЙЛА (SafeZone) */}
-            <div 
+            <div
                 ref={safeZoneRef}
                 className="relative w-[1920px] h-[1080px] flex items-center justify-center pointer-events-none"
                 style={{ transformOrigin: 'center center' }}
             >
                 {/* Анимируемый GSAP контейнер (ограничиваем размер окна относительно 1920x1080) */}
-                <div ref={contentRef} className="relative w-[1600px] h-[900px] p-8 flex items-center justify-center pointer-events-none">
+                <div
+                    ref={contentRef}
+                    className="relative w-[1600px] h-[900px] p-8 flex items-center justify-center pointer-events-none"
+                >
                     {/* Внутри компонента уже будет pointer-events-auto */}
                     <ActiveComponent />
                 </div>
             </div>
         </div>,
-        document.body
+        document.body,
     );
 };

@@ -25,9 +25,9 @@ export class LeftMenu extends PIXI.Container {
             resolveAssetPath('/assets/images/ui/bar_gold.png'),
             resolveAssetPath('/assets/images/ui/bar_gem.png'),
             resolveAssetPath('/assets/images/ui/bar_energy.png'),
-            resolveAssetPath('/assets/images/ui/mail_icon.png')
+            resolveAssetPath('/assets/images/ui/mail_icon.png'),
         ];
-        
+
         await PIXI.Assets.load(assetsToLoad);
         this.render();
     }
@@ -43,14 +43,14 @@ export class LeftMenu extends PIXI.Container {
             { id: 'STORE', label: 'МАГАЗИН', icon: 'bar_gold.png' },
             { id: 'INVENTORY', label: 'ИНВЕНТАРЬ', icon: 'bar_gem.png' },
             { id: 'BEASTS', label: 'ЗВЕРИ', icon: 'bar_energy.png' },
-            { id: 'CLANS', label: 'КЛАНЫ', icon: 'mail_icon.png' }
+            { id: 'CLANS', label: 'КЛАНЫ', icon: 'mail_icon.png' },
         ];
 
         menuItems.forEach((item, index) => {
             // ОДИН контейнер на ОДНУ кнопку
             const btnContainer = new PIXI.Container();
             btnContainer.y = index * 85; // Строгий фиксированный отступ
-            
+
             // 1. ПОДЛОЖКА
             const texture = PIXI.Assets.get(resolveAssetPath('/assets/images/ui/btn_panel_mis12c.png'));
             const bg = new PIXI.Sprite(texture);
@@ -79,8 +79,8 @@ export class LeftMenu extends PIXI.Container {
                     fontSize: 18,
                     fontWeight: 'bold',
                     fontFamily: 'Arial Black',
-                    dropShadow: { color: 0x000000, alpha: 0.5, blur: 2, distance: 2 }
-                }
+                    dropShadow: { color: 0x000000, alpha: 0.5, blur: 2, distance: 2 },
+                },
             });
             text.anchor.set(0, 0.5);
             text.position.set(60, bg.height / 2);
@@ -97,7 +97,7 @@ export class LeftMenu extends PIXI.Container {
 
     private handleNavigation(id: string) {
         if (id === 'STORE') {
-            import('../../store/useGameStore').then(m => m.useGameStore.setState({ activeScreen: 'SHOP' }));
+            import('../../store/useGameStore').then((m) => m.useGameStore.setState({ activeScreen: 'SHOP' }));
             SceneManager.getInstance().switchScene(new ShopScreen());
         }
     }

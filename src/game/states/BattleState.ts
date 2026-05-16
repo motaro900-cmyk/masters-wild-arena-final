@@ -4,7 +4,6 @@ import { BaseEntity, EntityState } from '../entities/BaseEntity';
 import { useGameStore } from '../../store/useGameStore';
 import { PixiApp } from '../../engine/core/PixiApp';
 import { EffectsManager } from '../../engine/systems/EffectsManager';
-import { AssetLoader } from '../../engine/systems/AssetLoader';
 
 /**
  * @class DamageNumber
@@ -21,7 +20,7 @@ class DamageNumber extends PIXI.Text {
             fill: '#ff0000',
             stroke: { color: '#000000', width: 4 },
             fontWeight: 'bold',
-            align: 'center'
+            align: 'center',
         });
         (this as any).anchor.set(0.5, 0.5);
         (this as any).visible = false;
@@ -36,7 +35,7 @@ class DamageNumber extends PIXI.Text {
         // Градиент для крита по ТЗ
         const fill = isCrit ? ['#ffff00', '#ff0000'] : '#ffffff';
         const fontSize = isCrit ? 64 : 40;
-        
+
         (this as any).text = text;
         (this as any).style.fill = fill;
         (this as any).style.fontSize = fontSize;
@@ -52,11 +51,11 @@ class DamageNumber extends PIXI.Text {
             alpha: 0,
             scale: isCrit ? 2.0 : 1.0,
             duration: 1.2,
-            ease: "power2.out",
+            ease: 'power2.out',
             onComplete: () => {
                 (this as any).visible = false;
                 this.isActive = false;
-            }
+            },
         });
 
         // Shaking effect for crit text
@@ -83,7 +82,7 @@ export enum BattleStatus {
     PREPARING = 'PREPARING',
     ACTIVE = 'ACTIVE',
     FINISHED = 'FINISHED',
-    ERROR = 'ERROR'
+    ERROR = 'ERROR',
 }
 
 /**
@@ -105,14 +104,14 @@ export interface IBattleStats {
 /**
  * @class BattleState
  * Управляет боевой системой с AAA-инди эффектами
- * 
+ *
  * Архитектура:
  * - Использует PixiApp для слоев и управления
  * - Интегрирует EffectsManager для визуальных эффектов
  * - Object Pooling для цифр урона
  * - State Machine для управления состояниями
  * - Lerp интерполяция для плавных движений
- * 
+ *
  * @example
  * const battle = new BattleState();
  * await battle.startBattle('panda', 'moose');
@@ -121,20 +120,20 @@ export interface IBattleStats {
 export class BattleState {
     private pixiApp: PixiApp;
     private fx: EffectsManager;
-    private assetLoader: AssetLoader;
-    
+
     private player: BaseEntity | null = null;
     private enemy: BaseEntity | null = null;
     private damagePool: DamageNumber[] = [];
-    
+
     private status: BattleStatus = BattleStatus.PREPARING;
     private playerAtb: number = 0; // Active Time Battle system
     private enemyAtb: number = 0;
     private battleStartTime: number = 0;
-    
+
     // Пул фильтров для вспышек урона (GPU memory leak prevention)
-    private flashFilterPool: Map<BaseEntity, { filter: PIXI.ColorMatrixFilter; refCount: number; timer: number }> = new Map();
-    
+    private flashFilterPool: Map<BaseEntity, { filter: PIXI.ColorMatrixFilter; refCount: number; timer: number }> =
+        new Map();
+
     // State machine для анимаций атаки (dt-based, не зависит от ticker.speed)
     private attackQueue: Array<{
         attacker: BaseEntity;
@@ -158,7 +157,7 @@ export class BattleState {
         damageDealt: 0,
         damageReceived: 0,
         critsLanded: 0,
-        turnCount: 0
+        turnCount: 0,
     };
 
     // Слой боя для управления сортировкой
@@ -167,7 +166,6 @@ export class BattleState {
     constructor() {
         this.pixiApp = PixiApp.getInstance();
         this.fx = EffectsManager.getInstance();
-        this.assetLoader = AssetLoader.getInstance();
 
         // Создаем слой для боя
         this.battleLayer = new PIXI.Container();
@@ -200,7 +198,7 @@ export class BattleState {
      */
     private getDamageNumberFromPool(): DamageNumber | null {
         try {
-            return this.damagePool.find(dn => !dn.isActive) || null;
+            return this.damagePool.find((dn) => !dn.isActive) || null;
         } catch (error) {
             console.error('❌ Get damage number error:', error);
             return null;
@@ -233,14 +231,10 @@ export class BattleState {
             this.battleStartTime = Date.now();
 
             // Получаем текстуры
-            const playerTexture = this.assetLoader.getTexture(playerHeroId);
-            const enemyTexture = this.assetLoader.getTexture(enemyHeroId);
-            const playerWeaponTex = playerStats.weaponTexture 
-                ? this.assetLoader.getTexture(playerStats.weaponTexture) 
-                : undefined;
-            const enemyWeaponTex = enemyStats.weaponTexture 
-                ? this.assetLoader.getTexture(enemyStats.weaponTexture) 
-                : undefined;
+            const playerTexture = PIXI.Assets.get(playerHeroId);
+            const enemyTexture = PIXI.Assets.get(enemyHeroId);
+            const playerWeaponTex = playerStats.weaponTexture ? PIXI.Assets.get(playerStats.weaponTexture) : undefined;
+            const enemyWeaponTex = enemyStats.weaponTexture ? PIXI.Assets.get(enemyStats.weaponTexture) : undefined;
 
             // Создаем персонажей с оружием (Socket System)
             this.player = new BaseEntity(playerTexture, playerStats, playerWeaponTex);
@@ -263,7 +257,7 @@ export class BattleState {
                 damageDealt: 0,
                 damageReceived: 0,
                 critsLanded: 0,
-                turnCount: 0
+                turnCount: 0,
             };
 
             this.status = BattleStatus.ACTIVE;
@@ -274,7 +268,6 @@ export class BattleState {
             console.log('⚔️ BATTLE STARTED!');
             console.log(`🐼 Player (${playerHeroId}):`, playerStats);
             console.log(`🦌 Enemy (${enemyHeroId}):`, enemyStats);
-
         } catch (error) {
             this.status = BattleStatus.ERROR;
             console.error('❌ Battle start failed:', error);
@@ -306,17 +299,13 @@ export class BattleState {
             const ATB_THRESHOLD = 3000; // Порог для совершения атаки
 
             // Проверяем готовность к атаке
-            if (this.playerAtb >= ATB_THRESHOLD && 
-                this.player.isAlive() && 
-                this.enemy.isAlive()) {
+            if (this.playerAtb >= ATB_THRESHOLD && this.player.isAlive() && this.enemy.isAlive()) {
                 this.playerAtb -= ATB_THRESHOLD;
                 this.stats.turnCount++;
                 this.resolveHit(this.player, this.enemy);
             }
 
-            if (this.enemyAtb >= ATB_THRESHOLD && 
-                this.enemy.isAlive() && 
-                this.player.isAlive()) {
+            if (this.enemyAtb >= ATB_THRESHOLD && this.enemy.isAlive() && this.player.isAlive()) {
                 this.enemyAtb -= ATB_THRESHOLD;
                 this.stats.turnCount++;
                 this.resolveHit(this.enemy, this.player);
@@ -337,7 +326,6 @@ export class BattleState {
             if (!this.player.isAlive() || !this.enemy.isAlive()) {
                 this.endBattle();
             }
-
         } catch (error) {
             console.error('❌ Battle update error:', error);
             this.status = BattleStatus.ERROR;
@@ -361,17 +349,28 @@ export class BattleState {
                 // Анимация уклонения (Move back 40px)
                 const dodgeDir = target === this.player ? -40 : 40;
                 const origX = (target as any).x;
-                gsap.to(target, { x: origX + dodgeDir, duration: 0.15, yoyo: true, repeat: 1, ease: "power1.out" });
-                
+                gsap.to(target, { x: origX + dodgeDir, duration: 0.15, yoyo: true, repeat: 1, ease: 'power1.out' });
+
                 // Текст уклонения
                 const dodgeText = new PIXI.Text({
                     text: 'УКЛОНЕНИЕ',
-                    style: { fontFamily: 'Arial', fontSize: 32, fill: '#aaaaaa', fontStyle: 'italic', stroke: { color: '#000000', width: 4 } }
+                    style: {
+                        fontFamily: 'Arial',
+                        fontSize: 32,
+                        fill: '#aaaaaa',
+                        fontStyle: 'italic',
+                        stroke: { color: '#000000', width: 4 },
+                    },
                 });
                 dodgeText.anchor.set(0.5);
                 dodgeText.position.set((target as any).x, (target as any).y - 100);
                 this.battleLayer.addChild(dodgeText);
-                gsap.to(dodgeText, { y: dodgeText.y - 50, alpha: 0, duration: 1, onComplete: () => dodgeText.destroy() });
+                gsap.to(dodgeText, {
+                    y: dodgeText.y - 50,
+                    alpha: 0,
+                    duration: 1,
+                    onComplete: () => dodgeText.destroy(),
+                });
                 return;
             }
 
@@ -398,14 +397,13 @@ export class BattleState {
                 phaseTimer: 0,
                 startX,
                 targetX: targetX + dashOffset,
-                dashOffset
+                dashOffset,
             });
 
             // Обновляем статистику атаки (будет применена после анимации)
             if (attacker === this.player) {
                 this.stats.turnCount++;
             }
-
         } catch (error) {
             console.error('❌ Resolve hit error:', error);
         }
@@ -422,7 +420,11 @@ export class BattleState {
             target.setState(EntityState.TAKE_DAMAGE);
 
             // Сброс вспышки через 50ms (реальных ms, не game time) — не зависит от ticker.speed
-            const flash = this.flashFilterPool.get(target) || { filter: new PIXI.ColorMatrixFilter(), refCount: 0, timer: 0 };
+            const flash = this.flashFilterPool.get(target) || {
+                filter: new PIXI.ColorMatrixFilter(),
+                refCount: 0,
+                timer: 0,
+            };
             if (flash.refCount === 0) {
                 flash.filter.brightness(2, true);
                 (target as any).filters = [flash.filter];
@@ -447,7 +449,7 @@ export class BattleState {
             const attacker = this.attackQueue[0]?.attacker;
             console.log(
                 `${isCrit ? '💥 CRIT!' : '⚔️ HIT'} ${attacker === this.player ? '🐼 Player' : '🦌 Enemy'} deals ${damage} dmg ` +
-                `(HP: ${previousHp} → ${target.getHp()})`
+                    `(HP: ${previousHp} → ${target.getHp()})`,
             );
         } catch (error) {
             console.error('❌ Apply hit effects error:', error);
@@ -565,7 +567,7 @@ export class BattleState {
                 gsap.to(this.battleLayer, {
                     alpha: 0.7,
                     duration: 0.5,
-                    ease: 'power2.out'
+                    ease: 'power2.out',
                 });
 
                 console.log(`✅ VICTORY!`);
@@ -573,13 +575,11 @@ export class BattleState {
                 console.log(`  Base: ${reward}, Bonus: ${bonusReward}`);
                 console.log(`  Battle duration: ${this.stats.battleDuration.toFixed(1)}s`);
                 console.log(`  Stats:`, this.stats);
-
             } else {
                 console.log(`❌ DEFEAT!`);
                 console.log(`  Battle duration: ${this.stats.battleDuration.toFixed(1)}s`);
                 console.log(`  Stats:`, this.stats);
             }
-
         } catch (error) {
             console.error('❌ End battle error:', error);
         }
@@ -607,7 +607,7 @@ export class BattleState {
             return {
                 ...this.stats,
                 playerHp: this.player.getHp(),
-                enemyHp: this.enemy.getHp()
+                enemyHp: this.enemy.getHp(),
             };
         }
         return this.stats;

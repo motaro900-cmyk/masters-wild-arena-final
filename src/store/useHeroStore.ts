@@ -27,7 +27,7 @@ interface IHeroState {
     heroGalleryId: string;
     ownedHeroes: string[];
     heroes: Record<string, IHeroStats>;
-    
+
     setSelectedHeroId: (id: string) => void;
     setHeroGalleryId: (id: string) => void;
     getCalculatedStats: (heroId: string) => ICalculatedStats | null;
@@ -40,18 +40,18 @@ export const useHeroStore = create<IHeroState>()(
             heroGalleryId: 'panda',
             ownedHeroes: ['panda', 'boar'],
             heroes: {
-                'panda': { strength: 52, agility: 20, stamina: 32 },
-                'moose': { strength: 30, agility: 15, stamina: 50 },
-                'goose': { strength: 45, agility: 40, stamina: 21 },
-                'cat': { strength: 48, agility: 35, stamina: 28 },
-                'boar': { strength: 68, agility: 18, stamina: 38 }
+                panda: { strength: 52, agility: 20, stamina: 32 },
+                moose: { strength: 30, agility: 15, stamina: 50 },
+                goose: { strength: 45, agility: 40, stamina: 21 },
+                cat: { strength: 48, agility: 35, stamina: 28 },
+                boar: { strength: 68, agility: 18, stamina: 38 },
             },
 
             setSelectedHeroId: (id) => set({ selectedHeroId: id }),
             setHeroGalleryId: (id) => set({ heroGalleryId: id }),
 
             getCalculatedStats: (heroId) => {
-                const heroData = HEROES_DB.find(h => h.id === heroId);
+                const heroData = HEROES_DB.find((h) => h.id === heroId);
                 if (!heroData) return null;
 
                 const invState = useInventoryStore.getState();
@@ -64,11 +64,11 @@ export const useHeroStore = create<IHeroState>()(
 
                 let hp = heroData.stats.stamina * 10;
                 let attack = heroData.stats.strength * 2;
-                let speed = 1 + (heroData.stats.agility * 0.05);
+                let speed = 1 + heroData.stats.agility * 0.05;
                 let crit = (heroData.stats.agility * 0.5) / 100;
                 let defense = heroData.stats.stamina * 0.5;
 
-                allItems.forEach(item => {
+                allItems.forEach((item) => {
                     if (item.hpBonus) hp += item.hpBonus;
                     if (item.attackBonus) attack += item.attackBonus;
                     if (item.defenseBonus) defense += item.defenseBonus;
@@ -84,13 +84,13 @@ export const useHeroStore = create<IHeroState>()(
                     dodgeChance: 0.1,
                     defense,
                     dodge: 0.1,
-                    weaponTexture: (weapon as IEquipmentStats)?.textureKey || null
+                    weaponTexture: (weapon as IEquipmentStats)?.textureKey || null,
                 };
-            }
+            },
         }),
         {
             name: 'hero-storage',
             storage: createJSONStorage(() => getStorage()),
-        }
-    )
+        },
+    ),
 );

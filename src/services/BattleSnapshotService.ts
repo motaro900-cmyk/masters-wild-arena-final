@@ -1,4 +1,3 @@
-
 import * as PIXI from 'pixi.js';
 import { HEROES_DB, IHeroConfig } from '../configs/HeroesConfig';
 import { ITEMS_DATABASE } from '../game/configs/ItemsConfig';
@@ -15,14 +14,14 @@ class BattleSnapshotService {
      */
     public async generateBattleTexture(heroId: string, equipment: Record<string, string>): Promise<PIXI.Texture> {
         const hash = this.getEquipmentHash(heroId, equipment);
-        
+
         if (this.cache.has(hash)) {
             return this.cache.get(hash)!;
         }
 
-        const heroConfig = HEROES_DB.find(h => h.id === heroId) || HEROES_DB[0];
+        const heroConfig = HEROES_DB.find((h) => h.id === heroId) || HEROES_DB[0];
         const texture = await this.createComposedTexture(heroConfig, equipment);
-        
+
         this.cache.set(hash, texture);
         return texture;
     }
@@ -53,19 +52,19 @@ class BattleSnapshotService {
         const scale = hero.baseScale || 1.0;
         const centerX = canvas.width / 2;
         const groundY = canvas.height * 0.85; // Чуть выше края для тени
-        
+
         // 1. Расчет корневой точки (Root Offset)
         // Ноги персонажа должны стоять точно в (centerX, groundY)
-        const rootX = centerX - (hero.anchors.feet.x * BASE_SIZE * scale);
-        const rootY = groundY - (hero.anchors.feet.y * BASE_SIZE * scale);
+        const rootX = centerX - hero.anchors.feet.x * BASE_SIZE * scale;
+        const rootY = groundY - hero.anchors.feet.y * BASE_SIZE * scale;
 
         const layers = await this.getLayers(hero, equipment);
 
         for (const layer of layers) {
             if (!layer.img) continue;
-            
+
             ctx.save();
-            
+
             if (layer.type === 'body') {
                 // Тело рисуется от Root
                 ctx.drawImage(layer.img, rootX, rootY, BASE_SIZE * scale, BASE_SIZE * scale);
@@ -74,18 +73,18 @@ class BattleSnapshotService {
                 const anchor = (hero.anchors as any)[layer.socket!];
                 if (anchor) {
                     // Позиция сокета в мировых координатах холста
-                    const socketX = rootX + (anchor.x * BASE_SIZE * scale);
-                    const socketY = rootY + (anchor.y * BASE_SIZE * scale);
-                    
+                    const socketX = rootX + anchor.x * BASE_SIZE * scale;
+                    const socketY = rootY + anchor.y * BASE_SIZE * scale;
+
                     ctx.translate(socketX, socketY);
-                    
+
                     if (anchor.angle) {
                         ctx.rotate((anchor.angle * Math.PI) / 180);
                     }
-                    
+
                     // Масштабирование предмета (наследование + тюнинг слота)
                     const itemScale = (anchor.scale || 1) * scale * (layer.itemSubTab === 'WEAPONS' ? 1.0 : 0.8);
-                    
+
                     // Рисуем предмет, центрируя его текстуру в точке сокета
                     const drawW = BASE_SIZE * itemScale;
                     const drawH = BASE_SIZE * itemScale;
@@ -105,14 +104,14 @@ class BattleSnapshotService {
         const loadPromises: any[] = [];
 
         // Слой ТЕЛА
-        loadPromises.push(this.loadImage(hero.image).then(img => ({ type: 'body', img, zIndex: 10 })));
+        loadPromises.push(this.loadImage(hero.image).then((img) => ({ type: 'body', img, zIndex: 10 })));
 
         // Слой ПРЕДМЕТОВ
         const slotToSocket: Record<string, string> = {
-            'WEAPONS': 'rightHand',
-            'SHIELDS': 'leftHand',
-            'HELMETS': 'head',
-            'ARMOR': 'center'
+            WEAPONS: 'rightHand',
+            SHIELDS: 'leftHand',
+            HELMETS: 'head',
+            ARMOR: 'center',
         };
 
         Object.entries(slotToSocket).forEach(([slot, socketKey]) => {
@@ -122,13 +121,15 @@ class BattleSnapshotService {
             const item = ITEMS_DATABASE[itemId] as any;
             if (!item || item.visualSocket !== socketKey) return;
 
-            loadPromises.push(this.loadImage(item.image).then(img => ({ 
-                type: 'item', 
-                img, 
-                socket: socketKey, 
-                itemSubTab: slot,
-                zIndex: socketKey === 'head' ? 30 : 20 
-            })));
+            loadPromises.push(
+                this.loadImage(item.image).then((img) => ({
+                    type: 'item',
+                    img,
+                    socket: socketKey,
+                    itemSubTab: slot,
+                    zIndex: socketKey === 'head' ? 30 : 20,
+                })),
+            );
         });
 
         const loadedLayers = await Promise.all(loadPromises);
@@ -149,7 +150,7 @@ class BattleSnapshotService {
      * Очистка кэша (например, при смене сцены или недостатке памяти)
      */
     public clearCache() {
-        this.cache.forEach(t => t.destroy(true));
+        this.cache.forEach((t) => t.destroy(true));
         this.cache.clear();
     }
 }

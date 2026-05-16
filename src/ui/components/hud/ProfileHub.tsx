@@ -1,16 +1,12 @@
 import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Pencil, Check, X } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { useGameStore } from '../../../store/useGameStore';
 import { AssetsMap } from '../../../configs/AssetsMap';
 import { audioService } from '../../../services/AudioService';
 import '../../styles/profile-hub.css';
 
 export const ProfileHub: React.FC = () => {
-    const { level, vipLevel, exp, vkUser, title, name, changeName } = useGameStore();
-    const [isEditing, setIsEditing] = React.useState(false);
-    const [newName, setNewName] = React.useState(name);
-    const [error, setError] = React.useState('');
+    const { level, vipLevel, exp, vkUser, title, name } = useGameStore();
 
     const getBadgeColor = (lvl: number) => {
         if (lvl >= 72) return 'from-[#8c6a3d] to-[#1a150f]'; // Эфир (Золотое сияние)
@@ -21,12 +17,18 @@ export const ProfileHub: React.FC = () => {
         if (lvl >= 32) return 'from-[#b38b3b] to-[#2d1f0a]'; // Золото
         if (lvl >= 24) return 'from-[#7a7a7a] to-[#1a1a1a]'; // Серебро
         if (lvl >= 16) return 'from-[#8c4a2a] to-[#2d150a]'; // Бронза
-        if (lvl >= 8)  return 'from-[#454d55] to-[#1a1c1e]'; // Железо
+        if (lvl >= 8) return 'from-[#454d55] to-[#1a1c1e]'; // Железо
         return 'from-[#3d2b1f] to-[#1a0f0a]'; // Странник
     };
 
     const maxExp = level * 600;
     const expPct = Math.min(100, (exp / maxExp) * 100);
+
+    React.useEffect(() => {
+        if (exp >= maxExp) {
+            useGameStore.getState().addExp(0);
+        }
+    }, [exp, maxExp]);
 
     return (
         <>
@@ -45,15 +47,14 @@ export const ProfileHub: React.FC = () => {
                     backgroundRepeat: 'no-repeat',
                     backgroundColor: 'transparent',
                     boxShadow: 'none',
-                    border: 'none'
+                    border: 'none',
                 }}
             >
-                {/* ШАГ 3: АВАТАР И НОВАЯ РАМКА */}
+                {/* АВАТАР И РАМКА */}
                 <div className="absolute left-[-18px] top-[-20px] w-[160px] h-[160px] flex items-center justify-center">
-                    {/* 1. Само изображение (Круг под рамкой) */}
                     <div className="w-[108px] h-[108px] rounded-full overflow-hidden bg-black/40 z-10 flex items-center justify-center relative translate-y-[1px]">
                         <img
-                            src={vkUser?.photo_200 || "/assets/images/avatars/панда.webp"}
+                            src={vkUser?.photo_200 || '/assets/images/avatars/панда.webp'}
                             className="w-full h-full object-cover scale-105"
                             alt="avatar"
                         />
@@ -65,32 +66,35 @@ export const ProfileHub: React.FC = () => {
                         alt="frame"
                     />
 
-                    {/* 3. Элемент уровня (LVL BADGE) */}
+                    {/* LVL BADGE */}
                     <div className="absolute bottom-[8px] left-[112px] w-[40px] h-[40px] z-30 flex items-center justify-center">
-                        {/* Подложка круга */}
-                        <div className={`absolute inset-[4px] rounded-full bg-gradient-to-b ${getBadgeColor(level)} shadow-[inset_0_2px_4px_rgba(255,255,255,0.3)] border border-white/10`} />
+                        <div
+                            className={`absolute inset-[4px] rounded-full bg-gradient-to-b ${getBadgeColor(level)} shadow-[inset_0_2px_4px_rgba(255,255,255,0.3)] border border-white/10`}
+                        />
 
                         <img
                             src={AssetsMap.UI.LVL_BADGE}
                             className="absolute inset-0 w-full h-full object-contain"
                             alt="lvl-bg"
                         />
-                        <span style={{
-                            position: 'relative',
-                            fontFamily: "'Cinzel', serif",
-                            fontSize: '16px',
-                            fontWeight: 900,
-                            color: '#fff',
-                            textShadow: '0 2px 5px rgba(0,0,0,1)',
-                            zIndex: 1,
-                            marginTop: '-1px'
-                        }}>
+                        <span
+                            style={{
+                                position: 'relative',
+                                fontFamily: "'Cinzel', serif",
+                                fontSize: '16px',
+                                fontWeight: 900,
+                                color: '#fff',
+                                textShadow: '0 2px 5px rgba(0,0,0,1)',
+                                zIndex: 1,
+                                marginTop: '-1px',
+                            }}
+                        >
                             {level}
                         </span>
                     </div>
                 </div>
 
-                {/* VIP ПЛАШКА (ОРИГИНАЛЬНЫЙ СПРАЙТ + ФУНКЦИОНАЛ) */}
+                {/* VIP ПЛАШКА */}
                 <button
                     className="absolute left-[345px] top-[10px] flex items-center justify-center group z-[101] outline-none bg-transparent border-none p-0 cursor-pointer"
                     style={{ width: '105px', height: '38px' }}
@@ -107,15 +111,17 @@ export const ProfileHub: React.FC = () => {
                         className="absolute inset-0 w-full h-full object-contain"
                         alt="vip"
                     />
-                    <span style={{
-                        position: 'relative',
-                        fontFamily: "'Cinzel', serif",
-                        fontSize: '16px',
-                        fontWeight: 900,
-                        color: '#fff',
-                        textShadow: '0 1px 3px rgba(0,0,0,1)',
-                        zIndex: 1
-                    }}>
+                    <span
+                        style={{
+                            position: 'relative',
+                            fontFamily: "'Cinzel', serif",
+                            fontSize: '16px',
+                            fontWeight: 900,
+                            color: '#fff',
+                            textShadow: '0 1px 3px rgba(0,0,0,1)',
+                            zIndex: 1,
+                        }}
+                    >
                         VIP {vipLevel}
                     </span>
                 </button>
@@ -128,46 +134,37 @@ export const ProfileHub: React.FC = () => {
                         style={{
                             left: '0px',
                             top: '3px',
-                            filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))'
+                            filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))',
                         }}
                         alt="crown"
                     />
                     <div className="flex flex-col items-start" style={{ marginLeft: '5px' }}>
                         <div className="flex items-center gap-2">
-                            <span style={{
-                                fontFamily: "'Cinzel', serif",
-                                fontSize: '24px',
-                                fontWeight: 900,
-                                color: '#fff',
-                                textShadow: '0 2px 4px rgba(0,0,0,1)',
-                                letterSpacing: '2px',
-                                lineHeight: '1.1'
-                            }}>
+                            <span
+                                style={{
+                                    fontFamily: "'Cinzel', serif",
+                                    fontSize: '24px',
+                                    fontWeight: 900,
+                                    color: '#fff',
+                                    textShadow: '0 2px 4px rgba(0,0,0,1)',
+                                    letterSpacing: '2px',
+                                    lineHeight: '1.1',
+                                }}
+                            >
                                 {name || 'Мастер'}
                             </span>
-                            <button
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
-                                    setIsEditing(true);
-                                    setNewName(name);
-                                    setError('');
-                                }}
-                                className="ml-1 p-1 flex items-center justify-center opacity-30 hover:opacity-100 hover:scale-110 transition-all group/edit"
-                                title="Сменить имя"
-                            >
-                                <Pencil size={12} className="text-white drop-shadow-[0_0_2px_rgba(0,0,0,0.8)]" />
-                            </button>
                         </div>
-                        <span style={{
-                            fontFamily: "'Cinzel', serif",
-                            fontSize: '11px',
-                            fontWeight: 500,
-                            color: '#a0a0a0',
-                            textShadow: '0 1px 2px rgba(0,0,0,1)',
-                            letterSpacing: '1px',
-                            marginTop: '-1px'
-                        }}>
+                        <span
+                            style={{
+                                fontFamily: "'Cinzel', serif",
+                                fontSize: '11px',
+                                fontWeight: 500,
+                                color: '#a0a0a0',
+                                textShadow: '0 1px 2px rgba(0,0,0,1)',
+                                letterSpacing: '1px',
+                                marginTop: '-1px',
+                            }}
+                        >
                             {title}
                         </span>
                     </div>
@@ -181,8 +178,10 @@ export const ProfileHub: React.FC = () => {
                         alt="exp-bg"
                     />
 
-                    {/* Внутренняя полоска (заполнение) */}
-                    <div className="absolute left-[15px] right-[50px] h-[22px] bg-black/50 rounded-full overflow-hidden border border-white/5" style={{ top: '50%', transform: 'translateY(-50%)' }}>
+                    <div
+                        className="absolute left-[15px] right-[20px] h-[22px] bg-black/50 rounded-full overflow-hidden border border-white/5"
+                        style={{ top: '50%', transform: 'translateY(-50%)' }}
+                    >
                         <motion.div
                             initial={{ width: 0 }}
                             animate={{ width: `${expPct}%` }}
@@ -191,21 +190,22 @@ export const ProfileHub: React.FC = () => {
                                 background: 'linear-gradient(90deg, #001144 0%, #0044bb 100%)',
                                 boxShadow: 'inset 0 0 10px rgba(0,0,0,0.6), 0 0 15px rgba(0,30,120,0.4)',
                                 borderRight: '1px solid rgba(255,255,255,0.2)',
-                                borderRadius: '9999px'
+                                borderRadius: '9999px',
                             }}
                         />
                     </div>
 
-                    {/* Текст опыта */}
                     <div className="absolute inset-0 flex items-center justify-center z-10">
-                        <span style={{
-                            fontFamily: "'Cinzel', serif",
-                            fontSize: '10px',
-                            fontWeight: 900,
-                            color: '#fff',
-                            textShadow: '0 1px 3px #000',
-                            letterSpacing: '1px'
-                        }}>
+                        <span
+                            style={{
+                                fontFamily: "'Cinzel', serif",
+                                fontSize: '10px',
+                                fontWeight: 900,
+                                color: '#fff',
+                                textShadow: '0 1px 3px #000',
+                                letterSpacing: '1px',
+                            }}
+                        >
                             {exp} / {maxExp} XP
                         </span>
                     </div>
@@ -226,76 +226,6 @@ export const ProfileHub: React.FC = () => {
                     />
                 </button>
             </motion.div>
-
-            {/* МОДАЛКА СМЕНЫ ИМЕНИ */}
-            <AnimatePresence>
-                {isEditing && (
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/80 backdrop-blur-md pointer-events-auto"
-                        onClick={() => setIsEditing(false)}
-                    >
-                        <motion.div
-                            initial={{ scale: 0.9, opacity: 0, y: 20 }}
-                            animate={{ scale: 1, opacity: 1, y: 0 }}
-                            exit={{ scale: 0.9, opacity: 0, y: 20 }}
-                            className="w-[500px] bg-[#0c0c0e] border-2 border-[#c8a870]/30 rounded-[32px] p-8 shadow-[0_0_50px_rgba(0,0,0,1)]"
-                            onClick={e => e.stopPropagation()}
-                        >
-                            <div className="flex justify-between items-center mb-6">
-                                <h3 className="text-[#f0c040] font-black text-xl tracking-widest uppercase">Смена Имени</h3>
-                                <button onClick={() => setIsEditing(false)} className="text-stone-500 hover:text-white transition-colors">
-                                    <X size={24} />
-                                </button>
-                            </div>
-
-                            <div className="space-y-4">
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-[#c8a870] uppercase tracking-widest ml-1">Новое Имя</label>
-                                    <input 
-                                        autoFocus
-                                        type="text"
-                                        value={newName}
-                                        onChange={e => {
-                                            setNewName(e.target.value);
-                                            setError('');
-                                        }}
-                                        className="w-full bg-black/60 border-2 border-white/5 rounded-2xl p-5 text-xl font-black text-white outline-none focus:border-[#f0c040]/50 transition-all"
-                                        placeholder="Введите имя..."
-                                    />
-                                    {error && <p className="text-red-500 text-[10px] font-bold uppercase tracking-wider ml-1">{error}</p>}
-                                </div>
-
-                                <div className="bg-white/5 rounded-2xl p-4 border border-white/5">
-                                    <p className="text-stone-400 text-[10px] leading-relaxed uppercase tracking-wider">
-                                        • Можно менять <span className="text-white font-bold">1 раз в месяц</span><br/>
-                                        • Длина <span className="text-white font-bold">2-15 символов</span><br/>
-                                        • Запрещена нецензурная лексика
-                                    </p>
-                                </div>
-
-                                <button
-                                    onClick={() => {
-                                        const res = changeName(newName);
-                                        if (res.success) {
-                                            setIsEditing(false);
-                                            audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
-                                        } else {
-                                            setError(res.message);
-                                        }
-                                    }}
-                                    className="w-full py-5 bg-gradient-to-r from-[#c8a870] to-[#f0c040] rounded-2xl font-black text-black uppercase tracking-widest hover:brightness-110 transition-all active:scale-95 flex items-center justify-center gap-2"
-                                >
-                                    <Check size={20} strokeWidth={4} />
-                                    Применить
-                                </button>
-                            </div>
-                        </motion.div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
         </>
     );
 };

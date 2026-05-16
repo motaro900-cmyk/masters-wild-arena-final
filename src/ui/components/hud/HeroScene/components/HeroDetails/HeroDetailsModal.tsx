@@ -1,4 +1,3 @@
-
 import { motion } from 'framer-motion';
 import { ROLE_ICONS } from '../../constants/roleIcons';
 import { DetailStat } from './DetailStat';
@@ -14,65 +13,195 @@ export const HeroDetailsModal = ({ hero, isOwned, onClose, rarityColors, onBuy, 
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             style={{
-                position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100000,
-                backdropFilter: 'blur(10px)'
+                position: 'fixed',
+                inset: 0,
+                background: 'rgba(0,0,0,0.85)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                zIndex: 100000,
+                backdropFilter: 'blur(10px)',
             }}
             onClick={onClose}
         >
             <motion.div
                 initial={{ scale: 0.9, y: 50 }}
                 animate={{ scale: 1, y: 0 }}
-                onClick={e => e.stopPropagation()}
+                onClick={(e) => e.stopPropagation()}
                 style={{
-                    width: '1200px', height: '800px', background: '#0a0a0a',
-                    borderRadius: '40px', border: `2px solid ${color}`,
-                    overflow: 'hidden', display: 'flex', position: 'relative',
-                    boxShadow: `0 30px 100px rgba(0,0,0,1), 0 0 50px ${color}33`
+                    width: '1200px',
+                    height: '800px',
+                    background: '#0a0a0a',
+                    borderRadius: '40px',
+                    border: `2px solid ${color}`,
+                    overflow: 'hidden',
+                    display: 'flex',
+                    position: 'relative',
+                    boxShadow: `0 30px 100px rgba(0,0,0,1), 0 0 50px ${color}33`,
                 }}
             >
                 {/* LEFT SIDE: HERO PREVIEW */}
-                <div style={{ width: '45%', height: '100%', position: 'relative', background: `radial-gradient(circle at center, ${color}22 0%, transparent 70%)` }}>
+                <div
+                    style={{
+                        width: '45%',
+                        height: '100%',
+                        position: 'relative',
+                        background: `radial-gradient(circle at center, ${color}22 0%, transparent 70%)`,
+                    }}
+                >
                     <motion.img
                         initial={{ opacity: 0, x: -50 }}
                         animate={{ opacity: 1, x: 0 }}
                         src={hero.image}
-                        style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '60px', zIndex: 2, position: 'relative' }}
+                        style={{
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'contain',
+                            padding: '60px',
+                            zIndex: 2,
+                            position: 'relative',
+                        }}
                     />
                     <div style={{ position: 'absolute', bottom: '60px', left: '60px', zIndex: 3 }}>
-                        <div style={{ background: role.bg, border: `1px solid ${role.color}`, borderRadius: '12px', padding: '8px 20px', display: 'inline-flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
+                        <div
+                            style={{
+                                background: role.bg,
+                                border: `1px solid ${role.color}`,
+                                borderRadius: '12px',
+                                padding: '8px 20px',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '10px',
+                                marginBottom: '20px',
+                            }}
+                        >
                             <span style={{ fontSize: '24px' }}>{role.icon}</span>
-                            <span style={{ color: role.color, fontSize: '18px', fontWeight: 900, letterSpacing: '2px' }}>{role.label}</span>
+                            <span
+                                style={{ color: role.color, fontSize: '18px', fontWeight: 900, letterSpacing: '2px' }}
+                            >
+                                {role.label}
+                            </span>
                         </div>
                     </div>
                 </div>
 
                 {/* RIGHT SIDE: INFO */}
-                <div style={{ width: '55%', height: '100%', padding: '60px', display: 'flex', flexDirection: 'column', gap: '30px', overflowY: 'auto' }} className="custom-scrollbar">
+                <div
+                    style={{
+                        width: '55%',
+                        height: '100%',
+                        padding: '60px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '30px',
+                        overflowY: 'auto',
+                    }}
+                    className="custom-scrollbar"
+                >
                     <div>
-                        <motion.h1 initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} style={{ fontSize: '64px', color: '#fff', margin: 0, fontFamily: "'Cinzel', serif", textShadow: `0 0 20px ${color}44` }}>{hero.name}</motion.h1>
-                        <div style={{ color: color, fontSize: '20px', fontWeight: 900, letterSpacing: '4px', textTransform: 'uppercase' }}>{hero.rarity}</div>
+                        <motion.h1
+                            initial={{ opacity: 0, y: -20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            style={{
+                                fontSize: '64px',
+                                color: '#fff',
+                                margin: 0,
+                                fontFamily: "'Cinzel', serif",
+                                textShadow: `0 0 20px ${color}44`,
+                            }}
+                        >
+                            {hero.name}
+                        </motion.h1>
+                        <div
+                            style={{
+                                color: color,
+                                fontSize: '20px',
+                                fontWeight: 900,
+                                letterSpacing: '4px',
+                                textTransform: 'uppercase',
+                            }}
+                        >
+                            {hero.rarity}
+                        </div>
                     </div>
 
-                    <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: '18px', lineHeight: '1.6', fontStyle: 'italic' }}>
+                    <div
+                        style={{
+                            color: 'rgba(255,255,255,0.6)',
+                            fontSize: '18px',
+                            lineHeight: '1.6',
+                            fontStyle: 'italic',
+                        }}
+                    >
                         "{hero.lore}"
                     </div>
 
                     {/* STATS */}
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-                        <DetailStat iconClass="sprite-stat stat-hp" label="ЗДОРОВЬЕ (MAX)" value={hero.stats.stamina * 10 * 5} color="#ef4444" />
-                        <DetailStat iconClass="sprite-stat stat-attack" label="АТАКА (MAX)" value={hero.stats.strength * 2 * 5} color="#f97316" />
-                        <DetailStat iconClass="sprite-stat stat-defense" label="ЗАЩИТА (MAX)" value={hero.stats.stamina * 0.5 * 5} color="#3b82f6" />
-                        <DetailStat iconClass="sprite-stat stat-speed" label="СКОРОСТЬ" value={1 + (hero.stats.agility * 0.05)} color="#fcd34d" />
-                        <DetailStat iconClass="sprite-stat stat-crit" label="КРИТ. ШАНС" value={`${hero.stats.agility * 0.5}%`} color="#a855f7" />
-                        <DetailStat iconClass="sprite-stat stat-accuracy" label="УКЛОНЕНИЕ" value={`${hero.stats.agility * 0.2}%`} color="#4ade80" />
-                        <DetailStat iconClass="sprite-stat stat-penetration" label="ПРОБИТИЕ" value="15" color="#fbbf24" />
-                        <DetailStat iconClass="sprite-stat stat-lifesteal" label="ВАМПИРИЗМ" value="5%" color="#f43f5e" />
+                        <DetailStat
+                            iconClass="sprite-stat stat-hp"
+                            label="ЗДОРОВЬЕ (MAX)"
+                            value={hero.stats.stamina * 10 * 5}
+                            color="#ef4444"
+                        />
+                        <DetailStat
+                            iconClass="sprite-stat stat-attack"
+                            label="АТАКА (MAX)"
+                            value={hero.stats.strength * 2 * 5}
+                            color="#f97316"
+                        />
+                        <DetailStat
+                            iconClass="sprite-stat stat-defense"
+                            label="ЗАЩИТА (MAX)"
+                            value={hero.stats.stamina * 0.5 * 5}
+                            color="#3b82f6"
+                        />
+                        <DetailStat
+                            iconClass="sprite-stat stat-speed"
+                            label="СКОРОСТЬ"
+                            value={1 + hero.stats.agility * 0.05}
+                            color="#fcd34d"
+                        />
+                        <DetailStat
+                            iconClass="sprite-stat stat-crit"
+                            label="КРИТ. ШАНС"
+                            value={`${hero.stats.agility * 0.5}%`}
+                            color="#a855f7"
+                        />
+                        <DetailStat
+                            iconClass="sprite-stat stat-accuracy"
+                            label="УКЛОНЕНИЕ"
+                            value={`${hero.stats.agility * 0.2}%`}
+                            color="#4ade80"
+                        />
+                        <DetailStat
+                            iconClass="sprite-stat stat-penetration"
+                            label="ПРОБИТИЕ"
+                            value="15"
+                            color="#fbbf24"
+                        />
+                        <DetailStat
+                            iconClass="sprite-stat stat-lifesteal"
+                            label="ВАМПИРИЗМ"
+                            value="5%"
+                            color="#f43f5e"
+                        />
                     </div>
 
                     {/* SKILLS PLACEHOLDER */}
                     <div>
-                        <div style={{ color: '#fff', fontSize: '24px', fontWeight: 900, marginBottom: '20px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '10px' }}>СПОСОБНОСТИ</div>
+                        <div
+                            style={{
+                                color: '#fff',
+                                fontSize: '24px',
+                                fontWeight: 900,
+                                marginBottom: '20px',
+                                borderBottom: '1px solid rgba(255,255,255,0.1)',
+                                paddingBottom: '10px',
+                            }}
+                        >
+                            СПОСОБНОСТИ
+                        </div>
                         <div style={{ display: 'flex', gap: '20px' }}>
                             <SkillItem icon="🔥" name="Мощный удар" desc="Наносит 200% урона по цели." />
                             <SkillItem icon="🛡️" name="Железная воля" desc="Повышает защиту на 50% на 2 хода." />
@@ -87,9 +216,19 @@ export const HeroDetailsModal = ({ hero, isOwned, onClose, rarityColors, onBuy, 
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                             style={{
-                                flex: 1, height: '70px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.2)',
-                                borderRadius: '15px', color: '#fff', fontSize: '20px', fontWeight: 900, cursor: 'pointer',
-                                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '15px'
+                                flex: 1,
+                                height: '70px',
+                                background: 'rgba(255,255,255,0.05)',
+                                border: '1px solid rgba(255,255,255,0.2)',
+                                borderRadius: '15px',
+                                color: '#fff',
+                                fontSize: '20px',
+                                fontWeight: 900,
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: '15px',
                             }}
                             onClick={() => alert('Режим тренировки скоро будет доступен!')}
                         >
@@ -101,8 +240,15 @@ export const HeroDetailsModal = ({ hero, isOwned, onClose, rarityColors, onBuy, 
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
                                 style={{
-                                    flex: 1, height: '70px', background: 'linear-gradient(180deg, #22c55e 0%, #15803d 100%)', border: 'none',
-                                    borderRadius: '15px', color: '#fff', fontSize: '20px', fontWeight: 900, cursor: 'pointer'
+                                    flex: 1,
+                                    height: '70px',
+                                    background: 'linear-gradient(180deg, #22c55e 0%, #15803d 100%)',
+                                    border: 'none',
+                                    borderRadius: '15px',
+                                    color: '#fff',
+                                    fontSize: '20px',
+                                    fontWeight: 900,
+                                    cursor: 'pointer',
                                 }}
                                 onClick={onSelect}
                             >
@@ -113,8 +259,15 @@ export const HeroDetailsModal = ({ hero, isOwned, onClose, rarityColors, onBuy, 
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
                                 style={{
-                                    flex: 1, height: '70px', background: 'linear-gradient(180deg, #f1c40f 0%, #d4a017 100%)', border: 'none',
-                                    borderRadius: '15px', color: '#fff', fontSize: '20px', fontWeight: 900, cursor: 'pointer'
+                                    flex: 1,
+                                    height: '70px',
+                                    background: 'linear-gradient(180deg, #f1c40f 0%, #d4a017 100%)',
+                                    border: 'none',
+                                    borderRadius: '15px',
+                                    color: '#fff',
+                                    fontSize: '20px',
+                                    fontWeight: 900,
+                                    cursor: 'pointer',
                                 }}
                                 onClick={onBuy}
                             >
@@ -127,7 +280,19 @@ export const HeroDetailsModal = ({ hero, isOwned, onClose, rarityColors, onBuy, 
                 {/* CLOSE BUTTON */}
                 <button
                     onClick={onClose}
-                    style={{ position: 'absolute', top: '30px', right: '30px', background: 'rgba(0,0,0,0.5)', border: 'none', color: '#fff', fontSize: '32px', cursor: 'pointer', width: '60px', height: '60px', borderRadius: '50%' }}
+                    style={{
+                        position: 'absolute',
+                        top: '30px',
+                        right: '30px',
+                        background: 'rgba(0,0,0,0.5)',
+                        border: 'none',
+                        color: '#fff',
+                        fontSize: '32px',
+                        cursor: 'pointer',
+                        width: '60px',
+                        height: '60px',
+                        borderRadius: '50%',
+                    }}
                 >
                     ✕
                 </button>

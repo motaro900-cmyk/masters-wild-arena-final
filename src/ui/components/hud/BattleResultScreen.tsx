@@ -28,34 +28,35 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
         const tl = gsap.timeline();
 
         // Затемнение фона
-        tl.fromTo(containerRef.current,
-            { opacity: 0 },
-            { opacity: 1, duration: 0.4 }
-        )
-        // Заголовок влетает сверху
-        .fromTo(titleRef.current,
-            { y: -150, opacity: 0, scale: 0.5 },
-            { y: 0, opacity: 1, scale: 1, duration: 0.6, ease: 'back.out(1.7)' },
-            '-=0.1'
-        )
-        // Панель со статистикой появляется
-        .fromTo(panelRef.current,
-            { y: 80, opacity: 0 },
-            { y: 0, opacity: 1, duration: 0.5, ease: 'power3.out' },
-            '-=0.2'
-        )
-        // Статы появляются по одному
-        .fromTo('.result-stat-item',
-            { x: -30, opacity: 0 },
-            { x: 0, opacity: 1, duration: 0.3, stagger: 0.1 },
-            '-=0.1'
-        )
-        // Кнопки появляются последними
-        .fromTo(buttonsRef.current,
-            { y: 40, opacity: 0 },
-            { y: 0, opacity: 1, duration: 0.4, ease: 'power2.out' },
-            '-=0.1'
-        );
+        tl.fromTo(containerRef.current, { opacity: 0 }, { opacity: 1, duration: 0.4 })
+            // Заголовок влетает сверху
+            .fromTo(
+                titleRef.current,
+                { y: -150, opacity: 0, scale: 0.5 },
+                { y: 0, opacity: 1, scale: 1, duration: 0.6, ease: 'back.out(1.7)' },
+                '-=0.1',
+            )
+            // Панель со статистикой появляется
+            .fromTo(
+                panelRef.current,
+                { y: 80, opacity: 0 },
+                { y: 0, opacity: 1, duration: 0.5, ease: 'power3.out' },
+                '-=0.2',
+            )
+            // Статы появляются по одному
+            .fromTo(
+                '.result-stat-item',
+                { x: -30, opacity: 0 },
+                { x: 0, opacity: 1, duration: 0.3, stagger: 0.1 },
+                '-=0.1',
+            )
+            // Кнопки появляются последними
+            .fromTo(
+                buttonsRef.current,
+                { y: 40, opacity: 0 },
+                { y: 0, opacity: 1, duration: 0.4, ease: 'power2.out' },
+                '-=0.1',
+            );
 
         // Пульсация заголовка
         if (data.isVictory) {
@@ -64,7 +65,7 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
                 duration: 1.5,
                 repeat: -1,
                 yoyo: true,
-                delay: 1
+                delay: 1,
             });
         }
     }, [data.isVictory]);
@@ -88,8 +89,10 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
             ref={containerRef}
             style={{
                 position: 'absolute',
-                top: 0, left: 0,
-                width: '1920px', height: '1080px',
+                top: 0,
+                left: 0,
+                width: '1920px',
+                height: '1080px',
                 background: bgGradient,
                 display: 'flex',
                 flexDirection: 'column',
@@ -97,38 +100,54 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
                 justifyContent: 'center',
                 zIndex: 5000,
                 opacity: 0,
-                pointerEvents: 'auto'
+                pointerEvents: 'auto',
             }}
         >
             {/* ДЕКОРАТИВНЫЕ ЛИНИИ */}
-            <div style={{
-                position: 'absolute', top: 0, left: 0, right: 0, height: '4px',
-                background: `linear-gradient(90deg, transparent, ${accentColor}, transparent)`
-            }} />
-            <div style={{
-                position: 'absolute', bottom: 0, left: 0, right: 0, height: '4px',
-                background: `linear-gradient(90deg, transparent, ${accentColor}, transparent)`
-            }} />
+            <div
+                style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    height: '4px',
+                    background: `linear-gradient(90deg, transparent, ${accentColor}, transparent)`,
+                }}
+            />
+            <div
+                style={{
+                    position: 'absolute',
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    height: '4px',
+                    background: `linear-gradient(90deg, transparent, ${accentColor}, transparent)`,
+                }}
+            />
 
             {/* ЗАГОЛОВОК РЕЗУЛЬТАТА */}
             <div ref={titleRef} style={{ textAlign: 'center', marginBottom: '40px' }}>
-                <div style={{
-                    fontSize: '120px',
-                    fontWeight: 900,
-                    color: accentColor,
-                    letterSpacing: '0.15em',
-                    textShadow: `0 0 20px ${accentColor}, 2px 4px 0 rgba(0,0,0,0.8)`,
-                    lineHeight: 1,
-                    fontFamily: 'Russo One, sans-serif'
-                }}>
+                <div
+                    style={{
+                        fontSize: '120px',
+                        fontWeight: 900,
+                        color: accentColor,
+                        letterSpacing: '0.15em',
+                        textShadow: `0 0 20px ${accentColor}, 2px 4px 0 rgba(0,0,0,0.8)`,
+                        lineHeight: 1,
+                        fontFamily: 'Russo One, sans-serif',
+                    }}
+                >
                     {isVictory ? 'ПОБЕДА!' : 'ПОРАЖЕНИЕ'}
                 </div>
-                <div style={{
-                    color: '#d1d5db',
-                    fontSize: '28px',
-                    marginTop: '10px',
-                    letterSpacing: '0.2em'
-                }}>
+                <div
+                    style={{
+                        color: '#d1d5db',
+                        fontSize: '28px',
+                        marginTop: '10px',
+                        letterSpacing: '0.2em',
+                    }}
+                >
                     {isVictory ? `Ты победил ${data.enemyName}!` : `${data.enemyName} оказался сильнее`}
                 </div>
             </div>
@@ -143,15 +162,17 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
                     borderRadius: '20px',
                     padding: '35px 50px',
                     marginBottom: '40px',
-                    boxShadow: `0 0 60px ${accentColor}22, inset 0 0 30px rgba(0,0,0,0.3)`
+                    boxShadow: `0 0 60px ${accentColor}22, inset 0 0 30px rgba(0,0,0,0.3)`,
                 }}
             >
                 {/* РАЗДЕЛИТЕЛЬ ВВЕРХУ */}
-                <div style={{
-                    height: '1px',
-                    background: `linear-gradient(90deg, transparent, ${accentColor}88, transparent)`,
-                    marginBottom: '25px'
-                }} />
+                <div
+                    style={{
+                        height: '1px',
+                        background: `linear-gradient(90deg, transparent, ${accentColor}88, transparent)`,
+                        marginBottom: '25px',
+                    }}
+                />
 
                 <div ref={statsRef} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
                     {stats.map((stat, i) => (
@@ -165,7 +186,7 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
                                 padding: '10px 15px',
                                 background: 'rgba(255,255,255,0.04)',
                                 borderRadius: '10px',
-                                border: '1px solid rgba(255,255,255,0.06)'
+                                border: '1px solid rgba(255,255,255,0.06)',
                             }}
                         >
                             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -174,24 +195,58 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
                                     {stat.label}
                                 </span>
                             </div>
-                            <span style={{
-                                color: stat.label === 'Кубки' && data.trophiesChange < 0 ? '#ef4444' : '#fbbf24',
-                                fontWeight: 900,
-                                fontSize: '22px',
-                                fontFamily: 'Russo One, sans-serif'
-                            }}>
+                            <span
+                                style={{
+                                    color: stat.label === 'Кубки' && data.trophiesChange < 0 ? '#ef4444' : '#fbbf24',
+                                    fontWeight: 900,
+                                    fontSize: '22px',
+                                    fontFamily: 'Russo One, sans-serif',
+                                }}
+                            >
                                 {stat.value}
                             </span>
                         </div>
                     ))}
                 </div>
 
+                {/* ПОЛОСКА ПРОГРЕССА ОПЫТА */}
+                <div style={{ marginTop: '25px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                        <span style={{ color: '#9ca3af', fontSize: '14px', fontWeight: 800 }}>ПРОГРЕСС УРОВНЯ</span>
+                        <span style={{ color: '#fbbf24', fontSize: '14px', fontWeight: 900 }}>+{data.xpEarned} XP</span>
+                    </div>
+                    <div
+                        style={{
+                            height: '12px',
+                            background: 'rgba(0,0,0,0.5)',
+                            borderRadius: '6px',
+                            border: '1px solid rgba(255,255,255,0.1)',
+                            overflow: 'hidden',
+                            position: 'relative',
+                        }}
+                    >
+                        <div
+                            style={{
+                                position: 'absolute',
+                                left: 0,
+                                top: 0,
+                                height: '100%',
+                                width: '45%', // Это должно быть динамическим, но для красоты сделаем анимацию
+                                background: 'linear-gradient(90deg, #3b82f6, #60a5fa)',
+                                boxShadow: '0 0 15px rgba(59,130,246,0.5)',
+                            }}
+                        />
+                    </div>
+                </div>
+
                 {/* РАЗДЕЛИТЕЛЬ ВНИЗУ */}
-                <div style={{
-                    height: '1px',
-                    background: `linear-gradient(90deg, transparent, ${accentColor}88, transparent)`,
-                    marginTop: '25px'
-                }} />
+                <div
+                    style={{
+                        height: '1px',
+                        background: `linear-gradient(90deg, transparent, ${accentColor}88, transparent)`,
+                        marginTop: '25px',
+                    }}
+                />
             </div>
 
             {/* КНОПКИ */}
@@ -210,12 +265,12 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
                         cursor: 'pointer',
                         letterSpacing: '0.1em',
                         transition: 'all 0.2s',
-                        fontFamily: 'Russo One, sans-serif'
+                        fontFamily: 'Russo One, sans-serif',
                     }}
-                    onMouseEnter={e => {
+                    onMouseEnter={(e) => {
                         gsap.to(e.currentTarget, { scale: 1.05, duration: 0.15 });
                     }}
-                    onMouseLeave={e => {
+                    onMouseLeave={(e) => {
                         gsap.to(e.currentTarget, { scale: 1, duration: 0.15 });
                     }}
                 >
@@ -237,15 +292,13 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
                         fontWeight: 900,
                         cursor: 'pointer',
                         letterSpacing: '0.1em',
-                        boxShadow: isVictory
-                            ? '0 8px 30px rgba(196,139,59,0.4)'
-                            : '0 8px 30px rgba(0,0,0,0.3)',
-                        fontFamily: 'Russo One, sans-serif'
+                        boxShadow: isVictory ? '0 8px 30px rgba(196,139,59,0.4)' : '0 8px 30px rgba(0,0,0,0.3)',
+                        fontFamily: 'Russo One, sans-serif',
                     }}
-                    onMouseEnter={e => {
+                    onMouseEnter={(e) => {
                         gsap.to(e.currentTarget, { scale: 1.05, duration: 0.15 });
                     }}
-                    onMouseLeave={e => {
+                    onMouseLeave={(e) => {
                         gsap.to(e.currentTarget, { scale: 1, duration: 0.15 });
                     }}
                 >

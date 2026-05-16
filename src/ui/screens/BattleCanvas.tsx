@@ -11,7 +11,7 @@ export function BattleCanvas() {
 
         let isMounted = true;
         const app = PixiApp.getInstance();
-        const engine = new BattleEngine();
+        const engine = BattleEngine.getInstance();
         engineRef.current = engine;
 
         // Инициализация PixiJS
@@ -20,7 +20,7 @@ export function BattleCanvas() {
 
             // Инициализация Боя (Approach E)
             const testStats = { hp: 1000, attack: 50, speed: 10, critChance: 0.1, defense: 20, dodge: 0.05 };
-            engine.init(canvasRef.current!, 'panda', testStats, testStats);
+            engine.init(canvasRef.current!, 'panda', 'tiger', testStats, testStats);
         });
 
         return () => {
@@ -31,16 +31,18 @@ export function BattleCanvas() {
     }, []);
 
     return (
-        <div style={{
-            position: 'relative',
-            width: '100%',
-            height: '100%',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            background: '#000'
-        }}>
+        <div
+            style={{
+                position: 'relative',
+                width: '100%',
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: '#000',
+            }}
+        >
             <canvas
                 ref={canvasRef}
                 style={{

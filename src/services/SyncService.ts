@@ -1,5 +1,18 @@
 import { db } from '../utils/firebase';
-import { doc, setDoc, getDoc, serverTimestamp, collection, getDocs, query, orderBy, limit, onSnapshot, deleteDoc } from 'firebase/firestore';
+import {
+    doc,
+    setDoc,
+    getDoc,
+    serverTimestamp,
+    collection,
+    getDocs,
+    query,
+    orderBy,
+    limit,
+    onSnapshot,
+    deleteDoc,
+    where,
+} from 'firebase/firestore';
 import { useGameStore } from '../store/useGameStore';
 import { getVkUserInfo } from '../utils/VKBridge';
 
@@ -21,7 +34,7 @@ export class SyncService {
      */
     public async syncPlayerData(): Promise<void> {
         const state = useGameStore.getState();
-        
+
         // Если пользователя нет в сторе, пробуем получить его из VK
         let vkUser = state.vkUser;
         if (!vkUser) {
@@ -33,7 +46,7 @@ export class SyncService {
 
         // Используем VK ID как основной ключ, если он есть, иначе - playerId
         const userId = vkUser ? String(vkUser.id) : state.playerId;
-        
+
         if (!userId) {
             console.warn('[SyncService] No UserID found, skipping sync');
             return;
@@ -41,7 +54,7 @@ export class SyncService {
 
         try {
             const playerRef = doc(db, 'пользователи', userId);
-            
+
             const syncData = {
                 id: userId,
                 vkId: vkUser ? Number(vkUser.id) : 0,
@@ -61,7 +74,7 @@ export class SyncService {
                     armor: state.heroEquipment?.panda?.ARMOR || '',
                     shield: state.heroEquipment?.panda?.SHIELDS || '',
                 },
-                инвентарь: state.inventory || []
+                инвентарь: state.inventory || [],
             };
 
             await setDoc(playerRef, syncData, { merge: true });
@@ -76,15 +89,15 @@ export class SyncService {
      */
     public startAutoSync(intervalMs: number = 60000): void {
         if (this.syncInterval) return;
-        
+
         // Первая синхронизация сразу
         this.syncPlayerData();
-        
+
         this.syncInterval = setInterval(() => {
             this.syncPlayerData();
         }, intervalMs);
-        
-        console.log(`[SyncService] Auto-sync started (every ${intervalMs/1000}s)`);
+
+        console.log(`[SyncService] Auto-sync started (every ${intervalMs / 1000}s)`);
     }
 
     public stopAutoSync(): void {
@@ -102,10 +115,10 @@ export class SyncService {
             const playersRef = collection(db, 'пользователи');
             const q = query(playersRef, orderBy('lastSeen', 'desc'), limit(100));
             const querySnapshot = await getDocs(q);
-            
-            return querySnapshot.docs.map(doc => ({
+
+            return querySnapshot.docs.map((doc) => ({
                 ...doc.data(),
-                id: doc.id
+                id: doc.id,
             }));
         } catch (error) {
             console.error('[SyncService] Failed to fetch players:', error);
@@ -135,7 +148,7 @@ export class SyncService {
             const feedbackRef = doc(collection(db, 'отзывы'));
             await setDoc(feedbackRef, {
                 ...data,
-                serverTimestamp: serverTimestamp()
+                serverTimestamp: serverTimestamp(),
             });
             console.log('[SyncService] Feedback sent successfully');
         } catch (error) {
@@ -152,10 +165,10 @@ export class SyncService {
             const feedbackRef = collection(db, 'отзывы');
             const q = query(feedbackRef, orderBy('timestamp', 'desc'), limit(50));
             const querySnapshot = await getDocs(q);
-            
-            return querySnapshot.docs.map(doc => ({
+
+            return querySnapshot.docs.map((doc) => ({
                 ...doc.data(),
-                id: doc.id
+                id: doc.id,
             }));
         } catch (error) {
             console.error('[SyncService] Failed to fetch feedback:', error);
@@ -172,11 +185,11 @@ export class SyncService {
             const id = playerId.toUpperCase().startsWith('MW-') ? playerId.substring(3) : playerId;
             const playerRef = doc(db, 'пользователи', id);
             const playerSnap = await getDoc(playerRef);
-            
+
             if (playerSnap.exists()) {
                 return {
                     id: playerSnap.id,
-                    ...playerSnap.data()
+                    ...playerSnap.data(),
                 };
             }
             return null;
@@ -194,9 +207,9 @@ export class SyncService {
             const playersRef = collection(db, 'пользователи');
             const q = query(playersRef, orderBy('lastSeen', 'desc'), limit(limitCount));
             const snapshot = await getDocs(q);
-            return snapshot.docs.map(doc => ({
+            return snapshot.docs.map((doc) => ({
                 id: doc.id,
-                ...doc.data()
+                ...doc.data(),
             }));
         } catch (error) {
             console.error('[SyncService] Failed to get global players:', error);
@@ -213,7 +226,7 @@ export class SyncService {
             const requestDoc = doc(requestsRef, senderData.id);
             await setDoc(requestDoc, {
                 ...senderData,
-                timestamp: Date.now()
+                timestamp: Date.now(),
             });
             return true;
         } catch (error) {
@@ -227,16 +240,20 @@ export class SyncService {
      */
     public subscribeToFriendRequests(userId: string, callback: (requests: any[]) => void): () => void {
         const requestsRef = collection(db, 'пользователи', userId, 'запросы');
-        
-        return onSnapshot(requestsRef, (snapshot: any) => {
-            const requests = snapshot.docs.map((doc: any) => ({
-                ...doc.data(),
-                id: doc.id
-            }));
-            callback(requests);
-        }, (error: any) => {
-            console.error('[SyncService] Requests subscription error:', error);
-        });
+
+        return onSnapshot(
+            requestsRef,
+            (snapshot: any) => {
+                const requests = snapshot.docs.map((doc: any) => ({
+                    ...doc.data(),
+                    id: doc.id,
+                }));
+                callback(requests);
+            },
+            (error: any) => {
+                console.error('[SyncService] Requests subscription error:', error);
+            },
+        );
     }
 
     /**
@@ -259,7 +276,7 @@ export class SyncService {
             const chatRef = doc(collection(db, 'чат'));
             await setDoc(chatRef, {
                 ...message,
-                serverTimestamp: serverTimestamp()
+                serverTimestamp: serverTimestamp(),
             });
         } catch (error) {
             console.error('[SyncService] Failed to send chat message:', error);
@@ -272,16 +289,22 @@ export class SyncService {
     public subscribeToChat(callback: (messages: any[]) => void): () => void {
         const chatRef = collection(db, 'чат');
         const q = query(chatRef, orderBy('serverTimestamp', 'desc'), limit(50));
-        
-        return onSnapshot(q, (snapshot: any) => {
-            const messages = snapshot.docs.map((doc: any) => ({
-                ...doc.data(),
-                id: doc.id
-            })).reverse();
-            callback(messages);
-        }, (error: any) => {
-            console.error('[SyncService] Chat subscription error:', error);
-        });
+
+        return onSnapshot(
+            q,
+            (snapshot: any) => {
+                const messages = snapshot.docs
+                    .map((doc: any) => ({
+                        ...doc.data(),
+                        id: doc.id,
+                    }))
+                    .reverse();
+                callback(messages);
+            },
+            (error: any) => {
+                console.error('[SyncService] Chat subscription error:', error);
+            },
+        );
     }
 
     /**
@@ -293,7 +316,7 @@ export class SyncService {
             await setDoc(mailRef, {
                 ...mailData,
                 timestamp: serverTimestamp(),
-                isRead: false
+                isRead: false,
             });
             console.log(`[SyncService] Mail sent to ${userId}`);
         } catch (error) {
@@ -308,7 +331,7 @@ export class SyncService {
     public async sendBroadcastMail(mailData: any): Promise<void> {
         try {
             const players = await this.getAllPlayers();
-            const promises = players.map(p => this.sendMail(p.id, mailData));
+            const promises = players.map((p) => this.sendMail(p.id, mailData));
             await Promise.all(promises);
             console.log(`[SyncService] Broadcast mail sent to ${players.length} players`);
         } catch (error) {
@@ -323,16 +346,36 @@ export class SyncService {
     public subscribeToMail(userId: string, callback: (mails: any[]) => void): () => void {
         const mailRef = collection(db, 'пользователи', userId, 'почта');
         const q = query(mailRef, orderBy('timestamp', 'desc'), limit(50));
-        
-        return onSnapshot(q, (snapshot: any) => {
-            const mails = snapshot.docs.map((doc: any) => ({
-                ...doc.data(),
-                id: doc.id
-            }));
-            callback(mails);
-        }, (error: any) => {
-            console.error('[SyncService] Mail subscription error:', error);
-        });
+
+        return onSnapshot(
+            q,
+            (snapshot: any) => {
+                const mails = snapshot.docs.map((doc: any) => ({
+                    ...doc.data(),
+                    id: doc.id,
+                }));
+                callback(mails);
+            },
+            (error: any) => {
+                console.error('[SyncService] Mail subscription error:', error);
+            },
+        );
+    }
+
+    /**
+     * Проверяет, свободно ли имя (никнейм) в базе данных
+     */
+    public async isNicknameUnique(name: string): Promise<boolean> {
+        try {
+            const playersRef = collection(db, 'пользователи');
+            // Ищем точное совпадение имени
+            const q = query(playersRef, where('name', '==', name));
+            const snapshot = await getDocs(q);
+            return snapshot.empty;
+        } catch (error) {
+            console.error('[SyncService] Nickname uniqueness check failed:', error);
+            return true; // В случае ошибки разрешаем, чтобы не блокировать вход
+        }
     }
 }
 

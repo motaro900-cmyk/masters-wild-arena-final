@@ -17,12 +17,12 @@ export const resolveAssetObject = <T>(source: T): T => {
     }
 
     if (Array.isArray(source)) {
-        return source.map(item => resolveAssetObject(item)) as unknown as T;
+        return source.map((item) => resolveAssetObject(item)) as unknown as T;
     }
 
     if (source && typeof source === 'object') {
         return Object.fromEntries(
-            Object.entries(source as Record<string, unknown>).map(([key, value]) => [key, resolveAssetObject(value)])
+            Object.entries(source as Record<string, unknown>).map(([key, value]) => [key, resolveAssetObject(value)]),
         ) as T;
     }
 

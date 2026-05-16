@@ -23,35 +23,37 @@ export const DailyTaskPanel: React.FC = () => {
     const getTimeRemaining = () => {
         const MSK_OFFSET = 3 * 60 * 60 * 1000;
         const DAY_MS = 24 * 60 * 60 * 1000;
-        
+
         const nowUTC = Date.now();
         const nowMSK = nowUTC + MSK_OFFSET;
-        
+
         // Находим следующую полночь по МСК
         const nextMidnightMSK = Math.floor(nowMSK / DAY_MS + 1) * DAY_MS;
         const diff = nextMidnightMSK - nowMSK;
 
-        if (diff <= 0) return "0h 0m";
+        if (diff <= 0) return '0h 0m';
         const hours = Math.floor(diff / (1000 * 60 * 60));
         const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
         return `${hours}h ${minutes}m`;
     };
 
     return (
-        <div style={{
-            backgroundImage: `url(${AssetsMap.UI.PANEL_QUEST})`,
-            backgroundSize: '100% 100%',
-            backgroundRepeat: 'no-repeat',
-            width: 400,
-            height: isCollapsed ? 65 : 480,
-            padding: '28px 28px 22px 28px',
-            display: 'flex',
-            flexDirection: 'column',
-            pointerEvents: 'auto',
-            transition: 'height 0.3s ease-in-out',
-            overflow: 'hidden',
-            position: 'relative'
-        }}>
+        <div
+            style={{
+                backgroundImage: `url(${AssetsMap.UI.PANEL_QUEST})`,
+                backgroundSize: '100% 100%',
+                backgroundRepeat: 'no-repeat',
+                width: 400,
+                height: isCollapsed ? 65 : 480,
+                padding: '28px 28px 22px 28px',
+                display: 'flex',
+                flexDirection: 'column',
+                pointerEvents: 'auto',
+                transition: 'height 0.3s ease-in-out',
+                overflow: 'hidden',
+                position: 'relative',
+            }}
+        >
             {/* HEADER */}
             <div
                 onClick={() => setIsCollapsed(!isCollapsed)}
@@ -61,157 +63,227 @@ export const DailyTaskPanel: React.FC = () => {
                     alignItems: 'center',
                     cursor: 'pointer',
                     marginBottom: isCollapsed ? 0 : 15,
-                    position: 'relative'
+                    position: 'relative',
                 }}
             >
-                <h3 style={{
-                    margin: 0,
-                    fontFamily: "'Cinzel', serif",
-                    fontSize: 18,
-                    fontWeight: 900,
-                    color: '#3d2a10',
-                    textAlign: 'center',
-                    letterSpacing: '1.5px'
-                }}>
+                <h3
+                    style={{
+                        margin: 0,
+                        fontFamily: "'Cinzel', serif",
+                        fontSize: 18,
+                        fontWeight: 900,
+                        color: '#3d2a10',
+                        textAlign: 'center',
+                        letterSpacing: '1.5px',
+                    }}
+                >
                     ЕЖЕДНЕВНЫЕ ЗАДАНИЯ
                 </h3>
-                <span style={{
-                    position: 'absolute',
-                    right: 0,
-                    fontSize: 16,
-                    color: '#3d2a10',
-                    transform: isCollapsed ? 'rotate(180deg)' : 'rotate(0deg)',
-                    transition: 'transform 0.3s'
-                }}>
+                <span
+                    style={{
+                        position: 'absolute',
+                        right: 0,
+                        fontSize: 16,
+                        color: '#3d2a10',
+                        transform: isCollapsed ? 'rotate(180deg)' : 'rotate(0deg)',
+                        transition: 'transform 0.3s',
+                    }}
+                >
                     ▲
                 </span>
             </div>
 
             {!isCollapsed && (
                 <AnimatePresence>
-                        <motion.div 
-                            key="task-list-content"
-                            initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                            style={{ 
-                                display: 'flex', 
-                                flexDirection: 'column', 
-                                gap: '10px', 
-                                flex: 1, 
-                                overflow: 'hidden',
-                                marginTop: '8px' 
-                            }}
-                        >
-                            {dailyQuests?.slice(0, 4).filter((dq: IDailyQuest) => dq.questId).map((dq: IDailyQuest, index: number) => {
-                                const qData = QUESTS_POOL.find(q => q.id === dq.questId);
+                    <motion.div
+                        key="task-list-content"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '10px',
+                            flex: 1,
+                            overflow: 'hidden',
+                            marginTop: '8px',
+                        }}
+                    >
+                        {dailyQuests
+                            ?.slice(0, 4)
+                            .filter((dq: IDailyQuest) => dq.questId)
+                            .map((dq: IDailyQuest, index: number) => {
+                                const qData = QUESTS_POOL.find((q) => q.id === dq.questId);
                                 if (!qData) return null;
 
                                 const isComplete = dq.progress >= qData.target;
-                                
+
                                 return (
-                                    <div key={`quest-item-${dq.questId}-${index}`} style={{
-                                        padding: '0',
-                                        position: 'relative',
-                                        height: '78px',
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                        justifyContent: 'center'
-                                    }}>
-                                    <div style={{ display: 'flex', flexDirection: 'column', marginBottom: '5px' }}>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                            <div style={{ 
-                                                color: '#3d2a10', 
-                                                fontWeight: 900, 
-                                                fontSize: '15px', 
-                                                textTransform: 'uppercase',
-                                                fontFamily: "'Montserrat', sans-serif",
-                                                textShadow: '0.5px 0.5px 0px rgba(255,255,255,0.2)'
-                                            }}>
-                                                {qData.title}
-                                            </div>
-                                            <div style={{ 
-                                                color: isComplete ? '#208040' : '#7a5828', 
-                                                fontWeight: 900, 
-                                                fontSize: '14px',
-                                                fontFamily: "'Montserrat', sans-serif" 
-                                            }}>
-                                                {dq.progress}/{qData.target} {isComplete && "✓"}
-                                            </div>
-                                        </div>
-                                        <div style={{ 
-                                            color: '#5a4020', 
-                                            fontSize: '11px', 
-                                            fontWeight: 700, 
-                                            marginTop: '2px',
-                                            fontFamily: "'Montserrat', sans-serif",
-                                            lineHeight: '1.25',
-                                            textShadow: '0.3px 0.3px 0px rgba(255,255,255,0.3)'
-                                        }}>
-                                            {qData.description}
-                                        </div>
-                                    </div>
-
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginTop: '8px' }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                                            <img src={AssetsMap.UI.ICON_GOLD_FULL} style={{ width: 18, height: 18, objectFit: 'contain' }} alt="" />
-                                            <span style={{ fontSize: '13px', fontWeight: 900, color: '#3d2a10' }}>{qData.rewardGold}</span>
-                                        </div>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                                            <img src={AssetsMap.UI.ICON_ALMAZ_FULL} style={{ width: 16, height: 16, objectFit: 'contain' }} alt="" />
-                                            <span style={{ fontSize: '13px', fontWeight: 900, color: '#3d2a10' }}>{qData.rewardGems}</span>
-                                        </div>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                                            <img 
-                                                src={AssetsMap.UI.ICON_XP} 
-                                                style={{ 
-                                                    width: 30, 
-                                                    height: 30, 
-                                                    objectFit: 'contain',
-                                                    filter: 'brightness(1.2) contrast(1.1) drop-shadow(0 0 3px rgba(0,180,255,0.4))',
-                                                    marginLeft: '-3px',
-                                                    marginRight: '-3px'
-                                                }} 
-                                                alt="" 
-                                            />
-                                            <span style={{ fontSize: '13px', fontWeight: 900, color: '#3d2a10' }}>{qData.rewardExp}</span>
-                                        </div>
-
-                                        <div style={{ flex: 1 }} />
-
-                                        {dq.isClaimed ? (
-                                            <span style={{ color: '#208040', fontWeight: 900, fontSize: '11px', textTransform: 'uppercase' }}>ВЫПОЛНЕНО</span>
-                                        ) : isComplete ? (
-                                            <button
-                                                onClick={() => claimQuestReward(dq.questId)}
+                                    <div
+                                        key={`quest-item-${dq.questId}-${index}`}
+                                        style={{
+                                            padding: '0',
+                                            position: 'relative',
+                                            height: '78px',
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            justifyContent: 'center',
+                                        }}
+                                    >
+                                        <div style={{ display: 'flex', flexDirection: 'column', marginBottom: '5px' }}>
+                                            <div
                                                 style={{
-                                                    padding: '5px 12px',
-                                                    background: 'linear-gradient(180deg, #f0c040 0%, #c87820 100%)',
-                                                    border: '1px solid #3d2a10',
-                                                    borderRadius: '4px',
-                                                    color: '#fff',
-                                                    fontWeight: 900,
-                                                    fontSize: '11px',
-                                                    cursor: 'pointer'
+                                                    display: 'flex',
+                                                    justifyContent: 'space-between',
+                                                    alignItems: 'center',
                                                 }}
                                             >
-                                                ЗАБРАТЬ
-                                            </button>
-                                        ) : (
-                                            <div style={{ 
-                                                width: '80px', height: '8px', background: 'rgba(0,0,0,0.1)', 
-                                                borderRadius: '4px', overflow: 'hidden' 
-                                            }}>
-                                                <div style={{ 
-                                                    width: `${(dq.progress / qData.target) * 100}%`, 
-                                                    height: '100%', background: '#7a5828', transition: 'width 0.3s' 
-                                                }} />
+                                                <div
+                                                    style={{
+                                                        color: '#3d2a10',
+                                                        fontWeight: 900,
+                                                        fontSize: '15px',
+                                                        textTransform: 'uppercase',
+                                                        fontFamily: "'Montserrat', sans-serif",
+                                                        textShadow: '0.5px 0.5px 0px rgba(255,255,255,0.2)',
+                                                    }}
+                                                >
+                                                    {qData.title}
+                                                </div>
+                                                <div
+                                                    style={{
+                                                        color: isComplete ? '#208040' : '#7a5828',
+                                                        fontWeight: 900,
+                                                        fontSize: '14px',
+                                                        fontFamily: "'Montserrat', sans-serif",
+                                                    }}
+                                                >
+                                                    {dq.progress}/{qData.target} {isComplete && '✓'}
+                                                </div>
                                             </div>
-                                        )}
+                                            <div
+                                                style={{
+                                                    color: '#5a4020',
+                                                    fontSize: '11px',
+                                                    fontWeight: 700,
+                                                    marginTop: '2px',
+                                                    fontFamily: "'Montserrat', sans-serif",
+                                                    lineHeight: '1.25',
+                                                    textShadow: '0.3px 0.3px 0px rgba(255,255,255,0.3)',
+                                                }}
+                                            >
+                                                {qData.description}
+                                            </div>
+                                        </div>
+
+                                        <div
+                                            style={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: '15px',
+                                                marginTop: '8px',
+                                            }}
+                                        >
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                                <img
+                                                    src={AssetsMap.UI.ICON_GOLD_FULL}
+                                                    style={{ width: 18, height: 18, objectFit: 'contain' }}
+                                                    alt=""
+                                                />
+                                                <span style={{ fontSize: '13px', fontWeight: 900, color: '#3d2a10' }}>
+                                                    {qData.rewardGold}
+                                                </span>
+                                            </div>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                                <img
+                                                    src={AssetsMap.UI.ICON_ALMAZ_FULL}
+                                                    style={{ width: 16, height: 16, objectFit: 'contain' }}
+                                                    alt=""
+                                                />
+                                                <span style={{ fontSize: '13px', fontWeight: 900, color: '#3d2a10' }}>
+                                                    {qData.rewardGems}
+                                                </span>
+                                            </div>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                                <img
+                                                    src={AssetsMap.UI.ICON_XP}
+                                                    style={{
+                                                        width: 30,
+                                                        height: 30,
+                                                        objectFit: 'contain',
+                                                        filter: 'brightness(1.2) contrast(1.1) drop-shadow(0 0 3px rgba(0,180,255,0.4))',
+                                                        marginLeft: '-3px',
+                                                        marginRight: '-3px',
+                                                    }}
+                                                    alt=""
+                                                />
+                                                <span style={{ fontSize: '13px', fontWeight: 900, color: '#3d2a10' }}>
+                                                    {qData.rewardExp}
+                                                </span>
+                                            </div>
+
+                                            <div style={{ flex: 1 }} />
+
+                                            {dq.isClaimed ? (
+                                                <span
+                                                    style={{
+                                                        color: '#208040',
+                                                        fontWeight: 900,
+                                                        fontSize: '11px',
+                                                        textTransform: 'uppercase',
+                                                    }}
+                                                >
+                                                    ВЫПОЛНЕНО
+                                                </span>
+                                            ) : isComplete ? (
+                                                <button
+                                                    onClick={() => claimQuestReward(dq.questId)}
+                                                    style={{
+                                                        padding: '5px 12px',
+                                                        background: 'linear-gradient(180deg, #f0c040 0%, #c87820 100%)',
+                                                        border: '1px solid #3d2a10',
+                                                        borderRadius: '4px',
+                                                        color: '#fff',
+                                                        fontWeight: 900,
+                                                        fontSize: '11px',
+                                                        cursor: 'pointer',
+                                                    }}
+                                                >
+                                                    ЗАБРАТЬ
+                                                </button>
+                                            ) : (
+                                                <div
+                                                    style={{
+                                                        width: '80px',
+                                                        height: '8px',
+                                                        background: 'rgba(0,0,0,0.1)',
+                                                        borderRadius: '4px',
+                                                        overflow: 'hidden',
+                                                    }}
+                                                >
+                                                    <div
+                                                        style={{
+                                                            width: `${(dq.progress / qData.target) * 100}%`,
+                                                            height: '100%',
+                                                            background: '#7a5828',
+                                                            transition: 'width 0.3s',
+                                                        }}
+                                                    />
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
-                                </div>
-                            );
-                        })}
+                                );
+                            })}
                     </motion.div>
-                    <div style={{ marginTop: '10px', textAlign: 'center', fontSize: '12px', color: '#7a5828', fontWeight: 700 }}>
+                    <div
+                        style={{
+                            marginTop: '10px',
+                            textAlign: 'center',
+                            fontSize: '12px',
+                            color: '#7a5828',
+                            fontWeight: 700,
+                        }}
+                    >
                         Обновится через: {getTimeRemaining()}
                     </div>
                 </AnimatePresence>

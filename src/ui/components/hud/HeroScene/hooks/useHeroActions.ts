@@ -9,8 +9,8 @@ export const useHeroActions = (selectedHeroId: string, heroEquipment: any, equip
 
     const addFloatingText = (text: string, color: string) => {
         const id = Math.random().toString(36).substr(2, 9);
-        setFloatingTexts(prev => [...prev, { id, text, color }]);
-        setTimeout(() => setFloatingTexts(prev => prev.filter(t => t.id !== id)), 2000);
+        setFloatingTexts((prev) => [...prev, { id, text, color }]);
+        setTimeout(() => setFloatingTexts((prev) => prev.filter((t) => t.id !== id)), 2000);
     };
 
     const triggerVictory = () => {
@@ -28,7 +28,7 @@ export const useHeroActions = (selectedHeroId: string, heroEquipment: any, equip
         if (!itemData) return;
 
         const currentGear = (heroEquipment || {})[selectedHeroId || 'panda'] || {};
-        const isEquippedOnCurrent = Object.values(currentGear).some(id => String(id) === String(itemId));
+        const isEquippedOnCurrent = Object.values(currentGear).some((id) => String(id) === String(itemId));
 
         if (isEquippedOnCurrent) {
             unequipItem(itemId);
@@ -36,15 +36,24 @@ export const useHeroActions = (selectedHeroId: string, heroEquipment: any, equip
             audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
         } else {
             const existingId = currentGear[itemData.subTab];
-            const existingItem = existingId ? ITEMS_DATABASE[String(existingId)] as any : null;
+            const existingItem = existingId ? (ITEMS_DATABASE[String(existingId)] as any) : null;
 
             const attackDelta = (itemData.attackBonus || 0) - (existingItem?.attackBonus || 0);
             const hpDelta = (itemData.hpBonus || 0) - (existingItem?.hpBonus || 0);
             const defenseDelta = (itemData.defenseBonus || 0) - (existingItem?.defenseBonus || 0);
 
-            if (attackDelta !== 0) addFloatingText(`${attackDelta > 0 ? '+' : ''}${attackDelta} АТАКА`, attackDelta > 0 ? '#22c55e' : '#ef4444');
-            if (hpDelta !== 0) addFloatingText(`${hpDelta > 0 ? '+' : ''}${hpDelta} ХП`, hpDelta > 0 ? '#22c55e' : '#ef4444');
-            if (defenseDelta !== 0) addFloatingText(`${defenseDelta > 0 ? '+' : ''}${defenseDelta} ЗАЩИТА`, defenseDelta > 0 ? '#22c55e' : '#ef4444');
+            if (attackDelta !== 0)
+                addFloatingText(
+                    `${attackDelta > 0 ? '+' : ''}${attackDelta} АТАКА`,
+                    attackDelta > 0 ? '#22c55e' : '#ef4444',
+                );
+            if (hpDelta !== 0)
+                addFloatingText(`${hpDelta > 0 ? '+' : ''}${hpDelta} ХП`, hpDelta > 0 ? '#22c55e' : '#ef4444');
+            if (defenseDelta !== 0)
+                addFloatingText(
+                    `${defenseDelta > 0 ? '+' : ''}${defenseDelta} ЗАЩИТА`,
+                    defenseDelta > 0 ? '#22c55e' : '#ef4444',
+                );
 
             triggerVictory();
             equipItem(itemId);

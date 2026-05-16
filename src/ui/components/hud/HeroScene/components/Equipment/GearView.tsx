@@ -8,14 +8,35 @@ import { EquippedHeroView } from '../../../../EquippedHeroView';
 import { InventoryPanel } from '../../../InventoryPanel';
 import { StatCard } from './StatCard';
 
-export const GearView = ({ hero, stats, detailSubTab, setDetailSubTab, handleItemClick, isEquipped, equippedIds = {}, activeDraggingId, unequipItem, addFloatingText, setGlobalHoveredItem }: any) => {
-
-
+export const GearView = ({
+    hero,
+    stats,
+    detailSubTab,
+    setDetailSubTab,
+    handleItemClick,
+    isEquipped,
+    equippedIds = {},
+    activeDraggingId,
+    unequipItem,
+    addFloatingText,
+    setGlobalHoveredItem,
+}: any) => {
     // stats теперь имеет структуру { base, total, weaponTexture }
-    const currentStats = stats?.total || { hp: 0, attack: 0, defense: 0, speed: 0, critChance: 0, evasion: 0, resilience: 0, lifesteal: 0, penetration: 0, critDamage: 1.5 };
+    const currentStats = stats?.total || {
+        hp: 0,
+        attack: 0,
+        defense: 0,
+        speed: 0,
+        critChance: 0,
+        evasion: 0,
+        resilience: 0,
+        lifesteal: 0,
+        penetration: 0,
+        critDamage: 1.5,
+    };
     const baseStats = stats?.base || currentStats;
 
-    let diffs: any = { hp: 0, attack: 0, defense: 0 };
+    const diffs: any = { hp: 0, attack: 0, defense: 0 };
     const [localSelectedId, setLocalSelectedId] = useState<string | null>(null);
     const [showPowerTooltip, setShowPowerTooltip] = useState(false);
 
@@ -46,7 +67,7 @@ export const GearView = ({ hero, stats, detailSubTab, setDetailSubTab, handleIte
         const selItem = ITEMS_DATABASE[localSelectedId] as any;
         if (selItem) {
             const equippedId = equippedIds[selItem.subTab];
-            const equippedItem = equippedId ? ITEMS_DATABASE[equippedId] as any : null;
+            const equippedItem = equippedId ? (ITEMS_DATABASE[equippedId] as any) : null;
             if (['WEAPONS', 'HELMETS', 'ARMOR', 'SHIELDS'].includes(selItem.subTab)) {
                 diffs.hp = (selItem.hpBonus || 0) - (equippedItem?.hpBonus || 0);
                 diffs.attack = (selItem.attackBonus || 0) - (equippedItem?.attackBonus || 0);
@@ -58,46 +79,116 @@ export const GearView = ({ hero, stats, detailSubTab, setDetailSubTab, handleIte
     return (
         <motion.div
             key="hero"
-            initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 1.05 }}
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 1.05 }}
             style={{ position: 'absolute', inset: '20px 60px', display: 'flex', gap: '40px', alignItems: 'stretch' }}
         >
             {/* ЛЕВАЯ ПАНЕЛЬ: КУКЛА ПЕРСОНАЖА */}
-            <div style={{
-                width: '420px', height: '100%',
-                background: 'radial-gradient(circle at 50% 30%, rgba(60, 40, 10, 0.4) 0%, rgba(10, 10, 15, 0.8) 70%)',
-                backdropFilter: 'blur(20px)',
-                borderRadius: '30px', border: '1px solid rgba(240, 192, 64, 0.2)',
-                display: 'flex', flexDirection: 'column', padding: '30px', gap: '20px', zIndex: 5,
-                boxShadow: 'inset 0 0 50px rgba(0,0,0,0.8), 0 20px 50px rgba(0,0,0,0.6)'
-            }}>
+            <div
+                style={{
+                    width: '420px',
+                    height: '100%',
+                    background:
+                        'radial-gradient(circle at 50% 30%, rgba(60, 40, 10, 0.4) 0%, rgba(10, 10, 15, 0.8) 70%)',
+                    backdropFilter: 'blur(20px)',
+                    borderRadius: '30px',
+                    border: '1px solid rgba(240, 192, 64, 0.2)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    padding: '30px',
+                    gap: '20px',
+                    zIndex: 5,
+                    boxShadow: 'inset 0 0 50px rgba(0,0,0,0.8), 0 20px 50px rgba(0,0,0,0.6)',
+                }}
+            >
                 <div style={{ textAlign: 'center' }}>
-                    <h3 style={{ color: '#f0c040', fontSize: '20px', fontFamily: "'Cinzel', serif", letterSpacing: '3px', margin: 0 }}>СНАРЯЖЕНИЕ</h3>
-                    <div style={{ height: '1px', background: 'linear-gradient(90deg, transparent, #f0c040, transparent)', marginTop: '10px', opacity: 0.5 }} />
+                    <h3
+                        style={{
+                            color: '#f0c040',
+                            fontSize: '20px',
+                            fontFamily: "'Cinzel', serif",
+                            letterSpacing: '3px',
+                            margin: 0,
+                        }}
+                    >
+                        СНАРЯЖЕНИЕ
+                    </h3>
+                    <div
+                        style={{
+                            height: '1px',
+                            background: 'linear-gradient(90deg, transparent, #f0c040, transparent)',
+                            marginTop: '10px',
+                            opacity: 0.5,
+                        }}
+                    />
                 </div>
 
-                <div style={{
-                    flex: 1,
-                    position: 'relative',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                }}>
-                    <div style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(3, 110px)',
-                        gridTemplateRows: 'repeat(4, 110px)',
-                        gap: '15px',
+                <div
+                    style={{
+                        flex: 1,
+                        position: 'relative',
+                        display: 'flex',
+                        alignItems: 'center',
                         justifyContent: 'center',
-                        position: 'relative'
-                    }}>
-                        <motion.div animate={{ rotate: 360 }} transition={{ duration: 50, repeat: Infinity, ease: 'linear' }} style={{ position: 'absolute', top: '50%', left: '50%', width: '450px', height: '450px', marginLeft: '-225px', marginTop: '-225px', border: '1px dashed rgba(240,192,64,0.06)', borderRadius: '50%', pointerEvents: 'none', zIndex: 0 }} />
-                        <motion.div animate={{ rotate: -360 }} transition={{ duration: 70, repeat: Infinity, ease: 'linear' }} style={{ position: 'absolute', top: '50%', left: '50%', width: '350px', height: '350px', marginLeft: '-175px', marginTop: '-175px', border: '1px solid rgba(160,64,255,0.05)', borderRadius: '50%', pointerEvents: 'none', zIndex: 0 }} />
+                    }}
+                >
+                    <div
+                        style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(3, 110px)',
+                            gridTemplateRows: 'repeat(4, 110px)',
+                            gap: '15px',
+                            justifyContent: 'center',
+                            position: 'relative',
+                        }}
+                    >
+                        <motion.div
+                            animate={{ rotate: 360 }}
+                            transition={{ duration: 50, repeat: Infinity, ease: 'linear' }}
+                            style={{
+                                position: 'absolute',
+                                top: '50%',
+                                left: '50%',
+                                width: '450px',
+                                height: '450px',
+                                marginLeft: '-225px',
+                                marginTop: '-225px',
+                                border: '1px dashed rgba(240,192,64,0.06)',
+                                borderRadius: '50%',
+                                pointerEvents: 'none',
+                                zIndex: 0,
+                            }}
+                        />
+                        <motion.div
+                            animate={{ rotate: -360 }}
+                            transition={{ duration: 70, repeat: Infinity, ease: 'linear' }}
+                            style={{
+                                position: 'absolute',
+                                top: '50%',
+                                left: '50%',
+                                width: '350px',
+                                height: '350px',
+                                marginLeft: '-175px',
+                                marginTop: '-175px',
+                                border: '1px solid rgba(160,64,255,0.05)',
+                                borderRadius: '50%',
+                                pointerEvents: 'none',
+                                zIndex: 0,
+                            }}
+                        />
 
                         {/* Ряд 1: Голова */}
                         <div style={{ zIndex: 1 }} />
                         <div style={{ zIndex: 1 }}>
-                            <EquipmentSlot id="HELMETS" label="ШЛЕМЫ" itemId={equippedIds.HELMETS} activeDraggingId={activeDraggingId}
-                                onClick={() => { if (equippedIds.HELMETS) handleUnequip(equippedIds.HELMETS); }}
+                            <EquipmentSlot
+                                id="HELMETS"
+                                label="ШЛЕМЫ"
+                                itemId={equippedIds.HELMETS}
+                                activeDraggingId={activeDraggingId}
+                                onClick={() => {
+                                    if (equippedIds.HELMETS) handleUnequip(equippedIds.HELMETS);
+                                }}
                                 setGlobalHoveredItem={setGlobalHoveredItem}
                             />
                         </div>
@@ -105,14 +196,26 @@ export const GearView = ({ hero, stats, detailSubTab, setDetailSubTab, handleIte
 
                         {/* Ряд 2: Плечи и Доспех */}
                         <div style={{ zIndex: 1 }}>
-                            <EquipmentSlot id="SHOULDERS" label="НАПЛЕЧНИКИ" itemId={equippedIds.SHOULDERS} activeDraggingId={activeDraggingId}
-                                onClick={() => { if (equippedIds.SHOULDERS) handleUnequip(equippedIds.SHOULDERS); }}
+                            <EquipmentSlot
+                                id="SHOULDERS"
+                                label="НАПЛЕЧНИКИ"
+                                itemId={equippedIds.SHOULDERS}
+                                activeDraggingId={activeDraggingId}
+                                onClick={() => {
+                                    if (equippedIds.SHOULDERS) handleUnequip(equippedIds.SHOULDERS);
+                                }}
                                 setGlobalHoveredItem={setGlobalHoveredItem}
                             />
                         </div>
                         <div style={{ zIndex: 1 }}>
-                            <EquipmentSlot id="ARMOR" label="ДОСПЕХИ" itemId={equippedIds.ARMOR} activeDraggingId={activeDraggingId}
-                                onClick={() => { if (equippedIds.ARMOR) handleUnequip(equippedIds.ARMOR); }}
+                            <EquipmentSlot
+                                id="ARMOR"
+                                label="ДОСПЕХИ"
+                                itemId={equippedIds.ARMOR}
+                                activeDraggingId={activeDraggingId}
+                                onClick={() => {
+                                    if (equippedIds.ARMOR) handleUnequip(equippedIds.ARMOR);
+                                }}
                                 setGlobalHoveredItem={setGlobalHoveredItem}
                             />
                         </div>
@@ -120,20 +223,38 @@ export const GearView = ({ hero, stats, detailSubTab, setDetailSubTab, handleIte
 
                         {/* Ряд 3: Оружие, Поножи, Щит */}
                         <div style={{ zIndex: 1 }}>
-                            <EquipmentSlot id="WEAPONS" label="ОРУЖИЕ" itemId={equippedIds.WEAPONS} activeDraggingId={activeDraggingId}
-                                onClick={() => { if (equippedIds.WEAPONS) handleUnequip(equippedIds.WEAPONS); }}
+                            <EquipmentSlot
+                                id="WEAPONS"
+                                label="ОРУЖИЕ"
+                                itemId={equippedIds.WEAPONS}
+                                activeDraggingId={activeDraggingId}
+                                onClick={() => {
+                                    if (equippedIds.WEAPONS) handleUnequip(equippedIds.WEAPONS);
+                                }}
                                 setGlobalHoveredItem={setGlobalHoveredItem}
                             />
                         </div>
                         <div style={{ zIndex: 1 }}>
-                            <EquipmentSlot id="PANTS" label="ПОНОЖИ" itemId={equippedIds.PANTS} activeDraggingId={activeDraggingId}
-                                onClick={() => { if (equippedIds.PANTS) handleUnequip(equippedIds.PANTS); }}
+                            <EquipmentSlot
+                                id="PANTS"
+                                label="ПОНОЖИ"
+                                itemId={equippedIds.PANTS}
+                                activeDraggingId={activeDraggingId}
+                                onClick={() => {
+                                    if (equippedIds.PANTS) handleUnequip(equippedIds.PANTS);
+                                }}
                                 setGlobalHoveredItem={setGlobalHoveredItem}
                             />
                         </div>
                         <div style={{ zIndex: 1 }}>
-                            <EquipmentSlot id="SHIELDS" label="ЩИТЫ" itemId={equippedIds.SHIELDS} activeDraggingId={activeDraggingId}
-                                onClick={() => { if (equippedIds.SHIELDS) handleUnequip(equippedIds.SHIELDS); }}
+                            <EquipmentSlot
+                                id="SHIELDS"
+                                label="ЩИТЫ"
+                                itemId={equippedIds.SHIELDS}
+                                activeDraggingId={activeDraggingId}
+                                onClick={() => {
+                                    if (equippedIds.SHIELDS) handleUnequip(equippedIds.SHIELDS);
+                                }}
                                 setGlobalHoveredItem={setGlobalHoveredItem}
                             />
                         </div>
@@ -141,8 +262,14 @@ export const GearView = ({ hero, stats, detailSubTab, setDetailSubTab, handleIte
                         {/* Ряд 4: Сапоги */}
                         <div style={{ zIndex: 1 }} />
                         <div style={{ zIndex: 1 }}>
-                            <EquipmentSlot id="BOOTS" label="САПОГИ" itemId={equippedIds.BOOTS} activeDraggingId={activeDraggingId}
-                                onClick={() => { if (equippedIds.BOOTS) handleUnequip(equippedIds.BOOTS); }}
+                            <EquipmentSlot
+                                id="BOOTS"
+                                label="САПОГИ"
+                                itemId={equippedIds.BOOTS}
+                                activeDraggingId={activeDraggingId}
+                                onClick={() => {
+                                    if (equippedIds.BOOTS) handleUnequip(equippedIds.BOOTS);
+                                }}
                                 setGlobalHoveredItem={setGlobalHoveredItem}
                             />
                         </div>
@@ -153,74 +280,279 @@ export const GearView = ({ hero, stats, detailSubTab, setDetailSubTab, handleIte
                 <div
                     onMouseEnter={() => setShowPowerTooltip(true)}
                     onMouseLeave={() => setShowPowerTooltip(false)}
-                    style={{ position: 'relative', background: 'rgba(0,0,0,0.4)', padding: '15px', borderRadius: '20px', border: '1px solid rgba(240,192,64,0.15)', textAlign: 'center', marginTop: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'center', boxShadow: 'inset 0 0 20px rgba(0,0,0,0.8)', cursor: 'help' }}
+                    style={{
+                        position: 'relative',
+                        background: 'rgba(0,0,0,0.4)',
+                        padding: '15px',
+                        borderRadius: '20px',
+                        border: '1px solid rgba(240,192,64,0.15)',
+                        textAlign: 'center',
+                        marginTop: 'auto',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        boxShadow: 'inset 0 0 20px rgba(0,0,0,0.8)',
+                        cursor: 'help',
+                    }}
                 >
                     {showPowerTooltip && (
-                        <div style={{ position: 'absolute', bottom: '110%', left: '50%', transform: 'translateX(-50%)', background: 'rgba(0,0,0,0.95)', border: '1px solid #f0c040', padding: '12px', borderRadius: '12px', width: '220px', fontSize: '12px', color: '#fff', zIndex: 100, pointerEvents: 'none', boxShadow: '0 10px 30px rgba(0,0,0,0.5)' }}>
-                            <div style={{ color: '#f0c040', fontWeight: 900, marginBottom: '5px', letterSpacing: '1px' }}>БОЕВАЯ МОЩЬ</div>
-                            Суммарный показатель силы вашего снаряжения. Учитывает бонусы атаки, защиты и здоровья от всех надетых предметов.
+                        <div
+                            style={{
+                                position: 'absolute',
+                                bottom: '110%',
+                                left: '50%',
+                                transform: 'translateX(-50%)',
+                                background: 'rgba(0,0,0,0.95)',
+                                border: '1px solid #f0c040',
+                                padding: '12px',
+                                borderRadius: '12px',
+                                width: '220px',
+                                fontSize: '12px',
+                                color: '#fff',
+                                zIndex: 100,
+                                pointerEvents: 'none',
+                                boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
+                            }}
+                        >
+                            <div
+                                style={{ color: '#f0c040', fontWeight: 900, marginBottom: '5px', letterSpacing: '1px' }}
+                            >
+                                БОЕВАЯ МОЩЬ
+                            </div>
+                            Суммарный показатель силы вашего снаряжения. Учитывает бонусы атаки, защиты и здоровья от
+                            всех надетых предметов.
                         </div>
                     )}
-                    <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '10px', fontWeight: 900, letterSpacing: '3px', marginBottom: '5px' }}>ОБЩАЯ МОЩЬ</div>
+                    <div
+                        style={{
+                            color: 'rgba(255,255,255,0.5)',
+                            fontSize: '10px',
+                            fontWeight: 900,
+                            letterSpacing: '3px',
+                            marginBottom: '5px',
+                        }}
+                    >
+                        ОБЩАЯ МОЩЬ
+                    </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                        <span style={{ background: 'linear-gradient(180deg, #ffffff 0%, #f0c040 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', fontSize: '36px', fontFamily: "'Inter', sans-serif", fontWeight: 900, letterSpacing: '1px', filter: 'drop-shadow(0 4px 10px rgba(0,0,0,0.5))' }}>
+                        <span
+                            style={{
+                                background: 'linear-gradient(180deg, #ffffff 0%, #f0c040 100%)',
+                                WebkitBackgroundClip: 'text',
+                                WebkitTextFillColor: 'transparent',
+                                fontSize: '36px',
+                                fontFamily: "'Inter', sans-serif",
+                                fontWeight: 900,
+                                letterSpacing: '1px',
+                                filter: 'drop-shadow(0 4px 10px rgba(0,0,0,0.5))',
+                            }}
+                        >
                             {Math.floor(gearPower)}
                         </span>
-                        <img src={AssetsMap.BACKGROUNDS.SHOP_DIVIDER} style={{ height: '35px', objectFit: 'contain', filter: 'drop-shadow(0 4px 10px rgba(0,0,0,0.6))' }} alt="Мощь" />
+                        <img
+                            src={AssetsMap.BACKGROUNDS.SHOP_DIVIDER}
+                            style={{
+                                height: '35px',
+                                objectFit: 'contain',
+                                filter: 'drop-shadow(0 4px 10px rgba(0,0,0,0.6))',
+                            }}
+                            alt="Мощь"
+                        />
                     </div>
                 </div>
             </div>
 
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative', justifyContent: 'flex-end', paddingBottom: '120px' }}>
-                <div style={{ position: 'absolute', bottom: '80px', width: '900px', height: '600px', backgroundImage: `url("${AssetsMap.UI.HERO_PEDESTAL}")`, backgroundSize: 'contain', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', zIndex: 1, opacity: 0.9 }} />
-                <div style={{ zIndex: 2, marginBottom: '-40px', display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
+            <div
+                style={{
+                    flex: 1,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    position: 'relative',
+                    justifyContent: 'flex-end',
+                    paddingBottom: '120px',
+                }}
+            >
+                <div
+                    style={{
+                        position: 'absolute',
+                        bottom: '80px',
+                        width: '900px',
+                        height: '600px',
+                        backgroundImage: `url("${AssetsMap.UI.HERO_PEDESTAL}")`,
+                        backgroundSize: 'contain',
+                        backgroundPosition: 'center',
+                        backgroundRepeat: 'no-repeat',
+                        zIndex: 1,
+                        opacity: 0.9,
+                    }}
+                />
+                <div
+                    style={{
+                        zIndex: 2,
+                        marginBottom: '-40px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        pointerEvents: 'none',
+                    }}
+                >
                     <EquippedHeroView heroId={hero.id} size={640} />
                 </div>
-                <div style={{ textAlign: 'center', zIndex: 10, marginBottom: '40px', background: 'rgba(0,0,0,0.8)', padding: '18px 50px', borderRadius: '15px', border: '1px solid rgba(240,192,64,0.3)', backdropFilter: 'blur(10px)' }}>
-                    <h2 style={{ color: '#f0c040', fontSize: '34px', margin: 0, fontFamily: "'Cinzel', serif" }}>{hero.name}</h2>
-                    <p style={{ color: hero.color ? `#${hero.color.toString(16)}` : '#a040ff', margin: 0, fontWeight: 900, letterSpacing: '4px', fontSize: '12px' }}>{hero.title}</p>
+                <div
+                    style={{
+                        textAlign: 'center',
+                        zIndex: 10,
+                        marginBottom: '40px',
+                        background: 'rgba(0,0,0,0.8)',
+                        padding: '18px 50px',
+                        borderRadius: '15px',
+                        border: '1px solid rgba(240,192,64,0.3)',
+                        backdropFilter: 'blur(10px)',
+                    }}
+                >
+                    <h2 style={{ color: '#f0c040', fontSize: '34px', margin: 0, fontFamily: "'Cinzel', serif" }}>
+                        {hero.name}
+                    </h2>
+                    <p
+                        style={{
+                            color: hero.color ? `#${hero.color.toString(16)}` : '#a040ff',
+                            margin: 0,
+                            fontWeight: 900,
+                            letterSpacing: '4px',
+                            fontSize: '12px',
+                        }}
+                    >
+                        {hero.title}
+                    </p>
                 </div>
             </div>
 
             <div style={{ width: '550px', display: 'flex', flexDirection: 'column' }}>
-                <div style={{ display: 'flex', background: 'rgba(0,0,0,0.5)', borderRadius: '10px', padding: '5px', marginBottom: '20px', gap: '5px' }}>
-                    {['STATS', 'INVENTORY', 'LORE'].map(tab => (
+                <div
+                    style={{
+                        display: 'flex',
+                        background: 'rgba(0,0,0,0.5)',
+                        borderRadius: '10px',
+                        padding: '5px',
+                        marginBottom: '20px',
+                        gap: '5px',
+                    }}
+                >
+                    {['STATS', 'INVENTORY', 'LORE'].map((tab) => (
                         <button
                             key={tab}
                             onClick={() => {
                                 setDetailSubTab(tab as any);
                             }}
-                            style={{ flex: 1, padding: '10px', background: detailSubTab === tab ? '#f0c040' : 'transparent', color: detailSubTab === tab ? '#000' : '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 800, fontSize: '11px' }}
+                            style={{
+                                flex: 1,
+                                padding: '10px',
+                                background: detailSubTab === tab ? '#f0c040' : 'transparent',
+                                color: detailSubTab === tab ? '#000' : '#fff',
+                                border: 'none',
+                                borderRadius: '8px',
+                                cursor: 'pointer',
+                                fontWeight: 800,
+                                fontSize: '11px',
+                            }}
                         >
                             {tab === 'STATS' ? 'СТАТЫ' : tab === 'INVENTORY' ? 'РЮКЗАК' : 'ЛО?'}
                         </button>
                     ))}
                 </div>
-                <div style={{ flex: 1, background: 'rgba(20, 20, 25, 0.6)', backdropFilter: 'blur(20px)', borderRadius: '30px', border: '1px solid rgba(240,192,64,0.3)', padding: '25px', overflow: 'visible', boxShadow: '0 20px 60px rgba(0,0,0,1)', display: 'flex', flexDirection: 'column', position: 'relative' }}>
+                <div
+                    style={{
+                        flex: 1,
+                        background: 'rgba(20, 20, 25, 0.6)',
+                        backdropFilter: 'blur(20px)',
+                        borderRadius: '30px',
+                        border: '1px solid rgba(240,192,64,0.3)',
+                        padding: '25px',
+                        overflow: 'visible',
+                        boxShadow: '0 20px 60px rgba(0,0,0,1)',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        position: 'relative',
+                    }}
+                >
                     {detailSubTab === 'INVENTORY' ? (
-                        <InventoryPanel mode="COMPACT" onItemClick={onInternalItemClick} setGlobalHoveredItem={setGlobalHoveredItem} />
+                        <InventoryPanel
+                            mode="COMPACT"
+                            onItemClick={onInternalItemClick}
+                            setGlobalHoveredItem={setGlobalHoveredItem}
+                        />
                     ) : detailSubTab === 'STATS' ? (
-                        <div style={{
-                            flex: 1,
-                            display: 'grid',
-                            gridTemplateColumns: '1fr 1fr',
-                            gridAutoRows: 'min-content',
-                            gap: '20px',
-                            overflowY: 'auto',
-                            paddingRight: '5px',
-                            paddingTop: '10px'
-                        }} className="custom-scrollbar">
-                            <StatCard label="ЗДОРОВЬЕ" value={currentStats.hp} base={baseStats.hp} iconClass="sprite-stat stat-hp" color="#ef4444" max={10000} tooltip="Общий запас жизненных сил персонажа." />
-                            <StatCard label="СИЛА АТАКИ" value={currentStats.attack} base={baseStats.attack} iconClass="sprite-stat stat-attack" color="#f97316" max={2000} tooltip="Влияет на урон, наносимый противникам." />
-                            <StatCard label="ЗАЩИТА" value={currentStats.defense} base={baseStats.defense} iconClass="sprite-stat stat-defense" color="#3b82f6" max={1000} tooltip="Снижает получаемый физический урон." />
-                            <StatCard label="СКОРОСТЬ АТАКИ" value={currentStats.speed} base={baseStats.speed} iconClass="sprite-stat stat-speed" color="#22c55e" max={200} tooltip="Частота атак и скорость передвижения." />
-                            <StatCard label="КРИТ. ШАНС" value={currentStats.critChance} base={baseStats.critChance} iconClass="sprite-stat stat-crit" color="#a855f7" max={100} tooltip="Шанс нанести критический удар." />
-                            <StatCard label="ВАМПИРИЗМ" value={currentStats.lifesteal || 0} base={baseStats.lifesteal || 0} iconClass="sprite-stat stat-lifesteal" color="#e11d48" max={100} tooltip="Восстановление здоровья при атаке." />
-                            <StatCard label="ПРОБИТИЕ БРОНИ" value={currentStats.penetration || 0} base={baseStats.penetration || 0} iconClass="sprite-stat stat-penetration" color="#facc15" max={500} tooltip="Игнорирует часть защиты противника." />
-                            <StatCard label="ТОЧНОСТЬ" value={currentStats.accuracy || 100} base={baseStats.accuracy || 100} iconClass="sprite-stat stat-accuracy" color="#0ea5e9" max={200} tooltip="Шанс попасть по уклоняющемуся врагу." />
+                        <div
+                            style={{
+                                flex: 1,
+                                display: 'grid',
+                                gridTemplateColumns: '1fr 1fr',
+                                gridAutoRows: 'min-content',
+                                gap: '20px',
+                                overflowY: 'auto',
+                                paddingRight: '5px',
+                                paddingTop: '10px',
+                            }}
+                            className="custom-scrollbar"
+                        >
+                            <StatCard
+                                label="ЗДОРОВЬЕ"
+                                value={currentStats.hp}
+                                base={baseStats.hp}
+                                iconClass="sprite-stat stat-hp"
+                                color="#ef4444"
+                                max={10000}
+                                tooltip="Общий запас жизненных сил персонажа."
+                            />
+                            <StatCard
+                                label="СИЛА АТАКИ"
+                                value={currentStats.attack}
+                                base={baseStats.attack}
+                                iconClass="sprite-stat stat-attack"
+                                color="#f97316"
+                                max={2000}
+                                tooltip="Влияет на урон, наносимый противникам."
+                            />
+                            <StatCard
+                                label="ЗАЩИТА"
+                                value={currentStats.defense}
+                                base={baseStats.defense}
+                                iconClass="sprite-stat stat-defense"
+                                color="#3b82f6"
+                                max={1000}
+                                tooltip="Снижает получаемый физический урон."
+                            />
+                            <StatCard
+                                label="СКОРОСТЬ"
+                                value={currentStats.speed}
+                                base={baseStats.speed}
+                                iconClass="sprite-stat stat-speed"
+                                color="#22c55e"
+                                max={200}
+                                tooltip="Частота атак в бою."
+                            />
+                            <StatCard
+                                label="КРИТ. ШАНС"
+                                value={currentStats.critChance}
+                                base={baseStats.critChance}
+                                iconClass="sprite-stat stat-crit"
+                                color="#a855f7"
+                                max={100}
+                                tooltip="Шанс нанести критический удар."
+                            />
                         </div>
                     ) : (
-                        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0.3, fontWeight: 900 }}>
+                        <div
+                            style={{
+                                flex: 1,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                opacity: 0.3,
+                                fontWeight: 900,
+                            }}
+                        >
                             LORE COMING SOON...
                         </div>
                     )}

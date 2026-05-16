@@ -28,13 +28,13 @@ export class ButtonFactory {
 
         // --- 1. ФОН (Нижний слой) ---
         let background: PIXI.Container;
-        
+
         try {
             if (options.bgTextureUrl) {
                 // Асинхронная загрузка с проверкой
                 const texture = await PIXI.Assets.load(options.bgTextureUrl);
                 if (!texture) throw new Error('Failed to load texture');
-                
+
                 const sprite = new PIXI.Sprite(texture);
                 sprite.width = w;
                 sprite.height = h;
@@ -50,7 +50,7 @@ export class ButtonFactory {
                 .fill({ color: UI_COLORS.GOLD, alpha: 1 })
                 .stroke({ color: UI_COLORS.GOLD_LIGHT, width: 3 });
         }
-        
+
         container.addChild(background);
 
         // --- 2. ТЕКСТ (Верхний слой) ---
@@ -61,9 +61,9 @@ export class ButtonFactory {
                 fontSize: Math.floor(h * 0.35),
                 fontWeight: 'bold',
                 fontFamily: 'Arial Black',
-                stroke: { color: 0xFFFFFF, width: 1 },
-                dropShadow: { color: 0x000000, alpha: 0.5, blur: 2, distance: 2 }
-            }
+                stroke: { color: 0xffffff, width: 1 },
+                dropShadow: { color: 0x000000, alpha: 0.5, blur: 2, distance: 2 },
+            },
         });
         text.anchor.set(0.5);
         text.position.set(w / 2, h / 2);

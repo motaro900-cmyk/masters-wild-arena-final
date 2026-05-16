@@ -23,9 +23,10 @@ interface AssetsStore {
 export const useAssetsStore = create<AssetsStore>((set) => ({
     assets: {},
     addAsset: (asset) => set((state) => ({ assets: { ...state.assets, [asset.id]: asset } })),
-    addAssets: (assets) => set((state) => {
-        const newAssets = { ...state.assets };
-        assets.forEach(a => newAssets[a.id] = a);
-        return { assets: newAssets };
-    })
+    addAssets: (assets) =>
+        set((state) => {
+            const newAssets = { ...state.assets };
+            assets.forEach((a) => (newAssets[a.id] = a));
+            return { assets: newAssets };
+        }),
 }));

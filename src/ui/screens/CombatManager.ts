@@ -14,7 +14,10 @@ export class CombatManager {
     public enemyMaxHp: number;
     public isBattleActive: boolean = true;
 
-    constructor(public playerHeroId: string, public enemyHeroId: string) {
+    constructor(
+        public playerHeroId: string,
+        public enemyHeroId: string,
+    ) {
         const store = useGameStore.getState();
         const pStats = store.getCalculatedStats(playerHeroId);
         // Fallback to base stats if enemy is not found in player's heroes store
@@ -37,12 +40,12 @@ export class CombatManager {
         const store = useGameStore.getState();
         const stats = store.getCalculatedStats(attacker === 'player' ? this.playerHeroId : this.enemyHeroId);
         const defStats = store.getCalculatedStats(attacker === 'player' ? this.enemyHeroId : this.playerHeroId);
-        
+
         const baseAtk = stats?.attack || (attacker === 'player' ? 250 : 200);
         const critChance = stats?.critChance || 0.15;
         const dodgeChance = defStats?.dodgeChance || 0.05;
         const speedAdvantage = (stats?.speed || 2.0) / (defStats?.speed || 2.0);
-        
+
         // 1. Уклонение (Dodge)
         if (Math.random() < dodgeChance) {
             return { damage: 0, isCrit: false, isDodge: true, isDoubleHit: false };

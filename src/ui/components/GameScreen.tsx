@@ -19,7 +19,7 @@ export const GameScreen: React.FC = () => {
         };
 
         window.addEventListener('resize', handleResize);
-        
+
         const observer = new ResizeObserver(handleResize);
         if (wrapperRef.current?.parentElement) {
             observer.observe(wrapperRef.current.parentElement);
@@ -34,17 +34,18 @@ export const GameScreen: React.FC = () => {
     }, []);
 
     return (
-        <div ref={wrapperRef} className={styles.gameScreen} style={{ width: '100%', height: '100%', position: 'relative', overflow: 'hidden' }}>
-            <div
-                className={styles.scaler}
-                style={{ transform: `scale(${scale})` }}
-            >
+        <div
+            ref={wrapperRef}
+            className={styles.gameScreen}
+            style={{ width: '100%', height: '100%', position: 'relative', overflow: 'hidden' }}
+        >
+            <div className={styles.scaler} style={{ transform: `scale(${scale})` }}>
                 {/* PixiLayer: 100% of screen. Render background and characters here */}
                 <div className={styles.pixiLayer} ref={containerRef} id="game-container">
                     {/* PixiJS Engine gets injected into this div */}
                 </div>
             </div>
-            
+
             {/* Отрисовываем наш новый интерфейс поверх игры */}
             <MainHUD />
         </div>

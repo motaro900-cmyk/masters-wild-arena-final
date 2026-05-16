@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useDebugStore } from '../../store/useDebugStore';
+import { useDebugStore } from '@store/useDebugStore';
 import { useUIStore } from '../../store/useUIStore';
 import { safeGetItem, safeSetItem } from '../../utils/SafeStorage';
 
@@ -10,7 +10,9 @@ interface Props extends React.HTMLAttributes<HTMLDivElement> {
 const getPrimaryTextElement = (container: HTMLElement): HTMLElement | null => {
     const semanticNode = container.querySelector('h1, h2, h3, h4, h5, h6, p');
     if (semanticNode) return semanticNode as HTMLElement;
-    const texts = Array.from(container.querySelectorAll('*')).filter(el => el.childNodes.length === 1 && el.childNodes[0].nodeType === 3);
+    const texts = Array.from(container.querySelectorAll('*')).filter(
+        (el) => el.childNodes.length === 1 && el.childNodes[0].nodeType === 3,
+    );
     if (texts.length > 0) return texts[0] as HTMLElement;
     return null;
 };
@@ -19,8 +21,8 @@ const getPrimaryTextElement = (container: HTMLElement): HTMLElement | null => {
  * Обертка для React-компонентов, делающая их перетаскиваемыми в режиме Visual Debug Editor.
  */
 export const DraggableHTML: React.FC<Props> = ({ id, children, className = '', ...props }) => {
-    const isEditorMode = useDebugStore(state => state.isEditorMode);
-    const setSelected = useDebugStore(state => state.setSelected);
+    const isEditorMode = useDebugStore((state: any) => state.isEditorMode);
+    const setSelected = useDebugStore((state: any) => state.setSelected);
     const [pos, setPos] = useState({ x: 0, y: 0, scale: 1 });
     const [isDragging, setIsDragging] = useState(false);
     const [customColor, setCustomColor] = useState<string | undefined>(undefined);
@@ -37,7 +39,7 @@ export const DraggableHTML: React.FC<Props> = ({ id, children, className = '', .
         startX: 0,
         startY: 0,
         initialX: 0,
-        initialY: 0
+        initialY: 0,
     });
 
     useEffect(() => {
@@ -46,13 +48,13 @@ export const DraggableHTML: React.FC<Props> = ({ id, children, className = '', .
             try {
                 const parsed = JSON.parse(saved);
                 const initial = {
-                    x: (parsed.x > -2000 && parsed.x < 3000) ? parsed.x : 0,
-                    y: (parsed.y > -2000 && parsed.y < 3000) ? parsed.y : 0,
-                    scale: parsed.scale || 1
+                    x: parsed.x > -2000 && parsed.x < 3000 ? parsed.x : 0,
+                    y: parsed.y > -2000 && parsed.y < 3000 ? parsed.y : 0,
+                    scale: parsed.scale || 1,
                 };
                 setPos(initial);
                 posRef.current = initial;
-                
+
                 if (parsed.text && elementRef.current) {
                     const target = getPrimaryTextElement(elementRef.current);
                     if (target) target.innerText = parsed.text;
@@ -61,7 +63,9 @@ export const DraggableHTML: React.FC<Props> = ({ id, children, className = '', .
                 if (parsed.hidden !== undefined) setIsHidden(parsed.hidden);
                 if (parsed.zIndex !== undefined) setZIndex(parsed.zIndex);
                 if (parsed.alpha !== undefined) setAlpha(parsed.alpha);
-            } catch (e) { console.error(e); }
+            } catch (e) {
+                console.error(e);
+            }
         }
     }, [id]);
 
@@ -69,11 +73,11 @@ export const DraggableHTML: React.FC<Props> = ({ id, children, className = '', .
         const handleUpdate = (e: any) => {
             if (e.detail.id === id && !dragState.current.isDragging) {
                 const newProps = e.detail.props;
-                setPos(prev => ({ 
-                    ...prev, 
-                    x: newProps.x !== undefined ? newProps.x : prev.x, 
-                    y: newProps.y !== undefined ? newProps.y : prev.y, 
-                    scale: newProps.scale !== undefined ? newProps.scale : prev.scale 
+                setPos((prev) => ({
+                    ...prev,
+                    x: newProps.x !== undefined ? newProps.x : prev.x,
+                    y: newProps.y !== undefined ? newProps.y : prev.y,
+                    scale: newProps.scale !== undefined ? newProps.scale : prev.scale,
                 }));
                 if (newProps.color) setCustomColor(newProps.color);
                 if (newProps.hidden !== undefined) setIsHidden(newProps.hidden);
@@ -107,10 +111,11 @@ export const DraggableHTML: React.FC<Props> = ({ id, children, className = '', .
             } else {
                 const deltaX = e.clientX - dragState.current.startX;
                 const deltaY = e.clientY - dragState.current.startY;
-                let newX = dragState.current.initialX + (deltaX / zoom) / posRef.current.scale;
-                let newY = dragState.current.initialY + (deltaY / zoom) / posRef.current.scale;
+                let newX = dragState.current.initialX + deltaX / zoom / posRef.current.scale;
+                let newY = dragState.current.initialY + deltaY / zoom / posRef.current.scale;
 
-                const isGridEnabled = (useUIStore.getState() as any).isGridEnabled ?? useDebugStore.getState().snapToGrid;
+                const isGridEnabled =
+                    (useUIStore.getState() as any).isGridEnabled ?? useDebugStore.getState().snapToGrid;
                 if (isGridEnabled) {
                     newX = Math.round(newX / 10) * 10;
                     newY = Math.round(newY / 10) * 10;
@@ -125,16 +130,22 @@ export const DraggableHTML: React.FC<Props> = ({ id, children, className = '', .
                 if (dx !== 0 || dy !== 0) {
                     const store = useDebugStore.getState();
                     const getChildrenIds = (parentId: string, allElements: any[]): string[] => {
-                        const children = allElements.filter(el => el.parentId === parentId);
-                        let ids = children.map(c => c.id);
-                        children.forEach(c => { ids = [...ids, ...getChildrenIds(c.id, allElements)]; });
+                        const children = allElements.filter((el) => el.parentId === parentId);
+                        let ids = children.map((c) => c.id);
+                        children.forEach((c) => {
+                            ids = [...ids, ...getChildrenIds(c.id, allElements)];
+                        });
                         return ids;
                     };
                     const childIds = getChildrenIds(id, store.elements);
-                    childIds.forEach(childId => {
-                        const childEl = store.elements.find(e => e.id === childId);
+                    childIds.forEach((childId) => {
+                        const childEl = store.elements.find((e: any) => e.id === childId);
                         if (childEl) {
-                            window.dispatchEvent(new CustomEvent('hud_editor_update', { detail: { id: childId, props: { x: childEl.x + dx, y: childEl.y + dy } } }));
+                            window.dispatchEvent(
+                                new CustomEvent('hud_editor_update', {
+                                    detail: { id: childId, props: { x: childEl.x + dx, y: childEl.y + dy } },
+                                }),
+                            );
                         }
                     });
                 }
@@ -144,15 +155,15 @@ export const DraggableHTML: React.FC<Props> = ({ id, children, className = '', .
         const onUp = () => {
             if (!dragState.current.isDragging) return;
             dragState.current.isDragging = false;
-            
-            const stateToSave: any = { 
-                x: Math.round(posRef.current.x), 
-                y: Math.round(posRef.current.y), 
+
+            const stateToSave: any = {
+                x: Math.round(posRef.current.x),
+                y: Math.round(posRef.current.y),
                 scale: Number(posRef.current.scale.toFixed(3)),
                 color: customColorRef.current,
                 hidden: isHidden,
                 zIndex: zIndex,
-                alpha: alpha
+                alpha: alpha,
             };
 
             if (elementRef.current) {
@@ -186,14 +197,23 @@ export const DraggableHTML: React.FC<Props> = ({ id, children, className = '', .
             const target = getPrimaryTextElement(elementRef.current);
             if (target) textVal = target.innerText;
         }
-        setSelected(id, { x: posRef.current.x, y: posRef.current.y, scale: posRef.current.scale, text: textVal, color: customColor, hidden: isHidden, zIndex: zIndex, alpha: alpha });
+        setSelected(id, {
+            x: posRef.current.x,
+            y: posRef.current.y,
+            scale: posRef.current.scale,
+            text: textVal,
+            color: customColor,
+            hidden: isHidden,
+            zIndex: zIndex,
+            alpha: alpha,
+        });
 
         dragState.current = {
             isDragging: true,
             startX: e.clientX,
             startY: e.clientY,
             initialX: posRef.current.x,
-            initialY: posRef.current.y
+            initialY: posRef.current.y,
         };
         setIsDragging(true);
     };
@@ -201,7 +221,7 @@ export const DraggableHTML: React.FC<Props> = ({ id, children, className = '', .
     const onDoubleClick = (e: React.MouseEvent<HTMLDivElement>) => {
         if (!isEditorMode) return;
         e.stopPropagation();
-        
+
         if (elementRef.current) {
             const targetEl = getPrimaryTextElement(elementRef.current);
             if (targetEl) {
@@ -209,13 +229,13 @@ export const DraggableHTML: React.FC<Props> = ({ id, children, className = '', .
                 const newText = prompt(`Редактировать текст [${id}]:`, currentText);
                 if (newText !== null && newText.trim() !== '') {
                     targetEl.innerText = newText;
-                    const stateToSave = { 
-                        x: Math.round(posRef.current.x), 
-                        y: Math.round(posRef.current.y), 
+                    const stateToSave = {
+                        x: Math.round(posRef.current.x),
+                        y: Math.round(posRef.current.y),
                         scale: Number(posRef.current.scale.toFixed(3)),
                         text: newText,
                         hidden: isHidden,
-                        zIndex: zIndex
+                        zIndex: zIndex,
                     };
                     safeSetItem(`react_debug_pos_${id}`, JSON.stringify(stateToSave));
                 }
@@ -227,15 +247,15 @@ export const DraggableHTML: React.FC<Props> = ({ id, children, className = '', .
 
     // Если элемент скрыт, мы показываем его только в режиме редактора с сильной прозрачностью
     if (isHidden && !isEditorMode) return null;
-    
-    const finalOpacity = isHidden && isEditorMode ? 0.3 : (isEditorMode && dragState.current.isDragging ? 0.8 : alpha);
-    
+
+    const finalOpacity = isHidden && isEditorMode ? 0.3 : isEditorMode && dragState.current.isDragging ? 0.8 : alpha;
+
     const dragStyle = {
         transform: `translate(${pos.x}px, ${pos.y}px) scale(${pos.scale})`,
         color: customColor,
         touchAction: 'none',
         opacity: finalOpacity,
-        zIndex: zIndex
+        zIndex: zIndex,
     } as React.CSSProperties;
 
     return (
@@ -256,8 +276,12 @@ export const DraggableHTML: React.FC<Props> = ({ id, children, className = '', .
                     {/* Label */}
                     <div className="absolute -top-14 left-0 bg-black/90 text-green-400 text-xs font-mono p-1 border border-green-500/50 rounded whitespace-nowrap shadow-lg">
                         <div className="font-bold text-white">{id}</div>
-                        <div>Pos: {Math.round(pos.x)}, {Math.round(pos.y)}</div>
-                        <div>Size: {elementRef.current?.offsetWidth || 0}x{elementRef.current?.offsetHeight || 0}</div>
+                        <div>
+                            Pos: {Math.round(pos.x)}, {Math.round(pos.y)}
+                        </div>
+                        <div>
+                            Size: {elementRef.current?.offsetWidth || 0}x{elementRef.current?.offsetHeight || 0}
+                        </div>
                     </div>
                 </div>
             )}

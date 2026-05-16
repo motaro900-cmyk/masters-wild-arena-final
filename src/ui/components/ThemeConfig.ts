@@ -5,15 +5,15 @@
  */
 export const ThemeConfig = {
     // Основные цвета интерфейса
-    primaryColor: '#f59e0b',   // Золотой / Янтарный (Основа)
+    primaryColor: '#f59e0b', // Золотой / Янтарный (Основа)
     secondaryColor: '#3b82f6', // Синий (Дополнительные элементы)
-    accentColor: '#10b981',    // Изумрудный (Акценты, подтверждения)
-    
+    accentColor: '#10b981', // Изумрудный (Акценты, подтверждения)
+
     // Системные цвета
-    dangerColor: '#ef4444',    // Красный (Ошибки, урон)
-    warningColor: '#facc15',   // Желтый (Предупреждения)
-    infoColor: '#0ea5e9',      // Инфо
-    
+    dangerColor: '#ef4444', // Красный (Ошибки, урон)
+    warningColor: '#facc15', // Желтый (Предупреждения)
+    infoColor: '#0ea5e9', // Инфо
+
     // Цвета текста
     textPrimary: '#ffffff',
     textMuted: '#a08b70',

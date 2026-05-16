@@ -10,23 +10,23 @@ export const CHARACTER_CONFIGS: Record<string, CharacterConfig> = {
     moose: { id: 'moose', name: 'Лось' },
     goose: { id: 'goose', name: 'Гусь' },
     cat: { id: 'cat', name: 'Кот' },
-    boar: { id: 'boar', name: 'Кабан' }
+    boar: { id: 'boar', name: 'Кабан' },
 };
 
 /**
  * Типы анимаций персонажей
  */
 export enum AnimationType {
-    IDLE = 'idle',           // Ожидание
-    WALK = 'walk',           // Движение
-    ATTACK = 'attack',       // Атака
+    IDLE = 'idle', // Ожидание
+    WALK = 'walk', // Движение
+    ATTACK = 'attack', // Атака
     ATTACK_HEAVY = 'attack_heavy', // Тяжелая атака
-    HIT = 'hit',             // Получение урона
-    DEATH = 'death',         // Смерть
-    SPECIAL = 'special',     // Специальная способность
-    POWER_UP = 'power_up',   // Усиление
-    WIND_UP = 'wind_up',     // Зарядка
-    BLOCK = 'block',         // Блок
+    HIT = 'hit', // Получение урона
+    DEATH = 'death', // Смерть
+    SPECIAL = 'special', // Специальная способность
+    POWER_UP = 'power_up', // Усиление
+    WIND_UP = 'wind_up', // Зарядка
+    BLOCK = 'block', // Блок
     DOUBLE_JUMP = 'double_jump', // Двойной прыжок
 }
 
@@ -86,9 +86,10 @@ const EasingFunctions = {
     linear: (t: number): number => t,
     easeIn: (t: number): number => t * t * t,
     easeOut: (t: number): number => 1 - Math.pow(1 - t, 3),
-    easeInOut: (t: number): number => t < 0.5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1,
+    easeInOut: (t: number): number => (t < 0.5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1),
     bounce: (t: number): number => {
-        const n1 = 7.5625, d1 = 2.75;
+        const n1 = 7.5625,
+            d1 = 2.75;
         if (t < 1 / d1) return n1 * t * t;
         else if (t < 2 / d1) return n1 * (t -= 1.5 / d1) * t + 0.75;
         else if (t < 2.5 / d1) return n1 * (t -= 2.25 / d1) * t + 0.9375;
@@ -96,7 +97,7 @@ const EasingFunctions = {
     },
     elastic: (t: number): number => {
         if (t === 0 || t === 1) return t;
-        return Math.pow(2, -10 * t) * Math.sin((t - 0.075) * (2 * Math.PI) / 0.3) + 1;
+        return Math.pow(2, -10 * t) * Math.sin(((t - 0.075) * (2 * Math.PI)) / 0.3) + 1;
     },
 };
 
@@ -164,8 +165,14 @@ export class AnimationConfigGenerator {
             loop: false,
             frames: [
                 { time: 0, values: { scale: 1.0, y: 0, alpha: 1, skewX: 0, rotation: 0 } },
-                { time: 0.1, values: { scale: 0.9, y: 0.02, alpha: 1, skewX: -direction * 0.1, rotation: -direction * 0.1 } },
-                { time: 0.3, values: { scale: 1.3, y: -0.05, alpha: 1, skewX: direction * 0.3, rotation: direction * 0.3 } },
+                {
+                    time: 0.1,
+                    values: { scale: 0.9, y: 0.02, alpha: 1, skewX: -direction * 0.1, rotation: -direction * 0.1 },
+                },
+                {
+                    time: 0.3,
+                    values: { scale: 1.3, y: -0.05, alpha: 1, skewX: direction * 0.3, rotation: direction * 0.3 },
+                },
                 { time: 0.5, values: { scale: 1.1, y: 0, alpha: 1, skewX: 0, rotation: 0 } },
                 { time: 1.0, values: { scale: 1.0, y: 0, alpha: 1, skewX: 0, rotation: 0 } },
             ],
@@ -183,8 +190,14 @@ export class AnimationConfigGenerator {
             loop: false,
             frames: [
                 { time: 0, values: { scale: 1.0, y: 0, alpha: 1, skewX: 0, rotation: 0 } },
-                { time: 0.15, values: { scale: 0.8, y: 0.05, alpha: 1, skewX: -direction * 0.15, rotation: -direction * 0.15 } },
-                { time: 0.4, values: { scale: 1.5, y: -0.1, alpha: 1, skewX: direction * 0.4, rotation: direction * 0.4 } },
+                {
+                    time: 0.15,
+                    values: { scale: 0.8, y: 0.05, alpha: 1, skewX: -direction * 0.15, rotation: -direction * 0.15 },
+                },
+                {
+                    time: 0.4,
+                    values: { scale: 1.5, y: -0.1, alpha: 1, skewX: direction * 0.4, rotation: direction * 0.4 },
+                },
                 { time: 0.6, values: { scale: 1.2, y: 0, alpha: 1, skewX: 0, rotation: 0 } },
                 { time: 1.0, values: { scale: 1.0, y: 0, alpha: 1, skewX: 0, rotation: 0 } },
             ],
@@ -202,9 +215,18 @@ export class AnimationConfigGenerator {
             loop: false,
             frames: [
                 { time: 0, values: { scale: 1.0, y: 0, alpha: 1, skewX: 0, rotation: 0 } },
-                { time: 0.1, values: { scale: 1.15, y: 0.05, alpha: 0.7, skewX: direction * 0.2, rotation: direction * 0.2 } },
-                { time: 0.3, values: { scale: 0.9, y: -0.03, alpha: 0.8, skewX: direction * -0.15, rotation: direction * -0.15 } },
-                { time: 0.6, values: { scale: 1.05, y: 0.02, alpha: 0.9, skewX: direction * 0.05, rotation: direction * 0.05 } },
+                {
+                    time: 0.1,
+                    values: { scale: 1.15, y: 0.05, alpha: 0.7, skewX: direction * 0.2, rotation: direction * 0.2 },
+                },
+                {
+                    time: 0.3,
+                    values: { scale: 0.9, y: -0.03, alpha: 0.8, skewX: direction * -0.15, rotation: direction * -0.15 },
+                },
+                {
+                    time: 0.6,
+                    values: { scale: 1.05, y: 0.02, alpha: 0.9, skewX: direction * 0.05, rotation: direction * 0.05 },
+                },
                 { time: 1.0, values: { scale: 1.0, y: 0, alpha: 1, skewX: 0, rotation: 0 } },
             ],
         };
@@ -240,8 +262,14 @@ export class AnimationConfigGenerator {
             frames: [
                 { time: 0, values: { scale: 1.0, y: 0, alpha: 1, skewX: 0, rotation: 0 } },
                 { time: 0.15, values: { scale: 0.85, y: 0.05, alpha: 1, skewX: 0, rotation: 0 } },
-                { time: 0.35, values: { scale: 1.4, y: -0.15, alpha: 1, skewX: direction * 0.2, rotation: direction * 0.2 } },
-                { time: 0.55, values: { scale: 1.3, y: -0.1, alpha: 1, skewX: direction * 0.3, rotation: direction * 0.3 } },
+                {
+                    time: 0.35,
+                    values: { scale: 1.4, y: -0.15, alpha: 1, skewX: direction * 0.2, rotation: direction * 0.2 },
+                },
+                {
+                    time: 0.55,
+                    values: { scale: 1.3, y: -0.1, alpha: 1, skewX: direction * 0.3, rotation: direction * 0.3 },
+                },
                 { time: 0.7, values: { scale: 1.1, y: 0, alpha: 1, skewX: 0, rotation: 0 } },
                 { time: 1.0, values: { scale: 1.0, y: 0, alpha: 1, skewX: 0, rotation: 0 } },
             ],
@@ -325,7 +353,7 @@ export class AnimationConfigGenerator {
      */
     getAllAnimations(): Map<AnimationType, AnimationConfig> {
         const animations = new Map<AnimationType, AnimationConfig>();
-        
+
         // Стандартные анимации
         animations.set(AnimationType.IDLE, this.generateIdle());
         animations.set(AnimationType.WALK, this.generateWalk());
@@ -334,7 +362,7 @@ export class AnimationConfigGenerator {
         animations.set(AnimationType.POWER_UP, this.generatePowerUp());
         animations.set(AnimationType.WIND_UP, this.generateWindUp());
         animations.set(AnimationType.BLOCK, this.generateBlock());
-        
+
         return animations;
     }
 }
@@ -346,11 +374,14 @@ const animationConfigGenerator = new AnimationConfigGenerator();
  * Управляет интерполяцией между ключевыми кадрами
  */
 export class AnimationSystem {
-    private currentAnimations: Map<AnimationType, {
-        config: AnimationConfig;
-        startTime: number;
-        currentFrameIndex: number;
-    }> = new Map();
+    private currentAnimations: Map<
+        AnimationType,
+        {
+            config: AnimationConfig;
+            startTime: number;
+            currentFrameIndex: number;
+        }
+    > = new Map();
 
     private sprites: Map<AnimationType, PIXI.Sprite> = new Map();
     private isPlaying = false;
@@ -362,7 +393,7 @@ export class AnimationSystem {
         sprite: PIXI.Sprite,
         animationType: AnimationType,
         config: AnimationConfig,
-        extraParams?: { direction?: number }
+        extraParams?: { direction?: number },
     ): void {
         // Генерируем конфиг если не предоставлен
         const animationConfig = config || this.generateAnimation(animationType, sprite, extraParams);
@@ -433,9 +464,7 @@ export class AnimationSystem {
 
             // Применяем pingPong
             if (config.pingPong) {
-                const pingPongProgress = segmentProgress < 0.5
-                    ? segmentProgress * 2
-                    : (1 - segmentProgress) * 2;
+                const pingPongProgress = segmentProgress < 0.5 ? segmentProgress * 2 : (1 - segmentProgress) * 2;
                 segmentProgress = pingPongProgress;
             }
 
@@ -523,7 +552,7 @@ export class AnimationSystem {
     private generateAnimation(
         type: AnimationType,
         _sprite: PIXI.Sprite,
-        extraParams?: { direction?: number }
+        extraParams?: { direction?: number },
     ): AnimationConfig {
         switch (type) {
             case AnimationType.IDLE:
