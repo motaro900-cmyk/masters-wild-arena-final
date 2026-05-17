@@ -116,6 +116,7 @@ export const ClanWindow: React.FC = () => {
 
     React.useEffect(() => {
         if (clanId) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setMembers([
                 {
                     name: vkUser?.first_name || 'Воин',

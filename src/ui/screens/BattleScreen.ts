@@ -221,10 +221,10 @@ export class BattleScreen extends Container {
             const baseDmg = this.playerStats.attack;
             const isCrit = Math.random() < this.playerStats.critChance;
             const isDodge = Math.random() < (this.enemyStats.dodge || 0);
-            
+
             let finalDmg;
             let actionText: string;
-            
+
             if (isDodge) {
                 finalDmg = 0;
                 actionText = 'УВОРОТ';
@@ -254,10 +254,10 @@ export class BattleScreen extends Container {
             const enemyBaseDmg = this.enemyStats.attack;
             const enemyCrit = Math.random() < this.enemyStats.critChance;
             const isPlayerDodge = Math.random() < (this.playerStats.dodge || 0.1); // У игрока тоже есть уворот
-            
+
             let finalEnemyDmg;
             let enemyActionText: string;
-            
+
             if (isPlayerDodge) {
                 finalEnemyDmg = 0;
                 enemyActionText = 'УВОРОТ';

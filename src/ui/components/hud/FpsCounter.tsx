@@ -14,7 +14,7 @@ export const FpsCounter: React.FC = () => {
                 if (app && app.ticker) {
                     setFps(Math.round(app.ticker.FPS));
                 }
-            } catch (e) {
+            } catch {
                 // Engine not ready yet
             }
             animationId = requestAnimationFrame(update);

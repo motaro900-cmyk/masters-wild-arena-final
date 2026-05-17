@@ -16,7 +16,7 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({ id, children, classNam
     const [isDragging, setIsDragging] = useState(false);
 
     useEffect(() => {
-        setPos({ x: savedPos.x || 0, y: savedPos.y || 0 });
+        setTimeout(() => setPos({ x: savedPos.x || 0, y: savedPos.y || 0 }), 0);
     }, [savedPos.x, savedPos.y]);
 
     const handlePointerDown = (e: React.PointerEvent) => {

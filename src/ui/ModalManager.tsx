@@ -22,7 +22,8 @@ export const ModalManager: React.FC = () => {
 
     // Устанавливаем флаг монтирования для безопасного использования Portal (защита от гидратации)
     useEffect(() => {
-        setMounted(true);
+        const timer = setTimeout(() => setMounted(true), 0);
+        return () => clearTimeout(timer);
     }, []);
 
     // ЗАДАЧА 2: ИЗОЛЯЦИЯ СКЕЙЛА (SafeZone logic)

@@ -24,6 +24,7 @@ export const DailyTaskPanel: React.FC = () => {
         const MSK_OFFSET = 3 * 60 * 60 * 1000;
         const DAY_MS = 24 * 60 * 60 * 1000;
 
+        // eslint-disable-next-line react-hooks/purity
         const nowUTC = Date.now();
         const nowMSK = nowUTC + MSK_OFFSET;
 

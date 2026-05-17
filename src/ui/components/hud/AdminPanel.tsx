@@ -88,6 +88,7 @@ export const AdminPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     const [isLoadingFeedback, setIsLoadingFeedback] = useState(false);
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setCustomGold(String(store.gold));
         setCustomCrystals(String(store.crystals));
         setCustomLevel(String(store.level));
@@ -103,16 +104,12 @@ export const AdminPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
 
     useEffect(() => {
         if (selectedPlayer) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setServerPlayerGold(String(selectedPlayer.gold));
             setServerPlayerCrystals(String(selectedPlayer.crystals));
             setServerPlayerLevel(String(selectedPlayer.level));
         }
     }, [selectedPlayerId, selectedPlayer]);
-
-    useEffect(() => {
-        if (activeTab === 'СЕРВЕР') refreshPlayers();
-        if (activeTab === 'ОТЗЫВЫ') refreshFeedback();
-    }, [activeTab]);
 
     const refreshFeedback = async () => {
         setIsLoadingFeedback(true);
@@ -158,6 +155,12 @@ export const AdminPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             setIsLoadingPlayers(false);
         }
     };
+
+    useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        if (activeTab === 'СЕРВЕР') refreshPlayers();
+        if (activeTab === 'ОТЗЫВЫ') refreshFeedback();
+    }, [activeTab]);
 
     const handleRemoteUpdate = async (field: string, value: any) => {
         if (!selectedPlayer) return;
@@ -384,7 +387,7 @@ export const AdminPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                             <button
                                 onClick={() => {
                                     audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
-                                    selectedItemId && store.addItemToInventory({ id: selectedItemId, level: 1 });
+                                    if (selectedItemId) store.addItemToInventory({ id: selectedItemId, level: 1 });
                                 }}
                                 style={{ ...bigBtnStyle, marginTop: '10px' }}
                             >
@@ -393,7 +396,7 @@ export const AdminPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                             <button
                                 onClick={() => {
                                     audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
-                                    confirm('Очистить инвентарь?') && store.clearInventory();
+                                    if (confirm('Очистить инвентарь?')) store.clearInventory();
                                 }}
                                 style={{ ...bigBtnStyle, marginTop: '5px', background: '#301010', color: '#ff4d4d' }}
                             >
@@ -447,7 +450,7 @@ export const AdminPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                             <button
                                 onClick={() => {
                                     audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
-                                    confirm('ВЫПОЛНИТЬ ПОЛНЫЙ СБРОС ИГРОВОГО ПРОГРЕССА?') && store.resetAllProgress();
+                                    if (confirm('ВЫПОЛНИТЬ ПОЛНЫЙ СБРОС ИГРОВОГО ПРОГРЕССА?')) store.resetAllProgress();
                                 }}
                                 style={{ ...bigBtnStyle, marginTop: '10px', background: '#431b1b', color: '#ff4d4d' }}
                             >
@@ -973,7 +976,7 @@ export const AdminPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                                                             );
                                                             alert(`Игрок ${selectedPlayer.name} ЗАБАНЕН`);
                                                             refreshPlayers();
-                                                        } catch (e) {
+                                                        } catch {
                                                             alert('Ошибка при бане');
                                                         }
                                                     }}
@@ -1011,7 +1014,7 @@ export const AdminPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                                                             );
                                                             alert(`Игрок ${selectedPlayer.name} получил МУТ`);
                                                             refreshPlayers();
-                                                        } catch (e) {
+                                                        } catch {
                                                             alert('Ошибка при муте');
                                                         }
                                                     }}
@@ -1034,7 +1037,7 @@ export const AdminPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                                                             );
                                                             alert('Игрок кикнут');
                                                             refreshPlayers();
-                                                        } catch (e) {
+                                                        } catch {
                                                             alert('Ошибка при кике');
                                                         }
                                                     }
@@ -1055,7 +1058,7 @@ export const AdminPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                                                             );
                                                             alert('Рейтинг сброшен');
                                                             refreshPlayers();
-                                                        } catch (e) {
+                                                        } catch {
                                                             alert('Ошибка сброса');
                                                         }
                                                     }
@@ -1088,7 +1091,7 @@ export const AdminPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                                                             );
                                                             alert('Аккаунт полностью очищен');
                                                             refreshPlayers();
-                                                        } catch (e) {
+                                                        } catch {
                                                             alert('Ошибка при вайпе');
                                                         }
                                                     }

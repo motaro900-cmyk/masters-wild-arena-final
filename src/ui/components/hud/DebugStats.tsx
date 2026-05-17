@@ -18,7 +18,7 @@ export const DebugStats: React.FC = () => {
                 try {
                     const pixiFPS = PixiApp.getInstance().getApp().ticker.FPS;
                     setFps(Math.round(pixiFPS || frames));
-                } catch (e) {
+                } catch {
                     setFps(frames);
                 }
                 frames = 0;

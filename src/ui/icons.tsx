@@ -1,6 +1,7 @@
 import React from 'react';
 
 // --- КОНСТАНТЫ ИКОНОК (SVG) ---
+// eslint-disable-next-line react-refresh/only-export-components
 export const SVG_ICONS: Record<string, string> = {
     Crown: 'M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5zm14 3c0 .6-.4 1-1 1H6c-.6 0-1-.4-1-1v-1h14v1z',
     Trophy: 'M19 5h-2V3H7v2H5c-1.1 0-2 .9-2 2v1c0 2.55 1.92 4.63 4.39 4.94A5.01 5.01 0 0011 15.9V19H7v2h10v-2h-4v-3.1',

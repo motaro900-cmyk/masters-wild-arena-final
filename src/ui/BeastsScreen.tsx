@@ -7,6 +7,7 @@ import { resolveAssetPath } from '../utils/assetPath';
 // =========================================
 // БАЗА ДАННЫХ ЗВЕРЕЙ (Mock Data)
 // =========================================
+// eslint-disable-next-line react-refresh/only-export-components
 export const BEASTS_DATABASE = [
     {
         id: 'moose',
@@ -192,6 +193,7 @@ const EquipSlot = ({ label, icon, item }: { label: string; icon: string; item: a
     </div>
 );
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const StatsView = ({ beastId: _beastId }: { beastId: string }) => {
     const stats = [
         { id: 'atk', name: 'АТАКА', base: 520, bonus: 150, icon: '⚔️' },

@@ -201,6 +201,7 @@ export class BaseEntity extends PIXI.Container {
     /**
      * Вызывается каждый кадр из BattleState
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public update(_dt: number): void {
         // Логика обновления в кадре
         // Можно добавить дополнительные вычисления

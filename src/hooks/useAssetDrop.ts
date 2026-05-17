@@ -119,7 +119,9 @@ export const useAssetDrop = () => {
                     }
                     return;
                 }
-            } catch (err) {}
+            } catch {
+                // Ignore parse errors
+            }
         }
 
         // ✨ 2. Drop из Asset Library (Внутренний UI-конструктор)

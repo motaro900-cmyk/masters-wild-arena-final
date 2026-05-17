@@ -1,6 +1,5 @@
 import React, { useRef } from 'react';
 import gsap from 'gsap';
-import { useGSAP } from '@gsap/react';
 
 interface JuicyButtonProps {
     icon: React.ReactNode | string;
@@ -18,24 +17,22 @@ export const JuicyButton: React.FC<JuicyButtonProps> = ({
     className = '',
 }) => {
     const btnRef = useRef<HTMLButtonElement>(null);
-    const { contextSafe } = useGSAP({ scope: btnRef });
-
-    const handleMouseEnter = contextSafe(() => {
+    const handleMouseEnter = () => {
         gsap.to(btnRef.current, { scale: 1.05, duration: 0.2, ease: 'power2.out' });
-    });
+    };
 
-    const handleMouseLeave = contextSafe(() => {
+    const handleMouseLeave = () => {
         gsap.to(btnRef.current, { scale: 1, duration: 0.2, ease: 'power2.out' });
-    });
+    };
 
-    const handlePointerDown = contextSafe(() => {
+    const handlePointerDown = () => {
         gsap.to(btnRef.current, { scale: 0.9, duration: 0.1, ease: 'power2.out' });
-    });
+    };
 
-    const handlePointerUp = contextSafe(() => {
+    const handlePointerUp = () => {
         gsap.to(btnRef.current, { scale: 1.05, duration: 0.3, ease: 'back.out(2)' });
         onClick();
-    });
+    };
 
     return (
         <button

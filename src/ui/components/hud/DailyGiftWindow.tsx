@@ -73,7 +73,7 @@ export const DailyGiftWindow: React.FC<DailyGiftWindowProps> = ({ onClose }) => 
 
         checkStatus();
         return () => clearInterval(timer);
-    }, []);
+    }, [setCanClaimDailyGift]);
 
     const handleOpen = () => {
         audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);

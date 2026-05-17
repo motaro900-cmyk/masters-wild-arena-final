@@ -63,6 +63,7 @@ export const FriendsWindow: React.FC<FriendsWindowProps> = () => {
 
     useEffect(() => {
         if (activeTab === 'WORLD') {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             fetchWorldPlayers();
         }
     }, [activeTab]);

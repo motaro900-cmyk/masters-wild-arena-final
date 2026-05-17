@@ -77,7 +77,7 @@ export class GameApp {
                 app.ticker.maxFPS = isPowerSaving ? 30 : 0;
                 console.log(`🔋 Power Saving: ${isPowerSaving ? 'ON (30 FPS)' : 'OFF (Max FPS)'}`);
             }
-        } catch (e) {
+        } catch {
             console.warn('⚠️ Could not apply performance settings yet (engine not ready)');
         }
     }

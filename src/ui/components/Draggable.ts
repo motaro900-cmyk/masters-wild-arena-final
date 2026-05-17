@@ -70,7 +70,9 @@ export function makeDraggable(obj: PIXI.Container, name: string): void {
                 if (textNode) textNode.text = parsed.text;
                 if (textNode && parsed.color) textNode.style.fill = parsed.color;
             }
-        } catch (e) {}
+        } catch {
+            // Ignore parse errors
+        }
     }
 
     const getTintHex = (obj: PIXI.Container) => {
@@ -97,7 +99,7 @@ export function makeDraggable(obj: PIXI.Container, name: string): void {
     useDebugStore.getState().registerElement(name);
 
     let isDragging = false;
-    let dragOffset = { x: 0, y: 0 };
+    const dragOffset = { x: 0, y: 0 };
     let startGlobalY = 0;
     let lastClickTime = 0;
     let initialScale = 1;

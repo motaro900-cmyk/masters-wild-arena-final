@@ -32,7 +32,7 @@ class BattleSnapshotService {
     private getEquipmentHash(heroId: string, equipment: Record<string, string>): string {
         const sortedItems = Object.entries(equipment)
             .sort(([a], [b]) => a.localeCompare(b))
-            .map(([_, id]) => id)
+            .map(([, id]) => id)
             .join('_');
         return `${heroId}_${sortedItems}`;
     }

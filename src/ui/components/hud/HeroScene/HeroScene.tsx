@@ -68,13 +68,13 @@ export const HeroScene: React.FC = () => {
     // -- Sync Tab from Store --
     useEffect(() => {
         if (heroesInitialTab) {
-            setActiveTab(heroesInitialTab as SceneTab);
+            setTimeout(() => setActiveTab(heroesInitialTab as SceneTab), 0);
         }
     }, [heroesInitialTab]);
 
     // -- Clear Tooltip on Tab Change --
     useEffect(() => {
-        setTooltipHero(null);
+        setTimeout(() => setTooltipHero(null), 0);
     }, [activeTab]);
 
     // -- Data --

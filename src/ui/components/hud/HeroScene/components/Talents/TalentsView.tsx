@@ -164,7 +164,7 @@ export const TalentsView = ({ hero }: any) => {
                             {branch.tiers.map((tier, tIndex) => {
                                 const branchPoints = Object.entries(talents)
                                     .filter(([id]) => id.startsWith(branch.id.substring(0, 3)))
-                                    .reduce((a, [_, v]) => a + (v as number), 0);
+                                    .reduce((a, [, v]) => a + (v as number), 0);
                                 const isUnlocked = branchPoints >= tier.requiredInBranch;
 
                                 return (

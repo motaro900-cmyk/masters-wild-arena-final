@@ -71,6 +71,7 @@ export const MailWindow: React.FC<MailWindowProps> = () => {
     };
 
     const formatTimeLeft = (expiresAt: number) => {
+        // eslint-disable-next-line react-hooks/purity
         const left = expiresAt - Date.now();
         if (left <= 0) return 'Истекло';
         const days = Math.ceil(left / (1000 * 60 * 60 * 24));

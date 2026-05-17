@@ -10,7 +10,7 @@ export const useTalentProgress = (heroId: string, talents: any, availablePoints:
 
         const branchPoints = Object.entries(talents)
             .filter(([id]) => id.startsWith(branchId.substring(0, 3)))
-            .reduce((a, [_, v]) => a + (v as number), 0);
+            .reduce((a, [, v]) => a + (v as number), 0);
 
         const tier = TALENTS_CONFIG.find((b) => b.id === branchId)?.tiers.find((t) =>
             t.talents.some((tt) => tt.id === talent.id),

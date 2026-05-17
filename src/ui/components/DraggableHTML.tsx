@@ -30,10 +30,16 @@ export const DraggableHTML: React.FC<Props> = ({ id, children, className = '', .
     const [zIndex, setZIndex] = useState(0);
     const [alpha, setAlpha] = useState(1);
     const customColorRef = useRef(customColor);
-    customColorRef.current = customColor;
     const elementRef = useRef<HTMLDivElement>(null);
     const posRef = useRef(pos);
-    posRef.current = pos;
+
+    useEffect(() => {
+        customColorRef.current = customColor;
+    }, [customColor]);
+
+    useEffect(() => {
+        posRef.current = pos;
+    }, [pos]);
     const dragState = useRef({
         isDragging: false,
         startX: 0,
@@ -52,6 +58,7 @@ export const DraggableHTML: React.FC<Props> = ({ id, children, className = '', .
                     y: parsed.y > -2000 && parsed.y < 3000 ? parsed.y : 0,
                     scale: parsed.scale || 1,
                 };
+                // eslint-disable-next-line react-hooks/set-state-in-effect
                 setPos(initial);
                 posRef.current = initial;
 
@@ -186,6 +193,7 @@ export const DraggableHTML: React.FC<Props> = ({ id, children, className = '', .
             window.removeEventListener('pointerup', onUp);
             window.removeEventListener('pointercancel', onUp);
         };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isDragging, id]);
 
     const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
@@ -248,7 +256,7 @@ export const DraggableHTML: React.FC<Props> = ({ id, children, className = '', .
     // Если элемент скрыт, мы показываем его только в режиме редактора с сильной прозрачностью
     if (isHidden && !isEditorMode) return null;
 
-    const finalOpacity = isHidden && isEditorMode ? 0.3 : isEditorMode && dragState.current.isDragging ? 0.8 : alpha;
+    const finalOpacity = isHidden && isEditorMode ? 0.3 : isEditorMode && isDragging ? 0.8 : alpha;
 
     const dragStyle = {
         transform: `translate(${pos.x}px, ${pos.y}px) scale(${pos.scale})`,
@@ -280,6 +288,7 @@ export const DraggableHTML: React.FC<Props> = ({ id, children, className = '', .
                             Pos: {Math.round(pos.x)}, {Math.round(pos.y)}
                         </div>
                         <div>
+                            {/* eslint-disable-next-line react-hooks/refs */}
                             Size: {elementRef.current?.offsetWidth || 0}x{elementRef.current?.offsetHeight || 0}
                         </div>
                     </div>

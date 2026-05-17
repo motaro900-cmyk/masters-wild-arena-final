@@ -743,14 +743,14 @@ export const calculateItemPower = (item: any): number => {
 };
 
 export const WEAPONS_DB = Object.fromEntries(
-    Object.entries(ITEMS_DATABASE).filter(([_, v]) => v.subTab === 'WEAPONS'),
+    Object.entries(ITEMS_DATABASE).filter(([, v]) => v.subTab === 'WEAPONS'),
 ) as Record<string, IEquipmentStats>;
 export const HELMS_DB = Object.fromEntries(
-    Object.entries(ITEMS_DATABASE).filter(([_, v]) => v.subTab === 'HELMETS'),
+    Object.entries(ITEMS_DATABASE).filter(([, v]) => v.subTab === 'HELMETS'),
 ) as Record<string, IEquipmentStats>;
 export const ARMOR_DB = Object.fromEntries(
-    Object.entries(ITEMS_DATABASE).filter(([_, v]) => v.subTab === 'ARMOR'),
+    Object.entries(ITEMS_DATABASE).filter(([, v]) => v.subTab === 'ARMOR'),
 ) as Record<string, IEquipmentStats>;
 export const SHIELDS_DB = Object.fromEntries(
-    Object.entries(ITEMS_DATABASE).filter(([_, v]) => v.subTab === 'SHIELDS'),
+    Object.entries(ITEMS_DATABASE).filter(([, v]) => v.subTab === 'SHIELDS'),
 ) as Record<string, IEquipmentStats>;

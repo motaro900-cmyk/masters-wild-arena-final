@@ -101,7 +101,7 @@ export class BattleEngine {
             const arenas = isMobile ? AssetsMap.BACKGROUNDS.BATTLE_ARENAS_MOBILE : AssetsMap.BACKGROUNDS.BATTLE_ARENAS;
             const randomBg = arenas[Math.floor(Math.random() * arenas.length)];
             console.log(`[BattleEngine] Loading background: ${randomBg}`);
-            const bgTex = await PIXI.Assets.load(randomBg).catch((_) => PIXI.Texture.WHITE);
+            const bgTex = await PIXI.Assets.load(randomBg).catch(() => PIXI.Texture.WHITE);
             const background = new PIXI.Sprite(bgTex);
 
             const W = 1920;
@@ -249,7 +249,7 @@ export class BattleEngine {
 
         const finalDamage = Math.ceil(mitigated);
 
-        let logMsg = '';
+        let logMsg: string;
         if (isCrit) {
             logMsg = `[Раунд] ${isPlayer ? 'Вы наносите' : 'Враг наносит'} КРИТИЧЕСКИЙ УДАР на ${finalDamage}!`;
         } else {

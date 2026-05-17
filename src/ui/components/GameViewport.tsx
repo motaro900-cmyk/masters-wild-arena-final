@@ -18,13 +18,15 @@ export const GameViewport: React.FC = () => {
                 // Пытаемся загрузить JSON конфигурацию (Vite соберет ее в бандл)
                 const module = await import('../../data/layoutConfig.json');
                 layoutData = module.default || module;
-            } catch (e) {
+            } catch {
                 console.warn('layoutConfig.json не найден, проверяем localStorage...');
                 const saved = safeGetItem('HUD_SAVED_LAYOUT');
                 if (saved) {
                     try {
                         layoutData = JSON.parse(saved);
-                    } catch (err) {}
+                    } catch {
+                        // Ignore parse errors
+                    }
                 }
             }
 

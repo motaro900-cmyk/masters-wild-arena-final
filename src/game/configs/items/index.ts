@@ -27,19 +27,14 @@ export const rawItemsDatabase: Record<string, IEquipmentStats> = {
  * Финальная база данных с обработанными путями ассетов
  */
 export const ITEMS_DATABASE: Record<string, IEquipmentStats> = Object.fromEntries(
-    Object.entries(rawItemsDatabase).map(([key, item]) => [
-        key,
-        { ...item, image: processItemImage(item.image) }
-    ])
+    Object.entries(rawItemsDatabase).map(([key, item]) => [key, { ...item, image: processItemImage(item.image) }]),
 );
 
 /**
  * Вспомогательная функция для фильтрации по подкатегории
  */
 const filterBySubTab = (subTab: string): Record<string, IEquipmentStats> => {
-    return Object.fromEntries(
-        Object.entries(ITEMS_DATABASE).filter(([_, v]) => v.subTab === subTab)
-    );
+    return Object.fromEntries(Object.entries(ITEMS_DATABASE).filter(([, v]) => v.subTab === subTab));
 };
 
 // Экспорты для конкретных разделов магазина
