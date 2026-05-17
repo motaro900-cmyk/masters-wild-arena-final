@@ -100,7 +100,7 @@ export const AncientsSanctuaryWindow: React.FC = () => {
                                         animation: 'pulse 1.5s infinite',
                                     }}
                                 >
-                                    ТЕКУЩИЙ ЦЕЛЬ
+                                    ТЕКУЩАЯ ЦЕЛЬ
                                 </div>
                             )}
                         </motion.div>

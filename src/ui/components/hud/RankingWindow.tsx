@@ -226,6 +226,38 @@ export const RankingWindow: React.FC = () => {
                     >
                         ЗАГРУЗКА ЛИДЕРОВ...
                     </div>
+                ) : activeTab === 'CLAN' ? (
+                    <div
+                        style={{
+                            textAlign: 'center',
+                            padding: '100px 20px',
+                            color: '#c8a870',
+                            fontWeight: 800,
+                            fontFamily: "'Cinzel', serif",
+                            fontSize: '16px',
+                        }}
+                    >
+                        ВЫ НЕ СОСТОИТЕ В КЛАНЕ
+                        <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)', marginTop: '10px' }}>
+                            Вступите в клан, чтобы видеть рейтинг соклановцев!
+                        </div>
+                    </div>
+                ) : activeTab === 'FRIENDS' ? (
+                    <div
+                        style={{
+                            textAlign: 'center',
+                            padding: '100px 20px',
+                            color: '#c8a870',
+                            fontWeight: 800,
+                            fontFamily: "'Cinzel', serif",
+                            fontSize: '16px',
+                        }}
+                    >
+                        У ВАС НЕТ ДРУЗЕЙ В ИГРЕ
+                        <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)', marginTop: '10px' }}>
+                            Пригласите друзей, чтобы соревноваться с ними!
+                        </div>
+                    </div>
                 ) : (
                     globalLeaders.map((player) => (
                         <LeaderItem key={player.rank} player={player} onClick={() => setSelectedPlayer(player)} />

@@ -4,7 +4,16 @@ import { useGameStore } from '../../../store/useGameStore';
 import { AssetsMap } from '../../../configs/AssetsMap';
 import { getAllShopItems, ShopItem } from '../../../configs/ShopConfig';
 
-import { WEAPONS_DB, HELMS_DB, ARMOR_DB, SHIELDS_DB, PANTS_DB, BOOTS_DB, SHOULDERS_DB, IEquipmentStats } from '../../../game/configs/ItemsConfig';
+import {
+    WEAPONS_DB,
+    HELMS_DB,
+    ARMOR_DB,
+    SHIELDS_DB,
+    PANTS_DB,
+    BOOTS_DB,
+    SHOULDERS_DB,
+    IEquipmentStats,
+} from '../../../game/configs/ItemsConfig';
 import { audioService } from '../../../services/AudioService';
 
 type MainTab = 'ARSENAL' | 'ALCHEMY' | 'BANK' | 'SKINS';
@@ -34,12 +43,12 @@ const getRarityColor = (rarity: ShopItem['rarity']) => {
 };
 
 const rarityTranslation: Record<string, string> = {
-    'COMMON': 'ОБЫЧНЫЙ',
-    'UNCOMMON': 'НЕОБЫЧНЫЙ',
-    'RARE': 'РЕДКИЙ',
-    'EPIC': 'ЭПИЧЕСКИЙ',
-    'MYTHIC': 'МИФИЧЕСКИЙ',
-    'LEGENDARY': 'ЛЕГЕНДАРНЫЙ',
+    COMMON: 'ОБЫЧНЫЙ',
+    UNCOMMON: 'НЕОБЫЧНЫЙ',
+    RARE: 'РЕДКИЙ',
+    EPIC: 'ЭПИЧЕСКИЙ',
+    MYTHIC: 'МИФИЧЕСКИЙ',
+    LEGENDARY: 'ЛЕГЕНДАРНЫЙ',
 };
 
 const getItemStats = (item: ShopItem): IEquipmentStats | null => {
@@ -60,7 +69,6 @@ export const ShopScene: React.FC = () => {
         addCrystals,
         addEnergy,
         inventory,
-        equipItem,
         equippedWeaponId,
         equippedHelmId,
         equippedArmorId,
@@ -128,10 +136,6 @@ export const ShopScene: React.FC = () => {
 
         return item.subTab === activeSubTab;
     });
-
-    const handleEquip = (item: ShopItem) => {
-        equipItem(String(item.id));
-    };
 
     const handleItemClick = (item: ShopItem) => {
         audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
@@ -876,7 +880,6 @@ interface ShopItemCardProps {
 const ShopItemCard = React.forwardRef((props: ShopItemCardProps, ref: React.ForwardedRef<HTMLDivElement>) => {
     const {
         item,
-        inventory,
         equippedWeaponId,
         equippedHelmId,
         equippedArmorId,
@@ -917,6 +920,37 @@ const ShopItemCard = React.forwardRef((props: ShopItemCardProps, ref: React.Forw
                 overflow: 'hidden',
             }}
         >
+            {isEquipped && (
+                <div
+                    style={{
+                        position: 'absolute',
+                        top: '10px',
+                        left: '10px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        padding: '3px 8px',
+                        background: 'linear-gradient(135deg, #10b981dd, #10b98188)',
+                        borderRadius: '3px',
+                        boxShadow: isMobile ? 'none' : '0 0 8px #10b98166',
+                        border: '1px solid rgba(255,255,255,0.3)',
+                        zIndex: 10,
+                    }}
+                >
+                    <span
+                        style={{
+                            fontSize: '9px',
+                            color: '#fff',
+                            fontFamily: "'Cinzel', serif",
+                            fontWeight: 900,
+                            letterSpacing: '1px',
+                            textTransform: 'uppercase',
+                        }}
+                    >
+                        НАДЕТО
+                    </span>
+                </div>
+            )}
             {!isMobile && (
                 <div
                     style={{

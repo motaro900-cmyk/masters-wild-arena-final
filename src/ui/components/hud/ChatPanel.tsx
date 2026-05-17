@@ -37,6 +37,14 @@ export const ChatPanel: React.FC = () => {
 
     // Фильтрация сообщений по табам
     const filteredMessages = messages.filter((msg: any) => {
+        // Удаляем старое сообщение мастера с эмодзи (по запросу)
+        if (
+            (msg.author === 'Мастер' || msg.author === 'Motar') &&
+            (msg.text.trim() === '👏' || msg.text.trim() === '👋')
+        ) {
+            return false;
+        }
+
         // ОБЩИЙ ЧАТ — показываем всё, кроме личных сообщений (ЛС)
         if (activeChatTab === 'all') return msg.type !== 'private' && msg.type !== 'personal';
 
@@ -147,6 +155,26 @@ export const ChatPanel: React.FC = () => {
             y: e.clientY,
             author,
         });
+    };
+
+    const handleMenuAction = (type: string, author: string | null) => {
+        switch (type) {
+            case 'profile':
+                console.log('Profile', author);
+                break;
+            case 'pm':
+                setActiveChatTab('private');
+                setPrivateRecipient(author);
+                setInputText('');
+                setTimeout(() => inputRef.current?.focus(), 50);
+                break;
+            case 'friend':
+                console.log('Friend', author);
+                break;
+            case 'copy':
+                navigator.clipboard.writeText(author || '');
+                break;
+        }
     };
 
     // Закрытие меню и сброс ЛС при клике вне или ESC
@@ -1020,26 +1048,15 @@ export const ChatPanel: React.FC = () => {
                             {contextMenu.author}
                         </div>
                         {[
-                            { label: '👤 Профиль', action: () => console.log('Profile', contextMenu.author) },
-                            {
-                                label: '💬 Написать ЛС',
-                                action: () => {
-                                    setActiveChatTab('private');
-                                    setPrivateRecipient(contextMenu.author);
-                                    setInputText('');
-                                    setTimeout(() => inputRef.current?.focus(), 50);
-                                },
-                            },
-                            { label: '🤝 В друзья', action: () => console.log('Friend', contextMenu.author) },
-                            {
-                                label: '📋 Копировать ник',
-                                action: () => navigator.clipboard.writeText(contextMenu.author || ''),
-                            },
+                            { label: '👤 Профиль', type: 'profile' },
+                            { label: '💬 Написать ЛС', type: 'pm' },
+                            { label: '🤝 В друзья', type: 'friend' },
+                            { label: '📋 Копировать ник', type: 'copy' },
                         ].map((item) => (
                             <div
                                 key={item.label}
                                 onClick={() => {
-                                    item.action();
+                                    handleMenuAction(item.type, contextMenu.author);
                                     setContextMenu((prev) => ({ ...prev, visible: false }));
                                 }}
                                 className="context-menu-item"

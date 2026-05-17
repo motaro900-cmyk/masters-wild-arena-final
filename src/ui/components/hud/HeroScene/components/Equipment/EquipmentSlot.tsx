@@ -15,7 +15,7 @@ export const EquipmentSlot = ({ id, label, itemId, activeDraggingId, onClick, se
 
     return (
         <motion.div
-            whileHover={itemId ? { scale: 1.05, zIndex: 10 } : {}}
+            whileHover={itemId ? { scale: 1.05, zIndex: 10 } : { background: 'rgba(240,192,64,0.1)' }}
             onMouseEnter={(e: any) => itemId && setGlobalHoveredItem(itemId, e.clientX, e.clientY)}
             onMouseLeave={() => setGlobalHoveredItem(null, 0, 0)}
             onMouseMove={(e: any) => itemId && setGlobalHoveredItem(itemId, e.clientX, e.clientY)}

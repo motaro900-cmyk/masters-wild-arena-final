@@ -34,6 +34,7 @@ export const useGameStore = create<any>()(
             exp: 0,
             gold: 100000,
             crystals: 100000,
+            shards: {},
             rating: 0,
             energy: 50,
             maxEnergy: 50,
@@ -85,6 +86,44 @@ export const useGameStore = create<any>()(
             addGold: (amount: number) => set((state: any) => ({ gold: state.gold + amount })),
             addCrystals: (amount: number) => set((state: any) => ({ crystals: state.crystals + amount })),
             addEnergy: (amount: number) => set((state: any) => ({ energy: state.energy + amount })),
+            addShards: (heroId: string, amount: number) =>
+                set((state: any) => {
+                    const currentShards = state.shards?.[heroId] || 0;
+                    return {
+                        shards: {
+                            ...(state.shards || {}),
+                            [heroId]: currentShards + amount,
+                        },
+                    };
+                }),
+            openChest: (type: 'SINGLE' | 'MULTI') => {
+                const state = get();
+                const cost = type === 'SINGLE' ? 100 : 950;
+                if (state.crystals < cost) return null;
+
+                const heroes = ['panda', 'monkey', 'tiger', 'rabbit', 'bear'];
+                const rewards: { heroId: string; amount: number }[] = [];
+                const pulls = type === 'SINGLE' ? 1 : 10;
+
+                for (let i = 0; i < pulls; i++) {
+                    const randomHero = heroes[Math.floor(Math.random() * heroes.length)];
+                    const randomAmount = Math.floor(Math.random() * 5) + 1; // 1 to 5 shards
+                    rewards.push({ heroId: randomHero, amount: randomAmount });
+                }
+
+                set((state: any) => {
+                    const newShards = { ...(state.shards || {}) };
+                    rewards.forEach((r) => {
+                        newShards[r.heroId] = (newShards[r.heroId] || 0) + r.amount;
+                    });
+                    return {
+                        crystals: state.crystals - cost,
+                        shards: newShards,
+                    };
+                });
+
+                return rewards;
+            },
             setMessages: (newMessages: any[]) => {
                 set((state: any) => {
                     const allMessages = [...state.messages, ...newMessages];
@@ -781,7 +820,7 @@ export const useGameStore = create<any>()(
 
                 const invItem = state.inventory[invItemIndex];
                 const currentLevel = invItem.level || 1;
-                if (currentLevel >= 10) return false;
+                if (currentLevel >= 3) return false;
 
                 const itemData = ITEMS_DATABASE[itemId];
                 if (!itemData) return false;
@@ -796,22 +835,22 @@ export const useGameStore = create<any>()(
                     else if (currentLevel === 2) upgradeCostGold = basePrice;
                 } else {
                     if (currentLevel === 1) {
-                        upgradeCostGold = 50000;
+                        upgradeCostGold = 0; // Донатные шмотки улучшаются только за кристаллы
                         upgradeCostGem = 50;
                     } else if (currentLevel === 2) {
-                        upgradeCostGold = 100000;
+                        upgradeCostGold = 0;
                         upgradeCostGem = 100;
                     }
                 }
 
-                if (state.gold < upgradeCostGold || (state.gems || 0) < upgradeCostGem) return false;
+                if (state.gold < upgradeCostGold || state.crystals < upgradeCostGem) return false;
 
                 const newInventory = [...state.inventory];
                 newInventory[invItemIndex] = { ...invItem, level: currentLevel + 1 };
 
                 set({
                     gold: state.gold - upgradeCostGold,
-                    gems: (state.gems || 0) - upgradeCostGem,
+                    crystals: state.crystals - upgradeCostGem,
                     inventory: newInventory,
                 });
 
@@ -885,7 +924,9 @@ export const useGameStore = create<any>()(
                 allItems.forEach((item) => {
                     const invItem = state.inventory.find((i: any) => String(i.id) === item.id);
                     const lvl = invItem?.level || 1;
-                    const mult = 1 + (lvl - 1) * 0.5; // +50% за уровень (Lvl 1 = 1x, Lvl 2 = 1.5x, Lvl 3 = 2x)
+                    let mult = 1.0;
+                    if (lvl === 2) mult = 1.15;
+                    if (lvl === 3) mult = 1.35;
 
                     if (item.hpBonus) total.hp += item.hpBonus * mult;
                     if (item.attackBonus) total.attack += item.attackBonus * mult;
@@ -1214,12 +1255,35 @@ export const useGameStore = create<any>()(
         {
             name: 'game-storage',
             storage: createJSONStorage(() => getStorage()),
-            version: 21, // v21: Обновление имен героев и фикс экранов
+            version: 22, // v22: Сброс БП и сообщений по запросу
             migrate: (persistedState: any, version: number) => {
-                if (version < 21) {
-                    console.log('🔄 Migrating store to v21...');
-                    // Принудительно сбрасываем activeScreen в MAIN_MENU при обновлении,
-                    // чтобы избежать застревания на черных экранах 'ARENA'
+                if (version < 22) {
+                    console.log('🔄 Migrating store to v22...');
+                    persistedState.bpLevel = 1;
+                    persistedState.bpExp = 0;
+                    persistedState.messages = [
+                        {
+                            id: 'welcome-1',
+                            author: 'СИСТЕМА',
+                            avatar: '/assets/images/ui/system_icon.png',
+                            text: 'Приветствуем в Masters of the Wild! Твой путь к величию начинается здесь. 🐉⚔️',
+                            type: 'system',
+                            timestamp: Date.now() - 1000,
+                            level: 1,
+                            rankIcon: '',
+                        },
+                        {
+                            id: 'codex-1',
+                            author: 'КОДЕКС ЧЕСТИ',
+                            avatar: '/assets/images/ui/system_icon.png',
+                            text: 'Истинная сила — в уважении. Будьте вежливы, не используйте оскорбления и мат. Пусть в чате царит дух честной игры! 🛡️🤝',
+                            type: 'system',
+                            timestamp: Date.now(),
+                            level: 1,
+                            rankIcon: '',
+                        },
+                    ];
+
                     if (persistedState.activeScreen === 'ARENA' || persistedState.activeScreen === 'OTHER') {
                         persistedState.activeScreen = 'MAIN_MENU';
                     }

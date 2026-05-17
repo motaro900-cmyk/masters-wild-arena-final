@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ITEMS_DATABASE } from '../../../../../../game/configs/ItemsConfig';
+import { useGameStore } from '../../../../../../store/useGameStore';
 import { audioService } from '../../../../../../services/AudioService';
 import { AssetsMap } from '../../../../../../configs/AssetsMap';
 import { EquipmentSlot } from './EquipmentSlot';
@@ -40,11 +41,23 @@ export const GearView = ({
     const [localSelectedId, setLocalSelectedId] = useState<string | null>(null);
     const [showPowerTooltip, setShowPowerTooltip] = useState(false);
 
+    const { inventory } = useGameStore();
+
     const gearPower = Object.values(equippedIds).reduce((acc: number, itemId: any) => {
         if (!itemId) return acc;
         const item = ITEMS_DATABASE[String(itemId)] as any;
         if (!item) return acc;
-        return acc + (item.attackBonus || 0) * 2 + (item.defenseBonus || 0) * 1.5 + (item.hpBonus || 0) * 0.1;
+
+        const invItem = inventory.find((i: any) => String(i.id) === String(itemId));
+        const lvl = invItem?.level || 1;
+        const mult = lvl === 3 ? 1.35 : lvl === 2 ? 1.15 : 1.0;
+
+        return (
+            acc +
+            (item.attackBonus || 0) * mult * 2 +
+            (item.defenseBonus || 0) * mult * 1.5 +
+            (item.hpBonus || 0) * mult * 0.1
+        );
     }, 0);
 
     const onInternalItemClick = (id: string) => {
@@ -69,9 +82,17 @@ export const GearView = ({
             const equippedId = equippedIds[selItem.subTab];
             const equippedItem = equippedId ? (ITEMS_DATABASE[equippedId] as any) : null;
             if (['WEAPONS', 'HELMETS', 'ARMOR', 'SHIELDS'].includes(selItem.subTab)) {
-                diffs.hp = (selItem.hpBonus || 0) - (equippedItem?.hpBonus || 0);
-                diffs.attack = (selItem.attackBonus || 0) - (equippedItem?.attackBonus || 0);
-                diffs.defense = (selItem.defenseBonus || 0) - (equippedItem?.defenseBonus || 0);
+                const eqInvItem = inventory.find((i: any) => String(i.id) === String(equippedId));
+                const eqLvl = eqInvItem?.level || 1;
+                const eqMult = eqLvl === 3 ? 1.35 : eqLvl === 2 ? 1.15 : 1.0;
+
+                const selInvItem = inventory.find((i: any) => String(i.id) === String(localSelectedId));
+                const selLvl = selInvItem?.level || 1;
+                const selMult = selLvl === 3 ? 1.35 : selLvl === 2 ? 1.15 : 1.0;
+
+                diffs.hp = (selItem.hpBonus || 0) * selMult - (equippedItem?.hpBonus || 0) * eqMult;
+                diffs.attack = (selItem.attackBonus || 0) * selMult - (equippedItem?.attackBonus || 0) * eqMult;
+                diffs.defense = (selItem.defenseBonus || 0) * selMult - (equippedItem?.defenseBonus || 0) * eqMult;
             }
         }
     }

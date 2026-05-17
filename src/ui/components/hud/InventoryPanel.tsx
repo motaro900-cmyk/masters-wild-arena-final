@@ -305,6 +305,19 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ mode = 'FULL', o
 };
 
 const ItemTooltip = ({ item }: { item: { id: string; x: number; y: number } }) => {
+    const { inventory } = useGameStore();
+    const invItem = inventory.find((i: any) => String(i.id) === item.id);
+    const currentLevel = invItem?.level || 1;
+
+    const getStatMultiplier = (lvl: number) => {
+        if (lvl === 1) return 1.0;
+        if (lvl === 2) return 1.15;
+        if (lvl === 3) return 1.35;
+        return 1.0;
+    };
+
+    const mult = getStatMultiplier(currentLevel);
+
     const data = ITEMS_DATABASE[item.id] as any;
     if (!data) return null;
 
@@ -345,7 +358,7 @@ const ItemTooltip = ({ item }: { item: { id: string; x: number; y: number } }) =
                         marginBottom: '4px',
                     }}
                 >
-                    {rarityTranslation[data.rarity] || data.rarity}
+                    {rarityTranslation[data.rarity] || data.rarity} {currentLevel > 1 && `(УР. ${currentLevel})`}
                 </div>
                 <div
                     style={{
@@ -362,16 +375,28 @@ const ItemTooltip = ({ item }: { item: { id: string; x: number; y: number } }) =
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                 {data.attackBonus && (
-                    <StatRow label="СИЛА АТАКИ" value={`+${data.attackBonus}`} icon="⚔️" color="#f97316" />
+                    <StatRow
+                        label="СИЛА АТАКИ"
+                        value={`+${Math.round(data.attackBonus * mult)}`}
+                        icon="⚔️"
+                        color="#f97316"
+                    />
                 )}
                 {data.defenseBonus && (
-                    <StatRow label="ЗАЩИТА" value={`+${data.defenseBonus}`} icon="🛡️" color="#3b82f6" />
+                    <StatRow
+                        label="ЗАЩИТА"
+                        value={`+${Math.round(data.defenseBonus * mult)}`}
+                        icon="🛡️"
+                        color="#3b82f6"
+                    />
                 )}
-                {data.hpBonus && <StatRow label="ЗДОРОВЬЕ" value={`+${data.hpBonus}`} icon="❤️" color="#ef4444" />}
+                {data.hpBonus && (
+                    <StatRow label="ЗДОРОВЬЕ" value={`+${Math.round(data.hpBonus * mult)}`} icon="❤️" color="#ef4444" />
+                )}
                 {(data.critChance || data.critBonus) && (
                     <StatRow
                         label="КРИТ. ШАНС"
-                        value={`+${Math.round((data.critChance || data.critBonus) * 100)}%`}
+                        value={`+${Math.round((data.critChance || data.critBonus) * 100 * mult)}%`}
                         icon="🎯"
                         color="#a855f7"
                     />
@@ -379,7 +404,7 @@ const ItemTooltip = ({ item }: { item: { id: string; x: number; y: number } }) =
                 {(data.attackSpeed || data.speedBonus) && (
                     <StatRow
                         label="СКОРОСТЬ"
-                        value={`+${(data.attackSpeed || data.speedBonus).toFixed(1)}`}
+                        value={`+${((data.attackSpeed || data.speedBonus) * mult).toFixed(1)}`}
                         icon="⚡"
                         color="#fcd34d"
                     />
@@ -404,7 +429,7 @@ const ItemTooltip = ({ item }: { item: { id: string; x: number; y: number } }) =
 
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '5px' }}>
                 <div style={{ color: '#f0c040', fontSize: '10px', fontWeight: 900 }}>
-                    МОЩЬ: {calculateItemPower(data)}
+                    МОЩЬ: {Math.round(calculateItemPower(data) * mult)}
                 </div>
                 {data.priceGold && (
                     <div
@@ -616,7 +641,7 @@ const DraggableItem = ({
                     pointerEvents: 'none',
                 }}
             >
-                {calculateItemPower(data)}
+                {Math.round(calculateItemPower(data) * (item.level === 3 ? 1.35 : item.level === 2 ? 1.15 : 1.0))}
             </div>
 
             {/* УРОВЕНЬ ПРЕДМЕТА (L1, L2, L3) */}

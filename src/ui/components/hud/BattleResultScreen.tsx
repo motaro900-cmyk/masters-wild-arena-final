@@ -148,7 +148,7 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
                         letterSpacing: '0.2em',
                     }}
                 >
-                    {isVictory ? `Ты победил ${data.enemyName}!` : `${data.enemyName} оказался сильнее`}
+                    {isVictory ? `Победа над: ${data.enemyName}!` : `${data.enemyName} оказался сильнее`}
                 </div>
             </div>
 

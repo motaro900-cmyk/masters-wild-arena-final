@@ -170,8 +170,9 @@ export const BestiaryWindow: React.FC = () => {
                 <div
                     style={{
                         height: '60px',
-                        fontStyle: 'italic',
-                        color: '#9ca3af',
+                        color: '#fff',
+                        fontSize: '16px',
+                        fontWeight: 600,
                         textAlign: 'center',
                         display: 'flex',
                         alignItems: 'center',

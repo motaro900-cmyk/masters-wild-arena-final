@@ -1,6 +1,5 @@
 import { TabButton } from './shared/TabButton';
 import { SceneTab } from '../types';
-import { ResourceBar } from '../../ResourceBar';
 
 interface HeroSceneHeaderProps {
     activeTab: SceneTab;
