@@ -41,6 +41,22 @@ export const GameHUD: React.FC = () => {
     const goToShop = useGameStore((state) => state.goToShop);
     const [prevScreen, setPrevScreen] = useState(activeScreen);
 
+    const [hudScale, setHudScale] = useState(1);
+
+    React.useEffect(() => {
+        const handleResize = () => {
+            const width = window.innerWidth;
+            if (width < 1100) {
+                setHudScale(Math.max(0.6, width / 1100));
+            } else {
+                setHudScale(1);
+            }
+        };
+        handleResize();
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
     // Автоматически закрываем любые окна при смене основного экрана (Pattern: Adjusting state during render)
     if (activeScreen !== prevScreen) {
         setPrevScreen(activeScreen);
@@ -151,7 +167,10 @@ export const GameHUD: React.FC = () => {
         >
             {/* 1. PLAYER PROFILE HUB */}
             {!isFullScreenScene && (
-                <div className="absolute top-[30px] left-[5px] hud-interactive">
+                <div
+                    className="absolute top-[30px] left-[5px] hud-interactive"
+                    style={{ transform: `scale(${hudScale})`, transformOrigin: 'top left' }}
+                >
                     <ProfileHub />
                 </div>
             )}
@@ -187,7 +206,10 @@ export const GameHUD: React.FC = () => {
                         />
                     </div>
 
-                    <div className="absolute top-[160px] right-[25px] flex flex-col gap-3 items-end hud-interactive">
+                    <div
+                        className="absolute top-[160px] right-[25px] flex flex-col gap-3 items-end hud-interactive"
+                        style={{ transform: `scale(${hudScale})`, transformOrigin: 'top right' }}
+                    >
                         <DailyGiftBanner onClick={() => setActiveWindow('GIFT')} />
                         <DailyTaskPanel />
                     </div>
@@ -261,7 +283,10 @@ export const GameHUD: React.FC = () => {
                         `}</style>
                     </div>
 
-                    <div className="absolute bottom-[15px] left-[5px] hud-interactive">
+                    <div
+                        className="absolute bottom-[15px] left-[5px] hud-interactive"
+                        style={{ transform: `scale(${hudScale})`, transformOrigin: 'bottom left' }}
+                    >
                         <ChatPanel />
                     </div>
 
