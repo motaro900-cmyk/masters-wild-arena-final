@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useGameStore } from '../../store/useGameStore';
 import { AssetsMap } from '../../configs/AssetsMap';
+import { useLayoutProfile } from '../../hooks/useLayoutProfile';
+import { BottomNavigation } from './hud/BottomNavigation';
 
 // HUD Components
 import { BattlePassBar } from './hud/BattlePassBar';
@@ -33,6 +35,7 @@ import { MatchmakingOverlay } from './hud/MatchmakingOverlay';
 import { safeGetItem, safeSetItem } from '../../utils/SafeStorage';
 
 export const GameHUD: React.FC = () => {
+    const profile = useLayoutProfile();
     const activeScreen = useGameStore((state) => state.activeScreen);
     const vipLevel = useGameStore((state) => state.vipLevel);
     const [activeWindow, setActiveWindow] = useState<string | null>(null);
@@ -177,15 +180,17 @@ export const GameHUD: React.FC = () => {
             {/* 4. SIDEBARS & PANELS */}
             {!isFullScreenScene && (
                 <>
-                    <div className="absolute top-[455px] left-[-10px] -translate-y-1/2 hud-interactive">
-                        <LeftSidebar
-                            onOpenWindow={(id) => {
-                                if (id === 'STORE') useGameStore.getState().goToShop();
-                                else if (id === 'HEROES') useGameStore.getState().goToHeroes('LIST');
-                                else setActiveWindow(id);
-                            }}
-                        />
-                    </div>
+                    {profile !== 'MOBILE' && (
+                        <div className="absolute top-[455px] left-[-10px] -translate-y-1/2 hud-interactive">
+                            <LeftSidebar
+                                onOpenWindow={(id) => {
+                                    if (id === 'STORE') useGameStore.getState().goToShop();
+                                    else if (id === 'HEROES') useGameStore.getState().goToHeroes('LIST');
+                                    else setActiveWindow(id);
+                                }}
+                            />
+                        </div>
+                    )}
 
                     <div className="absolute top-[160px] right-[25px] flex flex-col gap-3 items-end hud-interactive">
                         <DailyGiftBanner onClick={() => setActiveWindow('GIFT')} />
@@ -366,6 +371,17 @@ export const GameHUD: React.FC = () => {
                         ))}
                     </div>
                 </>
+            )}
+
+            {profile === 'MOBILE' && !isFullScreenScene && (
+                <BottomNavigation
+                    onNavigate={(id) => {
+                        if (id === 'SHOP') useGameStore.getState().goToShop();
+                        else if (id === 'HEROES') useGameStore.getState().goToHeroes('LIST');
+                        else if (id === 'MAIN_MENU') useGameStore.getState().goToMainMenu();
+                        else setActiveWindow(id);
+                    }}
+                />
             )}
 
             {/* --- МОДАЛЬНЫЕ ОКНА --- */}
