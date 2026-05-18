@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../../../store/useGameStore';
-import { useLayoutProfile } from '../../../hooks/useLayoutProfile';
 
 /**
  * ChatPanel (v2.1) — Интерактивный чат с поддержкой стора.
@@ -16,15 +15,6 @@ export const ChatPanel: React.FC = () => {
     const [privateRecipient, setPrivateRecipient] = useState<string | null>(null);
     const [isFocused, setIsFocused] = useState(false);
     const [hasNewMessages, setHasNewMessages] = useState(false);
-    const profile = useLayoutProfile();
-    const [prevProfile, setPrevProfile] = useState(profile);
-
-    if (profile !== prevProfile) {
-        setPrevProfile(profile);
-        if (profile === 'MOBILE') {
-            setIsOpen(false);
-        }
-    }
 
     const [contextMenu, setContextMenu] = useState<{ visible: boolean; x: number; y: number; author: string | null }>({
         visible: false,
