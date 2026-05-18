@@ -1278,7 +1278,7 @@ export const useGameStore = create<any>()(
         {
             name: 'game-storage',
             storage: createJSONStorage(() => getStorage()),
-            version: 22, // v22: Сброс БП и сообщений по запросу
+            version: 23, // v23: Принудительный сброс на Интро для всех
             migrate: (persistedState: any, version: number) => {
                 if (version < 22) {
                     console.log('🔄 Migrating store to v22...');
@@ -1311,6 +1311,14 @@ export const useGameStore = create<any>()(
                         persistedState.activeScreen = 'MAIN_MENU';
                     }
                 }
+
+                if (version < 23) {
+                    console.log('🔄 Migrating store to v23: Forcing Intro...');
+                    persistedState.activeScreen = 'INTRO';
+                    persistedState.name = 'Мастер';
+                    persistedState.avatar = 'sprite:sprite-avatar avatar-pos-1';
+                }
+
                 return persistedState;
             },
         },
