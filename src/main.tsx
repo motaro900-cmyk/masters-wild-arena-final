@@ -403,6 +403,12 @@ export const Root = () => {
                     });
                 }
 
+                // [Fix] Направляем игроков без имени на Интро
+                if (!state.name || state.name === 'Мастер') {
+                    console.log('👶 New player or Master detected, forcing Intro...');
+                    useGameStore.setState({ activeScreen: 'INTRO' });
+                }
+
                 if (isNewDayMSK(state.lastDailyRefresh) || !state.dailyQuests || state.dailyQuests.length === 0) {
                     state.refreshDailyQuests();
                 }

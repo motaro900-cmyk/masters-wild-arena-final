@@ -31,6 +31,10 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
     const [confirmWipeChat, setConfirmWipeChat] = React.useState(false);
     const [confirmWipeProgress, setConfirmWipeProgress] = React.useState(false);
 
+    const userVkId = useGameStore.getState().vkUser?.id || useGameStore.getState().vkUser?.uid;
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const isAdmin = Number(userVkId) === 212359386 || isLocal;
+
     const colors = {
         text: '#e8d8a8',
         accent: '#f0c040',
@@ -606,62 +610,68 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
                         >
                             🎬 ПОВТОРИТЬ ИНТРО
                         </button>
-                        <button
-                            onClick={() => {
-                                if (!confirmWipeProgress) {
-                                    setConfirmWipeProgress(true);
-                                    setTimeout(() => setConfirmWipeProgress(false), 3000);
-                                    return;
-                                }
-                                handleClearCache();
-                            }}
-                            style={{
-                                gridColumn: 'span 2',
-                                padding: '12px',
-                                borderRadius: '10px',
-                                background: confirmWipeProgress ? 'rgba(239,68,68,0.2)' : 'rgba(255,255,255,0.05)',
-                                border: `1px solid ${colors.danger}88`,
-                                color: colors.danger,
-                                fontSize: '12px',
-                                fontWeight: 900,
-                                cursor: 'pointer',
-                                boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.05)',
-                                pointerEvents: 'auto',
-                                transition: 'all 0.3s',
-                            }}
-                        >
-                            {confirmWipeProgress ? '⚠️ ТОЧНО СБРОСИТЬ ВСЁ?' : '🗑️ ПОЛНЫЙ ВАЙП ПРОГРЕССА'}
-                        </button>
-                        <button
-                            onClick={async () => {
-                                if (!confirmWipeChat) {
-                                    setConfirmWipeChat(true);
-                                    setTimeout(() => setConfirmWipeChat(false), 3000);
-                                    return;
-                                }
-                                const { syncService } = await import('../../../services/SyncService');
-                                await syncService.wipeGlobalChat();
-                                alert('Глобальный чат очищен!');
-                                window.location.reload();
-                            }}
-                            style={{
-                                gridColumn: 'span 2',
-                                padding: '12px',
-                                borderRadius: '10px',
-                                background: confirmWipeChat ? 'rgba(240,192,64,0.2)' : 'rgba(255,255,255,0.05)',
-                                border: `1px solid #f0c04088`,
-                                color: '#f0c040',
-                                fontSize: '12px',
-                                fontWeight: 900,
-                                cursor: 'pointer',
-                                boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.05)',
-                                marginTop: '10px',
-                                pointerEvents: 'auto',
-                                transition: 'all 0.3s',
-                            }}
-                        >
-                            {confirmWipeChat ? '⚠️ ТОЧНО УДАЛИТЬ ЧАТ?' : '🧹 АДМИН: ОЧИСТИТЬ ВЕСЬ ЧАТ'}
-                        </button>
+                        {isAdmin && (
+                            <>
+                                <button
+                                    onClick={() => {
+                                        if (!confirmWipeProgress) {
+                                            setConfirmWipeProgress(true);
+                                            setTimeout(() => setConfirmWipeProgress(false), 3000);
+                                            return;
+                                        }
+                                        handleClearCache();
+                                    }}
+                                    style={{
+                                        gridColumn: 'span 2',
+                                        padding: '12px',
+                                        borderRadius: '10px',
+                                        background: confirmWipeProgress
+                                            ? 'rgba(239,68,68,0.2)'
+                                            : 'rgba(255,255,255,0.05)',
+                                        border: `1px solid ${colors.danger}88`,
+                                        color: colors.danger,
+                                        fontSize: '12px',
+                                        fontWeight: 900,
+                                        cursor: 'pointer',
+                                        boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.05)',
+                                        pointerEvents: 'auto',
+                                        transition: 'all 0.3s',
+                                    }}
+                                >
+                                    {confirmWipeProgress ? '⚠️ ТОЧНО СБРОСИТЬ ВСЁ?' : '🗑️ ПОЛНЫЙ ВАЙП ПРОГРЕССА'}
+                                </button>
+                                <button
+                                    onClick={async () => {
+                                        if (!confirmWipeChat) {
+                                            setConfirmWipeChat(true);
+                                            setTimeout(() => setConfirmWipeChat(false), 3000);
+                                            return;
+                                        }
+                                        const { syncService } = await import('../../../services/SyncService');
+                                        await syncService.wipeGlobalChat();
+                                        alert('Глобальный чат очищен!');
+                                        window.location.reload();
+                                    }}
+                                    style={{
+                                        gridColumn: 'span 2',
+                                        padding: '12px',
+                                        borderRadius: '10px',
+                                        background: confirmWipeChat ? 'rgba(240,192,64,0.2)' : 'rgba(255,255,255,0.05)',
+                                        border: `1px solid #f0c04088`,
+                                        color: '#f0c040',
+                                        fontSize: '12px',
+                                        fontWeight: 900,
+                                        cursor: 'pointer',
+                                        boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.05)',
+                                        marginTop: '10px',
+                                        pointerEvents: 'auto',
+                                        transition: 'all 0.3s',
+                                    }}
+                                >
+                                    {confirmWipeChat ? '⚠️ ТОЧНО УДАЛИТЬ ЧАТ?' : '🧹 АДМИН: ОЧИСТИТЬ ВЕСЬ ЧАТ'}
+                                </button>
+                            </>
+                        )}
                     </>
                 </div>
             </div>
