@@ -41,6 +41,23 @@ export const GameHUD: React.FC = () => {
     const goToShop = useGameStore((state) => state.goToShop);
     const [prevScreen, setPrevScreen] = useState(activeScreen);
 
+    const [scale, setScale] = useState(1);
+
+    React.useEffect(() => {
+        const handleResize = () => {
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            // Рассчитываем масштаб по меньшей стороне, чтобы HUD всегда влезал
+            const scaleX = width / 1920;
+            const scaleY = height / 1080;
+            const newScale = Math.min(scaleX, scaleY);
+            setScale(newScale);
+        };
+        handleResize();
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
     // Автоматически закрываем любые окна при смене основного экрана (Pattern: Adjusting state during render)
     if (activeScreen !== prevScreen) {
         setPrevScreen(activeScreen);
@@ -140,13 +157,15 @@ export const GameHUD: React.FC = () => {
         <div
             className="game-hud-root"
             style={{
-                width: '100%',
-                height: '100%',
+                width: '1920px',
+                height: '1080px',
                 position: 'absolute',
-                top: 0,
-                left: 0,
+                top: '50%',
+                left: '50%',
+                transform: `translate(-50%, -50%) scale(${scale})`,
                 pointerEvents: 'none',
                 overflow: 'hidden',
+                transformOrigin: 'center',
             }}
         >
             {/* 1. PLAYER PROFILE HUB */}
