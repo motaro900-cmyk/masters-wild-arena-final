@@ -214,12 +214,52 @@ export const isGroupMember = async (groupId: number = 238197449): Promise<boolea
             params: {
                 group_id: groupId,
                 v: '5.131',
-                access_token: '', // Будет запрошен автоматически если нужно, или можно использовать сервисную проверку
+                access_token: '',
             },
         });
         return result.response === 1;
     } catch (error) {
         console.warn('isGroupMember check failed:', error);
         return false;
+    }
+};
+
+/**
+ * Шаринг результата боя в ВК.
+ * На localhost — копирует текст в буфер обмена.
+ * В мини-приложении — вызывает VKWebAppShowWallPostBox.
+ */
+export const shareBattleResult = async (params: {
+    playerName: string;
+    enemyName: string;
+    damageDealt: number;
+    trophiesChange: number;
+    isVictory: boolean;
+}): Promise<'shared' | 'copied' | 'failed'> => {
+    const text = params.isVictory
+        ? `⚔️ Masters of the Wild\n${params.playerName} победил!\nПротивник: ${params.enemyName}\nНанесено урона: ${params.damageDealt.toLocaleString()}\nКубки: +${params.trophiesChange} ▲\n🎮 Играй: https://vk.com/app${import.meta.env.VITE_VK_APP_ID || '52446645'}`
+        : `⚔️ Masters of the Wild\n${params.playerName} против ${params.enemyName}!\nТяжёлый бой... Нанесено урона: ${params.damageDealt.toLocaleString()}\n🎮 Бросишь вызов? https://vk.com/app${import.meta.env.VITE_VK_APP_ID || '52446645'}`;
+
+    // На localhost — просто копируем
+    if (!bridge || window.location.hostname === 'localhost') {
+        try {
+            await navigator.clipboard.writeText(text);
+            return 'copied';
+        } catch {
+            return 'failed';
+        }
+    }
+
+    try {
+        await bridge.send('VKWebAppShowWallPostBox', { message: text });
+        return 'shared';
+    } catch {
+        // Fallback: clipboard
+        try {
+            await navigator.clipboard.writeText(text);
+            return 'copied';
+        } catch {
+            return 'failed';
+        }
     }
 };

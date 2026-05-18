@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { AssetsMap } from '../../../configs/AssetsMap';
+import { useGameStore } from '../../../store/useGameStore';
 
 interface RightPanelProps {
     onOpenWindow: (name: string) => void;
@@ -7,6 +8,7 @@ interface RightPanelProps {
 
 export const RightPanel: React.FC<RightPanelProps> = ({ onOpenWindow }) => {
     const [isTasksExpanded, setIsTasksExpanded] = useState(true); // Открыто по умолчанию для проверки
+    const canClaimDailyGift = useGameStore((s: any) => s.canClaimDailyGift);
     const whiteText = { color: 'white', textShadow: '2px 2px 4px rgba(0,0,0,1)' };
 
     const dailyTasks = [
@@ -23,7 +25,7 @@ export const RightPanel: React.FC<RightPanelProps> = ({ onOpenWindow }) => {
                 className="relative w-[270px] h-[110px] cursor-pointer transition-all hover:scale-105"
             >
                 <img src={AssetsMap.UI.ICON_GIFT} className="w-full h-full object-contain" alt="" />
-                <div className="absolute inset-0 flex items-center justify-center pt-2 pl-12">
+                <div className="absolute inset-0 flex items-center justify-center pt-2 pl-[58px]">
                     <span
                         className="font-header text-[15px] font-bold text-center leading-tight uppercase tracking-wide"
                         style={whiteText}
@@ -31,6 +33,21 @@ export const RightPanel: React.FC<RightPanelProps> = ({ onOpenWindow }) => {
                         ПОДАРОК
                     </span>
                 </div>
+                {canClaimDailyGift && (
+                    <div className="absolute right-[5px] top-[15px] w-[30px] h-[30px] rounded-full bg-red-600 border-2 border-yellow-400 flex items-center justify-center shadow-[0_0_15px_rgba(255,0,0,0.8)] z-20 animate-pulse">
+                        <span
+                            style={{
+                                fontFamily: "'Cinzel', serif",
+                                fontSize: '20px',
+                                fontWeight: 900,
+                                color: '#fff',
+                                marginTop: '-2px',
+                            }}
+                        >
+                            !
+                        </span>
+                    </div>
+                )}
             </div>
 
             {/* КВЕСТЫ */}

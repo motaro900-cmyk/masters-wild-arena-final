@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../../../store/useGameStore';
 import { QUESTS_POOL } from '../../../configs/QuestsConfig';
+import { safeGetItem, safeSetItem } from '../../../utils/SafeStorage';
+import { audioService } from '../../../services/AudioService';
 import { AssetsMap } from '../../../configs/AssetsMap';
 
 interface IDailyQuest {
@@ -12,7 +14,80 @@ interface IDailyQuest {
 
 export const DailyTaskPanel: React.FC = () => {
     const [isCollapsed, setIsCollapsed] = useState(false);
-    const { dailyQuests, claimQuestReward, refreshDailyQuests } = useGameStore();
+    const { dailyQuests, claimQuestReward, refreshDailyQuests, vipLevel } = useGameStore();
+    const [floatingRewards, setFloatingRewards] = useState<{ id: number; text: string; x: number; y: number }[]>([]);
+
+    const handleClaimReward = (dq: IDailyQuest, qData: any, e: React.MouseEvent) => {
+        e.stopPropagation();
+        const rect = e.currentTarget.getBoundingClientRect();
+        const parent = document.getElementById('daily-task-panel-root');
+        const parentRect = parent ? parent.getBoundingClientRect() : null;
+
+        // Position coordinates relative to the panel
+        const x = rect.left - (parentRect?.left || 0) + rect.width / 2;
+        const y = rect.top - (parentRect?.top || 0) - 10;
+
+        const newRewards = [
+            { id: Date.now(), text: `+${qData.rewardGold} 💰`, x: x - 40, y: y },
+            { id: Date.now() + 1, text: `+${qData.rewardGems} 💎`, x: x, y: y - 15 },
+            { id: Date.now() + 2, text: `+${qData.rewardExp} ⭐`, x: x + 40, y: y },
+        ];
+
+        setFloatingRewards((prev) => [...prev, ...newRewards]);
+
+        audioService.playSFX(AssetsMap.AUDIO.SFX_BUY);
+        claimQuestReward(dq.questId);
+
+        setTimeout(() => {
+            setFloatingRewards((prev) => prev.filter((r) => !newRewards.some((nr) => nr.id === r.id)));
+        }, 1500);
+    };
+
+    const getMoscowDateString = () => {
+        const now = new Date();
+        const msk = new Date(now.getTime() + (now.getTimezoneOffset() + 180) * 60000);
+        return `${msk.getFullYear()}-${(msk.getMonth() + 1).toString().padStart(2, '0')}-${msk.getDate().toString().padStart(2, '0')}`;
+    };
+
+    const todayStr = getMoscowDateString();
+    const [lastRerollDate, setLastRerollDate] = useState(() => safeGetItem('lastVipQuestRerollDate') || '');
+
+    const canReroll = vipLevel > 0 && lastRerollDate !== todayStr;
+
+    const handleRerollQuest = (oldQuestId: string) => {
+        if (!canReroll) return;
+
+        // Находим все квесты, которые сейчас НЕ отображаются в dailyQuests
+        const activeIds = dailyQuests.map((dq: any) => dq.questId);
+        const availablePool = QUESTS_POOL.filter((q) => !activeIds.includes(q.id));
+
+        if (availablePool.length === 0) return;
+
+        // Выбираем случайный новый квест
+        // eslint-disable-next-line react-hooks/purity
+        const newQuest = availablePool[Math.floor(Math.random() * availablePool.length)];
+
+        // Заменяем старый квест новым
+        const updatedQuests = dailyQuests.map((dq: any) => {
+            if (dq.questId === oldQuestId) {
+                return {
+                    questId: newQuest.id,
+                    progress: 0,
+                    isClaimed: false,
+                };
+            }
+            return dq;
+        });
+
+        // Записываем в Zustand
+        useGameStore.setState({ dailyQuests: updatedQuests });
+
+        // Сохраняем дату реролла
+        safeSetItem('lastVipQuestRerollDate', todayStr);
+        setLastRerollDate(todayStr);
+
+        audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
+    };
 
     React.useEffect(() => {
         if (!dailyQuests || dailyQuests.length === 0) {
@@ -40,6 +115,7 @@ export const DailyTaskPanel: React.FC = () => {
 
     return (
         <div
+            id="daily-task-panel-root"
             style={{
                 backgroundImage: `url(${AssetsMap.UI.PANEL_QUEST})`,
                 backgroundSize: '100% 100%',
@@ -152,6 +228,9 @@ export const DailyTaskPanel: React.FC = () => {
                                                 </div>
                                                 <div
                                                     style={{
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        gap: '6px',
                                                         color: isComplete ? '#208040' : '#7a5828',
                                                         fontWeight: 900,
                                                         fontSize: '14px',
@@ -159,6 +238,38 @@ export const DailyTaskPanel: React.FC = () => {
                                                     }}
                                                 >
                                                     {dq.progress}/{qData.target} {isComplete && '✓'}
+                                                    {canReroll && !isComplete && !dq.isClaimed && (
+                                                        <motion.button
+                                                            whileHover={{
+                                                                scale: 1.1,
+                                                                background: 'rgba(240, 192, 64, 0.35)',
+                                                            }}
+                                                            whileTap={{ scale: 0.95 }}
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                handleRerollQuest(dq.questId);
+                                                            }}
+                                                            title="Заменить задание (VIP)"
+                                                            style={{
+                                                                background: 'rgba(240, 192, 64, 0.15)',
+                                                                border: '1px solid #c8a870',
+                                                                color: '#c8a870',
+                                                                borderRadius: '50%',
+                                                                width: '18px',
+                                                                height: '18px',
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                justifyContent: 'center',
+                                                                fontSize: '10px',
+                                                                cursor: 'pointer',
+                                                                padding: 0,
+                                                                lineHeight: 1,
+                                                                transition: 'all 0.2s',
+                                                            }}
+                                                        >
+                                                            🔄
+                                                        </motion.button>
+                                                    )}
                                                 </div>
                                             </div>
                                             <div
@@ -237,7 +348,7 @@ export const DailyTaskPanel: React.FC = () => {
                                                 </span>
                                             ) : isComplete ? (
                                                 <button
-                                                    onClick={() => claimQuestReward(dq.questId)}
+                                                    onClick={(e) => handleClaimReward(dq, qData, e)}
                                                     style={{
                                                         padding: '5px 12px',
                                                         background: 'linear-gradient(180deg, #f0c040 0%, #c87820 100%)',
@@ -289,6 +400,36 @@ export const DailyTaskPanel: React.FC = () => {
                     </div>
                 </AnimatePresence>
             )}
+
+            {/* FLOATING REWARDS OVERLAY */}
+            <AnimatePresence>
+                {floatingRewards.map((reward) => (
+                    <motion.div
+                        key={reward.id}
+                        initial={{ opacity: 0, y: reward.y, scale: 0.8 }}
+                        animate={{ opacity: 1, y: reward.y - 60, scale: 1.1 }}
+                        exit={{ opacity: 0, scale: 1.2 }}
+                        transition={{ duration: 1.2, ease: 'easeOut' }}
+                        style={{
+                            position: 'absolute',
+                            left: reward.x,
+                            color: reward.text.includes('💰')
+                                ? '#f1c40f'
+                                : reward.text.includes('💎')
+                                  ? '#00ffff'
+                                  : '#38bdf8',
+                            fontWeight: 900,
+                            fontSize: '15px',
+                            fontFamily: "'Cinzel', serif",
+                            textShadow: '0 2px 6px #000, 0 0 10px rgba(0,0,0,0.8)',
+                            pointerEvents: 'none',
+                            zIndex: 1000,
+                        }}
+                    >
+                        {reward.text}
+                    </motion.div>
+                ))}
+            </AnimatePresence>
         </div>
     );
 };

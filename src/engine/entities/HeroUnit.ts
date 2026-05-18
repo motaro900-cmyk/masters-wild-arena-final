@@ -2,6 +2,7 @@ import * as PIXI from 'pixi.js';
 import { IHeroConfig, IHeroAnchors } from '../../configs/HeroesConfig';
 import { SpriteValidator } from '../../utils/SpriteValidator';
 import { ITEMS_DATABASE } from '../../game/configs/ItemsConfig';
+import { useGameStore } from '../../store/useGameStore';
 
 const SLOT_CONFIG = {
     WEAPON: { baseSize: 256, anchorX: 0.5, anchorY: 0.9, socketKey: 'rightHand' as keyof IHeroAnchors, zIndex: 20 },
@@ -205,5 +206,157 @@ export class HeroUnit extends PIXI.Container {
 
     public destroy(options?: any) {
         super.destroy(options);
+    }
+
+    public animateLunge(isPlayer: boolean): Promise<void> {
+        return new Promise((resolve) => {
+            const timeScale = useGameStore.getState().timeScale || 1;
+            const startX = this.x;
+            const targetX = startX + 500 * (isPlayer ? 1 : -1); // Увеличенный рывок к центру
+            const startTime = Date.now();
+            const lungeDuration = 160 / timeScale;
+            const holdDuration = 80 / timeScale;
+            const returnDuration = 250 / timeScale;
+            const totalDuration = lungeDuration + holdDuration + returnDuration;
+
+            const animate = () => {
+                const now = Date.now();
+                const elapsed = now - startTime;
+
+                if (elapsed >= totalDuration) {
+                    this.x = startX;
+                    resolve();
+                    return;
+                }
+
+                if (elapsed < lungeDuration) {
+                    // Рывок вперёд: cubic ease-out
+                    const t = elapsed / lungeDuration;
+                    const ease = 1 - Math.pow(1 - t, 3);
+                    this.x = startX + (targetX - startX) * ease;
+                } else if (elapsed < lungeDuration + holdDuration) {
+                    // Стоп-кадр в точке удара
+                    this.x = targetX;
+                } else {
+                    // Возврат: ease-in-out
+                    const t = (elapsed - lungeDuration - holdDuration) / returnDuration;
+                    const ease = t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+                    this.x = targetX + (startX - targetX) * ease;
+                }
+
+                requestAnimationFrame(animate);
+            };
+            requestAnimationFrame(animate);
+        });
+    }
+
+    public animateDeath(isPlayer: boolean): Promise<void> {
+        return new Promise((resolve) => {
+            const timeScale = useGameStore.getState().timeScale || 1;
+            const startTime = Date.now();
+            const duration = 1000 / timeScale;
+
+            const startRotation = this.rotation;
+            const targetRotation = startRotation + (isPlayer ? -Math.PI / 2.5 : Math.PI / 2.5);
+            const startAlpha = this.alpha;
+
+            const animate = () => {
+                const now = Date.now();
+                const elapsed = now - startTime;
+
+                if (elapsed >= duration) {
+                    this.rotation = targetRotation;
+                    this.alpha = 0;
+                    resolve();
+                    return;
+                }
+
+                const t = elapsed / duration;
+                const ease = t * t;
+
+                this.rotation = startRotation + (targetRotation - startRotation) * ease;
+                this.alpha = startAlpha * (1 - t);
+
+                if (this.weaponSprite) {
+                    this.weaponSprite.rotation += 0.05;
+                    this.weaponSprite.y += 2;
+                }
+
+                requestAnimationFrame(animate);
+            };
+            requestAnimationFrame(animate);
+        });
+    }
+
+    public animateHitReaction(isCrit: boolean): Promise<void> {
+        return new Promise((resolve) => {
+            const startX = this.x;
+            const startScaleX = this.scale.x;
+            const startScaleY = this.scale.y;
+            const startTime = Date.now();
+            const duration = 200;
+            const amp1 = isCrit ? 16 : 8;
+            const amp2 = isCrit ? 10 : 5;
+
+            const animate = () => {
+                const now = Date.now();
+                const elapsed = now - startTime;
+
+                if (elapsed >= duration) {
+                    this.x = startX;
+                    this.scale.set(startScaleX, startScaleY);
+                    resolve();
+                    return;
+                }
+
+                const t = elapsed / duration;
+                let offset = 0;
+                if (t < 0.25) {
+                    offset = -amp1 * (t / 0.25);
+                } else if (t < 0.5) {
+                    offset = -amp1 + amp1 * 2 * ((t - 0.25) / 0.25);
+                } else if (t < 0.75) {
+                    offset = amp1 - (amp1 + amp2) * ((t - 0.5) / 0.25);
+                } else {
+                    offset = -amp2 + amp2 * ((t - 0.75) / 0.25);
+                }
+                this.x = startX + offset;
+
+                if (isCrit) {
+                    const scaleFactor = 1.0 - 0.05 * Math.sin(t * Math.PI);
+                    this.scale.set(startScaleX * scaleFactor, startScaleY * scaleFactor);
+                }
+
+                requestAnimationFrame(animate);
+            };
+            requestAnimationFrame(animate);
+        });
+    }
+
+    public animateDodge(isPlayer: boolean): Promise<void> {
+        return new Promise((resolve) => {
+            const startAngle = this.angle;
+            const targetAngle = startAngle + (isPlayer ? -5 : 5);
+            const startTime = Date.now();
+            const duration = 150;
+
+            const animate = () => {
+                const now = Date.now();
+                const elapsed = now - startTime;
+
+                if (elapsed >= duration) {
+                    this.angle = startAngle;
+                    resolve();
+                    return;
+                }
+
+                const t = elapsed / duration;
+                const angleFactor = Math.sin(t * Math.PI);
+                this.angle = startAngle + (targetAngle - startAngle) * angleFactor;
+
+                requestAnimationFrame(animate);
+            };
+            requestAnimationFrame(animate);
+        });
     }
 }

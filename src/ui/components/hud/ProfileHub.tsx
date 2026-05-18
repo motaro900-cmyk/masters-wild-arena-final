@@ -24,6 +24,9 @@ export const ProfileHub: React.FC = () => {
     const maxExp = level * 600;
     const expPct = Math.min(100, (exp / maxExp) * 100);
 
+    const [showExpTooltip, setShowExpTooltip] = React.useState(false);
+    const [isHoveredVIP, setIsHoveredVIP] = React.useState(false);
+
     React.useEffect(() => {
         if (exp >= maxExp) {
             useGameStore.getState().addExp(0);
@@ -59,6 +62,20 @@ export const ProfileHub: React.FC = () => {
                             alt="avatar"
                         />
                     </div>
+
+                    {/* VIP Аура (Свечение) */}
+                    {vipLevel > 0 && (
+                        <div
+                            className="vip-avatar-glow absolute z-15"
+                            style={{
+                                width: '110px',
+                                height: '110px',
+                                borderRadius: '50%',
+                                transform: 'translateY(1px)',
+                                pointerEvents: 'none',
+                            }}
+                        />
+                    )}
 
                     <img
                         src={AssetsMap.UI.AVATAR_FRAME_NEW}
@@ -105,10 +122,20 @@ export const ProfileHub: React.FC = () => {
                             (window as any).setActiveHUDWindow('VIP');
                         }
                     }}
+                    onMouseEnter={() => setIsHoveredVIP(true)}
+                    onMouseLeave={() => setIsHoveredVIP(false)}
                 >
                     <img
                         src={AssetsMap.UI.VIP_PLAQUE}
-                        className="absolute inset-0 w-full h-full object-contain"
+                        className="absolute inset-0 w-full h-full object-contain transition-all duration-200"
+                        style={{
+                            filter:
+                                vipLevel > 0
+                                    ? 'drop-shadow(0 0 8px rgba(240, 192, 64, 0.6))'
+                                    : isHoveredVIP
+                                      ? 'grayscale(0) opacity(1) drop-shadow(0 0 8px rgba(240, 192, 64, 0.5))'
+                                      : 'grayscale(1) opacity(0.5) contrast(0.8)',
+                        }}
                         alt="vip"
                     />
                     <span
@@ -117,12 +144,12 @@ export const ProfileHub: React.FC = () => {
                             fontFamily: "'Cinzel', serif",
                             fontSize: '16px',
                             fontWeight: 900,
-                            color: '#fff',
+                            color: vipLevel > 0 ? '#fff' : '#d0d0d0',
                             textShadow: '0 1px 3px rgba(0,0,0,1)',
                             zIndex: 1,
                         }}
                     >
-                        VIP {vipLevel}
+                        VIP
                     </span>
                 </button>
 
@@ -171,7 +198,11 @@ export const ProfileHub: React.FC = () => {
                 </div>
 
                 {/* ПОЛОСКА ОПЫТА */}
-                <div className="absolute left-[130px] bottom-[11px] w-[280px] h-[35px] flex items-center justify-center">
+                <div
+                    className="absolute left-[130px] bottom-[11px] w-[280px] h-[35px] flex items-center justify-center"
+                    onMouseEnter={() => setShowExpTooltip(true)}
+                    onMouseLeave={() => setShowExpTooltip(false)}
+                >
                     <img
                         src={AssetsMap.UI.EXP_BAR_BG}
                         className="absolute inset-0 w-full h-full object-fill"
@@ -209,6 +240,50 @@ export const ProfileHub: React.FC = () => {
                             {exp} / {maxExp} XP
                         </span>
                     </div>
+
+                    {/* Тултип Опыта */}
+                    {showExpTooltip && (
+                        <div
+                            style={{
+                                position: 'absolute',
+                                top: '120%',
+                                left: '50%',
+                                transform: 'translateX(-50%)',
+                                background: 'rgba(10, 5, 2, 0.95)',
+                                border: '1px solid #c8a870',
+                                borderRadius: '6px',
+                                padding: '8px 16px',
+                                zIndex: 1000,
+                                whiteSpace: 'nowrap',
+                                boxShadow: '0 5px 15px rgba(0,0,0,0.8)',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                gap: '4px',
+                            }}
+                        >
+                            <span
+                                style={{
+                                    fontFamily: "'Cinzel', serif",
+                                    fontSize: '12px',
+                                    fontWeight: 700,
+                                    color: '#f0c040',
+                                }}
+                            >
+                                ОПЫТ ПРОФИЛЯ
+                            </span>
+                            <span
+                                style={{
+                                    fontFamily: "'Cinzel', serif",
+                                    fontSize: '10px',
+                                    fontWeight: 500,
+                                    color: '#d0d0d0',
+                                }}
+                            >
+                                До следующего уровня: {maxExp - exp} XP
+                            </span>
+                        </div>
+                    )}
                 </div>
 
                 {/* КНОПКА НАСТРОЕК */}

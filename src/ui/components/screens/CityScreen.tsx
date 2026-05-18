@@ -274,36 +274,55 @@ export const CityScreen: React.FC = () => {
                         filter: 'contrast(1.05) saturate(1.1)',
                     }}
                 >
-                    {/* Кнопка закрытия */}
+                    {/* Кнопка закрытия (Поверх серого элемента внизу) */}
                     <button
-                        onClick={() => !isSpinning && setShowSummon(false)}
+                        onClick={() => {
+                            if (!isSpinning) {
+                                audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
+                                setShowSummon(false);
+                            }
+                        }}
                         style={{
                             position: 'absolute',
-                            bottom: '40px',
-                            right: '40px',
-                            background: 'rgba(255,255,255,0.03)',
-                            border: '1px solid rgba(200,168,112,0.2)',
-                            borderRadius: '50%',
-                            width: '60px',
-                            height: '60px',
-                            color: '#fff',
-                            fontSize: '28px',
-                            cursor: isSpinning ? 'not-allowed' : 'pointer',
+                            bottom: '62px',
+                            left: '50%',
+                            transform: 'translateX(-50%)',
+                            width: '200px',
+                            height: '50px',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            opacity: isSpinning ? 0.3 : 1,
-                            transition: 'all 0.3s',
-                            boxShadow: '0 5px 15px rgba(0,0,0,0.3)',
+                            gap: '10px',
+                            background: '#7f1d1d',
+                            border: '1px solid #c8a870',
+                            borderRadius: '8px',
+                            boxShadow: '0 4px 10px rgba(0,0,0,0.6)',
+                            color: '#f0c040',
+                            fontFamily: "'Cinzel', serif",
+                            fontSize: '24px',
+                            fontWeight: 700,
+                            letterSpacing: '2px',
+                            cursor: isSpinning ? 'not-allowed' : 'pointer',
+                            opacity: isSpinning ? 0.3 : 0.8,
+                            transition: 'all 0.2s',
+                            zIndex: 10,
                         }}
-                        onMouseEnter={(e) =>
-                            !isSpinning && (e.currentTarget.style.background = 'rgba(255,255,255,0.1)')
-                        }
-                        onMouseLeave={(e) =>
-                            !isSpinning && (e.currentTarget.style.background = 'rgba(255,255,255,0.03)')
-                        }
+                        onMouseEnter={(e) => {
+                            if (!isSpinning) {
+                                e.currentTarget.style.opacity = '1';
+                                e.currentTarget.style.transform = 'translateX(-50%) scale(1.05)';
+                                e.currentTarget.style.textShadow = '0 0 10px rgba(255,255,255,0.8)';
+                            }
+                        }}
+                        onMouseLeave={(e) => {
+                            if (!isSpinning) {
+                                e.currentTarget.style.opacity = '0.8';
+                                e.currentTarget.style.transform = 'translateX(-50%) scale(1)';
+                                e.currentTarget.style.textShadow = 'none';
+                            }
+                        }}
                     >
-                        ✕
+                        <span>ВЫХОД</span>
                     </button>
 
                     {/* Заголовок */}

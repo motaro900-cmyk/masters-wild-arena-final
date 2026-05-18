@@ -1,12 +1,43 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { AssetsMap } from '../../../configs/AssetsMap';
 import { useGameStore } from '../../../store/useGameStore';
+import { safeGetItem } from '../../../utils/SafeStorage';
 
 /**
- * DailyGiftBanner (v4.5) — Индикатор зависит от стора.
+ * DailyGiftBanner (v4.6) — Проверяет доступность подарка.
  */
 export const DailyGiftBanner: React.FC<{ onClick: () => void }> = ({ onClick }) => {
     const canClaim = useGameStore((state) => state.canClaimDailyGift);
+    const setCanClaim = useGameStore((state) => state.setCanClaimDailyGift);
+
+    useEffect(() => {
+        const checkStatus = () => {
+            const lastClaim = safeGetItem('lastGiftClaim');
+            if (!lastClaim) {
+                setCanClaim(true);
+                return;
+            }
+
+            const now = new Date();
+            const utcNow = now.getTime() + now.getTimezoneOffset() * 60000;
+            const mskNow = new Date(utcNow + 3 * 3600000);
+
+            const lastClaimDate = new Date(parseInt(lastClaim));
+            const utcLast = lastClaimDate.getTime() + lastClaimDate.getTimezoneOffset() * 60000;
+            const mskLast = new Date(utcLast + 3 * 3600000);
+
+            const isSameDay =
+                mskNow.getDate() === mskLast.getDate() &&
+                mskNow.getMonth() === mskLast.getMonth() &&
+                mskNow.getFullYear() === mskLast.getFullYear();
+
+            setCanClaim(!isSameDay);
+        };
+
+        checkStatus();
+        const interval = setInterval(checkStatus, 60000);
+        return () => clearInterval(interval);
+    }, [setCanClaim]);
 
     return (
         <div
@@ -22,14 +53,14 @@ export const DailyGiftBanner: React.FC<{ onClick: () => void }> = ({ onClick }) 
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'flex-end',
-                paddingRight: 110,
+                paddingRight: 70,
                 pointerEvents: 'auto',
                 transition: 'transform 0.2s',
             }}
             onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.02)')}
             onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1)')}
         >
-            <div style={{ display: 'flex', flexDirection: 'column', textAlign: 'right' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', textAlign: 'center' }}>
                 <span
                     style={{
                         fontFamily: "'Cinzel', serif",

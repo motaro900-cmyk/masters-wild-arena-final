@@ -126,6 +126,7 @@ const rawAssetsMap = {
         BATTLE_PASS_MOBILE: '/assets/images/backgrounds/боевойпропуска_mobile.webp',
         CITY_HUB: '/assets/images/backgrounds/bg_city_hub.webp',
         CITY_HUB_MOBILE: '/assets/images/backgrounds/bg_city_hub_mobile.webp',
+        RANKED_LOBBY: '/assets/images/backgrounds/bg_ranked_lobby.jpg',
     },
     CHARACTERS: {
         PANDA_AVATAR: '/assets/images/avatars/панда.webp',

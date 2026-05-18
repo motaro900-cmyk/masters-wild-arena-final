@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import gsap from 'gsap';
+import { useGameStore } from '../../../store/useGameStore';
 
 export interface BattleResultData {
     isVictory: boolean;
@@ -9,6 +10,19 @@ export interface BattleResultData {
     damageDealt: number;
     turnsPlayed: number;
     enemyName: string;
+    playerStats?: {
+        hp: number;
+        attack: number;
+        defense: number;
+        speed: number;
+    };
+    enemyStats?: {
+        hp: number;
+        attack: number;
+        defense: number;
+        speed: number;
+    };
+    battleDurationSeconds?: number;
 }
 
 interface BattleResultScreenProps {
@@ -23,6 +37,74 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
     const panelRef = useRef<HTMLDivElement>(null);
     const statsRef = useRef<HTMLDivElement>(null);
     const buttonsRef = useRef<HTMLDivElement>(null);
+
+    const goToForge = useGameStore((state) => state.goToForge);
+    const goToHeroes = useGameStore((state) => state.goToHeroes);
+    const trophies = useGameStore((state) => state.trophies);
+
+    const { level, exp, gold } = useGameStore();
+
+    const isVictory = data.isVictory;
+
+    const getRecommendation = () => {
+        if (isVictory) return null;
+
+        const playerStats = data.playerStats;
+        const enemyStats = data.enemyStats;
+        const duration = data.battleDurationSeconds || 0;
+
+        if (!playerStats || !enemyStats) return null;
+
+        // 1. enemyAttack > playerDefense * 2 -> "Враг пробивает броню. Улучши нагрудник." -> button "В КУЗНИЦУ"
+        if (enemyStats.attack > playerStats.defense * 2) {
+            return {
+                icon: '🛡️',
+                text: 'Враг пробивает броню. Улучши нагрудник.',
+                buttonText: 'В КУЗНИЦУ',
+                action: goToForge,
+            };
+        }
+
+        // 2. playerHp < enemyHp * 0.5 -> "Мало здоровья. Прокачай таланты выносливости." -> button "К ТАЛАНТАМ"
+        if (playerStats.hp < enemyStats.hp * 0.5) {
+            return {
+                icon: '✨',
+                text: 'Мало здоровья. Прокачай таланты выносливости.',
+                buttonText: 'К ТАЛАНТАМ',
+                action: () => goToHeroes('TALENTS'),
+            };
+        }
+
+        // 3. бой < 5 секунд -> "Враг слишком силён. Надень лучшее оружие." -> button "В АРСЕНАЛ"
+        if (duration < 5) {
+            return {
+                icon: '⚔️',
+                text: 'Враг слишком силён. Надень лучшее оружие.',
+                buttonText: 'В АРСЕНАЛ',
+                action: () => goToHeroes('HERO'),
+            };
+        }
+
+        // 4. playerSpeed < enemySpeed * 0.7 -> "Враг бьёт первым. Найди сапоги или кинжалы." -> button "В АРСЕНАЛ"
+        if (playerStats.speed < enemyStats.speed * 0.7) {
+            return {
+                icon: '⚡',
+                text: 'Враг бьёт первым. Найди сапоги или кинжалы.',
+                buttonText: 'В АРСЕНАЛ',
+                action: () => goToHeroes('HERO'),
+            };
+        }
+
+        // Дефолтный совет на случай, если ни одно из условий выше не сработало
+        return {
+            icon: '⚔️',
+            text: 'Враг слишком силён. Надень лучшее оружие.',
+            buttonText: 'В АРСЕНАЛ',
+            action: () => goToHeroes('HERO'),
+        };
+    };
+
+    const recommendation = getRecommendation();
 
     useEffect(() => {
         const tl = gsap.timeline();
@@ -70,18 +152,21 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
         }
     }, [data.isVictory]);
 
-    const isVictory = data.isVictory;
     const accentColor = isVictory ? '#fbbf24' : '#ef4444';
     const bgGradient = isVictory
-        ? 'radial-gradient(ellipse at center, rgba(120,80,20,0.95) 0%, rgba(20,12,4,0.98) 100%)'
-        : 'radial-gradient(ellipse at center, rgba(80,20,20,0.95) 0%, rgba(10,4,4,0.98) 100%)';
+        ? 'radial-gradient(ellipse at center, rgba(100,70,20,0.95) 0%, rgba(15,10,5,0.98) 100%)'
+        : 'radial-gradient(ellipse at center, rgba(60,10,10,0.95) 0%, rgba(10,5,5,0.98) 100%)';
 
     const stats = [
-        { icon: '⚔️', label: 'Нанесено урона', value: data.damageDealt },
+        { icon: '⚔️', label: 'Нанесено урона', value: Math.round(data.damageDealt) },
         { icon: '🔄', label: 'Ходов сыграно', value: data.turnsPlayed },
-        { icon: '💰', label: 'Золото получено', value: `+${data.goldEarned}` },
+        { icon: '💰', label: 'Золото получено', value: `+${data.goldEarned} (Всего: ${gold})` },
         { icon: '⭐', label: 'Опыт получен', value: `+${data.xpEarned} XP` },
-        { icon: '🏆', label: 'Кубки', value: `${data.trophiesChange > 0 ? '+' : ''}${data.trophiesChange}` },
+        {
+            icon: '🏆',
+            label: 'Кубки',
+            value: `${data.trophiesChange > 0 ? '+' : ''}${data.trophiesChange} (Всего: ${trophies})`,
+        },
     ];
 
     return (
@@ -131,11 +216,12 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
                     style={{
                         fontSize: '120px',
                         fontWeight: 900,
-                        color: accentColor,
+                        color: '#ffffff',
                         letterSpacing: '0.15em',
-                        textShadow: `0 0 20px ${accentColor}, 2px 4px 0 rgba(0,0,0,0.8)`,
+                        textShadow: `0 0 25px ${accentColor}, 0 0 50px ${accentColor}, 4px 6px 0 rgba(0,0,0,0.9)`,
                         lineHeight: 1,
                         fontFamily: 'Russo One, sans-serif',
+                        textTransform: 'uppercase',
                     }}
                 >
                     {isVictory ? 'ПОБЕДА!' : 'ПОРАЖЕНИЕ'}
@@ -157,12 +243,12 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
                 ref={panelRef}
                 style={{
                     width: '700px',
-                    background: 'rgba(0,0,0,0.6)',
-                    border: `2px solid ${accentColor}44`,
+                    background: isVictory ? 'rgba(30,20,5,0.85)' : 'rgba(30,5,5,0.85)',
+                    border: `2px solid ${accentColor}66`,
                     borderRadius: '20px',
                     padding: '35px 50px',
                     marginBottom: '40px',
-                    boxShadow: `0 0 60px ${accentColor}22, inset 0 0 30px rgba(0,0,0,0.3)`,
+                    boxShadow: `0 0 60px ${accentColor}33, inset 0 0 30px rgba(0,0,0,0.5)`,
                 }}
             >
                 {/* РАЗДЕЛИТЕЛЬ ВВЕРХУ */}
@@ -190,17 +276,27 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
                             }}
                         >
                             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                <span style={{ fontSize: '24px' }}>{stat.icon}</span>
-                                <span style={{ color: '#9ca3af', fontSize: '18px', letterSpacing: '0.05em' }}>
+                                <span style={{ fontSize: '24px', filter: `drop-shadow(0 0 5px ${accentColor})` }}>
+                                    {stat.icon}
+                                </span>
+                                <span
+                                    style={{
+                                        color: '#ffffff',
+                                        fontSize: '18px',
+                                        letterSpacing: '0.05em',
+                                        fontWeight: 700,
+                                    }}
+                                >
                                     {stat.label}
                                 </span>
                             </div>
                             <span
                                 style={{
-                                    color: stat.label === 'Кубки' && data.trophiesChange < 0 ? '#ef4444' : '#fbbf24',
+                                    color: stat.label === 'Кубки' && data.trophiesChange < 0 ? '#ef4444' : '#ffffff',
                                     fontWeight: 900,
                                     fontSize: '22px',
                                     fontFamily: 'Russo One, sans-serif',
+                                    textShadow: `0 0 10px ${accentColor}`,
                                 }}
                             >
                                 {stat.value}
@@ -212,15 +308,26 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
                 {/* ПОЛОСКА ПРОГРЕССА ОПЫТА */}
                 <div style={{ marginTop: '25px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                        <span style={{ color: '#9ca3af', fontSize: '14px', fontWeight: 800 }}>ПРОГРЕСС УРОВНЯ</span>
-                        <span style={{ color: '#fbbf24', fontSize: '14px', fontWeight: 900 }}>+{data.xpEarned} XP</span>
+                        <span style={{ color: '#ffffff', fontSize: '14px', fontWeight: 800 }}>
+                            ПРОГРЕСС УРОВНЯ: {level} УРОВЕНЬ
+                        </span>
+                        <span
+                            style={{
+                                color: '#ffffff',
+                                fontSize: '14px',
+                                fontWeight: 900,
+                                textShadow: `0 0 8px ${accentColor}`,
+                            }}
+                        >
+                            +{data.xpEarned} XP (Текущий: {exp}/{level * 600} XP)
+                        </span>
                     </div>
                     <div
                         style={{
                             height: '12px',
                             background: 'rgba(0,0,0,0.5)',
                             borderRadius: '6px',
-                            border: '1px solid rgba(255,255,255,0.1)',
+                            border: '1px solid rgba(255,255,255,0.2)',
                             overflow: 'hidden',
                             position: 'relative',
                         }}
@@ -231,9 +338,11 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
                                 left: 0,
                                 top: 0,
                                 height: '100%',
-                                width: '45%', // Это должно быть динамическим, но для красоты сделаем анимацию
-                                background: 'linear-gradient(90deg, #3b82f6, #60a5fa)',
-                                boxShadow: '0 0 15px rgba(59,130,246,0.5)',
+                                width: `${Math.min(100, (exp / (level * 600)) * 100)}%`,
+                                background: isVictory
+                                    ? 'linear-gradient(90deg, #3b82f6, #60a5fa)'
+                                    : 'linear-gradient(90deg, #ef4444, #f87171)',
+                                boxShadow: isVictory ? '0 0 15px rgba(59,130,246,0.5)' : '0 0 15px rgba(239,68,68,0.5)',
                             }}
                         />
                     </div>
@@ -249,6 +358,84 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
                 />
             </div>
 
+            {/* SMART DEFEAT RECOMMENDATION BLOCK */}
+            {!isVictory && recommendation && (
+                <div
+                    style={{
+                        width: '700px',
+                        background: 'rgba(239, 68, 68, 0.08)',
+                        border: '2px solid rgba(239, 68, 68, 0.4)',
+                        borderRadius: '16px',
+                        padding: '16px 24px',
+                        marginBottom: '30px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        boxShadow: '0 8px 32px rgba(239, 68, 68, 0.15)',
+                        backdropFilter: 'blur(8px)',
+                        pointerEvents: 'auto',
+                    }}
+                >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                        <span style={{ fontSize: '48px', filter: 'drop-shadow(0 0 10px rgba(239,68,68,0.5))' }}>
+                            {recommendation.icon}
+                        </span>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', textAlign: 'left' }}>
+                            <span
+                                style={{
+                                    color: 'rgba(255,255,255,0.5)',
+                                    fontSize: '12px',
+                                    fontWeight: 800,
+                                    letterSpacing: '0.1em',
+                                }}
+                            >
+                                СОВЕТ МУДРЕЦА
+                            </span>
+                            <span
+                                style={{
+                                    color: '#fff',
+                                    fontSize: '18px',
+                                    fontWeight: 'bold',
+                                    fontFamily: "'Cinzel', serif",
+                                }}
+                            >
+                                {recommendation.text}
+                            </span>
+                        </div>
+                    </div>
+                    <button
+                        onClick={() => {
+                            onContinue();
+                            recommendation.action();
+                        }}
+                        style={{
+                            padding: '12px 28px',
+                            background: 'linear-gradient(135deg, #ef4444 0%, #991b1b 100%)',
+                            border: '1px solid rgba(255,255,255,0.2)',
+                            borderRadius: '10px',
+                            color: '#fff',
+                            fontSize: '15px',
+                            fontWeight: 900,
+                            cursor: 'pointer',
+                            letterSpacing: '0.05em',
+                            boxShadow: '0 4px 15px rgba(239,68,68,0.3)',
+                            fontFamily: 'Russo One, sans-serif',
+                            transition: 'transform 0.2s, filter 0.2s',
+                        }}
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.transform = 'scale(1.05)';
+                            e.currentTarget.style.filter = 'brightness(1.1)';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.transform = 'scale(1)';
+                            e.currentTarget.style.filter = 'brightness(1)';
+                        }}
+                    >
+                        {recommendation.buttonText}
+                    </button>
+                </div>
+            )}
+
             {/* КНОПКИ */}
             <div ref={buttonsRef} style={{ display: 'flex', gap: '20px' }}>
                 {/* РЕВАНШ */}
@@ -256,22 +443,31 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
                     onClick={onRematch}
                     style={{
                         padding: '20px 50px',
-                        background: 'rgba(196,139,59,0.15)',
-                        border: `2px solid #c48b3b`,
+                        background: isVictory ? 'rgba(251, 191, 36, 0.15)' : 'rgba(239, 68, 68, 0.15)',
+                        border: `2px solid ${accentColor}`,
                         borderRadius: '14px',
-                        color: '#fbbf24',
+                        color: isVictory ? '#fbbf24' : '#ffffff',
                         fontSize: '22px',
                         fontWeight: 900,
                         cursor: 'pointer',
                         letterSpacing: '0.1em',
                         transition: 'all 0.2s',
                         fontFamily: 'Russo One, sans-serif',
+                        textShadow: `0 0 8px ${isVictory ? 'rgba(251,191,36,0.8)' : 'rgba(239,68,68,0.8)'}`,
                     }}
                     onMouseEnter={(e) => {
-                        gsap.to(e.currentTarget, { scale: 1.05, duration: 0.15 });
+                        gsap.to(e.currentTarget, {
+                            scale: 1.05,
+                            background: isVictory ? 'rgba(251, 191, 36, 0.25)' : 'rgba(239, 68, 68, 0.25)',
+                            duration: 0.15,
+                        });
                     }}
                     onMouseLeave={(e) => {
-                        gsap.to(e.currentTarget, { scale: 1, duration: 0.15 });
+                        gsap.to(e.currentTarget, {
+                            scale: 1,
+                            background: isVictory ? 'rgba(251, 191, 36, 0.15)' : 'rgba(239, 68, 68, 0.15)',
+                            duration: 0.15,
+                        });
                     }}
                 >
                     ⚔️ РЕВАНШ
@@ -283,17 +479,18 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
                     style={{
                         padding: '20px 60px',
                         background: isVictory
-                            ? 'linear-gradient(180deg, #c48b3b 0%, #784a1a 100%)'
-                            : 'linear-gradient(180deg, #6b7280 0%, #374151 100%)',
-                        border: 'none',
+                            ? 'linear-gradient(180deg, #fbbf24 0%, #b45309 100%)'
+                            : 'linear-gradient(180deg, #ef4444 0%, #991b1b 100%)',
+                        border: `2px solid ${isVictory ? '#fde68a' : '#f87171'}`,
                         borderRadius: '14px',
-                        color: '#fff',
+                        color: '#ffffff',
                         fontSize: '22px',
                         fontWeight: 900,
                         cursor: 'pointer',
                         letterSpacing: '0.1em',
-                        boxShadow: isVictory ? '0 8px 30px rgba(196,139,59,0.4)' : '0 8px 30px rgba(0,0,0,0.3)',
+                        boxShadow: `0 8px 30px ${isVictory ? 'rgba(251,191,36,0.4)' : 'rgba(239,68,68,0.4)'}`,
                         fontFamily: 'Russo One, sans-serif',
+                        textShadow: '0 2px 4px rgba(0,0,0,0.5)',
                     }}
                     onMouseEnter={(e) => {
                         gsap.to(e.currentTarget, { scale: 1.05, duration: 0.15 });

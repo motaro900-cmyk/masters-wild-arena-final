@@ -159,19 +159,19 @@ export const HeroDetailsModal = ({ hero, isOwned, onClose, rarityColors, onBuy, 
                         <DetailStat
                             iconClass="sprite-stat stat-speed"
                             label="СКОРОСТЬ"
-                            value={1 + hero.stats.agility * 0.05}
+                            value={parseFloat((1 + hero.stats.agility * 0.05).toFixed(2))}
                             color="#fcd34d"
                         />
                         <DetailStat
                             iconClass="sprite-stat stat-crit"
                             label="КРИТ. ШАНС"
-                            value={`${hero.stats.agility * 0.5}%`}
+                            value={`${parseFloat((hero.stats.agility * 0.5).toFixed(1))}%`}
                             color="#a855f7"
                         />
                         <DetailStat
                             iconClass="sprite-stat stat-accuracy"
                             label="УКЛОНЕНИЕ"
-                            value={`${hero.stats.agility * 0.2}%`}
+                            value={`${parseFloat((hero.stats.agility * 0.2).toFixed(1))}%`}
                             color="#4ade80"
                         />
                         <DetailStat

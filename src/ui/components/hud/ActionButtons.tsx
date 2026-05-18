@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { AssetsMap } from '../../../configs/AssetsMap';
 import { useGameStore } from '../../../store/useGameStore';
 import { getRankInfo } from '../../../configs/RankSystem';
@@ -16,6 +16,7 @@ interface ActionButtonsProps {
 export const ActionButtons: React.FC<ActionButtonsProps> = ({ onStartBattle, onWarmup, onOpenRanks }) => {
     const { rating } = useGameStore();
     const rank = getRankInfo(rating);
+    const [energyError, setEnergyError] = useState(false);
 
     return (
         <div
@@ -174,6 +175,8 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({ onStartBattle, onW
                         onClick={(e) => {
                             e.stopPropagation();
                             audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
+                            const store = useGameStore.getState() as any;
+                            if (store.setBattleMode) store.setBattleMode('WARMUP');
                             onWarmup();
                         }}
                         style={{
@@ -186,17 +189,48 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({ onStartBattle, onW
                             alignItems: 'center',
                             justifyContent: 'center',
                             fontFamily: "'Cinzel', serif",
-                            fontSize: 16,
-                            fontWeight: 900,
                             color: '#a0c0ff',
                             textShadow: '0 0 8px rgba(0,0,0,1)',
                             transition: 'all 0.2s',
-                            paddingLeft: '55px',
+                            paddingLeft: '75px',
+                            position: 'relative',
                         }}
                         onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'rgba(0,100,255,0.1)')}
                         onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
                     >
-                        РАЗМИНКА
+                        <div style={{ position: 'relative' }}>
+                            <div style={{ fontSize: '16px', fontWeight: 900 }}>РАЗМИНКА</div>
+
+                            <div
+                                style={{
+                                    position: 'absolute',
+                                    top: '100%',
+                                    left: '50%',
+                                    transform: 'translateX(-50%)',
+                                    marginTop: '5px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    background: 'rgba(0,0,0,0.4)',
+                                    border: '1px solid rgba(160, 192, 255, 0.3)',
+                                    borderRadius: '12px',
+                                    padding: '1px 8px',
+                                    boxShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                                    whiteSpace: 'nowrap',
+                                }}
+                            >
+                                <span
+                                    style={{
+                                        fontSize: '10px',
+                                        color: '#a0c0ff',
+                                        fontWeight: 800,
+                                        letterSpacing: '1px',
+                                    }}
+                                >
+                                    0 ⚡
+                                </span>
+                            </div>
+                        </div>
                     </button>
 
                     {/* ПРАВАЯ КНОПКА (Красная) */}
@@ -204,6 +238,16 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({ onStartBattle, onW
                         onClick={(e) => {
                             e.stopPropagation();
                             audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
+                            const store = useGameStore.getState() as any;
+
+                            // Проверяем энергию
+                            if (!store.hasInfiniteEnergy && store.energy < 10) {
+                                setEnergyError(true);
+                                setTimeout(() => setEnergyError(false), 2000);
+                                return;
+                            }
+
+                            if (store.setBattleMode) store.setBattleMode('RANKED');
                             onStartBattle();
                         }}
                         style={{
@@ -216,17 +260,66 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({ onStartBattle, onW
                             alignItems: 'center',
                             justifyContent: 'center',
                             fontFamily: "'Cinzel', serif",
-                            fontSize: 22,
-                            fontWeight: 950,
-                            color: '#ffffff',
+                            color: energyError ? '#ef4444' : '#ffffff',
                             textShadow: '0 2px 8px rgba(0,0,0,1)',
                             transition: 'all 0.2s',
-                            paddingRight: '75px',
+                            paddingRight: '105px',
+                            position: 'relative',
                         }}
                         onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'rgba(255,50,0,0.1)')}
                         onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
                     >
-                        РЕЙТИНГОВЫЙ БОЙ
+                        {energyError ? (
+                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+                                <div style={{ fontSize: '22px', fontWeight: 950 }}>НУЖНО 10 ⚡</div>
+                            </div>
+                        ) : (
+                            <>
+                                <div style={{ position: 'relative' }}>
+                                    <div style={{ fontSize: '22px', fontWeight: 950 }}>РЕЙТИНГОВЫЙ БОЙ</div>
+
+                                    <div
+                                        style={{
+                                            position: 'absolute',
+                                            top: '100%',
+                                            left: '50%',
+                                            transform: 'translateX(-50%)',
+                                            marginTop: '5px',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            background: 'rgba(0,0,0,0.6)',
+                                            border: '1px solid rgba(240, 192, 64, 0.5)',
+                                            borderRadius: '12px',
+                                            padding: '2px 10px',
+                                            boxShadow: '0 2px 6px rgba(0,0,0,0.5)',
+                                            whiteSpace: 'nowrap',
+                                        }}
+                                    >
+                                        <span
+                                            style={{
+                                                fontSize: '13px',
+                                                color: '#f0c040',
+                                                fontWeight: 900,
+                                                textShadow: 'none',
+                                            }}
+                                        >
+                                            10
+                                        </span>
+                                        <img
+                                            src={AssetsMap.UI.ICON_ENERGY_FULL}
+                                            style={{
+                                                width: '14px',
+                                                height: '14px',
+                                                marginLeft: '4px',
+                                                filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.8))',
+                                            }}
+                                            alt="energy"
+                                        />
+                                    </div>
+                                </div>
+                            </>
+                        )}
                     </button>
                 </div>
             </div>

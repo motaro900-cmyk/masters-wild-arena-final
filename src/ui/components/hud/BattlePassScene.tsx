@@ -163,6 +163,7 @@ export const BattlePassScene: React.FC<{ onClose: () => void }> = ({ onClose }) 
                 fontFamily: "'Inter', sans-serif",
                 color: '#fff',
                 overflow: 'hidden',
+                pointerEvents: 'auto',
             }}
         >
             {/* КИНЕМАТОГРАФИЧЕСКИЙ ФОН */}

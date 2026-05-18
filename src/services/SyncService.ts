@@ -78,7 +78,6 @@ export class SyncService {
             };
 
             await setDoc(playerRef, syncData, { merge: true });
-            console.log(`[SyncService] Data synced for player: ${syncData.name}`);
         } catch (error) {
             console.error('[SyncService] Sync failed:', error);
         }
@@ -96,8 +95,6 @@ export class SyncService {
         this.syncInterval = setInterval(() => {
             this.syncPlayerData();
         }, intervalMs);
-
-        console.log(`[SyncService] Auto-sync started (every ${intervalMs / 1000}s)`);
     }
 
     public stopAutoSync(): void {
@@ -133,7 +130,6 @@ export class SyncService {
         try {
             const playerRef = doc(db, 'пользователи', userId);
             await setDoc(playerRef, data, { merge: true });
-            console.log(`[SyncService] Remote data updated for player: ${userId}`);
         } catch (error) {
             console.error('[SyncService] Remote update failed:', error);
             throw error;
@@ -150,7 +146,6 @@ export class SyncService {
                 ...data,
                 serverTimestamp: serverTimestamp(),
             });
-            console.log('[SyncService] Feedback sent successfully');
         } catch (error) {
             console.error('[SyncService] Failed to send feedback:', error);
             throw error;
@@ -181,7 +176,6 @@ export class SyncService {
      */
     public async searchPlayerById(playerId: string): Promise<any | null> {
         try {
-            // Убираем префикс MW-, если он есть
             const id = playerId.toUpperCase().startsWith('MW-') ? playerId.substring(3) : playerId;
             const playerRef = doc(db, 'пользователи', id);
             const playerSnap = await getDoc(playerRef);
@@ -318,7 +312,6 @@ export class SyncService {
                 timestamp: serverTimestamp(),
                 isRead: false,
             });
-            console.log(`[SyncService] Mail sent to ${userId}`);
         } catch (error) {
             console.error('[SyncService] Failed to send mail:', error);
             throw error;

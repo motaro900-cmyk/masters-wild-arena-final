@@ -478,7 +478,7 @@ export const GearView = ({
                                 fontSize: '11px',
                             }}
                         >
-                            {tab === 'STATS' ? 'СТАТЫ' : tab === 'INVENTORY' ? 'РЮКЗАК' : 'ЛО?'}
+                            {tab === 'STATS' ? 'СТАТЫ' : tab === 'INVENTORY' ? 'РЮКЗАК' : 'ЛОР'}
                         </button>
                     ))}
                 </div>

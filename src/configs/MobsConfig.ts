@@ -21,7 +21,7 @@ export const MOBS_DB: IMobData[] = [
         id: 'wolf_scout',
         name: 'Волк-Разведчик',
         rarity: 'COMMON',
-        image: '/assets/images/avatars/волк.webp',
+        image: '/assets/characters/wolf.png',
         baseStats: { hp: 450, attack: 45, defense: 10, speed: 1.2, crit: 0.1 },
         anchors: {
             feet: { x: 0.5, y: 0.95 },

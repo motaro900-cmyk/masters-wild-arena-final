@@ -4,7 +4,8 @@ import { EditorPanel } from './EditorPanel';
 
 export const RightBar: React.FC = () => {
     const store = useGameStore();
-    const stats = store.getCalculatedStats(store.currentHeroId) || { hp: 0, attack: 0, speed: 0, critChance: 0 };
+    const statsObj = store.getCalculatedStats(store.currentHeroId);
+    const stats = statsObj ? statsObj.total : { hp: 0, attack: 0, speed: 0, critChance: 0 };
 
     const displayStats = [
         { icon: '❤️', name: 'Здоровье', val: stats.hp },

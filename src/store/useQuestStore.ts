@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { getStorage } from '../utils/SafeStorage';
 import { QUESTS_POOL } from '../configs/QuestsConfig';
-import { usePlayerStore } from './usePlayerStore';
+import { useGameStore } from './useGameStore';
 
 interface IQuestState {
     dailyQuests: { questId: string; progress: number; isClaimed: boolean }[];
@@ -46,8 +46,8 @@ export const useQuestStore = create<IQuestState>()(
                 const qData = QUESTS_POOL.find((q) => q.id === questId);
 
                 if (dq && qData && dq.progress >= qData.target && !dq.isClaimed) {
-                    usePlayerStore.getState().addGold(qData.rewardGold);
-                    usePlayerStore.getState().addCrystals(qData.rewardGems);
+                    useGameStore.getState().addGold(qData.rewardGold);
+                    useGameStore.getState().addCrystals(qData.rewardGems);
                     const newQuests = state.dailyQuests.map((q) =>
                         q.questId === questId ? { ...q, isClaimed: true } : q,
                     );

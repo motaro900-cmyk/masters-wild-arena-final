@@ -1,9 +1,6 @@
 import { useGameStore } from '../store/useGameStore';
-import { ITEMS_DATABASE as BASE_ITEMS } from '../game/configs/ItemsConfig';
-import { ITEMS_DATABASE as HARDCORE_ITEMS } from '../game/configs/ItemsConfig_Hardcore';
+import { ITEMS_DATABASE } from '../game/configs/ItemsConfig';
 import { HEROES_DB } from '../configs/HeroesConfig';
-
-const ITEMS_DATABASE: any = { ...BASE_ITEMS, ...HARDCORE_ITEMS };
 
 export interface IAvatarLayer {
     id: string;

@@ -28,9 +28,13 @@ import { AdminPanel } from './hud/AdminPanel';
 import { VIPWindow } from './hud/VIPWindow';
 import { UnderDevelopmentModal } from './hud/SharedUI';
 import { BestiaryWindow } from './hud/BestiaryWindow';
+import { MatchmakingOverlay } from './hud/MatchmakingOverlay';
+
+import { safeGetItem, safeSetItem } from '../../utils/SafeStorage';
 
 export const GameHUD: React.FC = () => {
     const activeScreen = useGameStore((state) => state.activeScreen);
+    const vipLevel = useGameStore((state) => state.vipLevel);
     const [activeWindow, setActiveWindow] = useState<string | null>(null);
     const [showAdmin, setShowAdmin] = useState(false);
     const [devModal, setDevModal] = useState({ isOpen: false, title: '' });
@@ -42,6 +46,80 @@ export const GameHUD: React.FC = () => {
         setPrevScreen(activeScreen);
         setActiveWindow(null);
     }
+
+    // Ежедневный VIP-подарок на почту и синхронизация VIP-статуса
+    React.useEffect(() => {
+        const endTimeStr = safeGetItem('vipEndTime');
+        const now = Date.now();
+        const isActive = endTimeStr ? parseInt(endTimeStr) > now : false;
+
+        // Синхронизируем vipLevel и maxEnergy в сторе
+        const expectedVipLevel = isActive ? 1 : 0;
+        const expectedMaxEnergy = isActive ? 60 : 50;
+
+        const currentMaxEnergy = useGameStore.getState().maxEnergy;
+        if (vipLevel !== expectedVipLevel || currentMaxEnergy !== expectedMaxEnergy) {
+            setTimeout(() => {
+                useGameStore.setState({
+                    vipLevel: expectedVipLevel,
+                    maxEnergy: expectedMaxEnergy,
+                });
+            }, 0);
+        }
+
+        if (!isActive) return;
+
+        // Определяем московскую дату
+        const msk = new Date(now + (new Date().getTimezoneOffset() + 180) * 60000);
+        const mskDateStr = `${msk.getFullYear()}-${(msk.getMonth() + 1).toString().padStart(2, '0')}-${msk.getDate().toString().padStart(2, '0')}`;
+
+        const lastClaim = safeGetItem('lastVipMailClaimDate');
+        if (lastClaim !== mskDateStr) {
+            // Генерируем случайные дары
+            const rand = Math.random();
+            let rewards = [];
+            if (rand < 0.33) {
+                rewards = [
+                    { type: 'GOLD', amount: 500 },
+                    { type: 'CRYSTALS', amount: 10 },
+                    { type: 'ENERGY', amount: 5 },
+                ];
+            } else if (rand < 0.66) {
+                rewards = [
+                    { type: 'GOLD', amount: 800 },
+                    { type: 'CRYSTALS', amount: 5 },
+                    { type: 'ENERGY', amount: 10 },
+                ];
+            } else {
+                rewards = [
+                    { type: 'GOLD', amount: 300 },
+                    { type: 'CRYSTALS', amount: 15 },
+                    { type: 'ENERGY', amount: 8 },
+                ];
+            }
+
+            const newMail = {
+                id: `vip_daily_${mskDateStr}_${Date.now()}`,
+                from: 'КОРОЛЕВСКАЯ СЛУЖБА',
+                subject: 'ЕЖЕДНЕВНЫЙ VIP ПОДАРОК!',
+                body: 'Славься, наш благородный покровитель! \n\nКаждый день твоего VIP-статуса Королевская Служба доставляет тебе лучшие дары из сокровищницы. \n\nСпасибо за твою поддержку! Желаем легких побед и славных свершений на просторах Masters of the Wild!',
+                date: 'СЕГОДНЯ',
+                isRead: false,
+                isStarred: false,
+                tab: 'INBOX',
+                rewards: rewards,
+            };
+
+            // Добавляем во входящие
+            setTimeout(() => {
+                const currentMail = useGameStore.getState().mail;
+                useGameStore.setState({
+                    mail: [newMail, ...currentMail],
+                });
+                safeSetItem('lastVipMailClaimDate', mskDateStr);
+            }, 100);
+        }
+    }, [vipLevel]);
 
     // Expose to window for external screen communication (like CityScreen)
     React.useEffect(() => {
@@ -189,7 +267,7 @@ export const GameHUD: React.FC = () => {
 
                     <div className="absolute bottom-[30px] left-1/2 -translate-x-1/2 hud-interactive">
                         <ActionButtons
-                            onStartBattle={() => useGameStore.getState().setScreen('BATTLE')}
+                            onStartBattle={() => setActiveWindow('RANKED_LOBBY')}
                             onWarmup={() => useGameStore.getState().setScreen('BATTLE')}
                             onOpenRanks={() => setActiveWindow('RANKS_LIST')}
                         />
@@ -423,6 +501,21 @@ export const GameHUD: React.FC = () => {
             )}
             {/* --- ADMIN PANEL (GLOBAL OVERLAY) --- */}
             {showAdmin && <AdminPanel onClose={() => setShowAdmin(false)} />}
+
+            {activeWindow === 'RANKED_LOBBY' && (
+                <MatchmakingOverlay
+                    onCancel={() => setActiveWindow(null)}
+                    onFound={(enemyId) => {
+                        setActiveWindow(null);
+
+                        // Use the selected mob from matchmaking
+                        useGameStore.setState({ selectedEnemyId: enemyId || 'wolf_scout', battleMode: 'RANKED' });
+
+                        // Switch screen to battle!
+                        useGameStore.getState().setScreen('BATTLE');
+                    }}
+                />
+            )}
 
             <UnderDevelopmentModal
                 isOpen={devModal.isOpen}

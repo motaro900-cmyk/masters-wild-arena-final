@@ -58,3 +58,22 @@
     height: 45px;
     background-position: -798px -532px;
 }
+
+/* 6. VIP PREMIUM GLOW */
+@keyframes vipGlow {
+    0% {
+        box-shadow: 0 0 10px rgba(240, 192, 64, 0.4), inset 0 0 10px rgba(240, 192, 64, 0.2);
+    }
+    50% {
+        box-shadow: 0 0 25px rgba(240, 192, 64, 0.8), inset 0 0 15px rgba(240, 192, 64, 0.5);
+    }
+    100% {
+        box-shadow: 0 0 10px rgba(240, 192, 64, 0.4), inset 0 0 10px rgba(240, 192, 64, 0.2);
+    }
+}
+
+.vip-avatar-glow {
+    animation: vipGlow 2.5s infinite ease-in-out;
+    border: 2px solid rgba(240, 192, 64, 0.8);
+    box-sizing: border-box;
+}

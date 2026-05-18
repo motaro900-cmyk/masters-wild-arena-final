@@ -57,7 +57,14 @@ export class BattleScreen extends Container {
         try {
             // ПОЛУЧАЕМ ДАННЫЕ ИГРОКА ИЗ СТОРА
             const store = useGameStore.getState();
-            const calcStats = store.getCalculatedStats(store.selectedHeroId);
+            const calcStats = store.getCalculatedStats(store.selectedHeroId)?.total || {
+                hp: 100,
+                attack: 10,
+                speed: 1.0,
+                defense: 5,
+                critChance: 0.1,
+                dodge: 0.05,
+            };
             this.playerStats = calcStats;
 
             this.playerHp = calcStats.hp;

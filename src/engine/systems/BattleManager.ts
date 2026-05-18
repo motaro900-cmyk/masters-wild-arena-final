@@ -35,7 +35,7 @@ export class BattleManager {
      */
     public initBattle() {
         console.log('⚔️ [BattleManager] Инициализация боя...');
-        const stats = useGameStore.getState().getCalculatedStats('panda');
+        const stats = useGameStore.getState().getCalculatedStats('panda')?.total;
 
         this.playerHP = stats?.hp || 1000;
         this.enemyHP = 1000; // Пример для врага
@@ -53,7 +53,7 @@ export class BattleManager {
         this.phase = BattlePhase.ACTION_CALCULATION;
 
         // 1. Расчет урона (Логика)
-        const stats = useGameStore.getState().getCalculatedStats('panda');
+        const stats = useGameStore.getState().getCalculatedStats('panda')?.total;
         const damage = (stats?.attack || 10) * (type === 'skill' ? 1.5 : 1);
         const isCrit = Math.random() > 0.8;
         const finalDamage = isCrit ? damage * 2 : damage;

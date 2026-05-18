@@ -77,6 +77,13 @@ export const HeroScene: React.FC = () => {
         setTimeout(() => setTooltipHero(null), 0);
     }, [activeTab]);
 
+    // -- Guard against direct navigation to locked hero --
+    useEffect(() => {
+        if (activeTab !== 'LIST' && !ownedHeroes.includes(selectedHeroId || 'panda')) {
+            setTimeout(() => setActiveTab('LIST'), 0);
+        }
+    }, [activeTab, selectedHeroId, ownedHeroes]);
+
     // -- Data --
     const selectedHero = HEROES_DB.find((h) => h.id === selectedHeroId) || HEROES_DB[0];
     const stats = getCalculatedStats(selectedHero.id);
@@ -140,10 +147,18 @@ export const HeroScene: React.FC = () => {
                                     setActiveFilter={setActiveFilter}
                                     setTooltipHero={setTooltipHero}
                                     setMousePos={setMousePos}
+                                    onBuyClick={(h: any) => {
+                                        setTooltipHero(null);
+                                        setConfirmingHero(h);
+                                    }}
                                     onHeroClick={(h: any) => {
                                         setTooltipHero(null); // КРИТИЧНО: Скрываем тултип перед переходом
-                                        setSelectedHeroId(h.id);
-                                        setActiveTab('HERO');
+                                        if (ownedHeroes.includes(h.id)) {
+                                            setSelectedHeroId(h.id);
+                                            setActiveTab('HERO');
+                                        } else {
+                                            setViewingHero(h);
+                                        }
                                     }}
                                 />
                             ) : activeTab === 'HERO' ? (

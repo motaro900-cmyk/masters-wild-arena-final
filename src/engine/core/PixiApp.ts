@@ -96,8 +96,8 @@ export class PixiApp {
                 await this.pixiApp.init({
                     width: this.config.width,
                     height: this.config.height,
-                    backgroundColor: this.config.background || 0x0c0c0c,
-                    backgroundAlpha: 1, // [Fix] Set to 1 to avoid black screens if BG fails
+                    backgroundColor: 0x000000,
+                    backgroundAlpha: 0, // Transparent — let CSS background show through
                     antialias: this.config.antialias,
                     resolution: Math.min(window.devicePixelRatio || 1, 2),
                     autoDensity: true,
@@ -131,7 +131,6 @@ export class PixiApp {
                 );
 
                 this.pixiApp.ticker.start();
-                console.log('✅ PixiApp initialized/reset successfully');
             }
         } catch (error) {
             console.error('❌ PixiApp initialization failed:', error);
@@ -154,7 +153,6 @@ export class PixiApp {
             if (this.pixiApp.canvas.parentElement !== this.homeContainer) {
                 this.homeContainer.appendChild(this.pixiApp.canvas);
                 this.applyCanvasStyles(this.pixiApp.canvas);
-                console.log('[PixiApp] Canvas returned to home container');
             }
         }
     }
@@ -256,6 +254,22 @@ export class PixiApp {
         return this._debugLayer;
     }
 
+    /**
+     * Очищает слои боя (gameLayer, effectsLayer, uiLayer, debugLayer).
+     * НЕ трогает backgroundLayer — он содержит фон главного меню.
+     */
+    public clearBattleLayers(): void {
+        [this.gameLayer, this.effectsLayer, this.uiLayer, this.debugLayer].forEach((l) => {
+            l.removeChildren().forEach((child) => {
+                if (!child.destroyed) {
+                    child.destroy({ children: true, texture: false });
+                }
+            });
+        });
+        this.updateLoops = [];
+    }
+
+    /** Полная очистка всех слоёв включая фон (используется только при переинициализации) */
     public clearAllLayers(): void {
         [this.backgroundLayer, this.gameLayer, this.effectsLayer, this.uiLayer, this.debugLayer].forEach((l) => {
             l.removeChildren().forEach((child) => {
@@ -265,7 +279,6 @@ export class PixiApp {
             });
         });
         this.updateLoops = [];
-        console.log('[PixiApp] All layers cleared safely.');
     }
 
     public static destroy(): void {

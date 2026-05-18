@@ -30,11 +30,14 @@ export const HeroTooltip = ({ hero, mousePos, rarityColors }: any) => {
     const tooltipWidth = 280;
     const tooltipHeight = 240;
 
-    let left = mousePos.x + 30;
-    let top = mousePos.y + 10;
+    let left = mousePos.x - tooltipWidth / 2;
+    let top = mousePos.y - tooltipHeight - 20;
 
-    if (left + tooltipWidth > 1880) left = mousePos.x - tooltipWidth - 30;
-    if (top + tooltipHeight > 1040) top = mousePos.y - tooltipHeight - 10;
+    if (left < 40) left = 40;
+    if (left + tooltipWidth > 1880) left = 1880 - tooltipWidth;
+    if (top < 20) {
+        top = mousePos.y + 35; // Render below the cursor if it goes off the top boundary
+    }
 
     return (
         <motion.div

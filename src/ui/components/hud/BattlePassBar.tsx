@@ -6,7 +6,7 @@ import { AssetsMap } from '../../../configs/AssetsMap';
  * BattlePassBar (v5.1) — Растянутая по высоте версия.
  */
 export const BattlePassBar: React.FC = () => {
-    const { bpLevel, setActiveScreen } = useGameStore();
+    const { bpLevel, setScreen } = useGameStore();
 
     return (
         <div
@@ -30,7 +30,7 @@ export const BattlePassBar: React.FC = () => {
                     cursor: 'pointer',
                     transition: 'transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
                 }}
-                onClick={() => setActiveScreen('BATTLE_PASS')}
+                onClick={() => setScreen('BATTLE_PASS')}
                 onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.03)')}
                 onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1)')}
             >

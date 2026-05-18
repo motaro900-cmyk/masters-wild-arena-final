@@ -39,7 +39,16 @@ export const useGameStore = create<any>()(
             energy: 50,
             maxEnergy: 50,
             lastEnergyUpdate: Date.now(),
-            updateProfile: (data: any) => set((state: any) => ({ ...state, ...data })),
+            updateProfile: (data: any) =>
+                set((state: any) => {
+                    const patch = { ...data };
+                    if ('trophies' in patch && !('rating' in patch)) {
+                        patch.rating = patch.trophies;
+                    } else if ('rating' in patch && !('trophies' in patch)) {
+                        patch.trophies = patch.rating;
+                    }
+                    return { ...state, ...patch };
+                }),
             name: 'Мастер',
             lastNameChange: 0,
             avatar: 'sprite:sprite-avatar avatar-pos-1',
@@ -218,7 +227,7 @@ export const useGameStore = create<any>()(
 
             addRating: (amount: number) =>
                 set((state: any) => {
-                    const newRating = state.rating + amount;
+                    const newRating = Math.max(0, state.rating + amount);
                     const oldRank = getRankInfo(state.rating).name;
                     const newRank = getRankInfo(newRating).name;
 
@@ -227,7 +236,7 @@ export const useGameStore = create<any>()(
                         get().broadcastEvent('RANK_UP', { playerName: 'Motar', rankName: 'ЛЕГЕНДА' });
                     }
 
-                    return { rating: newRating };
+                    return { rating: newRating, trophies: newRating };
                 }),
 
             // --- ГЛОБАЛЬНЫЕ СОБЫТИЯ (АНОНСЫ) ---
@@ -310,7 +319,7 @@ export const useGameStore = create<any>()(
                 }
             },
 
-            // Логика восстановления энергии (1 ед / 5 мин)
+            // Логика восстановления энергии (1 ед / 3 мин)
             restoreEnergy: () =>
                 set((state: any) => {
                     if (state.energy >= state.maxEnergy) {
@@ -319,12 +328,12 @@ export const useGameStore = create<any>()(
 
                     const now = Date.now();
                     const diff = now - state.lastEnergyUpdate;
-                    const FIVE_MIN = 5 * 60 * 1000;
+                    const THREE_MIN = 3 * 60 * 1000;
 
-                    if (diff >= FIVE_MIN) {
-                        const energyToAdd = Math.floor(diff / FIVE_MIN);
+                    if (diff >= THREE_MIN) {
+                        const energyToAdd = Math.floor(diff / THREE_MIN);
                         const newEnergy = Math.min(state.maxEnergy, state.energy + energyToAdd);
-                        const leftover = diff % FIVE_MIN;
+                        const leftover = diff % THREE_MIN;
 
                         return {
                             energy: newEnergy,
@@ -436,6 +445,20 @@ export const useGameStore = create<any>()(
             selectedEnemyId: 'wolf_scout',
             heroGalleryId: 'panda',
             ownedHeroes: ['panda'],
+            chatMessages: [
+                { id: 1, text: 'Добро пожаловать в общий чат!', sender: 'Система' },
+                { id: 2, text: 'Всем привет, кто в пати?', sender: 'xXx_Panda_xXx' },
+                { id: 3, text: 'Куплю Меч Рассвета, дорого!', sender: 'TraderBob' },
+                { id: 4, text: 'Когда обнова?', sender: 'NoobMaster99' },
+            ],
+            addChatMessage: (msg) =>
+                set((state: any) => ({
+                    chatMessages: [...state.chatMessages, { id: Date.now(), ...msg }].slice(-50),
+                })),
+
+            battleMode: 'RANKED',
+            setBattleMode: (mode: 'RANKED' | 'WARMUP') => set({ battleMode: mode }),
+
             tutorialStep: 0,
             mail: [
                 {
@@ -564,11 +587,11 @@ export const useGameStore = create<any>()(
                 });
             },
             addClanCoins: (amount: number) => set((state: any) => ({ clanCoins: state.clanCoins + amount })),
-            consumeEnergy: () => {
+            consumeEnergy: (amount: number = 10) => {
                 const state = get() as any;
                 if (state.hasInfiniteEnergy) return true;
-                if (state.energy > 0) {
-                    set({ energy: state.energy - 1 });
+                if (state.energy >= amount) {
+                    set({ energy: state.energy - amount });
                     return true;
                 }
                 return false;
@@ -1293,3 +1316,7 @@ export const useGameStore = create<any>()(
         },
     ),
 );
+
+if (typeof window !== 'undefined') {
+    (window as any).useGameStore = useGameStore;
+}

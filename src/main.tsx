@@ -107,13 +107,10 @@ export const SafeGameLayout = ({ containerRef }: { containerRef: React.RefObject
             const gw = AppConfig.GAME_WIDTH;
             const gh = AppConfig.GAME_HEIGHT;
 
-            // [Lead Architect]: Adaptive Scaling.
-            // On very narrow screens (mobile), we prioritize width and allow some height cropping if necessary,
-            // or we use a slightly more aggressive scale to fill the screen better.
-            const s = Math.min(sw / gw, sh / gh);
+            // Use width-based scale on mobile (portrait) or standard fit-scale on landscape (PC)
+            const isPortrait = sw < sh;
+            const s = isPortrait ? sw / gw : Math.min(sw / gw, sh / gh);
 
-            // If the screen is very small, we might want a minimum scale to keep buttons tappable,
-            // but that would cause overflow. Instead, we'll rely on the scale but improve HUD styles.
             setScale(s);
 
             // [Mobile Fix]: Force scroll to top to hide address bar
@@ -148,6 +145,7 @@ export const SafeGameLayout = ({ containerRef }: { containerRef: React.RefObject
     }, [showFps, setShowFps]);
 
     const isMobile = useGameStore((state) => state.isMobile);
+    const isPortrait = typeof window !== 'undefined' && window.innerWidth < window.innerHeight;
 
     return (
         <div
@@ -165,61 +163,71 @@ export const SafeGameLayout = ({ containerRef }: { containerRef: React.RefObject
                 left: 0,
             }}
         >
-            {/* 1. GAME LAYER (PIXI + SCALED CONTENT) */}
+            {/* Unified 1920x1080 Scaled Container */}
             <div
-                className="game-container"
+                className="game-scale-wrapper"
                 style={{
                     width: `${AppConfig.GAME_WIDTH}px`,
                     height: `${AppConfig.GAME_HEIGHT}px`,
-                    transform: `scale(${scale})`,
-                    transformOrigin: 'center center',
                     position: 'absolute',
+                    top: isPortrait ? 0 : '50%',
+                    left: isPortrait ? 0 : '50%',
+                    transform: isPortrait ? `scale(${scale})` : `translate(-50%, -50%) scale(${scale})`,
+                    transformOrigin: isPortrait ? 'top left' : 'center center',
                     flexShrink: 0,
-                    backgroundImage: `url(${
-                        isMobile ? AssetsMap.BACKGROUNDS.MAIN_MENU_MOBILE : AssetsMap.BACKGROUNDS.MAIN_MENU
-                    })`,
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center',
-                    backgroundColor: '#0c0c0c',
-                    boxShadow: '0 0 100px rgba(0,0,0,0.5)',
                     overflow: 'hidden',
-                    zIndex: 1,
-                }}
-            >
-                <div ref={containerRef} style={{ position: 'absolute', inset: 0, pointerEvents: 'auto' }} />
-                {showFps && <FpsCounter />}
-            </div>
-
-            {/* 2. HUD LAYER (LIQUID / ADAPTIVE) */}
-            <div
-                className="hud-layer"
-                style={{
-                    position: 'absolute',
-                    inset: 0,
-                    zIndex: 100,
                     pointerEvents: 'none',
-                    // On PC we can still use a subtle scale if the window is huge,
-                    // but on Mobile we want 1:1 liquid layout.
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
                 }}
             >
+                {/* 1. GAME LAYER (PIXI + SCALED CONTENT) */}
                 <div
+                    className="game-container"
                     style={{
-                        width: isMobile ? '100%' : `${AppConfig.GAME_WIDTH}px`,
-                        height: isMobile ? '100%' : `${AppConfig.GAME_HEIGHT}px`,
-                        transform: isMobile ? 'none' : `scale(${scale})`,
-                        transformOrigin: 'center center',
-                        position: 'relative',
+                        width: '100%',
+                        height: '100%',
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        backgroundImage: `url(${
+                            isMobile ? AssetsMap.BACKGROUNDS.MAIN_MENU_MOBILE : AssetsMap.BACKGROUNDS.MAIN_MENU
+                        })`,
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center',
+                        backgroundColor: '#0c0c0c',
+                        boxShadow: '0 0 100px rgba(0,0,0,0.5)',
+                        overflow: 'hidden',
+                        zIndex: 1,
+                        pointerEvents: 'auto',
+                    }}
+                >
+                    <div ref={containerRef} style={{ position: 'absolute', inset: 0, pointerEvents: 'auto' }} />
+                    {showFps && <FpsCounter />}
+                </div>
+
+                {/* 2. HUD LAYER (LIQUID / ADAPTIVE) */}
+                <div
+                    className="hud-layer"
+                    style={{
+                        position: 'absolute',
+                        inset: 0,
+                        zIndex: 100,
                         pointerEvents: 'none',
                     }}
                 >
-                    <div style={{ position: 'absolute', inset: 0, zIndex: 10, pointerEvents: 'none' }}>
-                        <SceneSwitcher />
-                    </div>
-                    <div style={{ position: 'absolute', inset: 0, zIndex: 100, pointerEvents: 'none' }}>
-                        <GameHUD />
+                    <div
+                        style={{
+                            width: '100%',
+                            height: '100%',
+                            position: 'relative',
+                            pointerEvents: 'none',
+                        }}
+                    >
+                        <div style={{ position: 'absolute', inset: 0, zIndex: 10, pointerEvents: 'none' }}>
+                            <SceneSwitcher />
+                        </div>
+                        <div style={{ position: 'absolute', inset: 0, zIndex: 100, pointerEvents: 'none' }}>
+                            <GameHUD />
+                        </div>
                     </div>
                 </div>
             </div>

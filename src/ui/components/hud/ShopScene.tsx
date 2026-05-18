@@ -351,7 +351,11 @@ export const ShopScene: React.FC = () => {
                         </div>
                     </div>
 
-                    <div
+                    <motion.div
+                        key={`${activeMainTab}-${activeSubTab}`}
+                        initial={{ opacity: 0, y: 15 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.25, ease: 'easeOut' }}
                         className="custom-scrollbar"
                         style={{
                             flex: 1,
@@ -364,25 +368,23 @@ export const ShopScene: React.FC = () => {
                             maxHeight: '750px',
                         }}
                     >
-                        <AnimatePresence mode="popLayout">
-                            {filteredItems.map((item) => (
-                                <ShopItemCard
-                                    key={String(item.id)}
-                                    item={item}
-                                    inventory={inventory}
-                                    equippedWeaponId={equippedWeaponId}
-                                    equippedHelmId={equippedHelmId}
-                                    equippedArmorId={equippedArmorId}
-                                    equippedShieldId={equippedShieldId}
-                                    onBuy={() => handleItemClick(item)}
-                                    onSelect={() => handleItemClick(item)}
-                                    isProcessing={isProcessing}
-                                    glowColor={getRarityColor(item.rarity)}
-                                    isMobile={isMobile}
-                                />
-                            ))}
-                        </AnimatePresence>
-                    </div>
+                        {filteredItems.map((item) => (
+                            <ShopItemCard
+                                key={String(item.id)}
+                                item={item}
+                                inventory={inventory}
+                                equippedWeaponId={equippedWeaponId}
+                                equippedHelmId={equippedHelmId}
+                                equippedArmorId={equippedArmorId}
+                                equippedShieldId={equippedShieldId}
+                                onBuy={() => handleItemClick(item)}
+                                onSelect={() => handleItemClick(item)}
+                                isProcessing={isProcessing}
+                                glowColor={getRarityColor(item.rarity)}
+                                isMobile={isMobile}
+                            />
+                        ))}
+                    </motion.div>
                 </div>
             </div>
 

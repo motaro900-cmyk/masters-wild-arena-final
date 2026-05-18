@@ -42,8 +42,29 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
         console.log('ID Copied:', playerId);
     };
 
-    const handleClearCache = () => {
-        if (window.confirm('Очистить кэш и перезагрузить игру?')) {
+    const handleClearCache = async () => {
+        if (
+            window.confirm(
+                'Вы уверены, что хотите полностью сбросить свой прогресс и очистить чат? Это действие необратимо.',
+            )
+        ) {
+            try {
+                const store = useGameStore.getState() as any;
+
+                // 1. Сбрасываем прогресс в памяти (уровень, кубки, квесты)
+                if (store.resetAllProgress) store.resetAllProgress();
+
+                // 2. Сбрасываем чат локально
+                if (store.resetChat) store.resetChat();
+
+                // 3. Синхронизируем обнуленные данные с Firebase
+                const { syncService } = await import('../../../services/SyncService');
+                await syncService.syncPlayerData();
+            } catch (error) {
+                console.error('Ошибка при сбросе прогресса в Firebase:', error);
+            }
+
+            // 4. Очищаем локальный кэш и перезагружаем страницу
             localStorage.clear();
             window.location.reload();
         }
