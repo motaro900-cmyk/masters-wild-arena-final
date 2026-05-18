@@ -42,12 +42,10 @@ export const GameHUD: React.FC = () => {
     const [prevScreen, setPrevScreen] = useState(activeScreen);
 
     const [hudScale, setHudScale] = useState(1);
-    const [isMobile, setIsMobile] = useState(false);
 
     React.useEffect(() => {
         const handleResize = () => {
             const width = window.innerWidth;
-            setIsMobile(width < 1000);
 
             // Адаптивный скейл от 1280px (как просил пользователь)
             if (width < 1280) {
