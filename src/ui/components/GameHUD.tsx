@@ -172,7 +172,7 @@ export const GameHUD: React.FC = () => {
             {/* 1. PLAYER PROFILE HUB */}
             {!isFullScreenScene && (
                 <div
-                    className="absolute top-[30px] left-[calc(5px+env(safe-area-inset-left))] hud-interactive"
+                    className="absolute top-[30px] left-[calc(5px+env(safe-area-inset-left))] hud-interactive w-[340px] md:w-[465px]"
                     style={{ transform: `scale(${hudScale})`, transformOrigin: 'top left' }}
                 >
                     <ProfileHub />
@@ -211,7 +211,7 @@ export const GameHUD: React.FC = () => {
                     </div>
 
                     <div
-                        className="absolute top-[160px] right-[calc(25px+env(safe-area-inset-right))] flex flex-col gap-3 items-end hud-interactive"
+                        className="absolute top-[160px] right-[calc(25px+env(safe-area-inset-right))] flex flex-col gap-3 items-end hud-interactive w-[260px] md:w-[400px]"
                         style={{ transform: `scale(${hudScale})`, transformOrigin: 'top right' }}
                     >
                         <DailyGiftBanner onClick={() => setActiveWindow('GIFT')} />
@@ -288,7 +288,7 @@ export const GameHUD: React.FC = () => {
                     </div>
 
                     <div
-                        className="absolute bottom-[15px] left-[calc(5px+env(safe-area-inset-left))] hud-interactive"
+                        className="absolute bottom-[15px] left-[calc(5px+env(safe-area-inset-left))] hud-interactive max-h-[140px] md:max-h-none overflow-hidden"
                         style={{ transform: `scale(${hudScale})`, transformOrigin: 'bottom left' }}
                     >
                         <ChatPanel />
