@@ -5,8 +5,10 @@ export type LayoutProfile = 'MOBILE' | 'TABLET' | 'SMALL_DESKTOP' | 'DESKTOP';
 const getProfile = (): LayoutProfile => {
     if (typeof window === 'undefined') return 'DESKTOP';
     const width = window.innerWidth;
-    if (width < 768) return 'MOBILE';
-    if (width < 1100) return 'TABLET';
+    // Современные телефоны в ландшафтном режиме часто имеют ширину 800-900px.
+    // Увеличиваем брейкпоинт до 950px, чтобы они гарантированно получали мобильный лейаут.
+    if (width < 950) return 'MOBILE';
+    if (width < 1150) return 'TABLET';
     if (width < 1400) return 'SMALL_DESKTOP';
     return 'DESKTOP';
 };
