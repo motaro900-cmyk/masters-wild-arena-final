@@ -5,6 +5,7 @@ import { QUESTS_POOL } from '../../../configs/QuestsConfig';
 import { safeGetItem, safeSetItem } from '../../../utils/SafeStorage';
 import { audioService } from '../../../services/AudioService';
 import { AssetsMap } from '../../../configs/AssetsMap';
+import { useLayoutProfile } from '../../../hooks/useLayoutProfile';
 
 interface IDailyQuest {
     questId: string;
@@ -16,6 +17,13 @@ export const DailyTaskPanel: React.FC = () => {
     const [isCollapsed, setIsCollapsed] = useState(false);
     const { dailyQuests, claimQuestReward, refreshDailyQuests, vipLevel } = useGameStore();
     const [floatingRewards, setFloatingRewards] = useState<{ id: number; text: string; x: number; y: number }[]>([]);
+    const profile = useLayoutProfile();
+
+    React.useEffect(() => {
+        if (profile === 'MOBILE') {
+            setIsCollapsed(true);
+        }
+    }, [profile]);
 
     const handleClaimReward = (dq: IDailyQuest, qData: any, e: React.MouseEvent) => {
         e.stopPropagation();
