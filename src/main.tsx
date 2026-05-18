@@ -35,6 +35,14 @@ if (typeof window !== 'undefined') {
             console.warn('⚠️ Network/Cert error detected. Attempting recovery...');
         }
     });
+
+    // [Hard Reset] Гарантированный сброс для версии 23
+    const RESET_KEY = 'forced_reset_v23_final';
+    if (!localStorage.getItem(RESET_KEY)) {
+        localStorage.clear();
+        localStorage.setItem(RESET_KEY, 'true');
+        window.location.reload();
+    }
 }
 
 // ─── КОМПОНЕНТЫ ──────────────────────────────────────────────────────────────
