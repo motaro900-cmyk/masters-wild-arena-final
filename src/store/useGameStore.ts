@@ -515,10 +515,12 @@ export const useGameStore = create<any>()(
 
             canClaimDailyGift: false,
             setCanClaimDailyGift: (val: boolean) => set({ canClaimDailyGift: val }),
+            setOnboardingCompleted: (val: boolean) => set({ onboardingCompleted: val }),
 
             // --- ИНТЕРФЕЙС ---
             activeScreen: 'INTRO', // Стартуем всегда с интро
             showIntro: true,
+            onboardingCompleted: false,
 
             heroesInitialTab: 'LIST',
             uiTheme: 'DARK',

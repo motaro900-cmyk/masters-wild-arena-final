@@ -99,6 +99,7 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
 
             // Сохраняем имя и завершаем
             changeName(nickname);
+            useGameStore.getState().setOnboardingCompleted(true);
             audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
             onComplete();
             return;

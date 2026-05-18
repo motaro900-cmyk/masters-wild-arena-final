@@ -321,7 +321,14 @@ export const Root = () => {
                     console.log('📡 VK Status:', vkAvailable ? 'Connected' : 'Standalone');
                     if (vkAvailable) {
                         const user = await getVkUserInfo();
-                        if (user) useGameStore.getState().setVkUser(user);
+                        if (user) {
+                            const store = useGameStore.getState();
+                            store.setVkUser(user);
+                            // [Fix] Всегда обновляем аватар из ВК при старте
+                            if (user.photo_200 || user.photo) {
+                                store.updateProfile({ avatar: user.photo_200 || user.photo });
+                            }
+                        }
                     }
                 } catch (vkErr) {
                     console.warn('⚠️ VK Bridge failed to init, continuing in standalone mode', vkErr);
@@ -411,9 +418,9 @@ export const Root = () => {
                     });
                 }
 
-                // [Fix] Направляем игроков без имени на Интро
-                if (!state.name || state.name === 'Мастер') {
-                    console.log('👶 New player or Master detected, forcing Intro...');
+                // [Fix] Направляем игроков на Интро, если обучение не пройдено
+                if (!state.onboardingCompleted) {
+                    console.log('👶 New player or Onboarding not completed, forcing Intro...');
                     useGameStore.setState({ activeScreen: 'INTRO' });
                 }
 
