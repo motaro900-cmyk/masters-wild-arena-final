@@ -60,6 +60,9 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
                 // 3. Синхронизируем обнуленные данные с Firebase
                 const { syncService } = await import('../../../services/SyncService');
                 await syncService.syncPlayerData();
+
+                // 4. Очищаем сообщения игрока в глобальном чате Firebase
+                await syncService.deletePlayerMessages(store.name || 'Мастер');
             } catch (error) {
                 console.error('Ошибка при сбросе прогресса в Firebase:', error);
             }

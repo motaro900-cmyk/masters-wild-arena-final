@@ -41,6 +41,12 @@ export class SyncService {
             vkUser = await getVkUserInfo();
             if (vkUser) {
                 state.setVkUser(vkUser);
+                // Если аватар дефолтный (спрайт), ставим фото из ВК
+                if (vkUser.photo && (state.avatar === 'sprite:sprite-avatar avatar-pos-1' || !state.avatar)) {
+                    if (state.updateProfile) {
+                        state.updateProfile({ avatar: vkUser.photo });
+                    }
+                }
             }
         }
 
@@ -274,6 +280,22 @@ export class SyncService {
             });
         } catch (error) {
             console.error('[SyncService] Failed to send chat message:', error);
+        }
+    }
+
+    /**
+     * Удаляет сообщения конкретного игрока из чата (для сброса прогресса)
+     */
+    public async deletePlayerMessages(playerName: string): Promise<void> {
+        try {
+            const chatRef = collection(db, 'чат');
+            const q = query(chatRef, where('author', '==', playerName));
+            const snapshot = await getDocs(q);
+            const promises = snapshot.docs.map((doc) => deleteDoc(doc.ref));
+            await Promise.all(promises);
+            console.log(`[SyncService] Deleted ${snapshot.docs.length} messages for player ${playerName}`);
+        } catch (error) {
+            console.error('[SyncService] Failed to delete player messages:', error);
         }
     }
 
