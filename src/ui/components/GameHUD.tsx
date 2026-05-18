@@ -42,12 +42,16 @@ export const GameHUD: React.FC = () => {
     const [prevScreen, setPrevScreen] = useState(activeScreen);
 
     const [hudScale, setHudScale] = useState(1);
+    const [isMobile, setIsMobile] = useState(false);
 
     React.useEffect(() => {
         const handleResize = () => {
             const width = window.innerWidth;
-            if (width < 1100) {
-                setHudScale(Math.max(0.6, width / 1100));
+            setIsMobile(width < 1000);
+
+            // Адаптивный скейл от 1280px (как просил пользователь)
+            if (width < 1280) {
+                setHudScale(Math.max(0.5, width / 1280)); // Не даем опускаться ниже 0.5
             } else {
                 setHudScale(1);
             }
@@ -168,7 +172,7 @@ export const GameHUD: React.FC = () => {
             {/* 1. PLAYER PROFILE HUB */}
             {!isFullScreenScene && (
                 <div
-                    className="absolute top-[30px] left-[5px] hud-interactive"
+                    className="absolute top-[30px] left-[calc(5px+env(safe-area-inset-left))] hud-interactive"
                     style={{ transform: `scale(${hudScale})`, transformOrigin: 'top left' }}
                 >
                     <ProfileHub />
@@ -207,7 +211,7 @@ export const GameHUD: React.FC = () => {
                     </div>
 
                     <div
-                        className="absolute top-[160px] right-[25px] flex flex-col gap-3 items-end hud-interactive"
+                        className="absolute top-[160px] right-[calc(25px+env(safe-area-inset-right))] flex flex-col gap-3 items-end hud-interactive"
                         style={{ transform: `scale(${hudScale})`, transformOrigin: 'top right' }}
                     >
                         <DailyGiftBanner onClick={() => setActiveWindow('GIFT')} />
@@ -284,7 +288,7 @@ export const GameHUD: React.FC = () => {
                     </div>
 
                     <div
-                        className="absolute bottom-[15px] left-[5px] hud-interactive"
+                        className="absolute bottom-[15px] left-[calc(5px+env(safe-area-inset-left))] hud-interactive"
                         style={{ transform: `scale(${hudScale})`, transformOrigin: 'bottom left' }}
                     >
                         <ChatPanel />
