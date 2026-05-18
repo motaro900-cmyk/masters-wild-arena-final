@@ -17,12 +17,14 @@ export const ChatPanel: React.FC = () => {
     const [isFocused, setIsFocused] = useState(false);
     const [hasNewMessages, setHasNewMessages] = useState(false);
     const profile = useLayoutProfile();
+    const [prevProfile, setPrevProfile] = useState(profile);
 
-    useEffect(() => {
+    if (profile !== prevProfile) {
+        setPrevProfile(profile);
         if (profile === 'MOBILE') {
             setIsOpen(false);
         }
-    }, [profile]);
+    }
 
     const [contextMenu, setContextMenu] = useState<{ visible: boolean; x: number; y: number; author: string | null }>({
         visible: false,

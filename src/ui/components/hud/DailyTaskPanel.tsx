@@ -18,12 +18,14 @@ export const DailyTaskPanel: React.FC = () => {
     const { dailyQuests, claimQuestReward, refreshDailyQuests, vipLevel } = useGameStore();
     const [floatingRewards, setFloatingRewards] = useState<{ id: number; text: string; x: number; y: number }[]>([]);
     const profile = useLayoutProfile();
+    const [prevProfile, setPrevProfile] = useState(profile);
 
-    React.useEffect(() => {
+    if (profile !== prevProfile) {
+        setPrevProfile(profile);
         if (profile === 'MOBILE') {
             setIsCollapsed(true);
         }
-    }, [profile]);
+    }
 
     const handleClaimReward = (dq: IDailyQuest, qData: any, e: React.MouseEvent) => {
         e.stopPropagation();

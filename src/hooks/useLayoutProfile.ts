@@ -2,24 +2,23 @@ import { useState, useEffect } from 'react';
 
 export type LayoutProfile = 'MOBILE' | 'TABLET' | 'SMALL_DESKTOP' | 'DESKTOP';
 
+const getProfile = (): LayoutProfile => {
+    if (typeof window === 'undefined') return 'DESKTOP';
+    const width = window.innerWidth;
+    if (width < 768) return 'MOBILE';
+    if (width < 1100) return 'TABLET';
+    if (width < 1400) return 'SMALL_DESKTOP';
+    return 'DESKTOP';
+};
+
 export const useLayoutProfile = (): LayoutProfile => {
-    const [profile, setProfile] = useState<LayoutProfile>('DESKTOP');
+    const [profile, setProfile] = useState<LayoutProfile>(getProfile);
 
     useEffect(() => {
         const updateProfile = () => {
-            const width = window.innerWidth;
-            if (width < 768) {
-                setProfile('MOBILE');
-            } else if (width < 1100) {
-                setProfile('TABLET');
-            } else if (width < 1400) {
-                setProfile('SMALL_DESKTOP');
-            } else {
-                setProfile('DESKTOP');
-            }
+            setProfile(getProfile());
         };
 
-        updateProfile();
         window.addEventListener('resize', updateProfile);
         return () => window.removeEventListener('resize', updateProfile);
     }, []);
