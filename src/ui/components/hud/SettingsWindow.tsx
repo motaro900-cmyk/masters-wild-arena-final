@@ -28,6 +28,9 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
         playerId,
     } = useGameStore();
 
+    const [confirmWipeChat, setConfirmWipeChat] = React.useState(false);
+    const [confirmWipeProgress, setConfirmWipeProgress] = React.useState(false);
+
     const colors = {
         text: '#e8d8a8',
         accent: '#f0c040',
@@ -43,42 +46,36 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
     };
 
     const handleClearCache = async () => {
-        if (
-            window.confirm(
-                'Вы уверены, что хотите полностью сбросить свой прогресс, удалить свои сообщения и начать заново? Это действие необратимо.',
-            )
-        ) {
-            try {
-                const store = useGameStore.getState() as any;
-                const { syncService } = await import('../../../services/SyncService');
-                const { db } = await import('../../../utils/firebase');
-                const { doc, deleteDoc } = await import('firebase/firestore');
+        try {
+            const store = useGameStore.getState() as any;
+            const { syncService } = await import('../../../services/SyncService');
+            const { db } = await import('../../../utils/firebase');
+            const { doc, deleteDoc } = await import('firebase/firestore');
 
-                // 1. Удаляем документы пользователя из Firebase (чтобы сбросить аватар и имя)
-                const userId = store.vkUser ? String(store.vkUser.id) : store.playerId;
-                if (userId) {
-                    const playerRef = doc(db, 'пользователи', userId);
-                    await deleteDoc(playerRef);
-                    console.log('Player doc deleted:', userId);
-                }
-
-                // 2. Удаляем сообщения этого игрока и дефолтного "Мастер" из чата
-                await syncService.deletePlayerMessages('Мастер');
-                if (store.name && store.name !== 'Мастер') {
-                    await syncService.deletePlayerMessages(store.name);
-                }
-
-                // 3. Сбрасываем прогресс в памяти
-                if (store.resetAllProgress) store.resetAllProgress();
-                if (store.resetChat) store.resetChat();
-
-                // 4. Очищаем локальный кэш и перезагружаем страницу
-                localStorage.clear();
-                window.location.reload();
-            } catch (error) {
-                console.error('Ошибка при полном сбросе прогресса:', error);
-                alert('Произошла ошибка при сбросе. Попробуйте еще раз.');
+            // 1. Удаляем документы пользователя из Firebase (чтобы сбросить аватар и имя)
+            const userId = store.vkUser ? String(store.vkUser.id) : store.playerId;
+            if (userId) {
+                const playerRef = doc(db, 'пользователи', userId);
+                await deleteDoc(playerRef);
+                console.log('Player doc deleted:', userId);
             }
+
+            // 2. Удаляем сообщения этого игрока и дефолтного "Мастер" из чата
+            await syncService.deletePlayerMessages('Мастер');
+            if (store.name && store.name !== 'Мастер') {
+                await syncService.deletePlayerMessages(store.name);
+            }
+
+            // 3. Сбрасываем прогресс в памяти
+            if (store.resetAllProgress) store.resetAllProgress();
+            if (store.resetChat) store.resetChat();
+
+            // 4. Очищаем локальный кэш и перезагружаем страницу
+            localStorage.clear();
+            window.location.reload();
+        } catch (error) {
+            console.error('Ошибка при полном сбросе прогресса:', error);
+            alert('Произошла ошибка при сбросе. Попробуйте еще раз.');
         }
     };
 
@@ -611,12 +608,19 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
                                 🎬 ПОВТОРИТЬ ИНТРО
                             </button>
                             <button
-                                onClick={handleClearCache}
+                                onClick={() => {
+                                    if (!confirmWipeProgress) {
+                                        setConfirmWipeProgress(true);
+                                        setTimeout(() => setConfirmWipeProgress(false), 3000);
+                                        return;
+                                    }
+                                    handleClearCache();
+                                }}
                                 style={{
                                     gridColumn: 'span 2',
                                     padding: '12px',
                                     borderRadius: '10px',
-                                    background: 'rgba(255,255,255,0.05)',
+                                    background: confirmWipeProgress ? 'rgba(239,68,68,0.2)' : 'rgba(255,255,255,0.05)',
                                     border: `1px solid ${colors.danger}88`,
                                     color: colors.danger,
                                     fontSize: '12px',
@@ -624,28 +628,28 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
                                     cursor: 'pointer',
                                     boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.05)',
                                     pointerEvents: 'auto',
+                                    transition: 'all 0.3s',
                                 }}
                             >
-                                🗑️ ПОЛНЫЙ ВАЙП ПРОГРЕССА
+                                {confirmWipeProgress ? '⚠️ ТОЧНО СБРОСИТЬ ВСЁ?' : '🗑️ ПОЛНЫЙ ВАЙП ПРОГРЕССА'}
                             </button>
                             <button
                                 onClick={async () => {
-                                    if (
-                                        window.confirm(
-                                            'ВЫ УВЕРЕНЫ? Это удалит ВСЕ сообщения из глобального чата для всех игроков!',
-                                        )
-                                    ) {
-                                        const { syncService } = await import('../../../services/SyncService');
-                                        await syncService.wipeGlobalChat();
-                                        alert('Глобальный чат очищен!');
-                                        window.location.reload();
+                                    if (!confirmWipeChat) {
+                                        setConfirmWipeChat(true);
+                                        setTimeout(() => setConfirmWipeChat(false), 3000);
+                                        return;
                                     }
+                                    const { syncService } = await import('../../../services/SyncService');
+                                    await syncService.wipeGlobalChat();
+                                    alert('Глобальный чат очищен!');
+                                    window.location.reload();
                                 }}
                                 style={{
                                     gridColumn: 'span 2',
                                     padding: '12px',
                                     borderRadius: '10px',
-                                    background: 'rgba(255,255,255,0.05)',
+                                    background: confirmWipeChat ? 'rgba(240,192,64,0.2)' : 'rgba(255,255,255,0.05)',
                                     border: `1px solid #f0c04088`,
                                     color: '#f0c040',
                                     fontSize: '12px',
@@ -654,9 +658,10 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
                                     boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.05)',
                                     marginTop: '10px',
                                     pointerEvents: 'auto',
+                                    transition: 'all 0.3s',
                                 }}
                             >
-                                🧹 АДМИН: ОЧИСТИТЬ ВЕСЬ ЧАТ
+                                {confirmWipeChat ? '⚠️ ТОЧНО УДАЛИТЬ ЧАТ?' : '🧹 АДМИН: ОЧИСТИТЬ ВЕСЬ ЧАТ'}
                             </button>
                         </>
                     )}
