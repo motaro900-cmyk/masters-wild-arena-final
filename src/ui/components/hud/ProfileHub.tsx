@@ -6,7 +6,7 @@ import { audioService } from '../../../services/AudioService';
 import '../../styles/profile-hub.css';
 
 export const ProfileHub: React.FC = () => {
-    const { level, vipLevel, exp, vkUser, title, name } = useGameStore();
+    const { level, vipLevel, exp, vkUser, title, name, avatar } = useGameStore();
 
     const getBadgeColor = (lvl: number) => {
         if (lvl >= 72) return 'from-[#8c6a3d] to-[#1a150f]'; // Эфир (Золотое сияние)
@@ -57,7 +57,11 @@ export const ProfileHub: React.FC = () => {
                 <div className="absolute left-[-18px] top-[-20px] w-[160px] h-[160px] flex items-center justify-center">
                     <div className="w-[108px] h-[108px] rounded-full overflow-hidden bg-black/40 z-10 flex items-center justify-center relative translate-y-[1px]">
                         <img
-                            src={vkUser?.photo_200 || '/assets/images/avatars/панда.webp'}
+                            src={
+                                avatar && avatar.startsWith('http')
+                                    ? avatar
+                                    : vkUser?.photo_200 || vkUser?.photo || '/assets/images/avatars/панда.webp'
+                            }
                             className="w-full h-full object-cover scale-105"
                             alt="avatar"
                         />
