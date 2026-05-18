@@ -45,31 +45,40 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
     const handleClearCache = async () => {
         if (
             window.confirm(
-                'Вы уверены, что хотите полностью сбросить свой прогресс и очистить чат? Это действие необратимо.',
+                'Вы уверены, что хотите полностью сбросить свой прогресс, удалить свои сообщения и начать заново? Это действие необратимо.',
             )
         ) {
             try {
                 const store = useGameStore.getState() as any;
+                const { syncService } = await import('../../../services/SyncService');
+                const { db } = await import('../../../utils/firebase');
+                const { doc, deleteDoc } = await import('firebase/firestore');
 
-                // 1. Сбрасываем прогресс в памяти (уровень, кубки, квесты)
+                // 1. Удаляем документы пользователя из Firebase (чтобы сбросить аватар и имя)
+                const userId = store.vkUser ? String(store.vkUser.id) : store.playerId;
+                if (userId) {
+                    const playerRef = doc(db, 'пользователи', userId);
+                    await deleteDoc(playerRef);
+                    console.log('Player doc deleted:', userId);
+                }
+
+                // 2. Удаляем сообщения этого игрока и дефолтного "Мастер" из чата
+                await syncService.deletePlayerMessages('Мастер');
+                if (store.name && store.name !== 'Мастер') {
+                    await syncService.deletePlayerMessages(store.name);
+                }
+
+                // 3. Сбрасываем прогресс в памяти
                 if (store.resetAllProgress) store.resetAllProgress();
-
-                // 2. Сбрасываем чат локально
                 if (store.resetChat) store.resetChat();
 
-                // 3. Синхронизируем обнуленные данные с Firebase
-                const { syncService } = await import('../../../services/SyncService');
-                await syncService.syncPlayerData();
-
-                // 4. Очищаем сообщения игрока в глобальном чате Firebase
-                await syncService.deletePlayerMessages(store.name || 'Мастер');
+                // 4. Очищаем локальный кэш и перезагружаем страницу
+                localStorage.clear();
+                window.location.reload();
             } catch (error) {
-                console.error('Ошибка при сбросе прогресса в Firebase:', error);
+                console.error('Ошибка при полном сбросе прогресса:', error);
+                alert('Произошла ошибка при сбросе. Попробуйте еще раз.');
             }
-
-            // 4. Очищаем локальный кэш и перезагружаем страницу
-            localStorage.clear();
-            window.location.reload();
         }
     };
 
@@ -616,7 +625,36 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
                                     boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.05)',
                                 }}
                             >
-                                🗑️ ОЧИСТИТЬ КЭШ И СБРОСИТЬ ПРОГРЕСС
+                                🗑️ ПОЛНЫЙ ВАЙП ПРОГРЕССА
+                            </button>
+                            <button
+                                onClick={async () => {
+                                    if (
+                                        window.confirm(
+                                            'ВЫ УВЕРЕНЫ? Это удалит ВСЕ сообщения из глобального чата для всех игроков!',
+                                        )
+                                    ) {
+                                        const { syncService } = await import('../../../services/SyncService');
+                                        await syncService.wipeGlobalChat();
+                                        alert('Глобальный чат очищен!');
+                                        window.location.reload();
+                                    }
+                                }}
+                                style={{
+                                    gridColumn: 'span 2',
+                                    padding: '12px',
+                                    borderRadius: '10px',
+                                    background: 'rgba(255,255,255,0.05)',
+                                    border: `1px solid ${colors.warning}88`,
+                                    color: colors.warning,
+                                    fontSize: '12px',
+                                    fontWeight: 900,
+                                    cursor: 'pointer',
+                                    boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.05)',
+                                    marginTop: '10px',
+                                }}
+                            >
+                                🧹 АДМИН: ОЧИСТИТЬ ВЕСЬ ЧАТ
                             </button>
                         </>
                     )}

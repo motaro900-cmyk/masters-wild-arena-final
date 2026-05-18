@@ -300,6 +300,21 @@ export class SyncService {
     }
 
     /**
+     * ПОЛНОСТЬЮ ОЧИЩАЕТ ГЛОБАЛЬНЫЙ ЧАТ (Админская функция)
+     */
+    public async wipeGlobalChat(): Promise<void> {
+        try {
+            const chatRef = collection(db, 'чат');
+            const snapshot = await getDocs(chatRef);
+            const promises = snapshot.docs.map((doc) => deleteDoc(doc.ref));
+            await Promise.all(promises);
+            console.log(`[SyncService] Wiped ${snapshot.docs.length} messages from global chat.`);
+        } catch (error) {
+            console.error('[SyncService] Failed to wipe global chat:', error);
+        }
+    }
+
+    /**
      * Подписывается на обновления чата
      */
     public subscribeToChat(callback: (messages: any[]) => void): () => void {
