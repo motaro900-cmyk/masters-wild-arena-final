@@ -623,6 +623,7 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
                                     fontWeight: 900,
                                     cursor: 'pointer',
                                     boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.05)',
+                                    pointerEvents: 'auto',
                                 }}
                             >
                                 🗑️ ПОЛНЫЙ ВАЙП ПРОГРЕССА
@@ -652,6 +653,7 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
                                     cursor: 'pointer',
                                     boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.05)',
                                     marginTop: '10px',
+                                    pointerEvents: 'auto',
                                 }}
                             >
                                 🧹 АДМИН: ОЧИСТИТЬ ВЕСЬ ЧАТ
