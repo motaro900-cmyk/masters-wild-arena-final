@@ -50,13 +50,13 @@ export const BaseWindow: React.FC<BaseWindowProps> = ({
                     exit={{ scale: 0.8, opacity: 0 }}
                     className="BaseWindow"
                     style={{
-                        width: isMobile ? '96vw' : width,
-                        height: isMobile ? '90vh' : 'auto',
+                        width: isMobile ? '1800px' : width,
+                        height: isMobile ? '1000px' : 'auto',
                         minHeight: isMobile ? '0' : '500px',
                         background: theme.bg,
                         backgroundImage: theme.pattern,
                         border: `4px solid ${theme.border}`,
-                        borderRadius: isMobile ? '12px' : '20px',
+                        borderRadius: isMobile ? '24px' : '20px',
                         boxShadow: theme.shadow,
                         position: 'relative',
                         display: 'flex',

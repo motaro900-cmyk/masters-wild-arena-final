@@ -10,7 +10,6 @@ import { ShopScene } from './ui/components/hud/ShopScene';
 import { BattlePassScene } from './ui/components/hud/BattlePassScene';
 import { HeroScene } from './ui/components/hud/HeroScene/index';
 import { AnimatePresence } from 'framer-motion';
-import { FpsCounter } from './ui/components/hud/FpsCounter';
 import { IntroScreen } from './ui/components/screens/IntroScreen';
 import { CityScreen } from './ui/components/screens/CityScreen';
 import { ForgeScreen } from './ui/components/screens/ForgeScreen';
@@ -103,8 +102,7 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { has
 
 export const SafeGameLayout = ({ containerRef }: { containerRef: React.RefObject<HTMLDivElement> }) => {
     const [scale, setScale] = React.useState(1);
-    const { showFps, setShowFps } = useGameStore((state) => ({
-        showFps: state.showFps,
+    const { setShowFps } = useGameStore((state) => ({
         setShowFps: state.setShowFps,
     }));
 
@@ -126,7 +124,7 @@ export const SafeGameLayout = ({ containerRef }: { containerRef: React.RefObject
         };
 
         const handleKey = (e: KeyboardEvent) => {
-            if (e.code === 'F8') setShowFps(!showFps);
+            if (e.code === 'F8') setShowFps(!useGameStore.getState().showFps);
         };
 
         const handleFirstInteraction = () => {
@@ -150,7 +148,7 @@ export const SafeGameLayout = ({ containerRef }: { containerRef: React.RefObject
             window.removeEventListener('keydown', handleKey);
             window.removeEventListener('pointerdown', handleFirstInteraction);
         };
-    }, [showFps, setShowFps]);
+    }, [setShowFps]);
 
     const isMobile = useGameStore((state) => state.isMobile);
     const isPortrait = typeof window !== 'undefined' && window.innerWidth < window.innerHeight;
@@ -189,16 +187,15 @@ export const SafeGameLayout = ({ containerRef }: { containerRef: React.RefObject
             >
                 {/* 1. GAME LAYER (PIXI + SCALED CONTENT) */}
                 <div
-                    className="game-container"
+                    className="game-container premium-saturated-panel"
                     style={{
                         width: '100%',
                         height: '100%',
                         position: 'absolute',
                         top: 0,
                         left: 0,
-                        backgroundImage: `url(${
-                            isMobile ? AssetsMap.BACKGROUNDS.MAIN_MENU_MOBILE : AssetsMap.BACKGROUNDS.MAIN_MENU
-                        })`,
+                        backgroundImage: `url(${isMobile ? AssetsMap.BACKGROUNDS.MAIN_MENU_MOBILE : AssetsMap.BACKGROUNDS.MAIN_MENU
+                            })`,
                         backgroundSize: 'cover',
                         backgroundPosition: 'center',
                         backgroundColor: '#0c0c0c',
@@ -209,12 +206,11 @@ export const SafeGameLayout = ({ containerRef }: { containerRef: React.RefObject
                     }}
                 >
                     <div ref={containerRef} style={{ position: 'absolute', inset: 0, pointerEvents: 'auto' }} />
-                    {showFps && <FpsCounter />}
                 </div>
 
                 {/* 2. HUD LAYER (LIQUID / ADAPTIVE) */}
                 <div
-                    className="hud-layer"
+                    className="hud-layer premium-saturated-panel"
                     style={{
                         position: 'absolute',
                         inset: 0,
@@ -325,8 +321,8 @@ export const Root = () => {
                             const store = useGameStore.getState();
                             store.setVkUser(user);
                             // [Fix] Всегда обновляем аватар из ВК при старте
-                            if (user.photo_200 || user.photo) {
-                                store.updateProfile({ avatar: user.photo_200 || user.photo });
+                            if (user.photo200 || user.photo) {
+                                store.updateProfile({ avatar: user.photo200 || user.photo });
                             }
                         }
                     }

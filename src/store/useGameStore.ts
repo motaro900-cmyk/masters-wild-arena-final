@@ -451,7 +451,7 @@ export const useGameStore = create<any>()(
                 { id: 3, text: 'Куплю Меч Рассвета, дорого!', sender: 'TraderBob' },
                 { id: 4, text: 'Когда обнова?', sender: 'NoobMaster99' },
             ],
-            addChatMessage: (msg) =>
+            addChatMessage: (msg: any) =>
                 set((state: any) => ({
                     chatMessages: [...state.chatMessages, { id: Date.now(), ...msg }].slice(-50),
                 })),
@@ -503,6 +503,9 @@ export const useGameStore = create<any>()(
             lastDailyRefresh: 0,
 
             // PET SYSTEM
+            // DECAY CONSTANTS (also referenced in BestiaryWindow.tsx for UI display):
+            //   hunger decays by 20 every 1 hour  → empty in 5h, critical at ~3.25h
+            //   happiness decays by 10 every 30min → empty in 5h, critical at ~3.25h
             pet: {
                 id: 'baby_dragon',
                 name: 'Дракоша',
@@ -511,6 +514,12 @@ export const useGameStore = create<any>()(
                 hunger: 100,
                 happiness: 100,
                 lastFed: Date.now(),
+                // offline decay timestamps
+                lastHungerDecay: Date.now(),
+                lastHappinessDecay: Date.now(),
+                // petting charge system
+                petCharges: 5,
+                lastPetTime: Date.now(),
             },
 
             canClaimDailyGift: false,
@@ -524,7 +533,7 @@ export const useGameStore = create<any>()(
 
             heroesInitialTab: 'LIST',
             uiTheme: 'DARK',
-            showFps: false,
+            showFps: true,
             musicVolume: 70,
             soundVolume: 85,
             graphicsQuality: /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)

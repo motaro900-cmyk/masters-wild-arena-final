@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useGameStore } from '../../store/useGameStore';
 import { AssetsMap } from '../../configs/AssetsMap';
 
@@ -35,6 +35,7 @@ import { safeGetItem, safeSetItem } from '../../utils/SafeStorage';
 export const GameHUD: React.FC = () => {
     const activeScreen = useGameStore((state) => state.activeScreen);
     const vipLevel = useGameStore((state) => state.vipLevel);
+    const isMobile = useGameStore((state) => state.isMobile);
     const [activeWindow, setActiveWindow] = useState<string | null>(null);
     const [showAdmin, setShowAdmin] = useState(false);
     const [devModal, setDevModal] = useState({ isOpen: false, title: '' });
@@ -42,6 +43,28 @@ export const GameHUD: React.FC = () => {
     const [prevScreen, setPrevScreen] = useState(activeScreen);
 
     const [hudScale, setHudScale] = useState(1);
+    const showFps = useGameStore((state) => state.showFps);
+    const [fpsValue, setFpsValue] = useState(0);
+    const fpsRafRef = useRef<number>(0);
+
+    useEffect(() => {
+        if (!showFps) return;
+        let frameCount = 0;
+        let lastTime = performance.now();
+
+        const tick = () => {
+            frameCount++;
+            const now = performance.now();
+            if (now - lastTime >= 500) {
+                setFpsValue(Math.round((frameCount * 1000) / (now - lastTime)));
+                frameCount = 0;
+                lastTime = now;
+            }
+            fpsRafRef.current = requestAnimationFrame(tick);
+        };
+        fpsRafRef.current = requestAnimationFrame(tick);
+        return () => cancelAnimationFrame(fpsRafRef.current);
+    }, [showFps]);
 
     React.useEffect(() => {
         const handleResize = () => {
@@ -179,19 +202,49 @@ export const GameHUD: React.FC = () => {
 
             {/* 2. BATTLE PASS BAR */}
             {!isFullScreenScene && (
-                <div className="absolute top-[20px] left-1/2 -translate-x-1/2 hud-interactive">
+                <div 
+                    className="absolute top-[20px] left-1/2 -translate-x-1/2 hud-interactive"
+                    style={isMobile ? { transform: `translateX(-50%) scale(${hudScale})`, transformOrigin: 'top center' } : {}}
+                >
                     <BattlePassBar />
                 </div>
             )}
 
             {/* 3. RESOURCES */}
             {activeScreen !== 'BATTLE' && (
-                <div className="absolute top-[20px] right-[25px] hud-interactive">
+                <div 
+                    className="absolute top-[20px] right-[25px] hud-interactive flex flex-col items-end gap-1"
+                    style={isMobile ? { transform: `scale(${hudScale})`, transformOrigin: 'top right' } : {}}
+                >
                     <ResourceBar
                         onOpenShop={(tab) => {
                             goToShop(tab === 'RESOURCES' ? 'BANK' : 'ALCHEMY');
                         }}
                     />
+                    {showFps && (
+                        <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            background: 'rgba(0,0,0,0.55)',
+                            backdropFilter: 'blur(8px)',
+                            border: '1px solid rgba(255,255,255,0.08)',
+                            borderRadius: '8px',
+                            padding: '3px 10px',
+                            pointerEvents: 'none',
+                        }}>
+                            <span style={{ fontSize: '9px', opacity: 0.5, color: '#fff', textTransform: 'uppercase', letterSpacing: '1px' }}>FPS</span>
+                            <span style={{
+                                fontSize: '14px',
+                                fontWeight: 800,
+                                fontFamily: 'monospace',
+                                minWidth: '30px',
+                                textAlign: 'center',
+                                color: fpsValue < 25 ? '#ff4444' : fpsValue < 50 ? '#ffcc00' : '#44ff44',
+                                transition: 'color 0.3s',
+                            }}>{fpsValue}</span>
+                        </div>
+                    )}
                 </div>
             )}
 
@@ -286,13 +339,15 @@ export const GameHUD: React.FC = () => {
                     </div>
 
                     <div
-                        className="absolute bottom-[15px] left-[calc(5px+env(safe-area-inset-left))] hud-interactive max-h-[140px] md:max-h-none overflow-hidden"
+                        className="absolute bottom-[15px] left-[calc(5px+env(safe-area-inset-left))] hud-interactive"
                         style={{ transform: `scale(${hudScale})`, transformOrigin: 'bottom left' }}
                     >
                         <ChatPanel />
                     </div>
 
-                    <div className="absolute bottom-[30px] left-1/2 -translate-x-1/2 hud-interactive">
+                    <div className="absolute bottom-[30px] left-1/2 -translate-x-1/2 hud-interactive"
+                        style={isMobile ? { transform: `translateX(-50%) scale(${hudScale})`, transformOrigin: 'bottom center' } : {}}
+                    >
                         <ActionButtons
                             onStartBattle={() => setActiveWindow('RANKED_LOBBY')}
                             onWarmup={() => useGameStore.getState().setScreen('BATTLE')}
@@ -301,59 +356,63 @@ export const GameHUD: React.FC = () => {
                     </div>
 
                     {/* STANDALONE CITY BUTTON (100px further right) */}
-                    <button
+                    <div 
                         className="absolute bottom-[10px] left-[calc(50%+400px)] hud-interactive"
-                        onClick={() => useGameStore.getState().goToCity()}
-                        style={{
-                            width: '200px',
-                            height: '240px',
-                            background: 'none',
-                            border: 'none',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            gap: '15px',
-                            transition: 'all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
-                            pointerEvents: 'auto',
-                        }}
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.transform = 'scale(1.08) translateY(-10px)';
-                            const img = e.currentTarget.querySelector('img');
-                            if (img) img.style.filter = 'drop-shadow(0 0 35px rgba(240,192,64,0.7))';
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.transform = 'scale(1) translateY(0)';
-                            const img = e.currentTarget.querySelector('img');
-                            if (img) img.style.filter = 'drop-shadow(0 0 15px rgba(240,192,64,0.4))';
-                        }}
+                        style={isMobile ? { transform: `scale(${hudScale})`, transformOrigin: 'bottom center' } : {}}
                     >
-                        <img
-                            src="/assets/images/ui/icon_city.png"
+                        <button
+                            onClick={() => useGameStore.getState().goToCity()}
                             style={{
-                                width: '180px',
-                                height: '180px',
-                                objectFit: 'contain',
-                                filter: 'drop-shadow(0 0 15px rgba(240,192,64,0.4))',
-                                transition: 'all 0.3s ease',
+                                width: '200px',
+                                height: '240px',
+                                background: 'none',
+                                border: 'none',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: '15px',
+                                transition: 'all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+                                pointerEvents: 'auto',
                             }}
-                            alt="City"
-                        />
-                        <div
-                            style={{
-                                fontFamily: "'Cinzel', serif",
-                                fontSize: '18px',
-                                fontWeight: 900,
-                                color: '#f0c040',
-                                letterSpacing: '4px',
-                                textShadow: '0 3px 12px rgba(0,0,0,1)',
-                                textTransform: 'uppercase',
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.transform = 'scale(1.08) translateY(-10px)';
+                                const img = e.currentTarget.querySelector('img');
+                                if (img) img.style.filter = 'drop-shadow(0 0 35px rgba(240,192,64,0.7))';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.transform = 'scale(1) translateY(0)';
+                                const img = e.currentTarget.querySelector('img');
+                                if (img) img.style.filter = 'drop-shadow(0 0 15px rgba(240,192,64,0.4))';
                             }}
                         >
-                            В ГОРОД
-                        </div>
-                    </button>
+                            <img
+                                src="/assets/images/ui/icon_city.png"
+                                style={{
+                                    width: '180px',
+                                    height: '180px',
+                                    objectFit: 'contain',
+                                    filter: 'drop-shadow(0 0 15px rgba(240,192,64,0.4))',
+                                    transition: 'all 0.3s ease',
+                                }}
+                                alt="City"
+                            />
+                            <div
+                                style={{
+                                    fontFamily: "'Cinzel', serif",
+                                    fontSize: '18px',
+                                    fontWeight: 900,
+                                    color: '#f0c040',
+                                    letterSpacing: '4px',
+                                    textShadow: '0 3px 12px rgba(0,0,0,1)',
+                                    textTransform: 'uppercase',
+                                }}
+                            >
+                                В ГОРОД
+                            </div>
+                        </button>
+                    </div>
 
                     <div
                         className="absolute bottom-[40px] right-[25px] hud-interactive"
@@ -367,6 +426,7 @@ export const GameHUD: React.FC = () => {
                             border: '1px solid rgba(240, 192, 64, 0.25)',
                             borderRadius: '20px',
                             boxShadow: '0 10px 30px rgba(0,0,0,0.7)',
+                            ...(isMobile ? { transform: `scale(${hudScale})`, transformOrigin: 'bottom right' } : {})
                         }}
                     >
                         {[
