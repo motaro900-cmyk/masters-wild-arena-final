@@ -193,7 +193,7 @@ export const GameHUD: React.FC = () => {
             {/* 1. PLAYER PROFILE HUB */}
             {!isFullScreenScene && (
                 <div
-                    className="absolute top-[30px] left-[calc(5px+env(safe-area-inset-left))] hud-interactive w-[340px] md:w-[465px]"
+                    className="absolute top-[30px] left-[5px] hud-interactive w-[340px] md:w-[465px]"
                     style={{ transform: `scale(${hudScale})`, transformOrigin: 'top left' }}
                 >
                     <ProfileHub />
@@ -251,7 +251,13 @@ export const GameHUD: React.FC = () => {
             {/* 4. SIDEBARS & PANELS */}
             {!isFullScreenScene && (
                 <>
-                    <div className="absolute top-[455px] left-[-10px] -translate-y-1/2 hud-interactive">
+                    <div 
+                        className="absolute top-[455px] left-[-10px] hud-interactive"
+                        style={{
+                            transform: `translateY(-50%) scale(${hudScale})`,
+                            transformOrigin: 'left center'
+                        }}
+                    >
                         <LeftSidebar
                             onOpenWindow={(id) => {
                                 if (id === 'STORE') useGameStore.getState().goToShop();
@@ -262,7 +268,7 @@ export const GameHUD: React.FC = () => {
                     </div>
 
                     <div
-                        className="absolute top-[160px] right-[calc(25px+env(safe-area-inset-right))] flex flex-col gap-3 items-end hud-interactive w-[260px] md:w-[400px]"
+                        className="absolute top-[160px] right-[25px] flex flex-col gap-3 items-end hud-interactive w-[260px] md:w-[400px]"
                         style={{ transform: `scale(${hudScale})`, transformOrigin: 'top right' }}
                     >
                         <DailyGiftBanner onClick={() => setActiveWindow('GIFT')} />
@@ -339,7 +345,7 @@ export const GameHUD: React.FC = () => {
                     </div>
 
                     <div
-                        className="absolute bottom-[15px] left-[calc(5px+env(safe-area-inset-left))] hud-interactive"
+                        className="absolute bottom-[15px] left-[5px] hud-interactive"
                         style={{ transform: `scale(${hudScale})`, transformOrigin: 'bottom left' }}
                     >
                         <ChatPanel />
