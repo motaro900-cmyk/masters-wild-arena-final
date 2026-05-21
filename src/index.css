@@ -32,11 +32,13 @@ html,
     --ui-scale: 1.25;
 }
 
+/*
 .is-mobile .hud-interactive {
     transform-origin: center;
     scale: var(--ui-scale);
     pointer-events: auto;
 }
+*/
 
 
 
@@ -46,18 +48,18 @@ html,
 }
 
 /* Fullscreen windows on mobile */
+/*
 .is-mobile .BaseWindow {
     width: 1800px !important;
     height: 1000px !important;
     max-width: none !important;
     max-height: none !important;
 }
+*/
 
 /* Safe areas for notched phones */
-@supports (padding: env(safe-area-inset-top)) {
-    .is-mobile .game-hud-root {
-        padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
-    }
+.is-mobile .game-hud-root {
+    padding: 0 !important;
 }
 
 /* Tappable targets size increase */

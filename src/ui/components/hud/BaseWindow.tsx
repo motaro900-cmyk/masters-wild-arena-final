@@ -11,6 +11,7 @@ interface BaseWindowProps {
     onClose: () => void;
     children: React.ReactNode;
     width?: string;
+    height?: string;
     headerExtra?: React.ReactNode;
 }
 
@@ -20,6 +21,7 @@ export const BaseWindow: React.FC<BaseWindowProps> = ({
     onClose,
     children,
     width = '850px',
+    height = 'auto',
     headerExtra,
 }) => {
     const uiTheme = useGameStore((state) => state.uiTheme);
@@ -39,8 +41,6 @@ export const BaseWindow: React.FC<BaseWindowProps> = ({
         shadow: isLight ? '0 10px 40px rgba(0,0,0,0.3)' : '0 0 50px rgba(0,0,0,1), inset 0 0 40px rgba(0,0,0,0.8)',
     };
 
-    const isMobile = useGameStore((state) => state.isMobile);
-
     return (
         <AnimatePresence>
             {isOpen && (
@@ -50,13 +50,13 @@ export const BaseWindow: React.FC<BaseWindowProps> = ({
                     exit={{ scale: 0.8, opacity: 0 }}
                     className="BaseWindow"
                     style={{
-                        width: isMobile ? '1800px' : width,
-                        height: isMobile ? '1000px' : 'auto',
-                        minHeight: isMobile ? '0' : '500px',
+                        width: width,
+                        height: height,
+                        minHeight: '500px',
                         background: theme.bg,
                         backgroundImage: theme.pattern,
                         border: `4px solid ${theme.border}`,
-                        borderRadius: isMobile ? '24px' : '20px',
+                        borderRadius: '20px',
                         boxShadow: theme.shadow,
                         position: 'relative',
                         display: 'flex',
