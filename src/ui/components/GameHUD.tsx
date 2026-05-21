@@ -70,9 +70,10 @@ export const GameHUD: React.FC = () => {
         const handleResize = () => {
             const width = window.innerWidth;
 
-            // Адаптивный скейл от 1280px (как просил пользователь)
-            if (width < 1280) {
-                setHudScale(Math.max(0.5, width / 1280)); // Не даем опускаться ниже 0.5
+            if (isMobile) {
+                setHudScale(1);
+            } else if (width < 1280) {
+                setHudScale(Math.max(0.5, width / 1280));
             } else {
                 setHudScale(1);
             }
@@ -80,7 +81,7 @@ export const GameHUD: React.FC = () => {
         handleResize();
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
-    }, []);
+    }, [isMobile]);
 
     // Автоматически закрываем любые окна при смене основного экрана (Pattern: Adjusting state during render)
     if (activeScreen !== prevScreen) {
@@ -204,7 +205,7 @@ export const GameHUD: React.FC = () => {
             {!isFullScreenScene && (
                 <div 
                     className="absolute top-[20px] left-1/2 -translate-x-1/2 hud-interactive"
-                    style={isMobile ? { transform: `translateX(-50%) scale(${hudScale})`, transformOrigin: 'top center' } : {}}
+                    style={isMobile ? { transform: `scale(${hudScale})`, transformOrigin: 'top center' } : {}}
                 >
                     <BattlePassBar />
                 </div>
@@ -352,7 +353,7 @@ export const GameHUD: React.FC = () => {
                     </div>
 
                     <div className="absolute bottom-[30px] left-1/2 -translate-x-1/2 hud-interactive"
-                        style={isMobile ? { transform: `translateX(-50%) scale(${hudScale})`, transformOrigin: 'bottom center' } : {}}
+                        style={isMobile ? { transform: `scale(${hudScale})`, transformOrigin: 'bottom center' } : {}}
                     >
                         <ActionButtons
                             onStartBattle={() => setActiveWindow('RANKED_LOBBY')}
