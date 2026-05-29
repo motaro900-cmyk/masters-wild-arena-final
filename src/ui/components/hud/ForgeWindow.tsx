@@ -36,19 +36,23 @@ export const ForgeWindow: React.FC = () => {
     const itemData = selectedItemId ? ITEMS_DATABASE[selectedItemId] : null;
 
     const currentLevel = invItem?.level || 1;
-    const maxLevel = 5;
+    const maxLevel = 3; // максимальный уровень соответствует useGameStore
 
-    // Расчет стоимости
+    // Расчет стоимости — Баланс v2 (синхронизировано с useGameStore.upgradeItem)
     let upgradeCostGold = 0;
     let upgradeCostGem = 0;
 
     if (itemData) {
-        const basePrice = itemData.priceGold || 1000;
-        const baseGem = itemData.priceGem || 0;
-        const multiplier = Math.pow(2, currentLevel - 1) * 0.5;
-        upgradeCostGold = Math.round(basePrice * multiplier);
-        if (baseGem > 0 || currentLevel > 3) {
-            upgradeCostGem = Math.round((baseGem || 10) * currentLevel);
+        const isDiamondItem = (itemData as any).priceGem && (itemData as any).priceGem > 0;
+        if (!isDiamondItem) {
+            const basePrice = (itemData as any).priceGold || 0;
+            if (currentLevel === 1)
+                upgradeCostGold = Math.round(basePrice * 1.5); // было 0.5×
+            else if (currentLevel === 2) upgradeCostGold = Math.round(basePrice * 3.0); // было 1.0×
+        } else {
+            if (currentLevel === 1)
+                upgradeCostGem = 75; // было 50
+            else if (currentLevel === 2) upgradeCostGem = 150; // было 100
         }
     }
 
@@ -174,7 +178,7 @@ export const ForgeWindow: React.FC = () => {
                                 <motion.button
                                     key={item.id}
                                     whileHover={{ scale: 1.05 }}
-                                    whileTap={{ scale: 0.95 }}
+                                    whileTap={{ scale: 0.92 }}
                                     onClick={() => setSelectedItemId(item.id)}
                                     style={{
                                         aspectRatio: '1/1',

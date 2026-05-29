@@ -25,16 +25,16 @@ export const TalentNode = ({
                 height: '120px',
                 borderRadius: '28px',
                 background: isUnlocked ? 'rgba(20, 20, 30, 0.85)' : 'rgba(10,10,15,0.9)',
-                border: `3px solid ${isMax ? '#f0c040' : isUnlocked ? branchColor : 'rgba(255,255,255,0.1)'}`,
+                border: `2px solid ${isMax ? '#f0c040' : isUnlocked ? `${branchColor}cc` : 'rgba(255,255,255,0.08)'}`,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 cursor: isUnlocked && !isMax && canAfford ? 'pointer' : 'default',
                 position: 'relative',
                 boxShadow: isMax
-                    ? `0 0 45px #f0c04066, inset 0 0 25px #f0c04022`
+                    ? `0 0 35px rgba(240,192,64,0.4), inset 0 0 15px rgba(240,192,64,0.15)`
                     : isUnlocked
-                      ? `0 8px 25px rgba(0,0,0,0.4)`
+                      ? `0 8px 25px rgba(0,0,0,0.5), inset 0 0 15px ${branchColor}1a`
                       : 'none',
                 filter: isUnlocked ? 'none' : 'grayscale(1) brightness(0.4)',
                 transition: 'all 0.25s ease-out',
@@ -78,17 +78,38 @@ export const TalentNode = ({
             </div>
 
             {isMax && (
-                <motion.div
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 15, repeat: Infinity, ease: 'linear' }}
-                    style={{
-                        position: 'absolute',
-                        inset: '-6px',
-                        border: '2px dashed #f0c040',
-                        borderRadius: '28px',
-                        opacity: 0.3,
-                    }}
-                />
+                <>
+                    {/* Эпическое свечение максимального уровня */}
+                    <motion.div
+                        animate={{
+                            boxShadow: [
+                                '0 0 15px rgba(240,192,64,0.4)',
+                                '0 0 35px rgba(240,192,64,0.8)',
+                                '0 0 15px rgba(240,192,64,0.4)',
+                            ],
+                        }}
+                        transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+                        style={{
+                            position: 'absolute',
+                            inset: 0,
+                            borderRadius: '28px',
+                            pointerEvents: 'none',
+                            zIndex: -1,
+                        }}
+                    />
+                    <motion.div
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 15, repeat: Infinity, ease: 'linear' }}
+                        style={{
+                            position: 'absolute',
+                            inset: '-6px',
+                            border: '2px dashed #f0c040',
+                            borderRadius: '28px',
+                            opacity: 0.7,
+                            boxShadow: '0 0 10px rgba(240,192,64,0.5)',
+                        }}
+                    />
+                </>
             )}
         </motion.div>
     );

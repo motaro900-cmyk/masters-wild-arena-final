@@ -19,7 +19,8 @@ export const ProfileBar: React.FC<ProfileBarProps> = ({ onOpenProfile }) => {
     const xpToNextLevel = level * 600;
     const isLevelUpReady = exp >= xpToNextLevel;
     const xpPercent = Math.min(100, (exp / xpToNextLevel) * 100);
-    const playerName = (vkUser?.firstName || 'DRAGONSLAYER').toUpperCase();
+    const name = store.name;
+    const playerName = (name && name !== 'Мастер' ? name : vkUser?.firstName || 'DRAGONSLAYER').toUpperCase();
 
     const getRankData = (tr: number) => {
         if (tr >= 5000) return { name: 'ЛЕГЕНДА', color: '#00ffff' };

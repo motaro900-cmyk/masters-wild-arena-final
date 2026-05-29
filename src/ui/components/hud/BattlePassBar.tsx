@@ -6,7 +6,29 @@ import { AssetsMap } from '../../../configs/AssetsMap';
  * BattlePassBar (v5.1) — Растянутая по высоте версия.
  */
 export const BattlePassBar: React.FC = () => {
-    const { bpLevel, setScreen } = useGameStore();
+    const { bpLevel, bpExp, setScreen } = useGameStore();
+    const maxExp = 1000;
+    const progress = Math.min(100, Math.max(0, (bpExp / maxExp) * 100));
+
+    const [timeLeft, setTimeLeft] = React.useState('');
+
+    React.useEffect(() => {
+        const updateTimer = () => {
+            const now = new Date();
+            const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+            const diff = endOfMonth.getTime() - now.getTime();
+
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+
+            setTimeLeft(`${days}д ${hours}ч ${mins}м`);
+        };
+
+        updateTimer();
+        const interval = setInterval(updateTimer, 60000);
+        return () => clearInterval(interval);
+    }, []);
 
     return (
         <div
@@ -61,6 +83,59 @@ export const BattlePassBar: React.FC = () => {
                     </span>
                 </div>
 
+                {/* ДИНАМИЧЕСКИЙ ПРОГРЕСС-БАР ОПЫТА (С МАСКОЙ ДЛЯ СТАТИЧЕСКОЙ ПОЛОСКИ) */}
+                <div
+                    style={{
+                        position: 'absolute',
+                        left: '24.9%',
+                        top: 'calc(49% + 10px)',
+                        width: '48.2%',
+                        height: '18px',
+                        transform: 'translateY(-50%)',
+                        borderRadius: '9px',
+                        pointerEvents: 'none',
+                        background: '#0c0d10', // Перекрывает встроенную статическую полоску
+                        border: '1px solid rgba(240, 192, 64, 0.45)', // Золотая окантовка
+                        boxShadow: '0 1px 3px rgba(0,0,0,0.8), inset 0 1px 5px rgba(0,0,0,0.9)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        overflow: 'hidden',
+                    }}
+                >
+                    {/* Заполняющаяся часть */}
+                    <div
+                        style={{
+                            width: `${progress}%`,
+                            height: '100%',
+                            background: 'linear-gradient(90deg, #f0c040 0%, #ffea80 50%, #f0c040 100%)',
+                            position: 'absolute',
+                            left: 0,
+                            top: 0,
+                            borderRadius: '9px',
+                            boxShadow: '0 0 10px rgba(240, 192, 64, 0.8)',
+                            transition: 'width 0.3s ease-out',
+                        }}
+                        className="bp-gold-sweep"
+                    />
+
+                    {/* Текст с количеством опыта */}
+                    <div
+                        style={{
+                            position: 'relative',
+                            zIndex: 2,
+                            fontFamily: "'Nunito', sans-serif",
+                            fontSize: '11px',
+                            fontWeight: 900,
+                            color: '#ffffff',
+                            textShadow: '1px 1px 2px rgba(0,0,0,1), 0 0 4px rgba(0,0,0,0.8)',
+                            pointerEvents: 'none',
+                        }}
+                    >
+                        {bpExp} / {maxExp} XP
+                    </div>
+                </div>
+
                 {/* ЗАГОЛОВОК */}
                 <div
                     style={{
@@ -102,7 +177,7 @@ export const BattlePassBar: React.FC = () => {
                     }}
                 >
                     <span style={{ fontSize: 11 }}>⏳</span>
-                    <span>ДО КОНЦА: 14д 06ч 24м</span>
+                    <span>ДО КОНЦА: {timeLeft}</span>
                 </div>
             </div>
         </div>

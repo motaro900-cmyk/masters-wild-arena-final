@@ -33,8 +33,13 @@ export const FilterBar = ({ activeFilter, onSelect }: any) => {
                 return (
                     <motion.button
                         key={f.id}
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
+                        whileHover={{
+                            scale: 1.05,
+                            filter: isActive
+                                ? 'brightness(1.4) drop-shadow(0 0 8px rgba(255,200,0,0.6))'
+                                : 'brightness(1.15)',
+                        }}
+                        whileTap={{ scale: 0.92 }}
                         onClick={() => onSelect(f.id)}
                         style={{
                             width: '140px',

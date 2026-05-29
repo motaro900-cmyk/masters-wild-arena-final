@@ -43,18 +43,18 @@
     background-position: 100% 100%;
 }
 
-/* Talents Sheet (12 icons, grid 4x3) */
+/* Talents Sheet (12 icons, grid 4x4 in 1024x1024 sheet) */
 .sprite-talent {
     width: 64px;
     height: 64px;
     background-image: url('/assets/images/sheets/talents_sheet.webp');
-    background-size: 400% 300%;
+    background-size: 400% 400%;
 }
 .talent-1 {
     background-position: 0% 0%;
 }
 .talent-2 {
-    background-position: 33.33% 0%;
+    background-position: calc(33.33% + 3px) calc(0% + 4px);
 }
 .talent-3 {
     background-position: 66.66% 0%;
@@ -63,28 +63,28 @@
     background-position: 100% 0%;
 }
 .talent-5 {
-    background-position: 0% 50%;
+    background-position: 0% 33.33%;
 }
 .talent-6 {
-    background-position: 33.33% 50%;
+    background-position: 33.33% 33.33%;
 }
 .talent-7 {
-    background-position: 66.66% 50%;
+    background-position: 66.66% 33.33%;
 }
 .talent-8 {
-    background-position: 100% 50%;
+    background-position: 100% 33.33%;
 }
 .talent-9 {
-    background-position: 0% 100%;
+    background-position: 0% 66.66%;
 }
 .talent-10 {
-    background-position: 33.33% 100%;
+    background-position: 33.33% 66.66%;
 }
 .talent-11 {
-    background-position: 66.66% 100%;
+    background-position: 66.66% 66.66%;
 }
 .talent-12 {
-    background-position: 100% 100%;
+    background-position: 100% 66.66%;
 }
 
 /* Equipment Master Sheets (16 icons each, grid 4x4) */
@@ -243,7 +243,7 @@
     mix-blend-mode: screen;
 }
 .sprite-trophy {
-    background-image: url('/assets/images/ui/trophy_premium.png');
+    background-image: url('/assets/images/ui/trophy_premium.webp');
     background-size: contain;
     background-repeat: no-repeat;
     mix-blend-mode: screen;

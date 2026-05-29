@@ -611,7 +611,7 @@ export const MailWindow: React.FC<MailWindowProps> = () => {
                                     </div>
                                     <motion.button
                                         whileHover={{ scale: 1.05 }}
-                                        whileTap={{ scale: 0.95 }}
+                                        whileTap={{ scale: 0.92 }}
                                         onClick={() => {
                                             claimMailReward(selectedMail.id);
                                             setView('LIST');

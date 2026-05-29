@@ -27,24 +27,23 @@ export const EquippedHeroView: React.FC<EquippedHeroViewProps> = ({ heroId, size
 
                 const style: any = isBody
                     ? {
+                          position: 'absolute',
                           left: layer.x,
                           top: layer.y,
-                          width: 512 * dimensions.scaleFactor,
-                          height: 512 * dimensions.scaleFactor,
+                          width: dimensions.normWidth * dimensions.scaleFactor,
+                          height: dimensions.normHeight * dimensions.scaleFactor,
+                          objectFit: 'contain',
                           zIndex: layer.zIndex,
                       }
                     : {
                           position: 'absolute',
                           left: layer.x,
                           top: layer.y,
-                          width: isWeapon ? 512 * dimensions.scaleFactor : 512 * layer.scale,
-                          height: isWeapon ? 512 * dimensions.scaleFactor : 'auto',
+                          width: 512,
+                          height: 512,
+                          objectFit: 'contain',
                           zIndex: layer.zIndex,
                           filter: `brightness(1.1) contrast(1.1)`,
-                          x: '-50%',
-                          y: isWeapon ? '-90%' : '-50%',
-                          scale: layer.scale,
-                          rotate: layer.rotation,
                           transformOrigin: isWeapon ? '50% 90%' : '50% 50%',
                       };
 
@@ -57,6 +56,7 @@ export const EquippedHeroView: React.FC<EquippedHeroViewProps> = ({ heroId, size
                             style={{
                                 ...style,
                                 overflow: 'hidden',
+                                ...layer.style,
                             }}
                         >
                             <motion.img
@@ -85,9 +85,22 @@ export const EquippedHeroView: React.FC<EquippedHeroViewProps> = ({ heroId, size
                             style={{
                                 ...style,
                                 backgroundSize: '400% 400%',
+                                ...layer.style,
                             }}
-                            initial={{ opacity: 0, scale: 0.8 }}
-                            animate={{ opacity: 1, scale: layer.scale }}
+                            initial={{
+                                opacity: 0,
+                                scale: 0.8 * layer.scale,
+                                rotate: layer.rotation,
+                                x: '-50%',
+                                y: isWeapon ? '-90%' : '-50%',
+                            }}
+                            animate={{
+                                opacity: 1,
+                                scale: layer.scale,
+                                rotate: layer.rotation,
+                                x: '-50%',
+                                y: isWeapon ? '-90%' : '-50%',
+                            }}
                             transition={{ duration: 0.3 }}
                         />
                     );
@@ -99,9 +112,32 @@ export const EquippedHeroView: React.FC<EquippedHeroViewProps> = ({ heroId, size
                         key={key}
                         src={layer.src}
                         className="absolute pointer-events-none"
-                        style={style}
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        animate={{ opacity: 1, scale: layer.scale }}
+                        style={{
+                            ...style,
+                            ...layer.style,
+                        }}
+                        initial={
+                            isBody
+                                ? { opacity: 0 }
+                                : {
+                                      opacity: 0,
+                                      scale: 0.8 * layer.scale,
+                                      rotate: layer.rotation,
+                                      x: '-50%',
+                                      y: isWeapon ? '-90%' : '-50%',
+                                  }
+                        }
+                        animate={
+                            isBody
+                                ? { opacity: 1 }
+                                : {
+                                      opacity: 1,
+                                      scale: layer.scale,
+                                      rotate: layer.rotation,
+                                      x: '-50%',
+                                      y: isWeapon ? '-90%' : '-50%',
+                                  }
+                        }
                         transition={{ duration: 0.3 }}
                     />
                 );

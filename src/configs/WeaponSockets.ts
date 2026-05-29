@@ -26,13 +26,13 @@ export const WEAPON_SOCKETS: Record<string, HeroSockets> = {
         '7': { x: -10, y: -325, rotation: 0.86, scale: 1.0 }, // VICTORY
 
         // --- HELMETS (Relative to head) ---
-        HELMET: { x: 0, y: -580, rotation: 0, scale: 0.85 },
+        HELMET: { x: 0, y: -510, rotation: 0, scale: 0.52 },
 
         // --- ARMOR (Over torso) ---
         ARMOR: { x: 0, y: -380, rotation: 0, scale: 1.15 },
 
         // --- SHIELDS (Left hand) ---
-        SHIELD: { x: -120, y: -300, rotation: -0.4, scale: 0.9 },
+        SHIELD: { x: -110, y: -300, rotation: -0.4, scale: 0.55 },
     },
     // Здесь можно легко добавить других героев
     fox: {

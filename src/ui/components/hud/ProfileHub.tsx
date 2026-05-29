@@ -4,6 +4,7 @@ import { useGameStore } from '../../../store/useGameStore';
 import { AssetsMap } from '../../../configs/AssetsMap';
 import { audioService } from '../../../services/AudioService';
 import '../../styles/profile-hub.css';
+import { UnderDevelopmentModal } from './SharedUI';
 
 export const ProfileHub: React.FC = () => {
     const { level, vipLevel, exp, vkUser, title, name, avatar } = useGameStore();
@@ -26,6 +27,7 @@ export const ProfileHub: React.FC = () => {
 
     const [showExpTooltip, setShowExpTooltip] = React.useState(false);
     const [isHoveredVIP, setIsHoveredVIP] = React.useState(false);
+    const [devModalOpen, setDevModalOpen] = React.useState(false);
 
     React.useEffect(() => {
         if (exp >= maxExp) {
@@ -41,6 +43,7 @@ export const ProfileHub: React.FC = () => {
                 className="relative pointer-events-auto cursor-pointer"
                 onClick={() => {
                     audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
+                    setDevModalOpen(true);
                 }}
                 style={{
                     width: '465px',
@@ -126,6 +129,8 @@ export const ProfileHub: React.FC = () => {
                             (window as any).setActiveHUDWindow('VIP');
                         }
                     }}
+                    onTouchStart={(e) => e.stopPropagation()}
+                    onTouchEnd={(e) => e.stopPropagation()}
                     onMouseEnter={() => setIsHoveredVIP(true)}
                     onMouseLeave={() => setIsHoveredVIP(false)}
                 >
@@ -292,11 +297,19 @@ export const ProfileHub: React.FC = () => {
 
                 {/* КНОПКА НАСТРОЕК */}
                 <button
+                    id="profile-settings-btn"
                     className="absolute right-[15px] bottom-[8px] w-[50px] h-[50px] flex items-center justify-center cursor-pointer group z-[100] outline-none bg-transparent border-none p-0"
-                    onMouseDown={(e) => {
+                    onClick={(e) => {
                         e.stopPropagation();
                         audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
+                        if ((window as any).setActiveHUDWindow) {
+                            (window as any).setActiveHUDWindow('SETTINGS');
+                        }
                     }}
+                    onPointerDown={(e) => e.stopPropagation()}
+                    onPointerUp={(e) => e.stopPropagation()}
+                    onTouchStart={(e) => e.stopPropagation()}
+                    onTouchEnd={(e) => e.stopPropagation()}
                 >
                     <img
                         src={AssetsMap.UI.ICON_SETTINGS_PROFILE}
@@ -305,6 +318,11 @@ export const ProfileHub: React.FC = () => {
                     />
                 </button>
             </motion.div>
+            <UnderDevelopmentModal
+                isOpen={devModalOpen}
+                onClose={() => setDevModalOpen(false)}
+                title="ПРОФИЛЬ ИГРОКА"
+            />
         </>
     );
 };

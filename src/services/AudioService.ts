@@ -5,21 +5,60 @@ import { Howl, Howler } from 'howler';
  */
 class AudioService {
     private music: Howl | null = null;
+    private ambient: Howl | null = null;
+    private ambientUrl: string | null = null;
     private sfx: Map<string, Howl> = new Map();
     private musicVolume: number = 0.7;
     private sfxVolume: number = 0.85;
 
     constructor() {
-        // [BUGFIX] Исправление бага игры музыки при сворачивании приложения
         document.addEventListener('visibilitychange', () => {
             if (document.hidden) {
                 console.log('🤫 App hidden - Muting audio');
                 Howler.mute(true);
             } else {
                 console.log('🔊 App visible - Unmuting audio');
-                Howler.mute(false);
+                import('../store/useGameStore')
+                    .then(({ useGameStore }) => {
+                        const isMuted = useGameStore.getState().isMuted;
+                        if (!isMuted) {
+                            Howler.mute(false);
+                        }
+                    })
+                    .catch((err) => {
+                        console.warn('Could not read mute state on visibility change:', err);
+                        Howler.mute(false);
+                    });
             }
         });
+        // Run background assets verification check
+        this.verifyIntegrity();
+    }
+
+    /**
+     * Проверка существования медиа-файлов
+     */
+    public async verifyIntegrity() {
+        const criticalUrls = [
+            '/assets/audio/sfx/click.mp3',
+            '/assets/audio/sfx/buy_success.mp3',
+            '/assets/audio/sfx/impact_hit.mp3',
+            '/assets/audio/sfx/block.mp3',
+            '/assets/audio/sfx/miss.mp3',
+            '/assets/audio/sfx/strike_staff.mp3',
+        ];
+
+        console.log('🔍 AudioService: Checking audio assets integrity...');
+        for (const url of criticalUrls) {
+            try {
+                const res = await fetch(url, { method: 'HEAD' });
+                if (!res.ok) {
+                    console.error(`⚠️ AudioService Asset Missing (Status ${res.status}): ${url}`);
+                }
+            } catch (err) {
+                console.warn(`⚠️ AudioService Asset Verification Failed for ${url}:`, err);
+            }
+        }
     }
 
     /**
@@ -40,17 +79,25 @@ class AudioService {
      * Загрузка и запуск фоновой музыки
      */
     public playMusic(url: string) {
-        this.stopAllMusic();
+        if (this.music) {
+            const oldMusic = this.music;
+            oldMusic.fade(this.musicVolume, 0, 1000);
+            oldMusic.once('fade', () => {
+                oldMusic.stop();
+                oldMusic.unload();
+            });
+        }
 
         this.music = new Howl({
             src: [url],
             loop: true,
-            volume: this.musicVolume,
+            volume: 0,
             html5: true,
             onloaderror: (_id, err) => console.warn(`❌ Music Load Error: ${url}`, err),
         });
 
         this.music.play();
+        this.music.fade(0, this.musicVolume, 1000);
     }
 
     /**
@@ -58,10 +105,14 @@ class AudioService {
      */
     public stopAllMusic() {
         if (this.music) {
-            console.log('⏹️ AudioService: Stopping and unloading music');
-            this.music.stop();
-            this.music.unload();
+            console.log('⏹️ AudioService: Fading out and stopping music');
+            const oldMusic = this.music;
             this.music = null;
+            oldMusic.fade(oldMusic.volume(), 0, 800);
+            oldMusic.once('fade', () => {
+                oldMusic.stop();
+                oldMusic.unload();
+            });
         }
     }
 
@@ -143,12 +194,19 @@ class AudioService {
             `🎵 AudioService: Attempting to play [${this.currentTrackIndex + 1}/${this.playlist.length}]: ${url}`,
         );
 
-        this.stopAllMusic();
+        if (this.music) {
+            const oldMusic = this.music;
+            oldMusic.fade(this.musicVolume, 0, 1000);
+            oldMusic.once('fade', () => {
+                oldMusic.stop();
+                oldMusic.unload();
+            });
+        }
 
         this.music = new Howl({
             src: [url],
             loop: false,
-            volume: this.musicVolume,
+            volume: 0,
             html5: true,
             onplay: () => {
                 console.log(`▶️ AudioService: Now playing: ${url}`);
@@ -170,6 +228,7 @@ class AudioService {
         });
 
         this.music.play();
+        this.music.fade(0, this.musicVolume, 1000);
     }
 
     /**
@@ -193,12 +252,105 @@ class AudioService {
     }
 
     /**
+     * Запуск цикличного эмбиента (фонового звука окружения)
+     */
+    public playAmbient(url: string) {
+        if (this.ambientUrl === url && this.ambient && this.ambient.playing()) {
+            return;
+        }
+        this.stopAmbient();
+
+        this.ambientUrl = url;
+        this.ambient = new Howl({
+            src: [url],
+            loop: true,
+            volume: this.musicVolume * 0.6,
+            html5: true,
+            onloaderror: (_id, err) => console.warn(`❌ Ambient Load Error: ${url}`, err),
+        });
+        this.ambient.play();
+        console.log(`🔊 Ambient started: ${url}`);
+    }
+
+    /**
+     * Остановка эмбиента
+     */
+    public stopAmbient() {
+        if (this.ambient) {
+            console.log('⏹️ Stopping ambient audio');
+            this.ambient.stop();
+            this.ambient.unload();
+            this.ambient = null;
+            this.ambientUrl = null;
+        }
+    }
+
+    /**
+     * Воспроизведение звука критического удара (с увеличенным объемом/эффектом)
+     */
+    public playCritSFX() {
+        const critUrl = '/assets/audio/sfx/impact_crit.mp3';
+        const hitFallbackUrl = '/assets/audio/sfx/impact_hit.mp3';
+        let sound = this.sfx.get(critUrl);
+
+        if (!sound) {
+            sound = new Howl({
+                src: [critUrl, hitFallbackUrl],
+                volume: this.sfxVolume * 1.25,
+                onloaderror: (_id, err) => console.warn(`❌ Crit SFX Load Error, using fallback`, err),
+            });
+            this.sfx.set(critUrl, sound);
+        }
+
+        sound.volume(this.sfxVolume * 1.25);
+        sound.play();
+    }
+
+    /**
+     * Воспроизведение звука атаки в зависимости от типа оружия
+     */
+    public playStrikeSFX(weaponArchetype: 'SWORD' | 'BOW' | 'STAFF' | 'DAGGER' | 'OTHER') {
+        let url = '/assets/audio/sfx/impact_hit.mp3';
+        switch (weaponArchetype) {
+            case 'SWORD':
+                url = '/assets/audio/sfx/strike_sword.mp3';
+                break;
+            case 'BOW':
+                url = '/assets/audio/sfx/strike_bow.mp3';
+                break;
+            case 'STAFF':
+                url = '/assets/audio/sfx/strike_staff.mp3';
+                break;
+            case 'DAGGER':
+                url = '/assets/audio/sfx/strike_dagger.mp3';
+                break;
+        }
+
+        const hitFallbackUrl = '/assets/audio/sfx/impact_hit.mp3';
+        let sound = this.sfx.get(url);
+        if (!sound) {
+            sound = new Howl({
+                src: [url, hitFallbackUrl],
+                volume: this.sfxVolume,
+                onloaderror: () => console.log(`SFX ${url} not found, using hit fallback.`),
+            });
+            this.sfx.set(url, sound);
+        }
+
+        sound.volume(this.sfxVolume);
+        sound.play();
+    }
+
+    /**
      * Обновление громкости музыки (0.0 - 1.0)
      */
     public setMusicVolume(volume: number) {
         this.musicVolume = volume;
         if (this.music) {
             this.music.volume(volume);
+        }
+        if (this.ambient) {
+            this.ambient.volume(volume * 0.6);
         }
     }
 

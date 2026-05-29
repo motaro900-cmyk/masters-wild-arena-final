@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ITEMS_DATABASE } from '../../../../../../game/configs/ItemsConfig';
+import { ITEMS_DATABASE, calculateItemPower } from '../../../../../../game/configs/ItemsConfig';
 import { useGameStore } from '../../../../../../store/useGameStore';
 import { audioService } from '../../../../../../services/AudioService';
 import { AssetsMap } from '../../../../../../configs/AssetsMap';
@@ -52,12 +52,7 @@ export const GearView = ({
         const lvl = invItem?.level || 1;
         const mult = lvl === 3 ? 1.35 : lvl === 2 ? 1.15 : 1.0;
 
-        return (
-            acc +
-            (item.attackBonus || 0) * mult * 2 +
-            (item.defenseBonus || 0) * mult * 1.5 +
-            (item.hpBonus || 0) * mult * 0.1
-        );
+        return acc + Math.round(calculateItemPower(item) * mult);
     }, 0);
 
     const onInternalItemClick = (id: string) => {
@@ -103,7 +98,13 @@ export const GearView = ({
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 1.05 }}
-            style={{ position: 'absolute', inset: '20px 60px', display: 'flex', gap: '40px', alignItems: 'stretch' }}
+            style={{
+                position: 'absolute',
+                inset: '20px 20px 20px 40px',
+                display: 'flex',
+                gap: '24px',
+                alignItems: 'stretch',
+            }}
         >
             {/* ЛЕВАЯ ПАНЕЛЬ: КУКЛА ПЕРСОНАЖА */}
             <div
@@ -128,7 +129,7 @@ export const GearView = ({
                         style={{
                             color: '#f0c040',
                             fontSize: '20px',
-                            fontFamily: "'Cinzel', serif",
+                            fontFamily: "'Cinzel', 'Philosopher', serif",
                             letterSpacing: '3px',
                             margin: 0,
                         }}
@@ -371,9 +372,10 @@ export const GearView = ({
                             {Math.floor(gearPower)}
                         </span>
                         <img
-                            src={AssetsMap.BACKGROUNDS.SHOP_DIVIDER}
+                            src="/assets/images/ui/mosh.png"
                             style={{
                                 height: '35px',
+                                width: '35px',
                                 objectFit: 'contain',
                                 filter: 'drop-shadow(0 4px 10px rgba(0,0,0,0.6))',
                             }}
@@ -432,7 +434,14 @@ export const GearView = ({
                         backdropFilter: 'blur(10px)',
                     }}
                 >
-                    <h2 style={{ color: '#f0c040', fontSize: '34px', margin: 0, fontFamily: "'Cinzel', serif" }}>
+                    <h2
+                        style={{
+                            color: '#f0c040',
+                            fontSize: '34px',
+                            margin: 0,
+                            fontFamily: "'Cinzel', 'Philosopher', serif",
+                        }}
+                    >
                         {hero.name}
                     </h2>
                     <p
@@ -449,38 +458,47 @@ export const GearView = ({
                 </div>
             </div>
 
-            <div style={{ width: '550px', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ width: '480px', display: 'flex', flexDirection: 'column' }}>
                 <div
                     style={{
                         display: 'flex',
-                        background: 'rgba(0,0,0,0.5)',
-                        borderRadius: '10px',
-                        padding: '5px',
+                        background: 'rgba(0,0,0,0.4)',
+                        borderRadius: '12px',
+                        padding: '4px',
                         marginBottom: '20px',
-                        gap: '5px',
+                        gap: '6px',
+                        border: '1px solid rgba(255, 255, 255, 0.05)',
                     }}
                 >
-                    {['STATS', 'INVENTORY', 'LORE'].map((tab) => (
-                        <button
-                            key={tab}
-                            onClick={() => {
-                                setDetailSubTab(tab as any);
-                            }}
-                            style={{
-                                flex: 1,
-                                padding: '10px',
-                                background: detailSubTab === tab ? '#f0c040' : 'transparent',
-                                color: detailSubTab === tab ? '#000' : '#fff',
-                                border: 'none',
-                                borderRadius: '8px',
-                                cursor: 'pointer',
-                                fontWeight: 800,
-                                fontSize: '11px',
-                            }}
-                        >
-                            {tab === 'STATS' ? 'СТАТЫ' : tab === 'INVENTORY' ? 'РЮКЗАК' : 'ЛОР'}
-                        </button>
-                    ))}
+                    {['STATS', 'INVENTORY', 'LORE'].map((tab) => {
+                        const active = detailSubTab === tab;
+                        return (
+                            <button
+                                key={tab}
+                                onClick={() => {
+                                    setDetailSubTab(tab as any);
+                                }}
+                                style={{
+                                    flex: 1,
+                                    padding: '10px',
+                                    background: active ? 'rgba(240, 192, 64, 0.12)' : 'transparent',
+                                    color: active ? '#f0c040' : 'rgba(255, 255, 255, 0.5)',
+                                    border: active ? '1px solid #f0c040' : '1px solid transparent',
+                                    borderRadius: '8px',
+                                    cursor: 'pointer',
+                                    fontWeight: 900,
+                                    fontSize: '11px',
+                                    fontFamily: "'Cinzel', 'Philosopher', serif",
+                                    letterSpacing: '1px',
+                                    textShadow: active ? '0 0 8px rgba(240, 192, 64, 0.3)' : 'none',
+                                    boxShadow: active ? 'inset 0 0 8px rgba(240, 192, 64, 0.05)' : 'none',
+                                    transition: 'all 0.2s ease',
+                                }}
+                            >
+                                {tab === 'STATS' ? 'СТАТЫ' : tab === 'INVENTORY' ? 'РЮКЗАК' : 'ЛОР'}
+                            </button>
+                        );
+                    })}
                 </div>
                 <div
                     style={{
@@ -507,10 +525,9 @@ export const GearView = ({
                         <div
                             style={{
                                 flex: 1,
-                                display: 'grid',
-                                gridTemplateColumns: '1fr 1fr',
-                                gridAutoRows: 'min-content',
-                                gap: '20px',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: '22px',
                                 overflowY: 'auto',
                                 paddingRight: '5px',
                                 paddingTop: '10px',

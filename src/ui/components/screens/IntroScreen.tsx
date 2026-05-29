@@ -18,16 +18,23 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
     const [error, setError] = useState('');
     const changeName = useGameStore((state) => state.changeName);
 
+    const hasPrepopulated = React.useRef(false);
+
     React.useEffect(() => {
-        if (step === 4 && (nickname === '' || nickname === 'Мастер')) {
+        if (step === 4 && !hasPrepopulated.current) {
+            hasPrepopulated.current = true;
             const currentStoreName = useGameStore.getState().name;
-            if (currentStoreName && currentStoreName !== 'Мастер') {
+            const vkUser = useGameStore.getState().vkUser;
+            const defaultName =
+                currentStoreName && currentStoreName !== 'Мастер' ? currentStoreName : vkUser?.firstName || '';
+
+            if (defaultName) {
                 setTimeout(() => {
-                    setNickname(currentStoreName);
+                    setNickname(defaultName);
                 }, 0);
             }
         }
-    }, [step, nickname]);
+    }, [step]);
 
     const validateNickname = async (name: string) => {
         const cleanName = name.trim();
@@ -83,8 +90,12 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
 
             const doc = document.documentElement;
             const isFirstLaunch = !useGameStore.getState().name || useGameStore.getState().name === 'Мастер';
+            const isLocalhost = typeof window !== 'undefined' && 
+                (window.location.hostname === 'localhost' || 
+                 window.location.hostname === '127.0.0.1' || 
+                 window.location.protocol === 'file:');
 
-            if (doc.requestFullscreen && !document.fullscreenElement && isFirstLaunch) {
+            if (doc.requestFullscreen && !document.fullscreenElement && isFirstLaunch && !isLocalhost) {
                 doc.requestFullscreen().catch(() => console.warn('Fullscreen denied'));
             }
         }

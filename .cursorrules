@@ -1,0 +1,25 @@
+# Masters of the Wild - AI Rules & Guidelines
+
+This project is a React + PixiJS + Zustand autobattler web game.
+
+## Tech Stack
+- **Framework**: React, Vite (Single Page App)
+- **Rendering**: PixiJS (Web GL/Canvas) for battle states & entity rendering
+- **State**: Zustand (`useGameStore`)
+- **Styles**: Tailwind CSS + Custom vanilla CSS
+
+## Coding Guidelines
+- **Modularity**: Keep components small. Split huge UI windows (>300 lines) into subcomponents (e.g., in subdirectories like `hud/Admin/` or `hud/Inventory/`).
+- **Strict TypeScript**: Never use implicit `any`. Use explicit interfaces, types, and generic parameters. Ensure `npx tsc --noEmit` compiles without errors.
+- **Aesthetics & Design**: Keep the premium look and feel. Use dark themes, rich gradients, smooth transitions, hover scaling (`hover:scale-105`), HSL-based colors, and clean typography. Avoid basic colors.
+- **Performance**: Optimize canvas operations, use state selectively, avoid redundant React renders, and clean up event listeners / ticker functions.
+
+## Token Saving & Efficiency Rules
+- **Do not read massive files**: Check file sizes before viewing. Use `grep_search` to find relevant methods or lines, and read specific line ranges.
+- **Precise Modifications**: Always edit files using targeted replacement chunks (`replace_file_content` or `multi_replace_file_content`). Never overwrite an entire large file with a few edits.
+- **Brief Explanations**: Keep explanations to the point. Focus on execution and design decisions rather than summarizing obvious code. Avoid conversational filler to save tokens.
+- **Active Criticism**: Critically evaluate user suggestions or existing designs. If a proposed solution is buggy, unscalable, or non-optimal, point it out immediately and suggest a better alternative.
+
+## Verification
+- Before finishing any change, verify types: `npx tsc --noEmit`.
+- Run automated Puppeteer tests to verify functionality: `node src/qa/full_test.js`.

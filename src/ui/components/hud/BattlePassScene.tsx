@@ -1,123 +1,16 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useGameStore } from '../../../store/useGameStore';
+import { useGameStore, WEEKLY_QUESTS_POOL } from '../../../store/useGameStore';
 import { AssetsMap } from '../../../configs/AssetsMap';
-
-interface Reward {
-    level: number;
-    free: {
-        id: string;
-        name: string;
-        icon: string;
-        amount?: number;
-        type: 'GOLD' | 'ITEM' | 'CHEST' | 'WEAPON' | 'GEMS' | 'SKIN';
-    };
-    premium: {
-        id: string;
-        name: string;
-        icon: string;
-        amount?: number;
-        type: 'GOLD' | 'ITEM' | 'CHEST' | 'WEAPON' | 'GEMS' | 'SKIN';
-    };
-}
-
-interface Quest {
-    id: string;
-    title: string;
-    description: string;
-    progress: number;
-    target: number;
-    rewardXp: number;
-    icon: string;
-}
-
-const DAILY_QUESTS: Quest[] = [
-    {
-        id: 'd1',
-        title: 'Первая Кровь',
-        description: 'Победите в 3 сражениях на Арене',
-        progress: 1,
-        target: 3,
-        rewardXp: 200,
-        icon: '⚔️',
-    },
-    {
-        id: 'd2',
-        title: 'Золотая Лихорадка',
-        description: 'Заработайте 1000 золота в боях',
-        progress: 450,
-        target: 1000,
-        rewardXp: 150,
-        icon: '💰',
-    },
-    {
-        id: 'd3',
-        title: 'Алхимик',
-        description: 'Используйте 5 любых зелий',
-        progress: 2,
-        target: 5,
-        rewardXp: 100,
-        icon: '🧪',
-    },
-];
-
-const WEEKLY_QUESTS: Quest[] = [
-    {
-        id: 'w1',
-        title: 'Чемпион Арены',
-        description: 'Победите в 20 сражениях',
-        progress: 12,
-        target: 20,
-        rewardXp: 1000,
-        icon: 'sprite-trophy',
-    },
-    {
-        id: 'w2',
-        title: 'Коллекционер',
-        description: 'Откройте 10 любых сундуков',
-        progress: 3,
-        target: 10,
-        rewardXp: 800,
-        icon: '📦',
-    },
-    {
-        id: 'w3',
-        title: 'Мастер Стали',
-        description: 'Улучшите любое оружие 3 раза',
-        progress: 1,
-        target: 3,
-        rewardXp: 600,
-        icon: '⚒️',
-    },
-];
-
-const BATTLE_PASS_REWARDS: Reward[] = [
-    {
-        level: 1,
-        free: { id: 'gold_500', name: '500 Золота', icon: '💰', amount: 500, type: 'GOLD' },
-        premium: { id: 'weapon_moon_sword', name: 'Эпический Меч Луны', icon: '⚔️', type: 'WEAPON' },
-    },
-    {
-        level: 2,
-        free: { id: 'chest_small', name: 'Малый Сундук', icon: '📦', type: 'CHEST' },
-        premium: { id: 'gems_100', name: '100 Кристаллов', icon: '💎', amount: 100, type: 'GEMS' },
-    },
-    {
-        level: 3,
-        free: { id: 'potion_strength', name: 'Зелье Силы', icon: '🧪', type: 'ITEM' },
-        premium: { id: 'skin_shadow_panda', name: 'Скин: Теневой Панда', icon: '🎭', type: 'SKIN' },
-    },
-    {
-        level: 4,
-        free: { id: 'gold_1000', name: '1000 Золота', icon: '💰', amount: 1000, type: 'GOLD' },
-        premium: { id: 'chest_epic', name: 'Эпический Сундук', icon: 'sprite-gift', type: 'CHEST' },
-    },
-    {
-        level: 5,
-        free: { id: 'shard_rare', name: 'Редкий Осколок', icon: '✨', type: 'ITEM' },
-        premium: { id: 'pedestal_legendary', name: 'Легендарный Пьедестал', icon: '🏛️', type: 'ITEM' },
-    },
-];
+import { QUESTS_POOL } from '../../../configs/QuestsConfig';
+import { audioService } from '../../../services/AudioService';
+import { TabButton } from './BattlePass/TabButton';
+import { QuestSection } from './BattlePass/QuestSection';
+import { BpLevelUpOverlay } from './BattlePass/BpLevelUpOverlay';
+import { PurchaseModal } from './BattlePass/PurchaseModal';
+import { RewardPreviewModal } from './BattlePass/RewardPreviewModal';
+import { BattlePassStyles, CornerOrnament, BATTLE_PASS_REWARDS } from './BattlePass/BattlePassShared';
+import { RewardColumn } from './BattlePass/RewardColumn';
 
 export const BattlePassScene: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     const {
@@ -129,8 +22,15 @@ export const BattlePassScene: React.FC<{ onClose: () => void }> = ({ onClose }) 
         setPremium,
         addItemToInventory,
         setEquippedWeapon,
+        dailyQuests,
+        weeklyQuests,
+        claimQuestReward,
+        claimWeeklyQuestReward,
+        showBpLevelUpOverlay,
+        hideBpLevelUpOverlay,
     } = useGameStore();
     const [activeTab, setActiveTab] = useState<'REWARDS' | 'QUESTS'>('REWARDS');
+    const [currentPage, setCurrentPage] = useState(Math.min(2, Math.max(0, Math.floor((bpLevel - 1) / 5))));
 
     const handleClaim = (item: any) => {
         claimReward(item.id);
@@ -138,12 +38,67 @@ export const BattlePassScene: React.FC<{ onClose: () => void }> = ({ onClose }) 
         if (item.type === 'WEAPON' || item.type === 'SKIN') {
             setEquippedWeapon(item.id); // Сразу надеваем для "ВАУ-эффекта"
         }
+        audioService.playSFX(AssetsMap.AUDIO.SFX_BUY);
     };
     const [selectedReward, setSelectedReward] = useState<any | null>(null);
     const [isPurchaseModalOpen, setIsPurchaseModalOpen] = useState(false);
 
     const maxExp = 1000;
     const progress = (bpExp / maxExp) * 100;
+
+    const currentDailyQuests = (dailyQuests || []).map((dq: any) => {
+        const meta = QUESTS_POOL.find((q) => q.id === dq.questId) || {
+            title: 'Неизвестное задание',
+            description: '',
+            target: 1,
+            rewardExp: 100,
+            icon: '📜',
+            type: 'LOGIN',
+        };
+        const xp = meta.rewardExp || 100;
+        let icon = '📜';
+        if (meta.type === 'LOGIN') icon = '🚪';
+        else if (meta.type === 'PLAY') icon = '🎮';
+        else if (meta.type === 'WIN') icon = '🏆';
+        else if (meta.type === 'DAMAGE') icon = '💥';
+        else if (meta.type === 'SPEND_GOLD') icon = '💰';
+        else if (meta.type === 'OPEN_CHEST') icon = '📦';
+        else if (meta.type === 'UPGRADE') icon = '⚒️';
+        else if (meta.type === 'WIN_STREAK') icon = '🔥';
+
+        return {
+            id: dq.questId,
+            title: meta.title,
+            description: meta.description,
+            progress: dq.progress,
+            target: meta.target,
+            rewardXp: xp,
+            icon: icon,
+            isClaimed: dq.isClaimed,
+            canClaim: dq.progress >= meta.target && !dq.isClaimed,
+        };
+    });
+
+    const currentWeeklyQuests = (weeklyQuests || []).map((wq: any) => {
+        const meta = WEEKLY_QUESTS_POOL.find((q) => q.id === wq.questId) || {
+            title: 'Неизвестное задание',
+            description: '',
+            target: 1,
+            rewardExp: 500,
+            icon: '📜',
+        };
+        return {
+            id: wq.questId,
+            title: meta.title,
+            description: meta.description,
+            progress: wq.progress,
+            target: meta.target,
+            rewardXp: meta.rewardExp || 500,
+            icon: meta.icon || '📜',
+            isClaimed: wq.isClaimed,
+            canClaim: wq.progress >= meta.target && !wq.isClaimed,
+        };
+    });
 
     return (
         <motion.div
@@ -156,16 +111,19 @@ export const BattlePassScene: React.FC<{ onClose: () => void }> = ({ onClose }) 
                 position: 'fixed',
                 top: 0,
                 left: 0,
-                background: '#050505',
+                background: '#020202',
                 zIndex: 1000,
                 display: 'flex',
-                flexDirection: 'column',
-                fontFamily: "'Inter', sans-serif",
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontFamily: "'Cinzel', serif",
                 color: '#fff',
                 overflow: 'hidden',
                 pointerEvents: 'auto',
             }}
         >
+            <BattlePassStyles />
+
             {/* КИНЕМАТОГРАФИЧЕСКИЙ ФОН */}
             <div
                 style={{
@@ -175,6 +133,7 @@ export const BattlePassScene: React.FC<{ onClose: () => void }> = ({ onClose }) 
                     backgroundSize: 'cover',
                     backgroundPosition: 'center',
                     opacity: 1,
+                    filter: 'brightness(0.4) blur(4px)',
                     zIndex: 0,
                     pointerEvents: 'none',
                 }}
@@ -185,813 +144,693 @@ export const BattlePassScene: React.FC<{ onClose: () => void }> = ({ onClose }) 
                 style={{
                     position: 'absolute',
                     inset: 0,
-                    background: 'radial-gradient(circle, rgba(0,0,0,0) 0%, rgba(0,0,0,0.4) 100%)',
+                    background: 'radial-gradient(circle at center, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.85) 100%)',
                     zIndex: 1,
                     pointerEvents: 'none',
                 }}
             />
 
-            {/* ШАПКА БОЕВОГО ПРОПУСКА (GLASS) */}
+            {/* ГЛАВНАЯ ГОТИЧЕСКАЯ ПАНЕЛЬ-СУНДУК */}
             <div
                 style={{
-                    height: '140px',
-                    padding: '0 80px',
+                    width: '1720px',
+                    height: '920px',
+                    background:
+                        'radial-gradient(circle at center, rgba(27, 18, 12, 0.8) 0%, rgba(10, 6, 4, 0.94) 100%)',
+                    border: '4px solid #b8860b',
+                    borderRadius: '16px',
+                    boxShadow: '0 30px 80px rgba(0,0,0,0.95), inset 0 0 40px rgba(0,0,0,0.85)',
                     display: 'flex',
-                    alignItems: 'center',
-                    background: 'rgba(0,0,0,0.4)',
-                    backdropFilter: 'blur(15px)',
-                    borderBottom: '1px solid rgba(240,192,64,0.3)',
-                    zIndex: 10,
+                    flexDirection: 'column',
+                    zIndex: 5,
                     position: 'relative',
-                    boxShadow: '0 10px 30px rgba(0,0,0,0.3)',
+                    overflow: 'hidden',
                 }}
             >
+                {/* ВНУТРЕННИЙ ПОЛУПРОЗРАЧНЫЙ ФОН ДЛЯ ГЛУБИНЫ ИНТЕРФЕЙСА */}
                 <div
                     style={{
-                        position: 'relative',
-                        width: '100px',
-                        height: '100px',
+                        position: 'absolute',
+                        inset: 0,
+                        backgroundImage: `url("${AssetsMap.BACKGROUNDS.BATTLE_PASS}")`,
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center',
+                        opacity: 0.16,
+                        zIndex: 0,
+                        pointerEvents: 'none',
+                    }}
+                />
+                {/* ДЕКОРАТИВНЫЕ МЕТАЛЛИЧЕСКИЕ УГОЛКИ */}
+                <CornerOrnament style={{ top: '8px', left: '8px' }} />
+                <CornerOrnament style={{ top: '8px', right: '8px', transform: 'rotate(90deg)' }} />
+                <CornerOrnament style={{ bottom: '8px', left: '8px', transform: 'rotate(-90deg)' }} />
+                <CornerOrnament style={{ bottom: '8px', right: '8px', transform: 'rotate(180deg)' }} />
+
+                {/* АНИМИРОВАННЫЕ ИСКРЫ НА ФОНЕ */}
+                <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none', zIndex: 1 }}>
+                    {Array.from({ length: 12 }).map((_, idx) => {
+                        const left = `${5 + idx * 8}%`;
+                        const size = `${3 + (idx % 3) * 2}px`;
+                        const delay = `${idx * 0.8}s`;
+                        const duration = `${6 + (idx % 4) * 2.5}s`;
+                        const drift = `${(idx % 2 === 0 ? 50 : -50) * (idx + 1)}px`;
+                        return (
+                            <div
+                                key={idx}
+                                style={{
+                                    position: 'absolute',
+                                    bottom: 0,
+                                    left,
+                                    width: size,
+                                    height: size,
+                                    borderRadius: '50%',
+                                    background: 'radial-gradient(circle, #ffaa33 0%, #cc5500 100%)',
+                                    boxShadow: '0 0 10px #ffaa33, 0 0 20px #ff5500',
+                                    animation: `bpEmberFloat ${duration} infinite linear`,
+                                    animationDelay: delay,
+                                    opacity: 0,
+                                    ['--drift-x' as any]: drift,
+                                }}
+                            />
+                        );
+                    })}
+                </div>
+
+                <div
+                    style={{
+                        height: '120px',
+                        padding: '0 40px',
                         display: 'flex',
                         alignItems: 'center',
-                        justifyContent: 'center',
+                        background: 'linear-gradient(180deg, #251b14 0%, #150f0c 100%)',
+                        borderBottom: '3px solid #b8860b',
+                        boxShadow: '0 4px 20px rgba(0,0,0,0.5)',
+                        zIndex: 10,
+                        position: 'relative',
                     }}
                 >
                     <div
                         style={{
-                            position: 'absolute',
-                            inset: 0,
-                            background: 'linear-gradient(135deg, #f0c040 0%, #a88020 100%)',
-                            clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)',
-                            boxShadow: '0 0 30px rgba(240,192,64,0.5)',
+                            position: 'relative',
+                            width: '80px',
+                            height: '80px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            filter: 'drop-shadow(0 0 15px rgba(240,192,64,0.4))',
                         }}
-                    />
-                    <span style={{ zIndex: 1, fontSize: '42px', fontWeight: 900, color: '#000' }}>{bpLevel}</span>
-                </div>
-
-                <div style={{ marginLeft: '40px', flex: 1 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '30px' }}>
-                        <div>
-                            <h1
-                                style={{
-                                    fontSize: '32px',
-                                    margin: 0,
-                                    fontFamily: "'Cinzel', serif",
-                                    color: '#fff',
-                                    letterSpacing: '2px',
-                                    textShadow: '0 2px 10px rgba(0,0,0,0.5)',
-                                }}
-                            >
-                                БОЕВОЙ ПРОПУСК
-                            </h1>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginTop: '5px' }}>
-                                <div
-                                    style={{
-                                        width: '250px',
-                                        height: '6px',
-                                        background: 'rgba(255,255,255,0.1)',
-                                        borderRadius: '3px',
-                                        overflow: 'hidden',
-                                    }}
-                                >
-                                    <motion.div
-                                        animate={{ width: `${progress}%` }}
-                                        style={{ height: '100%', background: '#f0c040', boxShadow: '0 0 10px #f0c040' }}
-                                    />
-                                </div>
-                                <span style={{ fontSize: '13px', fontWeight: 800, color: '#f0c040' }}>
-                                    {bpExp} / {maxExp} XP
-                                </span>
-                            </div>
-                        </div>
-
-                        {/* ПЕРЕКЛЮЧАТЕЛЬ ТАБОВ */}
+                    >
                         <div
                             style={{
-                                display: 'flex',
-                                background: 'rgba(255,255,255,0.05)',
-                                padding: '4px',
-                                borderRadius: '12px',
-                                border: '1px solid rgba(255,255,255,0.1)',
+                                position: 'absolute',
+                                inset: 0,
+                                borderRadius: '50%',
+                                background: 'radial-gradient(circle, #f0c040 0%, #a88020 100%)',
+                                border: '4px solid #ffd700',
+                                boxShadow: 'inset 0 0 15px rgba(0,0,0,0.8)',
+                            }}
+                        />
+                        <span
+                            style={{
+                                zIndex: 1,
+                                fontSize: '32px',
+                                fontWeight: 900,
+                                color: '#1a0d00',
+                                textShadow: '0 1px 1px rgba(255,255,255,0.4)',
                             }}
                         >
-                            <TabButton
-                                active={activeTab === 'REWARDS'}
-                                onClick={() => setActiveTab('REWARDS')}
-                                label="НАГРАДЫ"
-                                icon="sprite-gift"
-                            />
-                            <TabButton
-                                active={activeTab === 'QUESTS'}
-                                onClick={() => setActiveTab('QUESTS')}
-                                label="ЗАДАНИЯ"
-                                icon="📜"
-                            />
+                            {bpLevel}
+                        </span>
+                    </div>
+
+                    <div style={{ marginLeft: '30px', flex: 1 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '30px' }}>
+                            <div>
+                                <h1
+                                    style={{
+                                        fontSize: '28px',
+                                        margin: 0,
+                                        fontFamily: "'Cinzel', serif",
+                                        color: '#f0c040',
+                                        letterSpacing: '2px',
+                                        textShadow: '0 2px 10px rgba(0,0,0,0.9)',
+                                    }}
+                                >
+                                    БОЕВОЙ ПРОПУСК
+                                </h1>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginTop: '5px' }}>
+                                    <div
+                                        style={{
+                                            width: '400px',
+                                            height: '12px',
+                                            background: '#0d0805',
+                                            border: '1px solid rgba(240,192,64,0.3)',
+                                            borderRadius: '6px',
+                                            padding: '2px',
+                                            overflow: 'hidden',
+                                            boxShadow: 'inset 0 0 8px rgba(0,0,0,0.9)',
+                                        }}
+                                    >
+                                        <motion.div
+                                            animate={{ width: `${progress}%` }}
+                                            className="bp-gold-sweep"
+                                            style={{
+                                                height: '100%',
+                                                background:
+                                                    'linear-gradient(90deg, #f0c040 0%, #ffea80 25%, #f0c040 50%, #ffea80 75%, #f0c040 100%)',
+                                                backgroundSize: '200% 100%',
+                                                borderRadius: '4px',
+                                                boxShadow: '0 0 12px rgba(240,192,64,0.9)',
+                                            }}
+                                        />
+                                    </div>
+                                    <span
+                                        style={{
+                                            fontSize: '13px',
+                                            fontWeight: 900,
+                                            color: '#f0c040',
+                                            textShadow: '0 2px 4px rgba(0,0,0,0.8)',
+                                        }}
+                                    >
+                                        {bpExp} / {maxExp} XP
+                                    </span>
+                                </div>
+                            </div>
+
+                            {/* ПЕРЕКЛЮЧАТЕЛЬ ТАБОВ */}
+                            <div
+                                style={{
+                                    display: 'flex',
+                                    background: '#120b08',
+                                    padding: '4px',
+                                    borderRadius: '8px',
+                                    border: '2px solid #5c4033',
+                                    boxShadow: 'inset 0 0 10px rgba(0,0,0,0.8)',
+                                }}
+                            >
+                                <TabButton
+                                    active={activeTab === 'REWARDS'}
+                                    onClick={() => {
+                                        setActiveTab('REWARDS');
+                                        audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
+                                    }}
+                                    label="НАГРАДЫ"
+                                    icon="sprite-gift"
+                                />
+                                <TabButton
+                                    active={activeTab === 'QUESTS'}
+                                    onClick={() => {
+                                        setActiveTab('QUESTS');
+                                        audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
+                                    }}
+                                    label="ЗАДАНИЯ"
+                                    icon="📜"
+                                />
+                            </div>
                         </div>
+                    </div>
+
+                    <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+                        {!isPremium && (
+                            <motion.button
+                                onClick={() => {
+                                    setIsPurchaseModalOpen(true);
+                                    audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
+                                }}
+                                whileHover={{ scale: 1.05, boxShadow: '0 0 30px rgba(240,192,64,0.4)' }}
+                                whileTap={{ scale: 0.92 }}
+                                style={{
+                                    padding: '12px 30px',
+                                    background: 'linear-gradient(180deg, #ffd700 0%, #b8860b 100%)',
+                                    border: '2px solid #ffffff',
+                                    borderRadius: '8px',
+                                    color: '#1a0d00',
+                                    fontWeight: 900,
+                                    fontSize: '14px',
+                                    fontFamily: "'Cinzel', serif",
+                                    cursor: 'pointer',
+                                    letterSpacing: '1px',
+                                    boxShadow: '0 0 20px rgba(255, 215, 0, 0.4), inset 0 0 8px rgba(255,255,255,0.6)',
+                                    textShadow: '0 1px 0 rgba(255,255,255,0.4)',
+                                }}
+                            >
+                                КУПИТЬ ПРЕМИУМ
+                            </motion.button>
+                        )}
+                        <motion.button
+                            whileTap={{ scale: 0.92 }}
+                            onClick={() => {
+                                onClose();
+                                audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
+                            }}
+                            style={{
+                                width: '45px',
+                                height: '45px',
+                                background: '#24140e',
+                                border: '2px solid #b8860b',
+                                borderRadius: '8px',
+                                color: '#f0c040',
+                                fontSize: '24px',
+                                fontWeight: 900,
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                boxShadow: '0 4px 10px rgba(0,0,0,0.5)',
+                            }}
+                        >
+                            ×
+                        </motion.button>
                     </div>
                 </div>
 
-                <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
-                    {!isPremium && (
-                        <motion.button
-                            onClick={() => setIsPurchaseModalOpen(true)}
-                            whileHover={{ scale: 1.05, boxShadow: '0 0 30px rgba(240,192,64,0.4)' }}
-                            whileTap={{ scale: 0.95 }}
-                            style={{
-                                padding: '12px 30px',
-                                background: 'linear-gradient(180deg, #f0c040 0%, #a88020 100%)',
-                                border: 'none',
-                                borderRadius: '10px',
-                                color: '#000',
-                                fontWeight: 900,
-                                fontSize: '15px',
-                                cursor: 'pointer',
-                            }}
-                        >
-                            КУПИТЬ ПРЕМИУМ
-                        </motion.button>
-                    )}
-                    <button
-                        onClick={onClose}
-                        style={{
-                            width: '45px',
-                            height: '45px',
-                            background: 'rgba(255,255,255,0.1)',
-                            border: '1px solid rgba(255,255,255,0.2)',
-                            borderRadius: '8px',
-                            color: '#fff',
-                            fontSize: '20px',
-                            cursor: 'pointer',
-                        }}
-                    >
-                        ×
-                    </button>
-                </div>
-            </div>
+                {/* КОНТЕНТ В ЗАВИСИМОСТИ ОТ ТАБА */}
+                <div style={{ flex: 1, position: 'relative', zIndex: 5, overflow: 'hidden' }}>
+                    <AnimatePresence mode="wait">
+                        {activeTab === 'REWARDS' ? (
+                            <motion.div
+                                key="rewards"
+                                initial={{ x: -50, opacity: 0 }}
+                                animate={{ x: 0, opacity: 1 }}
+                                exit={{ x: 50, opacity: 0 }}
+                                style={{
+                                    height: '100%',
+                                    display: 'flex',
+                                    width: '100%',
+                                    overflow: 'hidden',
+                                }}
+                            >
+                                {/* ЛЕВАЯ ФИКСИРОВАННАЯ ПАНЕЛЬ С НАЗВАНИЯМИ ДОРОЖЕК */}
+                                <div
+                                    style={{
+                                        width: '140px',
+                                        background: 'linear-gradient(90deg, #1b120c 0%, #150f0c 100%)',
+                                        borderRight: '3px solid #b8860b',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        justifyContent: 'space-between',
+                                        padding: '20px 10px',
+                                        boxShadow: '5px 0 15px rgba(0,0,0,0.5)',
+                                        zIndex: 2,
+                                    }}
+                                >
+                                    {/* Вверхняя метка - Премиум */}
+                                    <div
+                                        style={{
+                                            height: '240px',
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            background:
+                                                'linear-gradient(180deg, rgba(153, 27, 27, 0.25) 0%, transparent 100%)',
+                                            border: '1px solid rgba(153, 27, 27, 0.5)',
+                                            borderRadius: '8px',
+                                            padding: '10px 5px',
+                                            textAlign: 'center',
+                                        }}
+                                    >
+                                        <span
+                                            style={{
+                                                fontSize: '32px',
+                                                marginBottom: '8px',
+                                                filter: 'drop-shadow(0 0 8px rgba(255,215,0,0.5))',
+                                            }}
+                                        >
+                                            👑
+                                        </span>
+                                        <span
+                                            style={{
+                                                fontFamily: "'Cinzel', serif",
+                                                fontWeight: 950,
+                                                fontSize: '11px',
+                                                color: '#ffd700',
+                                                letterSpacing: '1px',
+                                                textTransform: 'uppercase',
+                                                textShadow: '0 2px 4px rgba(0,0,0,0.8)',
+                                                display: 'block',
+                                                width: '100%',
+                                            }}
+                                        >
+                                            КОРОЛЕВСКИЙ
+                                        </span>
+                                        <span
+                                            style={{
+                                                fontFamily: "'Cinzel', serif",
+                                                fontWeight: 900,
+                                                fontSize: '9px',
+                                                color: '#f59e0b',
+                                                letterSpacing: '2px',
+                                                textTransform: 'uppercase',
+                                                marginTop: '3px',
+                                                textShadow: '0 1px 2px rgba(0,0,0,0.8)',
+                                            }}
+                                        >
+                                            ПУТЬ
+                                        </span>
+                                    </div>
 
-            {/* КОНТЕНТ В ЗАВИСИМОСТИ ОТ ТАБА */}
-            <div style={{ flex: 1, position: 'relative', zIndex: 5, overflow: 'hidden' }}>
-                <AnimatePresence mode="wait">
-                    {activeTab === 'REWARDS' ? (
-                        <motion.div
-                            key="rewards"
-                            initial={{ x: -50, opacity: 0 }}
-                            animate={{ x: 0, opacity: 1 }}
-                            exit={{ x: 50, opacity: 0 }}
-                            style={{
-                                height: '100%',
-                                display: 'flex',
-                                alignItems: 'center',
-                                padding: '0 100px',
-                                gap: '45px',
-                                overflowX: 'auto',
-                            }}
-                            className="custom-scrollbar"
-                        >
-                            {BATTLE_PASS_REWARDS.map((reward) => (
-                                <RewardColumn
-                                    key={reward.level}
-                                    reward={reward}
-                                    isUnlocked={bpLevel >= reward.level}
-                                    isPremium={isPremium}
-                                    claimedRewards={claimedRewards}
-                                    onClaim={handleClaim}
-                                    onPreview={setSelectedReward}
-                                    isMilestone={reward.level % 5 === 0}
+                                    {/* Центр - Разделитель */}
+                                    <div
+                                        style={{
+                                            height: '60px',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                        }}
+                                    >
+                                        <span
+                                            style={{
+                                                fontFamily: "'Cinzel', serif",
+                                                fontWeight: 950,
+                                                fontSize: '12px',
+                                                color: '#f0c040',
+                                                letterSpacing: '2px',
+                                                textShadow: '0 2px 4px rgba(0,0,0,0.8)',
+                                            }}
+                                        >
+                                            ЭТАПЫ
+                                        </span>
+                                    </div>
+
+                                    {/* Нижняя метка - Бесплатный */}
+                                    <div
+                                        style={{
+                                            height: '240px',
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            background:
+                                                'linear-gradient(180deg, rgba(255, 255, 255, 0.03) 0%, transparent 100%)',
+                                            border: '1px solid rgba(255, 255, 255, 0.1)',
+                                            borderRadius: '8px',
+                                            padding: '10px 5px',
+                                            textAlign: 'center',
+                                        }}
+                                    >
+                                        <span
+                                            style={{
+                                                fontSize: '32px',
+                                                marginBottom: '8px',
+                                                filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))',
+                                            }}
+                                        >
+                                            ⚔️
+                                        </span>
+                                        <span
+                                            style={{
+                                                fontFamily: "'Cinzel', serif",
+                                                fontWeight: 950,
+                                                fontSize: '11px',
+                                                color: '#c8a870',
+                                                letterSpacing: '1px',
+                                                textTransform: 'uppercase',
+                                                textShadow: '0 2px 4px rgba(0,0,0,0.8)',
+                                                display: 'block',
+                                                width: '100%',
+                                            }}
+                                        >
+                                            ВОИНСКИЙ
+                                        </span>
+                                        <span
+                                            style={{
+                                                fontFamily: "'Cinzel', serif",
+                                                fontWeight: 900,
+                                                fontSize: '9px',
+                                                color: '#a3a3a3',
+                                                letterSpacing: '2px',
+                                                textTransform: 'uppercase',
+                                                marginTop: '3px',
+                                                textShadow: '0 1px 2px rgba(0,0,0,0.8)',
+                                            }}
+                                        >
+                                            ПУТЬ
+                                        </span>
+                                    </div>
+                                </div>
+
+                                {/* ПАНЕЛЬ ДОРОЖКИ НАГРАД С ПОСТРАНИЧНОЙ НАВИГАЦИЕЙ */}
+                                <div
+                                    style={{
+                                        flex: 1,
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        height: '100%',
+                                        justifyContent: 'center',
+                                        padding: '0 20px',
+                                        overflow: 'hidden',
+                                        position: 'relative',
+                                    }}
+                                >
+                                    {/* НАПРАВЛЯЮЩИЕ СТРЕЛКИ И ДОРОЖКА */}
+                                    <div
+                                        style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'space-between',
+                                            width: '100%',
+                                            gap: '15px',
+                                            flex: 1,
+                                        }}
+                                    >
+                                        {/* ЛЕВАЯ СТРЕЛКА */}
+                                        <motion.button
+                                            disabled={currentPage === 0}
+                                            whileHover={
+                                                currentPage > 0
+                                                    ? { scale: 1.1, boxShadow: '0 0 15px rgba(240, 192, 64, 0.4)' }
+                                                    : {}
+                                            }
+                                            whileTap={currentPage > 0 ? { scale: 0.9 } : {}}
+                                            onClick={() => {
+                                                if (currentPage > 0) {
+                                                    setCurrentPage(currentPage - 1);
+                                                    audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
+                                                }
+                                            }}
+                                            style={{
+                                                width: '50px',
+                                                height: '60px',
+                                                background:
+                                                    currentPage === 0
+                                                        ? 'rgba(25, 17, 12, 0.4)'
+                                                        : 'linear-gradient(180deg, #4a2f1b 0%, #2b180a 100%)',
+                                                border: '2px solid #b8860b',
+                                                borderColor: currentPage === 0 ? 'rgba(184, 134, 11, 0.2)' : '#b8860b',
+                                                borderRadius: '8px',
+                                                color: currentPage === 0 ? 'rgba(200, 168, 112, 0.3)' : '#ffd700',
+                                                fontSize: '22px',
+                                                fontWeight: 900,
+                                                cursor: currentPage === 0 ? 'default' : 'pointer',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                opacity: currentPage === 0 ? 0.45 : 1,
+                                                boxShadow: currentPage === 0 ? 'none' : '0 4px 10px rgba(0,0,0,0.5)',
+                                                transition: 'all 0.2s ease',
+                                            }}
+                                        >
+                                            ◀
+                                        </motion.button>
+
+                                        {/* КОЛОНКИ НАГРАД ТЕКУЩЕЙ СТРАНИЦЫ */}
+                                        <div
+                                            style={{
+                                                flex: 1,
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                gap: '30px',
+                                            }}
+                                        >
+                                            {BATTLE_PASS_REWARDS.slice(currentPage * 5, currentPage * 5 + 5).map(
+                                                (reward) => (
+                                                    <RewardColumn
+                                                        key={reward.level}
+                                                        reward={reward}
+                                                        isUnlocked={bpLevel >= reward.level}
+                                                        isPremium={isPremium}
+                                                        claimedRewards={claimedRewards}
+                                                        onClaim={handleClaim}
+                                                        onPreview={setSelectedReward}
+                                                        isMilestone={reward.level % 5 === 0}
+                                                    />
+                                                ),
+                                            )}
+                                        </div>
+
+                                        {/* ПРАВАЯ СТРЕЛКА */}
+                                        <motion.button
+                                            disabled={currentPage === 2}
+                                            whileHover={
+                                                currentPage < 2
+                                                    ? { scale: 1.1, boxShadow: '0 0 15px rgba(240, 192, 64, 0.4)' }
+                                                    : {}
+                                            }
+                                            whileTap={currentPage < 2 ? { scale: 0.9 } : {}}
+                                            onClick={() => {
+                                                if (currentPage < 2) {
+                                                    setCurrentPage(currentPage + 1);
+                                                    audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
+                                                }
+                                            }}
+                                            style={{
+                                                width: '50px',
+                                                height: '60px',
+                                                background:
+                                                    currentPage === 2
+                                                        ? 'rgba(25, 17, 12, 0.4)'
+                                                        : 'linear-gradient(180deg, #4a2f1b 0%, #2b180a 100%)',
+                                                border: '2px solid #b8860b',
+                                                borderColor: currentPage === 2 ? 'rgba(184, 134, 11, 0.2)' : '#b8860b',
+                                                borderRadius: '8px',
+                                                color: currentPage === 2 ? 'rgba(200, 168, 112, 0.3)' : '#ffd700',
+                                                fontSize: '22px',
+                                                fontWeight: 900,
+                                                cursor: currentPage === 2 ? 'default' : 'pointer',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                opacity: currentPage === 2 ? 0.45 : 1,
+                                                boxShadow: currentPage === 2 ? 'none' : '0 4px 10px rgba(0,0,0,0.5)',
+                                                transition: 'all 0.2s ease',
+                                            }}
+                                        >
+                                            ▶
+                                        </motion.button>
+                                    </div>
+
+                                    {/* ПЕРЕКЛЮЧАТЕЛИ СТРАНИЦ */}
+                                    <div
+                                        style={{
+                                            display: 'flex',
+                                            gap: '20px',
+                                            justifyContent: 'center',
+                                            margin: '15px 0 10px 0',
+                                        }}
+                                    >
+                                        {[0, 1, 2].map((pageIndex) => {
+                                            const isActive = currentPage === pageIndex;
+                                            const startLvl = pageIndex * 5 + 1;
+                                            const endLvl = pageIndex * 5 + 5;
+                                            return (
+                                                <motion.button
+                                                    key={pageIndex}
+                                                    whileHover={
+                                                        !isActive
+                                                            ? {
+                                                                  scale: 1.05,
+                                                                  boxShadow: '0 0 10px rgba(240,192,64,0.3)',
+                                                              }
+                                                            : {}
+                                                    }
+                                                    whileTap={!isActive ? { scale: 0.95 } : {}}
+                                                    onClick={() => {
+                                                        setCurrentPage(pageIndex);
+                                                        audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
+                                                    }}
+                                                    style={{
+                                                        padding: '8px 22px',
+                                                        background: isActive
+                                                            ? 'linear-gradient(180deg, #ffd700 0%, #b8860b 100%)'
+                                                            : 'linear-gradient(180deg, #2e1c11 0%, #1c110a 100%)',
+                                                        border: isActive ? '2px solid #ffffff' : '2px solid #b8860b',
+                                                        borderRadius: '8px',
+                                                        color: isActive ? '#1a0d00' : '#c8a870',
+                                                        fontFamily: "'Cinzel', serif",
+                                                        fontWeight: 900,
+                                                        fontSize: '12px',
+                                                        cursor: 'pointer',
+                                                        boxShadow: isActive
+                                                            ? '0 0 15px rgba(240, 192, 64, 0.4)'
+                                                            : '0 4px 8px rgba(0,0,0,0.5)',
+                                                        letterSpacing: '1px',
+                                                        transition: 'all 0.2s ease',
+                                                    }}
+                                                >
+                                                    ЭТАПЫ {startLvl}-{endLvl}
+                                                </motion.button>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            </motion.div>
+                        ) : (
+                            <motion.div
+                                key="quests"
+                                initial={{ x: 50, opacity: 0 }}
+                                animate={{ x: 0, opacity: 1 }}
+                                exit={{ x: -50, opacity: 0 }}
+                                style={{
+                                    height: '100%',
+                                    padding: '40px 60px',
+                                    display: 'grid',
+                                    gridTemplateColumns: '1fr 1fr',
+                                    gap: '40px',
+                                }}
+                            >
+                                <QuestSection
+                                    title="ЕЖЕДНЕВНЫЕ"
+                                    quests={currentDailyQuests}
+                                    onClaim={claimQuestReward}
                                 />
-                            ))}
-                        </motion.div>
-                    ) : (
-                        <motion.div
-                            key="quests"
-                            initial={{ x: 50, opacity: 0 }}
-                            animate={{ x: 0, opacity: 1 }}
-                            exit={{ x: -50, opacity: 0 }}
-                            style={{
-                                height: '100%',
-                                padding: '60px 100px',
-                                display: 'grid',
-                                gridTemplateColumns: '1fr 1fr',
-                                gap: '40px',
-                            }}
-                        >
-                            <QuestSection title="ЕЖЕДНЕВНЫЕ" quests={DAILY_QUESTS} />
-                            <QuestSection title="ЕЖЕНЕДЕЛЬНЫЕ" quests={WEEKLY_QUESTS} />
-                        </motion.div>
-                    )}
-                </AnimatePresence>
-            </div>
-
-            {/* МОДАЛКИ */}
-            <AnimatePresence>
-                {selectedReward && <PreviewModal item={selectedReward} onClose={() => setSelectedReward(null)} />}
-                {isPurchaseModalOpen && (
-                    <PurchaseModal
-                        onClose={() => setIsPurchaseModalOpen(false)}
-                        onBuy={() => {
-                            setPremium(true);
-                            setIsPurchaseModalOpen(false);
-                        }}
-                    />
-                )}
-            </AnimatePresence>
-
-            {/* ФУТЕР С ПОДСКАЗКОЙ */}
-            <div
-                style={{
-                    height: '80px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    background: 'linear-gradient(0deg, rgba(0,0,0,0.8) 0%, transparent 100%)',
-                    zIndex: 10,
-                }}
-            >
-                <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '14px', letterSpacing: '1px', fontWeight: 800 }}>
-                    ЗАРАБАТЫВАЙТЕ ОПЫТ В БОЯХ, ЧТОБЫ ОТКРЫВАТЬ НОВЫЕ УРОВНИ
-                </p>
-            </div>
-        </motion.div>
-    );
-};
-
-const RewardColumn: React.FC<{
-    reward: Reward;
-    isUnlocked: boolean;
-    isPremium: boolean;
-    claimedRewards: string[];
-    onClaim: (item: any) => void;
-    onPreview: (item: any) => void;
-    isMilestone?: boolean;
-}> = ({ reward, isUnlocked, isPremium, claimedRewards, onClaim, onPreview, isMilestone }) => {
-    return (
-        <div
-            style={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: isMilestone ? '40px' : '20px',
-                minWidth: isMilestone ? '280px' : '220px',
-                position: 'relative',
-                zIndex: isMilestone ? 5 : 1,
-            }}
-        >
-            {/* ПРЕМИУМ ДОРОЖКА (СВЕРХУ) */}
-            <RewardCard
-                item={reward.premium}
-                isPremiumCard
-                isUnlocked={isUnlocked && isPremium}
-                isClaimed={claimedRewards.includes(reward.premium.id)}
-                onClaim={() => onClaim(reward.premium)}
-                onPreview={onPreview}
-                isMilestone={isMilestone}
-            />
-
-            {/* УРОВЕНЬ ПОСЕРЕДИНЕ */}
-            <div
-                style={{
-                    height: '60px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    position: 'relative',
-                }}
-            >
-                <div
-                    style={{
-                        position: 'absolute',
-                        width: '120%',
-                        height: '2px',
-                        background: isUnlocked ? '#f0c040' : 'rgba(255,255,255,0.1)',
-                        zIndex: 0,
-                    }}
-                />
-                <div
-                    style={{
-                        width: isMilestone ? '70px' : '50px',
-                        height: isMilestone ? '70px' : '50px',
-                        borderRadius: '50%',
-                        background: isUnlocked ? '#f0c040' : '#222',
-                        border: `4px solid ${isMilestone ? '#f0c040' : '#111'}`,
-                        zIndex: 1,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontWeight: 900,
-                        color: isUnlocked ? '#000' : '#666',
-                        fontSize: isMilestone ? '28px' : '20px',
-                        boxShadow: isUnlocked ? `0 0 30px ${isMilestone ? '#f0c040' : 'rgba(240,192,64,0.5)'}` : 'none',
-                        transition: 'all 0.3s',
-                    }}
-                >
-                    {reward.level}
+                                <QuestSection
+                                    title="ЕЖЕНЕДЕЛЬНЫЕ"
+                                    quests={currentWeeklyQuests}
+                                    onClaim={claimWeeklyQuestReward}
+                                />
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
                 </div>
-            </div>
 
-            {/* БЕСПЛАТНАЯ ДОРОЖКА (СНИЗУ) */}
-            <RewardCard
-                item={reward.free}
-                isUnlocked={isUnlocked}
-                isClaimed={claimedRewards.includes(reward.free.id)}
-                onClaim={() => onClaim(reward.free)}
-                onPreview={onPreview}
-                isMilestone={isMilestone}
-            />
-        </div>
-    );
-};
-
-const RewardCard: React.FC<{
-    item: any;
-    isPremiumCard?: boolean;
-    isUnlocked: boolean;
-    isClaimed: boolean;
-    onClaim: () => void;
-    onPreview: (item: any) => void;
-    isMilestone?: boolean;
-}> = ({ item, isPremiumCard, isUnlocked, isClaimed, onClaim, onPreview, isMilestone }) => {
-    return (
-        <motion.div
-            onClick={() => onPreview(item)}
-            whileHover={isUnlocked && !isClaimed ? { scale: 1.05, y: isPremiumCard ? -10 : 10 } : { scale: 1.02 }}
-            style={{
-                height: isMilestone ? '300px' : '240px',
-                background: isMilestone
-                    ? isPremiumCard
-                        ? 'linear-gradient(180deg, rgba(240,192,64,0.15) 0%, rgba(20,20,20,0.4) 100%)'
-                        : 'rgba(255,255,255,0.05)'
-                    : isPremiumCard
-                      ? 'rgba(240,192,64,0.1)'
-                      : 'rgba(255,255,255,0.03)',
-                borderRadius: '24px',
-                backdropFilter: 'blur(8px)',
-                border: isMilestone
-                    ? `2px solid ${isPremiumCard ? '#f0c040' : 'rgba(255,255,255,0.4)'}`
-                    : `1px solid ${isPremiumCard ? 'rgba(240,192,64,0.4)' : 'rgba(255,255,255,0.15)'}`,
-                padding: '25px',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                position: 'relative',
-                overflow: 'hidden',
-                cursor: 'pointer',
-                filter: isUnlocked ? 'none' : 'grayscale(1) brightness(0.8) opacity(0.7)',
-                opacity: isClaimed ? 0.4 : 1,
-                boxShadow:
-                    isMilestone && isUnlocked
-                        ? `0 0 40px ${isPremiumCard ? 'rgba(240,192,64,0.2)' : 'rgba(255,255,255,0.1)'}`
-                        : 'none',
-                transition: 'all 0.3s',
-            }}
-        >
-            {isPremiumCard && (
+                {/* ФУТЕР С ПОДСКАЗКОЙ */}
                 <div
                     style={{
-                        position: 'absolute',
-                        top: '15px',
-                        right: '15px',
-                        fontSize: '24px',
-                        filter: 'drop-shadow(0 0 10px #f0c040)',
-                    }}
-                >
-                    👑
-                </div>
-            )}
-
-            {isMilestone && (
-                <div
-                    style={{
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        height: '4px',
-                        background: isPremiumCard
-                            ? 'linear-gradient(90deg, transparent, #f0c040, transparent)'
-                            : 'linear-gradient(90deg, transparent, #fff, transparent)',
-                    }}
-                />
-            )}
-
-            <div
-                style={{
-                    width: isMilestone ? '120px' : '90px',
-                    height: isMilestone ? '120px' : '90px',
-                    marginBottom: '15px',
-                    filter: isUnlocked ? 'drop-shadow(0 10px 20px rgba(0,0,0,0.5))' : 'blur(5px)',
-                    transition: 'all 0.3s',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                }}
-            >
-                {item.icon.startsWith('sprite-') ? (
-                    <div className={item.icon} style={{ width: '100%', height: '100%', backgroundSize: '300% 100%' }} />
-                ) : (
-                    <span style={{ fontSize: isMilestone ? '90px' : '64px' }}>{item.icon}</span>
-                )}
-            </div>
-
-            <div style={{ textAlign: 'center', zIndex: 1 }}>
-                <div
-                    style={{
-                        fontSize: isMilestone ? '20px' : '16px',
-                        fontWeight: 900,
-                        color: isPremiumCard ? '#f0c040' : '#fff',
-                        textShadow: '0 2px 4px rgba(0,0,0,0.5)',
-                    }}
-                >
-                    {item.name}
-                </div>
-                <div
-                    style={{
-                        fontSize: '11px',
-                        color: isPremiumCard ? 'rgba(240,192,64,0.6)' : 'rgba(255,255,255,0.4)',
-                        marginTop: '4px',
-                        textTransform: 'uppercase',
-                        letterSpacing: '1.5px',
-                        fontWeight: 800,
-                    }}
-                >
-                    {item.type}
-                </div>
-            </div>
-
-            <AnimatePresence>
-                {isUnlocked && !isClaimed && (
-                    <motion.button
-                        initial={{ y: 20, opacity: 0 }}
-                        animate={{ y: 0, opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            onClaim();
-                        }}
-                        style={{
-                            marginTop: '20px',
-                            padding: '10px 25px',
-                            background: isPremiumCard ? 'linear-gradient(180deg, #f0c040 0%, #a88020 100%)' : '#fff',
-                            border: 'none',
-                            borderRadius: '8px',
-                            color: '#000',
-                            fontWeight: 900,
-                            fontSize: '13px',
-                            cursor: 'pointer',
-                            boxShadow: '0 5px 15px rgba(0,0,0,0.3)',
-                        }}
-                    >
-                        ЗАБРАТЬ
-                    </motion.button>
-                )}
-            </AnimatePresence>
-
-            {isClaimed && (
-                <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    style={{
-                        position: 'absolute',
-                        inset: 0,
-                        background: 'rgba(0,0,0,0.7)',
-                        backdropFilter: 'blur(4px)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontSize: '60px',
-                        zIndex: 10,
-                    }}
-                >
-                    ✅
-                </motion.div>
-            )}
-
-            {!isUnlocked && isPremiumCard && !isClaimed && (
-                <div
-                    style={{
-                        position: 'absolute',
-                        bottom: '20px',
-                        fontSize: '11px',
-                        color: '#f0c040',
-                        fontWeight: 900,
-                        letterSpacing: '1px',
-                        background: 'rgba(0,0,0,0.5)',
-                        padding: '4px 10px',
-                        borderRadius: '4px',
-                    }}
-                >
-                    НУЖЕН ПРЕМИУМ
-                </div>
-            )}
-        </motion.div>
-    );
-};
-
-const PreviewModal: React.FC<{ item: any; onClose: () => void }> = ({ item, onClose }) => {
-    return (
-        <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={onClose}
-            style={{
-                position: 'fixed',
-                inset: 0,
-                zIndex: 2000,
-                background: 'rgba(0,0,0,0.9)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                backdropFilter: 'blur(10px)',
-            }}
-        >
-            <motion.div
-                initial={{ scale: 0.8, y: 50 }}
-                animate={{ scale: 1, y: 0 }}
-                onClick={(e) => e.stopPropagation()}
-                style={{
-                    width: '600px',
-                    padding: '60px',
-                    background: 'rgba(30,30,30,0.95)',
-                    borderRadius: '40px',
-                    border: '2px solid rgba(240,192,64,0.3)',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    textAlign: 'center',
-                    boxShadow: '0 0 100px rgba(240,192,64,0.1)',
-                }}
-            >
-                <div
-                    style={{
-                        fontSize: '180px',
-                        marginBottom: '40px',
-                        filter: 'drop-shadow(0 20px 40px rgba(0,0,0,0.5))',
-                    }}
-                >
-                    {item.icon}
-                </div>
-                <h2 style={{ fontSize: '42px', margin: 0, color: '#f0c040', fontFamily: "'Cinzel', serif" }}>
-                    {item.name}
-                </h2>
-                <p style={{ fontSize: '18px', color: 'rgba(255,255,255,0.6)', marginTop: '20px', lineHeight: '1.6' }}>
-                    Эксклюзивная награда первого сезона. Улучшает ваши возможности и подчеркивает статус легендарного
-                    бойца арены.
-                </p>
-                <button
-                    onClick={onClose}
-                    style={{
-                        marginTop: '40px',
-                        padding: '15px 50px',
-                        background: '#f0c040',
-                        border: 'none',
-                        borderRadius: '12px',
-                        color: '#000',
-                        fontWeight: 900,
-                        fontSize: '18px',
-                        cursor: 'pointer',
-                    }}
-                >
-                    ПОНЯТНО
-                </button>
-            </motion.div>
-        </motion.div>
-    );
-};
-
-const TabButton: React.FC<{ active: boolean; onClick: () => void; label: string; icon: string }> = ({
-    active,
-    onClick,
-    label,
-    icon,
-}) => (
-    <motion.button
-        onClick={onClick}
-        whileHover={{ background: active ? '#f0c040' : 'rgba(255,255,255,0.1)' }}
-        style={{
-            padding: '10px 25px',
-            borderRadius: '10px',
-            border: 'none',
-            background: active ? '#f0c040' : 'transparent',
-            color: active ? '#000' : 'rgba(255,255,255,0.6)',
-            fontWeight: 900,
-            fontSize: '14px',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '10px',
-            transition: 'all 0.2s',
-        }}
-    >
-        {icon.startsWith('sprite-') ? (
-            <div className={icon} style={{ width: '24px', height: '24px', backgroundSize: '300% 100%' }} />
-        ) : (
-            <span style={{ fontSize: '18px' }}>{icon}</span>
-        )}
-        {label}
-    </motion.button>
-);
-
-const QuestSection: React.FC<{ title: string; quests: Quest[] }> = ({ title, quests }) => (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '25px' }}>
-        <h3
-            style={{
-                fontSize: '24px',
-                color: '#f0c040',
-                fontFamily: "'Cinzel', serif",
-                margin: '0 0 10px 0',
-                letterSpacing: '2px',
-            }}
-        >
-            {title}
-        </h3>
-        {quests.map((quest) => (
-            <motion.div
-                key={quest.id}
-                whileHover={{ x: 10, background: 'rgba(255,255,255,0.05)' }}
-                style={{
-                    padding: '25px',
-                    background: 'rgba(255,255,255,0.03)',
-                    borderRadius: '20px',
-                    border: '1px solid rgba(255,255,255,0.05)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '25px',
-                }}
-            >
-                <div
-                    style={{
-                        width: '60px',
                         height: '60px',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
+                        background: '#150f0c',
+                        borderTop: '2px solid #b8860b',
+                        zIndex: 10,
                     }}
                 >
-                    {quest.icon.startsWith('sprite-') ? (
-                        <div
-                            className={quest.icon}
-                            style={{ width: '40px', height: '40px', backgroundSize: '300% 100%' }}
-                        />
-                    ) : (
-                        <span style={{ fontSize: '40px' }}>{quest.icon}</span>
-                    )}
-                </div>
-                <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: '20px', fontWeight: 900, marginBottom: '5px' }}>{quest.title}</div>
-                    <div style={{ fontSize: '14px', color: 'rgba(255,255,255,0.5)', marginBottom: '15px' }}>
-                        {quest.description}
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                        <div
-                            style={{
-                                flex: 1,
-                                height: '6px',
-                                background: 'rgba(0,0,0,0.3)',
-                                borderRadius: '3px',
-                                overflow: 'hidden',
-                            }}
-                        >
-                            <div
-                                style={{
-                                    width: `${(quest.progress / quest.target) * 100}%`,
-                                    height: '100%',
-                                    background: '#f0c040',
-                                }}
-                            />
-                        </div>
-                        <span style={{ fontSize: '12px', fontWeight: 800 }}>
-                            {quest.progress} / {quest.target}
-                        </span>
-                    </div>
-                </div>
-                <div style={{ textAlign: 'right', minWidth: '100px' }}>
-                    <div style={{ fontSize: '18px', fontWeight: 900, color: '#f0c040' }}>+{quest.rewardXp} XP</div>
-                    <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.3)', marginTop: '2px' }}>НАГРАДА</div>
-                </div>
-            </motion.div>
-        ))}
-    </div>
-);
-
-const PurchaseModal: React.FC<{ onClose: () => void; onBuy: () => void }> = ({ onClose, onBuy }) => {
-    return (
-        <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={onClose}
-            style={{
-                position: 'fixed',
-                inset: 0,
-                zIndex: 2000,
-                background: 'rgba(0,0,0,0.95)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                backdropFilter: 'blur(20px)',
-            }}
-        >
-            <motion.div
-                initial={{ scale: 0.9, rotateX: 20 }}
-                animate={{ scale: 1, rotateX: 0 }}
-                onClick={(e) => e.stopPropagation()}
-                style={{
-                    width: '900px',
-                    background: 'linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%)',
-                    borderRadius: '40px',
-                    border: '3px solid #f0c040',
-                    overflow: 'hidden',
-                    display: 'flex',
-                    position: 'relative',
-                }}
-            >
-                <div style={{ flex: 1, padding: '60px' }}>
-                    <h2 style={{ fontSize: '48px', color: '#f0c040', fontFamily: "'Cinzel', serif", margin: 0 }}>
-                        ЗОЛОТОЙ ПРОПУСК
-                    </h2>
-                    <p style={{ fontSize: '18px', color: 'rgba(255,255,255,0.5)', marginTop: '10px' }}>
-                        РАЗБЛОКИРУЙТЕ МАКСИМУМ ВОЗМОЖНОСТЕЙ
-                    </p>
-
-                    <ul
+                    <p
                         style={{
-                            listStyle: 'none',
-                            padding: 0,
-                            marginTop: '40px',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: '20px',
+                            color: '#c8a870',
+                            fontSize: '13px',
+                            letterSpacing: '2px',
+                            fontWeight: 900,
+                            fontFamily: "'Cinzel', serif",
+                            textShadow: '0 2px 4px rgba(0,0,0,0.8)',
+                            margin: 0,
                         }}
                     >
-                        {[
-                            'Эксклюзивная дорожка наград',
-                            'Уникальный скин "Теневой Панда"',
-                            'Множитель опыта +50%',
-                            'Золотая рамка профиля',
-                        ].map((text, i) => (
-                            <li
-                                key={i}
-                                style={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '15px',
-                                    fontSize: '20px',
-                                    fontWeight: 700,
-                                }}
-                            >
-                                <span style={{ color: '#f0c040' }}>✔</span> {text}
-                            </li>
-                        ))}
-                    </ul>
+                        ЗАРАБАТЫВАЙТЕ ОПЫТ В БОЯХ, ЧТОБЫ ОТКРЫВАТЬ НОВЫЕ УРОВНИ
+                    </p>
+                </div>
 
-                    <div style={{ marginTop: '60px', display: 'flex', alignItems: 'center', gap: '30px' }}>
-                        <div style={{ fontSize: '32px', fontWeight: 900 }}>
-                            <span
-                                style={{
-                                    fontSize: '20px',
-                                    color: 'rgba(255,255,255,0.4)',
-                                    textDecoration: 'line-through',
-                                    marginRight: '10px',
-                                }}
-                            >
-                                1999
-                            </span>
-                            999 <span style={{ color: '#f0c040' }}>💎</span>
-                        </div>
-                        <motion.button
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            onClick={onBuy}
-                            style={{
-                                padding: '20px 60px',
-                                background: 'linear-gradient(180deg, #f0c040 0%, #a88020 100%)',
-                                border: 'none',
-                                borderRadius: '15px',
-                                color: '#000',
-                                fontWeight: 900,
-                                fontSize: '22px',
-                                cursor: 'pointer',
-                                boxShadow: '0 10px 40px rgba(240,192,64,0.4)',
+                {/* МОДАЛЬНЫЕ ОКНА И ОВЕРЛЕИ */}
+                <AnimatePresence>
+                    {isPurchaseModalOpen && (
+                        <PurchaseModal
+                            onClose={() => setIsPurchaseModalOpen(false)}
+                            onBuy={() => {
+                                const success = setPremium(true);
+                                if (success) {
+                                    setIsPurchaseModalOpen(false);
+                                }
                             }}
-                        >
-                            РАЗБЛОКИРОВАТЬ
-                        </motion.button>
-                    </div>
-                </div>
-                <div
-                    style={{
-                        width: '350px',
-                        background: 'rgba(240,192,64,0.05)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontSize: '200px',
-                    }}
-                >
-                    👑
-                </div>
-            </motion.div>
+                        />
+                    )}
+                    {selectedReward && (
+                        <RewardPreviewModal item={selectedReward} onClose={() => setSelectedReward(null)} />
+                    )}
+                    {showBpLevelUpOverlay && <BpLevelUpOverlay level={bpLevel} onClose={hideBpLevelUpOverlay} />}
+                </AnimatePresence>
+            </div>
         </motion.div>
     );
 };

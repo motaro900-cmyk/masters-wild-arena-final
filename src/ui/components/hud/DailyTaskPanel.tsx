@@ -251,12 +251,12 @@ export const DailyTaskPanel: React.FC = () => {
                                                             }}
                                                             title="Заменить задание (VIP)"
                                                             style={{
-                                                                background: 'rgba(240, 192, 64, 0.15)',
-                                                                border: '1px solid #c8a870',
-                                                                color: '#c8a870',
+                                                                background: 'rgba(61, 42, 16, 0.95)',
+                                                                border: '1.2px solid #b38028',
+                                                                color: '#f5c864',
                                                                 borderRadius: '50%',
-                                                                width: '18px',
-                                                                height: '18px',
+                                                                width: '20px',
+                                                                height: '20px',
                                                                 display: 'flex',
                                                                 alignItems: 'center',
                                                                 justifyContent: 'center',
@@ -265,9 +265,12 @@ export const DailyTaskPanel: React.FC = () => {
                                                                 padding: 0,
                                                                 lineHeight: 1,
                                                                 transition: 'all 0.2s',
+                                                                boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
                                                             }}
                                                         >
-                                                            🔄
+                                                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0 }}>
+                                                                <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l.73-.73" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+                                                            </svg>
                                                         </motion.button>
                                                     )}
                                                 </div>

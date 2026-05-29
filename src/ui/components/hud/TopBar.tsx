@@ -9,7 +9,7 @@ interface TopBarProps {
 }
 
 export const TopBar: React.FC<TopBarProps> = ({ onOpenWindow, mode }) => {
-    const { avatar, title, level, crystals, gold, energy, exp, vkUser } = useGameStore();
+    const { avatar, title, level, crystals, gold, energy, maxEnergy, exp, vkUser, name } = useGameStore();
     const textShadow = { textShadow: '0 2px 4px rgba(0,0,0,1), 0 0 10px rgba(0,0,0,0.5)' };
 
     if (mode === 'profile_only') {
@@ -34,7 +34,11 @@ export const TopBar: React.FC<TopBarProps> = ({ onOpenWindow, mode }) => {
                         className="font-header text-[28px] font-black text-white leading-tight uppercase tracking-tight truncate w-[180px]"
                         style={textShadow}
                     >
-                        {vkUser?.firstName ? `${vkUser.firstName} ${vkUser.lastName}` : 'ИГРОК ВК'}
+                        {name && name !== 'Мастер'
+                            ? name
+                            : vkUser?.firstName
+                              ? `${vkUser.firstName} ${vkUser.lastName}`
+                              : 'ИГРОК ВК'}
                     </h1>
                     <span className="font-ui text-amber-400 text-[11px] font-black tracking-[0.2em] uppercase">
                         {title || 'МАСТЕР АРЕНЫ'}
@@ -61,7 +65,7 @@ export const TopBar: React.FC<TopBarProps> = ({ onOpenWindow, mode }) => {
         return (
             <div className="flex items-center gap-6">
                 {[
-                    { img: AssetsMap.UI.BAR_ENERGY, val: `${energy}/50`, color: 'text-white' },
+                    { img: AssetsMap.UI.BAR_ENERGY, val: `${energy}/${maxEnergy || 50}`, color: 'text-white' },
                     { img: AssetsMap.UI.BAR_GOLD, val: gold.toLocaleString(), color: 'text-amber-400' },
                     { img: AssetsMap.UI.BAR_GEM, val: crystals, color: 'text-purple-400' },
                 ].map((item, i) => (

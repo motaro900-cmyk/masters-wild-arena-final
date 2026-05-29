@@ -17,8 +17,13 @@ export const TalentsView = ({ hero }: any) => {
     const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
 
     const { handleUpgrade } = useTalentProgress(hero.id, talents, availablePoints, upgradeTalent);
+
+    const CONNECTOR_HEIGHT = 140;
+    const halfH = CONNECTOR_HEIGHT / 2;
+
     return (
         <motion.div
+            id="talents-view-root"
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 1.05 }}
@@ -49,7 +54,7 @@ export const TalentsView = ({ hero }: any) => {
                             color: '#fff',
                             fontSize: '36px',
                             margin: 0,
-                            fontFamily: "'Cinzel', serif",
+                            fontFamily: "'Cinzel', 'Philosopher', serif",
                             textShadow: '0 4px 15px rgba(0,0,0,0.8)',
                             letterSpacing: '2px',
                         }}
@@ -92,7 +97,7 @@ export const TalentsView = ({ hero }: any) => {
                                 color: '#fff',
                                 fontSize: '48px',
                                 fontWeight: 950,
-                                fontFamily: "'Cinzel', serif",
+                                fontFamily: "'Cinzel', 'Philosopher', serif",
                                 textShadow: '0 0 25px rgba(240,192,64,0.6)',
                                 lineHeight: 1,
                             }}
@@ -105,7 +110,7 @@ export const TalentsView = ({ hero }: any) => {
                                 fontSize: '15px',
                                 fontWeight: 900,
                                 letterSpacing: '1px',
-                                fontFamily: "'Cinzel', serif",
+                                fontFamily: "'Cinzel', 'Philosopher', serif",
                                 textShadow: '0 2px 4px rgba(0,0,0,0.5)',
                                 textTransform: 'uppercase',
                                 marginTop: '4px',
@@ -128,18 +133,31 @@ export const TalentsView = ({ hero }: any) => {
             {/* TREE COLUMNS */}
             <div style={{ flex: 1, display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '30px' }}>
                 {TALENTS_CONFIG.map((branch) => (
-                    <div key={branch.id} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                    <div
+                        key={branch.id}
+                        style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '20px',
+                            background: 'rgba(18, 18, 26, 0.45)',
+                            border: '1.5px solid rgba(255, 255, 255, 0.05)',
+                            borderRadius: '24px',
+                            padding: '24px',
+                            boxShadow: '0 20px 50px rgba(0,0,0,0.4), inset 0 0 30px rgba(255,255,255,0.02)',
+                            backdropFilter: 'blur(10px)',
+                        }}
+                    >
                         {/* BRANCH HEADER */}
                         <div
                             style={{
                                 display: 'flex',
                                 alignItems: 'center',
                                 gap: '15px',
-                                background: `linear-gradient(90deg, ${branch.color}aa 0%, transparent 100%)`,
+                                background: `linear-gradient(90deg, ${branch.color}18 0%, ${branch.color}05 60%, transparent 100%)`,
                                 padding: '12px 25px',
                                 borderRadius: '12px',
-                                borderLeft: `5px solid ${branch.color}`,
-                                boxShadow: '0 4px 15px rgba(0,0,0,0.4)',
+                                borderLeft: `3px solid ${branch.color}`,
+                                boxShadow: '0 4px 20px rgba(0,0,0,0.25)',
                                 backdropFilter: 'blur(4px)',
                             }}
                         >
@@ -151,9 +169,9 @@ export const TalentsView = ({ hero }: any) => {
                                     color: '#fff',
                                     fontSize: '24px',
                                     fontWeight: 900,
-                                    fontFamily: "'Cinzel', serif",
+                                    fontFamily: "'Cinzel', 'Philosopher', serif",
                                     letterSpacing: '3px',
-                                    textShadow: `0 0 15px ${branch.color}`,
+                                    textShadow: `0 0 10px ${branch.color}44`,
                                 }}
                             >
                                 {branch.title}
@@ -183,7 +201,7 @@ export const TalentsView = ({ hero }: any) => {
                                             <div
                                                 style={{
                                                     position: 'relative',
-                                                    height: '50px',
+                                                    height: `${CONNECTOR_HEIGHT}px`,
                                                     width: '100%',
                                                     display: 'flex',
                                                     justifyContent: 'center',
@@ -198,45 +216,58 @@ export const TalentsView = ({ hero }: any) => {
                                                                 style={{
                                                                     position: 'absolute',
                                                                     top: 0,
-                                                                    width: '6px',
-                                                                    height: '25px',
-                                                                    background: isUnlocked ? branch.color : '#0a0a0a',
-                                                                    border: `1px solid ${isUnlocked ? branch.color + '88' : 'rgba(255,255,255,0.15)'}`,
+                                                                    width: '2px',
+                                                                    height: `${halfH}px`,
+                                                                    background: isUnlocked
+                                                                        ? `linear-gradient(180deg, ${branch.color}, ${branch.color}ee)`
+                                                                        : '#1a1a24',
+                                                                    boxShadow: isUnlocked
+                                                                        ? `0 0 8px ${branch.color}88, 0 0 2px ${branch.color}`
+                                                                        : 'none',
                                                                 }}
                                                             />
                                                             {/* Bridge */}
                                                             <div
                                                                 style={{
                                                                     position: 'absolute',
-                                                                    top: '25px',
+                                                                    top: `${halfH}px`,
                                                                     width: '170px',
-                                                                    height: '6px',
-                                                                    background: isUnlocked ? branch.color : '#0a0a0a',
-                                                                    border: `1px solid ${isUnlocked ? branch.color + '88' : 'rgba(255,255,255,0.15)'}`,
-                                                                    borderRadius: '3px',
+                                                                    height: '2px',
+                                                                    background: isUnlocked ? branch.color : '#1a1a24',
+                                                                    boxShadow: isUnlocked
+                                                                        ? `0 0 8px ${branch.color}88, 0 0 2px ${branch.color}`
+                                                                        : 'none',
                                                                 }}
                                                             />
                                                             {/* 2 Legs DOWN */}
                                                             <div
                                                                 style={{
                                                                     position: 'absolute',
-                                                                    top: '25px',
+                                                                    top: `${halfH}px`,
                                                                     left: 'calc(50% - 85px)',
-                                                                    width: '6px',
-                                                                    height: '25px',
-                                                                    background: isUnlocked ? branch.color : '#0a0a0a',
-                                                                    border: `1px solid ${isUnlocked ? branch.color + '88' : 'rgba(255,255,255,0.15)'}`,
+                                                                    width: '2px',
+                                                                    height: `${halfH}px`,
+                                                                    background: isUnlocked
+                                                                        ? `linear-gradient(180deg, ${branch.color}ee, ${branch.color})`
+                                                                        : '#1a1a24',
+                                                                    boxShadow: isUnlocked
+                                                                        ? `0 0 8px ${branch.color}88, 0 0 2px ${branch.color}`
+                                                                        : 'none',
                                                                 }}
                                                             />
                                                             <div
                                                                 style={{
                                                                     position: 'absolute',
-                                                                    top: '25px',
+                                                                    top: `${halfH}px`,
                                                                     left: 'calc(50% + 85px)',
-                                                                    width: '6px',
-                                                                    height: '25px',
-                                                                    background: isUnlocked ? branch.color : '#0a0a0a',
-                                                                    border: `1px solid ${isUnlocked ? branch.color + '88' : 'rgba(255,255,255,0.15)'}`,
+                                                                    width: '2px',
+                                                                    height: `${halfH}px`,
+                                                                    background: isUnlocked
+                                                                        ? `linear-gradient(180deg, ${branch.color}ee, ${branch.color})`
+                                                                        : '#1a1a24',
+                                                                    boxShadow: isUnlocked
+                                                                        ? `0 0 8px ${branch.color}88, 0 0 2px ${branch.color}`
+                                                                        : 'none',
                                                                 }}
                                                             />
                                                         </>
@@ -250,12 +281,13 @@ export const TalentsView = ({ hero }: any) => {
                                                             <div
                                                                 style={{
                                                                     position: 'absolute',
-                                                                    top: '25px',
+                                                                    top: `${halfH}px`,
                                                                     width: '170px',
-                                                                    height: '6px',
-                                                                    background: isUnlocked ? branch.color : '#0a0a0a',
-                                                                    border: `1px solid ${isUnlocked ? branch.color + '88' : 'rgba(255,255,255,0.15)'}`,
-                                                                    borderRadius: '3px',
+                                                                    height: '2px',
+                                                                    background: isUnlocked ? branch.color : '#1a1a24',
+                                                                    boxShadow: isUnlocked
+                                                                        ? `0 0 8px ${branch.color}88, 0 0 2px ${branch.color}`
+                                                                        : 'none',
                                                                 }}
                                                             />
                                                             {/* 2 Legs UP (Connect to parents above) */}
@@ -264,10 +296,14 @@ export const TalentsView = ({ hero }: any) => {
                                                                     position: 'absolute',
                                                                     top: 0,
                                                                     left: 'calc(50% - 85px)',
-                                                                    width: '6px',
-                                                                    height: '25px',
-                                                                    background: isUnlocked ? branch.color : '#0a0a0a',
-                                                                    border: `1px solid ${isUnlocked ? branch.color + '88' : 'rgba(255,255,255,0.15)'}`,
+                                                                    width: '2px',
+                                                                    height: `${halfH}px`,
+                                                                    background: isUnlocked
+                                                                        ? `linear-gradient(180deg, ${branch.color}, ${branch.color}ee)`
+                                                                        : '#1a1a24',
+                                                                    boxShadow: isUnlocked
+                                                                        ? `0 0 8px ${branch.color}88, 0 0 2px ${branch.color}`
+                                                                        : 'none',
                                                                 }}
                                                             />
                                                             <div
@@ -275,21 +311,29 @@ export const TalentsView = ({ hero }: any) => {
                                                                     position: 'absolute',
                                                                     top: 0,
                                                                     left: 'calc(50% + 85px)',
-                                                                    width: '6px',
-                                                                    height: '25px',
-                                                                    background: isUnlocked ? branch.color : '#0a0a0a',
-                                                                    border: `1px solid ${isUnlocked ? branch.color + '88' : 'rgba(255,255,255,0.15)'}`,
+                                                                    width: '2px',
+                                                                    height: `${halfH}px`,
+                                                                    background: isUnlocked
+                                                                        ? `linear-gradient(180deg, ${branch.color}, ${branch.color}ee)`
+                                                                        : '#1a1a24',
+                                                                    boxShadow: isUnlocked
+                                                                        ? `0 0 8px ${branch.color}88, 0 0 2px ${branch.color}`
+                                                                        : 'none',
                                                                 }}
                                                             />
                                                             {/* Spine DOWN (Connect to child below) */}
                                                             <div
                                                                 style={{
                                                                     position: 'absolute',
-                                                                    top: '25px',
-                                                                    width: '6px',
-                                                                    height: '25px',
-                                                                    background: isUnlocked ? branch.color : '#0a0a0a',
-                                                                    border: `1px solid ${isUnlocked ? branch.color + '88' : 'rgba(255,255,255,0.15)'}`,
+                                                                    top: `${halfH}px`,
+                                                                    width: '2px',
+                                                                    height: `${halfH}px`,
+                                                                    background: isUnlocked
+                                                                        ? `linear-gradient(180deg, ${branch.color}ee, ${branch.color})`
+                                                                        : '#1a1a24',
+                                                                    boxShadow: isUnlocked
+                                                                        ? `0 0 8px ${branch.color}88, 0 0 2px ${branch.color}`
+                                                                        : 'none',
                                                                 }}
                                                             />
                                                         </>
@@ -300,10 +344,14 @@ export const TalentsView = ({ hero }: any) => {
                                                     tier.talents.length === 1 && (
                                                         <div
                                                             style={{
-                                                                width: '6px',
+                                                                width: '2px',
                                                                 height: '100%',
-                                                                background: isUnlocked ? branch.color : '#0a0a0a',
-                                                                border: `1px solid ${isUnlocked ? branch.color + '88' : 'rgba(255,255,255,0.15)'}`,
+                                                                background: isUnlocked
+                                                                    ? `linear-gradient(180deg, ${branch.color}, ${branch.color})`
+                                                                    : '#1a1a24',
+                                                                boxShadow: isUnlocked
+                                                                    ? `0 0 8px ${branch.color}88, 0 0 2px ${branch.color}`
+                                                                    : 'none',
                                                             }}
                                                         />
                                                     )}
@@ -333,15 +381,18 @@ export const TalentsView = ({ hero }: any) => {
                                                         onMouseEnter={(e: any) => {
                                                             const rect = e.currentTarget.getBoundingClientRect();
                                                             const root = document.getElementById('hero-scene-root');
+                                                            const talentsRoot =
+                                                                document.getElementById('talents-view-root');
                                                             const rootRect = root?.getBoundingClientRect();
-                                                            if (rootRect) {
+                                                            const talentsRect = talentsRoot?.getBoundingClientRect();
+                                                            if (rootRect && talentsRect) {
                                                                 const scale = rootRect.width / 1920;
-                                                                const x = (rect.right - rootRect.left) / scale + 20;
-                                                                const y = (rect.top - rootRect.top) / scale;
-                                                                // SMART POSITIONING: Lowered threshold and increased offset to ensure visibility
+                                                                const x = (rect.right - talentsRect.left) / scale + 20;
+                                                                const y = (rect.top - talentsRect.top) / scale;
+                                                                // Flipping to left if it's too far right (width is ~1520px in talents-view space)
                                                                 setTooltipPos({
-                                                                    x: x > 1400 ? x - 520 : x,
-                                                                    y: y > 420 ? y - 520 : y,
+                                                                    x: x > 1100 ? x - 610 : x,
+                                                                    y: y > 500 ? y - 350 : y,
                                                                 });
                                                             }
                                                             setActiveTalent({
@@ -384,7 +435,7 @@ export const TalentsView = ({ hero }: any) => {
                         fontSize: '16px',
                         fontWeight: 900,
                         cursor: 'pointer',
-                        fontFamily: "'Cinzel', serif",
+                        fontFamily: "'Cinzel', 'Philosopher', serif",
                         letterSpacing: '2px',
                         backdropFilter: 'blur(10px)',
                     }}

@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion } from 'framer-motion';
 import { useGameStore } from '../../../store/useGameStore';
 import { AssetsMap } from '../../../configs/AssetsMap';
 import { audioService } from '../../../services/AudioService';
@@ -14,11 +15,11 @@ interface MenuItem {
  * MENU_ITEMS (v5.4) — Финальная подтяжка вверх.
  */
 const MENU_ITEMS: MenuItem[] = [
-    { id: 'STORE', label: 'МАГАЗИН', top: 10, height: 102 },
-    { id: 'INVENTORY', label: 'ИНВЕНТАРЬ', top: 112, height: 96 },
-    { id: 'HEROES', label: 'ГЕРОИ', top: 212, height: 96 },
-    { id: 'CLAN', label: 'КЛАН', top: 312, height: 96 },
-    { id: 'RANKING', label: 'РЕЙТИНГ', top: 412, height: 96 },
+    { id: 'STORE', label: 'МАГАЗИН', top: 9, height: 94 },
+    { id: 'INVENTORY', label: 'ИНВЕНТАРЬ', top: 103, height: 88 },
+    { id: 'HEROES', label: 'ГЕРОИ', top: 195, height: 88 },
+    { id: 'CLAN', label: 'КЛАН', top: 287, height: 88 },
+    { id: 'RANKING', label: 'РЕЙТИНГ', top: 379, height: 88 },
 ];
 
 export const LeftSidebar: React.FC<{ onOpenWindow: (n: string) => void }> = ({ onOpenWindow }) => {
@@ -31,7 +32,7 @@ export const LeftSidebar: React.FC<{ onOpenWindow: (n: string) => void }> = ({ o
                 backgroundSize: '100% 100%',
                 backgroundRepeat: 'no-repeat',
                 width: 320,
-                height: 560,
+                height: 515,
                 position: 'relative',
                 pointerEvents: 'auto',
             }}
@@ -56,7 +57,8 @@ const SideMenuItem: React.FC<{
     isActive: boolean;
     onClick: () => void;
 }> = ({ item, isActive, onClick }) => (
-    <button
+    <motion.button
+        whileTap={{ scale: 0.92 }}
         onClick={onClick}
         style={{
             position: 'absolute',
@@ -104,5 +106,5 @@ const SideMenuItem: React.FC<{
                 }}
             />
         )}
-    </button>
+    </motion.button>
 );

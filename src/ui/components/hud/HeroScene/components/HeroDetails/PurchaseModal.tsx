@@ -17,6 +17,8 @@ export const PurchaseModal = ({ hero, onClose, rarityColors }: any) => {
             if (isGold) spendGold(price);
             else spendDiamonds(price);
             audioService.playSFX('SFX_BUY');
+            // Сразу выбираем этого героя как активного для боя и просмотра
+            useGameStore.setState({ selectedHeroId: hero.id, heroGalleryId: hero.id });
             onClose();
         } else {
             audioService.playSFX('SFX_ERROR');
@@ -108,7 +110,7 @@ export const PurchaseModal = ({ hero, onClose, rarityColors }: any) => {
                 <div style={{ display: 'flex', gap: '20px', width: '100%' }}>
                     <motion.button
                         whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
+                        whileTap={{ scale: 0.92 }}
                         onClick={onClose}
                         style={{
                             flex: 1,
@@ -127,7 +129,7 @@ export const PurchaseModal = ({ hero, onClose, rarityColors }: any) => {
                     </motion.button>
                     <motion.button
                         whileHover={hasEnough ? { scale: 1.05, boxShadow: `0 0 20px ${color}44` } : {}}
-                        whileTap={hasEnough ? { scale: 0.95 } : {}}
+                        whileTap={hasEnough ? { scale: 0.92 } : {}}
                         onClick={handleConfirm}
                         disabled={!hasEnough}
                         style={{

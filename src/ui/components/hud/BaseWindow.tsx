@@ -15,6 +15,22 @@ interface BaseWindowProps {
     headerExtra?: React.ReactNode;
 }
 
+/** Угловая декорация для рамы окна */
+const CornerAccent: React.FC<{ position: 'tl' | 'tr' | 'bl' | 'br'; color: string }> = ({ position, color }) => {
+    const style: React.CSSProperties = {
+        position: 'absolute',
+        width: '18px',
+        height: '18px',
+        zIndex: 20,
+        pointerEvents: 'none',
+        ...(position === 'tl' && { top: -2, left: -2, borderTop: `3px solid ${color}`, borderLeft: `3px solid ${color}` }),
+        ...(position === 'tr' && { top: -2, right: -2, borderTop: `3px solid ${color}`, borderRight: `3px solid ${color}` }),
+        ...(position === 'bl' && { bottom: -2, left: -2, borderBottom: `3px solid ${color}`, borderLeft: `3px solid ${color}` }),
+        ...(position === 'br' && { bottom: -2, right: -2, borderBottom: `3px solid ${color}`, borderRight: `3px solid ${color}` }),
+    };
+    return <div style={style} />;
+};
+
 export const BaseWindow: React.FC<BaseWindowProps> = ({
     title,
     isOpen,
@@ -29,52 +45,70 @@ export const BaseWindow: React.FC<BaseWindowProps> = ({
 
     // Цветовая схема окна
     const theme = {
-        bg: isLight ? '#f5e6c8' : '#2a1b0a',
+        bg: isLight
+            ? 'var(--panel-parchment)'
+            : 'linear-gradient(165deg, rgba(20, 13, 7, 0.98) 0%, rgba(30, 16, 7, 0.96) 50%, rgba(12, 7, 3, 0.99) 100%)',
         pattern: isLight
             ? 'repeating-linear-gradient(45deg, rgba(0,0,0,0.02) 0px, rgba(0,0,0,0.02) 2px, transparent 2px, transparent 4px)'
-            : 'repeating-linear-gradient(45deg, rgba(255,255,255,0.02) 0px, rgba(255,255,255,0.02) 2px, transparent 2px, transparent 4px)',
-        border: isLight ? '#a67c52' : '#c48b3b',
+            : 'none',
+        border: isLight ? 'var(--border-gold-mid)' : 'rgba(235, 185, 55, 0.7)',
         headerBg: isLight
             ? 'linear-gradient(180deg, #d2b48c 0%, #b8860b 100%)'
-            : 'linear-gradient(180deg, #451a03 0%, #1a0a05 100%)',
-        titleColor: isLight ? '#4a3219' : '#fef3c7',
-        shadow: isLight ? '0 10px 40px rgba(0,0,0,0.3)' : '0 0 50px rgba(0,0,0,1), inset 0 0 40px rgba(0,0,0,0.8)',
+            : 'linear-gradient(180deg, rgba(40, 24, 10, 0.95) 0%, rgba(20, 12, 5, 0.98) 100%)',
+        titleColor: isLight ? '#4a3219' : '#f5d37a',
+        shadow: isLight
+            ? '0 10px 40px rgba(0,0,0,0.3)'
+            : '0 0 45px rgba(0, 0, 0, 0.95), 0 10px 60px rgba(0, 0, 0, 0.85), inset 0 0 25px rgba(251, 191, 36, 0.05)',
     };
 
     return (
         <AnimatePresence>
             {isOpen && (
                 <motion.div
-                    initial={{ scale: 0.8, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    exit={{ scale: 0.8, opacity: 0 }}
+                    initial={{ scale: 0.88, opacity: 0, y: 15 }}
+                    animate={{ scale: 1, opacity: 1, y: 0 }}
+                    exit={{ scale: 0.88, opacity: 0, y: 15 }}
+                    transition={{ type: 'spring', damping: 24, stiffness: 280 }}
                     className="BaseWindow"
                     style={{
                         width: width,
                         height: height,
-                        minHeight: '500px',
+                        minHeight: '520px',
                         background: theme.bg,
-                        backgroundImage: theme.pattern,
-                        border: `4px solid ${theme.border}`,
-                        borderRadius: '20px',
+                        ...(theme.pattern !== 'none' && { backgroundImage: theme.pattern }),
+                        border: isLight ? `4px solid ${theme.border}` : `2px solid ${theme.border}`,
+                        borderRadius: '12px',
                         boxShadow: theme.shadow,
                         position: 'relative',
                         display: 'flex',
                         flexDirection: 'column',
                         overflow: 'hidden',
                         pointerEvents: 'auto',
+                        backdropFilter: isLight ? 'none' : 'blur(16px)',
                     }}
                 >
+                    {/* Угловые акценты (только в темной теме) */}
+                    {!isLight && (
+                        <>
+                            <CornerAccent position="tl" color="#fbbf24" />
+                            <CornerAccent position="tr" color="#fbbf24" />
+                            <CornerAccent position="bl" color="rgba(251,191,36,0.5)" />
+                            <CornerAccent position="br" color="rgba(251,191,36,0.5)" />
+                        </>
+                    )}
+
                     {/* Заголовок окна */}
                     <div
                         style={{
-                            height: '70px',
+                            height: '75px',
                             background: theme.headerBg,
                             display: 'flex',
                             alignItems: 'center',
-                            padding: '0 30px',
+                            padding: '0 28px',
                             justifyContent: 'space-between',
-                            borderBottom: `2px solid ${theme.border}`,
+                            borderBottom: `2.5px solid ${isLight ? theme.border : 'rgba(235, 185, 55, 0.45)'}`,
+                            position: 'relative',
+                            zIndex: 15,
                         }}
                     >
                         <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
@@ -82,10 +116,12 @@ export const BaseWindow: React.FC<BaseWindowProps> = ({
                                 style={{
                                     color: theme.titleColor,
                                     fontSize: '28px',
-                                    fontFamily: "'Philosopher', serif",
+                                    fontFamily: "'Cinzel', 'Philosopher', serif",
+                                    fontWeight: 900,
                                     margin: 0,
                                     textTransform: 'uppercase',
-                                    letterSpacing: '2px',
+                                    letterSpacing: '2.5px',
+                                    textShadow: isLight ? 'none' : '0 2px 10px rgba(0,0,0,0.8), 0 0 15px rgba(251,191,36,0.25)',
                                 }}
                             >
                                 {title}
@@ -93,7 +129,9 @@ export const BaseWindow: React.FC<BaseWindowProps> = ({
                             {headerExtra}
                         </div>
 
-                        <button
+                        <motion.button
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
                             onClick={() => {
                                 audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
                                 onClose();
@@ -103,12 +141,27 @@ export const BaseWindow: React.FC<BaseWindowProps> = ({
                                 border: 'none',
                                 cursor: 'pointer',
                                 color: theme.titleColor,
-                                opacity: 0.7,
+                                opacity: 0.8,
+                                transition: 'opacity 0.2s',
                             }}
+                            onMouseEnter={(e) => (e.currentTarget.style.opacity = '1')}
+                            onMouseLeave={(e) => (e.currentTarget.style.opacity = '0.8')}
                         >
-                            <X size={32} />
-                        </button>
+                            <X size={30} style={{ filter: isLight ? 'none' : 'drop-shadow(0 0 4px rgba(251,191,36,0.3))' }} />
+                        </motion.button>
                     </div>
+
+                    {/* Декоративная тонкая полоска под хедером */}
+                    {!isLight && (
+                        <div style={{
+                            height: '1px',
+                            background: 'linear-gradient(90deg, transparent, rgba(251, 191, 36, 0.4), transparent)',
+                            width: '100%',
+                            position: 'absolute',
+                            top: '75px',
+                            zIndex: 16
+                        }} />
+                    )}
 
                     {/* Контент окна */}
                     <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>{children}</div>

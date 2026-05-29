@@ -187,9 +187,8 @@ export const CityScreen: React.FC = () => {
                 y="16%"
                 label="ОБИТЕЛЬ ДРЕВНИХ"
                 onClick={() => {
-                    if ((window as any).setActiveHUDWindow) {
-                        (window as any).setActiveHUDWindow('SANCTUARY');
-                    }
+                    audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
+                    useGameStore.setState({ activeScreen: 'SANCTUARY' });
                 }}
             />
 

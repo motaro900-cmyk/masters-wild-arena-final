@@ -9,11 +9,20 @@ import { PreBattleScreen } from './PreBattleScreen';
 import { audioService } from '../../../services/AudioService';
 import { AssetsMap } from '../../../configs/AssetsMap';
 import { BATTLE_REWARDS } from '../../../game/configs/GameConstants';
-import { shareBattleResult } from '../../../utils/VKBridge';
+import { showInterstitialAd } from '../../../utils/VKBridge';
+import { BattleHUD } from './Battle/BattleHUD';
 
 export const BattleScene: React.FC = () => {
-    const { selectedHeroId, selectedEnemyId, goToMainMenu, getCalculatedStats, timeScale, setTimeScale } =
-        useGameStore();
+    const {
+        selectedHeroId,
+        selectedEnemyId,
+        goToMainMenu,
+        getCalculatedStats,
+        timeScale,
+        setTimeScale,
+        activePveEnemy,
+        battleMode,
+    } = useGameStore();
     const containerRef = useRef<HTMLDivElement>(null);
     const engineRef = useRef<BattleEngine | null>(null);
 
@@ -23,6 +32,8 @@ export const BattleScene: React.FC = () => {
         enemyHP: 100,
         enemyMaxHP: 100,
         log: 'ПОДГОТОВКА...',
+        playerMana: 0,
+        playerMaxMana: 100,
     });
     const [playerPulse, setPlayerPulse] = useState(false);
     const [enemyPulse, setEnemyPulse] = useState(false);
@@ -38,8 +49,7 @@ export const BattleScene: React.FC = () => {
     const [battleStarted, setBattleStarted] = useState(useGameStore.getState().battleMode === 'RANKED');
     // Реальный счётчик ходов
     const turnCountRef = useRef(0);
-    // Тост для VK Share
-    const [shareToast, setShareToast] = useState<string | null>(null);
+
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -61,7 +71,38 @@ export const BattleScene: React.FC = () => {
     }, [showResult]);
 
     const playerHero = HEROES_DB.find((h) => h.id === selectedHeroId) || HEROES_DB[0];
-    const enemyData = MOBS_DB.find((m) => m.id === selectedEnemyId) || MOBS_DB[0];
+    const rawEnemy =
+        battleMode === 'PVE'
+            ? MOBS_DB.find((m) => m.id === selectedEnemyId) || MOBS_DB[0]
+            : HEROES_DB.find((h) => h.id === selectedEnemyId) || HEROES_DB[0];
+
+    const enemyData = React.useMemo(() => {
+        if ('baseStats' in rawEnemy) {
+            return rawEnemy;
+        }
+        const calculated = getCalculatedStats(rawEnemy.id)?.total || {
+            hp: rawEnemy.stats.stamina * 20,
+            attack: rawEnemy.stats.strength * 2,
+            defense: rawEnemy.stats.agility * 1,
+            speed: 1.0,
+            crit: 0.05,
+        };
+        return {
+            id: rawEnemy.id,
+            name: rawEnemy.name,
+            rarity: rawEnemy.rarity,
+            image: rawEnemy.image,
+            baseStats: {
+                hp: calculated.hp,
+                attack: calculated.attack,
+                defense: calculated.defense,
+                speed: calculated.speed || 1.0,
+                crit: (calculated as any).crit || (calculated as any).critChance || 0.05,
+            },
+            anchors: rawEnemy.anchors,
+            icon: '👤',
+        };
+    }, [rawEnemy, getCalculatedStats]);
 
     // [Sound] Switch to battle music on mount
     useEffect(() => {
@@ -86,12 +127,13 @@ export const BattleScene: React.FC = () => {
         if (!containerRef.current) return;
 
         const playerStats = getCalculatedStats(selectedHeroId)?.total;
+        const isPve = battleMode === 'PVE';
         const enemyStats = {
-            hp: enemyData.baseStats.hp,
-            attack: enemyData.baseStats.attack,
+            hp: isPve && activePveEnemy ? activePveEnemy.hp : enemyData.baseStats.hp,
+            attack: isPve && activePveEnemy ? activePveEnemy.attack : enemyData.baseStats.attack,
             speed: enemyData.baseStats.speed,
             critChance: enemyData.baseStats.crit,
-            defense: enemyData.baseStats.defense,
+            defense: isPve && activePveEnemy ? activePveEnemy.defense : enemyData.baseStats.defense,
             dodge: 0,
         };
 
@@ -115,23 +157,40 @@ export const BattleScene: React.FC = () => {
                 const isVictory = newState.enemyHP <= 0;
                 const store = useGameStore.getState() as any;
                 const isWarmup = store.battleMode === 'WARMUP';
+                const isPve = store.battleMode === 'PVE';
 
-                const gold = isWarmup ? 0 : isVictory ? BATTLE_REWARDS.GOLD_VICTORY : BATTLE_REWARDS.GOLD_DEFEAT;
-                const xp = isWarmup ? 0 : isVictory ? BATTLE_REWARDS.XP_VICTORY : BATTLE_REWARDS.XP_DEFEAT;
-                const trophies = isWarmup
-                    ? 0
-                    : isVictory
-                      ? BATTLE_REWARDS.TROPHIES_VICTORY
-                      : BATTLE_REWARDS.TROPHIES_DEFEAT;
+                let gold = 0;
+                let xp = 0;
+                let trophies = 0;
+                let crystals = 0;
+
+                if (isPve) {
+                    if (isVictory) {
+                        gold = store.pveStage * 100;
+                        xp = store.pveStage * 50;
+                        const isBoss = store.pveStage % 5 === 0;
+                        crystals = isBoss ? 20 : 0;
+                    }
+                } else {
+                    gold = isWarmup ? 0 : isVictory ? BATTLE_REWARDS.GOLD_VICTORY : BATTLE_REWARDS.GOLD_DEFEAT;
+                    xp = isWarmup ? 0 : isVictory ? BATTLE_REWARDS.XP_VICTORY : BATTLE_REWARDS.XP_DEFEAT;
+                    trophies = isWarmup
+                        ? 0
+                        : isVictory
+                          ? BATTLE_REWARDS.TROPHIES_VICTORY
+                          : BATTLE_REWARDS.TROPHIES_DEFEAT;
+                }
 
                 setResultData({
                     isVictory,
                     goldEarned: gold,
                     xpEarned: xp,
                     trophiesChange: trophies,
+                    crystalsEarned: crystals,
                     damageDealt: engineRef.current?.totalDamageDealt ?? (playerStats?.attack || 50) * 10,
+                    damageTaken: engineRef.current?.totalDamageTaken ?? 0,
                     turnsPlayed: turnCountRef.current,
-                    enemyName: enemyData.name,
+                    enemyName: isPve && activePveEnemy ? activePveEnemy.name : enemyData.name,
                     playerStats: playerStats
                         ? {
                               hp: playerStats.hp,
@@ -141,15 +200,15 @@ export const BattleScene: React.FC = () => {
                           }
                         : undefined,
                     enemyStats: {
-                        hp: enemyData.baseStats.hp,
-                        attack: enemyData.baseStats.attack,
-                        defense: enemyData.baseStats.defense,
+                        hp: isPve && activePveEnemy ? activePveEnemy.hp : enemyData.baseStats.hp,
+                        attack: isPve && activePveEnemy ? activePveEnemy.attack : enemyData.baseStats.attack,
+                        defense: isPve && activePveEnemy ? activePveEnemy.defense : enemyData.baseStats.defense,
                         speed: enemyData.baseStats.speed,
                     },
                     battleDurationSeconds: engineRef.current ? engineRef.current.battleTime / 60 : 0,
                 });
 
-                if (!isWarmup) {
+                if (!isWarmup && !isPve) {
                     // НАЧИСЛЯЕМ НАГРАДЫ В СТОР
                     store.addGold(gold);
                     store.addExp(xp);
@@ -173,6 +232,8 @@ export const BattleScene: React.FC = () => {
                             totalBattles: store.totalBattles + 1,
                         });
                     }
+                } else if (isPve) {
+                    store.completePveBattle(isVictory);
                 }
 
                 setTimeout(() => setShowResult(true), 1500);
@@ -211,12 +272,19 @@ export const BattleScene: React.FC = () => {
                     setTimeout(() => setShake({ x: 0, y: 0 }), 200);
                     break;
                 case 'DODGE':
-                    text = 'МИМО!';
-                    color = '#999999'; // Серый
+                    text = 'УВОРОТ!';
+                    color = '#FFB74D'; // Оранжевый
                     break;
                 case 'BLOCK':
                     text = `🛡️ БЛОК! (-${Math.round(event.damage)})`;
                     color = '#4FC3F7'; // Синий
+                    break;
+                case 'INSTINCT':
+                    text = event.label || 'ИНСТИНКТ!';
+                    color = '#A78BFA'; // Фиолетовый
+                    fontSize = '58px';
+                    initialScale = 0.5;
+                    animateScale = 1.3;
                     break;
             }
 
@@ -261,11 +329,15 @@ export const BattleScene: React.FC = () => {
                 return [...prev.slice(-4), entry];
             });
 
+            // Add slight random offsets to prevent overlays of text tags
+            const offsetX = (Math.random() - 0.5) * 80;
+            const offsetY = (Math.random() - 0.5) * 60;
+
             const newDmg = {
                 id: Date.now() + Math.random(),
                 text,
-                x,
-                y,
+                x: x + offsetX,
+                y: y + offsetY - 50, // Slightly higher baseline
                 color,
                 fontSize,
                 initialScale,
@@ -280,20 +352,19 @@ export const BattleScene: React.FC = () => {
                 return [...sliced, newDmg];
             });
 
-            // Автоматическое удаление через 800мс (fade out в конце)
+            // Автоматическое удаление через 1000мс (fade out в конце, slightly longer to view easily)
             setTimeout(() => {
                 setDamageTexts((prev) => prev.filter((d) => d.id !== newDmg.id));
-            }, 800);
+            }, 1000);
         };
 
         const run = async () => {
             if (engineRef.current?.isInitialized) return;
-            // Ждём пока игрок нажмёт «Начать бой» на PreBattleScreen
             if (!battleStarted) return;
             turnCountRef.current = 0;
             if (containerRef.current) {
                 await engine
-                    .init(containerRef.current, selectedHeroId, selectedEnemyId, playerStats, enemyStats)
+                    .init(containerRef.current, selectedHeroId, rawEnemy.id, playerStats, enemyStats)
                     .catch((err) => {
                         console.error('[BattleScene] Критическая ошибка инициализации боя:', err);
                     });
@@ -305,7 +376,7 @@ export const BattleScene: React.FC = () => {
             engine.destroy();
             (window as any).__BATTLE_ENGINE__ = null;
         };
-    }, [selectedHeroId, selectedEnemyId, getCalculatedStats, enemyData, battleStarted]);
+    }, [selectedHeroId, selectedEnemyId, getCalculatedStats, enemyData, battleStarted, battleMode, activePveEnemy]);
 
     const isMobile = useGameStore((state) => state.isMobile);
     const isBattleOver = battleState.playerHP <= 0 || battleState.enemyHP <= 0;
@@ -323,23 +394,7 @@ export const BattleScene: React.FC = () => {
         goToMainMenu();
     }, [goToMainMenu]);
 
-    // Функция шаринга результата
-    const handleShare = useCallback(async () => {
-        if (!resultData) return;
-        const store = useGameStore.getState();
-        const playerName = store.profile?.firstName || 'Игрок';
-        const result = await shareBattleResult({
-            playerName,
-            enemyName: resultData.enemyName,
-            damageDealt: Math.round(resultData.damageDealt),
-            trophiesChange: resultData.trophiesChange,
-            isVictory: resultData.isVictory,
-        });
-        if (result === 'shared') setShareToast('✅ Опубликовано в ВК!');
-        else if (result === 'copied') setShareToast('📋 Скопировано в буфер!');
-        else setShareToast('❌ Ошибка шаринга');
-        setTimeout(() => setShareToast(null), 3000);
-    }, [resultData]);
+
 
     // Вычисляем статы врага для PreBattleScreen
     const playerStats4Pre = getCalculatedStats(selectedHeroId)?.total;
@@ -379,13 +434,19 @@ export const BattleScene: React.FC = () => {
                                 defense: playerStats4Pre.defense,
                                 speed: Math.round(playerStats4Pre.speed),
                             }}
-                            enemyName={enemyData.name}
-                            enemyImage={enemyData.image}
+                            enemyName={battleMode === 'PVE' && activePveEnemy ? activePveEnemy.name : enemyData.name}
+                            enemyImage={battleMode === 'PVE' && activePveEnemy ? activePveEnemy.image : enemyData.image}
                             enemyIcon={enemyData.icon}
                             enemyStats={{
-                                hp: enemyData.baseStats.hp,
-                                attack: enemyData.baseStats.attack,
-                                defense: enemyData.baseStats.defense,
+                                hp: battleMode === 'PVE' && activePveEnemy ? activePveEnemy.hp : enemyData.baseStats.hp,
+                                attack:
+                                    battleMode === 'PVE' && activePveEnemy
+                                        ? activePveEnemy.attack
+                                        : enemyData.baseStats.attack,
+                                defense:
+                                    battleMode === 'PVE' && activePveEnemy
+                                        ? activePveEnemy.defense
+                                        : enemyData.baseStats.defense,
                                 speed: Math.round(enemyData.baseStats.speed),
                             }}
                             onStart={handleBattleStart}
@@ -422,11 +483,11 @@ export const BattleScene: React.FC = () => {
                                 transform: `translate3d(${dmg.x + animateX}px, ${dmg.y + animateY}px, 0)`,
                             }}
                             transition={{
-                                duration: 0.8,
+                                duration: 1.0,
                                 ease: 'easeOut',
                                 opacity: {
                                     times: [0, 0.15, 0.75, 1],
-                                    duration: 0.8,
+                                    duration: 1.0,
                                 },
                             }}
                             style={{
@@ -450,249 +511,28 @@ export const BattleScene: React.FC = () => {
                 })}
             </AnimatePresence>
 
-            <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 100 }}>
-                <div
-                    style={{
-                        padding: '40px 100px',
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'flex-start',
-                    }}
-                >
-                    {/* PLAYER PANEL */}
-                    <motion.div
-                        animate={{ scale: playerPulse ? 1.05 : 1 }}
-                        transition={{ duration: 0.15 }}
-                        style={{ width: '480px' }}
-                    >
-                        {/* Имя + индикатор атаки */}
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                            <AnimatePresence>
-                                {currentAttacker === 'player' && (
-                                    <motion.div
-                                        initial={{ scale: 0, opacity: 0 }}
-                                        animate={{ scale: 1, opacity: 1 }}
-                                        exit={{ scale: 0, opacity: 0 }}
-                                        style={{
-                                            width: '12px',
-                                            height: '12px',
-                                            borderRadius: '50%',
-                                            background: '#FFD700',
-                                            boxShadow: '0 0 12px #FFD700',
-                                        }}
-                                    />
-                                )}
-                            </AnimatePresence>
-                            <div
-                                style={{
-                                    color: currentAttacker === 'player' ? '#FFD700' : '#fff',
-                                    fontSize: '28px',
-                                    fontFamily: "'Cinzel', serif",
-                                    textTransform: 'uppercase',
-                                    transition: 'color 0.2s',
-                                    textShadow: currentAttacker === 'player' ? '0 0 20px rgba(255,215,0,0.8)' : 'none',
-                                }}
-                            >
-                                {playerHero.name}
-                            </div>
-                        </div>
-                        {/* HP БАР ИГРОКА */}
-                        <div
-                            style={{
-                                height: '28px',
-                                background: 'rgba(0,0,0,0.6)',
-                                border: '2px solid #f0c040',
-                                marginTop: '10px',
-                                position: 'relative',
-                                overflow: 'hidden',
-                                borderRadius: '4px',
-                            }}
-                        >
-                            <motion.div
-                                animate={{ width: `${(battleState.playerHP / battleState.playerMaxHP) * 100}%` }}
-                                transition={{ duration: 0.4, ease: 'easeOut' }}
-                                style={{ height: '100%', background: 'linear-gradient(90deg, #10b981, #059669)' }}
-                            />
-                            <div
-                                style={{
-                                    position: 'absolute',
-                                    inset: 0,
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    color: '#fff',
-                                    fontSize: '14px',
-                                    fontWeight: 'bold',
-                                    textShadow: '1px 1px 2px #000',
-                                }}
-                            >
-                                {Math.max(0, battleState.playerHP)} / {battleState.playerMaxHP}
-                            </div>
-                        </div>
-                    </motion.div>
-
-                    {/* CENTER LOG */}
-                    <div
-                        style={{
-                            flex: 1,
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                            gap: '8px',
-                            padding: '0 40px',
-                        }}
-                    >
-                        {/* Главный лог (текущее событие) */}
-                        <AnimatePresence mode="wait">
-                            <motion.div
-                                key={battleState.log}
-                                initial={{ opacity: 0, y: -15, scale: 0.95 }}
-                                animate={{ opacity: 1, y: 0, scale: 1 }}
-                                exit={{ opacity: 0, y: 15 }}
-                                style={{
-                                    color: '#f0c040',
-                                    fontSize: '32px',
-                                    textAlign: 'center',
-                                    fontFamily: "'Cinzel', serif",
-                                    fontWeight: 'bold',
-                                    textShadow: '0 2px 12px rgba(0,0,0,0.9)',
-                                }}
-                            >
-                                {battleState.log}
-                            </motion.div>
-                        </AnimatePresence>
-
-                        {/* ЖИВОЙ ЛОГ СОБЫТИЙ */}
-                        <div
-                            style={{
-                                display: 'flex',
-                                flexDirection: 'column',
-                                gap: '4px',
-                                width: '100%',
-                                maxWidth: '500px',
-                            }}
-                        >
-                            <AnimatePresence>
-                                {liveLog.map((entry, i) => (
-                                    <motion.div
-                                        key={entry.id}
-                                        initial={{ opacity: 0, x: -20 }}
-                                        animate={{ opacity: i === liveLog.length - 1 ? 1 : 0.4, x: 0 }}
-                                        exit={{ opacity: 0, x: 20 }}
-                                        style={{
-                                            textAlign: 'center',
-                                            fontSize: i === liveLog.length - 1 ? '22px' : '16px',
-                                            fontFamily: "'Cinzel', serif",
-                                            fontWeight: i === liveLog.length - 1 ? 'bold' : 'normal',
-                                            color:
-                                                entry.type === 'CRIT'
-                                                    ? '#FFD700'
-                                                    : entry.type === 'DODGE'
-                                                      ? '#9E9E9E'
-                                                      : entry.type === 'BLOCK'
-                                                        ? '#4FC3F7'
-                                                        : entry.type === 'INSTINCT'
-                                                          ? '#CE93D8'
-                                                          : '#ffffff',
-                                            textShadow: '0 1px 6px rgba(0,0,0,1)',
-                                            transition: 'font-size 0.2s, opacity 0.2s',
-                                        }}
-                                    >
-                                        {entry.text}
-                                    </motion.div>
-                                ))}
-                            </AnimatePresence>
-                        </div>
-                    </div>
-
-                    {/* ENEMY PANEL */}
-                    <motion.div
-                        animate={{ scale: enemyPulse ? 1.05 : 1 }}
-                        transition={{ duration: 0.15 }}
-                        style={{ width: '480px', textAlign: 'right' }}
-                    >
-                        {/* Имя врага + индикатор атаки */}
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '12px' }}>
-                            <div
-                                style={{
-                                    color: currentAttacker === 'enemy' ? '#FF6B6B' : '#fff',
-                                    fontSize: '28px',
-                                    fontFamily: "'Cinzel', serif",
-                                    textTransform: 'uppercase',
-                                    transition: 'color 0.2s',
-                                    textShadow: currentAttacker === 'enemy' ? '0 0 20px rgba(255,100,100,0.8)' : 'none',
-                                }}
-                            >
-                                {enemyData.name}
-                            </div>
-                            <AnimatePresence>
-                                {currentAttacker === 'enemy' && (
-                                    <motion.div
-                                        initial={{ scale: 0, opacity: 0 }}
-                                        animate={{ scale: 1, opacity: 1 }}
-                                        exit={{ scale: 0, opacity: 0 }}
-                                        style={{
-                                            width: '12px',
-                                            height: '12px',
-                                            borderRadius: '50%',
-                                            background: '#FF6B6B',
-                                            boxShadow: '0 0 12px #FF6B6B',
-                                        }}
-                                    />
-                                )}
-                            </AnimatePresence>
-                        </div>
-                        {/* HP БАР ВРАГА */}
-                        <div
-                            style={{
-                                height: '28px',
-                                background: 'rgba(0,0,0,0.6)',
-                                border: '2px solid #ef4444',
-                                marginTop: '10px',
-                                position: 'relative',
-                                overflow: 'hidden',
-                                borderRadius: '4px',
-                            }}
-                        >
-                            <motion.div
-                                animate={{ width: `${(battleState.enemyHP / battleState.enemyMaxHP) * 100}%` }}
-                                transition={{ duration: 0.4, ease: 'easeOut' }}
-                                style={{
-                                    height: '100%',
-                                    background: 'linear-gradient(90deg, #10b981, #059669)',
-                                    float: 'right',
-                                }}
-                            />
-                            <div
-                                style={{
-                                    position: 'absolute',
-                                    inset: 0,
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    color: '#fff',
-                                    fontSize: '14px',
-                                    fontWeight: 'bold',
-                                    textShadow: '1px 1px 2px #000',
-                                }}
-                            >
-                                {Math.max(0, battleState.enemyHP)} / {battleState.enemyMaxHP}
-                            </div>
-                        </div>
-                    </motion.div>
-                </div>
-            </div>
+            <BattleHUD
+                playerHero={playerHero}
+                enemyData={enemyData}
+                battleMode={battleMode}
+                activePveEnemy={activePveEnemy}
+                battleState={battleState}
+                playerPulse={playerPulse}
+                enemyPulse={enemyPulse}
+                currentAttacker={currentAttacker}
+                liveLog={liveLog}
+            />
 
             {/* BATTLE ACCELERATION & SKIP CONTROLS */}
             {!isBattleOver && (
                 <div
                     style={{
                         position: 'absolute',
-                        top: '40px',
-                        right: '25px',
+                        bottom: '30px',
+                        right: '30px',
                         zIndex: 200,
                         display: 'flex',
-                        flexDirection: 'column',
+                        flexDirection: 'row',
                         gap: '15px',
                         pointerEvents: 'auto',
                     }}
@@ -700,32 +540,32 @@ export const BattleScene: React.FC = () => {
                     {/* X2 SPEED BUTTON */}
                     <motion.button
                         whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
+                        whileTap={{ scale: 0.92 }}
                         onClick={() => {
                             audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
-                            setTimeScale(timeScale === 2 ? 1 : 2);
+                            setTimeScale(timeScale >= 1.2 ? 0.7 : 1.5);
                         }}
                         style={{
                             width: '56px',
                             height: '56px',
                             borderRadius: '12px',
-                            background: timeScale === 2 ? 'rgba(251, 191, 36, 0.25)' : 'rgba(0, 0, 0, 0.7)',
-                            border: timeScale === 2 ? '2px solid #fbbf24' : '2px solid rgba(255, 255, 255, 0.2)',
-                            boxShadow: timeScale === 2 ? '0 0 20px rgba(251, 191, 36, 0.5)' : 'none',
-                            color: timeScale === 2 ? '#fbbf24' : '#ffffff',
-                            fontSize: '18px',
+                            background: timeScale >= 1.2 ? 'rgba(251, 191, 36, 0.25)' : 'rgba(0, 0, 0, 0.7)',
+                            border: timeScale >= 1.2 ? '2px solid #fbbf24' : '2px solid rgba(255, 255, 255, 0.2)',
+                            boxShadow: timeScale >= 1.2 ? '0 0 20px rgba(251, 191, 36, 0.5)' : 'none',
+                            color: timeScale >= 1.2 ? '#fbbf24' : '#ffffff',
+                            fontSize: '16px',
                             fontWeight: '900',
                             cursor: 'pointer',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
                             fontFamily: "'Cinzel', serif",
-                            textShadow: timeScale === 2 ? '0 0 10px rgba(251, 191, 36, 0.6)' : 'none',
+                            textShadow: timeScale >= 1.2 ? '0 0 10px rgba(251, 191, 36, 0.6)' : 'none',
                             transition: 'border 0.2s, background 0.2s, box-shadow 0.2s',
                         }}
                         title="Ускорение боя"
                     >
-                        {timeScale === 2 ? '2X' : '1X'}
+                        {timeScale >= 1.2 ? '1.5X' : '0.7X'}
                     </motion.button>
 
                     {/* SKIP BUTTON */}
@@ -736,7 +576,7 @@ export const BattleScene: React.FC = () => {
                                 animate={{ opacity: 1, scale: 1 }}
                                 exit={{ opacity: 0, scale: 0.8 }}
                                 whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
+                                whileTap={{ scale: 0.92 }}
                                 onClick={() => {
                                     audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
                                     if (engineRef.current) {
@@ -782,82 +622,28 @@ export const BattleScene: React.FC = () => {
                     <>
                         <BattleResultScreen
                             data={resultData}
-                            onContinue={goToMainMenu}
-                            onRematch={() => {
-                                setShowResult(false);
-                                goToMainMenu();
-                            }}
+                            onContinue={
+                                battleMode === 'PVE'
+                                    ? async () => {
+                                          await showInterstitialAd();
+                                          useGameStore.setState({
+                                              activeScreen: 'SANCTUARY',
+                                              activePveEnemy: null,
+                                          });
+                                      }
+                                    : async () => {
+                                          await showInterstitialAd();
+                                          goToMainMenu();
+                                      }
+                            }
                         />
-                        {/* ── ПРИОРИТЕТ 3: VK SHARE КНОПКА ─────────────────── */}
-                        {resultData.isVictory && (
-                            <motion.button
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 1.2, duration: 0.4 }}
-                                whileHover={{ scale: 1.05, boxShadow: '0 0 30px rgba(59,130,246,0.5)' }}
-                                whileTap={{ scale: 0.95 }}
-                                onClick={handleShare}
-                                style={{
-                                    position: 'absolute',
-                                    bottom: '32px',
-                                    right: '48px',
-                                    zIndex: 6000,
-                                    padding: '14px 28px',
-                                    background: 'linear-gradient(135deg, #2563eb 0%, #1e3a8a 100%)',
-                                    border: '2px solid #60a5fa',
-                                    borderRadius: '14px',
-                                    color: '#ffffff',
-                                    fontSize: '16px',
-                                    fontWeight: 900,
-                                    cursor: 'pointer',
-                                    fontFamily: 'Russo One, sans-serif',
-                                    letterSpacing: '0.5px',
-                                    boxShadow: '0 6px 20px rgba(0,0,0,0.5)',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '10px',
-                                    pointerEvents: 'auto',
-                                    textShadow: '0 2px 4px rgba(0,0,0,0.5)',
-                                }}
-                            >
-                                <span style={{ fontSize: '20px' }}>🌐</span>
-                                РАССКАЗАТЬ О ПОБЕДЕ
-                            </motion.button>
-                        )}
                     </>
                 )}
             </AnimatePresence>
 
-            {/* ТОСТ уведомление */}
-            <AnimatePresence>
-                {shareToast && (
-                    <motion.div
-                        initial={{ opacity: 0, y: -20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -20 }}
-                        style={{
-                            position: 'absolute',
-                            top: '20px',
-                            left: '50%',
-                            transform: 'translateX(-50%)',
-                            background: 'rgba(10,20,40,0.95)',
-                            border: '1px solid #3b82f6',
-                            borderRadius: '12px',
-                            padding: '12px 24px',
-                            color: '#ffffff',
-                            fontSize: '16px',
-                            fontWeight: 700,
-                            zIndex: 9999,
-                            pointerEvents: 'none',
-                            boxShadow: '0 0 20px rgba(59,130,246,0.4)',
-                            fontFamily: 'Russo One, sans-serif',
-                            whiteSpace: 'nowrap',
-                        }}
-                    >
-                        {shareToast}
-                    </motion.div>
-                )}
-            </AnimatePresence>
+
+
+            {/* ACTIVE ABILITY FLOATING BUTTON REMOVED (CASTS AUTOMATICALLY) */}
         </div>
     );
 };

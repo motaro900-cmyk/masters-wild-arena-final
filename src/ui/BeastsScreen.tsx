@@ -241,36 +241,46 @@ const EquipmentTab: React.FC = () => {
     React.useEffect(() => {
         if (!pixiContainerRef.current) return;
         let app: any;
+        let active = true;
+
         const initPreview = async () => {
             app = new PIXI.Application();
             await app.init({ width: 600, height: 800, backgroundAlpha: 0, antialias: true });
+            if (!active) {
+                app.destroy(true, { children: true });
+                return;
+            }
             appRef.current = app;
             pixiContainerRef.current?.appendChild(app.canvas);
 
-            const atlas = await PIXI.Assets.load(AssetsMap.CHARACTERS.PANDA_ATLAS);
-            const FRAME_W = 568;
-            const FRAME_H = 941;
-            const getFrame = (index: number) => {
-                const col = index % 4;
-                const row = Math.floor(index / 4);
-                return new PIXI.Texture({
-                    source: atlas.source,
-                    frame: new PIXI.Rectangle(col * FRAME_W + 10, row * FRAME_H + 10, FRAME_W - 20, FRAME_H - 20),
-                });
-            };
+            let sheet;
+            try {
+                const sheetPath = beast.id === 'raccoon'
+                    ? '/assets/characters/raccoon/raccoon_poses.png.json'
+                    : '/assets/characters/panda/panda_poses.png.json';
+                sheet = await PIXI.Assets.load(sheetPath);
+            } catch (err) {
+                console.error(`Failed to load ${beast.id} sheet:`, err);
+                return;
+            }
+            if (!active) {
+                app.destroy(true, { children: true });
+                return;
+            }
 
             const container = new PIXI.Container();
             container.x = 300;
             container.y = 700;
-            container.scale.set(0.7);
+            container.scale.set(1.1); // Scaled up slightly since the textures are trimmed smaller
             app.stage.addChild(container);
 
-            const body = new PIXI.Sprite(getFrame(0));
-            body.anchor.set(0.5, 0.9);
+            const idleTexture = sheet.textures['0_idle.png'] || Object.values(sheet.textures)[0];
+            const body = new PIXI.Sprite(idleTexture);
+            body.anchor.set(0.5, 0.95);
             container.addChild(body);
 
             const weapon = new PIXI.Sprite();
-            weapon.anchor.set(0.5, 0.5);
+            weapon.anchor.set(0.5, 0.85); // Default anchor for swords
             container.addChild(weapon);
 
             const updateWeapon = async (id: string | null) => {
@@ -286,28 +296,76 @@ const EquipmentTab: React.FC = () => {
                     '8': 'moon_sword',
                 };
                 const file = weaponFileMap[id] || 'moon_sword';
-                const tex = await PIXI.Assets.load(resolveAssetPath(`/assets/items/${file}.png`)).catch(() => null);
-                if (tex) {
-                    weapon.texture = tex;
-                    weapon.visible = true;
-                    weapon.x = 60;
-                    weapon.y = -460;
-                    weapon.rotation = 0.4;
-                    weapon.scale.set(1.2);
+                try {
+                    const tex = await PIXI.Assets.load(resolveAssetPath(`/assets/items/${file}.png`));
+                    if (!active) return;
+                    if (tex && !weapon.destroyed) {
+                        weapon.texture = tex;
+                        weapon.visible = true;
+
+                        // Hand coordinates relative to the body pivot computed dynamically
+                        const feet = { x: 0.5, y: 0.95 };
+                        const rightHand = { x: 0.74, y: 0.4 };
+                        const texWidth = body.texture.width || 561;
+                        const texHeight = body.texture.height || 583;
+
+                        weapon.x = (rightHand.x - feet.x) * texWidth;
+                        weapon.y = (rightHand.y - feet.y) * texHeight * body.scale.y;
+
+                        // Align anchors, rotations, and scales per weapon type
+                        if (file === 'staff') {
+                            weapon.anchor.set(0.5, 0.7);
+                            weapon.rotation = -0.2;
+                            weapon.scale.set(1.1);
+                        } else if (file === 'bow') {
+                            weapon.anchor.set(0.5, 0.5);
+                            weapon.rotation = 0.0;
+                            weapon.scale.set(1.15);
+                        } else if (file === 'daggers') {
+                            weapon.anchor.set(0.5, 0.85);
+                            weapon.rotation = 0.3;
+                            weapon.scale.set(1.0);
+                        } else if (file === 'axe') {
+                            weapon.anchor.set(0.5, 0.85);
+                            weapon.rotation = 0.4;
+                            weapon.scale.set(1.2);
+                        } else {
+                            // Default for swords (e.g. moon_sword)
+                            weapon.anchor.set(0.5, 0.85);
+                            weapon.rotation = -0.5; // Upward-right angle
+                            weapon.scale.set(1.2);
+                        }
+                    }
+                } catch (e) {
+                    console.error('Failed to load weapon texture:', e);
                 }
             };
 
             await updateWeapon(equippedWeaponId);
+            if (!active) {
+                app.destroy(true, { children: true });
+                return;
+            }
 
             let time = 0;
-            app.ticker.add((t: any) => {
+            const tickerCallback = (t: any) => {
+                if (!active || body.destroyed || weapon.destroyed) {
+                    app.ticker.remove(tickerCallback);
+                    return;
+                }
                 time += t.elapsedMS;
                 body.scale.y = 1 + Math.sin(time / 500) * 0.02;
-                weapon.y = -460 + Math.sin(time / 500) * 10;
-            });
+                // Weapon Y coordinates perfectly track the body vertical scaling
+                const feetY = 0.95;
+                const rightHandY = 0.4;
+                const texHeight = body.texture.height || 583;
+                weapon.y = (rightHandY - feetY) * texHeight * body.scale.y;
+            };
+            app.ticker.add(tickerCallback);
         };
         initPreview();
         return () => {
+            active = false;
             if (app) app.destroy(true, { children: true });
         };
     }, [equippedWeaponId, selectedHeroId]);

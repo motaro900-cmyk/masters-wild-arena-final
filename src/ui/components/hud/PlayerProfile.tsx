@@ -24,7 +24,8 @@ export const PlayerProfile: React.FC<PlayerProfileProps> = ({ onOpenProfile }) =
     const exp = store.exp || 0;
     const vkUser = store.vkUser;
 
-    const playerName = vkUser?.firstName || 'DRAGONSLAYER';
+    const name = store.name;
+    const playerName = name && name !== 'Мастер' ? name : vkUser?.firstName || 'DRAGONSLAYER';
     const expNeeded = level * 600;
     const xpPercent = Math.min(100, (exp / expNeeded) * 100);
 

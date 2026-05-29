@@ -2,6 +2,7 @@ import * as PIXI from 'pixi.js';
 import { gsap } from 'gsap';
 import { PixiApp } from '../core/PixiApp';
 import { SoundManager } from './SoundManager';
+import { useGameStore } from '../../store/useGameStore';
 
 /**
  * @enum {string}
@@ -100,6 +101,14 @@ export class EffectsManager {
      * @private
      */
     private getParticle(): PIXI.Graphics | null {
+        // Фильтруем уничтоженные частицы из пула (например, после очистки слоев)
+        this.particlePool = this.particlePool.filter((p) => !p.destroyed);
+
+        // Если пул опустел, пересоздаем его
+        if (this.particlePool.length === 0) {
+            this.initParticlePool();
+        }
+
         for (const particle of this.particlePool) {
             if (!particle.visible) {
                 particle.visible = true;
@@ -114,6 +123,7 @@ export class EffectsManager {
      * @private
      */
     private releaseParticle(particle: PIXI.Graphics): void {
+        if (particle.destroyed) return;
         particle.visible = false;
         particle.clear();
     }
@@ -217,7 +227,14 @@ export class EffectsManager {
         force: number = 200,
     ): void {
         try {
-            for (let i = 0; i < particleCount; i++) {
+            let count = particleCount;
+            // Limit active particles under power saving mode (Step 10)
+            const isPowerSaving = useGameStore.getState().isPowerSaving;
+            if (isPowerSaving) {
+                count = Math.min(particleCount, 4); // Limit to max 4 particles
+            }
+
+            for (let i = 0; i < count; i++) {
                 const particle = this.getParticle();
                 if (!particle) break;
 
@@ -395,7 +412,7 @@ export class EffectsManager {
      * @param target Целевой объект
      * @param intensity Интенсивность эффекта
      */
-    public criticalHit(target: PIXI.Sprite, intensity: number = 1.5): void {
+    public criticalHit(target: PIXI.Container, intensity: number = 1.5): void {
         try {
             console.log(`🌟 CRITICAL HIT EFFECT!`);
 
@@ -406,10 +423,28 @@ export class EffectsManager {
             this.screenShake(15 * intensity, 0.92, 400);
 
             // Вспышка желтого
-            this.colorFlash(target, 0xffff00, 0.3);
+            const flashSprite = (target as any).bodySprite || target;
+            if (flashSprite instanceof PIXI.Sprite) {
+                this.colorFlash(flashSprite, 0xffff00, 0.3);
+            }
+
+            // Нахождение центра мишени
+            let px = target.x;
+            let py = target.y - 100;
+            if (typeof (target as any).getVisualCenter === 'function') {
+                const center = (target as any).getVisualCenter();
+                if (center) {
+                    px = center.x;
+                    py = center.y;
+                }
+            } else if (target.parent) {
+                const globalPos = target.toGlobal(new PIXI.Point(0, 0));
+                px = globalPos.x;
+                py = globalPos.y;
+            }
 
             // Взрыв золотых частиц
-            this.particleBurst(target.position.x, target.position.y, 20, 0xffdd00, 250 * intensity);
+            this.particleBurst(px, py, 20, 0xffdd00, 250 * intensity);
 
             // Замедление времени
             this.slowMotion(0.4, 0.3);
@@ -422,14 +457,74 @@ export class EffectsManager {
      * Эффект обычного удара
      * @param target Целевой объект
      */
-    public normalHit(target: PIXI.Sprite): void {
+    public normalHit(target: PIXI.Container): void {
         try {
             SoundManager.getInstance().playHit();
             this.screenShake(5, 0.95, 200);
-            this.colorFlash(target, 0xff6666, 0.15);
-            this.particleBurst(target.position.x, target.position.y, 8, 0xff8888, 150);
+
+            const flashSprite = (target as any).bodySprite || target;
+            if (flashSprite instanceof PIXI.Sprite) {
+                this.colorFlash(flashSprite, 0xff6666, 0.15);
+            }
+
+            // Нахождение центра мишени
+            let px = target.x;
+            let py = target.y - 100;
+            if (typeof (target as any).getVisualCenter === 'function') {
+                const center = (target as any).getVisualCenter();
+                if (center) {
+                    px = center.x;
+                    py = center.y;
+                }
+            } else if (target.parent) {
+                const globalPos = target.toGlobal(new PIXI.Point(0, 0));
+                px = globalPos.x;
+                py = globalPos.y;
+            }
+
+            this.particleBurst(px, py, 8, 0xff8888, 150);
         } catch (error) {
             console.error('❌ Normal hit error:', error);
+        }
+    }
+
+    /**
+     * Эффект уклонения
+     */
+    public dodgeEffect(target: PIXI.Container): void {
+        try {
+            let px = target.x;
+            let py = target.y - 100;
+            if (typeof (target as any).getVisualCenter === 'function') {
+                const center = (target as any).getVisualCenter();
+                if (center) {
+                    px = center.x;
+                    py = center.y;
+                }
+            }
+            this.particleBurst(px, py, 6, 0xaaccff, 120);
+        } catch (error) {
+            console.error('❌ Dodge effect error:', error);
+        }
+    }
+
+    /**
+     * Эффект блокирования
+     */
+    public blockEffect(target: PIXI.Container): void {
+        try {
+            let px = target.x;
+            let py = target.y - 100;
+            if (typeof (target as any).getVisualCenter === 'function') {
+                const center = (target as any).getVisualCenter();
+                if (center) {
+                    px = center.x;
+                    py = center.y;
+                }
+            }
+            this.particleBurst(px, py, 12, 0x3b82f6, 180);
+        } catch (error) {
+            console.error('❌ Block effect error:', error);
         }
     }
 
@@ -440,7 +535,23 @@ export class EffectsManager {
     public deathEffect(target: PIXI.Container): void {
         try {
             this.screenShake(8, 0.9, 300);
-            this.particleBurst(target.position.x, target.position.y, 30, 0xff0000, 300);
+
+            // Нахождение центра мишени
+            let px = target.x;
+            let py = target.y - 100;
+            if (typeof (target as any).getVisualCenter === 'function') {
+                const center = (target as any).getVisualCenter();
+                if (center) {
+                    px = center.x;
+                    py = center.y;
+                }
+            } else if (target.parent) {
+                const globalPos = target.toGlobal(new PIXI.Point(0, 0));
+                px = globalPos.x;
+                py = globalPos.y;
+            }
+
+            this.particleBurst(px, py, 30, 0xff0000, 300);
             this.fadeOut(target, 0.8);
         } catch (error) {
             console.error('❌ Death effect error:', error);
@@ -501,6 +612,151 @@ export class EffectsManager {
      */
     public getActiveParticleCount(): number {
         return this.particlePool.filter((p) => p.visible).length;
+    }
+
+    /**
+     * Эффект взмаха оружия (Slash/Swipe)
+     */
+    public slashEffect(x: number, y: number, isPlayer: boolean, weaponArchetype?: string): void {
+        try {
+            const container = new PIXI.Container();
+            this.pixiApp.effectsLayer.addChild(container);
+
+            const slash = new PIXI.Graphics();
+            
+            let colorOuter = 0x00ffff;
+            let colorInner = 0xffffff;
+            let pColor = 0x00ffff;
+            let pCount = 10;
+            let pForce = 160;
+
+            if (weaponArchetype === 'STAFF') {
+                // Magic void/violet blast
+                colorOuter = 0xbd00ff;
+                colorInner = 0xffa6ff;
+                pColor = 0xda70d6;
+                pCount = 18;
+                pForce = 220;
+                
+                // Draw a mystical magic ring/spiral
+                slash.arc(0, 0, 90, 0, Math.PI * 1.5)
+                     .stroke({ color: colorOuter, width: 20, cap: 'round' })
+                     .stroke({ color: colorInner, width: 6, cap: 'round' });
+            } else if (weaponArchetype === 'BOW') {
+                // Wind swirl / arrow sparks
+                colorOuter = 0x00ff88;
+                colorInner = 0xe0ffff;
+                pColor = 0x80ffdb;
+                pCount = 12;
+                pForce = 200;
+                
+                // Draw a swift wind flow
+                slash.moveTo(-60, 0)
+                     .quadraticCurveTo(0, -90, 80, -20)
+                     .stroke({ color: colorOuter, width: 14, cap: 'round' })
+                     .stroke({ color: colorInner, width: 4, cap: 'round' });
+            } else if (weaponArchetype === 'DAGGER') {
+                // Double quick yellow critical cross slashes
+                colorOuter = 0xffd700;
+                colorInner = 0xffffff;
+                pColor = 0xffea00;
+                pCount = 14;
+                pForce = 180;
+                
+                // Draw cross slashes
+                slash.moveTo(-50, -50).lineTo(50, 50)
+                     .moveTo(50, -50).lineTo(-50, 50)
+                     .stroke({ color: colorOuter, width: 10, cap: 'round' })
+                     .stroke({ color: colorInner, width: 3, cap: 'round' });
+            } else if (weaponArchetype === 'SWORD') {
+                // Fire/heavy orange-red slash
+                colorOuter = 0xff4500;
+                colorInner = 0xffcc00;
+                pColor = 0xffaa00;
+                pCount = 20;
+                pForce = 240;
+
+                slash.arc(0, 0, 130, -Math.PI / 3, Math.PI / 3)
+                     .stroke({ color: colorOuter, width: 28, cap: 'round' })
+                     .stroke({ color: colorInner, width: 8, cap: 'round' });
+            } else {
+                // Default: Standard sword slash
+                slash.arc(0, 0, 120, -Math.PI / 4, Math.PI / 4)
+                     .stroke({ color: 0xffffff, width: 24, cap: 'round' })
+                     .stroke({ color: 0x00ffff, width: 8, cap: 'round' });
+            }
+
+            slash.scale.x = isPlayer ? 1 : -1;
+            slash.rotation = isPlayer ? -0.2 : 0.2;
+            
+            container.addChild(slash);
+            container.position.set(x - (isPlayer ? 50 : -50), y - 100);
+            container.alpha = 0.9;
+            container.scale.set(0.2);
+
+            gsap.to(container.scale, {
+                x: isPlayer ? 1.4 : -1.4,
+                y: 1.4,
+                duration: 0.22,
+                ease: 'power2.out',
+            });
+            gsap.to(container, {
+                alpha: 0,
+                rotation: isPlayer ? 0.5 : -0.5,
+                duration: 0.22,
+                ease: 'power2.inOut',
+                onComplete: () => {
+                    container.destroy({ children: true });
+                }
+            });
+
+            // Trigger corresponding particle burst for extra impact juice!
+            this.particleBurst(x, y, pCount, pColor, pForce);
+        } catch (error) {
+            console.error('❌ Slash effect error:', error);
+        }
+    }
+
+    /**
+     * Эффект полупрозрачного силуэта (призрачного шлейфа / Ghost Trail)
+     */
+    public spawnGhostTrail(target: any, durationMs: number = 320, tint: number = 0xffffff): void {
+        try {
+            if (!target || !target.bodySprite || !target.bodySprite.texture) return;
+            
+            const ghost = new PIXI.Sprite(target.bodySprite.texture);
+            ghost.anchor.set(target.config?.anchors?.feet?.x ?? 0.5, target.config?.anchors?.feet?.y ?? 0.95);
+            
+            // Match position and scale (base scale and body Container scale combined)
+            // Slightly offset trail positions backwards depending on facing direction to make it clearly visible even in static/near-static states
+            const isPlayerSide = target.x < 960;
+            const offsetDir = isPlayerSide ? -1 : 1;
+            const trailOffset = (target.trailCount || 0) * 15 * offsetDir;
+            target.trailCount = ((target.trailCount || 0) + 1) % 4;
+
+            ghost.x = target.x - trailOffset;
+            ghost.y = target.y;
+            ghost.scale.set(
+                target.scale.x * (target.bodyContainer?.scale?.x ?? 1),
+                target.scale.y * (target.bodyContainer?.scale?.y ?? 1)
+            );
+            ghost.rotation = target.rotation + (target.bodyContainer?.rotation ?? 0);
+            ghost.alpha = 0.6;
+            ghost.tint = tint;
+            
+            this.pixiApp.effectsLayer.addChild(ghost);
+            
+            gsap.to(ghost, {
+                alpha: 0,
+                duration: durationMs / 1000,
+                ease: 'power2.out',
+                onComplete: () => {
+                    ghost.destroy();
+                }
+            });
+        } catch (error) {
+            console.error('❌ Ghost trail spawn error:', error);
+        }
     }
 
     /**

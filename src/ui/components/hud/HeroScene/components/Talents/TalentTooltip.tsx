@@ -4,16 +4,14 @@ export const TalentTooltip = ({ talent, pos, color }: any) => {
     const isMax = talent.level >= talent.max;
     const progressValue = talent.level * (talent.id.includes('ult') ? 10 : 5);
     const progressText = talent.desc.replace('{v}', progressValue.toString());
-    const nextText = !isMax
-        ? talent.desc.replace('{v}', (progressValue + (talent.id.includes('ult') ? 10 : 5)).toString())
-        : null;
 
     let left = pos.x;
     let top = pos.y;
-    // Bounds check within 1920x1080 (Hero Scene bounds)
-    const expectedHeight = 550;
-    if (left + 480 > 1910) left = pos.x - 520;
-    if (top + expectedHeight > 1070) top = 1070 - expectedHeight;
+    // Bounds check within talents-view-root space (approx 1520x934)
+    const expectedHeight = 500;
+    if (left + 470 > 1510) left = pos.x - 590;
+    if (left < 10) left = 10;
+    if (top + expectedHeight > 910) top = 910 - expectedHeight;
     if (top < 10) top = 10;
 
     return (
@@ -71,6 +69,7 @@ export const TalentTooltip = ({ talent, pos, color }: any) => {
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                {/* Описание таланта */}
                 <div
                     style={{
                         background: 'rgba(255,255,255,0.04)',
@@ -89,40 +88,67 @@ export const TalentTooltip = ({ talent, pos, color }: any) => {
                             textTransform: 'uppercase',
                         }}
                     >
-                        Текущий Эффект
+                        Свойства таланта
                     </div>
                     <div style={{ color: '#fff', fontSize: '17px', lineHeight: '1.5', fontWeight: 600 }}>
-                        {talent.level > 0 ? progressText : 'Талант не активирован'}
+                        {!isMax
+                            ? talent.desc.replace(
+                                  '{v}',
+                                  (talent.level > 0 ? progressValue : talent.id.includes('ult') ? 10 : 5).toString(),
+                              )
+                            : progressText}
                     </div>
                 </div>
 
-                {!isMax && (
-                    <div
-                        style={{
-                            background: `${color}15`,
-                            padding: '20px',
-                            borderRadius: '18px',
-                            border: `1px solid ${color}33`,
-                        }}
-                    >
+                {/* СРАВНЕНИЕ УРОВНЕЙ */}
+                <div
+                    style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        background: 'rgba(0, 0, 0, 0.4)',
+                        border: '1.5px solid rgba(255,255,255,0.08)',
+                        borderRadius: '18px',
+                        padding: '20px 30px',
+                        boxShadow: 'inset 0 0 15px rgba(0,0,0,0.5)',
+                    }}
+                >
+                    <div style={{ textAlign: 'center' }}>
+                        <div style={{ fontSize: '11px', color: '#888', fontWeight: 800, letterSpacing: '1px' }}>
+                            ТЕКУЩИЙ
+                        </div>
                         <div
                             style={{
+                                fontSize: '24px',
                                 color: '#fff',
-                                fontSize: '12px',
                                 fontWeight: 900,
-                                marginBottom: '10px',
-                                letterSpacing: '2px',
-                                textTransform: 'uppercase',
-                                opacity: 0.7,
+                                fontFamily: "'Cinzel', serif",
+                                marginTop: '5px',
                             }}
                         >
-                            Следующий Уровень
-                        </div>
-                        <div style={{ color: '#fff', fontSize: '17px', lineHeight: '1.5', fontWeight: 600 }}>
-                            {nextText}
+                            {talent.level > 0 ? `+${progressValue}${talent.id.includes('ult') ? '' : '%'}` : '—'}
                         </div>
                     </div>
-                )}
+                    <div style={{ fontSize: '28px', color: color, transform: 'scaleX(1.3)' }}>➔</div>
+                    <div style={{ textAlign: 'center' }}>
+                        <div style={{ fontSize: '11px', color: color, fontWeight: 800, letterSpacing: '1px' }}>
+                            СЛЕДУЮЩИЙ
+                        </div>
+                        <div
+                            style={{
+                                fontSize: '24px',
+                                color: isMax ? '#888' : '#fbbf24',
+                                fontWeight: 900,
+                                fontFamily: "'Cinzel', serif",
+                                marginTop: '5px',
+                            }}
+                        >
+                            {isMax
+                                ? 'МАКС'
+                                : `+${progressValue + (talent.id.includes('ult') ? 10 : 5)}${talent.id.includes('ult') ? '' : '%'}`}
+                        </div>
+                    </div>
+                </div>
             </div>
 
             {talent.branchPoints < talent.required && (

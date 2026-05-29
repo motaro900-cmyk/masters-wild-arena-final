@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
+import { Lock } from 'lucide-react';
 import { useGameStore } from '../../../store/useGameStore';
-import { safeGetItem, safeSetItem } from '../../../utils/SafeStorage';
+import { safeGetItem } from '../../../utils/SafeStorage';
 import { audioService } from '../../../services/AudioService';
 import { AssetsMap } from '../../../configs/AssetsMap';
 
@@ -113,12 +114,29 @@ export const VIPWindow: React.FC<VIPWindowProps> = () => {
     const [hoveredBenefit, setHoveredBenefit] = useState<number | null>(null);
     const [hoveredPkg, setHoveredPkg] = useState<number | null>(null);
 
-    // Синхронизируем состояние VIP в сторе, если оно расходится с днями
+    const timeoutRefs = useRef<ReturnType<typeof setTimeout>[]>([]);
+
+    const scheduleTimeout = (fn: () => void, ms: number) => {
+        const id = setTimeout(() => {
+            timeoutRefs.current = timeoutRefs.current.filter((t) => t !== id);
+            fn();
+        }, ms);
+        timeoutRefs.current.push(id);
+        return id;
+    };
+
+    useEffect(() => {
+        return () => {
+            timeoutRefs.current.forEach((id) => clearTimeout(id));
+            timeoutRefs.current = [];
+        };
+    }, []);
+
     useEffect(() => {
         if (daysLeft > 0 && vipLevel === 0) {
-            setTimeout(() => useGameStore.setState({ vipLevel: 1, maxEnergy: 60 }), 0);
+            scheduleTimeout(() => useGameStore.setState({ vipLevel: 1, maxEnergy: 60 }), 0);
         } else if (daysLeft === 0 && vipLevel > 0) {
-            setTimeout(() => useGameStore.setState({ vipLevel: 0, maxEnergy: 50 }), 0);
+            scheduleTimeout(() => useGameStore.setState({ vipLevel: 0, maxEnergy: 50 }), 0);
         }
     }, [daysLeft, vipLevel]);
 
@@ -132,10 +150,10 @@ export const VIPWindow: React.FC<VIPWindowProps> = () => {
     ];
 
     const vipPackages = [
-        { days: 1, price: 50 },
-        { days: 3, price: 130 },
-        { days: 7, price: 250 },
-        { days: 30, price: 900 },
+        { days: 1, price: 50, label: '1 ДЕНЬ', discount: null },
+        { days: 3, price: 130, label: '3 ДНЯ', discount: null },
+        { days: 7, price: 250, label: '7 ДНЕЙ', discount: '-11%' },
+        { days: 30, price: 900, label: '30 ДНЕЙ', discount: '-40%' },
     ];
 
     const buyVip = React.useCallback((days: number, price: number) => {
@@ -147,321 +165,428 @@ export const VIPWindow: React.FC<VIPWindowProps> = () => {
 
         audioService.playSFX(AssetsMap.AUDIO.SFX_BUY || AssetsMap.AUDIO.SFX_CLICK);
 
-        // Списываем алмазы и активируем VIP
-        useGameStore.setState({ crystals: store.crystals - price, vipLevel: 1, maxEnergy: 60 });
-
-        // Продлеваем VIP
-        const now = Date.now();
-        const currentEndTime = safeGetItem('vipEndTime') ? parseInt(safeGetItem('vipEndTime')!) : now;
-        const newEndTime = Math.max(currentEndTime, now) + days * 24 * 60 * 60 * 1000;
-        safeSetItem('vipEndTime', newEndTime.toString());
-
-        setDaysLeft(Math.ceil((newEndTime - now) / (1000 * 60 * 60 * 24)));
+        const success = store.buyVip(days, price);
+        if (success) {
+            const now = Date.now();
+            const newEndTime = useGameStore.getState().vipEndTime || now;
+            setDaysLeft(Math.ceil((newEndTime - now) / (1000 * 60 * 60 * 24)));
+        } else {
+            alert('Не удалось активировать VIP-статус!');
+        }
     }, []);
 
     const isActive = daysLeft > 0;
 
     return (
-        <div className="flex flex-col gap-6 p-2 select-none">
-            {/* 1. HEADER STATUS */}
-            <div
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', padding: '4px', userSelect: 'none' }}>
+
+            {/* ────────── 1. STATUS HEADER ────────── */}
+            <motion.div
+                initial={{ opacity: 0, y: -8 }}
+                animate={{ opacity: 1, y: 0 }}
                 style={{
                     background: isActive
-                        ? 'linear-gradient(180deg, rgba(240, 192, 64, 0.15) 0%, rgba(26, 18, 15, 0.95) 100%)'
-                        : 'linear-gradient(180deg, #2a1f1a 0%, #1a120f 100%)',
-                    padding: '24px 20px',
+                        ? 'linear-gradient(180deg, rgba(240,192,64,0.18) 0%, rgba(22,14,8,0.97) 100%)'
+                        : 'linear-gradient(180deg, rgba(35,24,16,0.98) 0%, rgba(14,8,4,0.98) 100%)',
+                    padding: '22px 20px 18px',
                     borderRadius: '16px',
-                    border: isActive ? '1.5px solid #f0c040' : '1px solid #4a3f3a',
+                    border: isActive
+                        ? '1.5px solid rgba(240,192,64,0.65)'
+                        : '1px solid rgba(255,255,255,0.05)',
                     boxShadow: isActive
-                        ? '0 0 30px rgba(240, 192, 64, 0.15), inset 0 0 15px rgba(240, 192, 64, 0.1)'
-                        : '0 5px 15px rgba(0,0,0,0.5)',
+                        ? '0 0 40px rgba(240,192,64,0.16), inset 0 0 24px rgba(240,192,64,0.06)'
+                        : '0 6px 22px rgba(0,0,0,0.7)',
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
-                    gap: '8px',
+                    gap: '10px',
                     position: 'relative',
                     overflow: 'hidden',
                 }}
             >
-                {/* Мерцающий золотой блеск заднего плана */}
+                {/* Радиальный свет сверху */}
                 {isActive && (
                     <div
-                        className="absolute inset-0 pointer-events-none opacity-20"
                         style={{
-                            background: 'radial-gradient(circle, rgba(240,192,64,0.4) 0%, transparent 70%)',
-                            animation: 'pulse 3s infinite alternate',
+                            position: 'absolute',
+                            top: 0, left: 0, right: 0,
+                            height: '60%',
+                            background: 'radial-gradient(ellipse at 50% 0%, rgba(240,192,64,0.22) 0%, transparent 70%)',
+                            pointerEvents: 'none',
+                            animation: 'pulse 3s ease-in-out infinite alternate',
                         }}
                     />
                 )}
 
+                {/* Crown sprite */}
+                <img
+                    src={AssetsMap.UI.ICON_CROWN}
+                    alt="crown"
+                    style={{
+                        width: '42px',
+                        height: '42px',
+                        objectFit: 'contain',
+                        filter: isActive
+                            ? 'drop-shadow(0 0 10px rgba(240,192,64,0.7)) drop-shadow(0 2px 4px rgba(0,0,0,0.8))'
+                            : 'grayscale(1) brightness(0.3) drop-shadow(0 2px 4px rgba(0,0,0,0.9))',
+                        zIndex: 1,
+                        transition: 'filter 0.3s ease',
+                    }}
+                />
+
                 <span
                     style={{
-                        color: isActive ? '#f0c040' : '#a0a0a0',
-                        fontSize: '13px',
-                        fontWeight: 'bold',
+                        color: isActive ? 'rgba(240,192,64,0.6)' : 'rgba(255,255,255,0.18)',
+                        fontSize: '10px',
+                        fontWeight: 700,
                         textTransform: 'uppercase',
                         letterSpacing: '3px',
-                        textShadow: isActive ? '0 0 5px rgba(240,192,64,0.3)' : 'none',
+                        zIndex: 1,
                     }}
                 >
                     Текущий статус
                 </span>
 
                 {isActive ? (
-                    <div className="flex flex-col items-center z-10">
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', zIndex: 1 }}>
                         <span
                             style={{
-                                background: 'linear-gradient(to bottom, #ffe066 0%, #f0c040 50%, #b38b3b 100%)',
+                                background: 'linear-gradient(to bottom, #fff8cc 0%, #f0c040 45%, #9a6200 100%)',
                                 WebkitBackgroundClip: 'text',
                                 WebkitTextFillColor: 'transparent',
-                                fontSize: '38px',
+                                fontSize: '34px',
                                 fontWeight: 950,
                                 fontFamily: "'Cinzel', serif",
-                                filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.8)) drop-shadow(0 0 12px rgba(240,192,64,0.4))',
-                                letterSpacing: '1px',
-                                lineHeight: '1.2',
+                                filter: 'drop-shadow(0 2px 10px rgba(0,0,0,0.95)) drop-shadow(0 0 16px rgba(240,192,64,0.45))',
+                                letterSpacing: '2px',
+                                lineHeight: 1.1,
                             }}
                         >
                             VIP АКТИВЕН
                         </span>
                         <div
-                            className="mt-1 bg-black/50 border border-amber-500/30 px-4 py-1 rounded-full shadow-[0_2px_8px_rgba(0,0,0,0.4)]"
-                            style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                                background: 'rgba(0,0,0,0.6)',
+                                border: '1px solid rgba(16,185,129,0.3)',
+                                padding: '5px 18px',
+                                borderRadius: '20px',
+                            }}
                         >
-                            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                            <span style={{ color: '#fff', fontSize: '14px', fontWeight: 800 }}>
-                                Осталось: <span style={{ color: '#f0c040' }}>{daysLeft} дней</span>
+                            <span
+                                style={{
+                                    width: '7px',
+                                    height: '7px',
+                                    borderRadius: '50%',
+                                    background: '#10b981',
+                                    display: 'inline-block',
+                                    boxShadow: '0 0 6px #10b981',
+                                    animation: 'pulse 1.5s ease-in-out infinite',
+                                }}
+                            />
+                            <span style={{ color: '#d1d5db', fontSize: '13px', fontWeight: 700 }}>
+                                Осталось:{' '}
+                                <span style={{ color: '#f0c040', textShadow: '0 0 8px rgba(240,192,64,0.4)', fontWeight: 900 }}>
+                                    {daysLeft} дней
+                                </span>
                             </span>
                         </div>
                     </div>
                 ) : (
-                    <div className="flex flex-col items-center">
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', zIndex: 1 }}>
                         <span
                             style={{
-                                color: '#7a6a5a',
-                                fontSize: '38px',
+                                color: '#a68f7b',
+                                fontSize: '32px',
                                 fontWeight: 950,
                                 fontFamily: "'Cinzel', serif",
-                                letterSpacing: '1px',
-                                lineHeight: '1.2',
-                                textShadow: '0 2px 4px rgba(0,0,0,0.8)',
+                                letterSpacing: '1.5px',
+                                lineHeight: 1.1,
+                                textShadow: '0 2px 10px rgba(0,0,0,0.98)',
                             }}
                         >
                             VIP НЕ АКТИВЕН
                         </span>
-                        <span style={{ color: '#a0a0a0', fontSize: '13px', marginTop: '4px', textAlign: 'center' }}>
+                        <span
+                            style={{
+                                color: '#bca895',
+                                fontSize: '12px',
+                                textAlign: 'center',
+                                lineHeight: 1.5,
+                                maxWidth: '300px',
+                            }}
+                        >
                             Приобретите VIP, чтобы мгновенно активировать все бонусы!
                         </span>
                     </div>
                 )}
-            </div>
+            </motion.div>
 
-            {/* 2. BENEFITS LIST */}
-            <div className="flex flex-col gap-3">
+            {/* ────────── 2. BENEFITS LIST ────────── */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <h3
                     style={{
                         fontFamily: "'Cinzel', serif",
                         color: '#f0c040',
-                        fontSize: '15px',
+                        fontSize: '12px',
                         fontWeight: 800,
-                        borderBottom: '1px solid rgba(240,192,64,0.2)',
+                        borderBottom: '1px solid rgba(240,192,64,0.15)',
                         paddingBottom: '8px',
                         textAlign: 'center',
-                        letterSpacing: '2px',
-                        textShadow: '0 1px 3px rgba(0,0,0,0.5)',
+                        letterSpacing: '3px',
+                        margin: 0,
+                        textTransform: 'uppercase',
                     }}
                 >
                     Привилегии VIP
                 </h3>
 
-                <div className="flex flex-col gap-2">
-                    {benefits.map((b, i) => (
-                        <motion.div
-                            key={i}
-                            onMouseEnter={() => setHoveredBenefit(i)}
-                            onMouseLeave={() => setHoveredBenefit(null)}
+                {benefits.map((b, i) => (
+                    <motion.div
+                        key={i}
+                        onMouseEnter={() => setHoveredBenefit(i)}
+                        onMouseLeave={() => setHoveredBenefit(null)}
+                        style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '12px',
+                            padding: '10px 14px',
+                            background:
+                                hoveredBenefit === i
+                                    ? 'linear-gradient(90deg, rgba(240,192,64,0.15) 0%, rgba(0,0,0,0.15) 100%)'
+                                    : isActive
+                                    ? 'linear-gradient(90deg, rgba(240,192,64,0.08) 0%, rgba(0,0,0,0.2) 100%)'
+                                    : 'linear-gradient(90deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%)',
+                            borderRadius: '10px',
+                            border: `1px solid ${hoveredBenefit === i ? 'rgba(240,192,64,0.32)' : 'rgba(255,255,255,0.09)'}`,
+                            borderLeft: `3px solid ${
+                                isActive
+                                    ? hoveredBenefit === i
+                                        ? '#f0c040'
+                                        : 'rgba(240,192,64,0.45)'
+                                    : hoveredBenefit === i
+                                    ? 'rgba(220,180,100,0.65)'
+                                    : 'rgba(180,140,60,0.45)'
+                            }`,
+                            transform: hoveredBenefit === i ? 'translateX(3px)' : 'translateX(0)',
+                            transition: 'all 0.2s ease',
+                            opacity: isActive ? 1 : 0.95,
+                        }}
+                    >
+                        {/* Icon */}
+                        <span
                             style={{
                                 display: 'flex',
                                 alignItems: 'center',
-                                gap: '15px',
-                                padding: '12px 20px',
-                                background: isActive
-                                    ? 'linear-gradient(90deg, rgba(240, 192, 64, 0.1) 0%, rgba(240, 192, 64, 0.02) 100%)'
-                                    : 'linear-gradient(90deg, rgba(255,255,255,0.03) 0%, rgba(0,0,0,0.15) 100%)',
-                                borderRadius: '12px',
-                                border: `1px solid ${isActive ? 'rgba(240,192,64,0.2)' : 'rgba(255,255,255,0.04)'}`,
-                                borderLeft:
-                                    hoveredBenefit === i
-                                        ? '4px solid #f0c040'
-                                        : `4px solid ${isActive ? 'rgba(240,192,64,0.3)' : 'rgba(255,255,255,0.05)'}`,
-                                transform: hoveredBenefit === i ? 'translateX(4px)' : 'translateX(0)',
-                                transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
-                                boxShadow: hoveredBenefit === i ? '0 4px 12px rgba(0,0,0,0.25)' : 'none',
+                                justifyContent: 'center',
+                                flexShrink: 0,
+                                filter: isActive ? 'none' : 'grayscale(0.2) brightness(0.85)',
+                                transition: 'filter 0.2s',
                             }}
                         >
-                            <span
-                                style={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    filter: isActive ? 'none' : 'grayscale(1) opacity(0.35)',
-                                }}
-                            >
-                                {b.icon}
-                            </span>
-                            <span
-                                style={{
-                                    color: isActive ? '#fff' : '#8a7a6a',
-                                    fontSize: '13px',
-                                    fontWeight: isActive ? '900' : '700',
-                                    fontFamily: "'Cinzel', serif",
-                                    letterSpacing: '0.5px',
-                                    textShadow: isActive ? '0 1px 2px rgba(0,0,0,0.5)' : 'none',
-                                }}
-                            >
-                                {b.text}
-                            </span>
+                            {b.icon}
+                        </span>
 
-                            {/* Элегантные капсульные плашки доступности */}
-                            <span
-                                style={{
-                                    marginLeft: 'auto',
-                                    fontSize: '10px',
-                                    fontWeight: 900,
-                                    letterSpacing: '1.5px',
-                                    padding: '3px 12px',
-                                    borderRadius: '20px',
-                                    transition: 'all 0.2s',
-                                    background: isActive ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.1)',
-                                    border: isActive
-                                        ? '1px solid rgba(16, 185, 129, 0.3)'
-                                        : '1px solid rgba(239, 68, 68, 0.2)',
-                                    color: isActive ? '#34d399' : '#f87171',
-                                    textShadow: isActive ? '0 0 5px rgba(52, 211, 153, 0.4)' : 'none',
-                                }}
-                            >
-                                {isActive ? 'ДОСТУПНО' : 'НЕДОСТУПНО'}
-                            </span>
-                        </motion.div>
-                    ))}
-                </div>
+                        {/* Text */}
+                        <span
+                            style={{
+                                color: isActive ? '#e0cfa0' : '#e5d7bc',
+                                fontSize: '11.5px',
+                                fontWeight: 700,
+                                fontFamily: "'Cinzel', serif",
+                                letterSpacing: '0.3px',
+                                flex: 1,
+                            }}
+                        >
+                            {b.text}
+                        </span>
+
+                        {/* Availability badge */}
+                        <span
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '4px',
+                                flexShrink: 0,
+                                fontSize: '9px',
+                                fontWeight: 900,
+                                letterSpacing: '0.8px',
+                                padding: '3px 9px 3px 7px',
+                                borderRadius: '20px',
+                                background: isActive
+                                    ? 'rgba(16,185,129,0.12)'
+                                    : 'rgba(90,60,20,0.65)',
+                                border: isActive
+                                    ? '1px solid rgba(16,185,129,0.28)'
+                                    : '1px solid rgba(160,110,40,0.55)',
+                                color: isActive ? '#34d399' : '#b8843a',
+                                textShadow: isActive ? '0 0 6px rgba(52,211,153,0.35)' : 'none',
+                            }}
+                        >
+                            {!isActive && (
+                                <Lock size={8} color="#b8843a" style={{ flexShrink: 0 }} />
+                            )}
+                            {isActive ? 'ДОСТУПНО' : 'ЗАПЕРТО'}
+                        </span>
+                    </motion.div>
+                ))}
             </div>
 
-            {/* 3. PURCHASE PACKAGES */}
-            <div className="flex flex-col gap-3 mt-2">
+            {/* ────────── 3. PURCHASE PACKAGES ────────── */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <h3
                     style={{
                         fontFamily: "'Cinzel', serif",
-                        color: isActive ? 'rgba(240, 192, 64, 0.4)' : '#f0c040',
-                        fontSize: '15px',
+                        color: isActive ? 'rgba(240,192,64,0.35)' : '#f0c040',
+                        fontSize: '12px',
                         fontWeight: 800,
-                        borderBottom: '1px solid rgba(240,192,64,0.2)',
+                        borderBottom: '1px solid rgba(240,192,64,0.15)',
                         paddingBottom: '8px',
                         textAlign: 'center',
-                        letterSpacing: '2px',
-                        textShadow: '0 1px 3px rgba(0,0,0,0.5)',
+                        letterSpacing: '3px',
+                        margin: 0,
+                        textTransform: 'uppercase',
                     }}
                 >
-                    Продлить VIP статус
+                    {isActive ? 'Продлить VIP статус' : 'Активировать VIP'}
                 </h3>
 
-                <div className="grid grid-cols-2 gap-4">
-                    {vipPackages.map((pkg, i) => (
-                        <button
-                            key={i}
-                            onClick={() => buyVip(pkg.days, pkg.price)}
-                            onMouseEnter={() => setHoveredPkg(i)}
-                            onMouseLeave={() => setHoveredPkg(null)}
-                            className="flex items-center justify-between gap-3 group relative overflow-hidden"
-                            style={{
-                                background:
-                                    pkg.days === 30 && !isActive
-                                        ? 'linear-gradient(180deg, rgba(60, 45, 30, 0.85) 0%, rgba(26,18,15,0.95) 100%)'
-                                        : 'linear-gradient(180deg, rgba(42,31,26,0.8) 0%, rgba(26,18,15,0.9) 100%)',
-                                border: isActive
-                                    ? hoveredPkg === i
-                                        ? '1px solid #f0c040'
-                                        : '1px solid rgba(255,255,255,0.06)'
-                                    : pkg.days === 30
-                                      ? '1.5px solid #f0c040'
-                                      : hoveredPkg === i
-                                        ? '1px solid #f0c040'
-                                        : '1px solid rgba(240,192,64,0.3)',
-                                borderRadius: '14px',
-                                padding: '14px 20px',
-                                cursor: 'pointer',
-                                transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
-                                transform: hoveredPkg === i ? 'scale(1.02) translateY(-1px)' : 'scale(1) translateY(0)',
-                                boxShadow: isActive
-                                    ? hoveredPkg === i
-                                        ? '0 4px 12px rgba(240,192,64,0.15)'
-                                        : 'none'
-                                    : pkg.days === 30
-                                      ? hoveredPkg === i
-                                          ? '0 6px 20px rgba(240,192,64,0.25)'
-                                          : '0 4px 15px rgba(240,192,64,0.15)'
-                                      : hoveredPkg === i
-                                        ? '0 5px 15px rgba(0,0,0,0.3)'
-                                        : 'none',
-                            }}
-                        >
-                            {/* Лента выгодной покупки для 30 дней */}
-                            {pkg.days === 30 && !isActive && (
-                                <div
-                                    className="absolute top-[-8px] right-[16px] bg-gradient-to-r from-amber-500 to-yellow-400 text-black text-[8px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider shadow-[0_2px_5px_rgba(0,0,0,0.3)] animate-pulse"
-                                    style={{ fontFamily: "'Montserrat', sans-serif" }}
-                                >
-                                    Выгодно!
-                                </div>
-                            )}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                    {vipPackages.map((pkg, i) => {
+                        const isBest = pkg.days === 30;
+                        const isHov = hoveredPkg === i;
 
-                            <span
+                        return (
+                            <button
+                                key={i}
+                                onClick={() => buyVip(pkg.days, pkg.price)}
+                                onMouseEnter={() => setHoveredPkg(i)}
+                                onMouseLeave={() => setHoveredPkg(null)}
                                 style={{
-                                    fontFamily: "'Cinzel', serif",
-                                    fontSize: '18px',
-                                    fontWeight: 950,
-                                    background:
-                                        pkg.days === 30 && !isActive
-                                            ? 'linear-gradient(to bottom, #fff 30%, #ffd700 100%)'
-                                            : 'none',
-                                    WebkitBackgroundClip: pkg.days === 30 && !isActive ? 'text' : 'none',
-                                    WebkitTextFillColor: pkg.days === 30 && !isActive ? 'transparent' : 'initial',
-                                    color: pkg.days === 30 && !isActive ? undefined : '#fff',
-                                    letterSpacing: '1px',
+                                    position: 'relative',
+                                    overflow: 'hidden',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'space-between',
+                                    background: isBest
+                                        ? isHov
+                                            ? 'linear-gradient(135deg, rgba(76,52,16,0.97) 0%, rgba(36,22,6,0.99) 100%)'
+                                            : 'linear-gradient(135deg, rgba(58,40,12,0.94) 0%, rgba(26,15,4,0.97) 100%)'
+                                        : isHov
+                                        ? 'linear-gradient(135deg, rgba(46,34,24,0.93) 0%, rgba(26,16,8,0.97) 100%)'
+                                        : 'linear-gradient(135deg, rgba(34,24,16,0.87) 0%, rgba(18,10,4,0.94) 100%)',
+                                    border: isBest
+                                        ? `1.5px solid ${isHov ? '#f0c040' : 'rgba(240,192,64,0.52)'}`
+                                        : `1px solid ${isHov ? 'rgba(240,192,64,0.35)' : 'rgba(255,255,255,0.055)'}`,
+                                    borderRadius: '12px',
+                                    padding: '14px 16px',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.22s ease',
+                                    transform: isHov ? 'scale(1.03) translateY(-2px)' : 'scale(1)',
+                                    boxShadow: isBest
+                                        ? isHov
+                                            ? '0 8px 26px rgba(240,192,64,0.28), inset 0 1px 0 rgba(255,255,255,0.06)'
+                                            : '0 4px 18px rgba(240,192,64,0.14), inset 0 1px 0 rgba(255,255,255,0.03)'
+                                        : isHov
+                                        ? '0 4px 16px rgba(0,0,0,0.45)'
+                                        : '0 2px 8px rgba(0,0,0,0.32)',
                                 }}
                             >
-                                {pkg.days} {pkg.days === 1 ? 'ДЕНЬ' : pkg.days > 4 ? 'ДНЕЙ' : 'ДНЯ'}
-                            </span>
+                                {/* Gold line shimmer on top of best package */}
+                                {isBest && (
+                                    <div
+                                        style={{
+                                            position: 'absolute',
+                                            top: 0, left: 0, right: 0,
+                                            height: '1px',
+                                            background: 'linear-gradient(90deg, transparent 0%, rgba(240,192,64,0.6) 50%, transparent 100%)',
+                                        }}
+                                    />
+                                )}
 
-                            <div
-                                className="flex items-center gap-1.5 bg-black/60 px-3 py-1.5 rounded-full border border-white/5 shadow-inner transition-all duration-200"
-                                style={{
-                                    borderColor:
-                                        hoveredPkg === i ? 'rgba(192, 132, 252, 0.4)' : 'rgba(255,255,255,0.05)',
-                                }}
-                            >
-                                <img
-                                    src={AssetsMap.UI.ICON_ALMAZ_FULL}
-                                    alt="gems"
-                                    style={{
-                                        width: '14px',
-                                        height: '14px',
-                                        filter: 'drop-shadow(0 0 4px rgba(192, 132, 252, 0.6))',
-                                    }}
-                                />
+                                {/* Discount badge (top ribbon) */}
+                                {pkg.discount && (
+                                    <div
+                                        style={{
+                                            position: 'absolute',
+                                            top: '-1px',
+                                            right: '12px',
+                                            background: isBest
+                                                ? 'linear-gradient(135deg, #f0c040 0%, #b87800 100%)'
+                                                : 'linear-gradient(135deg, #555 0%, #333 100%)',
+                                            color: isBest ? '#1a0d00' : '#aaa',
+                                            fontSize: '8px',
+                                            fontWeight: 900,
+                                            padding: '2px 9px',
+                                            borderRadius: '0 0 8px 8px',
+                                            letterSpacing: '0.5px',
+                                            boxShadow: isBest ? '0 2px 8px rgba(240,192,64,0.35)' : 'none',
+                                        }}
+                                    >
+                                        {pkg.discount}
+                                    </div>
+                                )}
+
+                                {/* Label */}
                                 <span
                                     style={{
-                                        color: '#c084fc',
-                                        fontWeight: 950,
-                                        fontSize: '14px',
-                                        textShadow: '0 1px 3px rgba(0,0,0,0.5)',
+                                        fontFamily: "'Cinzel', serif",
+                                        fontSize: '15px',
+                                        fontWeight: 900,
+                                        letterSpacing: '0.5px',
+                                        background: isBest
+                                            ? 'linear-gradient(to bottom, #fff8d8 0%, #f0c040 55%, #9a6200 100%)'
+                                            : 'none',
+                                        WebkitBackgroundClip: isBest ? 'text' : 'initial',
+                                        WebkitTextFillColor: isBest ? 'transparent' : 'initial',
+                                        color: isBest ? undefined : isHov ? '#e0d0b0' : '#9a8868',
+                                        filter: isBest ? 'drop-shadow(0 1px 5px rgba(0,0,0,0.85))' : 'none',
                                     }}
                                 >
-                                    {pkg.price}
+                                    {pkg.label}
                                 </span>
-                            </div>
-                        </button>
-                    ))}
+
+                                {/* Price chip */}
+                                <div
+                                    style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '5px',
+                                        background: 'rgba(0,0,0,0.52)',
+                                        padding: '5px 12px',
+                                        borderRadius: '20px',
+                                        border: isBest
+                                            ? '1px solid rgba(192,132,252,0.38)'
+                                            : '1px solid rgba(255,255,255,0.055)',
+                                        boxShadow: isBest ? '0 0 10px rgba(192,132,252,0.18)' : 'none',
+                                        flexShrink: 0,
+                                    }}
+                                >
+                                    <img
+                                        src={AssetsMap.UI.ICON_ALMAZ_FULL}
+                                        alt="gems"
+                                        style={{
+                                            width: '14px',
+                                            height: '14px',
+                                            filter: 'drop-shadow(0 0 4px rgba(192,132,252,0.65))',
+                                        }}
+                                    />
+                                    <span
+                                        style={{
+                                            color: '#c084fc',
+                                            fontWeight: 900,
+                                            fontSize: '14px',
+                                            textShadow: '0 0 8px rgba(192,132,252,0.38)',
+                                        }}
+                                    >
+                                        {pkg.price}
+                                    </span>
+                                </div>
+                            </button>
+                        );
+                    })}
                 </div>
             </div>
         </div>

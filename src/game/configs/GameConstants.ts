@@ -13,14 +13,14 @@ export const CANVAS_HEIGHT = 1080;
 export const EXP_PER_LEVEL = 600;
 
 // --- НАГРАДЫ ЗА БОЙ ---
-// TODO: заменить на формулы от уровня врага и рейтингового разрыва
+// Сбалансировано v2: замедление прогрессии, прокачка занимает 7–14 дней
 export const BATTLE_REWARDS = {
-    GOLD_VICTORY: 150,
-    GOLD_DEFEAT: 20,
-    XP_VICTORY: 300,
-    XP_DEFEAT: 50,
-    TROPHIES_VICTORY: 25, // TODO: MMR-формула
-    TROPHIES_DEFEAT: -15, // TODO: MMR-формула
+    GOLD_VICTORY: 80, // было 150 — снижено чтобы не купить всё за 1 день
+    GOLD_DEFEAT: 10, // было 20
+    XP_VICTORY: 200, // было 300
+    XP_DEFEAT: 30, // было 50
+    TROPHIES_VICTORY: 28, // было 25 — чуть больше мотивация побеждать
+    TROPHIES_DEFEAT: -18, // было -15 — чуть больнее проигрывать
 } as const;
 
 // --- ATB / БОЕВАЯ СИСТЕМА ---

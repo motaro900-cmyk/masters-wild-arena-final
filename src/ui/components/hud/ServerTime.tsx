@@ -10,20 +10,26 @@ export const ServerTime: React.FC = () => {
 
     useEffect(() => {
         const updateTime = () => {
-            const MSK_OFFSET = 3 * 60 * 60 * 1000;
-            const nowMSK = new Date(Date.now() + MSK_OFFSET);
+            const now = new Date();
 
             // Time: HH:MM:SS
-            const h = nowMSK.getUTCHours().toString().padStart(2, '0');
-            const m = nowMSK.getUTCMinutes().toString().padStart(2, '0');
-            const s = nowMSK.getUTCSeconds().toString().padStart(2, '0');
-            setTime(`${h}:${m}:${s}`);
+            const timeStr = now.toLocaleTimeString('ru-RU', {
+                timeZone: 'Europe/Moscow',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false,
+            });
+            setTime(timeStr);
 
             // Date: DD.MM.YYYY
-            const d = nowMSK.getUTCDate().toString().padStart(2, '0');
-            const mo = (nowMSK.getUTCMonth() + 1).toString().padStart(2, '0');
-            const y = nowMSK.getUTCFullYear();
-            setDate(`${d}.${mo}.${y}`);
+            const dateStr = now.toLocaleDateString('ru-RU', {
+                timeZone: 'Europe/Moscow',
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+            });
+            setDate(dateStr);
         };
 
         updateTime();

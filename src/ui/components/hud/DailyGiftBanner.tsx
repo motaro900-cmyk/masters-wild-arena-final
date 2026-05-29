@@ -19,17 +19,12 @@ export const DailyGiftBanner: React.FC<{ onClick: () => void }> = ({ onClick }) 
             }
 
             const now = new Date();
-            const utcNow = now.getTime() + now.getTimezoneOffset() * 60000;
-            const mskNow = new Date(utcNow + 3 * 3600000);
-
             const lastClaimDate = new Date(parseInt(lastClaim));
-            const utcLast = lastClaimDate.getTime() + lastClaimDate.getTimezoneOffset() * 60000;
-            const mskLast = new Date(utcLast + 3 * 3600000);
 
             const isSameDay =
-                mskNow.getDate() === mskLast.getDate() &&
-                mskNow.getMonth() === mskLast.getMonth() &&
-                mskNow.getFullYear() === mskLast.getFullYear();
+                now.getDate() === lastClaimDate.getDate() &&
+                now.getMonth() === lastClaimDate.getMonth() &&
+                now.getFullYear() === lastClaimDate.getFullYear();
 
             setCanClaim(!isSameDay);
         };
@@ -53,7 +48,7 @@ export const DailyGiftBanner: React.FC<{ onClick: () => void }> = ({ onClick }) 
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'flex-end',
-                paddingRight: 70,
+                paddingRight: 100,
                 pointerEvents: 'auto',
                 transition: 'transform 0.2s',
             }}
@@ -72,9 +67,9 @@ export const DailyGiftBanner: React.FC<{ onClick: () => void }> = ({ onClick }) 
                         whiteSpace: 'nowrap',
                     }}
                 >
-                    ЕЖЕДНЕВНЫЙ
+                    ЕЖЕДНЕВНЫЕ
                     <br />
-                    ПОДАРОК
+                    НАГРАДЫ
                 </span>
             </div>
 

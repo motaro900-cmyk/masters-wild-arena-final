@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion } from 'framer-motion';
 import { AssetsMap } from '../../../configs/AssetsMap';
 import { useGameStore } from '../../../store/useGameStore';
 import { getRankInfo } from '../../../configs/RankSystem';
@@ -171,7 +172,8 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({ onStartBattle, onW
                     }}
                 >
                     {/* ЛЕВАЯ КНОПКА (Синяя) */}
-                    <button
+                    <motion.button
+                        whileTap={{ scale: 0.92 }}
                         onClick={(e) => {
                             e.stopPropagation();
                             audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
@@ -231,10 +233,11 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({ onStartBattle, onW
                                 </span>
                             </div>
                         </div>
-                    </button>
+                    </motion.button>
 
                     {/* ПРАВАЯ КНОПКА (Красная) */}
-                    <button
+                    <motion.button
+                        whileTap={{ scale: 0.92 }}
                         onClick={(e) => {
                             e.stopPropagation();
                             audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
@@ -320,7 +323,7 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({ onStartBattle, onW
                                 </div>
                             </>
                         )}
-                    </button>
+                    </motion.button>
                 </div>
             </div>
         </div>

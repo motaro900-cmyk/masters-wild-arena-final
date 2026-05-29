@@ -30,6 +30,8 @@ export interface IBaseItem {
     flavor?: string;
     badge?: string;
     spriteClass?: string;
+    /** Минимальный уровень игрока для покупки. 1 = доступно сразу. */
+    requiredLevel?: number;
 }
 
 /**

@@ -9,14 +9,16 @@ const RESOURCES = [
 ];
 
 export const ResourceBar: React.FC<{ onOpenShop?: (tab: string) => void }> = ({ onOpenShop }) => {
-    const { gold, crystals, energy, maxEnergy, lastEnergyUpdate, restoreEnergy } = useGameStore();
+    const { gold, crystals, energy, maxEnergy, lastEnergyUpdate, regenerateEnergy } = useGameStore();
     const [hoveredRes, setHoveredRes] = useState<string | null>(null);
     const [timeLeft, setTimeLeft] = useState<{ next: string; full: string } | null>(null);
 
     // Обновляем таймер каждую секунду
     useEffect(() => {
         const timer = setInterval(() => {
-            restoreEnergy(); // Проверяем регенерацию в сторе
+            if (typeof regenerateEnergy === 'function') {
+                regenerateEnergy(); // Проверяем регенерацию в сторе
+            }
 
             if (energy < maxEnergy) {
                 const now = Date.now();
@@ -45,12 +47,12 @@ export const ResourceBar: React.FC<{ onOpenShop?: (tab: string) => void }> = ({ 
         }, 1000);
 
         return () => clearInterval(timer);
-    }, [energy, maxEnergy, lastEnergyUpdate, restoreEnergy]);
+    }, [energy, maxEnergy, lastEnergyUpdate, regenerateEnergy]);
 
     const values = { energy: `${energy}/${maxEnergy}`, gold, gems: crystals };
 
     return (
-        <div className="flex items-center gap-1.5 pointer-events-auto">
+        <div className="flex items-center gap-3 pointer-events-auto">
             {RESOURCES.map((res) => (
                 <div
                     key={res.key}
@@ -283,7 +285,7 @@ export const ResourceBar: React.FC<{ onOpenShop?: (tab: string) => void }> = ({ 
                     </div>
 
                     <button
-                        onClick={() => onOpenShop?.(res.key === 'energy' ? 'ENERGY' : 'RESOURCES')}
+                        onClick={() => onOpenShop?.(res.key === 'gems' ? 'GEMS' : res.key.toUpperCase())}
                         style={{
                             position: 'absolute',
                             right: 4,

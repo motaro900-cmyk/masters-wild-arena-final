@@ -214,7 +214,7 @@ export const HeroDetailsModal = ({ hero, isOwned, onClose, rarityColors, onBuy, 
                     <div style={{ display: 'flex', gap: '20px' }}>
                         <motion.button
                             whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
+                            whileTap={{ scale: 0.92 }}
                             style={{
                                 flex: 1,
                                 height: '70px',
@@ -238,7 +238,7 @@ export const HeroDetailsModal = ({ hero, isOwned, onClose, rarityColors, onBuy, 
                         {isOwned ? (
                             <motion.button
                                 whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
+                                whileTap={{ scale: 0.92 }}
                                 style={{
                                     flex: 1,
                                     height: '70px',
@@ -257,7 +257,7 @@ export const HeroDetailsModal = ({ hero, isOwned, onClose, rarityColors, onBuy, 
                         ) : (
                             <motion.button
                                 whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
+                                whileTap={{ scale: 0.92 }}
                                 style={{
                                     flex: 1,
                                     height: '70px',
@@ -278,7 +278,8 @@ export const HeroDetailsModal = ({ hero, isOwned, onClose, rarityColors, onBuy, 
                 </div>
 
                 {/* CLOSE BUTTON */}
-                <button
+                <motion.button
+                    whileTap={{ scale: 0.92 }}
                     onClick={onClose}
                     style={{
                         position: 'absolute',
@@ -295,7 +296,7 @@ export const HeroDetailsModal = ({ hero, isOwned, onClose, rarityColors, onBuy, 
                     }}
                 >
                     ✕
-                </button>
+                </motion.button>
             </motion.div>
         </motion.div>
     );

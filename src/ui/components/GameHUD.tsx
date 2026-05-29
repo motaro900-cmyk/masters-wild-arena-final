@@ -14,7 +14,6 @@ import { ProfileHub } from './hud/ProfileHub';
 import { ServerTime } from './hud/ServerTime';
 
 // Window Components
-import { AncientsSanctuaryWindow } from './hud/AncientsSanctuaryWindow';
 import { BaseWindow } from './hud/BaseWindow';
 import { FriendsWindow } from './hud/FriendsWindow';
 import { MailWindow } from './hud/MailWindow';
@@ -173,7 +172,8 @@ export const GameHUD: React.FC = () => {
         activeScreen === 'HEROES' ||
         activeScreen === 'CITY' ||
         activeScreen === 'BATTLE' ||
-        activeScreen === 'FORGE';
+        activeScreen === 'FORGE' ||
+        activeScreen === 'SANCTUARY';
 
     if (activeScreen === 'INTRO') return null;
     if (activeScreen !== 'MAIN_MENU' && !isFullScreenScene) return null;
@@ -203,7 +203,7 @@ export const GameHUD: React.FC = () => {
 
             {/* 2. BATTLE PASS BAR */}
             {!isFullScreenScene && (
-                <div 
+                <div
                     className="absolute top-[20px] left-1/2 -translate-x-1/2 hud-interactive"
                     style={isMobile ? { transform: `scale(${hudScale})`, transformOrigin: 'top center' } : {}}
                 >
@@ -212,51 +212,75 @@ export const GameHUD: React.FC = () => {
             )}
 
             {/* 3. RESOURCES */}
-            {activeScreen !== 'BATTLE' && (
-                <div 
-                    className="absolute top-[20px] right-[25px] hud-interactive flex flex-col items-end gap-1"
-                    style={isMobile ? { transform: `scale(${hudScale})`, transformOrigin: 'top right' } : {}}
-                >
-                    <ResourceBar
-                        onOpenShop={(tab) => {
-                            goToShop(tab === 'RESOURCES' ? 'BANK' : 'ALCHEMY');
-                        }}
-                    />
-                    {showFps && (
-                        <div style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '6px',
-                            background: 'rgba(0,0,0,0.55)',
-                            backdropFilter: 'blur(8px)',
-                            border: '1px solid rgba(255,255,255,0.08)',
-                            borderRadius: '8px',
-                            padding: '3px 10px',
-                            pointerEvents: 'none',
-                        }}>
-                            <span style={{ fontSize: '9px', opacity: 0.5, color: '#fff', textTransform: 'uppercase', letterSpacing: '1px' }}>FPS</span>
-                            <span style={{
-                                fontSize: '14px',
-                                fontWeight: 800,
-                                fontFamily: 'monospace',
-                                minWidth: '30px',
-                                textAlign: 'center',
-                                color: fpsValue < 25 ? '#ff4444' : fpsValue < 50 ? '#ffcc00' : '#44ff44',
-                                transition: 'color 0.3s',
-                            }}>{fpsValue}</span>
-                        </div>
-                    )}
-                </div>
-            )}
+            {activeScreen !== 'BATTLE' &&
+                activeScreen !== 'HEROES' &&
+                activeScreen !== 'SHOP' &&
+                activeScreen !== 'FORGE' &&
+                activeScreen !== 'SANCTUARY' && (
+                    <div
+                        className="absolute top-[20px] right-[25px] hud-interactive flex flex-col items-end gap-1"
+                        style={isMobile ? { transform: `scale(${hudScale})`, transformOrigin: 'top right' } : {}}
+                    >
+                        <ResourceBar
+                            onOpenShop={(tab) => {
+                                if (tab === 'GOLD' || tab === 'GEMS' || tab === 'ENERGY') {
+                                    goToShop('BANK', tab);
+                                } else {
+                                    goToShop('ALCHEMY');
+                                }
+                            }}
+                        />
+                        {showFps && (
+                            <div
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '6px',
+                                    background: 'rgba(0,0,0,0.55)',
+                                    backdropFilter: 'blur(8px)',
+                                    border: '1px solid rgba(255,255,255,0.08)',
+                                    borderRadius: '8px',
+                                    padding: '3px 10px',
+                                    pointerEvents: 'none',
+                                }}
+                            >
+                                <span
+                                    style={{
+                                        fontSize: '9px',
+                                        opacity: 0.5,
+                                        color: '#fff',
+                                        textTransform: 'uppercase',
+                                        letterSpacing: '1px',
+                                    }}
+                                >
+                                    FPS
+                                </span>
+                                <span
+                                    style={{
+                                        fontSize: '14px',
+                                        fontWeight: 800,
+                                        fontFamily: 'monospace',
+                                        minWidth: '30px',
+                                        textAlign: 'center',
+                                        color: fpsValue < 25 ? '#ff4444' : fpsValue < 50 ? '#ffcc00' : '#44ff44',
+                                        transition: 'color 0.3s',
+                                    }}
+                                >
+                                    {fpsValue}
+                                </span>
+                            </div>
+                        )}
+                    </div>
+                )}
 
             {/* 4. SIDEBARS & PANELS */}
             {!isFullScreenScene && (
                 <>
-                    <div 
+                    <div
                         className="absolute top-[455px] left-[-10px] hud-interactive"
                         style={{
                             transform: `translateY(-50%) scale(${hudScale})`,
-                            transformOrigin: 'left center'
+                            transformOrigin: 'left center',
                         }}
                     >
                         <LeftSidebar
@@ -352,7 +376,8 @@ export const GameHUD: React.FC = () => {
                         <ChatPanel />
                     </div>
 
-                    <div className="absolute bottom-[30px] left-1/2 -translate-x-1/2 hud-interactive"
+                    <div
+                        className="absolute bottom-[30px] left-1/2 -translate-x-1/2 hud-interactive"
                         style={isMobile ? { transform: `scale(${hudScale})`, transformOrigin: 'bottom center' } : {}}
                     >
                         <ActionButtons
@@ -363,7 +388,7 @@ export const GameHUD: React.FC = () => {
                     </div>
 
                     {/* STANDALONE CITY BUTTON (100px further right) */}
-                    <div 
+                    <div
                         className="absolute bottom-[10px] left-[calc(50%+400px)] hud-interactive"
                         style={isMobile ? { transform: `scale(${hudScale})`, transformOrigin: 'bottom center' } : {}}
                     >
@@ -433,7 +458,7 @@ export const GameHUD: React.FC = () => {
                             border: '1px solid rgba(240, 192, 64, 0.25)',
                             borderRadius: '20px',
                             boxShadow: '0 10px 30px rgba(0,0,0,0.7)',
-                            ...(isMobile ? { transform: `scale(${hudScale})`, transformOrigin: 'bottom right' } : {})
+                            ...(isMobile ? { transform: `scale(${hudScale})`, transformOrigin: 'bottom right' } : {}),
                         }}
                     >
                         {[
@@ -472,16 +497,6 @@ export const GameHUD: React.FC = () => {
                         className="absolute top-[515px] left-[960px] -translate-x-1/2 -translate-y-1/2 hud-interactive"
                         onClick={(e) => e.stopPropagation()}
                     >
-                        {activeWindow === 'SANCTUARY' && (
-                            <BaseWindow
-                                title="ОБИТЕЛЬ ДРЕВНИХ"
-                                isOpen={true}
-                                onClose={() => setActiveWindow(null)}
-                                width="800px"
-                            >
-                                <AncientsSanctuaryWindow />
-                            </BaseWindow>
-                        )}
                         {activeWindow === 'FRIENDS' && (
                             <BaseWindow
                                 title="ДРУЗЬЯ"
@@ -530,10 +545,10 @@ export const GameHUD: React.FC = () => {
                         )}
                         {activeWindow === 'GIFT' && (
                             <BaseWindow
-                                title="ЕЖЕДНЕВНЫЙ ПОДАРОК"
+                                title="КАЛЕНДАРЬ НАГРАД"
                                 isOpen={true}
                                 onClose={() => setActiveWindow(null)}
-                                width="600px"
+                                width="900px"
                             >
                                 <DailyGiftWindow onClose={() => setActiveWindow(null)} />
                             </BaseWindow>

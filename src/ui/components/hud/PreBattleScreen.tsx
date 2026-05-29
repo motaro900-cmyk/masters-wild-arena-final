@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
 
 interface StatCompareRowProps {
@@ -141,9 +141,6 @@ export const PreBattleScreen: React.FC<PreBattleScreenProps> = ({
     onStart,
     onCancel,
 }) => {
-    const [countdown, setCountdown] = useState(5);
-    const autoStartedRef = useRef(false);
-
     // Вычисляем «силу» для шанса победы
     const playerPower =
         playerStats.hp * 0.4 + playerStats.attack * 2 + playerStats.defense * 1.5 + playerStats.speed * 10;
@@ -154,18 +151,6 @@ export const PreBattleScreen: React.FC<PreBattleScreenProps> = ({
 
     const winChanceColor = winChance >= 70 ? '#4ade80' : winChance >= 45 ? '#fbbf24' : '#ef4444';
     const winChanceLabel = winChance >= 70 ? 'Уверенная победа' : winChance >= 45 ? 'Равный бой' : 'Высокий риск';
-
-    // Обратный отсчёт — автостарт через 5 сек
-    useEffect(() => {
-        if (autoStartedRef.current) return;
-        if (countdown <= 0) {
-            autoStartedRef.current = true;
-            onStart();
-            return;
-        }
-        const t = setTimeout(() => setCountdown((c) => c - 1), 1000);
-        return () => clearTimeout(t);
-    }, [countdown, onStart]);
 
     return (
         <div
@@ -339,7 +324,12 @@ export const PreBattleScreen: React.FC<PreBattleScreenProps> = ({
                                 <img
                                     src={enemyImage}
                                     alt={enemyName}
-                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                    style={{
+                                        width: '100%',
+                                        height: '100%',
+                                        objectFit: 'cover',
+                                        transform: 'scaleX(-1)',
+                                    }}
                                     onError={(e) => {
                                         (e.target as HTMLImageElement).style.display = 'none';
                                     }}
@@ -347,7 +337,6 @@ export const PreBattleScreen: React.FC<PreBattleScreenProps> = ({
                             ) : (
                                 <span>{enemyIcon}</span>
                             )}
-                            <span style={{ position: 'absolute' }}>{enemyIcon}</span>
                         </div>
                         <div
                             style={{
@@ -474,10 +463,7 @@ export const PreBattleScreen: React.FC<PreBattleScreenProps> = ({
                     <motion.button
                         whileHover={{ scale: 1.03, boxShadow: '0 0 40px rgba(196,139,59,0.5)' }}
                         whileTap={{ scale: 0.97 }}
-                        onClick={() => {
-                            autoStartedRef.current = true;
-                            onStart();
-                        }}
+                        onClick={onStart}
                         style={{
                             flex: 1,
                             padding: '16px 48px',
@@ -496,19 +482,6 @@ export const PreBattleScreen: React.FC<PreBattleScreenProps> = ({
                         }}
                     >
                         ⚔️ НАЧАТЬ БОЙ
-                        {/* Счётчик автостарта */}
-                        <span
-                            style={{
-                                position: 'absolute',
-                                top: '4px',
-                                right: '8px',
-                                fontSize: '11px',
-                                opacity: 0.6,
-                                fontWeight: 700,
-                            }}
-                        >
-                            {countdown}с
-                        </span>
                     </motion.button>
                 </div>
             </motion.div>

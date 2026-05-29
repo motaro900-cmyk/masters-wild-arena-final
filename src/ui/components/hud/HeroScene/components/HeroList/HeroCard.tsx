@@ -224,7 +224,7 @@ export const HeroCard = ({
                                 }
                                 transition={{ duration: 1.8, repeat: Infinity }}
                                 whileHover={{ scale: 1.04 }}
-                                whileTap={{ scale: 0.96 }}
+                                whileTap={{ scale: 0.92 }}
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     onBuyClick();
@@ -352,7 +352,7 @@ export const HeroCard = ({
                             onClick();
                         }}
                         whileHover={{ scale: 1.03 }}
-                        whileTap={{ scale: 0.97 }}
+                        whileTap={{ scale: 0.92 }}
                         style={{
                             width: '100%',
                             padding: '13px',

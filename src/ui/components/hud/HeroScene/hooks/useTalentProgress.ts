@@ -4,7 +4,16 @@ import { TALENTS_CONFIG } from '../constants/talentsConfig';
 
 export const useTalentProgress = (heroId: string, talents: any, availablePoints: number, upgradeTalent: any) => {
     const handleUpgrade = (talent: any, branchId: string) => {
-        if (availablePoints <= 0) return;
+        const getTalentUpgradeCost = (tId: string): number => {
+            if (['atk_base', 'def_base', 'mas_base'].includes(tId)) return 1;
+            if (['atk_crit', 'atk_pen', 'def_res', 'def_eva', 'mas_spd', 'mas_focus'].includes(tId)) return 2;
+            if (['atk_ult', 'def_ult', 'mas_ult'].includes(tId)) return 3;
+            return 1;
+        };
+
+        const cost = getTalentUpgradeCost(talent.id);
+        if (availablePoints < cost) return;
+
         const currentLevel = talents[talent.id] || 0;
         if (currentLevel >= talent.max) return;
 

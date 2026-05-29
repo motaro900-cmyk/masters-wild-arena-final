@@ -1,0 +1,392 @@
+[
+    {
+        "id": "gen_mob_level_1",
+        "name": "Лесной Паук",
+        "level": 1,
+        "rarity": "COMMON",
+        "baseStats": {
+            "hp": 472,
+            "attack": 47,
+            "defense": 12,
+            "speed": 1.01,
+            "crit": 0.1
+        }
+    },
+    {
+        "id": "gen_mob_level_2",
+        "name": "Волк Обители",
+        "level": 2,
+        "rarity": "COMMON",
+        "baseStats": {
+            "hp": 544,
+            "attack": 54,
+            "defense": 14,
+            "speed": 1.02,
+            "crit": 0.1
+        }
+    },
+    {
+        "id": "gen_mob_level_3",
+        "name": "Пещерный Грифон",
+        "level": 3,
+        "rarity": "EPIC",
+        "baseStats": {
+            "hp": 616,
+            "attack": 62,
+            "defense": 15,
+            "speed": 1.03,
+            "crit": 0.1
+        }
+    },
+    {
+        "id": "gen_mob_level_4",
+        "name": "Болотная Пантера",
+        "level": 4,
+        "rarity": "COMMON",
+        "baseStats": {
+            "hp": 688,
+            "attack": 69,
+            "defense": 17,
+            "speed": 1.04,
+            "crit": 0.1
+        }
+    },
+    {
+        "id": "gen_mob_level_5",
+        "name": "🔥 БОСС: Хранитель Рощи",
+        "level": 5,
+        "rarity": "BOSS",
+        "baseStats": {
+            "hp": 1368,
+            "attack": 103,
+            "defense": 19,
+            "speed": 1.05,
+            "crit": 0.2
+        }
+    },
+    {
+        "id": "gen_mob_level_6",
+        "name": "Каменный Голем",
+        "level": 6,
+        "rarity": "EPIC",
+        "baseStats": {
+            "hp": 832,
+            "attack": 83,
+            "defense": 21,
+            "speed": 1.06,
+            "crit": 0.1
+        }
+    },
+    {
+        "id": "gen_mob_level_7",
+        "name": "Лесной Паук",
+        "level": 7,
+        "rarity": "COMMON",
+        "baseStats": {
+            "hp": 904,
+            "attack": 90,
+            "defense": 23,
+            "speed": 1.07,
+            "crit": 0.1
+        }
+    },
+    {
+        "id": "gen_mob_level_8",
+        "name": "Волк Обители",
+        "level": 8,
+        "rarity": "COMMON",
+        "baseStats": {
+            "hp": 976,
+            "attack": 98,
+            "defense": 24,
+            "speed": 1.08,
+            "crit": 0.1
+        }
+    },
+    {
+        "id": "gen_mob_level_9",
+        "name": "Пещерный Грифон",
+        "level": 9,
+        "rarity": "EPIC",
+        "baseStats": {
+            "hp": 1048,
+            "attack": 105,
+            "defense": 26,
+            "speed": 1.09,
+            "crit": 0.1
+        }
+    },
+    {
+        "id": "gen_mob_level_10",
+        "name": "🔥 БОСС: Болотная Пантера",
+        "level": 10,
+        "rarity": "BOSS",
+        "baseStats": {
+            "hp": 2016,
+            "attack": 151,
+            "defense": 28,
+            "speed": 1.1,
+            "crit": 0.2
+        }
+    },
+    {
+        "id": "gen_mob_level_11",
+        "name": "Хранитель Рощи",
+        "level": 11,
+        "rarity": "COMMON",
+        "baseStats": {
+            "hp": 1192,
+            "attack": 119,
+            "defense": 30,
+            "speed": 1.11,
+            "crit": 0.1
+        }
+    },
+    {
+        "id": "gen_mob_level_12",
+        "name": "Каменный Голем",
+        "level": 12,
+        "rarity": "EPIC",
+        "baseStats": {
+            "hp": 1264,
+            "attack": 126,
+            "defense": 32,
+            "speed": 1.12,
+            "crit": 0.1
+        }
+    },
+    {
+        "id": "gen_mob_level_13",
+        "name": "Лесной Паук",
+        "level": 13,
+        "rarity": "COMMON",
+        "baseStats": {
+            "hp": 1336,
+            "attack": 134,
+            "defense": 33,
+            "speed": 1.13,
+            "crit": 0.1
+        }
+    },
+    {
+        "id": "gen_mob_level_14",
+        "name": "Волк Обители",
+        "level": 14,
+        "rarity": "COMMON",
+        "baseStats": {
+            "hp": 1408,
+            "attack": 141,
+            "defense": 35,
+            "speed": 1.14,
+            "crit": 0.1
+        }
+    },
+    {
+        "id": "gen_mob_level_15",
+        "name": "🔥 БОСС: Пещерный Грифон",
+        "level": 15,
+        "rarity": "BOSS",
+        "baseStats": {
+            "hp": 2664,
+            "attack": 200,
+            "defense": 37,
+            "speed": 1.15,
+            "crit": 0.2
+        }
+    },
+    {
+        "id": "gen_mob_level_16",
+        "name": "Болотная Пантера",
+        "level": 16,
+        "rarity": "COMMON",
+        "baseStats": {
+            "hp": 1552,
+            "attack": 155,
+            "defense": 39,
+            "speed": 1.16,
+            "crit": 0.1
+        }
+    },
+    {
+        "id": "gen_mob_level_17",
+        "name": "Хранитель Рощи",
+        "level": 17,
+        "rarity": "COMMON",
+        "baseStats": {
+            "hp": 1624,
+            "attack": 162,
+            "defense": 41,
+            "speed": 1.17,
+            "crit": 0.1
+        }
+    },
+    {
+        "id": "gen_mob_level_18",
+        "name": "Каменный Голем",
+        "level": 18,
+        "rarity": "EPIC",
+        "baseStats": {
+            "hp": 1696,
+            "attack": 170,
+            "defense": 42,
+            "speed": 1.18,
+            "crit": 0.1
+        }
+    },
+    {
+        "id": "gen_mob_level_19",
+        "name": "Лесной Паук",
+        "level": 19,
+        "rarity": "COMMON",
+        "baseStats": {
+            "hp": 1768,
+            "attack": 177,
+            "defense": 44,
+            "speed": 1.19,
+            "crit": 0.1
+        }
+    },
+    {
+        "id": "gen_mob_level_20",
+        "name": "🔥 БОСС: Волк Обители",
+        "level": 20,
+        "rarity": "BOSS",
+        "baseStats": {
+            "hp": 3312,
+            "attack": 248,
+            "defense": 46,
+            "speed": 1.2,
+            "crit": 0.2
+        }
+    },
+    {
+        "id": "gen_mob_level_21",
+        "name": "Пещерный Грифон",
+        "level": 21,
+        "rarity": "EPIC",
+        "baseStats": {
+            "hp": 1912,
+            "attack": 191,
+            "defense": 48,
+            "speed": 1.21,
+            "crit": 0.1
+        }
+    },
+    {
+        "id": "gen_mob_level_22",
+        "name": "Болотная Пантера",
+        "level": 22,
+        "rarity": "COMMON",
+        "baseStats": {
+            "hp": 1984,
+            "attack": 198,
+            "defense": 50,
+            "speed": 1.22,
+            "crit": 0.1
+        }
+    },
+    {
+        "id": "gen_mob_level_23",
+        "name": "Хранитель Рощи",
+        "level": 23,
+        "rarity": "COMMON",
+        "baseStats": {
+            "hp": 2056,
+            "attack": 206,
+            "defense": 51,
+            "speed": 1.23,
+            "crit": 0.1
+        }
+    },
+    {
+        "id": "gen_mob_level_24",
+        "name": "Каменный Голем",
+        "level": 24,
+        "rarity": "EPIC",
+        "baseStats": {
+            "hp": 2128,
+            "attack": 213,
+            "defense": 53,
+            "speed": 1.24,
+            "crit": 0.1
+        }
+    },
+    {
+        "id": "gen_mob_level_25",
+        "name": "🔥 БОСС: Лесной Паук",
+        "level": 25,
+        "rarity": "BOSS",
+        "baseStats": {
+            "hp": 3960,
+            "attack": 297,
+            "defense": 55,
+            "speed": 1.25,
+            "crit": 0.2
+        }
+    },
+    {
+        "id": "gen_mob_level_26",
+        "name": "Волк Обители",
+        "level": 26,
+        "rarity": "COMMON",
+        "baseStats": {
+            "hp": 2272,
+            "attack": 227,
+            "defense": 57,
+            "speed": 1.26,
+            "crit": 0.1
+        }
+    },
+    {
+        "id": "gen_mob_level_27",
+        "name": "Пещерный Грифон",
+        "level": 27,
+        "rarity": "EPIC",
+        "baseStats": {
+            "hp": 2344,
+            "attack": 234,
+            "defense": 59,
+            "speed": 1.27,
+            "crit": 0.1
+        }
+    },
+    {
+        "id": "gen_mob_level_28",
+        "name": "Болотная Пантера",
+        "level": 28,
+        "rarity": "COMMON",
+        "baseStats": {
+            "hp": 2416,
+            "attack": 242,
+            "defense": 60,
+            "speed": 1.28,
+            "crit": 0.1
+        }
+    },
+    {
+        "id": "gen_mob_level_29",
+        "name": "Хранитель Рощи",
+        "level": 29,
+        "rarity": "COMMON",
+        "baseStats": {
+            "hp": 2488,
+            "attack": 249,
+            "defense": 62,
+            "speed": 1.29,
+            "crit": 0.1
+        }
+    },
+    {
+        "id": "gen_mob_level_30",
+        "name": "🔥 БОСС: Каменный Голем",
+        "level": 30,
+        "rarity": "BOSS",
+        "baseStats": {
+            "hp": 4608,
+            "attack": 346,
+            "defense": 64,
+            "speed": 1.3,
+            "crit": 0.2
+        }
+    }
+]

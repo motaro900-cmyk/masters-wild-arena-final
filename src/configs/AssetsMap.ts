@@ -10,13 +10,13 @@ const rawAssetsMap = {
         PANEL_PARCHMENT: '/assets/images/ui/btn_panel_mis12c.webp',
         PANEL_TASK: '/assets/images/ui/panel_task.webp',
         PANEL_PROFILE: '/assets/images/ui/panel_profile.png',
-        PROFILE_PANEL_BASE: '/assets/images/ui/profilepanel.png',
+        PROFILE_PANEL_BASE: '/assets/images/ui/profilepanel.webp', // was .png
         AVATAR_FRAME_NEW: '/assets/images/ui/avatar_frame.png',
-        VIP_PLAQUE: '/assets/images/ui/vip.png',
-        LVL_BADGE: '/assets/images/ui/lvl.png',
+        VIP_PLAQUE: '/assets/images/ui/vip.webp', // was .png
+        LVL_BADGE: '/assets/images/ui/lvl.webp', // was .png
         EXP_BAR_BG: '/assets/images/ui/exp.png',
-        ICON_SETTINGS_PROFILE: '/assets/images/ui/settingprofile.png',
-        ICON_CROWN: '/assets/images/ui/ICON_CROWN.png',
+        ICON_SETTINGS_PROFILE: '/assets/images/ui/settingprofile.webp', // was .png
+        ICON_CROWN: '/assets/images/ui/ICON_CROWN.webp', // was .png
         HUB_BASE: '/assets/images/ui/hub_panel_base.png',
         HUB_FRAME: '/assets/images/ui/hub_avatar_frame.png',
         HUB_XP_EMPTY: '/assets/images/ui/hub_xp_bar_empty.png',
@@ -44,11 +44,13 @@ const rawAssetsMap = {
         ICON_ALMAZ_FULL: '/assets/images/ui/icons/almaz.webp',
         ICON_ENERGY_FULL: '/assets/images/ui/icons/energy.webp',
 
-        // Сундук подарка (Новый!)
-        ICON_DAILY_CHEST: '/assets/images/ui/iconrgy.webp',
+        // Иконки сундуков / наград
+        ICON_DAILY_CHEST: '/assets/images/ui/gift_premium.webp', // was daily_gift_v2.webp
+        ICON_SEASON_CHEST: '/assets/images/ui/icons/season_chest.webp', // was .png
+        ICON_SEASON_RATE: '/assets/images/ui/Seasonrate.png',
         ICON_PROMO: '/assets/images/ui/icons/promo_coin.webp',
         ICON_XP: '/assets/images/ui/exp_icon.png',
-        TROPHY_PREMIUM: '/assets/images/ui/trophy_premium.png',
+        TROPHY_PREMIUM: '/assets/images/ui/trophy_premium.webp', // was .png
         BTN_BATTLE_GROUP: '/assets/images/ui/battle_btn_group.webp',
 
         // Иконки HUD
@@ -83,19 +85,20 @@ const rawAssetsMap = {
         EQUIPMENT_PANEL: '/assets/images/ui/equipment_panel.webp',
         HERO_PEDESTAL: '/assets/images/ui/hero_pedestal.webp',
 
-        // Blueprint icons
-        BLUEPRINT_HELMET: '/assets/blueprint_helmet.webp',
-        BLUEPRINT_ARMOR: '/assets/blueprint_armor.webp',
-        BLUEPRINT_WEAPON: '/assets/blueprint_weapon.webp',
-        BLUEPRINT_SHIELD: '/assets/blueprint_shield.webp',
-        BLUEPRINT_SHOULDERS: '/assets/blueprint_shoulders.png',
-        BLUEPRINT_PANTS: '/assets/blueprint_pants.png',
-        BLUEPRINT_BOOTS: '/assets/blueprint_boots.png',
+        // Blueprint icons (moved to /assets/images/ui/blueprints/)
+        BLUEPRINT_HELMET: '/assets/images/ui/blueprints/blueprint_helmet.webp',
+        BLUEPRINT_ARMOR: '/assets/images/ui/blueprints/blueprint_armor.webp',
+        BLUEPRINT_WEAPON: '/assets/images/ui/blueprints/blueprint_weapon.webp',
+        BLUEPRINT_SHIELD: '/assets/images/ui/blueprints/blueprint_shield.webp',
+        BLUEPRINT_SHOULDERS: '/assets/images/ui/blueprints/blueprint_shoulders.png',
+        BLUEPRINT_PANTS: '/assets/images/ui/blueprints/blueprint_pants.png',
+        BLUEPRINT_BOOTS: '/assets/images/ui/blueprints/blueprint_boots.png',
     },
     BACKGROUNDS: {
         MAIN_MENU: '/assets/images/backgrounds/bg_main.webp',
         MAIN_MENU_MOBILE: '/assets/images/backgrounds/bg_main_mobile.webp',
-        FORGE: '/assets/images/backgrounds/bg_forge.png',
+        FORGE: '/assets/images/backgrounds/bg_forge.webp',
+        FORGE_MOBILE: '/assets/images/backgrounds/bg_forge_mobile.webp',
         BATTLE_ARENA: '/assets/images/backgrounds/battle/bg_1.webp',
         BATTLE_ARENAS: [
             '/assets/images/backgrounds/battle/bg_1.webp',
@@ -114,37 +117,40 @@ const rawAssetsMap = {
             '/assets/images/backgrounds/battle/bg_6_mobile.webp',
         ],
         SHOP: '/assets/images/ui/Shop.webp',
-        HEROES_HALL: '/assets/images/backgrounds/зал героев.webp',
-        HEROES_HALL_MOBILE: '/assets/images/backgrounds/зал героев_mobile.webp',
+        HEROES_HALL: '/assets/images/backgrounds/bg_heroes_hall.webp', // was кириллица
+        HEROES_HALL_MOBILE: '/assets/images/backgrounds/bg_heroes_hall_mobile.webp', // was кириллица
         SHOP_NAV_BG: '/assets/images/ui/Shoping.webp',
-        SHOP_GRID_FRAME: '/assets/images/ui/ChatGPT Image 5  4otoom-port.webp',
+        SHOP_GRID_FRAME: '/assets/images/ui/btn_panel_mis12c.webp', // was ChatGPT-мусор
         SHOP_ITEM_FRAME: '/assets/images/ui/Shop phone.webp',
         SHOP_BANNER_RED: '/assets/images/ui/icons/banner_red_tab.webp',
-        SHOP_BANNER_BLACK: '/assets/images/ui/icons/ChatGPT Imaport.webp',
+        SHOP_BANNER_BLACK: '/assets/images/ui/icons/promo_coin.webp', // was ChatGPT Imaport.webp
         SHOP_DIVIDER: '/assets/images/ui/power_icon.webp',
-        BATTLE_PASS: '/assets/images/backgrounds/боевойпропуска.webp',
-        BATTLE_PASS_MOBILE: '/assets/images/backgrounds/боевойпропуска_mobile.webp',
+        BATTLE_PASS: '/assets/images/backgrounds/bg_battle_pass.webp', // was кириллица
+        BATTLE_PASS_MOBILE: '/assets/images/backgrounds/bg_battle_pass_mobile.webp', // was кириллица
         CITY_HUB: '/assets/images/backgrounds/bg_city_hub.webp',
         CITY_HUB_MOBILE: '/assets/images/backgrounds/bg_city_hub_mobile.webp',
-        RANKED_LOBBY: '/assets/images/backgrounds/bg_ranked_lobby.jpg',
+        RANKED_LOBBY: '/assets/images/backgrounds/bg_ranked_lobby.webp',
+        RANKED_LOBBY_MOBILE: '/assets/images/backgrounds/bg_ranked_lobby_mobile.webp',
+        SANCTUARY: '/assets/images/backgrounds/gemini-2026-05-22-001.webp',
+        SANCTUARY_MOBILE: '/assets/images/backgrounds/gemini-2026-05-22-001_mobile.webp',
     },
     CHARACTERS: {
-        PANDA_AVATAR: '/assets/images/avatars/панда.webp',
-        PANDA_FULL: '/assets/images/avatars/панда.webp',
-        PANDA_ATLAS: '/assets/characters/panda/pandapanda_atlas.png',
+        PANDA_AVATAR: '/assets/images/avatars/panda.webp', // was кириллица
+        PANDA_FULL: '/assets/images/avatars/panda.webp', // was кириллица
+        PANDA_ATLAS: '/assets/characters/panda/panda_poses.png.png',
         SKINS: {
-            DEFAULT: '/assets/characters/panda/pandapanda_atlas.png',
+            DEFAULT: '/assets/characters/panda/panda_poses.png.png',
             FROST: '/assets/characters/panda/frost_panda_atlas.png',
         },
     },
     ITEMS: {
-        MOON_SWORD: '/assets/images/items/moon_sword.webp',
-        MOON_SWORD_PREMIUM: '/assets/images/items/weapon_moon_sword.webp',
-        AXE: '/assets/images/items/axe.webp',
-        VOID_STAFF: '/assets/images/items/void_staff.webp',
-        BONE_ARMOR: '/assets/images/items/armor_bone.webp',
-        LION_ARMOR: '/assets/images/items/armor_lion.webp',
-        PHOENIX_ARMOR: '/assets/images/items/armor_phoenix.webp',
+        MOON_SWORD: '/assets/images/items/weapons/moon_sword.webp',
+        MOON_SWORD_PREMIUM: '/assets/images/items/weapons/moon_sword.webp',
+        AXE: '/assets/images/items/weapons/axe.webp',
+        VOID_STAFF: '/assets/images/items/weapons/void_staff.webp',
+        BONE_ARMOR: '/assets/images/items/armor/armor_bone.webp',
+        LION_ARMOR: '/assets/images/items/armor/armor_lion.webp',
+        PHOENIX_ARMOR: '/assets/images/items/armor/armor_phoenix.webp',
     },
     AUDIO: {
         MUSIC_MAIN: '/assets/audio/music/Dawn_of_the_Siege.mp3',
@@ -160,11 +166,11 @@ const rawAssetsMap = {
         ],
         SFX_CLICK: '/assets/audio/sfx/click.mp3',
         SFX_BUY: '/assets/audio/sfx/buy_success.mp3',
-        SFX_ERROR: '/assets/audio/sfx/click.mp3', // Fallback
-        SFX_LEVEL_UP: '/assets/audio/sfx/click.mp3', // Fallback
-        SFX_EQUIP: '/assets/audio/sfx/click.mp3', // Fallback
-        SFX_ATTACK: '/assets/audio/sfx/click.mp3', // Fallback
-        SFX_HIT: '/assets/audio/sfx/impact_hit.mp3', // Exists!
+        SFX_ERROR: '/assets/audio/sfx/click.mp3',
+        SFX_LEVEL_UP: '/assets/audio/sfx/click.mp3',
+        SFX_EQUIP: '/assets/audio/sfx/click.mp3',
+        SFX_ATTACK: '/assets/audio/sfx/click.mp3',
+        SFX_HIT: '/assets/audio/sfx/impact_hit.mp3',
     },
     SHEETS: {
         BOOTS: '/assets/images/sheets/boots_sprite.webp',

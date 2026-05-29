@@ -1,10 +1,15 @@
+/* eslint-disable react-refresh/only-export-components */
 import React, { useState, useMemo } from 'react';
-import { motion } from 'framer-motion';
 import { useGameStore } from '../../../store/useGameStore';
 import { ITEMS_DATABASE, calculateItemPower, ItemRarity } from '../../../game/configs/ItemsConfig';
 import { HEROES_DB } from '../../../configs/HeroesConfig';
-import { UnderDevelopmentModal, ConfirmDialog } from './SharedUI';
-import { useDraggable } from '@dnd-kit/core';
+import { ConfirmDialog } from './SharedUI';
+import { AssetsMap } from '../../../configs/AssetsMap';
+import { audioService } from '../../../services/AudioService';
+import { DraggableItem } from './Inventory/DraggableItem';
+import { ItemTooltip } from './Inventory/ItemTooltip';
+import { ChestOpeningOverlay } from './Inventory/ChestOpeningOverlay';
+
 
 interface InventoryPanelProps {
     onItemClick?: (id: string) => void;
@@ -12,7 +17,7 @@ interface InventoryPanelProps {
     setGlobalHoveredItem?: (id: string | null, x: number, y: number) => void;
 }
 
-const RARITY_COLORS: any = {
+export const RARITY_COLORS: any = {
     [ItemRarity.COMMON]: {
         border: '#a0a0a0',
         glow: 'rgba(160,160,160,0.2)',
@@ -45,7 +50,7 @@ const RARITY_COLORS: any = {
     },
 };
 
-const rarityTranslation: Record<string, string> = {
+export const rarityTranslation: Record<string, string> = {
     COMMON: 'ОБЫЧНЫЙ',
     RARE: 'РЕДКИЙ',
     EPIC: 'ЭПИЧЕСКИЙ',
@@ -54,10 +59,25 @@ const rarityTranslation: Record<string, string> = {
 };
 
 export const InventoryPanel: React.FC<InventoryPanelProps> = ({ mode = 'FULL', onItemClick, setGlobalHoveredItem }) => {
-    const { inventory, sellItem, equippedItems, getHeroByItemId, selectedHeroId } = useGameStore();
-    const [activeTab, setActiveTab] = useState<'ALL' | 'EQUIPMENT' | 'POTIONS'>('ALL');
+    const {
+        inventory,
+        sellItem,
+        equippedItems,
+        getHeroByItemId,
+        selectedHeroId,
+        openSeasonChest,
+        coal,
+        steel_bars,
+        runic_shards,
+        ancient_compass,
+        astral_crystal,
+        void_sphere,
+        golden_sprout,
+        dragon_scale,
+        lava_heart,
+    } = useGameStore();
+    const [activeTab, setActiveTab] = useState<'ALL' | 'EQUIPMENT' | 'POTIONS' | 'RESOURCES'>('ALL');
     const [sortBy, setSortBy] = useState<'POWER' | 'RARITY'>('POWER');
-    const [devModalOpen, setDevModalOpen] = useState(false);
     const [hoveredItem, setHoveredItem] = useState<{ id: string; x: number; y: number } | null>(null);
     const containerRef = React.useRef<HTMLDivElement>(null);
 
@@ -75,16 +95,69 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ mode = 'FULL', o
         variant: 'normal',
     });
 
+    const [openingResult, setOpeningResult] = useState<any | null>(null);
+    const [isOpening, setIsOpening] = useState(false);
+    const [showRewardCard, setShowRewardCard] = useState(false);
+    const [showFlash, setShowFlash] = useState(false);
+
+    const handleOpenChest = () => {
+        if (isOpening) return;
+        setIsOpening(true);
+        setShowRewardCard(false);
+        setShowFlash(false);
+        setOpeningResult(null);
+
+        audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
+
+        const result = openSeasonChest();
+
+        setTimeout(() => {
+            setShowFlash(true);
+            setOpeningResult(result);
+            audioService.playSFX(AssetsMap.AUDIO.SFX_BUY);
+
+            setTimeout(() => {
+                setShowFlash(false);
+                setShowRewardCard(true);
+            }, 150);
+        }, 1500);
+    };
+
     // Лимит инвентаря (заглушка на 100)
     const MAX_SLOTS = 100;
 
     const filteredItems = useMemo(() => {
+        // Virtual resource items
+        const resourceItems = [
+            { id: 'coal', amount: coal || 0, isResource: true },
+            { id: 'steel_bar', amount: steel_bars || 0, isResource: true },
+            { id: 'runic_shard', amount: runic_shards || 0, isResource: true },
+            { id: 'ancient_compass', amount: ancient_compass || 0, isResource: true },
+            { id: 'astral_crystal', amount: astral_crystal || 0, isResource: true },
+            { id: 'void_sphere', amount: void_sphere || 0, isResource: true },
+            { id: 'golden_sprout', amount: golden_sprout || 0, isResource: true },
+            { id: 'dragon_scale', amount: dragon_scale || 0, isResource: true },
+            { id: 'lava_heart', amount: lava_heart || 0, isResource: true },
+        ].filter((r) => r.amount > 0);
+
+        if (activeTab === 'RESOURCES') {
+            return resourceItems;
+        }
+
         let items = [...inventory];
 
         if (activeTab === 'EQUIPMENT') {
             items = items.filter((item) => (ITEMS_DATABASE[item.id] as any)?.mainTab === 'ARSENAL');
         } else if (activeTab === 'POTIONS') {
-            items = items.filter((item) => (ITEMS_DATABASE[item.id] as any)?.mainTab === 'ALCHEMY');
+            items = items.filter(
+                (item) =>
+                    (ITEMS_DATABASE[item.id] as any)?.mainTab === 'ALCHEMY' &&
+                    (ITEMS_DATABASE[item.id] as any)?.subTab !== 'RESOURCES',
+            );
+        } else if (activeTab === 'ALL') {
+            // Include normal items + resources when looking at everything
+            const normalItems = items.filter((item) => (ITEMS_DATABASE[item.id] as any)?.subTab !== 'RESOURCES');
+            items = [...normalItems, ...resourceItems];
         }
 
         const rarityOrder: Record<string, number> = { COMMON: 0, RARE: 1, EPIC: 2, MYTHIC: 3, LEGENDARY: 4 };
@@ -95,12 +168,27 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ mode = 'FULL', o
             if (!dataA || !dataB) return 0;
 
             if (sortBy === 'POWER') {
-                return calculateItemPower(dataB) - calculateItemPower(dataA);
+                const powerA = a.isResource ? 0 : calculateItemPower(dataA);
+                const powerB = b.isResource ? 0 : calculateItemPower(dataB);
+                return powerB - powerA;
             } else {
                 return rarityOrder[dataB.rarity] - rarityOrder[dataA.rarity];
             }
         });
-    }, [inventory, activeTab, sortBy]);
+    }, [
+        inventory,
+        activeTab,
+        sortBy,
+        coal,
+        steel_bars,
+        runic_shards,
+        ancient_compass,
+        astral_crystal,
+        void_sphere,
+        golden_sprout,
+        dragon_scale,
+        lava_heart,
+    ]);
 
     const isItemEquipped = (itemId: string) => {
         return Object.values(equippedItems || {}).some((id: any) => id === itemId);
@@ -124,6 +212,8 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ mode = 'FULL', o
         });
     };
 
+
+
     return (
         <div
             ref={containerRef}
@@ -137,12 +227,13 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ mode = 'FULL', o
             }}
         >
             {/* ТАБЫ И ИНФО */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-                <div style={{ display: 'flex', gap: '8px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <div style={{ display: 'flex', gap: '6px', width: '100%' }}>
                     {[
                         { id: 'ALL', label: 'ВСЁ' },
                         { id: 'EQUIPMENT', label: 'СНАРЯЖЕНИЕ' },
                         { id: 'POTIONS', label: 'АЛХИМИЯ' },
+                        { id: 'RESOURCES', label: 'РЕСУРСЫ' },
                     ].map((tab) => (
                         <button
                             key={tab.id}
@@ -150,7 +241,8 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ mode = 'FULL', o
                                 setActiveTab(tab.id as any);
                             }}
                             style={{
-                                padding: '8px 16px',
+                                flex: 1,
+                                padding: '8px 4px',
                                 borderRadius: '8px',
                                 border: '1px solid rgba(240,192,64,0.2)',
                                 background: activeTab === tab.id ? 'rgba(240,192,64,0.1)' : 'transparent',
@@ -159,6 +251,8 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ mode = 'FULL', o
                                 fontWeight: 800,
                                 cursor: 'pointer',
                                 fontFamily: "'Cinzel', serif",
+                                textAlign: 'center',
+                                whiteSpace: 'nowrap',
                             }}
                         >
                             {tab.label}
@@ -166,29 +260,47 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ mode = 'FULL', o
                     ))}
                 </div>
 
-                <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                    <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', fontWeight: 700 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                    <div
+                        style={{
+                            fontSize: '11px',
+                            color: 'rgba(255,255,255,0.5)',
+                            fontWeight: 700,
+                            fontFamily: "'Cinzel', serif",
+                            letterSpacing: '1.2px',
+                        }}
+                    >
                         СУМКА:{' '}
                         <span style={{ color: inventory.length > MAX_SLOTS * 0.8 ? '#ef4444' : '#fff' }}>
                             {inventory.length}/{MAX_SLOTS}
                         </span>
                     </div>
-                    <select
-                        value={sortBy}
-                        onChange={(e) => setSortBy(e.target.value as any)}
+                    <button
+                        onClick={() => {
+                            setSortBy(sortBy === 'POWER' ? 'RARITY' : 'POWER');
+                            audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK || 'SFX_CLICK');
+                        }}
                         style={{
-                            background: 'rgba(0,0,0,0.5)',
+                            background: 'rgba(240,192,64,0.05)',
                             color: '#f0c040',
-                            border: '1px solid rgba(240,192,64,0.2)',
-                            borderRadius: '6px',
-                            padding: '4px 10px',
+                            border: '1px solid rgba(240,192,64,0.25)',
+                            borderRadius: '8px',
+                            padding: '6px 12px',
                             fontSize: '10px',
+                            fontWeight: 900,
+                            cursor: 'pointer',
                             fontFamily: "'Cinzel', serif",
+                            letterSpacing: '1px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            boxShadow: '0 2px 6px rgba(0,0,0,0.2)',
+                            transition: 'all 0.2s ease',
                         }}
                     >
-                        <option value="POWER">ПО МОЩИ</option>
-                        <option value="RARITY">ПО РЕДКОСТИ</option>
-                    </select>
+                        <span>⇅</span>
+                        <span>{sortBy === 'POWER' ? 'ПО МОЩИ' : 'ПО РЕДКОСТИ'}</span>
+                    </button>
                 </div>
             </div>
 
@@ -227,6 +339,10 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ mode = 'FULL', o
                             isEquippedOnOther={isEquippedOnOther}
                             equippedHeroId={equippedHeroId}
                             onItemClick={(id: string) => {
+                                if (id === 'season_chest') {
+                                    handleOpenChest();
+                                    return;
+                                }
                                 if (isEquippedOnOther) {
                                     setConfirmData({
                                         isOpen: true,
@@ -284,12 +400,6 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ mode = 'FULL', o
                 </button>
             </div>
 
-            <UnderDevelopmentModal
-                isOpen={devModalOpen}
-                onClose={() => setDevModalOpen(false)}
-                title="СЕКРЕТЫ АЛХИМИИ"
-            />
-
             <ConfirmDialog
                 isOpen={confirmData.isOpen}
                 onClose={() => setConfirmData({ ...confirmData, isOpen: false })}
@@ -300,386 +410,17 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ mode = 'FULL', o
             />
 
             {hoveredItem && <ItemTooltip item={hoveredItem} />}
-        </div>
-    );
-};
 
-const ItemTooltip = ({ item }: { item: { id: string; x: number; y: number } }) => {
-    const { inventory } = useGameStore();
-    const invItem = inventory.find((i: any) => String(i.id) === item.id);
-    const currentLevel = invItem?.level || 1;
-
-    const getStatMultiplier = (lvl: number) => {
-        if (lvl === 1) return 1.0;
-        if (lvl === 2) return 1.15;
-        if (lvl === 3) return 1.35;
-        return 1.0;
-    };
-
-    const mult = getStatMultiplier(currentLevel);
-
-    const data = ITEMS_DATABASE[item.id] as any;
-    if (!data) return null;
-
-    const rarity = RARITY_COLORS[data.rarity || 'COMMON'];
-    const tooltipWidth = 280;
-    const isTooRight = item.x > 500;
-
-    return (
-        <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            style={{
-                position: 'absolute',
-                left: isTooRight ? item.x - tooltipWidth - 20 : item.x + 20,
-                top: item.y + 20,
-                zIndex: 10000,
-                width: `${tooltipWidth}px`,
-                background: 'rgba(15, 10, 5, 0.95)',
-                backdropFilter: 'blur(10px)',
-                borderRadius: '12px',
-                border: `2px solid ${rarity.border}`,
-                boxShadow: `0 10px 30px rgba(0,0,0,0.8), 0 0 15px ${rarity.glow}`,
-                padding: '20px',
-                pointerEvents: 'none',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '12px',
-            }}
-        >
-            <div style={{ borderBottom: `1px solid ${rarity.border}44`, paddingBottom: '10px' }}>
-                <div
-                    style={{
-                        color: rarity.color,
-                        fontSize: '10px',
-                        fontWeight: 900,
-                        letterSpacing: '2px',
-                        fontFamily: "'Cinzel', serif",
-                        marginBottom: '4px',
-                    }}
-                >
-                    {rarityTranslation[data.rarity] || data.rarity} {currentLevel > 1 && `(УР. ${currentLevel})`}
-                </div>
-                <div
-                    style={{
-                        color: '#fff',
-                        fontSize: '18px',
-                        fontWeight: 900,
-                        fontFamily: "'Cinzel', serif",
-                        textTransform: 'uppercase',
-                    }}
-                >
-                    {data.name}
-                </div>
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                {data.attackBonus && (
-                    <StatRow
-                        label="СИЛА АТАКИ"
-                        value={`+${Math.round(data.attackBonus * mult)}`}
-                        icon="⚔️"
-                        color="#f97316"
-                    />
-                )}
-                {data.defenseBonus && (
-                    <StatRow
-                        label="ЗАЩИТА"
-                        value={`+${Math.round(data.defenseBonus * mult)}`}
-                        icon="🛡️"
-                        color="#3b82f6"
-                    />
-                )}
-                {data.hpBonus && (
-                    <StatRow label="ЗДОРОВЬЕ" value={`+${Math.round(data.hpBonus * mult)}`} icon="❤️" color="#ef4444" />
-                )}
-                {(data.critChance || data.critBonus) && (
-                    <StatRow
-                        label="КРИТ. ШАНС"
-                        value={`+${Math.round((data.critChance || data.critBonus) * 100 * mult)}%`}
-                        icon="🎯"
-                        color="#a855f7"
-                    />
-                )}
-                {(data.attackSpeed || data.speedBonus) && (
-                    <StatRow
-                        label="СКОРОСТЬ"
-                        value={`+${((data.attackSpeed || data.speedBonus) * mult).toFixed(1)}`}
-                        icon="⚡"
-                        color="#fcd34d"
-                    />
-                )}
-            </div>
-
-            {data.desc && (
-                <div
-                    style={{
-                        color: 'rgba(255,255,255,0.6)',
-                        fontSize: '11px',
-                        lineHeight: '1.4',
-                        fontStyle: 'italic',
-                        borderTop: '1px solid rgba(255,255,255,0.1)',
-                        paddingTop: '10px',
-                        marginTop: '5px',
-                    }}
-                >
-                    "{data.desc}"
-                </div>
-            )}
-
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '5px' }}>
-                <div style={{ color: '#f0c040', fontSize: '10px', fontWeight: 900 }}>
-                    МОЩЬ: {Math.round(calculateItemPower(data) * mult)}
-                </div>
-                {data.priceGold && (
-                    <div
-                        style={{
-                            color: 'rgba(255,255,255,0.4)',
-                            fontSize: '10px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '4px',
-                        }}
-                    >
-                        ЦЕНА: {data.priceGold} 🪙
-                    </div>
-                )}
-            </div>
-        </motion.div>
-    );
-};
-
-const StatRow = ({ label, value, icon, color }: any) => (
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ fontSize: '14px' }}>{icon}</span>
-            <span style={{ color: 'rgba(255,255,255,0.5)', fontWeight: 700 }}>{label}</span>
-        </div>
-        <span style={{ color: color, fontWeight: 900 }}>{value}</span>
-    </div>
-);
-
-const DraggableItem = ({
-    item,
-    data,
-    isEquippedOnCurrent,
-    isEquippedOnOther,
-    equippedHeroId,
-    rarity,
-    onItemClick,
-    setGlobalHoveredItem,
-}: any) => {
-    const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
-        id: item.id,
-        data: item,
-    });
-
-    return (
-        <motion.div
-            whileHover={{
-                scale: 1.05,
-                zIndex: 10,
-                boxShadow: `0 0 25px ${rarity.glow}, 0 10px 30px rgba(0,0,0,0.5)`,
-            }}
-            whileTap={{ scale: 0.95 }}
-            onMouseMove={(e: any) => setGlobalHoveredItem?.(item.id, e.clientX, e.clientY)}
-            onMouseEnter={(e: any) => setGlobalHoveredItem?.(item.id, e.clientX, e.clientY)}
-            onMouseLeave={() => setGlobalHoveredItem?.(null, 0, 0)}
-            style={{
-                background: rarity.bg,
-                borderRadius: '8px',
-                border: `2px solid ${isEquippedOnCurrent ? '#f0c040' : rarity.border}`,
-                position: 'relative',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                boxShadow: isEquippedOnCurrent
-                    ? `0 0 15px rgba(240,192,64,0.3), 0 0 10px ${rarity.glow}`
-                    : `0 4px 10px rgba(0,0,0,0.3), 0 0 5px ${rarity.glow}`,
-                cursor: 'pointer',
-                transition: 'border-color 0.2s',
-                opacity: isDragging ? 0.4 : 1,
-            }}
-        >
-            <motion.div
-                initial={{ opacity: 0 }}
-                whileHover={{ opacity: 1 }}
-                style={{
-                    position: 'absolute',
-                    inset: 0,
-                    background: 'rgba(0,0,0,0.6)',
-                    backdropFilter: 'blur(2px)',
-                    borderRadius: '8px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    zIndex: 20,
-                    pointerEvents: 'none',
-                }}
-            >
-                <div
-                    style={{
-                        background: isEquippedOnCurrent ? '#ef4444' : '#f0c040',
-                        color: '#000',
-                        fontSize: '9px',
-                        fontWeight: 900,
-                        padding: '4px 8px',
-                        borderRadius: '4px',
-                        fontFamily: "'Cinzel', serif",
-                        boxShadow: '0 4px 10px rgba(0,0,0,0.5)',
-                        pointerEvents: 'auto',
-                    }}
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        onItemClick?.(item.id);
-                    }}
-                >
-                    {isEquippedOnCurrent ? 'СНЯТЬ' : 'НАДЕТЬ'}
-                </div>
-            </motion.div>
-
-            <div
-                ref={setNodeRef}
-                {...listeners}
-                {...attributes}
-                style={{
-                    position: 'absolute',
-                    inset: 0,
-                    zIndex: 5,
-                    cursor: isDragging ? 'grabbing' : 'grab',
+            <ChestOpeningOverlay
+                isOpening={isOpening}
+                showRewardCard={showRewardCard}
+                openingResult={openingResult}
+                showFlash={showFlash}
+                onClose={() => {
+                    setIsOpening(false);
+                    setShowRewardCard(false);
                 }}
             />
-
-            {data.spriteClass ? (
-                <div
-                    className={data.spriteClass}
-                    style={{
-                        width: '80px',
-                        height: '80px',
-                        opacity: isEquippedOnOther ? 0.6 : 1,
-                        pointerEvents: 'none',
-                        zIndex: 1,
-                    }}
-                />
-            ) : (
-                <img
-                    src={data.image}
-                    style={{
-                        width: '70%',
-                        height: '70%',
-                        objectFit: 'contain',
-                        opacity: isEquippedOnOther ? 0.6 : 1,
-                        pointerEvents: 'none',
-                        zIndex: 1,
-                    }}
-                    alt=""
-                />
-            )}
-
-            {isEquippedOnCurrent && (
-                <div
-                    style={{
-                        position: 'absolute',
-                        top: '-5px',
-                        right: '-5px',
-                        width: '20px',
-                        height: '20px',
-                        background: '#f0c040',
-                        borderRadius: '50%',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontSize: '10px',
-                        color: '#000',
-                        fontWeight: 900,
-                        border: '2px solid #1a1008',
-                        pointerEvents: 'none',
-                        zIndex: 10,
-                    }}
-                >
-                    ✔
-                </div>
-            )}
-
-            {isEquippedOnOther && (
-                <div
-                    style={{
-                        position: 'absolute',
-                        top: '-5px',
-                        right: '-5px',
-                        width: '24px',
-                        height: '24px',
-                        background: '#1a1008',
-                        borderRadius: '50%',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        border: '1px solid #ef4444',
-                        overflow: 'hidden',
-                        pointerEvents: 'none',
-                    }}
-                    title={`Надето на: ${equippedHeroId}`}
-                >
-                    <img
-                        src={HEROES_DB.find((h) => h.id === equippedHeroId)?.image}
-                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                        alt=""
-                    />
-                    <div style={{ position: 'absolute', inset: 0, background: 'rgba(239,68,68,0.3)' }} />
-                </div>
-            )}
-
-            <div
-                style={{
-                    position: 'absolute',
-                    bottom: '2px',
-                    right: '4px',
-                    fontSize: '9px',
-                    fontWeight: 900,
-                    color: '#f0c040',
-                    opacity: 0.8,
-                    pointerEvents: 'none',
-                }}
-            >
-                {Math.round(calculateItemPower(data) * (item.level === 3 ? 1.35 : item.level === 2 ? 1.15 : 1.0))}
-            </div>
-
-            {/* УРОВЕНЬ ПРЕДМЕТА (L1, L2, L3) */}
-            {item.level && item.level > 0 && (
-                <div
-                    style={{
-                        position: 'absolute',
-                        bottom: '2px',
-                        left: '4px',
-                        fontSize: '10px',
-                        fontWeight: 900,
-                        color: '#f0c040',
-                        textShadow: '0 1px 3px #000',
-                        pointerEvents: 'none',
-                        zIndex: 10,
-                    }}
-                >
-                    L{item.level}
-                </div>
-            )}
-
-            {/* СТАК (для зелий) */}
-            {item.amount > 1 && (
-                <div
-                    style={{
-                        position: 'absolute',
-                        top: '2px',
-                        left: '4px',
-                        fontSize: '10px',
-                        fontWeight: 900,
-                        color: '#fff',
-                        textShadow: '0 1px 2px #000',
-                        pointerEvents: 'none',
-                    }}
-                >
-                    x{item.amount}
-                </div>
-            )}
-        </motion.div>
+        </div>
     );
 };

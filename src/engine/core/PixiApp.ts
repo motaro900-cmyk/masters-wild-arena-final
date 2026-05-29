@@ -132,14 +132,14 @@ export class PixiApp {
 
                 // Add brightness filter to UI layer
                 const brightnessFilter = new PIXI.ColorMatrixFilter();
-                brightnessFilter.brightness(1.05, false);
+                brightnessFilter.brightness(1.0, false);
                 this._uiLayer.filters = [brightnessFilter];
 
                 // GPU color grading via PIXI ColorMatrixFilter — single GLSL pass, zero CPU cost
                 const colorGrade = new PIXI.ColorMatrixFilter();
-                colorGrade.contrast(0.12, false);
-                colorGrade.saturate(0.24, false);
-                colorGrade.brightness(1.02, false);
+                colorGrade.contrast(0.05, false);
+                colorGrade.saturate(0.15, false);
+                colorGrade.brightness(0.96, false);
                 this.pixiApp.stage.filters = [colorGrade];
 
                 this.pixiApp.ticker.start();

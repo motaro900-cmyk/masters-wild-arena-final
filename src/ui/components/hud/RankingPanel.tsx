@@ -89,7 +89,7 @@ export const RankingPanel: React.FC<RankingPanelProps> = ({ onClose, onStartSear
                                 {rating} / {nextRankTrophies}
                             </span>
                             <img
-                                src={resolveAssetPath('/assets/images/ui/trophy_premium.png')}
+                                src={resolveAssetPath('/assets/images/ui/trophy_premium.webp')}
                                 alt="trophy"
                                 style={{ width: '24px', height: '24px', objectFit: 'contain' }}
                             />

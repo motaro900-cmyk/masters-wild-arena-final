@@ -3,7 +3,7 @@ export const TALENTS_CONFIG = [
         id: 'attack',
         title: 'АТАКА',
         icon: '⚔️',
-        color: '#ef4444',
+        color: '#b53f3f',
         tiers: [
             {
                 level: 1,
@@ -57,7 +57,7 @@ export const TALENTS_CONFIG = [
         id: 'defense',
         title: 'ЗАЩИТА',
         icon: '🛡️',
-        color: '#3b82f6',
+        color: '#346fa1',
         tiers: [
             {
                 level: 1,
@@ -111,7 +111,7 @@ export const TALENTS_CONFIG = [
         id: 'mastery',
         title: 'МАСТЕРСТВО',
         icon: '✨',
-        color: '#f0c040',
+        color: '#b3822b',
         tiers: [
             {
                 level: 1,

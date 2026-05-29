@@ -112,77 +112,89 @@ export const ItemTooltipPortal: React.FC<ItemTooltipPortalProps> = ({ hoveredIte
                         {itemData.desc}
                     </div>
 
-                    <div
-                        style={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: '12px',
-                            background: 'rgba(0,0,0,0.5)',
-                            padding: '20px',
-                            borderRadius: '15px',
-                            border: '1px solid rgba(255,255,255,0.03)',
-                        }}
-                    >
-                        {['attackBonus', 'defenseBonus', 'hpBonus'].map((statKey) => {
-                            const val = itemData[statKey];
-                            if (val === undefined) return null;
-                            const labels: any = { attackBonus: 'АТАКА', defenseBonus: 'ЗАЩИТА', hpBonus: 'ЗДОРОВЬЕ' };
-                            const colors: any = { attackBonus: '#f97316', defenseBonus: '#3b82f6', hpBonus: '#ef4444' };
-                            const icons: any = {
-                                attackBonus: 'sprite-stat stat-attack',
-                                defenseBonus: 'sprite-stat stat-defense',
-                                hpBonus: 'sprite-stat stat-hp',
-                            };
-                            return (
-                                <div
-                                    key={statKey}
-                                    style={{
-                                        display: 'flex',
-                                        justifyContent: 'space-between',
-                                        fontSize: '16px',
-                                        fontWeight: 900,
-                                        alignItems: 'center',
-                                    }}
-                                >
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                        <div
-                                            className={icons[statKey]}
-                                            style={{
-                                                width: '24px',
-                                                height: '24px',
-                                                backgroundSize: '400% 200%',
-                                                filter: `contrast(1.2) brightness(1.1) drop-shadow(0 0 5px ${colors[statKey]}aa)`,
-                                                imageRendering: '-webkit-optimize-contrast',
-                                            }}
-                                        />
-                                        <span style={{ color: 'rgba(255,255,255,0.3)', letterSpacing: '1px' }}>
-                                            {labels[statKey]}
-                                        </span>
+                    {itemData.subTab !== 'RESOURCES' && (
+                        <div
+                            style={{
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: '12px',
+                                background: 'rgba(0,0,0,0.5)',
+                                padding: '20px',
+                                borderRadius: '15px',
+                                border: '1px solid rgba(255,255,255,0.03)',
+                            }}
+                        >
+                            {['attackBonus', 'defenseBonus', 'hpBonus'].map((statKey) => {
+                                const val = itemData[statKey];
+                                if (val === undefined) return null;
+                                const labels: any = {
+                                    attackBonus: 'АТАКА',
+                                    defenseBonus: 'ЗАЩИТА',
+                                    hpBonus: 'ЗДОРОВЬЕ',
+                                };
+                                const colors: any = {
+                                    attackBonus: '#f97316',
+                                    defenseBonus: '#3b82f6',
+                                    hpBonus: '#ef4444',
+                                };
+                                const icons: any = {
+                                    attackBonus: 'sprite-stat stat-attack',
+                                    defenseBonus: 'sprite-stat stat-defense',
+                                    hpBonus: 'sprite-stat stat-hp',
+                                };
+                                return (
+                                    <div
+                                        key={statKey}
+                                        style={{
+                                            display: 'flex',
+                                            justifyContent: 'space-between',
+                                            fontSize: '16px',
+                                            fontWeight: 900,
+                                            alignItems: 'center',
+                                        }}
+                                    >
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            <div
+                                                className={icons[statKey]}
+                                                style={{
+                                                    width: '24px',
+                                                    height: '24px',
+                                                    backgroundSize: '400% 200%',
+                                                    filter: `contrast(1.2) brightness(1.1) drop-shadow(0 0 5px ${colors[statKey]}aa)`,
+                                                    imageRendering: '-webkit-optimize-contrast',
+                                                }}
+                                            />
+                                            <span style={{ color: 'rgba(255,255,255,0.3)', letterSpacing: '1px' }}>
+                                                {labels[statKey]}
+                                            </span>
+                                        </div>
+                                        <span style={{ color: colors[statKey] }}>+{val}</span>
                                     </div>
-                                    <span style={{ color: colors[statKey] }}>+{val}</span>
-                                </div>
-                            );
-                        })}
-                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
 
-                    <div
-                        style={{
-                            marginTop: '25px',
-                            paddingTop: '20px',
-                            borderTop: '1px solid rgba(255,255,255,0.08)',
-                            fontSize: '13px',
-                            color: '#f0c040',
-                            fontWeight: 900,
-                            textAlign: 'center',
-                            letterSpacing: '2px',
-                        }}
-                    >
-                        {(() => {
-                            const heroEquip = (heroEquipment || {})[selectedHeroId || 'panda'] || {};
-                            const isEquippedOnMe = Object.values(heroEquip).includes(hoveredItem.id);
-                            return isEquippedOnMe ? 'КЛИКНИТЕ, ЧТОБЫ СНЯТЬ' : 'КЛИКНИТЕ, ЧТОБЫ НАДЕТЬ';
-                        })()}
-                    </div>
+                    {itemData.subTab !== 'RESOURCES' && (
+                        <div
+                            style={{
+                                marginTop: '25px',
+                                paddingTop: '20px',
+                                borderTop: '1px solid rgba(255,255,255,0.08)',
+                                fontSize: '13px',
+                                color: '#f0c040',
+                                fontWeight: 900,
+                                textAlign: 'center',
+                                letterSpacing: '2px',
+                            }}
+                        >
+                            {(() => {
+                                const heroEquip = (heroEquipment || {})[selectedHeroId || 'panda'] || {};
+                                const isEquippedOnMe = Object.values(heroEquip).includes(hoveredItem.id);
+                                return isEquippedOnMe ? 'КЛИКНИТЕ, ЧТОБЫ СНЯТЬ' : 'КЛИКНИТЕ, ЧТОБЫ НАДЕТЬ';
+                            })()}
+                        </div>
+                    )}
                 </div>
             </motion.div>
         </AnimatePresence>,

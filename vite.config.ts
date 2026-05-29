@@ -13,6 +13,13 @@ export default defineConfig({
     {
       name: 'save-layout-plugin',
       configureServer(server) {
+        // Очищаем лог ошибок при старте сервера
+        try {
+          const __dirname = fileURLToPath(new URL('.', import.meta.url));
+          const logPath = path.resolve(__dirname, 'runtime_errors.log');
+          fs.writeFileSync(logPath, '', 'utf-8');
+        } catch (e) {}
+
         server.middlewares.use('/api/save-layout', (req, res) => {
           if (req.method === 'POST') {
             let body = '';
@@ -27,6 +34,37 @@ export default defineConfig({
               } catch (err) {
                 res.statusCode = 500;
                 res.end('Error saving file');
+              }
+            });
+          }
+        });
+
+        server.middlewares.use('/api/log-error', (req, res) => {
+          if (req.method === 'POST') {
+            let body = '';
+            req.on('data', chunk => { body += chunk.toString(); });
+            req.on('end', () => {
+              try {
+                const data = JSON.parse(body);
+                const __dirname = fileURLToPath(new URL('.', import.meta.url));
+                const logPath = path.resolve(__dirname, 'runtime_errors.log');
+                const timestamp = new Date().toISOString();
+                const logMsg = `[${timestamp}] ERROR: ${data.message}\nFile: ${data.source}:${data.line}:${data.col}\nStack: ${data.stack}\n\n`;
+                fs.appendFileSync(logPath, logMsg, 'utf-8');
+                
+                // Выводим ошибку в консоль сервера ярким цветом
+                console.error(`\x1b[41m\x1b[37m 🚨 FRONTEND ERROR DETECTED 🚨 \x1b[0m`);
+                console.error(`\x1b[31mError: ${data.message}\x1b[0m`);
+                console.error(`\x1b[33mLocation: ${data.source}:${data.line}:${data.col}\x1b[0m`);
+                if (data.stack) {
+                  console.error(`\x1b[90m${data.stack.split('\n').slice(0, 3).join('\n')}\x1b[0m`);
+                }
+                
+                res.statusCode = 200;
+                res.end('Logged');
+              } catch (err) {
+                res.statusCode = 500;
+                res.end('Error writing error log');
               }
             });
           }

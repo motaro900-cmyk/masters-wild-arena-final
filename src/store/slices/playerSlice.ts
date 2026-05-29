@@ -1,0 +1,502 @@
+import { ENERGY_CONFIG, BATTLE_CONFIG } from '../../game/configs/constants';
+import { getRankInfo } from '../../configs/RankSystem';
+import { syncService } from '../../services/SyncService';
+import { audioService } from '../../services/AudioService';
+import { safeSetItem } from '../../utils/SafeStorage';
+import { showRewardedVideo } from '../../utils/VKBridge';
+
+const getPlayerTitle = (level: number): string => {
+    if (level >= 72) return 'Хранитель Равновесия';
+    if (level >= 64) return 'Старейшина';
+    if (level >= 56) return 'Провидец';
+    if (level >= 48) return 'Мудрец';
+    if (level >= 40) return 'Наставник';
+    if (level >= 32) return 'Мастер Клинка';
+    if (level >= 24) return 'Адепт';
+    if (level >= 16) return 'Искатель';
+    if (level >= 8) return 'Послушник';
+    return 'Странник';
+};
+
+export const createPlayerSlice = (set: any, get: any) => ({
+    // --- СОСТОЯНИЕ ИГРОКА ---
+    level: 1,
+    vipLevel: 0,
+    vipExp: 0,
+    exp: 0,
+    gold: 300,
+    crystals: 50,
+    shards: {} as Record<string, number>,
+    rating: 0,
+    energy: ENERGY_CONFIG.MAX_ENERGY,
+    maxEnergy: ENERGY_CONFIG.MAX_ENERGY,
+    lastEnergyUpdate: Date.now(),
+    vipEndTime: 0,
+    dailyAdWatchesCount: 0,
+    dailyBattles: 0,
+    dailyBattleLimit: BATTLE_CONFIG.DAILY_LIMIT,
+    lastBattleReset: Date.now(),
+    name: 'Мастер',
+    lastNameChange: 0,
+    avatar: 'sprite:sprite-avatar avatar-pos-1',
+    frame: 'Рамка 1.webp',
+    title: 'Странник',
+    trophies: 0,
+    wins: 0,
+    totalBattles: 0,
+    combatPower: 2450000,
+    buffs: [
+        { id: 'xp_x2', icon: '✨', label: 'XP x2' },
+        { id: 'vip_crown', icon: '👑', label: 'VIP' },
+        { id: 'gold_plus', icon: '💰', label: '+10%' },
+    ],
+    isPremium: false,
+    claimedRewards: [] as string[],
+    claimedSocialRewards: [] as string[],
+    usedPromoCodes: [] as string[],
+    tutorialStep: 0,
+    canClaimDailyGift: false,
+    lastWheelSpinTime: 0,
+    onboardingCompleted: false,
+    vkUser: null as any,
+    isVkEnvironment:
+        typeof window !== 'undefined' &&
+        (window.location.search.includes('vk_app_id') || window.location.search.includes('vk_')),
+    isMobile:
+        typeof navigator !== 'undefined' &&
+        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent),
+    isPowerSaving:
+        typeof navigator !== 'undefined' &&
+        (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+            (typeof window !== 'undefined' &&
+                (window.location.search.includes('vk_app_id') || window.location.search.includes('vk_')))),
+    isMuted: false,
+    referralProcessed: false,
+    referredBy: null as string | null,
+    playerId: 'MW-' + Math.random().toString(36).substr(2, 9).toUpperCase(),
+    musicVolume: 70,
+    soundVolume: 85,
+    graphicsQuality:
+        typeof navigator !== 'undefined' &&
+        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+            ? 'LOW'
+            : 'ULTRA',
+    showFps: false,
+    notificationsEnabled: true,
+    uiTheme: 'DARK',
+    heroesInitialTab: 'LIST',
+    pet: {
+        id: 'baby_dragon',
+        name: 'Дракоша',
+        level: 1,
+        exp: 0,
+        hunger: 100,
+        happiness: 100,
+        lastFed: Date.now(),
+        lastHungerDecay: Date.now(),
+        lastHappinessDecay: Date.now(),
+        petCharges: 5,
+        lastPetTime: Date.now(),
+    },
+
+    // --- ЭКШЕНЫ ПРОФИЛЯ/ИГРОКА ---
+    updateProfile: (data: any) =>
+        set((state: any) => {
+            const patch = { ...data };
+            if ('trophies' in patch && !('rating' in patch)) {
+                patch.rating = patch.trophies;
+            } else if ('rating' in patch && !('trophies' in patch)) {
+                patch.trophies = patch.rating;
+            }
+            return { ...state, ...patch };
+        }),
+
+    addGold: (amount: number) => set((state: any) => ({ gold: state.gold + amount })),
+    spendGold: (amount: number) => set((state: any) => ({ gold: Math.max(0, state.gold - amount) })),
+    addCrystals: (amount: number) => set((state: any) => ({ crystals: state.crystals + amount })),
+    spendDiamonds: (amount: number) => set((state: any) => ({ crystals: Math.max(0, state.crystals - amount) })),
+    addEnergy: (amount: number) => set((state: any) => ({ energy: state.energy + amount })),
+    addShards: (heroId: string, amount: number) =>
+        set((state: any) => {
+            const currentShards = state.shards?.[heroId] || 0;
+            return {
+                shards: {
+                    ...(state.shards || {}),
+                    [heroId]: currentShards + amount,
+                },
+            };
+        }),
+
+    openChest: (type: 'SINGLE' | 'MULTI') => {
+        const state = get();
+        const cost = type === 'SINGLE' ? 100 : 950;
+        if (state.crystals < cost) return null;
+
+        const heroes = ['panda', 'monkey', 'tiger', 'rabbit', 'bear'];
+        const rewards: { heroId: string; amount: number }[] = [];
+        const pulls = type === 'SINGLE' ? 1 : 10;
+
+        for (let i = 0; i < pulls; i++) {
+            const randomHero = heroes[Math.floor(Math.random() * heroes.length)];
+            const randomAmount = Math.floor(Math.random() * 5) + 1; // 1 to 5 shards
+            rewards.push({ heroId: randomHero, amount: randomAmount });
+        }
+
+        set((state: any) => {
+            const newShards = { ...(state.shards || {}) };
+            rewards.forEach((r) => {
+                newShards[r.heroId] = (newShards[r.heroId] || 0) + r.amount;
+            });
+            return {
+                crystals: state.crystals - cost,
+                shards: newShards,
+            };
+        });
+
+        return rewards;
+    },
+
+    addExp: (amount: number) =>
+        set((state: any) => {
+            let newExp = state.exp + amount;
+            let newLevel = state.level;
+            let maxExp = newLevel * 600;
+
+            while (newExp >= maxExp) {
+                newExp -= maxExp;
+                newLevel += 1;
+                maxExp = newLevel * 600;
+            }
+
+            return {
+                exp: newExp,
+                level: newLevel,
+                title: getPlayerTitle(newLevel),
+            };
+        }),
+
+    addRating: (amount: number) =>
+        set((state: any) => {
+            const newRating = Math.max(0, state.rating + amount);
+            const oldRank = getRankInfo(state.rating).name;
+            const newRank = getRankInfo(newRating).name;
+
+            // Если подняли ранг до Легенды
+            if (newRank === 'ЛЕГЕНДА' && oldRank !== 'ЛЕГЕНДА') {
+                get().broadcastEvent('RANK_UP', { playerName: get().name, rankName: 'ЛЕГЕНДА' });
+            }
+
+            return { rating: newRating, trophies: newRating };
+        }),
+
+    broadcastEvent: (type: 'RANK_UP' | 'LEVEL_UP' | 'ITEM_DROP', payload: any) => {
+        const { addMessage } = get();
+        if (type === 'RANK_UP' && payload.rankName === 'ЛЕГЕНДА') {
+            addMessage(
+                `🌟 ВЕЛИКОЕ СОБЫТИЕ: Мастер ${payload.playerName} достиг ранга ЛЕГЕНДА! Весь мир склоняется перед его силой! 🐉`,
+                'ГЕРОЛЬД',
+                'system',
+            );
+        }
+        if (type === 'LEVEL_UP' && payload.level >= 80) {
+            addMessage(
+                `⚔️ ТРИУМФ: ${payload.playerName} достиг 80 уровня! Его мощь не знает границ! 🛡️`,
+                'ГЕРОЛЬД',
+                'system',
+            );
+        }
+    },
+
+    watchAdForReward: async (type: 'GOLD' | 'ENERGY' | 'CRYSTAL') => {
+        const state = get() as any;
+        const adCount = state.dailyAdWatchesCount || 0;
+        if (adCount >= 2) {
+            return false;
+        }
+
+        const success = await showRewardedVideo();
+        if (success) {
+            if (type === 'GOLD') get().addGold(5000);
+            if (type === 'ENERGY') get().addEnergy(25);
+            if (type === 'CRYSTAL') get().addCrystals(25);
+
+            set((s: any) => ({ dailyAdWatchesCount: (s.dailyAdWatchesCount || 0) + 1 }));
+
+            // Синхронизируем сразу после награды
+            syncService.syncPlayerData();
+            return true;
+        }
+        return false;
+    },
+
+    buyVip: (days: number, price: number) => {
+        const state = get() as any;
+        if (state.crystals < price) {
+            return false;
+        }
+
+        const now = Date.now();
+        const currentEndTime = state.vipEndTime && state.vipEndTime > now ? state.vipEndTime : now;
+        const newEndTime = currentEndTime + days * 24 * 60 * 60 * 1000;
+
+        set({
+            crystals: state.crystals - price,
+            vipLevel: 1,
+            maxEnergy: 60,
+            vipEndTime: newEndTime,
+        });
+
+        // Продлеваем также локально для обратной совместимости
+        safeSetItem('vipEndTime', newEndTime.toString());
+
+        // Синхронизируем
+        syncService.syncPlayerData();
+        return true;
+    },
+
+    checkSocialRewards: async () => {
+        const { isGroupMember } = await import('../../utils/VKBridge');
+        const state = get() as any;
+        const rewards = state.claimedSocialRewards || [];
+
+        // 1. Проверка группы
+        if (!rewards.includes('group')) {
+            const isMember = await isGroupMember();
+            if (isMember) {
+                state.addCrystals(50);
+                set({ claimedSocialRewards: [...rewards, 'group'] });
+                alert('Награда за вступление в группу: 50 кристаллов! 💎');
+            }
+        }
+    },
+
+    claimFavoriteReward: () => {
+        const state = get() as any;
+        const rewards = state.claimedSocialRewards || [];
+        if (!rewards.includes('favorites')) {
+            state.addCrystals(50);
+            set({ claimedSocialRewards: [...rewards, 'favorites'] });
+        }
+    },
+
+    claimGroupReward: () => {
+        const state = get() as any;
+        const rewards = state.claimedSocialRewards || [];
+        if (!rewards.includes('group')) {
+            state.addCrystals(50);
+            set({ claimedSocialRewards: [...rewards, 'group'] });
+        }
+    },
+
+    canBattle: () => {
+        const s = get();
+        return s.energy >= BATTLE_CONFIG.ENERGY_COST && s.dailyBattles < s.dailyBattleLimit;
+    },
+
+    recordBattle: () => {
+        const s = get();
+        if (!s.canBattle?.()) return false;
+        set((state: any) => ({
+            energy: Math.max(0, state.energy - BATTLE_CONFIG.ENERGY_COST),
+            dailyBattles: state.dailyBattles + 1,
+        }));
+        return true;
+    },
+
+    regenerateEnergy: () => {
+        const s = get();
+        const now = Date.now();
+        const regenMs = s.isPremium ? ENERGY_CONFIG.PREMIUM_REGEN_MS : ENERGY_CONFIG.REGEN_MS;
+        // Always compute maxEnergy from config — ignore stale persisted maxEnergy
+        const maxEnergy = s.isPremium ? ENERGY_CONFIG.PREMIUM_MAX_ENERGY : ENERGY_CONFIG.MAX_ENERGY;
+
+        // Sync maxEnergy in store if it's out of date (e.g. was persisted as 50)
+        if (s.maxEnergy !== maxEnergy) {
+            set({ maxEnergy });
+        }
+
+        if (s.energy >= maxEnergy) {
+            set({ lastEnergyUpdate: now });
+            return;
+        }
+        const elapsed = now - s.lastEnergyUpdate;
+        const points = Math.floor(elapsed / regenMs);
+        if (points > 0) {
+            set((state: any) => ({
+                energy: Math.min(state.energy + points, maxEnergy),
+                maxEnergy, // keep in sync
+                lastEnergyUpdate: state.lastEnergyUpdate + points * regenMs,
+            }));
+        }
+    },
+
+    resetDailyCounters: () => {
+        const s = get();
+        const now = new Date();
+        const last = new Date(s.lastBattleReset);
+        const isNewDay =
+            now.getUTCFullYear() !== last.getUTCFullYear() ||
+            now.getUTCMonth() !== last.getUTCMonth() ||
+            now.getUTCDate() !== last.getUTCDate();
+        if (isNewDay) {
+            set({
+                dailyBattles: 0,
+                dailyBattleLimit: s.isPremium ? BATTLE_CONFIG.PREMIUM_DAILY_LIMIT : BATTLE_CONFIG.DAILY_LIMIT,
+                lastBattleReset: Date.now(),
+            });
+        }
+    },
+
+    redeemPromoCode: (code: string) => {
+        const normalizedCode = code.trim().toUpperCase();
+        const state = get() as any;
+
+        if (state.usedPromoCodes.includes(normalizedCode)) {
+            return { success: false, message: 'ПРОМОКОД УЖЕ ИСПОЛЬЗОВАН' };
+        }
+
+        const promoCodes: Record<string, { gold?: number; crystals?: number; energy?: number }> = {
+            START: { gold: 1000, crystals: 10 },
+            WILD: { energy: 10 },
+            DIAMONDS: { crystals: 25 },
+            MOTAR: { gold: 5000, crystals: 100, energy: 50 },
+        };
+
+        const reward = promoCodes[normalizedCode];
+
+        if (reward) {
+            const mailRewards = [];
+            if (reward.gold) mailRewards.push({ type: 'GOLD', amount: reward.gold });
+            if (reward.crystals) mailRewards.push({ type: 'CRYSTAL', amount: reward.crystals });
+            if (reward.energy) mailRewards.push({ type: 'ENERGY', amount: reward.energy });
+
+            const newMail = {
+                id: `promo_${normalizedCode}_${Date.now()}`,
+                from: 'МУДРЫЙ ФИЛИН',
+                subject: 'ДАР ЗА ТАЙНЫЙ ШИФР!',
+                body: `Приветствую тебя, путник! Лесные духи нашептали мне, что ты узнал древний код "${normalizedCode}". \n\nЗа твою проницательность и мудрость они посылают тебе эти дары. Пусть они помогут тебе в твоем нелегком приключении по Великому Лесу! \n\nИспользуй их с умом, мастер!`,
+                date: new Date().toLocaleDateString(),
+                isRead: false,
+                tab: 'INBOX',
+                rewards: mailRewards,
+            };
+
+            set((s: any) => ({
+                usedPromoCodes: [...s.usedPromoCodes, normalizedCode],
+                mail: [newMail, ...s.mail],
+            }));
+
+            return { success: true, message: 'ПИСЬМО С ПОДАРКОМ ОТПРАВЛЕНО ВО ВХОДЯЩИЕ!' };
+        }
+
+        return { success: false, message: 'НЕВЕРНЫЙ ПРОМОКОД' };
+    },
+
+    addVipExp: (amount: number) =>
+        set((state: any) => {
+            let newExp = state.vipExp + amount;
+            let newLevel = state.vipLevel;
+            let expNeeded = (newLevel + 1) * 1000;
+
+            while (newExp >= expNeeded) {
+                newExp -= expNeeded;
+                newLevel += 1;
+                expNeeded = (newLevel + 1) * 1000;
+            }
+
+            return { vipExp: newExp, vipLevel: newLevel };
+        }),
+
+    setCanClaimDailyGift: (val: boolean) => set({ canClaimDailyGift: val }),
+    setOnboardingCompleted: (val: boolean) => set({ onboardingCompleted: val }),
+    processReferralCode: (code: string) => {
+        const state = get() as any;
+        if (state.referralProcessed) return;
+        set({
+            gold: state.gold + 1000,
+            crystals: state.crystals + 50,
+            referralProcessed: true,
+            referredBy: code,
+        });
+        console.log(`🎁 Referral bonus credited! Inviter: ${code}`);
+    },
+
+    setNotificationsEnabled: (enabled: boolean) => set({ notificationsEnabled: enabled }),
+    setIsPowerSaving: (enabled: boolean) => set({ isPowerSaving: enabled }),
+    setIsMuted: (enabled: boolean) => {
+        const isMuted = enabled;
+        set({ isMuted });
+        if (isMuted) {
+            audioService.setMusicVolume(0);
+            audioService.setSFXVolume(0);
+            audioService.stopAllMusic();
+        } else {
+            const state = get();
+            audioService.setMusicVolume(state.musicVolume / 100);
+            audioService.setSFXVolume(state.soundVolume / 100);
+            if (!audioService.isPlaying()) {
+                audioService.toggleMusic();
+            }
+        }
+    },
+    setShowFps: (show: boolean) => set({ showFps: show }),
+    setMusicVolume: (vol: number) => {
+        set({ musicVolume: vol });
+        if (!get().isMuted) audioService.setMusicVolume(vol / 100);
+    },
+    setSoundVolume: (vol: number) => {
+        set({ soundVolume: vol });
+        if (!get().isMuted) audioService.setSFXVolume(vol / 100);
+    },
+    setGraphicsQuality: (val: string) => set({ graphicsQuality: val }),
+    setLevel: (val: number) => set({ level: val, title: getPlayerTitle(val) }),
+    setGold: (val: number) => set({ gold: val }),
+    setCrystals: (val: number) => set({ crystals: val }),
+    setVkUser: (user: any) => {
+        const state = get() as any;
+        const currentName = state.name;
+        const newName = currentName === 'Мастер' || !currentName ? user.firstName : currentName;
+
+        set({
+            vkUser: user,
+            name: newName,
+            avatar: user.photo || state.avatar,
+        });
+    },
+
+    changeName: (newName: string) => {
+        const state = get() as any;
+        const now = Date.now();
+        const thirtyDays = 30 * 24 * 60 * 60 * 1000;
+
+        if (now - state.lastNameChange < thirtyDays && state.lastNameChange !== 0) {
+            const remainingDays = Math.ceil((thirtyDays - (now - state.lastNameChange)) / (24 * 60 * 60 * 1000));
+            return { success: false, message: `Смена будет доступна через ${remainingDays} дн.` };
+        }
+
+        const cleanName = newName.trim();
+        if (cleanName.length < 2 || cleanName.length > 15) {
+            return { success: false, message: 'Имя должно быть от 2 до 15 символов' };
+        }
+
+        const forbidden = ['хуй', 'пизд', 'еблан', 'сука', 'бля', 'админ', 'gm', 'admin', 'moder'];
+        const lowerName = cleanName.toLowerCase();
+        if (forbidden.some((word) => lowerName.includes(word))) {
+            return { success: false, message: 'Имя содержит недопустимые слова' };
+        }
+
+        const nameRegex = /^[a-zA-Zа-яА-Я0-9\s]+$/;
+        if (!nameRegex.test(cleanName)) {
+            return { success: false, message: 'Только буквы и цифры' };
+        }
+
+        set({ name: cleanName, lastNameChange: now });
+        syncService.syncPlayerData();
+        return { success: true };
+    },
+
+    setAvatar: (avatar: string) => set({ avatar }),
+    setFrame: (frame: string) => set({ frame }),
+    setTitle: (title: string) => set({ title }),
+    setRating: (rating: number) => set({ rating: Math.max(0, rating) }),
+});

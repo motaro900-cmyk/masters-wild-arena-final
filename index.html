@@ -5,11 +5,15 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <title>Masters of the Wild</title>
+  <meta name="description" content="Управляйте героями, сражайтесь в автоматических битвах и покоряйте рейтинги в Masters of the Wild!" />
+  <meta property="og:title" content="Masters of the Wild — Арена Животных" />
+  <meta property="og:description" content="Соберите свою команду диких зверей и станьте легендой арены!" />
+  <meta property="og:image" content="/assets/images/ui/promo_banner.png" />
   <link rel="icon" href="data:," />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
-    href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=Philosopher:ital,wght@0,400;0,700;1,400;1,700&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Montserrat:wght@400;700;900&family=Outfit:wght@400;700;800;900&family=Philosopher:ital,wght@0,400;0,700;1,400;1,700&display=swap"
     rel="stylesheet">
   
   <!-- Preload Critical Assets -->
@@ -79,7 +83,7 @@
 
     /* Canvas PixiJS rendering sharpness */
     canvas {
-      image-rendering: crisp-edges;
+      image-rendering: auto;
     }
   </style>
 </head>
@@ -118,6 +122,32 @@
   </div>
 
   <script>
+    // [Global QA logger] Отчет об ошибках в дев-сервер
+    (function() {
+      function logErr(message, source, lineno, colno, errorObj) {
+        fetch('/api/log-error', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message: message || 'Unknown Error',
+            source: source || 'unknown',
+            line: lineno || 0,
+            col: colno || 0,
+            stack: errorObj ? errorObj.stack : ''
+          })
+        }).catch(() => {});
+      }
+      window.addEventListener('error', function(e) {
+        if (e.message) {
+          logErr(e.message, e.filename, e.lineno, e.colno, e.error);
+        }
+      });
+      window.addEventListener('unhandledrejection', function(e) {
+        const reason = e.reason || {};
+        logErr('Unhandled Rejection: ' + (reason.message || reason), reason.filename || '', reason.lineno || 0, reason.colno || 0, reason);
+      });
+    })();
+
     // [Recovery] Detect module load failure (e.g. CDN/Cert errors)
     window.addEventListener('error', function(e) {
       if (e.target && (e.target.src || e.target.href)) {

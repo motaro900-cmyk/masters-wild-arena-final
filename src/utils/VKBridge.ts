@@ -10,8 +10,9 @@ type VkUser = {
 };
 
 export const isVkMiniApp = (): boolean => {
-    // В десктопном браузере вне VK это вернет false или не сработает
-    return typeof window !== 'undefined' && (window as any).isVkMiniApp === true;
+    if (typeof window === 'undefined') return false;
+    const params = new URLSearchParams(window.location.search);
+    return params.has('vk_app_id') || (window as any).isVkMiniApp === true;
 };
 
 export const initVK = async (): Promise<boolean> => {
@@ -103,9 +104,12 @@ export const showInviteBox = async (): Promise<boolean> => {
  * @returns true если реклама была просмотрена до конца
  */
 export const showRewardedVideo = async (): Promise<boolean> => {
-    if (!bridge) {
-        console.warn('VK Bridge not available for Ads');
-        return false;
+    if (!bridge || !isVkMiniApp()) {
+        console.log('Mock Ads: showing rewarded video...');
+        // Симулируем просмотр рекламы 1.2 секунды
+        await new Promise((resolve) => setTimeout(resolve, 1200));
+        console.log('Mock Ads: rewarded video watched successfully');
+        return true;
     }
 
     try {
@@ -124,8 +128,13 @@ export const showRewardedVideo = async (): Promise<boolean> => {
  * @param item Идентификатор товара (например, "gems_pack_1")
  */
 export const purchaseStars = async (item: string): Promise<boolean> => {
-    if (!bridge) {
-        console.warn('VK Bridge not available for Payments');
+    if (!bridge || !isVkMiniApp()) {
+        console.log(`Mock Payment: initiating purchase for: ${item}`);
+        const confirmBuy = window.confirm(`[Mock Payment] Вы хотите приобрести товар "${item}"?`);
+        if (confirmBuy) {
+            console.log(`Mock Payment: purchase of ${item} completed successfully`);
+            return true;
+        }
         return false;
     }
 
@@ -199,7 +208,7 @@ export const joinGroup = async (groupId: number = 238197449): Promise<boolean> =
         // Если нативный метод не сработал (например, десктопная версия ВК), открываем ссылку
         window.open(groupUrl, '_blank');
         console.warn('VKWebAppJoinGroup failed, falling back to window.open');
-        return false;
+        return true; // Лояльный фоллбек: выдаем награду за сам факт перехода
     }
 };
 
@@ -241,7 +250,7 @@ export const shareBattleResult = async (params: {
         : `⚔️ Masters of the Wild\n${params.playerName} против ${params.enemyName}!\nТяжёлый бой... Нанесено урона: ${params.damageDealt.toLocaleString()}\n🎮 Бросишь вызов? https://vk.com/app${import.meta.env.VITE_VK_APP_ID || '52446645'}`;
 
     // На localhost — просто копируем
-    if (!bridge || window.location.hostname === 'localhost') {
+    if (!bridge || !isVkMiniApp()) {
         try {
             await navigator.clipboard.writeText(text);
             return 'copied';
@@ -261,5 +270,42 @@ export const shareBattleResult = async (params: {
         } catch {
             return 'failed';
         }
+    }
+};
+
+let lastInterstitialTime = 0;
+const INTERSTITIAL_COOLDOWN = 180 * 1000; // 3 минуты кулдаун в миллисекундах
+
+/**
+ * Показывает межстраничную рекламу (Interstitial) с кулдауном.
+ */
+export const showInterstitialAd = async (force: boolean = false): Promise<boolean> => {
+    const now = Date.now();
+    if (!force && now - lastInterstitialTime < INTERSTITIAL_COOLDOWN) {
+        console.log(
+            `[VK Bridge] Interstitial on cooldown. Remaining: ${Math.round(
+                (INTERSTITIAL_COOLDOWN - (now - lastInterstitialTime)) / 1000,
+            )}s`,
+        );
+        return false;
+    }
+
+    if (!bridge || !isVkMiniApp()) {
+        console.log('Mock Ads: showing interstitial...');
+        await new Promise((resolve) => setTimeout(resolve, 800));
+        console.log('Mock Ads: interstitial closed');
+        lastInterstitialTime = now;
+        return true;
+    }
+
+    try {
+        const result = await bridge.send('VKWebAppShowNativeAds', {
+            ad_format: 'interstitial',
+        });
+        lastInterstitialTime = now;
+        return result.result === true;
+    } catch (error) {
+        console.warn('VKWebAppShowNativeAds (interstitial) failed:', error);
+        return false;
     }
 };

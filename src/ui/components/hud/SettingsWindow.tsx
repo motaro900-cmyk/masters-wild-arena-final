@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { useGameStore } from '../../../store/useGameStore';
 import { AssetsMap } from '../../../configs/AssetsMap';
 import { requestNotifications, addToFavorites, joinGroup } from '../../../utils/VKBridge';
+import { audioService } from '../../../services/AudioService';
 
 interface SettingsWindowProps {
     onClose: () => void;
@@ -26,10 +27,25 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
         isMuted,
         setIsMuted,
         playerId,
+        claimedSocialRewards,
+        claimGroupReward,
+        claimFavoriteReward,
     } = useGameStore();
 
     const [confirmWipeChat, setConfirmWipeChat] = React.useState(false);
     const [confirmWipeProgress, setConfirmWipeProgress] = React.useState(false);
+    const [isFullscreen, setIsFullscreen] = React.useState(!!document.fullscreenElement);
+    const [copied, setCopied] = React.useState(false);
+
+    React.useEffect(() => {
+        const handleFullscreenChange = () => {
+            setIsFullscreen(!!document.fullscreenElement);
+        };
+        document.addEventListener('fullscreenchange', handleFullscreenChange);
+        return () => {
+            document.removeEventListener('fullscreenchange', handleFullscreenChange);
+        };
+    }, []);
 
     const userVkId = useGameStore.getState().vkUser?.id || useGameStore.getState().vkUser?.uid;
     const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
@@ -44,9 +60,48 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
     };
 
     const copyPlayerId = () => {
-        navigator.clipboard.writeText(playerId);
-        // Можно добавить тост "Скопировано", но пока просто лог
-        console.log('ID Copied:', playerId);
+        try {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard
+                    .writeText(playerId)
+                    .then(() => {
+                        setCopied(true);
+                        setTimeout(() => setCopied(false), 2000);
+                    })
+                    .catch((err) => {
+                        console.warn('Clipboard write failure, using fallback:', err);
+                        fallbackCopyText(playerId);
+                    });
+            } else {
+                fallbackCopyText(playerId);
+            }
+        } catch (err) {
+            console.error('Clipboard copy failed:', err);
+        }
+    };
+
+    const fallbackCopyText = (text: string) => {
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        textArea.style.top = '0';
+        textArea.style.left = '0';
+        textArea.style.position = 'fixed';
+        textArea.style.opacity = '0';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        try {
+            const successful = document.execCommand('copy');
+            if (successful) {
+                setCopied(true);
+                setTimeout(() => setCopied(false), 2000);
+            } else {
+                console.warn('Fallback copy command failed');
+            }
+        } catch (err) {
+            console.error('Fallback copy command failed:', err);
+        }
+        document.body.removeChild(textArea);
     };
 
     const handleClearCache = async () => {
@@ -150,7 +205,6 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
                                     whileHover={{ scale: 1.2, color: '#fff' }}
                                     whileTap={{ scale: 0.9 }}
                                     onClick={() => {
-                                        const { audioService } = window as any;
                                         audioService.prevTrack();
                                         setMusicVolume(musicVolume);
                                     }}
@@ -168,7 +222,6 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
 
                                 <div
                                     onClick={() => {
-                                        const { audioService } = window as any;
                                         audioService.toggleMusic();
                                         setMusicVolume(musicVolume);
                                     }}
@@ -183,7 +236,7 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
                                     }}
                                 >
                                     {/* VISUALIZER BARS */}
-                                    {(window as any).audioService?.isPlaying() && (
+                                    {audioService?.isPlaying() && (
                                         <div
                                             style={{
                                                 display: 'flex',
@@ -212,28 +265,24 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
                                     )}
 
                                     <motion.span
-                                        animate={
-                                            (window as any).audioService?.isPlaying() ? { scale: [1, 1.1, 1] } : {}
-                                        }
+                                        animate={audioService?.isPlaying() ? { scale: [1, 1.1, 1] } : {}}
                                         transition={{ repeat: Infinity, duration: 2 }}
                                         style={{
                                             fontSize: '16px',
                                             color: colors.accent,
-                                            textShadow: (window as any).audioService?.isPlaying()
+                                            textShadow: audioService?.isPlaying()
                                                 ? `0 0 15px ${colors.accent}`
                                                 : 'none',
                                         }}
                                     >
-                                        {(window as any).audioService?.isPlaying() ? '⏸' : '▶️'}
+                                        {audioService?.isPlaying() ? '⏸' : '▶️'}
                                     </motion.span>
 
                                     <div
                                         style={{
                                             fontSize: '11px',
                                             fontWeight: 900,
-                                            color: (window as any).audioService?.isPlaying()
-                                                ? '#fff'
-                                                : 'rgba(255,255,255,0.4)',
+                                            color: audioService?.isPlaying() ? '#fff' : 'rgba(255,255,255,0.4)',
                                             fontFamily: "'Cinzel', serif",
                                             maxWidth: '120px',
                                             overflow: 'hidden',
@@ -242,9 +291,9 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
                                             transition: 'all 0.3s',
                                         }}
                                     >
-                                        {(window as any).audioService?.getCurrentTrackName() === 'Тишина'
+                                        {audioService?.getCurrentTrackName() === 'Тишина'
                                             ? 'ЗАПУСТИТЬ'
-                                            : (window as any).audioService?.getCurrentTrackName()}
+                                            : audioService?.getCurrentTrackName()}
                                     </div>
                                 </div>
 
@@ -252,7 +301,6 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
                                     whileHover={{ scale: 1.2, color: '#fff' }}
                                     whileTap={{ scale: 0.9 }}
                                     onClick={() => {
-                                        const { audioService } = window as any;
                                         audioService.nextTrack();
                                         setMusicVolume(musicVolume);
                                     }}
@@ -274,9 +322,6 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
                     <div
                         onClick={() => {
                             setIsMuted(!isMuted);
-                            if (!isMuted) {
-                                (window as any).audioService?.stopAllMusic();
-                            }
                         }}
                         style={{
                             display: 'flex',
@@ -418,7 +463,7 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
                         <ToggleItem
                             label="ПОЛНОЭКРАННЫЙ РЕЖИМ"
                             icon="📺"
-                            active={!!document.fullscreenElement}
+                            active={isFullscreen}
                             onToggle={handleFullscreenToggle}
                             colors={colors}
                         />
@@ -509,26 +554,28 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
                         style={{
                             padding: '8px 15px',
                             borderRadius: '8px',
-                            background: 'rgba(240,192,64,0.1)',
-                            border: `2px solid ${colors.accent}`,
-                            color: colors.accent,
+                            background: copied ? 'rgba(46, 204, 113, 0.15)' : 'rgba(240,192,64,0.1)',
+                            border: `2px solid ${copied ? '#2ecc71' : colors.accent}`,
+                            color: copied ? '#2ecc71' : colors.accent,
                             fontSize: '12px',
                             fontWeight: 800,
                             cursor: 'pointer',
                             boxShadow: 'inset 0 1px 1px rgba(240,192,64,0.2)',
+                            transition: 'all 0.3s ease',
                         }}
                     >
-                        КОПИРОВАТЬ
+                        {copied ? 'СКОПИРОВАНО!' : 'КОПИРОВАТЬ'}
                     </motion.button>
                 </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                    {!useGameStore.getState().claimedSocialRewards?.includes('group') && (
+                    {!claimedSocialRewards?.includes('group') && (
                         <button
                             onClick={async () => {
                                 const success = await joinGroup();
                                 if (success) {
-                                    setTimeout(() => (useGameStore.getState() as any).checkSocialRewards(), 3000);
+                                    claimGroupReward();
+                                    alert('Награда за вступление в группу: 50 кристаллов! 💎');
                                 }
                             }}
                             style={{
@@ -557,12 +604,12 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
                         </button>
                     )}
 
-                    {!useGameStore.getState().claimedSocialRewards?.includes('favorites') && (
+                    {!claimedSocialRewards?.includes('favorites') && (
                         <button
                             onClick={async () => {
                                 const success = await addToFavorites();
                                 if (success) {
-                                    (useGameStore.getState() as any).claimFavoriteReward();
+                                    claimFavoriteReward();
                                 }
                             }}
                             style={{
