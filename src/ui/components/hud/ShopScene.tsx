@@ -188,7 +188,7 @@ export const ShopScene: React.FC = () => {
                     flex: 1,
                     padding: isMobile ? '10px 15px 5px 15px' : '20px 80px 10px 80px',
                     gap: isMobile ? '15px' : '40px',
-                    maxHeight: isMobile ? 'calc(100vh - 120px)' : 'calc(100vh - 230px)',
+                    maxHeight: isMobile ? 'calc(100% - 120px)' : 'calc(100% - 230px)',
                     minWidth: 0,
                     overflow: 'hidden',
                 }}
