@@ -23,7 +23,7 @@ interface MatchmakingOverlayProps {
 }
 
 export const MatchmakingOverlay: React.FC<MatchmakingOverlayProps> = ({ onFound, onCancel }) => {
-    const { name, rating, vipLevel, selectedHeroId, level, getCalculatedStats, avatar, vkUser } = useGameStore();
+    const { name, rating, vipLevel, selectedHeroId, level, getCalculatedStats, avatar, vkUser, isMobile } = useGameStore();
 
     const playerName = name && name !== 'Мастер' ? name : vkUser?.first_name || vkUser?.firstName || 'Мастер';
     const playerAvatarSrc =
@@ -193,7 +193,7 @@ export const MatchmakingOverlay: React.FC<MatchmakingOverlayProps> = ({ onFound,
             style={{
                 position: 'absolute',
                 inset: 0,
-                backgroundImage: `url(${AssetsMap.BACKGROUNDS.RANKED_LOBBY})`,
+                backgroundImage: `url(${isMobile ? AssetsMap.BACKGROUNDS.RANKED_LOBBY_MOBILE : AssetsMap.BACKGROUNDS.RANKED_LOBBY})`,
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
                 display: 'flex',

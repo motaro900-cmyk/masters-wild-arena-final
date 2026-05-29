@@ -28,6 +28,7 @@ export const BattlePassScene: React.FC<{ onClose: () => void }> = ({ onClose }) 
         claimWeeklyQuestReward,
         showBpLevelUpOverlay,
         hideBpLevelUpOverlay,
+        isMobile,
     } = useGameStore();
     const [activeTab, setActiveTab] = useState<'REWARDS' | 'QUESTS'>('REWARDS');
     const [currentPage, setCurrentPage] = useState(Math.min(2, Math.max(0, Math.floor((bpLevel - 1) / 5))));
@@ -129,7 +130,7 @@ export const BattlePassScene: React.FC<{ onClose: () => void }> = ({ onClose }) 
                 style={{
                     position: 'absolute',
                     inset: 0,
-                    backgroundImage: `url("${AssetsMap.BACKGROUNDS.BATTLE_PASS}")`,
+                    backgroundImage: `url("${isMobile ? AssetsMap.BACKGROUNDS.BATTLE_PASS_MOBILE : AssetsMap.BACKGROUNDS.BATTLE_PASS}")`,
                     backgroundSize: 'cover',
                     backgroundPosition: 'center',
                     opacity: 1,
@@ -172,7 +173,7 @@ export const BattlePassScene: React.FC<{ onClose: () => void }> = ({ onClose }) 
                     style={{
                         position: 'absolute',
                         inset: 0,
-                        backgroundImage: `url("${AssetsMap.BACKGROUNDS.BATTLE_PASS}")`,
+                        backgroundImage: `url("${isMobile ? AssetsMap.BACKGROUNDS.BATTLE_PASS_MOBILE : AssetsMap.BACKGROUNDS.BATTLE_PASS}")`,
                         backgroundSize: 'cover',
                         backgroundPosition: 'center',
                         opacity: 0.16,

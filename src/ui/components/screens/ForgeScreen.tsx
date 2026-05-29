@@ -27,6 +27,7 @@ export const ForgeScreen: React.FC = () => {
         dismantleItem,
         reforgeItem,
         goToCity,
+        isMobile,
     } = stateStore;
 
     const [activeCategory, setActiveCategory] = useState<string>('ALL');
@@ -328,7 +329,10 @@ export const ForgeScreen: React.FC = () => {
             exit={{ opacity: 0 }}
             style={styles.screenContainer}
         >
-            <div style={styles.bgOverlay} />
+            <div style={{
+                ...styles.bgOverlay,
+                background: `#0d0a08 url(${isMobile ? AssetsMap.BACKGROUNDS.FORGE_MOBILE : AssetsMap.BACKGROUNDS.FORGE}) no-repeat center/cover`
+            }} />
 
             {/* ВСПЫШКА УСПЕХА */}
             <AnimatePresence>

@@ -119,7 +119,7 @@ export const HeroScene: React.FC = () => {
                     style={{
                         width: isMobile ? '100%' : '1920px',
                         height: isMobile ? '100%' : '1080px',
-                        backgroundImage: `url("${AssetsMap.BACKGROUNDS.HEROES_HALL}")`,
+                        backgroundImage: `url("${isMobile ? AssetsMap.BACKGROUNDS.HEROES_HALL_MOBILE : AssetsMap.BACKGROUNDS.HEROES_HALL}")`,
                         backgroundSize: 'cover',
                         backgroundPosition: 'center',
                         display: 'flex',

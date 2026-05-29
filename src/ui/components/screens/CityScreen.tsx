@@ -5,6 +5,7 @@ import { AssetsMap } from '../../../configs/AssetsMap';
 import { audioService } from '../../../services/AudioService';
 
 export const CityScreen: React.FC = () => {
+    const isMobile = useGameStore((state) => state.isMobile);
     const goToMainMenu = useGameStore((state) => state.goToMainMenu);
     const goToShop = useGameStore((state) => state.goToShop);
     const goToForge = useGameStore((state) => state.goToForge);
@@ -65,7 +66,7 @@ export const CityScreen: React.FC = () => {
             style={{
                 width: '1920px',
                 height: '1080px',
-                backgroundImage: `url(${AssetsMap.BACKGROUNDS.CITY_HUB})`,
+                backgroundImage: `url(${isMobile ? AssetsMap.BACKGROUNDS.CITY_HUB_MOBILE : AssetsMap.BACKGROUNDS.CITY_HUB})`,
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
                 backgroundColor: '#0c0c0c',

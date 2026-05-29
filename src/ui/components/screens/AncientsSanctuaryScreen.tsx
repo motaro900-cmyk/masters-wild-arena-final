@@ -52,6 +52,7 @@ export const AncientsSanctuaryScreen: React.FC = () => {
         goToShop,
         selectedHeroId,
         getCalculatedStats,
+        isMobile,
     } = useGameStore();
 
     const [adLoading, setAdLoading] = useState(false);
@@ -159,7 +160,7 @@ export const AncientsSanctuaryScreen: React.FC = () => {
                 width: '100%',
                 height: '100%',
                 pointerEvents: 'auto', // Restore click interactivity blocked by HUD layer
-                backgroundImage: `linear-gradient(to bottom, rgba(5, 3, 15, 0.4), rgba(5, 3, 15, 0.85)), url(${AssetsMap.BACKGROUNDS.SANCTUARY})`,
+                backgroundImage: `linear-gradient(to bottom, rgba(5, 3, 15, 0.4), rgba(5, 3, 15, 0.85)), url(${isMobile ? AssetsMap.BACKGROUNDS.SANCTUARY_MOBILE : AssetsMap.BACKGROUNDS.SANCTUARY})`,
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
                 overflow: 'hidden',

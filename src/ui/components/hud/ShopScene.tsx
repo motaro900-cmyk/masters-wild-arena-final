@@ -94,7 +94,7 @@ export const ShopScene: React.FC = () => {
                 position: 'absolute',
                 top: 0,
                 left: 0,
-                backgroundImage: 'url("' + AssetsMap.BACKGROUNDS.SHOP + '")',
+                backgroundImage: 'url("' + (isMobile ? AssetsMap.BACKGROUNDS.SHOP.replace('.webp', '_mobile.webp') : AssetsMap.BACKGROUNDS.SHOP) + '")',
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
                 backgroundColor: 'rgba(10, 5, 5, 0.45)',
@@ -450,30 +450,34 @@ export const ShopScene: React.FC = () => {
                                     </div>
                                 )}
 
-                                {/* Dot Indicators for Bottom Shelf items (usually 6) */}
-                                <div style={{ display: 'flex', gap: '8px', zIndex: 10, margin: '5px 0' }}>
-                                    {filteredItems.map((item: ShopItem) => (
-                                        <button
-                                            key={item.id}
-                                            onClick={() => setSelectedItem(item)}
-                                            style={{
-                                                width: '10px',
-                                                height: '10px',
-                                                borderRadius: '50%',
-                                                backgroundColor:
-                                                    selectedItem.id === item.id ? '#f0c040' : 'rgba(255,255,255,0.2)',
-                                                border: 'none',
-                                                cursor: 'pointer',
-                                                padding: 0,
-                                                boxShadow:
-                                                    selectedItem.id === item.id
-                                                        ? '0 0 8px #f0c040, 0 0 3px #f0c040'
-                                                        : 'none',
-                                                transition: 'all 0.2s',
-                                            }}
-                                        />
-                                    ))}
-                                </div>
+                                 {/* Dot Indicators for Bottom Shelf items (usually 6) - Hidden on mobile to prevent layout clutter */}
+                                 {!isMobile && (
+                                     <div style={{ display: 'flex', gap: '8px', zIndex: 10, margin: '5px 0' }}>
+                                         {filteredItems.map((item: ShopItem) => (
+                                             <button
+                                                 key={item.id}
+                                                 onClick={() => setSelectedItem(item)}
+                                                 style={{
+                                                     width: '10px',
+                                                     height: '10px',
+                                                     minWidth: 'auto',
+                                                     minHeight: 'auto',
+                                                     borderRadius: '50%',
+                                                     backgroundColor:
+                                                         selectedItem.id === item.id ? '#f0c040' : 'rgba(255,255,255,0.2)',
+                                                     border: 'none',
+                                                     cursor: 'pointer',
+                                                     padding: 0,
+                                                     boxShadow:
+                                                         selectedItem.id === item.id
+                                                             ? '0 0 8px #f0c040, 0 0 3px #f0c040'
+                                                             : 'none',
+                                                     transition: 'all 0.2s',
+                                                 }}
+                                             />
+                                         ))}
+                                     </div>
+                                 )}
                             </div>
 
                             {/* RIGHT SIDE DETAILED INSPECTION CARD */}
@@ -660,6 +664,8 @@ export const ShopScene: React.FC = () => {
                                                 style={{
                                                     width: '8px',
                                                     height: '8px',
+                                                    minWidth: 'auto',
+                                                    minHeight: 'auto',
                                                     borderRadius: '50%',
                                                     border: 'none',
                                                     cursor: 'pointer',
