@@ -12,6 +12,7 @@ interface ShopDetailPanelProps {
     equippedItem: any;
     powerDiff: number;
     handleBuyTrigger: (item: ShopItem) => void;
+    isMobile?: boolean;
 }
 
 export const ShopDetailPanel: React.FC<ShopDetailPanelProps> = ({
@@ -22,6 +23,7 @@ export const ShopDetailPanel: React.FC<ShopDetailPanelProps> = ({
     equippedItem,
     powerDiff,
     handleBuyTrigger,
+    isMobile = false,
 }) => {
     const stats = getItemStats(selectedItem);
 
@@ -106,12 +108,12 @@ export const ShopDetailPanel: React.FC<ShopDetailPanelProps> = ({
     return (
         <div
             style={{
-                width: '380px',
+                width: isMobile ? '260px' : '380px',
                 background: 'rgba(10,8,8,0.85)',
                 border: `2px solid ${getRarityColor(selectedItem.rarity)}88`,
                 boxShadow: `0 0 30px ${getRarityColor(selectedItem.rarity)}22, inset 0 0 20px rgba(0,0,0,0.8)`,
                 borderRadius: '16px',
-                padding: '25px',
+                padding: isMobile ? '12px' : '25px',
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'space-between',
@@ -121,23 +123,23 @@ export const ShopDetailPanel: React.FC<ShopDetailPanelProps> = ({
                 style={{
                     display: 'flex',
                     flexDirection: 'column',
-                    gap: '20px',
+                    gap: isMobile ? '8px' : '20px',
                     flex: 1,
                     height: '100%',
                     justifyContent: 'space-between',
                 }}
             >
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? '8px' : '20px' }}>
                     {/* Header: Quality/Rarity and Name */}
                     <div
                         style={{
                             borderBottom: '1px solid rgba(255,255,255,0.1)',
-                            paddingBottom: '12px',
+                            paddingBottom: isMobile ? '6px' : '12px',
                         }}
                     >
                         <span
                             style={{
-                                fontSize: '11px',
+                                fontSize: isMobile ? '9px' : '11px',
                                 color: getRarityColor(selectedItem.rarity),
                                 fontWeight: 900,
                                 letterSpacing: '1.5px',
@@ -147,11 +149,11 @@ export const ShopDetailPanel: React.FC<ShopDetailPanelProps> = ({
                         >
                             {rarityTranslation[selectedItem.rarity] || selectedItem.rarity}
                         </span>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '5px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '5px', gap: '5px' }}>
                             <h4
                                 style={{
                                     margin: 0,
-                                    fontSize: '22px',
+                                    fontSize: isMobile ? '16px' : '22px',
                                     color: '#fff',
                                     textTransform: 'uppercase',
                                     fontFamily: "'Cinzel', 'Philosopher', serif",
@@ -164,12 +166,13 @@ export const ShopDetailPanel: React.FC<ShopDetailPanelProps> = ({
                                 <div style={{
                                     display: 'flex',
                                     alignItems: 'center',
-                                    gap: '6px',
+                                    gap: isMobile ? '3px' : '6px',
                                     background: 'rgba(240, 192, 64, 0.1)',
                                     border: '1px solid rgba(240, 192, 64, 0.3)',
                                     borderRadius: '6px',
-                                    padding: '3px 8px',
+                                    padding: isMobile ? '2px 5px' : '3px 8px',
                                     boxShadow: '0 2px 4px rgba(0,0,0,0.5)',
+                                    flexShrink: 0,
                                 }}>
                                     <img
                                         src="/assets/images/ui/mosh.png"
@@ -253,14 +256,19 @@ export const ShopDetailPanel: React.FC<ShopDetailPanelProps> = ({
                     {(selectedItem.flavor || selectedItem.desc) && (
                         <div
                             style={{
-                                fontSize: '13px',
+                                fontSize: isMobile ? '11px' : '13px',
                                 color: 'rgba(255,255,255,0.7)',
-                                lineHeight: '1.5',
+                                lineHeight: '1.4',
                                 fontStyle: 'italic',
                                 background: 'rgba(255,255,255,0.02)',
-                                padding: '12px',
+                                padding: isMobile ? '8px' : '12px',
                                 borderRadius: '8px',
                                 border: '1px solid rgba(255,255,255,0.05)',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                display: '-webkit-box',
+                                WebkitLineClamp: isMobile ? 3 : 6,
+                                WebkitBoxOrient: 'vertical',
                             }}
                         >
                             {selectedItem.flavor || selectedItem.desc}

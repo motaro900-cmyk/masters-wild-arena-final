@@ -8,9 +8,10 @@ interface SidebarBtnProps {
     onClick: () => void;
     label: string;
     image: string;
+    isMobile?: boolean;
 }
 
-export const SidebarBtn: React.FC<SidebarBtnProps> = ({ active, onClick, label, image }) => (
+export const SidebarBtn: React.FC<SidebarBtnProps> = ({ active, onClick, label, image, isMobile = false }) => (
     <motion.button
         onClick={() => {
             audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
@@ -19,20 +20,20 @@ export const SidebarBtn: React.FC<SidebarBtnProps> = ({ active, onClick, label, 
         whileHover={{ x: 5, color: '#fff' }}
         style={{
             width: '100%',
-            height: '70px',
+            height: isMobile ? '42px' : '70px',
             background: active ? 'rgba(240, 192, 64, 0.08)' : 'transparent',
             border: 'none',
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
-            paddingLeft: '10px',
-            gap: '15px',
+            paddingLeft: isMobile ? '6px' : '10px',
+            gap: isMobile ? '8px' : '15px',
             position: 'relative',
             zIndex: 10,
             color: active ? '#ffd700' : '#c8a870',
             fontFamily: "'Cinzel', 'Philosopher', serif",
             fontWeight: 900,
-            fontSize: '16px',
+            fontSize: isMobile ? '11px' : '16px',
             letterSpacing: '1px',
             textTransform: 'uppercase',
             borderLeft: active ? '3px solid #f0c040' : '3px solid transparent',
@@ -42,13 +43,14 @@ export const SidebarBtn: React.FC<SidebarBtnProps> = ({ active, onClick, label, 
     >
         <div
             style={{
-                width: '45px',
-                height: '45px',
-                borderRadius: '8px',
+                width: isMobile ? '30px' : '45px',
+                height: isMobile ? '30px' : '45px',
+                borderRadius: '6px',
                 overflow: 'hidden',
                 boxShadow: active ? '0 0 10px rgba(240,192,64,0.3)' : 'none',
                 border: active ? '1px solid #f0c040' : '1px solid rgba(255,255,255,0.1)',
                 transition: 'all 0.3s',
+                flexShrink: 0,
             }}
         >
             <img

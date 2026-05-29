@@ -10,6 +10,7 @@ interface ShopItemCardProps {
     playerLevel?: number;
     discount?: number;
     onClick: () => void;
+    isMobile?: boolean;
 }
 
 const getRarityColor = (rarity: ShopItem['rarity']) => {
@@ -31,7 +32,14 @@ const getRarityColor = (rarity: ShopItem['rarity']) => {
     }
 };
 
-export const ShopItemCard: React.FC<ShopItemCardProps> = ({ item, isSelected, playerLevel, discount = 0, onClick }) => {
+export const ShopItemCard: React.FC<ShopItemCardProps> = ({
+    item,
+    isSelected,
+    playerLevel,
+    discount = 0,
+    onClick,
+    isMobile = false,
+}) => {
     const glow = getRarityColor(item.rarity);
     const isLocked = item.requiredLevel !== undefined && (playerLevel || 1) < item.requiredLevel;
 
@@ -40,9 +48,9 @@ export const ShopItemCard: React.FC<ShopItemCardProps> = ({ item, isSelected, pl
             onClick={onClick}
             whileHover={{ y: -6, scale: 1.03 }}
             style={{
-                minWidth: '155px',
+                minWidth: isMobile ? '105px' : '155px',
                 flexShrink: 0,
-                height: '175px',
+                height: isMobile ? '125px' : '175px',
                 background: isSelected
                     ? `radial-gradient(circle, rgba(240,192,64,0.2) 0%, rgba(20,20,25,0.96) 100%)`
                     : isLocked
@@ -61,7 +69,7 @@ export const ShopItemCard: React.FC<ShopItemCardProps> = ({ item, isSelected, pl
                     ? `0 4px 10px rgba(0,0,0,0.6), 0 0 10px rgba(225, 29, 72, 0.4)`
                     : `0 4px 10px rgba(0,0,0,0.5), 0 0 5px ${glow}11`,
                 borderRadius: '10px',
-                padding: '10px 10px 8px 10px',
+                padding: isMobile ? '5px 5px 4px 5px' : '10px 10px 8px 10px',
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
@@ -141,8 +149,8 @@ export const ShopItemCard: React.FC<ShopItemCardProps> = ({ item, isSelected, pl
             {/* Sprite Container — large */}
             <div
                 style={{
-                    width: '90px',
-                    height: '90px',
+                    width: isMobile ? '55px' : '90px',
+                    height: isMobile ? '55px' : '90px',
                     position: 'relative',
                     flex: 1,
                     display: 'flex',
@@ -155,8 +163,8 @@ export const ShopItemCard: React.FC<ShopItemCardProps> = ({ item, isSelected, pl
                     <div
                         className={item.spriteClass}
                         style={{
-                            width: '80px',
-                            height: '80px',
+                            width: isMobile ? '45px' : '80px',
+                            height: isMobile ? '45px' : '80px',
                             filter: isLocked
                                 ? 'grayscale(1) brightness(0.4)'
                                 : `drop-shadow(0 2px 6px rgba(0,0,0,0.6)) drop-shadow(0 0 4px ${glow}66)`,
@@ -167,8 +175,8 @@ export const ShopItemCard: React.FC<ShopItemCardProps> = ({ item, isSelected, pl
                         src={item.image}
                         onError={(e) => (e.currentTarget.src = AssetsMap.UI.ICON_DAILY_CHEST)}
                         style={{
-                            width: '80px',
-                            height: '80px',
+                            width: isMobile ? '45px' : '80px',
+                            height: isMobile ? '45px' : '80px',
                             objectFit: 'contain',
                             filter: isLocked
                                 ? 'grayscale(1) brightness(0.4)'

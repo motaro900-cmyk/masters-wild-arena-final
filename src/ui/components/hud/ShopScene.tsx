@@ -110,11 +110,11 @@ export const ShopScene: React.FC = () => {
             <div
                 style={{
                     width: '100%',
-                    height: '110px',
+                    height: isMobile ? '60px' : '110px',
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center',
-                    padding: '0 80px',
+                    padding: isMobile ? '0 20px' : '0 80px',
                     pointerEvents: 'none',
                     borderBottom: '1px solid rgba(240, 192, 64, 0.1)',
                     background: 'linear-gradient(180deg, rgba(0,0,0,0.8) 0%, transparent 100%)',
@@ -127,12 +127,12 @@ export const ShopScene: React.FC = () => {
                             background: 'rgba(240, 192, 64, 0.1)',
                             border: '1px solid rgba(240, 192, 64, 0.3)',
                             borderRadius: '50%',
-                            width: '44px',
-                            height: '44px',
+                            width: isMobile ? '32px' : '44px',
+                            height: isMobile ? '32px' : '44px',
                             color: '#f0c040',
-                            fontSize: '18px',
+                            fontSize: isMobile ? '14px' : '18px',
                             cursor: 'pointer',
-                            marginRight: '20px',
+                            marginRight: isMobile ? '10px' : '20px',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
@@ -157,7 +157,7 @@ export const ShopScene: React.FC = () => {
                             margin: 0,
                             fontFamily: "'Cinzel', 'Philosopher', serif",
                             color: '#f0c040',
-                            fontSize: '40px',
+                            fontSize: isMobile ? '20px' : '40px',
                             textShadow: '0 0 20px #000, 0 4px 15px #000',
                             letterSpacing: '4px',
                             whiteSpace: 'nowrap',
@@ -186,9 +186,9 @@ export const ShopScene: React.FC = () => {
                 style={{
                     display: 'flex',
                     flex: 1,
-                    padding: '20px 80px 10px 80px',
-                    gap: '40px',
-                    maxHeight: 'calc(100vh - 230px)',
+                    padding: isMobile ? '10px 15px 5px 15px' : '20px 80px 10px 80px',
+                    gap: isMobile ? '15px' : '40px',
+                    maxHeight: isMobile ? 'calc(100vh - 120px)' : 'calc(100vh - 230px)',
                     minWidth: 0,
                     overflow: 'hidden',
                 }}
@@ -196,11 +196,11 @@ export const ShopScene: React.FC = () => {
                 {/* LEFT SIDEBAR (CATEGORY SELECTION) */}
                 <div
                     style={{
-                        width: '320px',
+                        width: isMobile ? '180px' : '320px',
                         background: 'rgba(10,8,8,0.85)',
                         borderRadius: '12px',
                         border: '2px solid rgba(240, 192, 64, 0.15)',
-                        padding: '20px',
+                        padding: isMobile ? '8px' : '20px',
                         display: 'flex',
                         flexDirection: 'column',
                         justifyContent: 'space-between',
@@ -213,24 +213,28 @@ export const ShopScene: React.FC = () => {
                             onClick={() => setActiveMainTab('ARSENAL')}
                             label="ЭКИПИРОВКА"
                             image={AssetsMap.UI.TAB_ARSENAL}
+                            isMobile={isMobile}
                         />
                         <SidebarBtn
                             active={activeMainTab === 'ALCHEMY'}
                             onClick={() => setActiveMainTab('ALCHEMY')}
                             label="АЛХИМИЯ"
                             image={AssetsMap.UI.TAB_ALCHEMY}
+                            isMobile={isMobile}
                         />
                         <SidebarBtn
                             active={activeMainTab === 'SKINS'}
                             onClick={() => setActiveMainTab('SKINS')}
                             label="ОБЛИКИ"
                             image={AssetsMap.UI.TAB_SKINS}
+                            isMobile={isMobile}
                         />
                         <SidebarBtn
                             active={activeMainTab === 'BANK'}
                             onClick={() => setActiveMainTab('BANK')}
                             label="БАНК"
                             image={AssetsMap.UI.TAB_BANK}
+                            isMobile={isMobile}
                         />
                     </div>
 
@@ -239,14 +243,14 @@ export const ShopScene: React.FC = () => {
                             onClick={exitShop}
                             style={{
                                 width: '100%',
-                                height: '50px',
+                                height: isMobile ? '32px' : '50px',
                                 background: 'rgba(255,50,50,0.1)',
                                 border: '1px solid rgba(255,50,50,0.3)',
                                 borderRadius: '8px',
                                 color: '#ff6666',
                                 fontFamily: "'Cinzel', 'Philosopher', serif",
                                 fontWeight: 900,
-                                fontSize: '15px',
+                                fontSize: isMobile ? '11px' : '15px',
                                 cursor: 'pointer',
                                 transition: 'all 0.3s',
                             }}
@@ -281,10 +285,12 @@ export const ShopScene: React.FC = () => {
                     <div
                         style={{
                             display: 'flex',
-                            gap: '15px',
+                            gap: isMobile ? '8px' : '15px',
                             borderBottom: '2px solid rgba(240,192,64,0.15)',
-                            paddingBottom: '10px',
+                            paddingBottom: isMobile ? '6px' : '10px',
                             alignItems: 'center',
+                            overflowX: 'auto',
+                            whiteSpace: 'nowrap',
                         }}
                     >
                         {getSubTabs(activeMainTab).map((tab) => (
@@ -299,7 +305,7 @@ export const ShopScene: React.FC = () => {
 
                     {/* MAIN MIDDLE ROW (PEDESTAL & INSPECTION CARD) */}
                     {selectedItem ? (
-                        <div style={{ flex: 1, display: 'flex', gap: '30px', alignItems: 'stretch', minWidth: 0 }}>
+                        <div style={{ flex: 1, display: 'flex', gap: isMobile ? '15px' : '30px', alignItems: 'stretch', minWidth: 0 }}>
                             {/* CENTRAL SHOWCASE PEDESTAL */}
                             <div
                                 style={{
@@ -307,7 +313,7 @@ export const ShopScene: React.FC = () => {
                                     background: 'rgba(15,12,12,0.6)',
                                     border: '1px solid rgba(240,192,64,0.1)',
                                     borderRadius: '16px',
-                                    padding: '25px',
+                                    padding: isMobile ? '10px 15px' : '25px',
                                     display: 'flex',
                                     flexDirection: 'column',
                                     alignItems: 'center',
@@ -332,6 +338,7 @@ export const ShopScene: React.FC = () => {
                                     <BankItemShowcase
                                         item={selectedItem}
                                         rarityColor={getRarityColor(selectedItem.rarity)}
+                                        isMobile={isMobile}
                                     />
                                 ) : (
                                     <div
@@ -342,14 +349,14 @@ export const ShopScene: React.FC = () => {
                                             width: '100%',
                                             position: 'relative',
                                             flex: 1,
-                                            marginTop: '-15px',
+                                            marginTop: isMobile ? '-10px' : '-15px',
                                         }}
                                     >
                                         <div
                                             style={{
                                                 position: 'relative',
-                                                width: '450px',
-                                                height: '400px',
+                                                width: isMobile ? '220px' : '450px',
+                                                height: isMobile ? '200px' : '400px',
                                                 display: 'flex',
                                                 alignItems: 'center',
                                                 justifyContent: 'center',
@@ -359,8 +366,8 @@ export const ShopScene: React.FC = () => {
                                             <div
                                                 style={{
                                                     position: 'absolute',
-                                                    width: '400px',
-                                                    height: '400px',
+                                                    width: isMobile ? '200px' : '400px',
+                                                    height: isMobile ? '200px' : '400px',
                                                     borderRadius: '50%',
                                                     background:
                                                         'radial-gradient(circle, ' +
@@ -374,17 +381,16 @@ export const ShopScene: React.FC = () => {
                                             <div
                                                 style={{
                                                     position: 'absolute',
-                                                    bottom: '-15px',
-                                                    width: '420px',
-                                                    height: '88px',
+                                                    bottom: isMobile ? '-10px' : '-15px',
+                                                    width: isMobile ? '210px' : '420px',
+                                                    height: isMobile ? '40px' : '88px',
                                                     borderRadius: '50%',
                                                     background:
                                                         'linear-gradient(180deg, rgba(35,30,30,0.96) 0%, rgba(10,5,5,0.98) 100%)',
-                                                    border: '2px solid ' + getRarityColor(selectedItem.rarity) + '88',
-                                                    boxShadow:
-                                                        '0 8px 25px rgba(0,0,0,0.8), 0 0 15px ' +
-                                                        getRarityColor(selectedItem.rarity) +
-                                                        '33, inset 0 2px 4px rgba(255,255,255,0.15)',
+                                                    border: (isMobile ? '1px solid ' : '2px solid ') + getRarityColor(selectedItem.rarity) + '88',
+                                                    boxShadow: isMobile
+                                                        ? '0 4px 10px rgba(0,0,0,0.8), 0 0 10px ' + getRarityColor(selectedItem.rarity) + '33'
+                                                        : '0 8px 25px rgba(0,0,0,0.8), 0 0 15px ' + getRarityColor(selectedItem.rarity) + '33, inset 0 2px 4px rgba(255,255,255,0.15)',
                                                     transform: 'rotateX(65deg)',
                                                     display: 'flex',
                                                     alignItems: 'center',
@@ -394,8 +400,8 @@ export const ShopScene: React.FC = () => {
                                                 {/* Inner spinning element */}
                                                 <div
                                                     style={{
-                                                        width: '340px',
-                                                        height: '340px',
+                                                        width: isMobile ? '170px' : '340px',
+                                                        height: isMobile ? '170px' : '340px',
                                                         borderRadius: '50%',
                                                         border: `1.5px dashed ${getRarityColor(selectedItem.rarity)}77`,
                                                         boxShadow: `inset 0 0 15px ${getRarityColor(selectedItem.rarity)}22`,
@@ -412,15 +418,15 @@ export const ShopScene: React.FC = () => {
                                                     display: 'flex',
                                                     alignItems: 'center',
                                                     justifyContent: 'center',
-                                                    marginBottom: '60px',
+                                                    marginBottom: isMobile ? '20px' : '60px',
                                                 }}
                                             >
                                                 {selectedItem.spriteClass ? (
                                                     <div
                                                         className={selectedItem.spriteClass}
                                                         style={{
-                                                            width: '320px',
-                                                            height: '320px',
+                                                            width: isMobile ? '140px' : '320px',
+                                                            height: isMobile ? '140px' : '320px',
                                                             filter: `contrast(1.2) brightness(1.2) drop-shadow(0 0 20px ${getRarityColor(selectedItem.rarity)}cc)`,
                                                         }}
                                                     />
@@ -431,8 +437,8 @@ export const ShopScene: React.FC = () => {
                                                             (e.currentTarget.src = AssetsMap.UI.ICON_DAILY_CHEST)
                                                         }
                                                         style={{
-                                                            width: '320px',
-                                                            height: '320px',
+                                                            width: isMobile ? '140px' : '320px',
+                                                            height: isMobile ? '140px' : '320px',
                                                             objectFit: 'contain',
                                                             filter: `contrast(1.2) brightness(1.2) drop-shadow(0 0 20px ${getRarityColor(selectedItem.rarity)}cc)`,
                                                         }}
@@ -479,6 +485,7 @@ export const ShopScene: React.FC = () => {
                                 equippedItem={equippedItem}
                                 powerDiff={powerDiff}
                                 handleBuyTrigger={handleBuyTrigger}
+                                isMobile={isMobile}
                             />
                         </div>
                     ) : (
@@ -544,10 +551,10 @@ export const ShopScene: React.FC = () => {
                                                         ? '1.5px solid rgba(255,255,255,0.05)'
                                                         : '2px solid rgba(240, 192, 64, 0.5)',
                                                 borderRadius: '50%',
-                                                width: '48px',
-                                                height: '48px',
+                                                width: isMobile ? '32px' : '48px',
+                                                height: isMobile ? '32px' : '48px',
                                                 color: currentPage === 0 ? 'rgba(255,255,255,0.15)' : '#f0c040',
-                                                fontSize: '20px',
+                                                fontSize: isMobile ? '14px' : '20px',
                                                 cursor: currentPage === 0 ? 'default' : 'pointer',
                                                 display: 'flex',
                                                 alignItems: 'center',
@@ -557,7 +564,7 @@ export const ShopScene: React.FC = () => {
                                                 flexShrink: 0,
                                             }}
                                         >
-                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'block', transform: 'translateX(-1px)' }}>
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'block', transform: 'translateX(-1px)' }}>
                                                 <polyline points="15 18 9 12 15 6" />
                                             </svg>
                                         </motion.button>
@@ -567,13 +574,13 @@ export const ShopScene: React.FC = () => {
                                     <div
                                         style={{
                                             flex: 1,
-                                            height: '210px',
+                                            height: isMobile ? '140px' : '210px',
                                             background: 'rgba(10,8,8,0.7)',
                                             border: '1px solid rgba(240,192,64,0.1)',
                                             borderRadius: '12px',
-                                            padding: '12px 20px',
+                                            padding: isMobile ? '6px 10px' : '12px 20px',
                                             display: 'flex',
-                                            gap: '12px',
+                                            gap: isMobile ? '8px' : '12px',
                                             alignItems: 'center',
                                             justifyContent: 'center',
                                             minWidth: 0,
@@ -588,6 +595,7 @@ export const ShopScene: React.FC = () => {
                                                 playerLevel={playerLevel}
                                                 discount={shopDiscounts?.[item.id]}
                                                 onClick={() => handleItemClick(item)}
+                                                isMobile={isMobile}
                                             />
                                         ))}
                                     </div>
@@ -609,13 +617,13 @@ export const ShopScene: React.FC = () => {
                                                         ? '1.5px solid rgba(255,255,255,0.05)'
                                                         : '2px solid rgba(240, 192, 64, 0.5)',
                                                 borderRadius: '50%',
-                                                width: '48px',
-                                                height: '48px',
+                                                width: isMobile ? '32px' : '48px',
+                                                height: isMobile ? '32px' : '48px',
                                                 color:
                                                     currentPage === totalPages - 1
                                                         ? 'rgba(255,255,255,0.15)'
                                                         : '#f0c040',
-                                                fontSize: '20px',
+                                                fontSize: isMobile ? '14px' : '20px',
                                                 cursor: currentPage === totalPages - 1 ? 'default' : 'pointer',
                                                 display: 'flex',
                                                 alignItems: 'center',
@@ -628,7 +636,7 @@ export const ShopScene: React.FC = () => {
                                                 flexShrink: 0,
                                             }}
                                         >
-                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'block', transform: 'translateX(1px)' }}>
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'block', transform: 'translateX(1px)' }}>
                                                 <polyline points="9 18 15 12 9 6" />
                                             </svg>
                                         </motion.button>
@@ -674,10 +682,10 @@ export const ShopScene: React.FC = () => {
             {/* BOTTOM BAR WITH REFRESH TIMER & FOOTER BANNERS */}
             <div
                 style={{
-                    height: '80px',
+                    height: isMobile ? '40px' : '80px',
                     borderTop: '1px solid rgba(240, 192, 64, 0.1)',
                     background: 'rgba(5,5,5,0.9)',
-                    padding: '0 80px',
+                    padding: isMobile ? '0 20px' : '0 80px',
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center',

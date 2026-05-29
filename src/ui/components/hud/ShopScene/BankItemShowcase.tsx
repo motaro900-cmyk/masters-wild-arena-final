@@ -4,6 +4,7 @@ import { ShopItem } from '../../../../configs/ShopConfig';
 interface BankItemShowcaseProps {
     item: ShopItem;
     rarityColor: string;
+    isMobile?: boolean;
 }
 
 const makeSunrays = (color: string): string => {
@@ -32,8 +33,8 @@ const BankCoinParticle: React.FC<{ style: React.CSSProperties; symbol: string }>
     </div>
 );
 
-export const BankItemShowcase: React.FC<BankItemShowcaseProps> = ({ item, rarityColor }) => {
-    const particles = [
+export const BankItemShowcase: React.FC<BankItemShowcaseProps> = ({ item, rarityColor, isMobile = false }) => {
+    const particles = isMobile ? [] : [
         { left: '15%', bottom: '30%', delay: '0s', duration: '3.2s', anim: 'coin-float-1', symbol: '🪙' },
         { left: '25%', bottom: '22%', delay: '0.7s', duration: '2.8s', anim: 'coin-float-2', symbol: '💰' },
         { left: '75%', bottom: '32%', delay: '0.3s', duration: '3.5s', anim: 'coin-float-1', symbol: '✨' },
@@ -68,8 +69,8 @@ export const BankItemShowcase: React.FC<BankItemShowcaseProps> = ({ item, rarity
             <div
                 style={{
                     position: 'absolute',
-                    width: '600px',
-                    height: '600px',
+                    width: isMobile ? '300px' : '600px',
+                    height: isMobile ? '300px' : '600px',
                     background: makeSunrays(rarityColor),
                     animation: 'bank-rays 30s linear infinite',
                     borderRadius: '50%',
@@ -82,8 +83,8 @@ export const BankItemShowcase: React.FC<BankItemShowcaseProps> = ({ item, rarity
             <div
                 style={{
                     position: 'absolute',
-                    width: '500px',
-                    height: '500px',
+                    width: isMobile ? '240px' : '500px',
+                    height: isMobile ? '240px' : '500px',
                     borderRadius: '50%',
                     background: outerGlow,
                     animation: 'bank-glow-pulse 4s ease-in-out infinite',
@@ -95,11 +96,11 @@ export const BankItemShowcase: React.FC<BankItemShowcaseProps> = ({ item, rarity
             <div
                 style={{
                     position: 'relative',
-                    width: '320px',
-                    height: '420px',
+                    width: isMobile ? '180px' : '320px',
+                    height: isMobile ? '230px' : '420px',
                     background: 'linear-gradient(135deg, rgba(25, 20, 20, 0.9) 0%, rgba(10, 8, 8, 0.95) 100%)',
                     border: '2px solid ' + rarityColor + 'aa',
-                    borderRadius: '24px',
+                    borderRadius: isMobile ? '14px' : '24px',
                     boxShadow:
                         '0 25px 50px rgba(0,0,0,0.8), 0 0 30px ' +
                         rarityColor +
@@ -108,7 +109,7 @@ export const BankItemShowcase: React.FC<BankItemShowcaseProps> = ({ item, rarity
                     flexDirection: 'column',
                     alignItems: 'center',
                     justifyContent: 'space-between',
-                    padding: '30px 20px',
+                    padding: isMobile ? '12px 10px' : '30px 20px',
                     zIndex: 10,
                     animation: 'bank-item-float 5s ease-in-out infinite',
                     overflow: 'hidden',
@@ -132,7 +133,7 @@ export const BankItemShowcase: React.FC<BankItemShowcaseProps> = ({ item, rarity
                 {/* Card Top Category Badge */}
                 <div
                     style={{
-                        padding: '6px 16px',
+                        padding: isMobile ? '3px 8px' : '6px 16px',
                         borderRadius: '30px',
                         background: 'rgba(255,255,255,0.03)',
                         border: '1px solid rgba(255,255,255,0.08)',
@@ -141,10 +142,10 @@ export const BankItemShowcase: React.FC<BankItemShowcaseProps> = ({ item, rarity
                         gap: '6px',
                     }}
                 >
-                    <span style={{ fontSize: '14px' }}>{currencySymbol}</span>
+                    <span style={{ fontSize: isMobile ? '10px' : '14px' }}>{currencySymbol}</span>
                     <span
                         style={{
-                            fontSize: '11px',
+                            fontSize: isMobile ? '8px' : '11px',
                             color: currencyColor,
                             fontWeight: 900,
                             fontFamily: "'Cinzel', 'Philosopher', serif",
@@ -159,8 +160,8 @@ export const BankItemShowcase: React.FC<BankItemShowcaseProps> = ({ item, rarity
                 <div
                     style={{
                         position: 'relative',
-                        width: '180px',
-                        height: '180px',
+                        width: isMobile ? '80px' : '180px',
+                        height: isMobile ? '80px' : '180px',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -170,8 +171,8 @@ export const BankItemShowcase: React.FC<BankItemShowcaseProps> = ({ item, rarity
                     <div
                         style={{
                             position: 'absolute',
-                            width: '140px',
-                            height: '140px',
+                            width: isMobile ? '60px' : '140px',
+                            height: isMobile ? '60px' : '140px',
                             borderRadius: '50%',
                             background: 'radial-gradient(circle, ' + rarityColor + '44 0%, transparent 70%)',
                             filter: 'blur(8px)',
@@ -205,7 +206,7 @@ export const BankItemShowcase: React.FC<BankItemShowcaseProps> = ({ item, rarity
                 >
                     <span
                         style={{
-                            fontSize: '32px',
+                            fontSize: isMobile ? '18px' : '32px',
                             fontWeight: 900,
                             fontFamily: "'Cinzel', 'Philosopher', serif",
                             color: '#fff',
@@ -216,7 +217,7 @@ export const BankItemShowcase: React.FC<BankItemShowcaseProps> = ({ item, rarity
                     </span>
                     <span
                         style={{
-                            fontSize: '11px',
+                            fontSize: isMobile ? '8px' : '11px',
                             color: 'rgba(255,255,255,0.4)',
                             fontWeight: 700,
                             letterSpacing: '1px',
