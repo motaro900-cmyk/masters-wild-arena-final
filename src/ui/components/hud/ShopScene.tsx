@@ -355,8 +355,8 @@ export const ShopScene: React.FC = () => {
                                         <div
                                             style={{
                                                 position: 'relative',
-                                                width: isMobile ? '220px' : '450px',
-                                                height: isMobile ? '200px' : '400px',
+                                                width: isMobile ? '360px' : '450px',
+                                                height: isMobile ? '320px' : '400px',
                                                 display: 'flex',
                                                 alignItems: 'center',
                                                 justifyContent: 'center',
@@ -366,8 +366,8 @@ export const ShopScene: React.FC = () => {
                                             <div
                                                 style={{
                                                     position: 'absolute',
-                                                    width: isMobile ? '200px' : '400px',
-                                                    height: isMobile ? '200px' : '400px',
+                                                    width: isMobile ? '320px' : '400px',
+                                                    height: isMobile ? '320px' : '400px',
                                                     borderRadius: '50%',
                                                     background:
                                                         'radial-gradient(circle, ' +
@@ -381,9 +381,9 @@ export const ShopScene: React.FC = () => {
                                             <div
                                                 style={{
                                                     position: 'absolute',
-                                                    bottom: isMobile ? '-10px' : '-15px',
-                                                    width: isMobile ? '210px' : '420px',
-                                                    height: isMobile ? '40px' : '88px',
+                                                    bottom: isMobile ? '-12px' : '-15px',
+                                                    width: isMobile ? '340px' : '420px',
+                                                    height: isMobile ? '70px' : '88px',
                                                     borderRadius: '50%',
                                                     background:
                                                         'linear-gradient(180deg, rgba(35,30,30,0.96) 0%, rgba(10,5,5,0.98) 100%)',
@@ -400,8 +400,8 @@ export const ShopScene: React.FC = () => {
                                                 {/* Inner spinning element */}
                                                 <div
                                                     style={{
-                                                        width: isMobile ? '170px' : '340px',
-                                                        height: isMobile ? '170px' : '340px',
+                                                        width: isMobile ? '280px' : '340px',
+                                                        height: isMobile ? '280px' : '340px',
                                                         borderRadius: '50%',
                                                         border: `1.5px dashed ${getRarityColor(selectedItem.rarity)}77`,
                                                         boxShadow: `inset 0 0 15px ${getRarityColor(selectedItem.rarity)}22`,
@@ -418,15 +418,15 @@ export const ShopScene: React.FC = () => {
                                                     display: 'flex',
                                                     alignItems: 'center',
                                                     justifyContent: 'center',
-                                                    marginBottom: isMobile ? '20px' : '60px',
+                                                    marginBottom: isMobile ? '35px' : '60px',
                                                 }}
                                             >
                                                 {selectedItem.spriteClass ? (
                                                     <div
                                                         className={selectedItem.spriteClass}
                                                         style={{
-                                                            width: isMobile ? '140px' : '320px',
-                                                            height: isMobile ? '140px' : '320px',
+                                                            width: isMobile ? '260px' : '320px',
+                                                            height: isMobile ? '260px' : '320px',
                                                             filter: `contrast(1.2) brightness(1.2) drop-shadow(0 0 20px ${getRarityColor(selectedItem.rarity)}cc)`,
                                                         }}
                                                     />
@@ -437,8 +437,8 @@ export const ShopScene: React.FC = () => {
                                                             (e.currentTarget.src = AssetsMap.UI.ICON_DAILY_CHEST)
                                                         }
                                                         style={{
-                                                            width: isMobile ? '140px' : '320px',
-                                                            height: isMobile ? '140px' : '320px',
+                                                            width: isMobile ? '260px' : '320px',
+                                                            height: isMobile ? '260px' : '320px',
                                                             objectFit: 'contain',
                                                             filter: `contrast(1.2) brightness(1.2) drop-shadow(0 0 20px ${getRarityColor(selectedItem.rarity)}cc)`,
                                                         }}
