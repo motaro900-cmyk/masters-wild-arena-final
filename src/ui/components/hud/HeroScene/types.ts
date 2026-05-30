@@ -1,1 +1,2 @@
-export type SceneTab = 'LIST' | 'HERO' | 'TALENTS';
+export type SceneTab = 'LIST' | 'HERO' | 'TALENTS' | 'SKINS';
+

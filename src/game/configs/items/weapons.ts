@@ -14,6 +14,19 @@ export const weapons: Record<string, IEquipmentStats> = {
         subTab: 'WEAPONS',
         desc: 'Простое метательное оружие из полоски кожи.',
     },
+    // Стартовое оружие (id: stick — выдаётся в начале игры)
+    stick: {
+        id: 'stick',
+        name: 'Бамбуковая Палка',
+        attackBonus: 8,
+        rarity: 'COMMON',
+        priceGold: 0,
+        requiredLevel: 1,
+        image: '/assets/images/items/weapons/stick.webp',
+        mainTab: 'ARSENAL',
+        subTab: 'WEAPONS',
+        desc: 'Простая бамбуковая палка. Не самое грозное оружие, но с чего-то надо начинать.',
+    },
     stick_oak: {
         id: 'stick_oak',
         name: 'Дубовый Посох',
@@ -26,6 +39,7 @@ export const weapons: Record<string, IEquipmentStats> = {
         subTab: 'WEAPONS',
         desc: 'Простой деревянный посох для начинающих магов.',
     },
+
     pan_master: {
         id: 'pan_master',
         name: 'Чугунная Сковорода',

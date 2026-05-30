@@ -182,7 +182,7 @@ export const DailyTaskPanel: React.FC = () => {
                             gap: '10px',
                             flex: 1,
                             overflow: 'hidden',
-                            marginTop: '8px',
+                            marginTop: '0px',
                         }}
                     >
                         {dailyQuests

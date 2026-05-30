@@ -57,6 +57,53 @@ export class GameApp {
             // Запускаем синхронизацию данных с Firebase
             syncService.startAutoSync();
 
+            // Запускаем синхронизацию снимка игрока и оффлайн результатов
+            (async () => {
+                try {
+                    const { playerSnapshotService } = await import('./services/PlayerSnapshotService');
+                    const summary = await playerSnapshotService.syncOnLogin();
+                    if (summary) {
+                        console.log('📬 Loaded offline PvP defense summary:', summary);
+                        
+                        // 1. Сохраняем в стор для показа во всплывающем окне
+                        useGameStore.setState({ offlineSummary: summary });
+
+                        // 2. Создаем письмо во входящие почты
+                        const newMail = {
+                            id: `offline_summary_${Date.now()}`,
+                            tab: 'INBOX',
+                            type: 'SYSTEM',
+                            from: 'ВЕСТНИК АРЕНЫ',
+                            subject: 'ОТЧЕТ О ЗАЩИТЕ АРЕНЫ',
+                            body: `Пока вас не было в игре, на вашего героя нападали другие игроки!\n\n` +
+                                  `⚔️ Всего нападений: ${summary.totalAttacks}\n` +
+                                  `✅ Успешная защита: ${summary.wins}\n` +
+                                  `❌ Поражение защитников: ${summary.losses}\n\n` +
+                                  `Итоговое изменение рейтинга: ${summary.totalCupsChange >= 0 ? '+' : ''}${summary.totalCupsChange} 🏆\n` +
+                                  `Получено золота за успешные бои: +${summary.totalGoldChange} 💰\n\n` +
+                                  `Детали боев:\n` +
+                                  summary.attacks.map((a, idx) => {
+                                      const icon = a.defenderResult === 'WIN' ? '✅' : '❌';
+                                      const text = a.defenderResult === 'WIN' ? 'победил!' : 'проиграл.';
+                                      const cups = a.cupsChange >= 0 ? `+${a.cupsChange}` : `${a.cupsChange}`;
+                                      const gold = a.goldChange > 0 ? ` (+${a.goldChange} 💰)` : '';
+                                      return `${idx + 1}. ${icon} ${a.attackerName} (${a.attackerRating} 🏆) — ваш герой ${text} (${cups} 🏆${gold})`;
+                                  }).join('\n'),
+                            date: 'СЕГОДНЯ',
+                            isRead: false,
+                            isStarred: false,
+                        };
+
+                        const currentMail = useGameStore.getState().mail || [];
+                        useGameStore.setState({
+                            mail: [newMail, ...currentMail],
+                        });
+                    }
+                } catch (err) {
+                    console.error('Failed to sync snapshot or offline results:', err);
+                }
+            })();
+
             console.log('✅ Game Engine Ready!');
         } catch (error) {
             console.error('❌ Engine Initialization Error:', error);

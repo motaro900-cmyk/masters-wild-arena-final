@@ -32,6 +32,8 @@ export interface BattleState {
     log: string;
     playerMana: number;
     playerMaxMana: number;
+    playerStatuses: Array<{ type: string; stacks: number; duration: number }>;
+    enemyStatuses: Array<{ type: string; stacks: number; duration: number }>;
 }
 
 export interface ICombatStats {
@@ -45,7 +47,7 @@ export interface ICombatStats {
 }
 
 export interface CombatEvent {
-    type: 'HIT' | 'CRIT' | 'DODGE' | 'BLOCK' | 'INSTINCT';
+    type: 'HIT' | 'CRIT' | 'DODGE' | 'BLOCK' | 'INSTINCT' | 'BURN' | 'POISON' | 'FREEZE';
     damage: number;
     target: 'player' | 'enemy';
     label?: string;
@@ -97,6 +99,8 @@ export class BattleEngine {
         log: 'ПОДГОТОВКА...',
         playerMana: 0,
         playerMaxMana: 100,
+        playerStatuses: [],
+        enemyStatuses: [],
     };
 
     private updateCallback: ((dt: number) => void) | null = null;
@@ -250,10 +254,14 @@ export class BattleEngine {
         if (!this.isCombatRunning) return;
 
         const ATB_THRESHOLD = 100;
-        let playerTicks = this.playerStats!.speed; // игрок стартует с форой по скорости
-        let enemyTicks = this.enemyStats!.speed;
+        const getEffectiveSpeed = (unit: HeroUnit, stats: ICombatStats) => {
+            return unit.isFrozenStatus ? Math.ceil(stats.speed * 0.5) : stats.speed;
+        };
 
-        const firstIsPlayer = this.playerStats!.speed >= this.enemyStats!.speed;
+        let playerTicks = getEffectiveSpeed(this.player!, this.playerStats!);
+        let enemyTicks = getEffectiveSpeed(this.enemy!, this.enemyStats!);
+
+        const firstIsPlayer = playerTicks >= enemyTicks;
         if (firstIsPlayer) {
             playerTicks = ATB_THRESHOLD; // игрок ходит первым
         } else {
@@ -273,9 +281,11 @@ export class BattleEngine {
             const isPlayerTurn = playerTicks >= enemyTicks;
 
             if (isPlayerTurn) {
+                // Применяем периодический урон в начале хода
+                await this.resolvePeriodicDamage(this.player!, true);
+                if (!this.isCombatRunning || this.state.playerHP <= 0 || this.state.enemyHP <= 0) break;
+
                 if (this.player!.isStunnedStatus) {
-                    this.player!.isStunnedStatus = false;
-                    this.player!.removeStunEffect();
                     const skipMsg = "Вы оглушены и пропускаете ход!";
                     this.updateState({ log: skipMsg });
                     useGameStore.getState().addCombatLog(`💫 ${skipMsg}`);
@@ -285,16 +295,22 @@ export class BattleEngine {
                 } else {
                     await this.executeAttack(this.player!, this.enemy!, true);
                 }
+
+                // Уменьшаем длительность статусов в конце хода
+                this.decrementStatusDurations(this.player!);
+
                 // После атаки — сбрасываем свои очки и добавляем обоим
                 playerTicks = 0;
-                playerTicks += this.playerStats!.speed;
-                enemyTicks += this.enemyStats!.speed;
+                playerTicks += getEffectiveSpeed(this.player!, this.playerStats!);
+                enemyTicks += getEffectiveSpeed(this.enemy!, this.enemyStats!);
             } else {
                 const { isEnemyFrozen } = useGameStore.getState();
                 if (!isEnemyFrozen) {
+                    // Применяем периодический урон в начале хода
+                    await this.resolvePeriodicDamage(this.enemy!, false);
+                    if (!this.isCombatRunning || this.state.playerHP <= 0 || this.state.enemyHP <= 0) break;
+
                     if (this.enemy!.isStunnedStatus) {
-                        this.enemy!.isStunnedStatus = false;
-                        this.enemy!.removeStunEffect();
                         const skipMsg = "Враг оглушен и пропускает ход!";
                         this.updateState({ log: skipMsg });
                         useGameStore.getState().addCombatLog(`💫 ${skipMsg}`);
@@ -302,10 +318,13 @@ export class BattleEngine {
                     } else {
                         await this.executeAttack(this.enemy!, this.player!, false);
                     }
+
+                    // Уменьшаем длительность статусов в конце хода
+                    this.decrementStatusDurations(this.enemy!);
                 }
                 enemyTicks = 0;
-                playerTicks += this.playerStats!.speed;
-                enemyTicks += this.enemyStats!.speed;
+                playerTicks += getEffectiveSpeed(this.player!, this.playerStats!);
+                enemyTicks += getEffectiveSpeed(this.enemy!, this.enemyStats!);
             }
 
             if (!this.isCombatRunning || this.state.playerHP <= 0 || this.state.enemyHP <= 0) break;
@@ -413,9 +432,13 @@ export class BattleEngine {
 
             await attacker.animateTeleportIn(targetX, faceScaleX);
         } else if (isSpecialStrike) {
-            await attacker.animateLungeForward(isPlayer, 6);
+            if (attacker.config?.role === 'TANK' && typeof attacker.jumpSlam === 'function') {
+                await attacker.jumpSlam(isPlayer ? victim.x - 85 : victim.x + 85);
+            } else {
+                await attacker.animateLungeForward(isPlayer, 6, victim.x);
+            }
         } else {
-            await attacker.animateLungeForward(isPlayer);
+            await attacker.animateLungeForward(isPlayer, undefined, victim.x);
         }
 
         if (!this.isCombatRunning) return;
@@ -444,7 +467,7 @@ export class BattleEngine {
 
             // 1. Взлетаем еще выше и копим энергию!
             const chargeDuration = Math.round(450 / timeScale);
-            tweenTo(attacker, { y: startY - 320 }, chargeDuration);
+            tweenTo(attacker, { y: startY - 460 }, chargeDuration);
             tweenTo(attacker.scale, {
                 x: (isPlayer ? 1 : -1) * baseScale * 1.3,
                 y: baseScale * 1.3,
@@ -536,7 +559,20 @@ export class BattleEngine {
         // Точка взмаха прямо перед атакующим
         const hitX = isPlayer ? attacker.x + 85 : attacker.x - 85;
         const hitY = attacker.y - 120;
-        EffectsManager.getInstance().slashEffect(hitX, hitY, isPlayer, attacker.config?.role, isCrit);
+        
+        if (attackerWeaponArchetype === 'STAFF') {
+            const startX = attacker.x;
+            const startY = attacker.y - 120;
+            const targetX = victim.x;
+            const targetY = victim.y - 120;
+            if (isCrit) {
+                EffectsManager.getInstance().spawnLightningStrike(targetX, targetY);
+            } else {
+                EffectsManager.getInstance().spawnFireballProjectile(startX, startY, targetX, targetY, victim);
+            }
+        } else {
+            EffectsManager.getInstance().slashEffect(hitX, hitY, isPlayer, attacker.config?.role, isCrit);
+        }
 
         // Характеристики
         const targetStats = isPlayer ? this.enemyStats! : this.playerStats!;
@@ -585,6 +621,7 @@ export class BattleEngine {
 
         let hasDodged = Math.random() < (targetStats.dodge || 0.05) + extraDodge;
         if (instinctEvent?.type === 'FOCUS') hasDodged = false;
+        if (victim.isStunnedStatus) hasDodged = false;
 
         if (hasDodged && !(isPlayer && isOneShot)) {
             // 1. Атакующий начинает удар!
@@ -661,6 +698,7 @@ export class BattleEngine {
         // 2b. Блок (Block)
         let hasBlocked = Math.random() < (targetStats.defense > 0 ? 0.15 : 0.05);
         if (instinctEvent?.type === 'FOCUS') hasBlocked = false;
+        if (victim.isStunnedStatus) hasBlocked = false;
 
         if (hasBlocked && !(isPlayer && isOneShot)) {
             audioService.playSFX('/assets/audio/sfx/block.mp3');
@@ -704,11 +742,32 @@ export class BattleEngine {
 
         // Шанс оглушения при критическом ударе: 35%
         let isStunnedThisHit = false;
-        if (isCrit && Math.random() < 0.35 && !victim.isStunnedStatus) {
+        if (isCrit && Math.random() < 0.35) {
             isStunnedThisHit = true;
-            victim.isStunnedStatus = true;
-            victim.showStunEffect();
-            victim.setFrame(0); // Стоит в позе Idle при оглушении
+            this.applyStatus(victim, 'STUN', 1, 0, !isPlayer);
+        }
+
+        // Character/Class specific status effects instead of wizard-like weapons
+        const attackerId = attacker.config?.id;
+        const attackerRole = attacker.config?.role;
+
+        if (attackerId === 'panda' || attackerRole === 'WARRIOR' || attackerId === 'ancient_golem') {
+            // FIRE/BURN Alignment (Panda, Lava Golem): 30% chance to Ignite on hit
+            if (Math.random() < 0.30) {
+                const burnDmg = Math.ceil(stats.attack * 0.12);
+                this.applyStatus(victim, 'BURN', 3, burnDmg, !isPlayer);
+            }
+        } else if (attackerId === 'raccoon' || attackerRole === 'ASSASSIN' || attackerId === 'ancient_spider') {
+            // POISON Alignment (Raccoon, Spider): 35% chance to Poison on hit
+            if (Math.random() < 0.35) {
+                const poisonDmg = Math.ceil(stats.attack * 0.09);
+                this.applyStatus(victim, 'POISON', 4, poisonDmg, !isPlayer);
+            }
+        } else if (attackerId === 'ancient_wolf') {
+            // ICE/FREEZE Alignment (Ice Wolf): 25% chance to Freeze on hit
+            if (Math.random() < 0.25) {
+                this.applyStatus(victim, 'FREEZE', 2, 0, !isPlayer);
+            }
         }
 
         if (isCrit) {
@@ -966,9 +1025,9 @@ export class BattleEngine {
         });
 
         // Trigger lunge animation for the cast
-        if (this.player) {
+        if (this.player && this.enemy) {
             this.player.playAttackAnimation();
-            await this.player.animateLungeForward(true);
+            await this.player.animateLungeForward(true, undefined, this.enemy.x);
         }
 
         // Deal damage
@@ -991,6 +1050,19 @@ export class BattleEngine {
             this.enemy.animateHitReaction(true);
             EffectsManager.getInstance().criticalHit(this.enemy);
             this.enemy.playHitEffect();
+
+            // Применяем статусные эффекты в зависимости от класса
+            if (role === 'WARRIOR' && Math.random() < 0.5) {
+                this.applyStatus(this.enemy, 'STUN', 1, 0, false);
+            } else if (role === 'TANK' && Math.random() < 0.5) {
+                this.applyStatus(this.enemy, 'STUN', 1, 0, false);
+            } else if (role === 'MAGE') {
+                const burnDmg = Math.ceil(this.playerStats!.attack * 0.15);
+                this.applyStatus(this.enemy, 'BURN', 3, burnDmg, false);
+            } else if (role === 'ASSASSIN') {
+                const poisonDmg = Math.ceil(this.playerStats!.attack * 0.10);
+                this.applyStatus(this.enemy, 'POISON', 4, poisonDmg, false);
+            }
         }
 
         const nextE_HP = Math.max(0, this.state.enemyHP - finalDamage);
@@ -1038,6 +1110,154 @@ export class BattleEngine {
         }
     }
 
+    public updateStatusesState() {
+        this.updateState({
+            playerStatuses: this.player ? this.player.statusEffects.map((s) => ({ type: s.type, stacks: s.stacks, duration: s.duration })) : [],
+            enemyStatuses: this.enemy ? this.enemy.statusEffects.map((s) => ({ type: s.type, stacks: s.stacks, duration: s.duration })) : []
+        });
+    }
+
+    public applyStatus(
+        unit: HeroUnit,
+        type: 'STUN' | 'BURN' | 'FREEZE' | 'POISON',
+        duration: number,
+        damagePerTurn: number,
+        isPlayer: boolean
+    ) {
+        if (!unit || unit.destroyed) return;
+
+        // Mutual exclusivity: Fire melts Ice, Ice extinguishes Fire
+        if (type === 'BURN') {
+            const hasFreeze = unit.statusEffects.find((s) => s.type === 'FREEZE');
+            if (hasFreeze) {
+                unit.statusEffects = unit.statusEffects.filter((s) => s.type !== 'FREEZE');
+                unit.removeFreezeEffect();
+            }
+        } else if (type === 'FREEZE') {
+            const hasBurn = unit.statusEffects.find((s) => s.type === 'BURN');
+            if (hasBurn) {
+                unit.statusEffects = unit.statusEffects.filter((s) => s.type !== 'BURN');
+                unit.removeBurnEffect();
+            }
+        }
+
+        let existing = unit.statusEffects.find((s) => s.type === type);
+        if (existing) {
+            if (type === 'POISON') {
+                existing.stacks = Math.min(5, existing.stacks + 1);
+                existing.duration = Math.max(existing.duration, duration);
+                existing.damagePerTurn = damagePerTurn;
+            } else {
+                existing.duration = Math.max(existing.duration, duration);
+            }
+        } else {
+            unit.statusEffects.push({
+                type,
+                duration,
+                stacks: 1,
+                damagePerTurn,
+            });
+
+            // Trigger visual on creation
+            if (type === 'STUN') {
+                unit.showStunEffect();
+                unit.setFrame(0);
+                this.onCombatEvent({
+                    type: 'STUN',
+                    damage: 0,
+                    target: isPlayer ? 'player' : 'enemy',
+                    label: '💫 ОГЛУШЕНИЕ!',
+                });
+            } else if (type === 'BURN') {
+                unit.showBurnEffect();
+            } else if (type === 'FREEZE') {
+                unit.showFreezeEffect();
+                this.onCombatEvent({
+                    type: 'FREEZE',
+                    damage: 0,
+                    target: isPlayer ? 'player' : 'enemy',
+                    label: '❄️ ЗАМОРОЗКА!',
+                });
+            } else if (type === 'POISON') {
+                unit.showPoisonEffect();
+            }
+        }
+
+        this.updateStatusesState();
+    }
+
+    public async resolvePeriodicDamage(unit: HeroUnit, isPlayer: boolean) {
+        if (!this.isCombatRunning || !unit || unit.destroyed) return;
+
+        const { timeScale, addCombatLog } = useGameStore.getState();
+        const activeEffects = [...unit.statusEffects];
+
+        for (const status of activeEffects) {
+            if (status.type === 'BURN' || status.type === 'POISON') {
+                const tickDamage = Math.ceil(status.damagePerTurn * status.stacks);
+                
+                if (isPlayer) {
+                    const nextHP = Math.max(0, this.state.playerHP - tickDamage);
+                    this.updateState({ playerHP: nextHP });
+                    this.totalDamageTaken += tickDamage;
+                    if (nextHP <= 0) unit.animateDeath(true);
+                } else {
+                    const nextHP = Math.max(0, this.state.enemyHP - tickDamage);
+                    this.updateState({ enemyHP: nextHP });
+                    this.totalDamageDealt += tickDamage;
+                    if (nextHP <= 0) unit.animateDeath(false);
+                }
+
+                // Popup combat event
+                this.onCombatEvent({
+                    type: status.type,
+                    damage: tickDamage,
+                    target: isPlayer ? 'player' : 'enemy',
+                });
+
+                const logMsg = status.type === 'BURN'
+                    ? `🔥 [Горение] ${unit.config.name} получает ${tickDamage} урона от огня!`
+                    : `🤢 [Отравление] ${unit.config.name} получает ${tickDamage} урона от яда! (${status.stacks} стак.)`;
+                
+                this.updateState({ log: logMsg });
+                addCombatLog(logMsg);
+
+                // Play reaction
+                unit.playHitEffect();
+                unit.animateHitReaction(false);
+
+                // Tiny pause to read the periodic damage pop
+                await new Promise((r) => setTimeout(r, 650 / timeScale));
+                if (!this.isCombatRunning || (isPlayer ? this.state.playerHP : this.state.enemyHP) <= 0) return;
+            }
+        }
+    }
+
+    public decrementStatusDurations(unit: HeroUnit) {
+        if (!unit || unit.destroyed) return;
+
+        const activeEffects = [...unit.statusEffects];
+        for (const status of activeEffects) {
+            status.duration -= 1;
+
+            if (status.duration <= 0) {
+                // Remove status
+                unit.statusEffects = unit.statusEffects.filter((s) => s.type !== status.type);
+                if (status.type === 'STUN') {
+                    unit.removeStunEffect();
+                } else if (status.type === 'BURN') {
+                    unit.removeBurnEffect();
+                } else if (status.type === 'FREEZE') {
+                    unit.removeFreezeEffect();
+                } else if (status.type === 'POISON') {
+                    unit.removePoisonEffect();
+                }
+            }
+        }
+
+        this.updateStatusesState();
+    }
+
     private updateState(patch: Partial<BattleState>) {
         this.state = { ...this.state, ...patch };
         this.onStateChange(this.state);
@@ -1048,8 +1268,23 @@ export class BattleEngine {
         const pixiApp = PixiApp.getInstance();
         if (this.updateCallback) pixiApp.removeUpdateLoop(this.updateCallback);
         
-        if (this.player) this.player.resetToIdle();
-        if (this.enemy) this.enemy.resetToIdle();
+        if (this.player) {
+            this.player.removeStunEffect();
+            this.player.removeBurnEffect();
+            this.player.removeFreezeEffect();
+            this.player.removePoisonEffect();
+            this.player.statusEffects = [];
+            this.player.resetToIdle();
+        }
+        if (this.enemy) {
+            this.enemy.removeStunEffect();
+            this.enemy.removeBurnEffect();
+            this.enemy.removeFreezeEffect();
+            this.enemy.removePoisonEffect();
+            this.enemy.statusEffects = [];
+            this.enemy.resetToIdle();
+        }
+        this.updateStatusesState();
         
         // We must clear the background layer as well, so the battle arena background is removed
         pixiApp.clearAllLayers();

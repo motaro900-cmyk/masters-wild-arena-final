@@ -65,6 +65,7 @@ export const createBattleSlice = (set: any, get: any) => ({
     isEnemyFrozen: false,
     hasInfiniteEnergy: false,
     activePveEnemy: null as any,
+    activeRankedOpponent: null as any,
     winStreak: 0,
 
     // --- ЭКШЕНЫ БИТВ, ЭКРАНОВ И ЧАТА ---

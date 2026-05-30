@@ -1,5 +1,6 @@
 import * as PIXI from 'pixi.js';
 import { gsap } from 'gsap';
+import { GlowFilter } from 'pixi-filters';
 import { PixiApp } from '../core/PixiApp';
 import { SoundManager } from './SoundManager';
 import { useGameStore } from '../../store/useGameStore';
@@ -376,7 +377,10 @@ export class EffectsManager {
             }
 
             // Защита от наложения анимаций: сбрасываем предыдущие анимации X
-            gsap.killTweensOf(target, { x: true });
+            // НО только если цель не в броске (иначе убьем промис рывка и он зависнет)
+            if (!target.isLunging) {
+                gsap.killTweensOf(target, { x: true });
+            }
 
             // Анимируем смещение и плавный возврат
             gsap.to(target, {
@@ -411,7 +415,9 @@ export class EffectsManager {
         defenderRole: 'WARRIOR' | 'TANK' | 'ASSASSIN',
         hitType: 'HIT' | 'CRIT' | 'DODGE' | 'BLOCK' | 'INSTINCT',
         targetUnit: any,
-        isPlayerTarget: boolean
+        isPlayerTarget: boolean,
+        attackerUnit?: any,
+        damage?: number
     ): void {
         try {
             if (!targetUnit || targetUnit.destroyed) return;
@@ -419,27 +425,29 @@ export class EffectsManager {
             // 1. Обработка уклонения (DODGE)
             if (hitType === 'DODGE') {
                 this.dodgeEffect(targetUnit);
-                // Плавное быстрое отклонение в сторону
-                gsap.killTweensOf(targetUnit, { x: true });
-                const direction = isPlayerTarget ? 1 : -1; // Уворот смещает вперед/в сторону
-                gsap.to(targetUnit, {
-                    x: targetUnit.x + (25 * direction),
-                    duration: 0.1,
-                    yoyo: true,
-                    repeat: 1,
-                    ease: 'sine.inOut',
-                    onComplete: () => {
-                        if (!targetUnit.destroyed) {
-                            targetUnit.x = targetUnit.defaultX ?? targetUnit.x;
+                // Плавное быстрое отклонение в сторону (только если не в броске)
+                if (!targetUnit.isLunging) {
+                    gsap.killTweensOf(targetUnit, { x: true });
+                    const direction = isPlayerTarget ? 1 : -1; // Уворот смещает вперед/в сторону
+                    gsap.to(targetUnit, {
+                        x: targetUnit.x + (25 * direction),
+                        duration: 0.1,
+                        yoyo: true,
+                        repeat: 1,
+                        ease: 'sine.inOut',
+                        onComplete: () => {
+                            if (!targetUnit.destroyed) {
+                                targetUnit.x = targetUnit.defaultX ?? targetUnit.x;
+                            }
                         }
-                    }
-                });
+                    });
+                }
                 return;
             }
 
             // 2. Обработка блокирования (BLOCK)
             if (hitType === 'BLOCK') {
-                this.blockEffect(targetUnit);
+                this.blockEffect(targetUnit, attackerUnit);
                 this.knockback(targetUnit, isPlayerTarget, 'HIT'); // Легкий отскок
                 return;
             }
@@ -481,6 +489,10 @@ export class EffectsManager {
             else if (attackerRole === 'ASSASSIN') pColor = 0xda70d6;
             else pColor = 0x80ffdb;
 
+            if (targetUnit.isBurningStatus) pColor = 0xFF5500;
+            else if (targetUnit.isFrozenStatus) pColor = 0x88CCFF;
+            else if (targetUnit.isPoisonedStatus) pColor = 0x44FF44;
+
             let px = targetUnit.x;
             let py = targetUnit.y - 80;
             if (typeof targetUnit.getVisualCenter === 'function') {
@@ -490,7 +502,12 @@ export class EffectsManager {
                     py = center.y;
                 }
             }
-            this.particleBurst(px, py, hitType === 'CRIT' ? 16 : 6, pColor, hitType === 'CRIT' ? 220 : 130);
+            
+            if (hitType === 'HIT' || hitType === 'CRIT') {
+                this.spawnImpactParticles(damage || 0, px, py, pColor);
+            } else {
+                this.particleBurst(px, py, hitType === 'CRIT' ? 16 : 6, pColor, hitType === 'CRIT' ? 220 : 130);
+            }
 
         } catch (error) {
             console.error('❌ applyHitResolution error:', error);
@@ -698,18 +715,23 @@ export class EffectsManager {
     /**
      * Эффект блокирования
      */
-    public blockEffect(target: PIXI.Container): void {
+    public blockEffect(target: PIXI.Container, attacker?: any): void {
         try {
             let px = target.x;
             let py = target.y - 100;
-            if (typeof (target as any).getVisualCenter === 'function') {
+            if (attacker && typeof attacker.getSocketGlobalPosition === 'function' && typeof (target as any).getSocketGlobalPosition === 'function') {
+                const attackPos = attacker.getSocketGlobalPosition('rightHand');
+                const defendPos = (target as any).getSocketGlobalPosition('leftHand');
+                px = (attackPos.x + defendPos.x) / 2;
+                py = (attackPos.y + defendPos.y) / 2;
+            } else if (typeof (target as any).getVisualCenter === 'function') {
                 const center = (target as any).getVisualCenter();
                 if (center) {
                     px = center.x;
                     py = center.y;
                 }
             }
-            this.particleBurst(px, py, 12, 0x3b82f6, 180);
+            this.spawnBlockSparks(px, py);
         } catch (error) {
             console.error('❌ Block effect error:', error);
         }
@@ -877,31 +899,39 @@ export class EffectsManager {
             }
 
             slash.scale.x = isPlayer ? 1 : -1;
-            slash.rotation = isPlayer ? -0.2 : 0.2;
+            slash.rotation = isPlayer ? -0.3 : 0.3;
             
             container.addChild(slash);
-            container.position.set(x - (isPlayer ? 50 : -50), y - 100);
-            container.alpha = 0.9;
-            container.scale.set(0.2);
+            // Сдвигаем точку взмаха чуть ближе к цели для лучшего контакта
+            container.position.set(x - (isPlayer ? 30 : -30), y - 90);
+            container.alpha = 0.95;
+            
+            // Начинаем с более крупного масштаба (0.65 вместо 0.2), чтобы взмах читался
+            container.scale.set(isPlayer ? 0.65 : -0.65);
 
             gsap.to(container.scale, {
-                x: isPlayer ? 1.4 : -1.4,
-                y: 1.4,
-                duration: 0.22,
+                x: isPlayer ? 2.2 : -2.2, // Гораздо больший размах
+                y: 2.2,
+                duration: 0.32,
                 ease: 'power2.out',
             });
             gsap.to(container, {
                 alpha: 0,
-                rotation: isPlayer ? 0.5 : -0.5,
-                duration: 0.22,
-                ease: 'power2.inOut',
+                rotation: isPlayer ? 0.7 : -0.7, // Более широкий угол пролета лезвия
+                duration: 0.32,
+                ease: 'power1.out',
                 onComplete: () => {
+                    gsap.killTweensOf(container);
+                    gsap.killTweensOf(container.scale);
                     container.destroy({ children: true });
                 }
             });
 
             // Trigger corresponding particle burst for extra impact juice!
             this.particleBurst(x, y, pCount, pColor, pForce);
+
+            // Спавним облако пыли при соприкосновении удара с целью
+            this.spawnDustPuff(x, y, isCrit ? 1.4 : 0.95);
         } catch (error) {
             console.error('❌ Slash effect error:', error);
         }
@@ -950,12 +980,462 @@ export class EffectsManager {
                 duration: durationMs / 1000,
                 ease: 'power2.out',
                 onComplete: () => {
+                    gsap.killTweensOf(ghost);
                     ghost.destroy();
                     this.activeTrails = this.activeTrails.filter((t) => t !== ghost);
                 }
             });
         } catch (error) {
             console.error('❌ Ghost trail spawn error:', error);
+        }
+    }
+
+    /**
+     * Эффект облака пыли/дыма (Dust/Smoke Puff)
+     */
+    public spawnDustPuff(x: number, y: number, baseScale: number = 1.0): void {
+        try {
+            const container = new PIXI.Container();
+            container.position.set(x, y);
+            this.pixiApp.effectsLayer.addChild(container);
+
+            const puffsCount = Math.round((5 + Math.floor(Math.random() * 4)) * baseScale);
+            for (let i = 0; i < puffsCount; i++) {
+                const puff = new PIXI.Graphics();
+                const radius = (10 + Math.random() * 15) * baseScale;
+                puff.beginPath();
+                puff.circle(0, 0, radius);
+                // Светло-серый пылевой цвет
+                puff.fill({ color: 0xdddddd, alpha: 0.28 });
+                puff.blendMode = 'add';
+
+                // Случайный начальный сдвиг вокруг центра
+                puff.x = (Math.random() - 0.5) * 40 * baseScale;
+                puff.y = (Math.random() - 0.5) * 20 * baseScale - 10;
+                container.addChild(puff);
+
+                const targetX = puff.x + (Math.random() - 0.5) * 80 * baseScale;
+                const targetY = puff.y - (40 + Math.random() * 50) * baseScale;
+                const targetScale = 1.8 + Math.random() * 1.0;
+
+                gsap.to(puff, {
+                    x: targetX,
+                    y: targetY,
+                    alpha: 0,
+                    duration: 0.5 + Math.random() * 0.4,
+                    ease: 'power2.out',
+                    onUpdate: () => {
+                        if (!puff.destroyed) {
+                            puff.scale.set(1 + (targetScale - 1) * (1 - puff.alpha));
+                        }
+                    },
+                    onComplete: () => {
+                        if (puff && !puff.destroyed) {
+                            gsap.killTweensOf(puff);
+                            puff.destroy();
+                        }
+                    }
+                });
+            }
+
+            setTimeout(() => {
+                if (container && !container.destroyed) {
+                    container.children.forEach(child => {
+                        gsap.killTweensOf(child);
+                    });
+                    container.destroy({ children: true });
+                }
+            }, 1000);
+        } catch (e) {
+            console.error('Error spawning dust puff:', e);
+        }
+    }
+
+    /**
+     * Спавн искр блока
+     */
+    public spawnBlockSparks(x: number, y: number): void {
+        try {
+            const sparksCount = 8 + Math.floor(Math.random() * 5); // 8-12 sparks
+            for (let i = 0; i < sparksCount; i++) {
+                const spark = new PIXI.Graphics();
+                const length = 10 + Math.random() * 15; // 10-25px
+                const angle = Math.random() * Math.PI * 2;
+                
+                spark.beginPath();
+                spark.moveTo(0, 0);
+                spark.lineTo(Math.cos(angle) * length, Math.sin(angle) * length);
+                spark.stroke({ color: 0xFFEE88, width: 2 });
+                
+                spark.position.set(x, y);
+                this.pixiApp.effectsLayer.addChild(spark);
+                
+                const velocityX = Math.cos(angle) * (20 + Math.random() * 30);
+                const velocityY = Math.sin(angle) * (20 + Math.random() * 30);
+                
+                gsap.to(spark, {
+                    x: x + velocityX,
+                    y: y + velocityY,
+                    alpha: 0,
+                    duration: 0.2 + Math.random() * 0.05, // 200-250ms
+                    ease: 'power2.out',
+                    onUpdate: () => {
+                        if (!spark.destroyed) {
+                            spark.scale.set(spark.alpha);
+                        }
+                    },
+                    onComplete: () => {
+                        if (spark && !spark.destroyed) {
+                            gsap.killTweensOf(spark);
+                            spark.destroy();
+                        }
+                    }
+                });
+            }
+        } catch (error) {
+            console.error('❌ spawnBlockSparks error:', error);
+        }
+    }
+
+    /**
+     * Спавн клубов дыма при телепортации
+     */
+    public spawnSmokePuff(x: number, y: number): void {
+        try {
+            const container = new PIXI.Container();
+            container.position.set(x, y);
+            this.pixiApp.effectsLayer.addChild(container);
+
+            const puffCount = 10 + Math.floor(Math.random() * 6); // 10-15 particles
+            for (let i = 0; i < puffCount; i++) {
+                const circle = new PIXI.Graphics();
+                const radius = 15 + Math.random() * 15;
+                circle.beginPath();
+                circle.circle(0, 0, radius);
+                circle.fill({ color: 0x999999, alpha: 0.6 });
+                
+                circle.x = (Math.random() - 0.5) * 50;
+                circle.y = (Math.random() - 0.5) * 50 - 40;
+                container.addChild(circle);
+                
+                const angle = Math.random() * Math.PI * 2;
+                const distance = 40 + Math.random() * 50;
+                
+                gsap.to(circle, {
+                    x: circle.x + Math.cos(angle) * distance,
+                    y: circle.y + Math.sin(angle) * distance,
+                    alpha: 0,
+                    duration: 0.4,
+                    ease: 'power1.out',
+                    onUpdate: () => {
+                        if (!circle.destroyed) {
+                            circle.scale.set(0.5 + 1.5 * (1 - circle.alpha));
+                        }
+                    },
+                    onComplete: () => {
+                        if (circle && !circle.destroyed) {
+                            gsap.killTweensOf(circle);
+                            circle.destroy();
+                        }
+                    }
+                });
+            }
+            
+            setTimeout(() => {
+                if (container && !container.destroyed) {
+                    container.children.forEach(child => {
+                        gsap.killTweensOf(child);
+                    });
+                    container.destroy({ children: true });
+                }
+            }, 500);
+        } catch (error) {
+            console.error('❌ spawnSmokePuff error:', error);
+        }
+    }
+
+    /**
+     * Спавн брызг частиц от нанесенного урона
+     */
+    public spawnImpactParticles(damage: number, x: number, y: number, color: number = 0xFF5533): void {
+        try {
+            let particlesCount = 4;
+            let spread = 30;
+            let shakeIntensity = 0;
+            let shakeDuration = 0;
+            let hasFlash = false;
+            
+            if (damage > 50) {
+                particlesCount = 18;
+                spread = 100;
+                shakeIntensity = 7;
+                shakeDuration = 250;
+                hasFlash = true;
+            } else if (damage > 20) {
+                particlesCount = 10;
+                spread = 60;
+                shakeIntensity = 3;
+                shakeDuration = 150;
+            }
+            
+            if (shakeIntensity > 0) {
+                this.screenShake(shakeIntensity, 0.95, shakeDuration);
+            }
+            
+            if (hasFlash) {
+                const flash = new PIXI.Graphics();
+                flash.beginPath();
+                flash.rect(0, 0, 1920, 1080);
+                flash.fill({ color: 0xFFFFFF, alpha: 0.35 });
+                this.pixiApp.effectsLayer.addChild(flash);
+                
+                gsap.to(flash, {
+                    alpha: 0,
+                    duration: 0.05,
+                    onComplete: () => {
+                        if (flash && !flash.destroyed) {
+                            gsap.killTweensOf(flash);
+                            flash.destroy();
+                        }
+                    }
+                });
+            }
+            
+            for (let i = 0; i < particlesCount; i++) {
+                const p = new PIXI.Graphics();
+                const radius = 3 + Math.random() * 4;
+                
+                p.beginPath();
+                if (Math.random() < 0.5) {
+                    p.circle(0, 0, radius);
+                } else {
+                    let rot = Math.PI / 2 * 3;
+                    const step = Math.PI / 5;
+                    p.moveTo(0, -radius);
+                    for (let j = 0; j < 5; j++) {
+                        let sx = Math.cos(rot) * radius;
+                        let sy = Math.sin(rot) * radius;
+                        p.lineTo(sx, sy);
+                        rot += step;
+                        sx = Math.cos(rot) * (radius * 0.4);
+                        sy = Math.sin(rot) * (radius * 0.4);
+                        p.lineTo(sx, sy);
+                        rot += step;
+                    }
+                    p.closePath();
+                }
+                
+                p.fill({ color: color });
+                p.position.set(x, y);
+                this.pixiApp.effectsLayer.addChild(p);
+                
+                const angle = Math.random() * Math.PI * 2;
+                const distance = Math.random() * spread;
+                
+                gsap.to(p, {
+                    x: x + Math.cos(angle) * distance,
+                    y: y + Math.sin(angle) * distance,
+                    alpha: 0,
+                    duration: 0.3 + Math.random() * 0.2,
+                    ease: 'power2.out',
+                    onComplete: () => {
+                        if (p && !p.destroyed) {
+                            gsap.killTweensOf(p);
+                            p.destroy();
+                        }
+                    }
+                });
+            }
+        } catch (error) {
+            console.error('❌ spawnImpactParticles error:', error);
+        }
+    }
+
+    /**
+     * Эффект удара молнии с неба
+     */
+    public spawnLightningStrike(targetX: number, targetY: number): void {
+        try {
+            const lightning = new PIXI.Graphics();
+            
+            const pointsCount = 8 + Math.floor(Math.random() * 5);
+            const points: PIXI.Point[] = [];
+            points.push(new PIXI.Point(targetX, 0));
+            
+            for (let i = 1; i < pointsCount; i++) {
+                const fraction = i / pointsCount;
+                const py = targetY * fraction;
+                const px = targetX + (Math.random() - 0.5) * 60;
+                points.push(new PIXI.Point(px, py));
+            }
+            points.push(new PIXI.Point(targetX, targetY));
+            
+            lightning.beginPath();
+            lightning.moveTo(points[0].x, points[0].y);
+            for (let i = 1; i < points.length; i++) {
+                lightning.lineTo(points[i].x, points[i].y);
+            }
+            lightning.stroke({ color: 0xCCEEFF, width: 3 });
+            
+            try {
+                const glow = new GlowFilter({ distance: 15, outerStrength: 3, color: 0xCCEEFF });
+                lightning.filters = [glow];
+            } catch (e) {
+                console.warn('GlowFilter failed, playing lightning without glow:', e);
+            }
+            
+            this.pixiApp.effectsLayer.addChild(lightning);
+            
+            const flash = new PIXI.Graphics();
+            flash.beginPath();
+            flash.rect(0, 0, 1920, 1080);
+            flash.fill({ color: 0xFFFFFF, alpha: 0.4 });
+            this.pixiApp.effectsLayer.addChild(flash);
+            
+            gsap.to(flash, {
+                alpha: 0,
+                duration: 0.08,
+                ease: 'power2.out',
+                onComplete: () => {
+                    if (flash && !flash.destroyed) {
+                        gsap.killTweensOf(flash);
+                        flash.destroy();
+                    }
+                }
+            });
+            
+            gsap.to(lightning, {
+                alpha: 0,
+                duration: 0.15,
+                ease: 'power2.inOut',
+                onComplete: () => {
+                    if (lightning && !lightning.destroyed) {
+                        gsap.killTweensOf(lightning);
+                        lightning.destroy();
+                    }
+                }
+            });
+            
+            this.screenShake(8, 0.9, 300);
+            
+        } catch (error) {
+            console.error('❌ spawnLightningStrike error:', error);
+        }
+    }
+
+    /**
+     * Создает огненный шар, летящий от стартовой позиции к цели
+     */
+    public spawnFireballProjectile(
+        startX: number,
+        startY: number,
+        targetX: number,
+        targetY: number,
+        victim: any
+    ): void {
+        try {
+            const fireball = new PIXI.Graphics();
+            fireball.beginPath();
+            fireball.circle(0, 0, 16);
+            fireball.fill({ color: 0xFF5500 });
+            fireball.position.set(startX, startY);
+            this.pixiApp.effectsLayer.addChild(fireball);
+
+            // GSAP tween for the fireball movement
+            gsap.to(fireball, {
+                x: targetX,
+                y: targetY,
+                duration: 0.45,
+                ease: 'power1.out',
+                onUpdate: () => {
+                    if (fireball.destroyed) return;
+                    
+                    const particle = new PIXI.Graphics();
+                    const radius = 4 + Math.random() * 4;
+                    particle.beginPath();
+                    particle.circle(0, 0, radius);
+                    particle.fill({ color: 0xFF4400 });
+                    particle.position.set(fireball.x + (Math.random() - 0.5) * 8, fireball.y + (Math.random() - 0.5) * 8);
+                    this.pixiApp.effectsLayer.addChild(particle);
+                    
+                    gsap.to(particle, {
+                        alpha: 0,
+                        duration: 0.3,
+                        ease: 'power2.out',
+                        onComplete: () => {
+                            if (particle && !particle.destroyed) {
+                                gsap.killTweensOf(particle);
+                                particle.destroy();
+                            }
+                        }
+                    });
+                },
+                onComplete: () => {
+                    if (fireball && !fireball.destroyed) {
+                        gsap.killTweensOf(fireball);
+                        fireball.destroy();
+                    }
+                    this.spawnExplosion(targetX, targetY);
+                    
+                    if (victim && !victim.destroyed) {
+                        victim.isBurningStatus = true;
+                        if (typeof victim.showBurnEffect === 'function') {
+                            victim.showBurnEffect();
+                        }
+                        victim.updateTints();
+                        
+                        setTimeout(() => {
+                            if (victim && !victim.destroyed) {
+                                victim.isBurningStatus = false;
+                                if (typeof victim.removeBurnEffect === 'function') {
+                                    victim.removeBurnEffect();
+                                }
+                                victim.updateTints();
+                            }
+                        }, 2000);
+                    }
+                }
+            });
+        } catch (error) {
+            console.error('❌ spawnFireballProjectile error:', error);
+        }
+    }
+
+    /**
+     * Взрыв от попадания огненного шара
+     */
+    public spawnExplosion(x: number, y: number): void {
+        try {
+            this.screenShake(4, 0.95, 200);
+            
+            for (let i = 0; i < 12; i++) {
+                const particle = new PIXI.Graphics();
+                const radius = 6 + Math.random() * 6;
+                particle.beginPath();
+                particle.circle(0, 0, radius);
+                particle.fill({ color: 0xFF5500 });
+                particle.position.set(x, y);
+                this.pixiApp.effectsLayer.addChild(particle);
+                
+                const angle = (i * Math.PI * 2) / 12 + (Math.random() - 0.5) * 0.2;
+                const distance = 50 + Math.random() * 60;
+                
+                gsap.to(particle, {
+                    x: x + Math.cos(angle) * distance,
+                    y: y + Math.sin(angle) * distance,
+                    alpha: 0,
+                    duration: 0.35,
+                    ease: 'power2.out',
+                    onComplete: () => {
+                        if (particle && !particle.destroyed) {
+                            gsap.killTweensOf(particle);
+                            particle.destroy();
+                        }
+                    }
+                });
+            }
+        } catch (error) {
+            console.error('❌ spawnExplosion error:', error);
         }
     }
 

@@ -90,9 +90,25 @@ export class HeroUnit extends PIXI.Container {
     public calculatedBaseScale: number = 1.0;
     public nextAttackPose: number = 3;
     public isStunnedStatus: boolean = false;
+    public isBurningStatus: boolean = false;
+    public isFrozenStatus: boolean = false;
+    public isPoisonedStatus: boolean = false;
+
+    public stunEffectContainer: PIXI.Container | null = null;
+    public stunTween: gsap.core.Tween | null = null;
+    public burnEffectContainer: PIXI.Container | null = null;
+    public freezeEffectContainer: PIXI.Container | null = null;
+    public poisonEffectContainer: PIXI.Container | null = null;
+    
+    public currentWeaponId: string | null = null;
+    private weaponTrailPositions: PIXI.Point[] = [];
+    private weaponTrailGraphics: PIXI.Graphics | null = null;
+
     public attackCounter: number = 0;
+    public statusEffects: any[] = [];
     private currentResolve: (() => void) | null = null;
     private trailInterval: any = null;
+    public isLunging: boolean = false;
     
     public defaultX: number = 0;
     public defaultY: number = 0;
@@ -166,7 +182,11 @@ export class HeroUnit extends PIXI.Container {
         let tex: PIXI.Texture;
         if (this.config.id === 'panda' || this.config.image.includes('panda')) {
             try {
-                const sheet = await PIXI.Assets.load('/assets/characters/panda/panda_poses.png.json');
+                const equippedSkin = useGameStore.getState().equippedSkins?.['panda'] || 'default';
+                const jsonPath = equippedSkin === 'panda_frost'
+                    ? '/assets/characters/panda/panda_frost_poses.png.json'
+                    : '/assets/characters/panda/panda_poses.png.json';
+                const sheet = await PIXI.Assets.load(jsonPath);
                 this.posesTextures = [];
                 const frameKeys = Object.keys(sheet.data.frames);
                 for (const key of frameKeys) {
@@ -279,6 +299,7 @@ export class HeroUnit extends PIXI.Container {
      * Экипировка оружия с использованием контейнера-сокета
      */
     async equipWeapon(itemId: string | null) {
+        this.currentWeaponId = itemId;
         const isPanda = this.config?.id === 'panda' || this.config?.image.includes('panda');
         const isRaccoon = this.config?.id === 'raccoon' || this.config?.image.includes('raccoon');
         if (isPanda || isRaccoon) return;
@@ -555,6 +576,29 @@ export class HeroUnit extends PIXI.Container {
     }
 
     /**
+     * Получить глобальные координаты сокета персонажа
+     */
+    public getSocketGlobalPosition(socketKey: 'rightHand' | 'leftHand' | 'head' | 'feet' | 'center'): PIXI.Point {
+        try {
+            if (!this.bodySprite || this.bodySprite.destroyed || !this.bodySprite.texture) {
+                return this.getVisualCenter();
+            }
+            const socket = this.config?.anchors?.[socketKey] || { x: 0.5, y: 0.5 };
+            const feet = this.config?.anchors?.feet || { x: 0.5, y: 0.95 };
+            const texWidth = this.bodySprite.texture.width || 1;
+            const texHeight = this.bodySprite.texture.height || 1;
+            
+            const lx = (socket.x - feet.x) * texWidth;
+            const ly = (socket.y - feet.y) * texHeight;
+            
+            return this.bodySprite.toGlobal(new PIXI.Point(lx, ly));
+        } catch (e) {
+            console.warn(`[HeroUnit] Failed to get socket ${socketKey} position, fallback to center:`, e);
+            return this.getVisualCenter();
+        }
+    }
+
+    /**
      * Анимация атаки (GSAP взмах оружием и наклон корпуса)
      */
     public playAttackAnimation() {
@@ -574,8 +618,8 @@ export class HeroUnit extends PIXI.Container {
                 const squashTl = gsap.timeline();
                 squashTl.timeScale(timeScale);
                 squashTl.to(this.bodyContainer.scale, {
-                    x: baseScale * 1.2,
-                    y: baseScale * 0.8,
+                    x: baseScale * 1.05,
+                    y: baseScale * 0.95,
                     duration: 0.15,
                     ease: 'power1.out'
                 }).to(this.bodyContainer.scale, {
@@ -590,8 +634,8 @@ export class HeroUnit extends PIXI.Container {
                 const stretchTl = gsap.timeline();
                 stretchTl.timeScale(timeScale);
                 stretchTl.to(this.bodyContainer.scale, {
-                    x: baseScale * 1.3,
-                    y: baseScale * 0.75,
+                    x: baseScale * 1.06,
+                    y: baseScale * 0.94,
                     duration: 0.12,
                     ease: 'power2.out'
                 }).to(this.bodyContainer.scale, {
@@ -639,15 +683,15 @@ export class HeroUnit extends PIXI.Container {
             this.setFrame(chosenPose);
 
             if (chosenPose === 6) {
-                // Jump strike animation: squash and stretch on impact
+                // Jump strike animation: squash and stretch on impact (subtle)
                 gsap.killTweensOf(this.bodyContainer.scale);
                 const baseScale = this.calculatedBaseScale;
                 const squashTl = gsap.timeline();
                 squashTl.timeScale(timeScale);
 
                 squashTl.to(this.bodyContainer.scale, {
-                    x: baseScale * 1.2,
-                    y: baseScale * 0.8,
+                    x: baseScale * 1.05,
+                    y: baseScale * 0.95,
                     duration: 0.15,
                     ease: 'power1.out'
                 });
@@ -661,15 +705,15 @@ export class HeroUnit extends PIXI.Container {
                     this.setFrame(0); // return to Idle
                 }, 700 / timeScale);
             } else if (chosenPose === 4) {
-                // Thrust: Horizontal stretch to simulate pierce
+                // Thrust: Horizontal stretch to simulate pierce (subtle)
                 gsap.killTweensOf(this.bodyContainer.scale);
                 const baseScale = this.calculatedBaseScale;
                 const stretchTl = gsap.timeline();
                 stretchTl.timeScale(timeScale);
 
                 stretchTl.to(this.bodyContainer.scale, {
-                    x: baseScale * 1.3,
-                    y: baseScale * 0.75,
+                    x: baseScale * 1.06,
+                    y: baseScale * 0.94,
                     duration: 0.12,
                     ease: 'power2.out'
                 });
@@ -818,10 +862,13 @@ export class HeroUnit extends PIXI.Container {
             const py = (s.y - anchors.feet.y) * this.baseSize;
             g.circle(px, py, 6).fill({ color: cfg.color, alpha: 0.8 });
 
-            const label = new PIXI.Text(key, {
-                fontSize: 12,
-                fill: cfg.color,
-                stroke: { color: 0x000000, width: 2 },
+            const label = new PIXI.Text({
+                text: key,
+                style: {
+                    fontSize: 12,
+                    fill: cfg.color,
+                    stroke: { color: 0x000000, width: 2 },
+                }
             });
             label.position.set(px + 8, py - 6);
             this.addChild(label);
@@ -838,18 +885,243 @@ export class HeroUnit extends PIXI.Container {
     public update(dt: number) {
         if (!this.bodySprite || !this.bodySprite.texture) return;
 
-        this.animTime += dt * 0.05;
-        const breath = Math.sin(this.animTime) * 0.02;
+        let speedMultiplier = 1.0;
+        if (this.isFrozenStatus) {
+            speedMultiplier = 0.25;
+        }
+
+        this.animTime += dt * 0.08 * speedMultiplier;
+        const breathY = Math.sin(this.animTime) * 0.035; // 3.5% height squash/stretch
+        const breathX = -Math.sin(this.animTime) * 0.025; // opposite width stretch/squash
 
         const baseScale = this.calculatedBaseScale;
 
         // Если идет анимация масштаба от удара/крита, не перезаписываем ее idle-дыханием
         if (!gsap.isTweening(this.bodyContainer) && !gsap.isTweening(this.bodyContainer.scale)) {
-            this.bodyContainer.scale.y = baseScale + breath;
+            this.bodyContainer.scale.y = baseScale + breathY;
+            this.bodyContainer.scale.x = (this.bodyContainer.scale.x >= 0 ? 1 : -1) * (baseScale + breathX);
+        }
+
+        // 1. Покачивание персонажа при оглушении
+        if (this.isStunnedStatus) {
+            this.bodyContainer.rotation = Math.sin(this.animTime * 1.5) * 0.08;
+            this.bodyContainer.y = Math.sin(this.animTime * 3) * 6;
+        } else {
+            this.bodyContainer.rotation = 0;
+            this.bodyContainer.y = 0;
+        }
+
+        // 2. Генерация пламени при горении (сочные языки пламени с блендингом add)
+        if (this.isBurningStatus && this.burnEffectContainer) {
+            if (Math.random() < 0.45) {
+                const flame = new PIXI.Graphics();
+                const height = 65 + Math.random() * 95;
+                const width = 18 + Math.random() * 25;
+                
+                flame.beginPath();
+                flame.moveTo(0, 0);
+                flame.quadraticCurveTo(-width, -height * 0.3, -width * 0.3, -height * 0.75);
+                flame.quadraticCurveTo(0, -height, width * 0.3, -height * 0.75);
+                flame.quadraticCurveTo(width, -height * 0.3, 0, 0);
+                flame.closePath();
+                
+                const colors = [0xff3300, 0xff6600, 0xffaa00, 0xffdd00];
+                flame.fill({ color: colors[Math.floor(Math.random() * colors.length)] });
+                flame.alpha = 0.85;
+                flame.blendMode = 'add';
+                
+                // Распределяем по всему телу от ног до головы
+                flame.x = (Math.random() - 0.5) * 160;
+                flame.y = -Math.random() * 320;
+                flame.scale.set(0.15);
+                this.burnEffectContainer.addChild(flame);
+                
+                gsap.to(flame.scale, {
+                    x: 1.1 + Math.random() * 0.4,
+                    y: 1.1 + Math.random() * 0.4,
+                    duration: 0.6,
+                });
+                
+                gsap.to(flame, {
+                    y: flame.y - 100 - Math.random() * 60,
+                    x: flame.x + (Math.random() - 0.5) * 50,
+                    alpha: 0,
+                    duration: 0.5 + Math.random() * 0.4,
+                    ease: 'power1.out',
+                    onComplete: () => {
+                        if (flame && !flame.destroyed) {
+                            gsap.killTweensOf(flame);
+                            gsap.killTweensOf(flame.scale);
+                            flame.destroy();
+                        }
+                    }
+                });
+            }
+        }
+
+        // 3. Генерация пузырьков и ядовитого облака при отравлении (зеленая дымка)
+        if (this.isPoisonedStatus && this.poisonEffectContainer) {
+            // Зеленое облако испарений
+            if (Math.random() < 0.22) {
+                const puff = new PIXI.Graphics();
+                const radius = 18 + Math.random() * 22;
+                puff.beginPath();
+                puff.circle(0, 0, radius);
+                puff.fill({ color: 0x228b22, alpha: 0.18 });
+                puff.blendMode = 'add';
+                puff.x = (Math.random() - 0.5) * 160;
+                puff.y = -Math.random() * 320;
+                this.poisonEffectContainer.addChild(puff);
+                
+                gsap.to(puff, {
+                    y: puff.y - 120,
+                    x: puff.x + (Math.random() - 0.5) * 35,
+                    alpha: 0,
+                    duration: 1.4,
+                    ease: 'sine.out',
+                    onComplete: () => {
+                        if (puff && !puff.destroyed) {
+                            gsap.killTweensOf(puff);
+                            puff.destroy();
+                        }
+                    }
+                });
+            }
+
+            // Токсичные пузырьки
+            if (Math.random() < 0.25) {
+                const p = new PIXI.Graphics();
+                const radius = 2.5 + Math.random() * 4.5;
+                p.beginPath();
+                p.circle(0, 0, radius);
+                p.fill({ color: 0xadff2f, alpha: 0.75 });
+                p.stroke({ color: 0x32cd32, width: 1.5 });
+                
+                p.x = (Math.random() - 0.5) * 160;
+                p.y = -Math.random() * 300;
+                p.alpha = 0.8;
+                this.poisonEffectContainer.addChild(p);
+                
+                gsap.to(p, {
+                    y: p.y - 160,
+                    x: p.x + Math.sin(Math.random() * Math.PI) * 25,
+                    alpha: 0,
+                    duration: 1.0 + Math.random() * 0.5,
+                    ease: 'power1.out',
+                    onComplete: () => {
+                        if (p && !p.destroyed) {
+                            gsap.killTweensOf(p);
+                            p.destroy();
+                        }
+                    }
+                });
+            }
+        }
+
+        // 4. Генерация снежинок при заморозке (плавный дрифт морозного воздуха)
+        if (this.isFrozenStatus && this.freezeEffectContainer) {
+            if (Math.random() < 0.25) {
+                const p = new PIXI.Graphics();
+                const size = 3 + Math.random() * 4.5;
+                p.beginPath();
+                p.moveTo(0, -size);
+                p.lineTo(size * 0.6, 0);
+                p.lineTo(0, size);
+                p.lineTo(-size * 0.6, 0);
+                p.closePath();
+                p.fill({ color: 0xe0f7fa });
+                p.stroke({ color: 0x80deea, width: 1 });
+                
+                p.x = (Math.random() - 0.5) * 160;
+                p.y = -Math.random() * 320;
+                p.alpha = 0.8;
+                this.freezeEffectContainer.addChild(p);
+                
+                gsap.to(p, {
+                    y: p.y + 40,
+                    x: p.x + (Math.random() - 0.5) * 20,
+                    alpha: 0,
+                    duration: 0.9 + Math.random() * 0.9,
+                    ease: 'sine.inOut',
+                    onComplete: () => {
+                        if (p && !p.destroyed) {
+                            gsap.killTweensOf(p);
+                            p.destroy();
+                        }
+                    }
+                });
+            }
+        }
+
+        // Update Weapon Trail
+        try {
+            if (this.weaponSocketContainer && this.weaponSocketContainer.parent && this.parent) {
+                if (!this.weaponTrailGraphics) {
+                    this.weaponTrailGraphics = new PIXI.Graphics();
+                    this.parent.addChild(this.weaponTrailGraphics);
+                }
+                
+                const currentPos = this.getSocketGlobalPosition('rightHand');
+                if (currentPos) {
+                    const parentPos = this.parent.toLocal(currentPos);
+                    if (parentPos && typeof parentPos.x === 'number' && typeof parentPos.y === 'number') {
+                        this.weaponTrailPositions.push(parentPos);
+                        if (this.weaponTrailPositions.length > 8) {
+                            this.weaponTrailPositions.shift();
+                        }
+                    }
+                }
+                
+                this.weaponTrailGraphics.clear();
+                if (this.weaponTrailPositions.length >= 2) {
+                    let trailColor = 0xFFFFFF;
+                    if (this.isBurningStatus) {
+                        trailColor = 0xFF6600;
+                    } else if (this.isFrozenStatus) {
+                        trailColor = 0x88CCFF;
+                    } else if (this.isPoisonedStatus) {
+                        trailColor = 0x44FF44;
+                    } else if (this.currentWeaponId) {
+                        const idLower = this.currentWeaponId.toLowerCase();
+                        if (idLower.includes('fire') || idLower.includes('lava') || idLower.includes('blaze') || idLower.includes('burn')) {
+                            trailColor = 0xFF6600;
+                        } else if (idLower.includes('ice') || idLower.includes('frost') || idLower.includes('cold') || idLower.includes('freeze')) {
+                            trailColor = 0x88CCFF;
+                        } else if (idLower.includes('poison') || idLower.includes('venom') || idLower.includes('acid') || idLower.includes('toxic') || idLower.includes('spider')) {
+                            trailColor = 0x44FF44;
+                        }
+                    }
+                    
+                    for (let i = 0; i < this.weaponTrailPositions.length - 1; i++) {
+                        const p1 = this.weaponTrailPositions[i];
+                        const p2 = this.weaponTrailPositions[i + 1];
+                        const alpha = i / (this.weaponTrailPositions.length - 1);
+                        
+                        this.weaponTrailGraphics.beginPath();
+                        this.weaponTrailGraphics.moveTo(p1.x, p1.y);
+                        this.weaponTrailGraphics.lineTo(p2.x, p2.y);
+                        this.weaponTrailGraphics.stroke({ color: trailColor, width: 4 + alpha * 6, alpha: alpha * 0.7 });
+                    }
+                }
+            } else {
+                if (this.weaponTrailGraphics) {
+                    this.weaponTrailGraphics.clear();
+                }
+            }
+        } catch (err) {
+            console.warn('[HeroUnit] Weapon trail update error:', err);
         }
     }
 
     public destroy(options?: any) {
+        if (this.weaponTrailGraphics) {
+            if (this.weaponTrailGraphics.parent) {
+                this.weaponTrailGraphics.parent.removeChild(this.weaponTrailGraphics);
+            }
+            this.weaponTrailGraphics.destroy();
+            this.weaponTrailGraphics = null;
+        }
+
         gsap.killTweensOf(this);
         if (this.bodyContainer) {
             gsap.killTweensOf(this.bodyContainer);
@@ -867,22 +1139,166 @@ export class HeroUnit extends PIXI.Container {
         if (this.armorSprite) gsap.killTweensOf(this.armorSprite);
         if (this.shieldSocketContainer) gsap.killTweensOf(this.shieldSocketContainer);
         if (this.shieldSprite) gsap.killTweensOf(this.shieldSprite);
+        
         this.removeStunEffect();
+        this.removeFreezeEffect();
+        this.removeBurnEffect();
+        this.removePoisonEffect();
+        
         super.destroy(options);
+    }
+
+    /**
+     * Телепортация персонажа с эффектом тумана
+     */
+    public teleportTo(newX: number, newY: number): Promise<void> {
+        return new Promise((resolve) => {
+            EffectsManager.getInstance().spawnSmokePuff(this.x, this.y);
+            
+            gsap.to(this, {
+                alpha: 0,
+                duration: 0.2,
+                onComplete: () => {
+                    this.x = newX;
+                    this.y = newY;
+                    EffectsManager.getInstance().spawnSmokePuff(newX, newY);
+                    
+                    gsap.to(this, {
+                        alpha: 1,
+                        duration: 0.2,
+                        onComplete: () => {
+                            resolve();
+                        }
+                    });
+                }
+            });
+        });
+    }
+
+    /**
+     * Прыжок + приземление с ударом (Landing Slam)
+     */
+    public jumpSlam(targetX: number): Promise<void> {
+        return new Promise((resolve) => {
+            const originalY = this.y;
+            
+            // 1. Прыжок вверх
+            gsap.to(this, {
+                y: this.y - 120,
+                duration: 0.3,
+                ease: 'power2.out',
+                onComplete: () => {
+                    // 2. Падение на цель
+                    gsap.to(this, {
+                        y: originalY,
+                        x: targetX,
+                        duration: 0.2,
+                        ease: 'power2.in',
+                        onComplete: () => {
+                            this.spawnLandingEffect();
+                            resolve();
+                        }
+                    });
+                }
+            });
+        });
+    }
+
+    /**
+     * Визуальный эффект приземления после прыжка
+     */
+    private spawnLandingEffect(): void {
+        try {
+            if (!this.parent) return;
+
+            const ring = new PIXI.Graphics();
+            ring.beginPath();
+            ring.circle(0, 0, 30);
+            ring.stroke({ color: 0xDDDDDD, width: 4 });
+            ring.position.set(this.x, this.y);
+            this.parent.addChild(ring);
+            
+            ring.scale.set(0);
+            gsap.to(ring.scale, {
+                x: 3,
+                y: 3,
+                duration: 0.3,
+                ease: 'power1.out',
+                onComplete: () => {
+                    if (ring && !ring.destroyed) {
+                        gsap.killTweensOf(ring);
+                        gsap.killTweensOf(ring.scale);
+                        ring.destroy();
+                    }
+                }
+            });
+            gsap.to(ring, {
+                alpha: 0,
+                duration: 0.3,
+                ease: 'power1.out'
+            });
+
+            const dustCount = 6 + Math.floor(Math.random() * 3);
+            for (let i = 0; i < dustCount; i++) {
+                const dust = new PIXI.Graphics();
+                const radius = 6 + Math.random() * 8;
+                dust.beginPath();
+                dust.circle(0, 0, radius);
+                dust.fill({ color: 0xCCCCCC, alpha: 0.5 });
+                
+                dust.position.set(this.x, this.y);
+                this.parent.addChild(dust);
+                
+                const angle = Math.PI + (Math.random() * Math.PI);
+                const distance = 30 + Math.random() * 50;
+                
+                gsap.to(dust, {
+                    x: this.x + Math.cos(angle) * distance,
+                    y: this.y + Math.sin(angle) * distance * 0.4,
+                    alpha: 0,
+                    duration: 0.35,
+                    ease: 'power1.out',
+                    onComplete: () => {
+                        if (dust && !dust.destroyed) {
+                            gsap.killTweensOf(dust);
+                            dust.destroy();
+                        }
+                    }
+                });
+            }
+
+            EffectsManager.getInstance().screenShake(5, 0.95, 200);
+
+        } catch (e) {
+            console.error('❌ spawnLandingEffect error:', e);
+        }
     }
 
     /**
      * GSAP-рывок вперед для атаки
      */
-    public animateLungeForward(isPlayer: boolean, poseOverride?: number): Promise<void> {
+    public animateLungeForward(isPlayer: boolean, poseOverride?: number, victimX?: number): Promise<void> {
         this.clearCurrentResolve();
+        this.isLunging = true;
+        // Спавним облако пыли под ногами при разгоне
+        EffectsManager.getInstance().spawnDustPuff(this.x, this.y);
         return new Promise((resolve) => {
-            this.currentResolve = resolve;
+            // Safety timeout: resolve after 2s max to prevent freeze
+            const safetyTimer = setTimeout(() => {
+                if (this.isLunging) {
+                    this.isLunging = false;
+                    resolve();
+                }
+            }, 2000);
+            const wrappedResolve = () => { clearTimeout(safetyTimer); this.isLunging = false; resolve(); };
+            this.currentResolve = wrappedResolve;
             const timeScale = useGameStore.getState().timeScale || 1;
             const startX = this.x;
             const startY = this.y;
-            // Let them dash closer so they are almost touching: 490px travel distance
-            const targetX = startX + 490 * (isPlayer ? 1 : -1);
+            // Дамажим вплотную: останавливаемся в 135px перед целью
+            const targetX = victimX !== undefined
+                ? (isPlayer ? victimX - 135 : victimX + 135)
+                : startX + 540 * (isPlayer ? 1 : -1);
 
             gsap.killTweensOf(this);
 
@@ -905,7 +1321,7 @@ export class HeroUnit extends PIXI.Container {
             const isAssassin = this.config?.role === 'ASSASSIN';
             if (this.trailInterval) clearInterval(this.trailInterval);
             if (isAssassin) {
-                const fxColor = 0xbd00ff; // Фиолетовый шлейф Убийцы
+                const fxColor = 0x222222; // Черный/теневой шлейф Убийцы
                 this.trailInterval = setInterval(() => {
                     EffectsManager.getInstance().spawnGhostTrail(this, 300, fxColor);
                 }, 40);
@@ -917,19 +1333,19 @@ export class HeroUnit extends PIXI.Container {
                         clearInterval(this.trailInterval);
                         this.trailInterval = null;
                     }
-                    if (this.currentResolve === resolve) {
+                    if (this.currentResolve === wrappedResolve) {
                         this.currentResolve = null;
                     }
-                    resolve();
+                    wrappedResolve();
                 },
             });
             tl.timeScale(timeScale);
 
             if (this.nextAttackPose === 6) {
-                // 1. Jump strike lunge: high arc (Y: -220px) to targets
+                // 1. Jump strike lunge: high arc (Y: -360px) to targets
                 tl.to(this, {
                     x: targetX,
-                    y: startY - 220,
+                    y: startY - 360,
                     duration: 0.35,
                     ease: 'power1.out',
                 });
@@ -970,15 +1386,29 @@ export class HeroUnit extends PIXI.Container {
 
     public animateLungeReturn(startX: number, startY: number): Promise<void> {
         this.clearCurrentResolve();
+        this.isLunging = true;
+        // Спавним облако пыли при резком отскоке
+        EffectsManager.getInstance().spawnDustPuff(this.x, this.y);
         return new Promise((resolve) => {
-            this.currentResolve = resolve;
+            // Safety timeout: resolve after 2s max to prevent freeze
+            const safetyTimer = setTimeout(() => {
+                if (this.isLunging) {
+                    this.isLunging = false;
+                    this.x = startX;
+                    this.y = startY;
+                    this.setFrame(0);
+                    resolve();
+                }
+            }, 2000);
+            const wrappedResolve = () => { clearTimeout(safetyTimer); this.isLunging = false; resolve(); };
+            this.currentResolve = wrappedResolve;
             const timeScale = useGameStore.getState().timeScale || 1;
 
             const isAssassin = this.config?.role === 'ASSASSIN';
             if (this.trailInterval) clearInterval(this.trailInterval);
             if (isAssassin) {
                 this.trailInterval = setInterval(() => {
-                    EffectsManager.getInstance().spawnGhostTrail(this, 300, 0xbd00ff);
+                    EffectsManager.getInstance().spawnGhostTrail(this, 300, 0x222222);
                 }, 40);
             }
 
@@ -991,10 +1421,10 @@ export class HeroUnit extends PIXI.Container {
                     this.x = startX;
                     this.y = startY;
                     this.setFrame(0); // return to Idle
-                    if (this.currentResolve === resolve) {
+                    if (this.currentResolve === wrappedResolve) {
                         this.currentResolve = null;
                     }
-                    resolve();
+                    wrappedResolve();
                 },
             });
             tl.timeScale(timeScale);
@@ -1114,7 +1544,9 @@ export class HeroUnit extends PIXI.Container {
 
     public showStunEffect() {
         if (this.stunEffectContainer) return;
+        this.isStunnedStatus = true;
         this.stunEffectContainer = new PIXI.Container();
+        this.stunEffectContainer.zIndex = 35;
         this.addChild(this.stunEffectContainer);
 
         const headSocket = this.config?.anchors?.head || { x: 0.5, y: 0.2 };
@@ -1123,7 +1555,7 @@ export class HeroUnit extends PIXI.Container {
         const texHeight = this.bodySprite?.texture?.height || 512;
 
         const hx = (headSocket.x - feetSocket.x) * texWidth * (this.bodyContainer?.scale?.x || 1);
-        const hy = (headSocket.y - feetSocket.y) * texHeight * (this.bodyContainer?.scale?.y || 1) - 120; // Raised from -40 to -120 to sit higher above the head
+        const hy = (headSocket.y - feetSocket.y) * texHeight * (this.bodyContainer?.scale?.y || 1) - 75; // Positioned right above the head
         this.stunEffectContainer.position.set(hx, hy);
 
         const stars: PIXI.Graphics[] = [];
@@ -1149,9 +1581,9 @@ export class HeroUnit extends PIXI.Container {
         for (let i = 0; i < 3; i++) {
             const star = new PIXI.Graphics();
             star.beginPath();
-            drawStar(star, 10, 4);
+            drawStar(star, 14, 6); // Larger stars (14px outer radius instead of 10px)
             star.fill({ color: 0xffea00 });
-            star.stroke({ color: 0xffaa00, width: 1.5 });
+            star.stroke({ color: 0xffaa00, width: 2.0 });
             this.stunEffectContainer.addChild(star);
             stars.push(star);
         }
@@ -1167,17 +1599,34 @@ export class HeroUnit extends PIXI.Container {
                 stars.forEach((star, index) => {
                     const offset = (index * Math.PI * 2) / 3;
                     const a = animObj.angle + offset;
-                    star.x = Math.cos(a) * 35;
-                    star.y = Math.sin(a) * 12;
-                    star.scale.set(0.6 + Math.sin(a) * 0.4);
+                    star.x = Math.cos(a) * 45; // slightly wider orbit path
+                    star.y = Math.sin(a) * 15;
+                    star.scale.set(0.85 + Math.sin(a) * 0.4); // larger base scale
                     star.rotation = animObj.angle * 2.5;
                 });
             }
         });
         (this.stunEffectContainer as any).gsapTween = tween;
+
+        // Покачивание (rotation oscillation) во время оглушения
+        this.stunTween = gsap.to(this.bodyContainer, {
+            rotation: 0.08,
+            yoyo: true,
+            repeat: -1,
+            duration: 0.15,
+            ease: 'sine.inOut',
+        });
     }
 
     public removeStunEffect() {
+        this.isStunnedStatus = false;
+        if (this.stunTween) {
+            this.stunTween.kill();
+            this.stunTween = null;
+        }
+        if (this.bodyContainer) {
+            this.bodyContainer.rotation = 0;
+        }
         if (this.stunEffectContainer) {
             const tween = (this.stunEffectContainer as any).gsapTween;
             if (tween) {
@@ -1188,6 +1637,191 @@ export class HeroUnit extends PIXI.Container {
             this.stunEffectContainer.destroy({ children: true });
             this.stunEffectContainer = null;
         }
+    }
+
+    public updateTints() {
+        if (!this.bodySprite) return;
+        if (this.isFrozenStatus) {
+            this.bodySprite.tint = 0x88ccff;
+        } else if (this.isBurningStatus) {
+            this.bodySprite.tint = 0xff8844;
+        } else if (this.isPoisonedStatus) {
+            this.bodySprite.tint = 0x8dffa9;
+        } else {
+            this.bodySprite.tint = 0xffffff;
+        }
+    }
+
+    public showBurnEffect() {
+        if (this.burnEffectContainer) return;
+        this.isBurningStatus = true;
+        this.burnEffectContainer = new PIXI.Container();
+        this.burnEffectContainer.zIndex = 35;
+        this.addChild(this.burnEffectContainer);
+        this.updateTints();
+    }
+
+    public removeBurnEffect() {
+        this.isBurningStatus = false;
+        if (this.burnEffectContainer) {
+            gsap.killTweensOf(this.burnEffectContainer);
+            this.burnEffectContainer.children.forEach(child => {
+                gsap.killTweensOf(child);
+                gsap.killTweensOf(child.scale);
+            });
+            this.removeChild(this.burnEffectContainer);
+            this.burnEffectContainer.destroy({ children: true });
+            this.burnEffectContainer = null;
+        }
+        this.updateTints();
+    }
+
+    public showFreezeEffect() {
+        if (this.freezeEffectContainer) return;
+        this.isFrozenStatus = true;
+        this.freezeEffectContainer = new PIXI.Container();
+        this.freezeEffectContainer.zIndex = 35;
+        this.addChild(this.freezeEffectContainer);
+        this.updateTints();
+
+        // 1. Рисуем красивую полупрозрачную ледяную глыбу вокруг персонажа
+        const iceBlock = new PIXI.Graphics();
+        
+        // Координаты глыбы льда (покрывает персонажа снизу до головы)
+        const points = [
+            { x: -125, y: 5 },
+            { x: 125, y: 5 },
+            { x: 145, y: -150 },
+            { x: 90, y: -340 },
+            { x: -90, y: -340 },
+            { x: -145, y: -150 }
+        ];
+
+        iceBlock.beginPath();
+        iceBlock.moveTo(points[0].x, points[0].y);
+        for (let i = 1; i < points.length; i++) {
+            iceBlock.lineTo(points[i].x, points[i].y);
+        }
+        iceBlock.closePath();
+
+        // Полупрозрачный циановый лед
+        iceBlock.fill({ color: 0x80deea, alpha: 0.55 });
+        // Четкая светящаяся ледяная кайма
+        iceBlock.stroke({ color: 0xe0f7fa, width: 3.5, alpha: 0.85 });
+
+        // 2. Рисуем внутренние грани/трещины кристалла для 3D объема
+        const facets = new PIXI.Graphics();
+        facets.beginPath();
+        
+        // Линии граней
+        facets.moveTo(-50, -170);
+        facets.lineTo(50, -170);
+        facets.lineTo(90, -340);
+        
+        facets.moveTo(-50, -170);
+        facets.lineTo(-90, -340);
+        
+        facets.moveTo(-50, -170);
+        facets.lineTo(-145, -150);
+        
+        facets.moveTo(50, -170);
+        facets.lineTo(145, -150);
+        
+        facets.moveTo(-50, -170);
+        facets.lineTo(-125, 5);
+        
+        facets.moveTo(50, -170);
+        facets.lineTo(125, 5);
+        
+        facets.closePath();
+        facets.stroke({ color: 0xffffff, width: 2.0, alpha: 0.65 });
+        facets.blendMode = 'add';
+
+        this.freezeEffectContainer.addChild(iceBlock);
+        this.freezeEffectContainer.addChild(facets);
+
+        // 3. Добавление 5–7 ледяных кристаллов вокруг персонажа в форме ромба
+        const crystalCount = 5 + Math.floor(Math.random() * 3);
+        for (let i = 0; i < crystalCount; i++) {
+            const crystal = new PIXI.Graphics();
+            const size = 8 + Math.random() * 8; // 8-16px
+            
+            crystal.beginPath();
+            crystal.moveTo(0, -size);
+            crystal.lineTo(size * 0.6, 0);
+            crystal.lineTo(0, size);
+            crystal.lineTo(-size * 0.6, 0);
+            crystal.closePath();
+            crystal.fill({ color: 0xAADDFF });
+            crystal.stroke({ color: 0xFFFFFF, width: 1.5 });
+            
+            const angle = Math.random() * Math.PI * 2;
+            const distance = 40 + Math.random() * 20;
+            crystal.x = Math.cos(angle) * distance;
+            crystal.y = Math.sin(angle) * distance * 0.4 - 20;
+            
+            crystal.scale.set(0);
+            gsap.to(crystal.scale, {
+                x: 1,
+                y: 1,
+                duration: 0.2,
+                ease: 'back.out(1.5)'
+            });
+            
+            this.freezeEffectContainer.addChild(crystal);
+        }
+
+        // Легкое ледяное мерцание (плавное пульсирование)
+        gsap.killTweensOf(this.freezeEffectContainer.scale);
+        this.freezeEffectContainer.scale.set(1.0);
+        gsap.to(this.freezeEffectContainer.scale, {
+            x: 1.02,
+            y: 1.02,
+            duration: 2.0,
+            repeat: -1,
+            yoyo: true,
+            ease: 'sine.inOut',
+        });
+    }
+
+    public removeFreezeEffect() {
+        this.isFrozenStatus = false;
+        if (this.freezeEffectContainer) {
+            gsap.killTweensOf(this.freezeEffectContainer);
+            gsap.killTweensOf(this.freezeEffectContainer.scale);
+            this.freezeEffectContainer.children.forEach(child => {
+                gsap.killTweensOf(child);
+                gsap.killTweensOf(child.scale);
+            });
+            this.removeChild(this.freezeEffectContainer);
+            this.freezeEffectContainer.destroy({ children: true });
+            this.freezeEffectContainer = null;
+        }
+        this.updateTints();
+    }
+
+    public showPoisonEffect() {
+        if (this.poisonEffectContainer) return;
+        this.isPoisonedStatus = true;
+        this.poisonEffectContainer = new PIXI.Container();
+        this.poisonEffectContainer.zIndex = 35;
+        this.addChild(this.poisonEffectContainer);
+        this.updateTints();
+    }
+
+    public removePoisonEffect() {
+        this.isPoisonedStatus = false;
+        if (this.poisonEffectContainer) {
+            gsap.killTweensOf(this.poisonEffectContainer);
+            this.poisonEffectContainer.children.forEach(child => {
+                gsap.killTweensOf(child);
+                gsap.killTweensOf(child.scale);
+            });
+            this.removeChild(this.poisonEffectContainer);
+            this.poisonEffectContainer.destroy({ children: true });
+            this.poisonEffectContainer = null;
+        }
+        this.updateTints();
     }
 
     /**
@@ -1312,10 +1946,10 @@ export class HeroUnit extends PIXI.Container {
                 const scaleTl = gsap.timeline();
                 scaleTl.timeScale(timeScale);
 
-                // Деформация сжатия по вертикали и растяжения по горизонтали (Slower)
+                // Деформация сжатия по вертикали и растяжения по горизонтали (Slower, subtle)
                 scaleTl.to(this.bodyContainer.scale, {
-                    x: baseScaleX * 1.15,
-                    y: baseScaleY * 0.85,
+                    x: baseScaleX * 1.05,
+                    y: baseScaleY * 0.95,
                     duration: 0.2, // Slowed down from 0.08
                     ease: 'power1.out',
                 });

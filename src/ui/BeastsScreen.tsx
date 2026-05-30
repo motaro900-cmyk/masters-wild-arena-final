@@ -318,9 +318,15 @@ const EquipmentTab: React.FC = () => {
 
             let sheet;
             try {
-                const sheetPath = selectedHeroId === 'raccoon'
-                    ? '/assets/characters/raccoon/raccoon_poses.png.json'
-                    : '/assets/characters/panda/panda_poses.png.json';
+                let sheetPath = '/assets/characters/panda/panda_poses.png.json';
+                if (selectedHeroId === 'raccoon') {
+                    sheetPath = '/assets/characters/raccoon/raccoon_poses.png.json';
+                } else if (selectedHeroId === 'panda') {
+                    const equippedSkin = useGameStore.getState().equippedSkins?.['panda'] || 'default';
+                    if (equippedSkin === 'panda_frost') {
+                        sheetPath = '/assets/characters/panda/panda_frost_poses.png.json';
+                    }
+                }
                 sheet = await PIXI.Assets.load(sheetPath);
             } catch (err) {
                 console.error(`Failed to load ${selectedHeroId} sheet:`, err);

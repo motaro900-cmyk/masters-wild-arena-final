@@ -1,6 +1,8 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { gsap } from 'gsap';
 import { useGameStore } from '../../../store/useGameStore';
 import { HEROES_DB } from '../../../configs/HeroesConfig';
+import { SKINS_DB } from '../../../configs/SkinsConfig';
 import { MOBS_DB } from '../../../configs/MobsConfig';
 import { BattleEngine, BattleState } from '../../../engine/core/BattleEngine';
 import { EffectsManager } from '../../../engine/systems/EffectsManager';
@@ -9,7 +11,7 @@ import { BattleResultScreen, BattleResultData } from './BattleResultScreen';
 import { PreBattleScreen } from './PreBattleScreen';
 import { audioService } from '../../../services/AudioService';
 import { AssetsMap } from '../../../configs/AssetsMap';
-import { BATTLE_REWARDS } from '../../../game/configs/GameConstants';
+import { calculateBattleRewards } from '../../../game/configs/GameConstants';
 import { showInterstitialAd } from '../../../utils/VKBridge';
 import { BattleHUD } from './Battle/BattleHUD';
 
@@ -22,7 +24,9 @@ export const BattleScene: React.FC = () => {
         timeScale,
         setTimeScale,
         activePveEnemy,
+        activeRankedOpponent,
         battleMode,
+        equippedSkins,
     } = useGameStore();
     const containerRef = useRef<HTMLDivElement>(null);
     const engineRef = useRef<BattleEngine | null>(null);
@@ -72,6 +76,10 @@ export const BattleScene: React.FC = () => {
     }, [showResult]);
 
     const playerHero = HEROES_DB.find((h) => h.id === selectedHeroId) || HEROES_DB[0];
+    const equippedSkinId = equippedSkins?.[selectedHeroId] || 'default';
+    const activeSkin = SKINS_DB.find(s => s.id === equippedSkinId && s.heroId === selectedHeroId);
+    const displayPlayerName = activeSkin && activeSkin.id !== 'default' ? activeSkin.name : playerHero.name;
+    const displayPlayerImage = activeSkin ? activeSkin.image : playerHero.image;
     const rawEnemy =
         battleMode === 'PVE'
             ? MOBS_DB.find((m) => m.id === selectedEnemyId) || MOBS_DB[0]
@@ -81,6 +89,25 @@ export const BattleScene: React.FC = () => {
         if ('baseStats' in rawEnemy) {
             return rawEnemy;
         }
+
+        if (battleMode === 'RANKED' && activeRankedOpponent) {
+            return {
+                id: activeRankedOpponent.id,
+                name: activeRankedOpponent.name,
+                rarity: 'COMMON',
+                image: activeRankedOpponent.heroImage,
+                baseStats: {
+                    hp: activeRankedOpponent.stats.hp,
+                    attack: activeRankedOpponent.stats.attack,
+                    defense: activeRankedOpponent.stats.defense,
+                    speed: activeRankedOpponent.stats.speed || 1.0,
+                    crit: activeRankedOpponent.stats.crit || activeRankedOpponent.stats.critChance || 0.05,
+                },
+                anchors: rawEnemy.anchors,
+                icon: '👤',
+            };
+        }
+
         const calculated = getCalculatedStats(rawEnemy.id)?.total || {
             hp: rawEnemy.stats.stamina * 20,
             attack: rawEnemy.stats.strength * 2,
@@ -103,7 +130,7 @@ export const BattleScene: React.FC = () => {
             anchors: rawEnemy.anchors,
             icon: '👤',
         };
-    }, [rawEnemy, getCalculatedStats]);
+    }, [rawEnemy, getCalculatedStats, battleMode, activeRankedOpponent]);
 
     // [Sound] Switch to battle music on mount
     useEffect(() => {
@@ -160,88 +187,123 @@ export const BattleScene: React.FC = () => {
                 const isWarmup = store.battleMode === 'WARMUP';
                 const isPve = store.battleMode === 'PVE';
 
-                let gold = 0;
-                let xp = 0;
-                let trophies = 0;
-                let crystals = 0;
+                (async () => {
+                    let gold = 0;
+                    let xp = 0;
+                    let trophies = 0;
+                    let crystals = 0;
 
-                if (isPve) {
-                    if (isVictory) {
-                        gold = store.pveStage * 100;
-                        xp = store.pveStage * 50;
-                        const isBoss = store.pveStage % 5 === 0;
-                        crystals = isBoss ? 20 : 0;
-                    }
-                } else {
-                    gold = isWarmup ? 0 : isVictory ? BATTLE_REWARDS.GOLD_VICTORY : BATTLE_REWARDS.GOLD_DEFEAT;
-                    xp = isWarmup ? 0 : isVictory ? BATTLE_REWARDS.XP_VICTORY : BATTLE_REWARDS.XP_DEFEAT;
-                    trophies = isWarmup
-                        ? 0
-                        : isVictory
-                          ? BATTLE_REWARDS.TROPHIES_VICTORY
-                          : BATTLE_REWARDS.TROPHIES_DEFEAT;
-                }
-
-                setResultData({
-                    isVictory,
-                    goldEarned: gold,
-                    xpEarned: xp,
-                    trophiesChange: trophies,
-                    crystalsEarned: crystals,
-                    damageDealt: engineRef.current?.totalDamageDealt ?? (playerStats?.attack || 50) * 10,
-                    damageTaken: engineRef.current?.totalDamageTaken ?? 0,
-                    turnsPlayed: turnCountRef.current,
-                    enemyName: isPve && activePveEnemy ? activePveEnemy.name : enemyData.name,
-                    playerStats: playerStats
-                        ? {
-                              hp: playerStats.hp,
-                              attack: playerStats.attack,
-                              defense: playerStats.defense,
-                              speed: playerStats.speed,
-                          }
-                        : undefined,
-                    enemyStats: {
-                        hp: isPve && activePveEnemy ? activePveEnemy.hp : enemyData.baseStats.hp,
-                        attack: isPve && activePveEnemy ? activePveEnemy.attack : enemyData.baseStats.attack,
-                        defense: isPve && activePveEnemy ? activePveEnemy.defense : enemyData.baseStats.defense,
-                        speed: enemyData.baseStats.speed,
-                    },
-                    battleDurationSeconds: engineRef.current ? engineRef.current.battleTime / 60 : 0,
-                });
-
-                if (!isWarmup && !isPve) {
-                    // НАЧИСЛЯЕМ НАГРАДЫ В СТОР
-                    store.addGold(gold);
-                    store.addExp(xp);
-                    store.addCombatLog(
-                        `Бой завершен: ${isVictory ? 'Победа' : 'Поражение'}. Получено +${gold} золота, +${xp} опыта.`,
-                    );
-                    // Уровень и трофеи тоже нужно обновить
-                    if (isVictory) {
-                        const newTrophies = store.trophies + trophies;
-                        store.updateProfile({
-                            trophies: newTrophies,
-                            rating: newTrophies,
-                            wins: store.wins + 1,
-                            totalBattles: store.totalBattles + 1,
-                        });
+                    if (isPve) {
+                        if (isVictory) {
+                            gold = store.pveStage * 100;
+                            xp = store.pveStage * 50;
+                            const isBoss = store.pveStage % 5 === 0;
+                            crystals = isBoss ? 20 : 0;
+                        }
+                        store.completePveBattle(isVictory);
                     } else {
+                        if (isWarmup) {
+                            const rewards = calculateBattleRewards(isVictory, store.rating || 0, store.rating || 0, true);
+                            gold = rewards.gold;
+                            xp = rewards.xp;
+                            trophies = rewards.trophies;
+                        } else {
+                            // Ranked
+                            const opponent = store.activeRankedOpponent;
+                            const myUserId = store.vkUser ? String(store.vkUser.id) : store.playerId;
+                            const myName = store.name || 'Мастер';
+                            const myRating = store.rating || 0;
+
+                            const { battleResultService } = await import('../../../services/BattleResultService');
+                            const { myCupsChange, myGoldChange } = await battleResultService.recordResult({
+                                myUserId,
+                                myName,
+                                myRating,
+                                opponentUserId: opponent?.realUserId,
+                                opponentName: opponent?.name || 'Противник',
+                                opponentRating: opponent?.rating || 0,
+                                isOpponentBot: opponent?.isBot ?? true,
+                                attackerWon: isVictory,
+                            });
+
+                            gold = myGoldChange;
+                            xp = isVictory ? 100 : 20;
+                            trophies = myCupsChange;
+                        }
+                    }
+
+                    if (!isPve) {
+                        store.addGold(gold);
+                        store.addExp(xp);
+                        store.addCombatLog(
+                            `Бой завершен: ${isVictory ? 'Победа' : 'Поражение'}. Получено +${gold} золота, +${xp} опыта.`,
+                        );
+                        
                         const newTrophies = Math.max(0, store.trophies + trophies);
-                        store.updateProfile({
+                        const patch: any = {
                             trophies: newTrophies,
                             rating: newTrophies,
                             totalBattles: store.totalBattles + 1,
-                        });
-                    }
-                } else if (isPve) {
-                    store.completePveBattle(isVictory);
-                }
+                        };
+                        if (isVictory) {
+                            patch.wins = store.wins + 1;
+                        }
+                        store.updateProfile(patch);
 
-                setTimeout(() => setShowResult(true), 1500);
+                        const { syncService } = await import('../../../services/SyncService');
+                        syncService.syncPlayerData();
+                    }
+
+                    setResultData({
+                        isVictory,
+                        goldEarned: gold,
+                        xpEarned: xp,
+                        trophiesChange: trophies,
+                        crystalsEarned: crystals,
+                        damageDealt: engineRef.current?.totalDamageDealt ?? (playerStats?.attack || 50) * 10,
+                        damageTaken: engineRef.current?.totalDamageTaken ?? 0,
+                        turnsPlayed: turnCountRef.current,
+                        enemyName: isPve && activePveEnemy ? activePveEnemy.name : enemyData.name,
+                        playerStats: playerStats
+                            ? {
+                                  hp: playerStats.hp,
+                                  attack: playerStats.attack,
+                                  defense: playerStats.defense,
+                                  speed: playerStats.speed,
+                              }
+                            : undefined,
+                        enemyStats: {
+                            hp: isPve && activePveEnemy ? activePveEnemy.hp : enemyData.baseStats.hp,
+                            attack: isPve && activePveEnemy ? activePveEnemy.attack : enemyData.baseStats.attack,
+                            defense: isPve && activePveEnemy ? activePveEnemy.defense : enemyData.baseStats.defense,
+                            speed: enemyData.baseStats.speed,
+                        },
+                        battleDurationSeconds: engineRef.current ? engineRef.current.battleTime / 60 : 0,
+                    });
+
+                    setTimeout(() => setShowResult(true), 1500);
+                })();
             }
         };
 
         engine.onCombatEvent = (event) => {
+            // 1. Hit-Stop Effect
+            if (event.type === 'HIT' || event.type === 'CRIT' || event.type === 'BLOCK') {
+                const damage = event.damage || 0;
+                if (damage > 0) {
+                    gsap.globalTimeline.timeScale(0);
+                    let duration = 40;
+                    if (damage > 50) {
+                        duration = 120;
+                    } else if (damage > 20) {
+                        duration = 80;
+                    }
+                    setTimeout(() => {
+                        gsap.globalTimeline.timeScale(1);
+                    }, duration);
+                }
+            }
+
             const isPlayerTarget = event.target === 'player';
             // В ХИБРИДНОЙ АРХИТЕКТУРЕ: Игрок стоит на X = W * 0.25 (480px), Враг на X = W * 0.75 (1440px)
             const x = isPlayerTarget ? 480 : 1440;
@@ -256,13 +318,16 @@ export const BattleScene: React.FC = () => {
 
             // Находим целевой юнит в PIXI-рендерере
             const targetUnit = isPlayerTarget ? engine.getPlayerUnit() : engine.getEnemyUnit();
+            const attackerUnit = isPlayerTarget ? engine.getEnemyUnit() : engine.getPlayerUnit();
             if (targetUnit) {
                 EffectsManager.getInstance().applyHitResolution(
                     attackerRole,
                     defenderRole,
                     event.type,
                     targetUnit,
-                    isPlayerTarget
+                    isPlayerTarget,
+                    attackerUnit,
+                    event.damage
                 );
             }
 
@@ -345,6 +410,34 @@ export const BattleScene: React.FC = () => {
                     fontSize = '58px';
                     initialScale = 0.5;
                     animateScale = 1.3;
+                    break;
+                case 'BURN':
+                    text = `🔥 -${Math.round(event.damage)}`;
+                    color = '#FF4500'; // Orangered
+                    fontSize = '52px';
+                    textShadow = '0 0 10px rgba(255, 69, 0, 0.8), 2px 2px 0px #000';
+                    animateY = -120;
+                    break;
+                case 'POISON':
+                    text = `🤢 -${Math.round(event.damage)}`;
+                    color = '#32CD32'; // Limegreen
+                    fontSize = '52px';
+                    textShadow = '0 0 10px rgba(50, 205, 50, 0.8), 2px 2px 0px #000';
+                    animateY = -120;
+                    break;
+                case 'FREEZE':
+                    text = event.label || '❄️ ЗАМОРОЗКА!';
+                    color = '#00BFFF'; // Deep sky blue
+                    fontSize = '52px';
+                    textShadow = '0 0 10px rgba(0, 191, 255, 0.8), 2px 2px 0px #000';
+                    animateY = -140;
+                    break;
+                case 'STUN':
+                    text = event.label || '💫 ОГЛУШЕНИЕ!';
+                    color = '#FFD700'; // Gold
+                    fontSize = '52px';
+                    textShadow = '0 0 10px rgba(255, 215, 0, 0.8), 2px 2px 0px #000';
+                    animateY = -140;
                     break;
             }
 
@@ -489,8 +582,8 @@ export const BattleScene: React.FC = () => {
                         style={{ position: 'absolute', inset: 0, zIndex: 5000 }}
                     >
                         <PreBattleScreen
-                            playerName={playerHero.name}
-                            playerImage={playerHero.image}
+                            playerName={displayPlayerName}
+                            playerImage={displayPlayerImage}
                             playerLevel={useGameStore.getState().level}
                             playerStats={{
                                 hp: playerStats4Pre.hp,

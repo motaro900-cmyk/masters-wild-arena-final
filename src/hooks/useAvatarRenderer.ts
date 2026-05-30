@@ -1,4 +1,6 @@
 import { HEROES_DB } from '../configs/HeroesConfig';
+import { useGameStore } from '../store/useGameStore';
+import { SKINS_DB } from '../configs/SkinsConfig';
 
 export interface IAvatarLayer {
     id: string;
@@ -64,7 +66,10 @@ export const useAvatarRenderer = (heroId: string, size: number = 512) => {
 
     // 1. ТЕЛО
     const bodyStyle: any = {};
-    const bodySrc = heroConfig.image;
+    const equippedSkins = useGameStore((s: any) => s.equippedSkins) || {};
+    const activeSkinId = equippedSkins[heroId] || 'default';
+    const activeSkin = SKINS_DB.find((s) => s.id === activeSkinId && s.heroId === heroId);
+    const bodySrc = activeSkin ? activeSkin.image : heroConfig.image;
 
     layers.push({
         id: 'body',

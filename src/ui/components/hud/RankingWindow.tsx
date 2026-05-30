@@ -173,17 +173,15 @@ export const RankingWindow: React.FC = () => {
                         whileTap={{ scale: 0.95 }}
                         onClick={() => setShowRewards(true)}
                         style={{
-                            background: 'linear-gradient(135deg, rgba(240,192,64,0.18) 0%, rgba(120,80,20,0.25) 100%)',
-                            border: '1.5px solid rgba(240,192,64,0.65)',
-                            borderRadius: '12px',
-                            width: '48px',
-                            height: '48px',
+                            background: 'none',
+                            border: 'none',
+                            width: '56px',
+                            height: '56px',
                             cursor: 'pointer',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            boxShadow: '0 0 18px rgba(240,192,64,0.22), inset 0 1px 0 rgba(255,255,255,0.08)',
-                            overflow: 'hidden',
+                            overflow: 'visible',
                             padding: 0,
                             flexShrink: 0,
                         }}
@@ -193,10 +191,10 @@ export const RankingWindow: React.FC = () => {
                             src={AssetsMap.UI.ICON_SEASON_RATE}
                             alt="season rewards"
                             style={{
-                                width: '42px',
-                                height: '42px',
+                                width: '56px',
+                                height: '56px',
                                 objectFit: 'contain',
-                                filter: 'drop-shadow(0 0 8px rgba(240,192,64,0.75)) drop-shadow(0 2px 4px rgba(0,0,0,0.7))',
+                                filter: 'drop-shadow(0 0 12px rgba(240,192,64,0.8)) drop-shadow(0 2px 4px rgba(0,0,0,0.7))',
                             }}
                         />
                     </motion.button>

@@ -1,9 +1,9 @@
 import React, { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { useGameStore } from '../../../store/useGameStore';
-import { useBattleStore } from '../../../store/useBattleStore';
 import { AssetsMap } from '../../../configs/AssetsMap';
 import { shareBattleResult } from '../../../utils/VKBridge';
+import { audioService } from '../../../services/AudioService';
 
 const RESOURCE_METADATA: Record<string, { name: string; image: string; rarity: string }> = {
     coal: { name: 'Уголь', image: '/assets/images/resources/coal.png', rarity: 'COMMON' },
@@ -75,11 +75,6 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
     const pveLoot = useGameStore((state) => state.pveLoot);
 
     const { level, exp, gold } = useGameStore();
-    const combatLogs = useGameStore((state) => state.combatLogs) || [];
-    const lastStartIndex = combatLogs.lastIndexOf(
-        combatLogs.findLast((log: string) => log.includes('--- НАЧАЛО БОЯ ---')) || '',
-    );
-    const currentBattleLogs = lastStartIndex !== -1 ? combatLogs.slice(lastStartIndex) : combatLogs;
 
     const isVictory = data.isVictory;
 
@@ -144,6 +139,9 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
     const recommendation = getRecommendation();
 
     useEffect(() => {
+        // Stop all active hit and swing sound effects from playing
+        audioService.stopAllSFX();
+
         const tl = gsap.timeline();
 
         // Затемнение фона
@@ -278,8 +276,8 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
                 position: 'absolute',
                 top: 0,
                 left: 0,
-                width: '1920px',
-                height: '1080px',
+                width: '100%',
+                height: '100%',
                 background: bgGradient,
                 display: 'flex',
                 flexDirection: 'column',
@@ -313,10 +311,10 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
             />
 
             {/* ЗАГОЛОВОК РЕЗУЛЬТАТА */}
-            <div ref={titleRef} style={{ textAlign: 'center', marginBottom: '40px' }}>
+            <div ref={titleRef} style={{ textAlign: 'center', marginBottom: '20px' }}>
                 <div
                     style={{
-                        fontSize: '110px',
+                        fontSize: '85px',
                         fontWeight: 900,
                         color: '#ffffff',
                         letterSpacing: '0.15em',
@@ -348,7 +346,7 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    marginBottom: '40px',
+                    marginBottom: '20px',
                     pointerEvents: 'auto',
                 }}
             >
@@ -360,7 +358,7 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
                         background: 'linear-gradient(135deg, rgba(24, 16, 8, 0.95) 0%, rgba(12, 7, 3, 0.98) 100%)',
                         border: '2.5px solid rgba(196, 139, 59, 0.55)',
                         borderRadius: '24px',
-                        padding: '40px 50px',
+                        padding: '24px 36px',
                         boxShadow: '0 20px 60px rgba(0,0,0,0.85)',
                     }}
                 >
@@ -382,7 +380,7 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
                                     display: 'flex',
                                     justifyContent: 'space-between',
                                     alignItems: 'center',
-                                    padding: '12px 20px',
+                                    padding: '8px 16px',
                                     background: 'rgba(0,0,0,0.3)',
                                     borderRadius: '12px',
                                     border: '1px solid rgba(255,255,255,0.05)',
@@ -420,7 +418,7 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
                     </div>
 
                     {/* ПОЛОСКА ПРОГРЕССА ОПЫТА */}
-                    <div style={{ marginTop: '25px' }}>
+                    <div style={{ marginTop: '15px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
                             <span
                                 style={{
@@ -553,7 +551,7 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
                         style={{
                             height: '1px',
                             background: `linear-gradient(90deg, transparent, ${accentColor}88, transparent)`,
-                            marginTop: '25px',
+                            marginTop: '15px',
                         }}
                     />
                 </div>
@@ -567,8 +565,8 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
                         background: 'rgba(139, 28, 28, 0.1)',
                         border: '2px solid rgba(139, 28, 28, 0.4)',
                         borderRadius: '16px',
-                        padding: '16px 24px',
-                        marginBottom: '30px',
+                        padding: '12px 20px',
+                        marginBottom: '15px',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'space-between',
@@ -658,7 +656,7 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
                         }
                     }}
                     style={{
-                        padding: '20px 44px',
+                        padding: '12px 32px',
                         background: 'linear-gradient(180deg, #3a2212 0%, #1c0f08 100%)',
                         border: '2px solid #b45309',
                         borderRadius: '14px',
@@ -694,7 +692,7 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
                 <button
                     onClick={onContinue}
                     style={{
-                        padding: '20px 60px',
+                        padding: '12px 48px',
                         background: isVictory
                             ? 'linear-gradient(180deg, #fbbf24 0%, #b45309 100%)'
                             : 'linear-gradient(180deg, #8b1c1c 0%, #581010 100%)',

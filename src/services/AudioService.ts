@@ -361,6 +361,15 @@ class AudioService {
         this.sfxVolume = volume;
         this.sfx.forEach((sound) => sound.volume(volume));
     }
+
+    /**
+     * Остановка всех проигрываемых эффектов
+     */
+    public stopAllSFX() {
+        this.sfx.forEach((sound) => {
+            sound.stop();
+        });
+    }
 }
 
 export const audioService = new AudioService();

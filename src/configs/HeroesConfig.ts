@@ -69,10 +69,10 @@ export const HEROES_DB: IHeroConfig[] = [
         color: 0xffaa00,
         rarity: 'EPIC',
         role: 'ASSASSIN',
-        unlockType: 'free',
-        unlockCost: 0,
+        unlockType: 'gold',
+        unlockCost: 200,
         stats: { strength: 14, agility: 24, stamina: 16, intelligence: 12 },
-        baseScale: 1.1,
+        baseScale: 0.8,
         anchors: {
             feet: { x: 0.5, y: 0.95 },
             head: { x: 0.5, y: 0.22, scale: 0.8 },

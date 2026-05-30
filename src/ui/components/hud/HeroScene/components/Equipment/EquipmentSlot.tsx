@@ -3,15 +3,29 @@ import { useDroppable } from '@dnd-kit/core';
 import { ITEMS_DATABASE } from '../../../../../../game/configs/ItemsConfig';
 import { AssetsMap } from '../../../../../../configs/AssetsMap';
 import { rarityColors } from '../../constants/roleIcons';
+import { useGameStore } from '../../../../../../store/useGameStore';
+
+const RARITY_RU: Record<string, string> = {
+    COMMON: 'ОБЫЧНЫЙ',
+    UNCOMMON: 'НЕОБЫЧНЫЙ',
+    RARE: 'РЕДКИЙ',
+    EPIC: 'ЭПИЧЕСКИЙ',
+    MYTHIC: 'МИФИЧЕСКИЙ',
+    LEGENDARY: 'ЛЕГЕНДАРНЫЙ',
+};
 
 export const EquipmentSlot = ({ id, label, itemId, activeDraggingId, onClick, setGlobalHoveredItem }: any) => {
     const { isOver, setNodeRef } = useDroppable({ id });
+    const store = useGameStore();
 
     const itemData = itemId ? (ITEMS_DATABASE[String(itemId)] as any) : null;
     const rarityColor = itemData ? rarityColors[itemData.rarity] || '#f0c040' : '#f0c040';
 
     const draggingItemData = activeDraggingId ? (ITEMS_DATABASE[String(activeDraggingId)] as any) : null;
     const isCompatible = draggingItemData && draggingItemData.subTab === id;
+
+    const invItem = store.inventory.find((i: any) => String(i.id) === String(itemId));
+    const itemLevel = invItem?.level || 1;
 
     return (
         <motion.div
@@ -199,7 +213,29 @@ export const EquipmentSlot = ({ id, label, itemId, activeDraggingId, onClick, se
                         boxShadow: '0 2px 5px rgba(0,0,0,0.5)',
                     }}
                 >
-                    {itemData.rarity}
+                    {RARITY_RU[itemData.rarity] || itemData.rarity}
+                </div>
+            )}
+
+            {itemData && itemLevel && itemLevel > 0 && (
+                <div
+                    style={{
+                        position: 'absolute',
+                        top: '5px',
+                        left: '5px',
+                        background: 'rgba(0,0,0,0.75)',
+                        border: '1px solid #f0c040',
+                        color: '#f0c040',
+                        padding: '2px 5px',
+                        borderRadius: '4px',
+                        fontSize: '9px',
+                        fontWeight: 900,
+                        boxShadow: '0 2px 5px rgba(0,0,0,0.5)',
+                        pointerEvents: 'none',
+                        zIndex: 10,
+                    }}
+                >
+                    L{itemLevel}
                 </div>
             )}
         </motion.div>

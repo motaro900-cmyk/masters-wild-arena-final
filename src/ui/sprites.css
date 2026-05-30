@@ -45,10 +45,11 @@
 
 /* Talents Sheet (12 icons, grid 4x4 in 1024x1024 sheet) */
 .sprite-talent {
-    width: 64px;
-    height: 64px;
+    width: 100px;
+    height: 100px;
     background-image: url('/assets/images/sheets/talents_sheet.webp');
     background-size: 400% 400%;
+    mix-blend-mode: screen;
 }
 .talent-1 {
     background-position: 0% 0%;

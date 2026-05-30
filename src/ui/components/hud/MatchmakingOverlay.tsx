@@ -3,8 +3,10 @@ import { AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../../../store/useGameStore';
 import { AssetsMap } from '../../../configs/AssetsMap';
 import { getRankInfo } from '../../../configs/RankSystem';
-import { getHeroConfig, HEROES_DB } from '../../../configs/HeroesConfig';
+import { getHeroConfig } from '../../../configs/HeroesConfig';
 import { audioService } from '../../../services/AudioService';
+import { SKINS_DB } from '../../../configs/SkinsConfig';
+import { matchmakingService } from '../../../services/MatchmakingService';
 import '../../styles/profile-hub.css';
 
 // Subcomponents
@@ -17,13 +19,15 @@ const shouldFlipEnemy = (src: string): boolean => {
     return !(s.includes('panther') || (s.includes('wolf') && !s.includes('wolf_knight')));
 };
 
+
+
 interface MatchmakingOverlayProps {
-    onFound: (enemyId?: string) => void;
+    onFound: (opponent: any) => void;
     onCancel: () => void;
 }
 
 export const MatchmakingOverlay: React.FC<MatchmakingOverlayProps> = ({ onFound, onCancel }) => {
-    const { name, rating, vipLevel, selectedHeroId, level, getCalculatedStats, avatar, vkUser, isMobile } = useGameStore();
+    const { name, rating, vipLevel, selectedHeroId, level, getCalculatedStats, avatar, vkUser, isMobile, equippedSkins } = useGameStore();
 
     const playerName = name && name !== 'Мастер' ? name : vkUser?.first_name || vkUser?.firstName || 'Мастер';
     const playerAvatarSrc =
@@ -43,10 +47,23 @@ export const MatchmakingOverlay: React.FC<MatchmakingOverlayProps> = ({ onFound,
         heroImage: string;
         rankIcon: string;
         level: number;
-        stats: { hp: number; attack: number; defense: number; speed: number; crit: number };
+        equipment: Record<string, string | null>;
+        winRate: number;
+        stats: { hp: number; attack: number; defense: number; speed: number; crit: number; evasion?: number; critChance?: number };
     } | null>(null);
 
-    const playerHero = getHeroConfig(selectedHeroId);
+    // isBot — скрыто от UI, только для логики после боя
+    const [opponentMeta, setOpponentMeta] = useState<{ isBot: boolean; realUserId?: string } | null>(null);
+
+    const baseHeroConfig = getHeroConfig(selectedHeroId);
+    const equippedSkinId = equippedSkins?.[selectedHeroId] || 'default';
+    const activeSkin = SKINS_DB.find((s) => s.id === equippedSkinId && s.heroId === selectedHeroId);
+
+    const playerHero = {
+        ...baseHeroConfig,
+        image: activeSkin && activeSkin.image ? activeSkin.image : baseHeroConfig.image
+    };
+
     const playerRank = getRankInfo(rating);
 
     useEffect(() => {
@@ -62,54 +79,45 @@ export const MatchmakingOverlay: React.FC<MatchmakingOverlayProps> = ({ onFound,
             });
         }, 1000);
 
-        const searchTime = 4500 + Math.random() * 1500;
-        const timeout = setTimeout(() => {
-            const oppRating = Math.max(0, rating + Math.floor(Math.random() * 110) - 50);
-            const oppRankInfo = getRankInfo(oppRating);
+        const storeState = useGameStore.getState();
+        const vkUser = storeState.vkUser;
+        const myUserId = vkUser ? String(vkUser.id) : storeState.playerId || 'local';
+        const myWinRate = (storeState as any).winRate || 50;
 
-            // Select random opponent from HEROES_DB instead of MOBS_DB
-            const randomHero = HEROES_DB[Math.floor(Math.random() * HEROES_DB.length)] || HEROES_DB[0];
-            
-            const randomNames = [
-                'Дикий Клык', 'Гром-Орк', 'Рыцарь Света', 'Мастер Дзен',
-                'Храбрый Панда', 'Воин Зари', 'Стальной Щит', 'Быстрая Стрела'
-            ];
-            const oppName = randomNames[Math.floor(Math.random() * randomNames.length)];
+        // Минимальная задержка показа (3-5 сек) для реалистичности
+        const minDelay = 3000 + Math.random() * 2000;
+        const minDelayPromise = new Promise<void>((res) => setTimeout(res, minDelay));
 
-            const calculatedStats = getCalculatedStats(randomHero.id)?.total || {
-                hp: randomHero.stats.stamina * 20,
-                attack: randomHero.stats.strength * 2,
-                defense: randomHero.stats.agility * 1,
-                speed: 1.0,
-                crit: 0.05
-            };
+        const searchPromise = matchmakingService.findOpponent(myUserId, rating, level, myWinRate);
 
-            const oppLevel = Math.max(1, level + Math.floor(Math.random() * 3) - 1);
-
+        Promise.all([searchPromise, minDelayPromise]).then(([found]) => {
             setOpponent({
-                id: randomHero.id,
-                name: oppName,
-                rating: oppRating,
-                heroImage: randomHero.image,
-                rankIcon: oppRankInfo.icon,
-                level: oppLevel,
+                id: found.id,
+                name: found.name,
+                rating: found.rating,
+                heroImage: found.heroImage,
+                rankIcon: found.rankIcon,
+                level: found.level,
+                equipment: found.equipment,
+                winRate: found.winRate,
                 stats: {
-                    hp: calculatedStats.hp,
-                    attack: calculatedStats.attack,
-                    defense: calculatedStats.defense,
-                    speed: calculatedStats.speed || 1.0,
-                    crit: calculatedStats.critChance || 0.05
+                    hp: found.stats.hp,
+                    attack: found.stats.attack,
+                    defense: found.stats.defense,
+                    speed: found.stats.speed,
+                    crit: found.stats.critChance,
+                    evasion: found.stats.evasion ?? 0,
+                    critChance: found.stats.critChance ?? 5,
                 },
             });
-
+            setOpponentMeta({ isBot: found.isBot, realUserId: found.realUserId });
             audioService.playSFX(AssetsMap.AUDIO.SFX_BUY);
             audioService.playSFX(AssetsMap.AUDIO.SFX_HIT);
             setState('FOUND');
-        }, searchTime);
+        });
 
         return () => {
             clearInterval(interval);
-            clearTimeout(timeout);
         };
     }, [state, rating, selectedHeroId, getCalculatedStats]);
 
@@ -243,7 +251,7 @@ export const MatchmakingOverlay: React.FC<MatchmakingOverlayProps> = ({ onFound,
                             shouldFlipEnemy={shouldFlipEnemy}
                             renderStatRow={renderStatRow}
                             onCancel={onCancel}
-                            onStartFight={() => onFoundRef.current(opponent.id)}
+                            onStartFight={() => onFoundRef.current({ ...opponent, ...opponentMeta })}
                         />
                     )
                 )}

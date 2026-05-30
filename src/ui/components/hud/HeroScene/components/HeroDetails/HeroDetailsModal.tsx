@@ -139,52 +139,34 @@ export const HeroDetailsModal = ({ hero, isOwned, onClose, rarityColors, onBuy, 
                     {/* STATS */}
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
                         <DetailStat
-                            iconClass="sprite-stat stat-hp"
-                            label="ЗДОРОВЬЕ (MAX)"
-                            value={hero.stats.stamina * 10 * 5}
+                            icon="❤️"
+                            label="ЗДОРОВЬЕ (BASE)"
+                            value={hero.stats.stamina * 10}
                             color="#ef4444"
                         />
                         <DetailStat
-                            iconClass="sprite-stat stat-attack"
-                            label="АТАКА (MAX)"
-                            value={hero.stats.strength * 2 * 5}
+                            icon="⚔️"
+                            label="СИЛА АТАКИ (BASE)"
+                            value={hero.stats.strength * 2}
                             color="#f97316"
                         />
                         <DetailStat
-                            iconClass="sprite-stat stat-defense"
-                            label="ЗАЩИТА (MAX)"
-                            value={hero.stats.stamina * 0.5 * 5}
+                            icon="🛡️"
+                            label="ЗАЩИТА (BASE)"
+                            value={Math.round(hero.stats.stamina * 0.5)}
                             color="#3b82f6"
                         />
                         <DetailStat
-                            iconClass="sprite-stat stat-speed"
-                            label="СКОРОСТЬ"
-                            value={parseFloat((1 + hero.stats.agility * 0.05).toFixed(2))}
-                            color="#fcd34d"
+                            icon="🌪️"
+                            label="ЛОВКОСТЬ / УКЛОН"
+                            value={`${Math.round(hero.stats.agility * 0.2)}%`}
+                            color="#22c55e"
                         />
                         <DetailStat
-                            iconClass="sprite-stat stat-crit"
+                            icon="💥"
                             label="КРИТ. ШАНС"
-                            value={`${parseFloat((hero.stats.agility * 0.5).toFixed(1))}%`}
+                            value={`${Math.round(hero.stats.agility * 0.5)}%`}
                             color="#a855f7"
-                        />
-                        <DetailStat
-                            iconClass="sprite-stat stat-accuracy"
-                            label="УКЛОНЕНИЕ"
-                            value={`${parseFloat((hero.stats.agility * 0.2).toFixed(1))}%`}
-                            color="#4ade80"
-                        />
-                        <DetailStat
-                            iconClass="sprite-stat stat-penetration"
-                            label="ПРОБИТИЕ"
-                            value="15"
-                            color="#fbbf24"
-                        />
-                        <DetailStat
-                            iconClass="sprite-stat stat-lifesteal"
-                            label="ВАМПИРИЗМ"
-                            value="5%"
-                            color="#f43f5e"
                         />
                     </div>
 

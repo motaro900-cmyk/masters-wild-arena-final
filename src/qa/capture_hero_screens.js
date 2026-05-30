@@ -95,10 +95,11 @@ async function run() {
                 inventory: mockInventory,
                 talentPoints: 10,
                 ownedHeroes: ['panda', 'raccoon'],
-                selectedHeroId: 'raccoon',
+                selectedHeroId: 'panda',
+                equippedSkins: { panda: 'panda_frost' },
                 heroEquipment: {
                     ...store.heroEquipment,
-                    raccoon: {
+                    panda: {
                         WEAPONS: 'dagger_bone',
                         ARMOR: 'starter_armor',
                         SHIELDS: 'starter_shield',

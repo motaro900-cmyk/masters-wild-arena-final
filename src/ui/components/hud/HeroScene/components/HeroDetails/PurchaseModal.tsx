@@ -76,7 +76,7 @@ export const PurchaseModal = ({ hero, onClose, rarityColors }: any) => {
                     </div>
                 </div>
 
-                <img src={hero.avatar} style={{ width: '220px', filter: `drop-shadow(0 0 30px ${color}44)` }} alt="" />
+                <img src={hero.image} style={{ width: '220px', filter: `drop-shadow(0 0 30px ${color}44)` }} alt="" />
 
                 <div
                     style={{

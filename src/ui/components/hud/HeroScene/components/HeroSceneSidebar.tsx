@@ -85,13 +85,13 @@ export const HeroSceneSidebar: React.FC<HeroSceneSidebarProps> = ({ activeTab, s
     return (
         <div
             style={{
-                width: '220px',
+                width: '260px',
                 height: '100%',
                 background: 'linear-gradient(180deg, rgba(32,24,18,0.97) 0%, rgba(20,15,10,0.97) 100%)',
                 borderRight: '1px solid rgba(240,192,64,0.12)',
                 display: 'flex',
                 flexDirection: 'column',
-                padding: '24px 14px 20px 14px',
+                padding: '24px 18px 20px 18px',
                 gap: '0px',
                 zIndex: 100,
                 boxShadow: '4px 0 20px rgba(0,0,0,0.5)',
@@ -105,8 +105,8 @@ export const HeroSceneSidebar: React.FC<HeroSceneSidebarProps> = ({ activeTab, s
                     height: '1px',
                     background: 'linear-gradient(90deg, transparent, rgba(240,192,64,0.25), transparent)',
                     marginBottom: '20px',
-                    marginLeft: '-14px',
-                    marginRight: '-14px',
+                    marginLeft: '-18px',
+                    marginRight: '-18px',
                 }}
             />
 
@@ -122,15 +122,15 @@ export const HeroSceneSidebar: React.FC<HeroSceneSidebarProps> = ({ activeTab, s
                             onClick={() => setActiveTab(id)}
                             style={{
                                 width: '100%',
-                                padding: '14px 16px',
+                                padding: '18px 20px',
                                 background: isActive
                                     ? 'linear-gradient(90deg, rgba(240,192,64,0.14) 0%, rgba(240,192,64,0.03) 100%)'
                                     : 'rgba(255,255,255,0.04)',
                                 border: 'none',
-                                borderRadius: '10px',
+                                borderRadius: '12px',
                                 display: 'flex',
                                 alignItems: 'center',
-                                gap: '14px',
+                                gap: '16px',
                                 cursor: 'pointer',
                                 position: 'relative',
                                 overflow: 'hidden',
@@ -176,7 +176,7 @@ export const HeroSceneSidebar: React.FC<HeroSceneSidebarProps> = ({ activeTab, s
                             <span
                                 style={{
                                     color: isActive ? '#f0c040' : 'rgba(255,255,255,0.65)',
-                                    fontSize: '14px',
+                                    fontSize: '15px',
                                     fontWeight: 900,
                                     fontFamily: "'Cinzel', serif",
                                     letterSpacing: '2px',
@@ -211,8 +211,8 @@ export const HeroSceneSidebar: React.FC<HeroSceneSidebarProps> = ({ activeTab, s
                 style={{
                     height: '1px',
                     background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent)',
-                    marginLeft: '-14px',
-                    marginRight: '-14px',
+                    marginLeft: '-18px',
+                    marginRight: '-18px',
                     marginBottom: '14px',
                 }}
             />

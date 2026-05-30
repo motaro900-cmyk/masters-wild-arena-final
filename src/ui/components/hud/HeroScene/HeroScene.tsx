@@ -15,6 +15,7 @@ import { HeroSceneSidebar } from './components/HeroSceneSidebar';
 import { HeroList } from './components/HeroList';
 import { GearView } from './components/Equipment/GearView';
 import { TalentsView } from './components/Talents/TalentsView';
+import { SkinsView } from './components/Skins/SkinsView';
 
 import { HeroDetailsModal } from './components/HeroDetails/HeroDetailsModal';
 import { PurchaseModal } from './components/HeroDetails/PurchaseModal';
@@ -132,7 +133,8 @@ export const HeroScene: React.FC = () => {
                         style={{
                             position: 'absolute',
                             inset: 0,
-                            background: 'rgba(10, 8, 5, 0.58)',
+                            background: 'rgba(10, 8, 5, 0.65)',
+                            backdropFilter: 'blur(4px)',
                             pointerEvents: 'none',
                             zIndex: 1,
                         }}
@@ -277,38 +279,14 @@ export const HeroScene: React.FC = () => {
                                     />
                                 ) : activeTab === 'TALENTS' ? (
                                     <TalentsView hero={selectedHero} />
+                                ) : activeTab === 'SKINS' ? (
+                                    <SkinsView hero={selectedHero} />
                                 ) : (
-                                    <div style={{ color: '#fff' }}>Таланты в разработке...</div>
+                                    <div style={{ color: '#fff' }}>В разработке...</div>
                                 )}
                             </AnimatePresence>
 
-                            {/* [TUTORIAL] Simple hint for first-time users */}
-                            {activeTab === 'LIST' && ownedHeroes.length === 1 && (
-                                <motion.div
-                                    initial={{ opacity: 0, y: -10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    style={{
-                                        position: 'absolute',
-                                        top: '25px',
-                                        left: '50%',
-                                        transform: 'translateX(-50%)',
-                                        background: 'rgba(20, 15, 10, 0.9)',
-                                        border: '1px solid rgba(240, 192, 64, 0.5)',
-                                        borderRadius: '8px',
-                                        padding: '6px 20px',
-                                        color: '#f0c040',
-                                        fontFamily: "'Cinzel', 'Philosopher', serif",
-                                        fontSize: '14px',
-                                        zIndex: 2000,
-                                        textAlign: 'center',
-                                        pointerEvents: 'none',
-                                        boxShadow: '0 4px 10px rgba(0,0,0,0.5)',
-                                        whiteSpace: 'nowrap',
-                                    }}
-                                >
-                                    👇 ВЫБЕРИТЕ ГЕРОЯ, ЧТОБЫ УПРАВЛЯТЬ ЕГО СНАРЯЖЕНИЕМ
-                                </motion.div>
-                            )}
+
                         </div>
                     </div>
 

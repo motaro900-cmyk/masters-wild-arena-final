@@ -28,11 +28,15 @@ import { VIPWindow } from './hud/VIPWindow';
 import { UnderDevelopmentModal } from './hud/SharedUI';
 import { BestiaryWindow } from './hud/BestiaryWindow';
 import { MatchmakingOverlay } from './hud/MatchmakingOverlay';
+import { InboxScreen } from './hud/Inbox/InboxScreen';
 
 import { safeGetItem, safeSetItem } from '../../utils/SafeStorage';
 
 export const GameHUD: React.FC = () => {
     const activeScreen = useGameStore((state) => state.activeScreen);
+    const mails = useGameStore((state) => state.mail) || [];
+    const unreadMailCount = mails.filter((m: any) => m.tab === 'INBOX' && !m.isRead).length;
+    const offlineSummary = useGameStore((state) => state.offlineSummary);
     const vipLevel = useGameStore((state) => state.vipLevel);
     const isMobile = useGameStore((state) => state.isMobile);
     const [activeWindow, setActiveWindow] = useState<string | null>(null);
@@ -477,11 +481,37 @@ export const GameHUD: React.FC = () => {
                                     backgroundColor: 'transparent',
                                     border: 'none',
                                     cursor: 'pointer',
+                                    position: 'relative',
                                     transition: 'all 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
                                 }}
                                 onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.15) translateY(-5px)')}
                                 onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1) translateY(0)')}
-                            />
+                            >
+                                {win.id === 'MAIL' && unreadMailCount > 0 && (
+                                    <div
+                                        style={{
+                                            position: 'absolute',
+                                            top: -2,
+                                            right: -2,
+                                            minWidth: '20px',
+                                            height: '20px',
+                                            background: '#ef4444',
+                                            color: '#fff',
+                                            fontSize: '11px',
+                                            borderRadius: '50%',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            fontWeight: 900,
+                                            border: '2.5px solid #0f0a05',
+                                            padding: '0 4px',
+                                            boxShadow: '0 0 10px rgba(239, 68, 68, 0.5)',
+                                        }}
+                                    >
+                                        {unreadMailCount}
+                                    </div>
+                                )}
+                            </button>
                         ))}
                     </div>
                 </>
@@ -614,11 +644,15 @@ export const GameHUD: React.FC = () => {
             {activeWindow === 'RANKED_LOBBY' && (
                 <MatchmakingOverlay
                     onCancel={() => setActiveWindow(null)}
-                    onFound={(enemyId) => {
+                    onFound={(opp) => {
                         setActiveWindow(null);
 
                         // Use the selected mob from matchmaking
-                        useGameStore.setState({ selectedEnemyId: enemyId || 'wolf_scout', battleMode: 'RANKED' });
+                        useGameStore.setState({ 
+                            selectedEnemyId: opp.id, 
+                            battleMode: 'RANKED',
+                            activeRankedOpponent: opp
+                        });
 
                         // Switch screen to battle!
                         useGameStore.getState().setScreen('BATTLE');
@@ -631,6 +665,28 @@ export const GameHUD: React.FC = () => {
                 title={devModal.title}
                 onClose={() => setDevModal({ ...devModal, isOpen: false })}
             />
+
+            {/* --- OFFLINE SUMMARY WINDOW --- */}
+            {offlineSummary && (
+                <div
+                    className="absolute inset-0 z-[200] pointer-events-auto bg-black/60 backdrop-blur-sm flex items-center justify-center"
+                    onClick={() => useGameStore.setState({ offlineSummary: null })}
+                >
+                    <div onClick={(e) => e.stopPropagation()}>
+                        <BaseWindow
+                            title="ОТЧЕТ О ЗАЩИТЕ АРЕНЫ"
+                            isOpen={true}
+                            onClose={() => useGameStore.setState({ offlineSummary: null })}
+                            width="900px"
+                        >
+                            <InboxScreen
+                                summary={offlineSummary}
+                                onClose={() => useGameStore.setState({ offlineSummary: null })}
+                            />
+                        </BaseWindow>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

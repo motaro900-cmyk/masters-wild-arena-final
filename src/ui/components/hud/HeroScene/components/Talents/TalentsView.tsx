@@ -10,16 +10,12 @@ import { audioService } from '../../../../../../services/AudioService';
 export const TalentsView = ({ hero }: any) => {
     const { heroTalents, upgradeTalent, resetTalents, talentPoints } = useGameStore();
     const talents = heroTalents[hero.id] || {};
-
     const availablePoints = talentPoints;
 
     const [activeTalent, setActiveTalent] = useState<any>(null);
     const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
 
     const { handleUpgrade } = useTalentProgress(hero.id, talents, availablePoints, upgradeTalent);
-
-    const CONNECTOR_HEIGHT = 140;
-    const halfH = CONNECTOR_HEIGHT / 2;
 
     return (
         <motion.div
@@ -29,390 +25,272 @@ export const TalentsView = ({ hero }: any) => {
             exit={{ opacity: 0, scale: 1.05 }}
             style={{
                 position: 'absolute',
-                inset: '40px 80px',
+                inset: '20px 60px',
                 display: 'flex',
                 flexDirection: 'column',
                 zIndex: 10,
             }}
         >
             {/* HEADER */}
-            <div
-                style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}
-            >
-                <div
-                    style={{
-                        background: 'rgba(0,0,0,0.6)',
-                        padding: '15px 35px',
-                        borderRadius: '20px',
-                        backdropFilter: 'blur(10px)',
-                        border: '2px solid rgba(240,192,64,0.3)',
-                        boxShadow: '0 0 35px rgba(0,0,0,0.6)',
-                    }}
-                >
-                    <h2
-                        style={{
-                            color: '#fff',
-                            fontSize: '36px',
-                            margin: 0,
-                            fontFamily: "'Cinzel', 'Philosopher', serif",
-                            textShadow: '0 4px 15px rgba(0,0,0,0.8)',
-                            letterSpacing: '2px',
-                        }}
-                    >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
+                <div style={{
+                    background: 'rgba(0,0,0,0.6)',
+                    padding: '15px 35px',
+                    borderRadius: '20px',
+                    backdropFilter: 'blur(10px)',
+                    border: '2px solid rgba(240,192,64,0.3)',
+                    boxShadow: '0 0 35px rgba(0,0,0,0.6)',
+                }}>
+                    <h2 style={{
+                        color: '#fff',
+                        fontSize: '36px',
+                        margin: 0,
+                        fontFamily: "'Cinzel', 'Philosopher', serif",
+                        textShadow: '0 4px 15px rgba(0,0,0,0.8)',
+                        letterSpacing: '2px',
+                    }}>
                         ДРЕВО ТАЛАНТОВ
                     </h2>
-                    <p
-                        style={{
-                            color: 'rgba(255,255,255,0.7)',
-                            margin: 0,
-                            fontSize: '14px',
-                            fontWeight: 600,
-                            letterSpacing: '1px',
-                        }}
-                    >
+                    <p style={{ color: 'rgba(255,255,255,0.7)', margin: 0, fontSize: '14px', fontWeight: 600, letterSpacing: '1px' }}>
                         Улучшайте способности вашего героя
                     </p>
                 </div>
 
-                {/* PREMIUM POINTS BLOCK */}
+                {/* POINTS BLOCK */}
                 <motion.div
                     initial={{ x: 50, opacity: 0 }}
                     animate={{ x: 0, opacity: 1 }}
                     style={{
-                        background: 'linear-gradient(135deg, rgba(20, 20, 25, 0.95) 0%, rgba(30, 30, 45, 0.98) 100%)',
-                        border: '2px solid rgba(240, 192, 64, 0.6)',
+                        background: 'linear-gradient(135deg, rgba(20,20,25,0.95) 0%, rgba(30,30,45,0.98) 100%)',
+                        border: '2px solid rgba(240,192,64,0.6)',
                         padding: '10px 35px',
                         borderRadius: '18px',
                         display: 'flex',
                         alignItems: 'center',
+                        gap: '15px',
                         boxShadow: '0 10px 40px rgba(0,0,0,0.8), inset 0 0 25px rgba(240,192,64,0.1)',
                         backdropFilter: 'blur(20px)',
                         minWidth: '220px',
                         justifyContent: 'center',
                     }}
                 >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                        <span
-                            style={{
-                                color: '#fff',
-                                fontSize: '48px',
-                                fontWeight: 950,
-                                fontFamily: "'Cinzel', 'Philosopher', serif",
-                                textShadow: '0 0 25px rgba(240,192,64,0.6)',
-                                lineHeight: 1,
-                            }}
-                        >
-                            {String(availablePoints ?? 0)}
-                        </span>
-                        <span
-                            style={{
-                                color: '#f0c040',
-                                fontSize: '15px',
-                                fontWeight: 900,
-                                letterSpacing: '1px',
-                                fontFamily: "'Cinzel', 'Philosopher', serif",
-                                textShadow: '0 2px 4px rgba(0,0,0,0.5)',
-                                textTransform: 'uppercase',
-                                marginTop: '4px',
-                            }}
-                        >
-                            {(() => {
-                                const n = availablePoints ?? 0;
-                                let m = Math.abs(n) % 100;
-                                if (m >= 5 && m <= 20) return 'ОЧКОВ ТАЛАНТОВ';
-                                m %= 10;
-                                if (m === 1) return 'ОЧКО ТАЛАНТОВ';
-                                if (m >= 2 && m <= 4) return 'ОЧКА ТАЛАНТОВ';
-                                return 'ОЧКОВ ТАЛАНТОВ';
-                            })()}
-                        </span>
-                    </div>
+                    <span style={{
+                        color: '#fff',
+                        fontSize: '48px',
+                        fontWeight: 950,
+                        fontFamily: "'Cinzel', serif",
+                        textShadow: '0 0 25px rgba(240,192,64,0.6)',
+                        lineHeight: 1,
+                    }}>
+                        {String(availablePoints ?? 0)}
+                    </span>
+                    <span style={{
+                        color: '#f0c040',
+                        fontSize: '15px',
+                        fontWeight: 900,
+                        letterSpacing: '1px',
+                        fontFamily: "'Cinzel', serif",
+                        textTransform: 'uppercase',
+                        marginTop: '4px',
+                    }}>
+                        {(() => {
+                            const n = availablePoints ?? 0;
+                            let m = Math.abs(n) % 100;
+                            if (m >= 5 && m <= 20) return 'ОЧКОВ ТАЛАНТОВ';
+                            m %= 10;
+                            if (m === 1) return 'ОЧКО ТАЛАНТОВ';
+                            if (m >= 2 && m <= 4) return 'ОЧКА ТАЛАНТОВ';
+                            return 'ОЧКОВ ТАЛАНТОВ';
+                        })()}
+                    </span>
                 </motion.div>
             </div>
 
             {/* TREE COLUMNS */}
-            <div style={{ flex: 1, display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '30px' }}>
-                {TALENTS_CONFIG.map((branch) => (
-                    <div
-                        key={branch.id}
-                        style={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: '20px',
-                            background: 'rgba(18, 18, 26, 0.45)',
-                            border: '1.5px solid rgba(255, 255, 255, 0.05)',
-                            borderRadius: '24px',
-                            padding: '24px',
-                            boxShadow: '0 20px 50px rgba(0,0,0,0.4), inset 0 0 30px rgba(255,255,255,0.02)',
-                            backdropFilter: 'blur(10px)',
-                        }}
-                    >
-                        {/* BRANCH HEADER */}
+            <div style={{ flex: 1, display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '24px', alignItems: 'stretch', minHeight: 0 }}>
+                {TALENTS_CONFIG.map((branch) => {
+                    const branchPoints = Object.entries(talents)
+                        .filter(([id]) => id.startsWith(branch.id.substring(0, 3)))
+                        .reduce((a, [, v]) => a + (v as number), 0);
+
+                    return (
                         <div
+                            key={branch.id}
                             style={{
                                 display: 'flex',
-                                alignItems: 'center',
-                                gap: '15px',
-                                background: `linear-gradient(90deg, ${branch.color}18 0%, ${branch.color}05 60%, transparent 100%)`,
-                                padding: '12px 25px',
-                                borderRadius: '12px',
-                                borderLeft: `3px solid ${branch.color}`,
-                                boxShadow: '0 4px 20px rgba(0,0,0,0.25)',
-                                backdropFilter: 'blur(4px)',
+                                flexDirection: 'column',
+                                background: 'rgba(18,18,26,0.45)',
+                                border: '1.5px solid rgba(255,255,255,0.05)',
+                                borderRadius: '24px',
+                                padding: '20px 16px 24px',
+                                boxShadow: '0 20px 50px rgba(0,0,0,0.4), inset 0 0 30px rgba(255,255,255,0.02)',
+                                backdropFilter: 'blur(10px)',
+                                height: '100%',
+                                boxSizing: 'border-box',
+                                overflow: 'hidden',
                             }}
                         >
-                            <span style={{ fontSize: '32px', filter: `drop-shadow(0 0 10px ${branch.color})` }}>
-                                {branch.icon}
-                            </span>
-                            <span
-                                style={{
+                            {/* BRANCH HEADER */}
+                            <div style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '12px',
+                                background: `linear-gradient(90deg, ${branch.color}18 0%, transparent 100%)`,
+                                padding: '10px 18px',
+                                borderRadius: '12px',
+                                borderLeft: `3px solid ${branch.color}`,
+                                marginBottom: '20px',
+                            }}>
+                                <span style={{ fontSize: '28px', filter: `drop-shadow(0 0 8px ${branch.color})` }}>
+                                    {branch.icon}
+                                </span>
+                                <span style={{
                                     color: '#fff',
-                                    fontSize: '24px',
+                                    fontSize: '20px',
                                     fontWeight: 900,
-                                    fontFamily: "'Cinzel', 'Philosopher', serif",
-                                    letterSpacing: '3px',
+                                    fontFamily: "'Cinzel', serif",
+                                    letterSpacing: '2px',
                                     textShadow: `0 0 10px ${branch.color}44`,
-                                }}
-                            >
-                                {branch.title}
-                            </span>
-                        </div>
+                                }}>
+                                    {branch.title}
+                                </span>
+                            </div>
 
-                        <div style={{ display: 'flex', flexDirection: 'column', position: 'relative' }}>
-                            {branch.tiers.map((tier, tIndex) => {
-                                const branchPoints = Object.entries(talents)
-                                    .filter(([id]) => id.startsWith(branch.id.substring(0, 3)))
-                                    .reduce((a, [, v]) => a + (v as number), 0);
-                                const isUnlocked = branchPoints >= tier.requiredInBranch;
-
-                                return (
-                                    <div
-                                        key={tIndex}
+                            {/* Branch content container - absolute positioning context */}
+                            <div style={{
+                                flex: 1,
+                                position: 'relative',
+                                width: '100%',
+                                minHeight: 0,
+                                overflow: 'visible',
+                            }}>
+                                {/* SVG Connector Lines */}
+                                <svg style={{
+                                    position: 'absolute',
+                                    inset: 0,
+                                    width: '100%',
+                                    height: '100%',
+                                    pointerEvents: 'none',
+                                    overflow: 'visible',
+                                }}>
+                                    {/* Line 1: Tier 1 (50%, 18%) -> Tier 2 Left (25%, 50%) */}
+                                    <line
+                                        x1="50%" y1="18%"
+                                        x2="25%" y2="50%"
+                                        stroke={branchPoints >= branch.tiers[1].requiredInBranch ? branch.color : '#222'}
+                                        strokeWidth="4"
                                         style={{
-                                            display: 'flex',
-                                            flexDirection: 'column',
-                                            alignItems: 'center',
-                                            position: 'relative',
-                                            width: '100%',
+                                            filter: branchPoints >= branch.tiers[1].requiredInBranch 
+                                                ? `drop-shadow(0 0 6px ${branch.color})` 
+                                                : 'none',
+                                            transition: 'stroke 0.25s ease, filter 0.25s ease'
                                         }}
-                                    >
-                                        {/* CONNECTORS (DYNAMIC GEOMETRY) */}
-                                        {tIndex > 0 && (
+                                    />
+                                    {/* Line 2: Tier 1 (50%, 18%) -> Tier 2 Right (75%, 50%) */}
+                                    <line
+                                        x1="50%" y1="18%"
+                                        x2="75%" y2="50%"
+                                        stroke={branchPoints >= branch.tiers[1].requiredInBranch ? branch.color : '#222'}
+                                        strokeWidth="4"
+                                        style={{
+                                            filter: branchPoints >= branch.tiers[1].requiredInBranch 
+                                                ? `drop-shadow(0 0 6px ${branch.color})` 
+                                                : 'none',
+                                            transition: 'stroke 0.25s ease, filter 0.25s ease'
+                                        }}
+                                    />
+                                    {/* Line 3: Tier 2 Left (25%, 50%) -> Tier 3 (50%, 82%) */}
+                                    <line
+                                        x1="25%" y1="50%"
+                                        x2="50%" y2="82%"
+                                        stroke={branchPoints >= branch.tiers[2].requiredInBranch ? branch.color : '#222'}
+                                        strokeWidth="4"
+                                        style={{
+                                            filter: branchPoints >= branch.tiers[2].requiredInBranch 
+                                                ? `drop-shadow(0 0 6px ${branch.color})` 
+                                                : 'none',
+                                            transition: 'stroke 0.25s ease, filter 0.25s ease'
+                                        }}
+                                    />
+                                    {/* Line 4: Tier 2 Right (75%, 50%) -> Tier 3 (50%, 82%) */}
+                                    <line
+                                        x1="75%" y1="50%"
+                                        x2="50%" y2="82%"
+                                        stroke={branchPoints >= branch.tiers[2].requiredInBranch ? branch.color : '#222'}
+                                        strokeWidth="4"
+                                        style={{
+                                            filter: branchPoints >= branch.tiers[2].requiredInBranch 
+                                                ? `drop-shadow(0 0 6px ${branch.color})` 
+                                                : 'none',
+                                            transition: 'stroke 0.25s ease, filter 0.25s ease'
+                                        }}
+                                    />
+                                </svg>
+
+                                {/* Nodes positioning */}
+                                {branch.tiers.map((tier, tIndex) => {
+                                    const isUnlocked = branchPoints >= tier.requiredInBranch;
+                                    return tier.talents.map((talent, talentIndex) => {
+                                        const lvl = talents[talent.id] || 0;
+                                        // Calculate position
+                                        let left = "50%";
+                                        let top = "18%";
+                                        if (tIndex === 0) {
+                                            left = "50%";
+                                            top = "18%";
+                                        } else if (tIndex === 1) {
+                                            left = talentIndex === 0 ? "25%" : "75%";
+                                            top = "50%";
+                                        } else if (tIndex === 2) {
+                                            left = "50%";
+                                            top = "82%";
+                                        }
+
+                                        return (
                                             <div
+                                                key={talent.id}
                                                 style={{
-                                                    position: 'relative',
-                                                    height: `${CONNECTOR_HEIGHT}px`,
-                                                    width: '100%',
-                                                    display: 'flex',
-                                                    justifyContent: 'center',
+                                                    position: 'absolute',
+                                                    left,
+                                                    top,
+                                                    transform: 'translate(-50%, -50%)',
+                                                    zIndex: 2,
                                                 }}
                                             >
-                                                {/* CASE A: 1 Parent -> 2 Children (Branching) */}
-                                                {branch.tiers[tIndex - 1].talents.length === 1 &&
-                                                    tier.talents.length > 1 && (
-                                                        <>
-                                                            {/* Spine UP */}
-                                                            <div
-                                                                style={{
-                                                                    position: 'absolute',
-                                                                    top: 0,
-                                                                    width: '2px',
-                                                                    height: `${halfH}px`,
-                                                                    background: isUnlocked
-                                                                        ? `linear-gradient(180deg, ${branch.color}, ${branch.color}ee)`
-                                                                        : '#1a1a24',
-                                                                    boxShadow: isUnlocked
-                                                                        ? `0 0 8px ${branch.color}88, 0 0 2px ${branch.color}`
-                                                                        : 'none',
-                                                                }}
-                                                            />
-                                                            {/* Bridge */}
-                                                            <div
-                                                                style={{
-                                                                    position: 'absolute',
-                                                                    top: `${halfH}px`,
-                                                                    width: '170px',
-                                                                    height: '2px',
-                                                                    background: isUnlocked ? branch.color : '#1a1a24',
-                                                                    boxShadow: isUnlocked
-                                                                        ? `0 0 8px ${branch.color}88, 0 0 2px ${branch.color}`
-                                                                        : 'none',
-                                                                }}
-                                                            />
-                                                            {/* 2 Legs DOWN */}
-                                                            <div
-                                                                style={{
-                                                                    position: 'absolute',
-                                                                    top: `${halfH}px`,
-                                                                    left: 'calc(50% - 85px)',
-                                                                    width: '2px',
-                                                                    height: `${halfH}px`,
-                                                                    background: isUnlocked
-                                                                        ? `linear-gradient(180deg, ${branch.color}ee, ${branch.color})`
-                                                                        : '#1a1a24',
-                                                                    boxShadow: isUnlocked
-                                                                        ? `0 0 8px ${branch.color}88, 0 0 2px ${branch.color}`
-                                                                        : 'none',
-                                                                }}
-                                                            />
-                                                            <div
-                                                                style={{
-                                                                    position: 'absolute',
-                                                                    top: `${halfH}px`,
-                                                                    left: 'calc(50% + 85px)',
-                                                                    width: '2px',
-                                                                    height: `${halfH}px`,
-                                                                    background: isUnlocked
-                                                                        ? `linear-gradient(180deg, ${branch.color}ee, ${branch.color})`
-                                                                        : '#1a1a24',
-                                                                    boxShadow: isUnlocked
-                                                                        ? `0 0 8px ${branch.color}88, 0 0 2px ${branch.color}`
-                                                                        : 'none',
-                                                                }}
-                                                            />
-                                                        </>
-                                                    )}
-
-                                                {/* CASE B: 2 Parents -> 1 Child (Merging) */}
-                                                {branch.tiers[tIndex - 1].talents.length > 1 &&
-                                                    tier.talents.length === 1 && (
-                                                        <>
-                                                            {/* Bridge MIDDLE */}
-                                                            <div
-                                                                style={{
-                                                                    position: 'absolute',
-                                                                    top: `${halfH}px`,
-                                                                    width: '170px',
-                                                                    height: '2px',
-                                                                    background: isUnlocked ? branch.color : '#1a1a24',
-                                                                    boxShadow: isUnlocked
-                                                                        ? `0 0 8px ${branch.color}88, 0 0 2px ${branch.color}`
-                                                                        : 'none',
-                                                                }}
-                                                            />
-                                                            {/* 2 Legs UP (Connect to parents above) */}
-                                                            <div
-                                                                style={{
-                                                                    position: 'absolute',
-                                                                    top: 0,
-                                                                    left: 'calc(50% - 85px)',
-                                                                    width: '2px',
-                                                                    height: `${halfH}px`,
-                                                                    background: isUnlocked
-                                                                        ? `linear-gradient(180deg, ${branch.color}, ${branch.color}ee)`
-                                                                        : '#1a1a24',
-                                                                    boxShadow: isUnlocked
-                                                                        ? `0 0 8px ${branch.color}88, 0 0 2px ${branch.color}`
-                                                                        : 'none',
-                                                                }}
-                                                            />
-                                                            <div
-                                                                style={{
-                                                                    position: 'absolute',
-                                                                    top: 0,
-                                                                    left: 'calc(50% + 85px)',
-                                                                    width: '2px',
-                                                                    height: `${halfH}px`,
-                                                                    background: isUnlocked
-                                                                        ? `linear-gradient(180deg, ${branch.color}, ${branch.color}ee)`
-                                                                        : '#1a1a24',
-                                                                    boxShadow: isUnlocked
-                                                                        ? `0 0 8px ${branch.color}88, 0 0 2px ${branch.color}`
-                                                                        : 'none',
-                                                                }}
-                                                            />
-                                                            {/* Spine DOWN (Connect to child below) */}
-                                                            <div
-                                                                style={{
-                                                                    position: 'absolute',
-                                                                    top: `${halfH}px`,
-                                                                    width: '2px',
-                                                                    height: `${halfH}px`,
-                                                                    background: isUnlocked
-                                                                        ? `linear-gradient(180deg, ${branch.color}ee, ${branch.color})`
-                                                                        : '#1a1a24',
-                                                                    boxShadow: isUnlocked
-                                                                        ? `0 0 8px ${branch.color}88, 0 0 2px ${branch.color}`
-                                                                        : 'none',
-                                                                }}
-                                                            />
-                                                        </>
-                                                    )}
-
-                                                {/* CASE C: 1 Parent -> 1 Child (Straight) */}
-                                                {branch.tiers[tIndex - 1].talents.length === 1 &&
-                                                    tier.talents.length === 1 && (
-                                                        <div
-                                                            style={{
-                                                                width: '2px',
-                                                                height: '100%',
-                                                                background: isUnlocked
-                                                                    ? `linear-gradient(180deg, ${branch.color}, ${branch.color})`
-                                                                    : '#1a1a24',
-                                                                boxShadow: isUnlocked
-                                                                    ? `0 0 8px ${branch.color}88, 0 0 2px ${branch.color}`
-                                                                    : 'none',
-                                                            }}
-                                                        />
-                                                    )}
-                                            </div>
-                                        )}
-
-                                        <div
-                                            style={{
-                                                display: 'flex',
-                                                gap: '60px',
-                                                justifyContent: 'center',
-                                                width: '100%',
-                                                zIndex: 2,
-                                            }}
-                                        >
-                                            {tier.talents.map((talent) => {
-                                                const lvl = talents[talent.id] || 0;
-                                                return (
-                                                    <TalentNode
-                                                        key={talent.id}
-                                                        talent={talent}
-                                                        level={lvl}
-                                                        branchColor={branch.color}
-                                                        isUnlocked={isUnlocked}
-                                                        canAfford={availablePoints > 0}
-                                                        onClick={() => handleUpgrade(talent, branch.id)}
-                                                        onMouseEnter={(e: any) => {
-                                                            const rect = e.currentTarget.getBoundingClientRect();
-                                                            const root = document.getElementById('hero-scene-root');
-                                                            const talentsRoot =
-                                                                document.getElementById('talents-view-root');
-                                                            const rootRect = root?.getBoundingClientRect();
-                                                            const talentsRect = talentsRoot?.getBoundingClientRect();
-                                                            if (rootRect && talentsRect) {
-                                                                const scale = rootRect.width / 1920;
-                                                                const x = (rect.right - talentsRect.left) / scale + 20;
-                                                                const y = (rect.top - talentsRect.top) / scale;
-                                                                // Flipping to left if it's too far right (width is ~1520px in talents-view space)
-                                                                setTooltipPos({
-                                                                    x: x > 1100 ? x - 610 : x,
-                                                                    y: y > 500 ? y - 350 : y,
-                                                                });
-                                                            }
-                                                            setActiveTalent({
-                                                                ...talent,
-                                                                branchPoints,
-                                                                required: tier.requiredInBranch,
-                                                                level: lvl,
+                                                <TalentNode
+                                                    talent={talent}
+                                                    level={lvl}
+                                                    branchColor={branch.color}
+                                                    isUnlocked={isUnlocked}
+                                                    canAfford={availablePoints > 0}
+                                                    onClick={() => handleUpgrade(talent, branch.id)}
+                                                    onMouseEnter={(e: any) => {
+                                                        const rect = e.currentTarget.getBoundingClientRect();
+                                                        const root = document.getElementById('hero-scene-root');
+                                                        const talentsRoot = document.getElementById('talents-view-root');
+                                                        const rootRect = root?.getBoundingClientRect();
+                                                        const talentsRect = talentsRoot?.getBoundingClientRect();
+                                                        if (rootRect && talentsRect) {
+                                                            const scale = rootRect.width / 1920;
+                                                            const x = (rect.right - talentsRect.left) / scale + 20;
+                                                            const y = (rect.top - talentsRect.top) / scale;
+                                                            setTooltipPos({
+                                                                x: x > 1100 ? x - 610 : x,
+                                                                y: y > 500 ? y - 350 : y,
                                                             });
-                                                        }}
-                                                        onMouseLeave={() => setActiveTalent(null)}
-                                                    />
-                                                );
-                                            })}
-                                        </div>
-                                    </div>
-                                );
-                            })}
+                                                        }
+                                                        setActiveTalent({ ...talent, branchPoints, required: tier.requiredInBranch, level: lvl });
+                                                    }}
+                                                    onMouseLeave={() => setActiveTalent(null)}
+                                                />
+                                            </div>
+                                        );
+                                    });
+                                })}
+                            </div>
                         </div>
-                    </div>
-                ))}
+                    );
+                })}
             </div>
 
             {/* FOOTER */}
@@ -435,7 +313,7 @@ export const TalentsView = ({ hero }: any) => {
                         fontSize: '16px',
                         fontWeight: 900,
                         cursor: 'pointer',
-                        fontFamily: "'Cinzel', 'Philosopher', serif",
+                        fontFamily: "'Cinzel', serif",
                         letterSpacing: '2px',
                         backdropFilter: 'blur(10px)',
                     }}
@@ -444,7 +322,7 @@ export const TalentsView = ({ hero }: any) => {
                 </motion.button>
             </div>
 
-            {/* CONTEXTUAL TOOLTIP (ABSOLUTE) */}
+            {/* TOOLTIP */}
             <AnimatePresence>
                 {activeTalent && (
                     <TalentTooltip

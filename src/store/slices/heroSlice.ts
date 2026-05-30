@@ -15,7 +15,7 @@ export const createHeroSlice = (set: any, get: any) => ({
         panda: {},
         wolf_knight: {},
     } as Record<string, any>,
-    ownedSkins: ['default'] as string[],
+    ownedSkins: ['default', 'panda_frost'] as string[],
     equippedSkins: { panda: 'default', wolf_knight: 'default' } as Record<string, string>,
 
     // --- ЭКШЕНЫ ГЕРОЕВ ---
@@ -92,10 +92,10 @@ export const createHeroSlice = (set: any, get: any) => ({
         const base = {
             hp: heroData.stats.stamina * 10,
             attack: heroData.stats.strength * 2,
-            defense: heroData.stats.stamina * 0.5,
-            speed: 1 + heroData.stats.agility * 0.05,
-            critChance: heroData.stats.agility * 0.5,
-            evasion: heroData.stats.agility * 0.2,
+            defense: Math.round(heroData.stats.stamina * 0.5),
+            speed: 1 + heroData.stats.agility * 0.05,   // internal ATB speed multiplier
+            critChance: heroData.stats.agility * 0.5,   // stored as % (e.g. 6%)
+            evasion: heroData.stats.agility * 0.2,      // stored as % (e.g. 2.4%)
             resilience: heroData.stats.stamina * 0.1,
             lifesteal: 0,
             penetration: 0,
@@ -110,17 +110,20 @@ export const createHeroSlice = (set: any, get: any) => ({
             const level = lvl as number;
             if (level <= 0) return;
 
-            if (tId === 'atk_base') total.attack *= 1 + level * 0.05;
+            // Attack talents
+            if (tId === 'atk_base') total.attack = Math.round(total.attack * (1 + level * 0.05));
             if (tId === 'atk_crit') total.critChance += level * 2;
-            if (tId === 'atk_pen') total.penetration += level * 10;
 
-            if (tId === 'def_base') total.hp *= 1 + level * 0.05;
+            // Defense talents
+            if (tId === 'def_base') total.hp = Math.round(total.hp * (1 + level * 0.05));
             if (tId === 'def_res') total.resilience += level * 5;
             if (tId === 'def_eva') total.evasion += level * 2;
 
+            // Mastery talents
             if (tId === 'mas_base') total.speed += level * 0.1;
-            if (tId === 'mas_spd') total.speed *= 1 + level * 0.03;
+            if (tId === 'mas_spd') total.speed = +(total.speed * (1 + level * 0.03)).toFixed(2);
             if (tId === 'mas_ult') total.critDamage += level * 0.1;
+            if (tId === 'atk_pen') total.penetration += level * 10;
         });
 
         allItems.forEach((item) => {
@@ -130,15 +133,19 @@ export const createHeroSlice = (set: any, get: any) => ({
             if (lvl === 2) mult = 1.15;
             if (lvl === 3) mult = 1.35;
 
-            if (item.hpBonus) total.hp += item.hpBonus * mult;
-            if (item.attackBonus) total.attack += item.attackBonus * mult;
-            if (item.defenseBonus) total.defense += item.defenseBonus * mult;
+            if (item.hpBonus) total.hp = Math.round(total.hp + item.hpBonus * mult);
+            if (item.attackBonus) total.attack = Math.round(total.attack + item.attackBonus * mult);
+            if (item.defenseBonus) total.defense = Math.round(total.defense + item.defenseBonus * mult);
 
-            const cChance = item.critChance || item.critBonus || 0;
-            if (cChance) total.critChance += cChance * 100 * mult;
+            // critChance stored as 0-100 scale; items may store as 0-1 or 0-100 — normalize
+            const rawCrit = item.critChance || item.critBonus || 0;
+            if (rawCrit) {
+                const critPct = rawCrit <= 1 ? rawCrit * 100 : rawCrit;
+                total.critChance += critPct * mult;
+            }
 
-            const aSpeed = item.attackSpeed || item.speedBonus || 0;
-            if (aSpeed) total.speed += aSpeed * mult;
+            const rawSpeed = item.attackSpeed || item.speedBonus || 0;
+            if (rawSpeed) total.speed += rawSpeed * mult;
 
             if (item.evasion) total.evasion += item.evasion * mult;
             if (item.resilience) total.resilience += item.resilience * mult;
@@ -147,6 +154,10 @@ export const createHeroSlice = (set: any, get: any) => ({
             if (item.critDamage) total.critDamage += item.critDamage * mult;
             if (item.accuracy) total.accuracy += item.accuracy * mult;
         });
+
+        // Cap crit/evasion at sensible max
+        total.critChance = Math.min(75, total.critChance);
+        total.evasion = Math.min(60, total.evasion);
 
         return {
             base,

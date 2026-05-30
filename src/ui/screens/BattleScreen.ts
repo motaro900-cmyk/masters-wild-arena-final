@@ -361,6 +361,7 @@ export class BattleScreen extends Container {
             xpEarned: isVictory ? Math.floor(Math.random() * 80) + 50 : Math.floor(Math.random() * 30) + 10,
             trophiesChange: isVictory ? Math.floor(Math.random() * 20) + 15 : -(Math.floor(Math.random() * 10) + 5),
             damageDealt: this.totalDamageDealt,
+            damageTaken: 0,
             turnsPlayed: this.turnsPlayed,
             enemyName: ENEMY_NAMES[this.enemyFileName] ?? 'Противник',
         };

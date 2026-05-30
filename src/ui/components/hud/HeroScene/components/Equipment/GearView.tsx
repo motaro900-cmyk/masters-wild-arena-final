@@ -8,6 +8,8 @@ import { EquipmentSlot } from './EquipmentSlot';
 import { EquippedHeroView } from '../../../../EquippedHeroView';
 import { InventoryPanel } from '../../../InventoryPanel';
 import { StatCard } from './StatCard';
+import { rarityColors } from '../../constants/roleIcons';
+import { SKINS_DB } from '../../../../../../configs/SkinsConfig';
 
 export const GearView = ({
     hero,
@@ -22,6 +24,13 @@ export const GearView = ({
     addFloatingText,
     setGlobalHoveredItem,
 }: any) => {
+    const equippedSkins = useGameStore((s: any) => s.equippedSkins) || {};
+    const equippedSkinId = equippedSkins[hero.id] || 'default';
+    const activeSkin = SKINS_DB.find((s) => s.id === equippedSkinId && s.heroId === hero.id);
+    const displayHeroName = activeSkin && activeSkin.id !== 'default' ? activeSkin.name : hero.name;
+    const activeRarity = activeSkin && activeSkin.id !== 'default' ? activeSkin.rarity : hero.rarity;
+    const activeRarityColor = rarityColors[activeRarity] || '#f0c040';
+
     // stats теперь имеет структуру { base, total, weaponTexture }
     const currentStats = stats?.total || {
         hp: 0,
@@ -442,18 +451,18 @@ export const GearView = ({
                             fontFamily: "'Cinzel', 'Philosopher', serif",
                         }}
                     >
-                        {hero.name}
+                        {displayHeroName}
                     </h2>
                     <p
                         style={{
-                            color: hero.color ? `#${hero.color.toString(16)}` : '#a040ff',
+                            color: activeRarityColor,
                             margin: 0,
                             fontWeight: 900,
                             letterSpacing: '4px',
                             fontSize: '12px',
                         }}
                     >
-                        {hero.title}
+                        {activeSkin && activeSkin.id !== 'default' ? `${hero.title} · ${activeSkin.sourceLabel}` : hero.title}
                     </p>
                 </div>
             </div>
@@ -536,48 +545,50 @@ export const GearView = ({
                         >
                             <StatCard
                                 label="ЗДОРОВЬЕ"
-                                value={currentStats.hp}
-                                base={baseStats.hp}
-                                iconClass="sprite-stat stat-hp"
+                                value={Math.round(currentStats.hp)}
+                                base={Math.round(baseStats.hp)}
+                                icon="❤️"
                                 color="#ef4444"
                                 max={10000}
                                 tooltip="Общий запас жизненных сил персонажа."
                             />
                             <StatCard
                                 label="СИЛА АТАКИ"
-                                value={currentStats.attack}
-                                base={baseStats.attack}
-                                iconClass="sprite-stat stat-attack"
+                                value={Math.round(currentStats.attack)}
+                                base={Math.round(baseStats.attack)}
+                                icon="⚔️"
                                 color="#f97316"
                                 max={2000}
-                                tooltip="Влияет на урон, наносимый противникам."
+                                tooltip="Влияет на урон, наносимый противникам в бою."
                             />
                             <StatCard
                                 label="ЗАЩИТА"
-                                value={currentStats.defense}
-                                base={baseStats.defense}
-                                iconClass="sprite-stat stat-defense"
+                                value={Math.round(currentStats.defense)}
+                                base={Math.round(baseStats.defense)}
+                                icon="🛡️"
                                 color="#3b82f6"
                                 max={1000}
-                                tooltip="Снижает получаемый физический урон."
+                                tooltip="Снижает получаемый физический урон от атак врага."
                             />
                             <StatCard
-                                label="СКОРОСТЬ"
-                                value={currentStats.speed}
-                                base={baseStats.speed}
-                                iconClass="sprite-stat stat-speed"
+                                label="ЛОВКОСТЬ"
+                                value={Math.round(currentStats.evasion ?? 0)}
+                                base={Math.round(baseStats.evasion ?? 0)}
+                                icon="🌪️"
                                 color="#22c55e"
-                                max={200}
-                                tooltip="Частота атак в бою."
+                                max={100}
+                                suffix="%"
+                                tooltip="Шанс уклонения от атак противника в бою."
                             />
                             <StatCard
                                 label="КРИТ. ШАНС"
-                                value={currentStats.critChance}
-                                base={baseStats.critChance}
-                                iconClass="sprite-stat stat-crit"
+                                value={Math.round(currentStats.critChance)}
+                                base={Math.round(baseStats.critChance)}
+                                icon="💥"
                                 color="#a855f7"
                                 max={100}
-                                tooltip="Шанс нанести критический удар."
+                                suffix="%"
+                                tooltip="Шанс нанести критический удар (x1.5 урон)."
                             />
                         </div>
                     ) : (

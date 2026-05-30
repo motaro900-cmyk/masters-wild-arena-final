@@ -49,7 +49,8 @@ const rawAssetsMap = {
         ICON_SEASON_CHEST: '/assets/images/ui/icons/season_chest.webp', // was .png
         ICON_SEASON_RATE: '/assets/images/ui/Seasonrate.png',
         ICON_PROMO: '/assets/images/ui/icons/promo_coin.webp',
-        ICON_XP: '/assets/images/ui/exp_icon.png',
+        ICON_XP: '/assets/images/ui/exp_icon.webp',
+        ICON_POWER: '/assets/images/ui/mosh.webp',
         TROPHY_PREMIUM: '/assets/images/ui/trophy_premium.webp', // was .png
         BTN_BATTLE_GROUP: '/assets/images/ui/battle_btn_group.webp',
 
@@ -129,8 +130,8 @@ const rawAssetsMap = {
         BATTLE_PASS_MOBILE: '/assets/images/backgrounds/bg_battle_pass_mobile.webp', // was кириллица
         CITY_HUB: '/assets/images/backgrounds/bg_city_hub.webp',
         CITY_HUB_MOBILE: '/assets/images/backgrounds/bg_city_hub_mobile.webp',
-        RANKED_LOBBY: '/assets/images/backgrounds/bg_ranked_lobby.webp',
-        RANKED_LOBBY_MOBILE: '/assets/images/backgrounds/bg_ranked_lobby_mobile.webp',
+        RANKED_LOBBY: '/assets/images/backgrounds/bg_ranked_lobby_new.png',
+        RANKED_LOBBY_MOBILE: '/assets/images/backgrounds/bg_ranked_lobby_new.png',
         SANCTUARY: '/assets/images/backgrounds/gemini-2026-05-22-001.webp',
         SANCTUARY_MOBILE: '/assets/images/backgrounds/gemini-2026-05-22-001_mobile.webp',
     },
