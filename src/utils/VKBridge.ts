@@ -21,9 +21,9 @@ export const initVK = async (): Promise<boolean> => {
     // [Lead Architect]: Страховка от зависания VK Bridge
     const timeoutPromise = new Promise<boolean>((resolve) => {
         setTimeout(() => {
-            console.warn('⚠️ VK Bridge Init Timeout (3s). Starting anyway...');
+            console.warn('⚠️ VK Bridge Init Timeout (7s). Starting anyway...');
             resolve(false);
-        }, 3000);
+        }, 7000);
     });
 
     const initPromise = (async () => {

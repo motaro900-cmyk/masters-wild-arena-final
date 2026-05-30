@@ -73,7 +73,8 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
         setIsChecking(true);
         const store = useGameStore.getState();
         const currentUserId = SyncService.getPrefixedUserId(store.vkUser, store.playerId);
-        const isUnique = await syncService.isNicknameUnique(cleanName, currentUserId);
+        const guestUserId = SyncService.getPrefixedUserId(null, store.playerId);
+        const isUnique = await syncService.isNicknameUnique(cleanName, currentUserId, guestUserId);
         setIsChecking(false);
         if (!isUnique) {
             return 'Это имя уже занято другим мастером';

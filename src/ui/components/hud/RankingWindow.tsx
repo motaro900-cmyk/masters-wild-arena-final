@@ -47,9 +47,9 @@ export const RankingWindow: React.FC = () => {
                         return {
                             rank: index + 1,
                             name: firstName,
-                            level: p.уровень || p.лев || p.level || 1,
-                            trophies: p.рейтинг || p.rating || 0,
-                            avatar: p.фото || p.photo || p.avatar || '🐺',
+                            level: p.уровень ?? p.level ?? p.лев ?? 1,
+                            trophies: p.рейтинг ?? p.rating ?? 0,
+                            avatar: p.фото ?? p.photo ?? p.avatar ?? '🐺',
                             change: 'stable',
                             isMe: p.id === useGameStore.getState().playerId || String(p.vkId) === String(vkUser?.id),
                         };

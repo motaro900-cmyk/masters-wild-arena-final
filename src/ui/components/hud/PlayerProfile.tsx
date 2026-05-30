@@ -19,9 +19,9 @@ export const PlayerProfile: React.FC<PlayerProfileProps> = ({ onOpenProfile }) =
     const avatar = store.avatar || 'панда.png';
     const frame = store.frame || 'Рамка 1.png';
     const title = store.title || 'СТРАННИК';
-    const trophies = store.trophies || 1250;
-    const level = store.level || 1;
-    const exp = store.exp || 0;
+    const trophies = store.trophies ?? 0;
+    const level = store.level ?? 1;
+    const exp = store.exp ?? 0;
     const vkUser = store.vkUser;
 
     const name = store.name;

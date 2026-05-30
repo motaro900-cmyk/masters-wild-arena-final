@@ -224,7 +224,21 @@ export class SyncService {
             const playerRef = doc(db, 'пользователи', userId);
             const playerSnap = await getDoc(playerRef);
             
-            let updatedData = { ...data };
+            const mapping: Record<string, string> = {
+                gold: 'золото',
+                crystals: 'кристаллы',
+                level: 'уровень',
+                rating: 'рейтинг',
+                avatar: 'фото',
+                inventory: 'инвентарь',
+                heroEquipment: 'снаряжение',
+            };
+
+            let updatedData: any = {};
+            for (const key in data) {
+                const mappedKey = mapping[key] || key;
+                updatedData[mappedKey] = data[key];
+            }
             
             if (playerSnap.exists()) {
                 const docData = playerSnap.data();
@@ -232,28 +246,33 @@ export class SyncService {
                     try {
                         const parsed = JSON.parse(docData.полноеСостояниеJSON);
                         
-                        // Map Firestore fields to Zustand state keys
-                        if (data.золото !== undefined) parsed.gold = Number(data.золото);
-                        if (data.кристаллы !== undefined) parsed.crystals = Number(data.кристаллы);
-                        if (data.уровень !== undefined) parsed.level = Number(data.уровень);
-                        if (data.рейтинг !== undefined) {
-                            parsed.rating = Number(data.рейтинг);
-                            parsed.trophies = Number(data.рейтинг);
+                        // Map fields to Zustand state keys in parsed JSON
+                        if (data.золото !== undefined || data.gold !== undefined) {
+                            parsed.gold = Number(data.золото !== undefined ? data.золото : data.gold);
                         }
-                        if (data.инвентарь !== undefined) parsed.inventory = data.инвентарь;
-                        if (data.снаряжение !== undefined) parsed.heroEquipment = data.снаряжение;
-                        if (data.ownedSkins !== undefined) parsed.ownedSkins = data.ownedSkins;
-                        
-                        // Also support clean English keys if they are passed
-                        if (data.gold !== undefined) parsed.gold = Number(data.gold);
-                        if (data.crystals !== undefined) parsed.crystals = Number(data.crystals);
-                        if (data.level !== undefined) parsed.level = Number(data.level);
-                        if (data.rating !== undefined) {
-                            parsed.rating = Number(data.rating);
-                            parsed.trophies = Number(data.rating);
+                        if (data.кристаллы !== undefined || data.crystals !== undefined) {
+                            parsed.crystals = Number(data.кристаллы !== undefined ? data.кристаллы : data.crystals);
                         }
-                        if (data.inventory !== undefined) parsed.inventory = data.inventory;
-                        if (data.heroEquipment !== undefined) parsed.heroEquipment = data.heroEquipment;
+                        if (data.уровень !== undefined || data.level !== undefined) {
+                            parsed.level = Number(data.уровень !== undefined ? data.уровень : data.level);
+                        }
+                        if (data.рейтинг !== undefined || data.rating !== undefined) {
+                            const val = Number(data.рейтинг !== undefined ? data.рейтинг : data.rating);
+                            parsed.rating = val;
+                            parsed.trophies = val;
+                        }
+                        if (data.инвентарь !== undefined || data.inventory !== undefined) {
+                            parsed.inventory = data.инвентарь !== undefined ? data.инвентарь : data.inventory;
+                        }
+                        if (data.снаряжение !== undefined || data.heroEquipment !== undefined) {
+                            parsed.heroEquipment = data.снаряжение !== undefined ? data.снаряжение : data.heroEquipment;
+                        }
+                        if (data.ownedSkins !== undefined) {
+                            parsed.ownedSkins = data.ownedSkins;
+                        }
+                        if (data.ownedHeroes !== undefined) {
+                            parsed.ownedHeroes = data.ownedHeroes;
+                        }
                         
                         updatedData.полноеСостояниеJSON = JSON.stringify(parsed);
                     } catch (e) {
@@ -661,7 +680,7 @@ export class SyncService {
     /**
      * Проверяет, свободно ли имя (никнейм) в базе данных
      */
-    public async isNicknameUnique(name: string, currentUserId?: string): Promise<boolean> {
+    public async isNicknameUnique(name: string, currentUserId?: string, guestUserId?: string): Promise<boolean> {
         try {
             const playersRef = collection(db, 'пользователи');
             // Ищем точное совпадение имени
@@ -669,9 +688,11 @@ export class SyncService {
             const snapshot = await getDocs(q);
             if (snapshot.empty) return true;
 
-            // Если есть документ с таким именем, но его ID совпадает с ID текущего игрока, то ник принадлежит ему же
-            if (currentUserId) {
-                const matchesCurrentUser = snapshot.docs.some((doc) => doc.id === currentUserId);
+            // Если есть документ с таким именем, но его ID совпадает с ID текущего или гостевого игрока, то ник принадлежит ему же
+            if (currentUserId || guestUserId) {
+                const matchesCurrentUser = snapshot.docs.some(
+                    (doc) => doc.id === currentUserId || (guestUserId && doc.id === guestUserId)
+                );
                 if (matchesCurrentUser) return true;
             }
             return false;

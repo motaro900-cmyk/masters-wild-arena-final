@@ -137,7 +137,7 @@ class PlayerSnapshotServiceClass {
             if (totalCupsChange !== 0 || totalGoldChange !== 0) {
                 const newRating = Math.max(0, (state.rating || 0) + totalCupsChange);
                 const newGold = (state.gold || 0) + totalGoldChange;
-                useGameStore.setState({ rating: newRating, gold: newGold });
+                useGameStore.setState({ rating: newRating, trophies: newRating, gold: newGold });
 
                 // Синхронизируем с Firebase
                 syncService.syncPlayerData();
