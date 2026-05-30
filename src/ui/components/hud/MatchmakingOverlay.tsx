@@ -7,6 +7,7 @@ import { getHeroConfig } from '../../../configs/HeroesConfig';
 import { audioService } from '../../../services/AudioService';
 import { SKINS_DB } from '../../../configs/SkinsConfig';
 import { matchmakingService } from '../../../services/MatchmakingService';
+import { SyncService } from '../../../services/SyncService';
 import '../../styles/profile-hub.css';
 
 // Subcomponents
@@ -80,8 +81,7 @@ export const MatchmakingOverlay: React.FC<MatchmakingOverlayProps> = ({ onFound,
         }, 1000);
 
         const storeState = useGameStore.getState();
-        const vkUser = storeState.vkUser;
-        const myUserId = vkUser ? String(vkUser.id) : storeState.playerId || 'local';
+        const myUserId = SyncService.getPrefixedUserId(storeState.vkUser, storeState.playerId);
         const myWinRate = (storeState as any).winRate || 50;
 
         // Минимальная задержка показа (3-5 сек) для реалистичности

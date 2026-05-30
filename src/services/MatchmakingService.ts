@@ -149,8 +149,10 @@ class MatchmakingServiceClass {
             const candidates = snapshot.docs
                 .map((d) => ({ id: d.id, ...d.data() } as any))
                 .filter((p) => {
-                    // Исключаем себя
-                    if (p.id === myUserId) return false;
+                    // Исключаем себя (сравнение с учетом префиксов и без)
+                    const cleanPId = p.id.replace('VK-', '').replace('GUEST-', '');
+                    const cleanMyId = myUserId.replace('VK-', '').replace('GUEST-', '');
+                    if (p.id === myUserId || cleanPId === cleanMyId) return false;
                     // Проверяем кулдаун атаки (не атаковали ли мы его недавно)
                     if (!this.canAttack(myUserId, p.id)) return false;
 
