@@ -376,6 +376,48 @@ export class SyncService {
     }
 
     /**
+     * Подписывается на топ игроков по рейтингу (кубкам) в реальном времени
+     */
+    public subscribeToGlobalLeaders(limitCount: number = 50, callback: (leaders: any[]) => void): () => void {
+        try {
+            const playersRef = collection(db, 'пользователи');
+            const q = query(playersRef, orderBy('рейтинг', 'desc'), limit(limitCount + 15));
+
+            return onSnapshot(
+                q,
+                (snapshot: any) => {
+                    const rawPlayers = snapshot.docs.map((doc: any) => ({
+                        id: doc.id,
+                        ...doc.data(),
+                    }));
+
+                    const filtered = rawPlayers
+                        .filter((p: any) => {
+                            const name = p.имя || p.name || '';
+                            const lowerName = name.toLowerCase();
+                            if (['мастер', 'разработчик', 'test'].some((w) => lowerName.includes(w))) {
+                                return false;
+                            }
+                            if (p.тестовый || p.разработчик) {
+                                return false;
+                            }
+                            return true;
+                        })
+                        .slice(0, limitCount);
+
+                    callback(filtered);
+                },
+                (error: any) => {
+                    console.error('[SyncService] Global leaders subscription error:', error);
+                }
+            );
+        } catch (error) {
+            console.error('[SyncService] Failed to set up global leaders subscription:', error);
+            return () => {};
+        }
+    }
+
+    /**
      * Отправляет запрос в друзья другому игроку
      */
     public async sendFriendRequest(targetId: string, senderData: any): Promise<boolean> {

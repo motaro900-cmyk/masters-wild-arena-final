@@ -29,39 +29,48 @@ export const RankingWindow: React.FC = () => {
 
     const scrollRef = React.useRef<HTMLDivElement>(null);
 
+    const myLeaderboardEntry = globalLeaders.find((l) => l.isMe);
+    const myRank = myLeaderboardEntry ? `#${myLeaderboardEntry.rank}` : '50+';
+
     React.useEffect(() => {
-        const fetchLeaders = async () => {
-            setIsLoading(true);
+        let unsubscribe: (() => void) | undefined;
+        setIsLoading(true);
+
+        const setupSubscription = async () => {
             try {
                 const { syncService } = await import('../../../services/SyncService');
-                const players = await syncService.getGlobalPlayers(50);
+                unsubscribe = syncService.subscribeToGlobalLeaders(50, (players) => {
+                    const mappedLeaders: LeaderboardEntry[] = players.map((p, index) => {
+                        const nameVal = p.имя || p.name || 'Мастер';
+                        const firstName = nameVal.split(' ')[0];
 
-                const mappedLeaders: LeaderboardEntry[] = players.map((p, index) => {
-                    // Оставляем только имя (первое слово) для приватности
-                    const nameVal = p.имя || p.name || 'Мастер';
-                    const firstName = nameVal.split(' ')[0];
-
-                    return {
-                        rank: index + 1,
-                        name: firstName,
-                        level: p.уровень || p.лев || p.level || 1,
-                        trophies: p.рейтинг || p.rating || 0,
-                        avatar: p.фото || p.photo || p.avatar || '🐺',
-                        change: 'stable',
-                        isMe: p.id === useGameStore.getState().playerId || String(p.vkId) === String(vkUser?.id),
-                    };
+                        return {
+                            rank: index + 1,
+                            name: firstName,
+                            level: p.уровень || p.лев || p.level || 1,
+                            trophies: p.рейтинг || p.rating || 0,
+                            avatar: p.фото || p.photo || p.avatar || '🐺',
+                            change: 'stable',
+                            isMe: p.id === useGameStore.getState().playerId || String(p.vkId) === String(vkUser?.id),
+                        };
+                    });
+                    setGlobalLeaders(mappedLeaders);
+                    setIsLoading(false);
                 });
-
-                setGlobalLeaders(mappedLeaders);
             } catch (e) {
-                console.error('Failed to fetch real leaders:', e);
-            } finally {
+                console.error('Failed to subscribe to leaders:', e);
                 setIsLoading(false);
             }
         };
 
-        fetchLeaders();
-    }, [rating, vkUser, playerAvatar]);
+        setupSubscription();
+
+        return () => {
+            if (unsubscribe) {
+                unsubscribe();
+            }
+        };
+    }, [vkUser]);
 
     React.useEffect(() => {
         const handleScroll = () => {
@@ -293,20 +302,22 @@ export const RankingWindow: React.FC = () => {
                     >
                         <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                             <div style={{ position: 'relative' }}>
-                                <span style={{ color: '#f0c040', fontSize: '20px', fontWeight: 900 }}>#1</span>
-                                <img
-                                    src={AssetsMap.UI.ICON_CROWN}
-                                    alt="crown"
-                                    style={{
-                                        position: 'absolute',
-                                        top: -14,
-                                        left: -12,
-                                        width: '22px',
-                                        height: '22px',
-                                        objectFit: 'contain',
-                                        filter: 'drop-shadow(0 0 5px rgba(240,192,64,0.7))',
-                                    }}
-                                />
+                                <span style={{ color: '#f0c040', fontSize: '20px', fontWeight: 900 }}>{myRank}</span>
+                                {myLeaderboardEntry?.rank === 1 && (
+                                    <img
+                                        src={AssetsMap.UI.ICON_CROWN}
+                                        alt="crown"
+                                        style={{
+                                            position: 'absolute',
+                                            top: -14,
+                                            left: -12,
+                                            width: '22px',
+                                            height: '22px',
+                                            objectFit: 'contain',
+                                            filter: 'drop-shadow(0 0 5px rgba(240,192,64,0.7))',
+                                        }}
+                                    />
+                                )}
                             </div>
                             <div
                                 style={{
