@@ -392,8 +392,27 @@ export class BattleEngine {
 
         const isSpecialStrike = Math.random() < specialChance;
 
-        // 2. РЫВОК ВПЕРЕД (Ждем полного подбегания персонажа вплотную)
-        if (isSpecialStrike) {
+        // Увеличиваем счетчик атак
+        attacker.attackCounter = (attacker.attackCounter || 0) + 1;
+        const isAssassin = attacker.config?.role === 'ASSASSIN';
+        const isShadowStep = isAssassin && (attacker.attackCounter % 4 === 0);
+
+        // 2. РЫВОК ВПЕРЕД ИЛИ ТЕЛЕПОРТАЦИЯ ЗА СПИНУ (Shadow Step)
+        if (isShadowStep) {
+            const stepLog = `👤 ${attacker.config.name} уходит в тень (Shadow Step)!`;
+            this.updateState({ log: stepLog });
+            addCombatLog(stepLog);
+
+            await attacker.animateTeleportOut();
+            if (!this.isCombatRunning) return;
+
+            // Вычисляем позицию за спиной цели
+            const baseScale = attacker.config.baseScale || 1.0;
+            const targetX = isPlayer ? victim.x + 85 : victim.x - 85;
+            const faceScaleX = (isPlayer ? -1 : 1) * baseScale; // Разворачиваемся лицом к жертве
+
+            await attacker.animateTeleportIn(targetX, faceScaleX);
+        } else if (isSpecialStrike) {
             await attacker.animateLungeForward(isPlayer, 6);
         } else {
             await attacker.animateLungeForward(isPlayer);
@@ -401,7 +420,7 @@ export class BattleEngine {
 
         if (!this.isCombatRunning) return;
 
-        const isJumpStrikeCombo = isSpecialStrike;
+        const isJumpStrikeCombo = isSpecialStrike && !isShadowStep;
 
         if (isJumpStrikeCombo) {
             const baseScale = attacker.config.baseScale || 1.0;
@@ -589,7 +608,14 @@ export class BattleEngine {
             await dodgePromise;
 
             // Возвращаем атакующего на исходную
-            await attacker.animateLungeReturn(startX, startY);
+            if (isShadowStep) {
+                await attacker.animateTeleportOut();
+                const baseScale = attacker.config.baseScale || 1.0;
+                const originalFaceScaleX = (isPlayer ? 1 : -1) * baseScale;
+                await attacker.animateTeleportIn(startX, originalFaceScaleX);
+            } else {
+                await attacker.animateLungeReturn(startX, startY);
+            }
             return;
         }
 
@@ -737,7 +763,14 @@ export class BattleEngine {
 
         // Пауза перед возвращением
         await new Promise((r) => setTimeout(r, 650 / timeScale));
-        await attacker.animateLungeReturn(startX, startY);
+        if (isShadowStep) {
+            await attacker.animateTeleportOut();
+            const baseScale = attacker.config.baseScale || 1.0;
+            const originalFaceScaleX = (isPlayer ? 1 : -1) * baseScale;
+            await attacker.animateTeleportIn(startX, originalFaceScaleX);
+        } else {
+            await attacker.animateLungeReturn(startX, startY);
+        }
     }
 
     public instantWin() {

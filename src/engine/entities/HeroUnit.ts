@@ -90,6 +90,7 @@ export class HeroUnit extends PIXI.Container {
     public calculatedBaseScale: number = 1.0;
     public nextAttackPose: number = 3;
     public isStunnedStatus: boolean = false;
+    public attackCounter: number = 0;
     private currentResolve: (() => void) | null = null;
     private trailInterval: any = null;
     
@@ -1004,6 +1005,110 @@ export class HeroUnit extends PIXI.Container {
                 duration: 0.45,
                 ease: 'power2.inOut',
             });
+        });
+    }
+
+    /**
+     * Телепортация: Исчезновение (Shadow step out)
+     * Сжимает и растягивает персонажа по вертикали (эффект искажения), убирает альфу
+     */
+    public animateTeleportOut(): Promise<void> {
+        this.clearCurrentResolve();
+        return new Promise((resolve) => {
+            this.currentResolve = resolve;
+            const timeScale = useGameStore.getState().timeScale || 1;
+
+            gsap.killTweensOf(this);
+            if (this.bodyContainer) {
+                gsap.killTweensOf(this.bodyContainer.scale);
+                gsap.killTweensOf(this.bodyContainer);
+            }
+
+            // Звук исчезновения
+            audioService.playSFX('/assets/audio/sfx/dodge.mp3');
+
+            // Небольшой взрыв частиц в месте исчезновения
+            EffectsManager.getInstance().particleBurst(this.x, this.y - 80, 8, 0x5a189a, 120);
+
+            const tl = gsap.timeline({
+                onComplete: () => {
+                    this.alpha = 0;
+                    if (this.currentResolve === resolve) {
+                        this.currentResolve = null;
+                    }
+                    resolve();
+                }
+            });
+            tl.timeScale(timeScale);
+
+            // Эффект растягивания по вертикали (Distortion)
+            if (this.bodyContainer) {
+                tl.to(this.bodyContainer.scale, {
+                    x: this.defaultScaleX * 0.4,
+                    y: this.defaultScaleY * 1.8,
+                    duration: 0.08,
+                    ease: 'power2.in'
+                });
+            }
+
+            tl.to(this, {
+                alpha: 0,
+                duration: 0.08,
+                ease: 'power2.in'
+            }, 0);
+        });
+    }
+
+    /**
+     * Телепортация: Появление (Shadow step in)
+     * Помещает в новые координаты, восстанавливает сжатие и альфу с кольцевым эффектом
+     */
+    public animateTeleportIn(targetX: number, faceScaleX: number): Promise<void> {
+        this.clearCurrentResolve();
+        return new Promise((resolve) => {
+            this.currentResolve = resolve;
+            const timeScale = useGameStore.getState().timeScale || 1;
+
+            this.x = targetX;
+            this.scale.x = faceScaleX;
+            this.alpha = 0;
+
+            if (this.bodyContainer) {
+                this.bodyContainer.scale.set(this.defaultScaleX * 0.4, this.defaultScaleY * 1.8);
+            }
+
+            // Кольцо теневой энергии (Arrival Burst) в точке появления
+            EffectsManager.getInstance().particleBurst(this.x, this.y - 80, 6, 0xbd00ff, 100);
+
+            const tl = gsap.timeline({
+                onComplete: () => {
+                    this.alpha = 1;
+                    if (this.bodyContainer) {
+                        this.bodyContainer.scale.set(this.defaultScaleX, this.defaultScaleY);
+                    }
+                    if (this.currentResolve === resolve) {
+                        this.currentResolve = null;
+                    }
+                    resolve();
+                }
+            });
+            tl.timeScale(timeScale);
+
+            // Восстановление нормального масштаба
+            if (this.bodyContainer) {
+                tl.to(this.bodyContainer.scale, {
+                    x: this.defaultScaleX,
+                    y: this.defaultScaleY,
+                    duration: 0.1,
+                    ease: 'back.out(2)'
+                });
+            }
+
+            tl.to(this, {
+                alpha: 1,
+                duration: 0.1,
+                ease: 'power2.out'
+            }, 0);
         });
     }
 
