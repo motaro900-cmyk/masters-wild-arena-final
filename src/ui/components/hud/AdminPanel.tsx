@@ -26,6 +26,51 @@ const ADMIN_VK_IDS = [212359386, 1035794378];
 
 type AdminTab = 'ИГРОК' | 'БОЙ' | 'СЕРВЕР' | 'ПОЧТА' | 'ЧАТ' | 'ОТЗЫВЫ' | 'СИСТЕМА';
 
+const mapRawPlayerToRealPlayer = (p: any): RealPlayer => {
+    const nameVal = p.имя || p.name || 'Unknown';
+    const photoVal = p.фото || p.avatar || p.photo || 'https://vk.com/images/camera_100.png';
+    const activeScreenVal = p.активныйЭкран || p.activeScreen || 'MAP';
+    const lastSeenMillis = p.былВСети?.toMillis?.() || p.lastSeen?.toMillis?.() || 0;
+    const statusVal = activeScreenVal === 'BATTLE'
+        ? 'BATTLE'
+        : Date.now() - lastSeenMillis < 300000
+            ? 'ONLINE'
+            : 'OFFLINE';
+
+    // Парсим полноеСостояниеJSON для получения актуальных значений ресурсов игрока в реальном времени
+    let parsedState: any = {};
+    if (p.полноеСостояниеJSON) {
+        try {
+            parsedState = JSON.parse(p.полноеСостояниеJSON);
+        } catch (e) {
+            console.error('Failed to parse полноеСостояниеJSON in AdminPanel', e);
+        }
+    }
+
+    const activeHero = parsedState.selectedHeroId || p.герой || 'panda';
+    const gearVal = (parsedState.heroEquipment && parsedState.heroEquipment[activeHero])
+        ? parsedState.heroEquipment[activeHero]
+        : (p.снаряжение || p.геройСнаряжение || {});
+
+    return {
+        id: p.id,
+        vkId: p.vkId || 0,
+        name: nameVal,
+        photo: photoVal,
+        status: p.status === 'BANNED' ? 'BANNED' : statusVal,
+        screen: activeScreenVal,
+        level: parsedState.level !== undefined ? parsedState.level : (p.уровень || p.лев || p.level || 1),
+        gold: parsedState.gold !== undefined ? parsedState.gold : (p.золото !== undefined ? p.золото : (p.gold || 0)),
+        crystals: parsedState.crystals !== undefined ? parsedState.crystals : (p.кристаллы !== undefined ? p.кристаллы : (p.crystals || 0)),
+        regDate: (p.былВСети || p.lastSeen)?.toDate?.().toLocaleDateString() || '10.05.2026',
+        reports: p.reports || 0,
+        reportLogs: p.reportLogs || [],
+        gear: gearVal as any,
+        isTest: p.тестовый || false,
+        isDev: p.разработчик || false,
+    };
+};
+
 export const AdminPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     const store = useGameStore();
     const [activeTab, setActiveTab] = useState<AdminTab>('ИГРОК');
@@ -69,45 +114,7 @@ export const AdminPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
         setIsLoadingPlayers(true);
         try {
             const players = await syncService.getAllPlayers();
-            const mappedPlayers: RealPlayer[] = players.map((p) => {
-                const nameVal = p.имя || p.name || 'Unknown';
-                const photoVal = p.фото || p.avatar || p.photo || 'https://vk.com/images/camera_100.png';
-                const activeScreenVal = p.активныйЭкран || p.activeScreen || 'MAP';
-                const lastSeenMillis = p.былВСети?.toMillis?.() || p.lastSeen?.toMillis?.() || 0;
-                const statusVal = activeScreenVal === 'BATTLE'
-                    ? 'BATTLE'
-                    : Date.now() - lastSeenMillis < 300000
-                        ? 'ONLINE'
-                        : 'OFFLINE';
-
-                // Парсим полноеСостояниеJSON для получения актуальных значений ресурсов игрока в реальном времени
-                let parsedState: any = {};
-                if (p.полноеСостояниеJSON) {
-                    try {
-                        parsedState = JSON.parse(p.полноеСостояниеJSON);
-                    } catch (e) {
-                        console.error('Failed to parse полноеСостояниеJSON in AdminPanel', e);
-                    }
-                }
-
-                return {
-                    id: p.id,
-                    vkId: p.vkId || 0,
-                    name: nameVal,
-                    photo: photoVal,
-                    status: p.status === 'BANNED' ? 'BANNED' : statusVal,
-                    screen: activeScreenVal,
-                    level: parsedState.level !== undefined ? parsedState.level : (p.уровень || p.лев || p.level || 1),
-                    gold: parsedState.gold !== undefined ? parsedState.gold : (p.золото !== undefined ? p.золото : (p.gold || 0)),
-                    crystals: parsedState.crystals !== undefined ? parsedState.crystals : (p.кристаллы !== undefined ? p.кристаллы : (p.crystals || 0)),
-                    regDate: (p.былВСети || p.lastSeen)?.toDate?.().toLocaleDateString() || '10.05.2026',
-                    reports: p.reports || 0,
-                    reportLogs: p.reportLogs || [],
-                    gear: parsedState.heroEquipment || p.снаряжение || p.геройСнаряжение || {},
-                    isTest: p.тестовый || false,
-                    isDev: p.разработчик || false,
-                };
-            });
+            const mappedPlayers = players.map(mapRawPlayerToRealPlayer);
             setRealPlayers(mappedPlayers);
         } catch (e) {
             console.error('Failed to refresh players:', e);
@@ -118,13 +125,28 @@ export const AdminPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
 
     useEffect(() => {
         let timer: any;
+        let unsubscribePlayers: (() => void) | null = null;
+
         if (activeTab === 'СЕРВЕР') {
-            timer = setTimeout(() => refreshPlayers(), 0);
+            setIsLoadingPlayers(true);
+            refreshPlayers().finally(() => {
+                setIsLoadingPlayers(false);
+            });
+
+            // Подписываемся на обновления всех игроков в реальном времени
+            unsubscribePlayers = syncService.subscribeToAllPlayers((players) => {
+                const mappedPlayers = players.map(mapRawPlayerToRealPlayer);
+                setRealPlayers(mappedPlayers);
+            });
         } else if (activeTab === 'ОТЗЫВЫ') {
             timer = setTimeout(() => refreshFeedback(), 0);
         }
+
         return () => {
             if (timer) clearTimeout(timer);
+            if (unsubscribePlayers) {
+                unsubscribePlayers();
+            }
         };
     }, [activeTab]);
 

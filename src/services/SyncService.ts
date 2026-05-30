@@ -217,6 +217,33 @@ export class SyncService {
     }
 
     /**
+     * Подписывается на список всех игроков в реальном времени (для админ-панели)
+     */
+    public subscribeToAllPlayers(callback: (players: any[]) => void): () => void {
+        try {
+            const playersRef = collection(db, 'пользователи');
+            const q = query(playersRef, orderBy('былВСети', 'desc'), limit(100));
+
+            return onSnapshot(
+                q,
+                (snapshot: any) => {
+                    const players = snapshot.docs.map((doc: any) => ({
+                        ...doc.data(),
+                        id: doc.id,
+                    }));
+                    callback(players);
+                },
+                (error: any) => {
+                    console.error('[SyncService] All players subscription error:', error);
+                }
+            );
+        } catch (error) {
+            console.error('[SyncService] Failed to set up all players subscription:', error);
+            return () => {};
+        }
+    }
+
+    /**
      * Удаленно обновляет данные игрока в Firebase (для админки)
      */
     public async updateRemotePlayerData(userId: string, data: any): Promise<void> {
