@@ -76,7 +76,7 @@ export const ShopItemCard: React.FC<ShopItemCardProps> = ({
                 justifyContent: 'space-between',
                 cursor: 'pointer',
                 position: 'relative',
-                transition: 'all 0.2s',
+                transition: 'background 0.2s, border-color 0.2s, box-shadow 0.2s',
             }}
         >
             {discount > 0 && !isLocked && (

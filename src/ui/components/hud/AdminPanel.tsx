@@ -69,27 +69,35 @@ export const AdminPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
         setIsLoadingPlayers(true);
         try {
             const players = await syncService.getAllPlayers();
-            // Маппим данные из Firebase в формат RealPlayer
-            const mappedPlayers: RealPlayer[] = players.map((p) => ({
-                id: p.id,
-                vkId: p.vkId || 0,
-                name: p.name || 'Unknown',
-                photo: p.photo || 'https://vk.com/images/camera_100.png',
-                status:
-                    p.activeScreen === 'BATTLE'
-                        ? 'BATTLE'
-                        : Date.now() - (p.lastSeen?.toMillis?.() || 0) < 300000
-                          ? 'ONLINE'
-                          : 'OFFLINE',
-                screen: p.activeScreen || 'MAP',
-                level: p.лев || 1,
-                gold: p.золото || 0,
-                crystals: p.кристаллы || 0,
-                regDate: p.lastSeen?.toDate?.().toLocaleDateString() || '10.05.2026',
-                reports: p.reports || 0,
-                reportLogs: p.reportLogs || [],
-                gear: p.геройСнаряжение || {},
-            }));
+            const mappedPlayers: RealPlayer[] = players.map((p) => {
+                const nameVal = p.имя || p.name || 'Unknown';
+                const photoVal = p.фото || p.avatar || p.photo || 'https://vk.com/images/camera_100.png';
+                const activeScreenVal = p.активныйЭкран || p.activeScreen || 'MAP';
+                const lastSeenMillis = p.былВСети?.toMillis?.() || p.lastSeen?.toMillis?.() || 0;
+                const statusVal = activeScreenVal === 'BATTLE'
+                    ? 'BATTLE'
+                    : Date.now() - lastSeenMillis < 300000
+                        ? 'ONLINE'
+                        : 'OFFLINE';
+
+                return {
+                    id: p.id,
+                    vkId: p.vkId || 0,
+                    name: nameVal,
+                    photo: photoVal,
+                    status: statusVal,
+                    screen: activeScreenVal,
+                    level: p.уровень || p.лев || p.level || 1,
+                    gold: p.золото !== undefined ? p.золото : (p.gold || 0),
+                    crystals: p.кристаллы !== undefined ? p.кристаллы : (p.crystals || 0),
+                    regDate: (p.былВСети || p.lastSeen)?.toDate?.().toLocaleDateString() || '10.05.2026',
+                    reports: p.reports || 0,
+                    reportLogs: p.reportLogs || [],
+                    gear: p.снаряжение || p.геройСнаряжение || {},
+                    isTest: p.тестовый || false,
+                    isDev: p.разработчик || false,
+                };
+            });
             setRealPlayers(mappedPlayers);
         } catch (e) {
             console.error('Failed to refresh players:', e);
@@ -488,6 +496,21 @@ export const AdminPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                                 style={{ ...bigBtnStyle, background: '#431b1b', color: '#ff4d4d', marginTop: '10px' }}
                             >
                                 HARD RESET LOCAL DATA
+                            </button>
+                            <button
+                                onClick={async () => {
+                                    if (confirm('ВНИМАНИЕ! ВЫ ПОДТВЕРЖДАЕТЕ ПОЛНЫЙ СБРОС ВСЕЙ БАЗЫ ДАННЫХ (БЕТА-ВАЙП)?\nЭто действие безвозвратно удалит всех пользователей, чаты и отзывы из Firestore!')) {
+                                        try {
+                                            await syncService.wipeAllFirestoreCollections();
+                                            alert('Вайп базы данных успешно завершен! 🎉');
+                                        } catch (err) {
+                                            alert('Произошла ошибка при вайпе базы данных: ' + err);
+                                        }
+                                    }
+                                }}
+                                style={{ ...bigBtnStyle, background: '#990000', color: '#fff', marginTop: '15px', fontWeight: 'bold' }}
+                            >
+                                СБРОСИТЬ ВСЮ БАЗУ ДАННЫХ (БЕТА-ВАЙП) 💥
                             </button>
                         </Section>
                     </div>

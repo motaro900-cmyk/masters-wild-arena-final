@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { audioService } from '../../../services/AudioService';
 import { AssetsMap } from '../../../configs/AssetsMap';
 import { useGameStore } from '../../../store/useGameStore';
-import { syncService } from '../../../services/SyncService';
+import { syncService, SyncService } from '../../../services/SyncService';
 import mainBg from '../../../assets/backgrounds/main-bg.jpg';
 
 interface IntroScreenProps {
@@ -71,7 +71,9 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
 
         // Проверка на уникальность
         setIsChecking(true);
-        const isUnique = await syncService.isNicknameUnique(cleanName);
+        const store = useGameStore.getState();
+        const currentUserId = SyncService.getPrefixedUserId(store.vkUser, store.playerId);
+        const isUnique = await syncService.isNicknameUnique(cleanName, currentUserId);
         setIsChecking(false);
         if (!isUnique) {
             return 'Это имя уже занято другим мастером';
@@ -108,9 +110,16 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
                 return;
             }
 
-            // Сохраняем имя и завершаем
+            // Сохраняем имя и завершаем onboarding
             changeName(nickname);
-            useGameStore.getState().setOnboardingCompleted(true);
+            const store = useGameStore.getState();
+            if (store.setOnboardingCompleted) {
+                store.setOnboardingCompleted(true);
+            } else {
+                useGameStore.setState({ onboardingCompleted: true });
+                syncService.syncPlayerData();
+            }
+            useGameStore.setState({ tutorialStep: 0 });
             audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
             onComplete();
             return;

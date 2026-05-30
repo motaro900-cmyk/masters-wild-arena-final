@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { AssetsMap } from '../../../../configs/AssetsMap';
 import { audioService } from '../../../../services/AudioService';
 import { RewardItem } from './BattlePassShared';
+import { SKINS_DB } from '../../../../configs/SkinsConfig';
+import { ITEMS_DATABASE } from '../../../../game/configs/ItemsConfig';
 
 interface RewardCardProps {
     item: RewardItem;
@@ -23,6 +25,15 @@ export const RewardCard: React.FC<RewardCardProps> = ({
     onPreview,
     isMilestone,
 }) => {
+    const skinConfig = item.type === 'SKIN' ? SKINS_DB.find(s => s.id === item.id) : null;
+
+    let mappedItemId = item.id;
+    if (item.id === 'potion_strength') mappedItemId = 'hp_potion_3';
+    else if (item.id === 'potion_strength_great') mappedItemId = 'hp_potion_3';
+    else if (item.id === 'potion_healing') mappedItemId = 'hp_potion_1';
+    else if (item.id === 'potion_defense') mappedItemId = 'hp_potion_2';
+
+    const dbItem = ITEMS_DATABASE[mappedItemId];
     return (
         <motion.div
             onClick={() => {
@@ -190,7 +201,29 @@ export const RewardCard: React.FC<RewardCardProps> = ({
                     zIndex: 1,
                 }}
             >
-                {item.icon.startsWith('sprite-') ? (
+                {skinConfig ? (
+                    <img
+                        src={skinConfig.image}
+                        alt={skinConfig.name}
+                        style={{
+                            width: '90%',
+                            height: '90%',
+                            objectFit: 'contain',
+                            filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.4))',
+                        }}
+                    />
+                ) : dbItem?.image ? (
+                    <img
+                        src={dbItem.image}
+                        alt={dbItem.name}
+                        style={{
+                            width: '80%',
+                            height: '80%',
+                            objectFit: 'contain',
+                            filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.4))',
+                        }}
+                    />
+                ) : item.icon.startsWith('sprite-') ? (
                     <div className={item.icon} style={{ width: '100%', height: '100%', backgroundSize: '300% 100%' }} />
                 ) : (
                     <span style={{ fontSize: isMilestone ? '80px' : '60px' }}>{item.icon}</span>

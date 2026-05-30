@@ -4,7 +4,7 @@ export const armor: Record<string, IEquipmentStats> = {
     ragged_tunic: {
         id: 'ragged_tunic',
         name: 'Рваная Туника Скитальца',
-        priceGold: 200,
+        priceGold: 90,
         requiredLevel: 1,
         image: '/assets/images/items/armor/ragged_tunic.webp',
         rarity: 'COMMON',
@@ -17,8 +17,8 @@ export const armor: Record<string, IEquipmentStats> = {
     starter_armor: {
         id: 'starter_armor',
         name: 'Ученический Доспех',
-        priceGold: 600,
-        requiredLevel: 3,
+        priceGold: 250,
+        requiredLevel: 1,
         image: '/assets/images/items/armor/starter_armor.webp',
         rarity: 'COMMON',
         mainTab: 'ARSENAL',

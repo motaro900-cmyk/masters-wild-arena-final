@@ -68,7 +68,7 @@ export const consumables: Record<string, IEquipmentStats> = {
     },
     gem_pack_2: {
         id: 'gem_pack_2',
-        name: 'Мешочек Алмазов',
+        name: 'Сундук Алмазов',
         priceStars: 100,
         image: '/assets/images/shop/bank_almaz_medium.webp',
         rarity: 'EPIC',
@@ -79,7 +79,7 @@ export const consumables: Record<string, IEquipmentStats> = {
     },
     gem_pack_3: {
         id: 'gem_pack_3',
-        name: 'Сундук Алмазов',
+        name: 'Сокровищница Алмазов',
         priceStars: 500,
         image: '/assets/images/shop/bank_almaz_large.webp',
         rarity: 'LEGENDARY',
@@ -101,7 +101,7 @@ export const consumables: Record<string, IEquipmentStats> = {
     },
     gold_pack_2: {
         id: 'gold_pack_2',
-        name: 'Мешочек Золота',
+        name: 'Сундук Золота',
         priceGem: 500,
         image: '/assets/images/shop/bank_gold_medium.webp',
         rarity: 'EPIC',
@@ -112,7 +112,7 @@ export const consumables: Record<string, IEquipmentStats> = {
     },
     gold_pack_3: {
         id: 'gold_pack_3',
-        name: 'Сундук Золота',
+        name: 'Сокровищница Золота',
         priceGem: 2000,
         image: '/assets/images/shop/bank_gold_large.webp',
         rarity: 'LEGENDARY',

@@ -213,6 +213,10 @@ export const createQuestSlice = (set: any, get: any) => ({
             if (!newOwnedSkins.includes('skin_lava_golem')) {
                 newOwnedSkins.push('skin_lava_golem');
             }
+        } else if (rewardId === 'panda_frost') {
+            if (!newOwnedSkins.includes('panda_frost')) {
+                newOwnedSkins.push('panda_frost');
+            }
         } else if (rewardId === 'shard_rare') {
             const heroId = 'wolf_knight';
             shardsObj[heroId] = (shardsObj[heroId] || 0) + 10;

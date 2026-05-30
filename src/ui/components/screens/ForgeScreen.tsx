@@ -11,7 +11,7 @@ import { ForgeHeader } from './Forge/ForgeHeader';
 import { ForgeArsenal } from './Forge/ForgeArsenal';
 import { ForgeAnvil } from './Forge/ForgeAnvil';
 import { ForgeUpgradePanel } from './Forge/ForgeUpgradePanel';
-import { DismantleConfirmModal, ReforgeConfirmModal } from './Forge/ForgeModals';
+import { DismantleConfirmModal, ReforgeConfirmModal, ForgeStatusModal } from './Forge/ForgeModals';
 
 export const ForgeScreen: React.FC = () => {
     const stateStore = useGameStore();
@@ -42,6 +42,25 @@ export const ForgeScreen: React.FC = () => {
     const [reforgeNewMultiplier, setReforgeNewMultiplier] = useState<number | null>(null);
     const [useProtection, setUseProtection] = useState(false);
     const [sparkPositions, setSparkPositions] = useState<{ x: number; y: number }[]>([]);
+
+    const [statusModalConfig, setStatusModalConfig] = useState<{
+        isOpen: boolean;
+        title: string;
+        message: string;
+        type: 'success' | 'fail' | 'protection' | 'info';
+        rewards?: {
+            goldGained: number;
+            coalGained: number;
+            steelGained: number;
+            shardGained: number;
+        } | null;
+    }>({
+        isOpen: false,
+        title: '',
+        message: '',
+        type: 'info',
+        rewards: null,
+    });
 
     // Фильтруем инвентарь по категории для предвыбора первого предмета
     const filteredInventory = inventory.filter((item: any) => {
@@ -219,25 +238,45 @@ export const ForgeScreen: React.FC = () => {
         setIsUpgrading(true);
         audioService.playSFX(AssetsMap.AUDIO.SFX_HIT);
 
-        await new Promise((resolve) => setTimeout(resolve, 1500));
-        const res = upgradeItem(selectedItemId, useProtection);
-        if (res) {
-            if (res.success) {
-                setShowSuccess(true);
-                audioService.playSFX(AssetsMap.AUDIO.SFX_BUY);
-                setTimeout(() => setShowSuccess(false), 2000);
-            } else {
-                audioService.playSFX(AssetsMap.AUDIO.SFX_ERROR);
-                if (res.degraded) {
-                    alert('Улучшение не удалось! Уровень предмета понизился.');
-                } else if (res.protectionUsed) {
-                    alert('Улучшение не удалось! Камень защиты спас предмет от понижения уровня.');
+        try {
+            await new Promise((resolve) => setTimeout(resolve, 1500));
+            const res = upgradeItem(selectedItemId, useProtection);
+            if (res) {
+                if (res.success) {
+                    setShowSuccess(true);
+                    audioService.playSFX(AssetsMap.AUDIO.SFX_BUY);
+                    setTimeout(() => setShowSuccess(false), 2000);
                 } else {
-                    alert('Улучшение не удалось!');
+                    audioService.playSFX(AssetsMap.AUDIO.SFX_ERROR);
+                    if (res.degraded) {
+                        setStatusModalConfig({
+                            isOpen: true,
+                            title: 'УЛУЧШЕНИЕ НЕ УДАЛОСЬ 💥',
+                            message: 'Не повезло! Уровень вашего предмета понизился.',
+                            type: 'fail',
+                        });
+                    } else if (res.protectionUsed) {
+                        setStatusModalConfig({
+                            isOpen: true,
+                            title: 'ПРЕДМЕТ СПАСЕН! 🛡️',
+                            message: 'Улучшение не удалось, но Камень защиты спас ваш предмет от понижения уровня!',
+                            type: 'protection',
+                        });
+                    } else {
+                        setStatusModalConfig({
+                            isOpen: true,
+                            title: 'УЛУЧШЕНИЕ НЕ УДАЛОСЬ',
+                            message: 'К сожалению, улучшить предмет не удалось. Попробуйте еще раз!',
+                            type: 'fail',
+                        });
+                    }
                 }
             }
+        } catch (error) {
+            console.error('[ForgeScreen] Upgrade failed:', error);
+        } finally {
+            setIsUpgrading(false);
         }
-        setIsUpgrading(false);
     };
 
     const handleDismantle = () => {
@@ -245,9 +284,18 @@ export const ForgeScreen: React.FC = () => {
         const reward = dismantleItem(selectedItemId);
         if (reward) {
             audioService.playSFX(AssetsMap.AUDIO.SFX_BUY);
-            alert(
-                `Успешно разобрано!\nПолучено ресурсов:\n🪙 Золото: +${reward.goldGained}\n🪵 Уголь: +${reward.coalGained}\n🔩 Сталь: +${reward.steelGained}\n💎 Осколки: +${reward.shardGained}`,
-            );
+            setStatusModalConfig({
+                isOpen: true,
+                title: 'ПРЕДМЕТ РАЗОБРАН! ⚒️',
+                message: 'Вы успешно разобрали предмет на полезные ресурсы:',
+                type: 'success',
+                rewards: {
+                    goldGained: reward.goldGained,
+                    coalGained: reward.coalGained,
+                    steelGained: reward.steelGained,
+                    shardGained: reward.shardGained,
+                },
+            });
             setSelectedItemId(null);
             setShowDismantleConfirm(false);
         }
@@ -331,7 +379,7 @@ export const ForgeScreen: React.FC = () => {
         >
             <div style={{
                 ...styles.bgOverlay,
-                background: `#0d0a08 url(${isMobile ? AssetsMap.BACKGROUNDS.FORGE_MOBILE : AssetsMap.BACKGROUNDS.FORGE}) no-repeat center/cover`
+                background: `#0d0a08 url("${isMobile ? AssetsMap.BACKGROUNDS.FORGE_MOBILE : AssetsMap.BACKGROUNDS.FORGE}") no-repeat center/cover`
             }} />
 
             {/* ВСПЫШКА УСПЕХА */}
@@ -364,7 +412,23 @@ export const ForgeScreen: React.FC = () => {
                     setSortBy={setSortBy}
                     selectedItemId={selectedItemId}
                     setSelectedItemId={setSelectedItemId}
-                    onDismantle={() => setShowDismantleConfirm(true)}
+                    onDismantle={() => {
+                        if (selectedItemId) {
+                            const heroId = stateStore.selectedHeroId || 'panda';
+                            const equippedGear = stateStore.heroEquipment[heroId] || {};
+                            const isEquipped = Object.values(equippedGear).includes(selectedItemId);
+                            if (isEquipped) {
+                                setStatusModalConfig({
+                                    isOpen: true,
+                                    title: 'НЕЛЬЗЯ РАЗОБРАТЬ ❌',
+                                    message: 'Этот предмет сейчас надет на герое. Снимите его перед разбором!',
+                                    type: 'fail',
+                                });
+                            } else {
+                                setShowDismantleConfirm(true);
+                            }
+                        }
+                    }}
                     onReforge={() => setShowReforgeConfirm(true)}
                 />
 
@@ -419,6 +483,15 @@ export const ForgeScreen: React.FC = () => {
                 itemName={itemData?.name || ''}
                 itemReforgeMultiplier={itemReforgeMultiplier}
                 reforgeNewMultiplier={reforgeNewMultiplier}
+            />
+
+            <ForgeStatusModal
+                isOpen={statusModalConfig.isOpen}
+                onClose={() => setStatusModalConfig((prev) => ({ ...prev, isOpen: false }))}
+                title={statusModalConfig.title}
+                message={statusModalConfig.message}
+                type={statusModalConfig.type}
+                rewards={statusModalConfig.rewards}
             />
         </motion.div>
     );

@@ -218,7 +218,9 @@ export const AvatarFrame: React.FC<{
     showGlow?: boolean;
 }> = ({ avatarFilename, frameFilename, size = 64, showGlow = false }) => {
     const isLow = useGameStore((state) => state.graphicsQuality === 'LOW');
-    const avatarSrc = resolveAssetPath(`/assets/images/avatars/${avatarFilename.replace(/\.(png|webp)$/, '')}.webp`);
+    const avatarSrc = avatarFilename.startsWith('http')
+        ? avatarFilename
+        : resolveAssetPath(`/assets/images/avatars/${avatarFilename.replace(/\.(png|webp)$/, '')}.webp`);
     const frameSrc = resolveAssetPath(`/assets/images/frames/${frameFilename.replace(/\.(png|webp)$/, '')}.webp`);
 
     return (

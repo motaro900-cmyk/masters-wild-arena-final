@@ -160,3 +160,115 @@ export const ReforgeConfirmModal: React.FC<ReforgeConfirmModalProps> = ({
         </AnimatePresence>
     );
 };
+
+interface ForgeStatusModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+    title: string;
+    message: string;
+    type: 'success' | 'fail' | 'protection' | 'info';
+    rewards?: {
+        goldGained: number;
+        coalGained: number;
+        steelGained: number;
+        shardGained: number;
+    } | null;
+}
+
+export const ForgeStatusModal: React.FC<ForgeStatusModalProps> = ({
+    isOpen,
+    onClose,
+    title,
+    message,
+    type,
+    rewards,
+}) => {
+    const getHeaderColor = () => {
+        if (type === 'success') return '#10b981';
+        if (type === 'protection') return '#60a5fa';
+        if (type === 'fail') return '#ef4444';
+        return '#f0c040';
+    };
+
+    const getIcon = () => {
+        if (type === 'success') return '✨';
+        if (type === 'protection') return '🛡️';
+        if (type === 'fail') return '💥';
+        return 'ℹ️';
+    };
+
+    return (
+        <AnimatePresence>
+            {isOpen && (
+                <div style={styles.modalOverlay} onClick={onClose}>
+                    <motion.div
+                        initial={{ scale: 0.9, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        exit={{ scale: 0.9, opacity: 0 }}
+                        style={{
+                            ...styles.modalContent,
+                            border: `2px solid ${getHeaderColor()}55`,
+                            boxShadow: `0 25px 60px ${getHeaderColor()}22`,
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div style={{ fontSize: '48px', marginBottom: '15px' }}>{getIcon()}</div>
+                        <h3 style={{ margin: '0 0 10px 0', color: getHeaderColor(), fontFamily: "'Cinzel', serif", letterSpacing: '1.5px' }}>
+                            {title}
+                        </h3>
+                        <p style={{ fontSize: 13, opacity: 0.9, marginBottom: 20, whiteSpace: 'pre-line', lineHeight: '1.5' }}>
+                            {message}
+                        </p>
+
+                        {rewards && (
+                            <div style={{
+                                display: 'grid',
+                                gridTemplateColumns: '1fr 1fr',
+                                gap: '12px',
+                                width: '100%',
+                                marginBottom: '20px',
+                                background: 'rgba(0,0,0,0.3)',
+                                padding: '15px',
+                                borderRadius: '14px',
+                                border: '1px solid rgba(255,255,255,0.05)',
+                                textAlign: 'left'
+                            }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px' }}>
+                                    <span>🪙</span>
+                                    <span>Золото: <strong>+{rewards.goldGained}</strong></span>
+                                </div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px' }}>
+                                    <span>🪵</span>
+                                    <span>Уголь: <strong>+{rewards.coalGained}</strong></span>
+                                </div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px' }}>
+                                    <span>🔩</span>
+                                    <span>Сталь: <strong>+{rewards.steelGained}</strong></span>
+                                </div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px' }}>
+                                    <span>💎</span>
+                                    <span>Осколки: <strong>+{rewards.shardGained}</strong></span>
+                                </div>
+                            </div>
+                        )}
+
+                        <button
+                            onClick={onClose}
+                            style={{
+                                ...styles.modalActionBtn,
+                                background: getHeaderColor(),
+                                color: type === 'success' || type === 'protection' ? '#fff' : '#000',
+                                width: '100%',
+                                fontSize: '13px',
+                                fontWeight: 900
+                            }}
+                        >
+                            ПОНЯТНО
+                        </button>
+                    </motion.div>
+                </div>
+            )}
+        </AnimatePresence>
+    );
+};
+

@@ -29,6 +29,17 @@ export class SyncService {
         return SyncService.instance;
     }
 
+    public static getPrefixedUserId(vkUser: any, playerId: string): string {
+        if (vkUser) {
+            return `VK-${vkUser.id}`;
+        }
+        if (playerId && playerId.startsWith('GUEST-')) {
+            return playerId;
+        }
+        const cleanGuest = playerId ? playerId.replace(/^MW-/, '') : Math.random().toString(36).substring(2, 11).toUpperCase();
+        return `GUEST-${cleanGuest}`;
+    }
+
     /**
      * Синхронизирует текущее состояние игрока с Firebase
      */
@@ -50,8 +61,8 @@ export class SyncService {
             }
         }
 
-        // Используем VK ID как основной ключ, если он есть, иначе - playerId
-        const userId = vkUser ? String(vkUser.id) : state.playerId;
+        // Используем VK-ID или GUEST-ID как основной ключ
+        const userId = SyncService.getPrefixedUserId(vkUser, state.playerId);
 
         if (!userId) {
             console.warn('[SyncService] No UserID found, skipping sync');
@@ -61,26 +72,102 @@ export class SyncService {
         try {
             const playerRef = doc(db, 'пользователи', userId);
 
+            const selectedHeroId = state.selectedHeroId || 'panda';
+            const fullState = {
+                level: state.level,
+                vipLevel: state.vipLevel,
+                vipExp: state.vipExp,
+                exp: state.exp,
+                gold: state.gold,
+                crystals: state.crystals,
+                shards: state.shards,
+                rating: state.rating,
+                energy: state.energy,
+                maxEnergy: state.maxEnergy,
+                lastEnergyUpdate: state.lastEnergyUpdate,
+                vipEndTime: state.vipEndTime,
+                dailyAdWatchesCount: state.dailyAdWatchesCount,
+                name: state.name,
+                lastNameChange: state.lastNameChange,
+                avatar: state.avatar,
+                frame: state.frame,
+                title: state.title,
+                bpLevel: state.bpLevel,
+                bpExp: state.bpExp,
+                trophies: state.trophies,
+                wins: state.wins,
+                totalBattles: state.totalBattles,
+                claimedSocialRewards: state.claimedSocialRewards,
+                ownedSkins: state.ownedSkins,
+                equippedSkins: state.equippedSkins,
+                usedPromoCodes: state.usedPromoCodes,
+                pveStage: state.pveStage,
+                maxPveStage: state.maxPveStage,
+                winStreak: state.winStreak,
+                onboardingCompleted: state.onboardingCompleted,
+                friends: state.friends,
+                clanId: state.clanId,
+                clanCoins: state.clanCoins,
+                heroes: state.heroes,
+                heroTalents: state.heroTalents,
+                pet: state.pet,
+                petCharges: state.petCharges,
+                lastPetTime: state.lastPetTime,
+                inventory: state.inventory,
+                heroEquipment: state.heroEquipment,
+                selectedHeroId: state.selectedHeroId,
+                ownedHeroes: state.ownedHeroes,
+                claimedRewards: state.claimedRewards,
+                coal: state.coal,
+                steel_bars: state.steel_bars,
+                runic_shards: state.runic_shards,
+                ancient_compass: state.ancient_compass,
+                astral_crystal: state.astral_crystal,
+                void_sphere: state.void_sphere,
+                golden_sprout: state.golden_sprout,
+                dragon_scale: state.dragon_scale,
+                lava_heart: state.lava_heart,
+                protection_stones: state.protection_stones,
+                shopRotation: state.shopRotation,
+                shopDiscounts: state.shopDiscounts,
+                shopLastRefreshTime: state.shopLastRefreshTime,
+                lastWheelSpinTime: state.lastWheelSpinTime,
+                activeBuffs: state.activeBuffs || {},
+            };
+
+            const isLocalhost = typeof window !== 'undefined' && 
+                (window.location.hostname === 'localhost' || 
+                 window.location.hostname === '127.0.0.1' || 
+                 window.location.protocol === 'file:');
+
             const syncData = {
                 id: userId,
                 vkId: vkUser ? Number(vkUser.id) : 0,
-                name: state.name || 'Мастер',
-                photo: state.avatar || (vkUser ? vkUser.photo : ''),
-                avatar: state.avatar, // Added explicit avatar field just in case
-                лев: state.level || 1,
+                имя: state.name || 'Мастер',
+                имяВК: vkUser ? (vkUser.first_name || vkUser.firstName || '') : '',
+                фамилияВК: vkUser ? (vkUser.last_name || vkUser.lastName || '') : '',
+                ссылкаВК: vkUser ? `https://vk.com/id${vkUser.id}` : '',
+                уровень: state.level || 1,
                 золото: state.gold || 0,
                 кристаллы: state.crystals || 0,
-                rating: state.rating || 0,
-                lastSeen: serverTimestamp(),
-                activeScreen: state.activeScreen || 'MAIN_MENU',
-                // Можно добавить инвентарь и прочее, если нужно для админки
-                геройСнаряжение: {
-                    weapon: state.heroEquipment?.panda?.WEAPONS || '',
-                    helm: state.heroEquipment?.panda?.HELMETS || '',
-                    armor: state.heroEquipment?.panda?.ARMOR || '',
-                    shield: state.heroEquipment?.panda?.SHIELDS || '',
+                рейтинг: state.rating || 0,
+                былВСети: serverTimestamp(),
+                активныйЭкран: state.activeScreen || 'MAIN_MENU',
+                герой: selectedHeroId,
+                фото: state.avatar || (vkUser ? (vkUser.photo200 || vkUser.photo || '') : ''),
+                снаряжение: {
+                    WEAPONS: state.heroEquipment?.[selectedHeroId]?.WEAPONS || null,
+                    HELMETS: state.heroEquipment?.[selectedHeroId]?.HELMETS || null,
+                    ARMOR: state.heroEquipment?.[selectedHeroId]?.ARMOR || null,
+                    SHIELDS: state.heroEquipment?.[selectedHeroId]?.SHIELDS || null,
+                    SHOULDERS: state.heroEquipment?.[selectedHeroId]?.SHOULDERS || null,
+                    PANTS: state.heroEquipment?.[selectedHeroId]?.PANTS || null,
+                    BOOTS: state.heroEquipment?.[selectedHeroId]?.BOOTS || null,
                 },
                 инвентарь: state.inventory || [],
+                полноеСостояниеJSON: JSON.stringify(fullState),
+                тестовый: isLocalhost || state.name === 'Разработчик' || state.name?.toLowerCase().includes('test'),
+                разработчик: isLocalhost || state.name === 'Разработчик',
             };
 
             await setDoc(playerRef, syncData, { merge: true });
@@ -116,7 +203,7 @@ export class SyncService {
     public async getAllPlayers(): Promise<any[]> {
         try {
             const playersRef = collection(db, 'пользователи');
-            const q = query(playersRef, orderBy('lastSeen', 'desc'), limit(100));
+            const q = query(playersRef, orderBy('былВСети', 'desc'), limit(100));
             const querySnapshot = await getDocs(q);
 
             return querySnapshot.docs.map((doc) => ({
@@ -182,9 +269,25 @@ export class SyncService {
      */
     public async searchPlayerById(playerId: string): Promise<any | null> {
         try {
-            const id = playerId.toUpperCase().startsWith('MW-') ? playerId.substring(3) : playerId;
-            const playerRef = doc(db, 'пользователи', id);
-            const playerSnap = await getDoc(playerRef);
+            let id = playerId.trim();
+            if (id.toUpperCase().startsWith('MW-')) {
+                id = id.substring(3);
+            }
+
+            // Пробуем найти напрямую (например, VK-12345 или GUEST-XYZ)
+            let playerRef = doc(db, 'пользователи', id);
+            let playerSnap = await getDoc(playerRef);
+
+            // Если не нашли и ID не содержит префиксов, пробуем добавить GUEST- или ГОСТЬ-
+            if (!playerSnap.exists() && !id.startsWith('VK-') && !id.startsWith('GUEST-') && !id.startsWith('ГОСТЬ-')) {
+                playerRef = doc(db, 'пользователи', `GUEST-${id}`);
+                playerSnap = await getDoc(playerRef);
+
+                if (!playerSnap.exists()) {
+                    playerRef = doc(db, 'пользователи', `ГОСТЬ-${id}`);
+                    playerSnap = await getDoc(playerRef);
+                }
+            }
 
             if (playerSnap.exists()) {
                 return {
@@ -205,12 +308,27 @@ export class SyncService {
     public async getGlobalPlayers(limitCount: number = 20): Promise<any[]> {
         try {
             const playersRef = collection(db, 'пользователи');
-            const q = query(playersRef, orderBy('lastSeen', 'desc'), limit(limitCount));
+            // Запрашиваем чуть больше игроков с запасом, чтобы отфильтровать тестовые аккаунты
+            const q = query(playersRef, orderBy('былВСети', 'desc'), limit(limitCount + 15));
             const snapshot = await getDocs(q);
-            return snapshot.docs.map((doc) => ({
+            const rawPlayers = snapshot.docs.map((doc) => ({
                 id: doc.id,
                 ...doc.data(),
             }));
+
+            return rawPlayers
+                .filter((p: any) => {
+                    const name = p.имя || p.name || '';
+                    const lowerName = name.toLowerCase();
+                    if (['мастер', 'разработчик', 'test'].some((w) => lowerName.includes(w))) {
+                        return false;
+                    }
+                    if (p.тестовый || p.разработчик) {
+                        return false;
+                    }
+                    return true;
+                })
+                .slice(0, limitCount);
         } catch (error) {
             console.error('[SyncService] Failed to get global players:', error);
             return [];
@@ -315,6 +433,53 @@ export class SyncService {
     }
 
     /**
+     * ПОЛНОСТЬЮ ОЧИЩАЕТ КОЛЛЕКЦИИ пользователей, чата и отзывов в Firestore (БЕТА-ВАЙП)
+     */
+    public async wipeAllFirestoreCollections(): Promise<void> {
+        try {
+            console.log('[SyncService] Starting full database wipe (Beta Wipe)...');
+            
+            // 1. Wipe chat
+            await this.wipeGlobalChat();
+            
+            // 2. Wipe отзывы
+            const feedbackRef = collection(db, 'отзывы');
+            const feedbackSnap = await getDocs(feedbackRef);
+            const feedbackPromises = feedbackSnap.docs.map((doc) => deleteDoc(doc.ref));
+            await Promise.all(feedbackPromises);
+            console.log(`[SyncService] Wiped ${feedbackSnap.docs.length} feedback documents.`);
+
+            // 3. Wipe пользователи
+            const playersRef = collection(db, 'пользователи');
+            const playersSnap = await getDocs(playersRef);
+            
+            for (const playerDoc of playersSnap.docs) {
+                const userId = playerDoc.id;
+                
+                // Delete "запросы" subcollection
+                const requestsRef = collection(db, 'пользователи', userId, 'запросы');
+                const requestsSnap = await getDocs(requestsRef);
+                const requestsPromises = requestsSnap.docs.map((d) => deleteDoc(d.ref));
+                await Promise.all(requestsPromises);
+
+                // Delete "почта" subcollection
+                const mailRef = collection(db, 'пользователи', userId, 'почта');
+                const mailSnap = await getDocs(mailRef);
+                const mailPromises = mailSnap.docs.map((d) => deleteDoc(d.ref));
+                await Promise.all(mailPromises);
+
+                // Delete the parent user doc
+                await deleteDoc(playerDoc.ref);
+            }
+            console.log(`[SyncService] Wiped ${playersSnap.docs.length} player accounts and their subcollections.`);
+            console.log('[SyncService] Full database wipe completed successfully.');
+        } catch (error) {
+            console.error('[SyncService] Failed to wipe database:', error);
+            throw error;
+        }
+    }
+
+    /**
      * Подписывается на обновления чата
      */
     public subscribeToChat(callback: (messages: any[]) => void): () => void {
@@ -395,16 +560,110 @@ export class SyncService {
     /**
      * Проверяет, свободно ли имя (никнейм) в базе данных
      */
-    public async isNicknameUnique(name: string): Promise<boolean> {
+    public async isNicknameUnique(name: string, currentUserId?: string): Promise<boolean> {
         try {
             const playersRef = collection(db, 'пользователи');
             // Ищем точное совпадение имени
-            const q = query(playersRef, where('name', '==', name));
+            const q = query(playersRef, where('имя', '==', name));
             const snapshot = await getDocs(q);
-            return snapshot.empty;
+            if (snapshot.empty) return true;
+
+            // Если есть документ с таким именем, но его ID совпадает с ID текущего игрока, то ник принадлежит ему же
+            if (currentUserId) {
+                const matchesCurrentUser = snapshot.docs.some((doc) => doc.id === currentUserId);
+                if (matchesCurrentUser) return true;
+            }
+            return false;
         } catch (error) {
             console.error('[SyncService] Nickname uniqueness check failed:', error);
             return true; // В случае ошибки разрешаем, чтобы не блокировать вход
+        }
+    }
+
+    /**
+     * Загружает данные игрока из Firebase (восстановление при перезагрузке)
+     */
+    public async loadPlayerData(userId: string): Promise<any | null> {
+        try {
+            const playerRef = doc(db, 'пользователи', userId);
+            const playerSnap = await getDoc(playerRef);
+
+            if (playerSnap.exists()) {
+                const data = playerSnap.data();
+                if (data.полноеСостояниеJSON) {
+                    try {
+                        const parsed = JSON.parse(data.полноеСостояниеJSON);
+                        return {
+                            ...parsed,
+                            // onboardingCompleted берём из сохранённого состояния, не перезаписываем
+                        };
+                    } catch (e) {
+                        console.error('[SyncService] Failed to parse полноеСостояниеJSON:', e);
+                    }
+                }
+                
+                // Fallback для старых данных / fullStateJSON
+                if (data.fullStateJSON) {
+                    try {
+                        const parsed = JSON.parse(data.fullStateJSON);
+                        return {
+                            ...parsed,
+                            // onboardingCompleted берём из сохранённого состояния
+                        };
+                    } catch (e) {
+                        console.error('[SyncService] Failed to parse legacy fullStateJSON:', e);
+                    }
+                }
+
+                // Вспомогательный маппинг для легаси/старых данных
+                // У старых игроков обучение уже пройдено
+                const legacyData: any = {
+                    onboardingCompleted: true,
+                };
+                
+                const nameVal = data.имя || data.name;
+                if (nameVal) legacyData.name = nameVal;
+                
+                const avatarVal = data.avatar || data.photo;
+                if (avatarVal) legacyData.avatar = avatarVal;
+
+                const levelVal = data.уровень || data.лев || data.level;
+                if (levelVal) legacyData.level = levelVal;
+
+                const goldVal = data.золото !== undefined ? data.золото : data.gold;
+                if (goldVal !== undefined) legacyData.gold = goldVal;
+
+                const crystalsVal = data.кристаллы !== undefined ? data.кристаллы : data.crystals;
+                if (crystalsVal !== undefined) legacyData.crystals = crystalsVal;
+
+                const ratingVal = data.рейтинг !== undefined ? data.рейтинг : data.rating;
+                if (ratingVal !== undefined) legacyData.rating = ratingVal;
+
+                const invVal = data.инвентарь || data.inventory;
+                if (invVal) legacyData.inventory = invVal;
+
+                const gearVal = data.снаряжение || data.геройСнаряжение;
+                if (gearVal) {
+                    const heroClass = data.герой || data.heroId || 'panda';
+                    legacyData.heroEquipment = {
+                        [heroClass]: {
+                            WEAPONS: gearVal.WEAPONS || gearVal.weapon || null,
+                            HELMETS: gearVal.HELMETS || gearVal.helm || null,
+                            ARMOR: gearVal.ARMOR || gearVal.armor || null,
+                            SHIELDS: gearVal.SHIELDS || gearVal.shield || null,
+                            SHOULDERS: gearVal.SHOULDERS || null,
+                            PANTS: gearVal.PANTS || null,
+                            BOOTS: gearVal.BOOTS || null,
+                        }
+                    };
+                }
+
+                return legacyData;
+            }
+            return null;
+        } catch (error) {
+            console.error('[SyncService] Load player data failed:', error);
+            return null;
         }
     }
 }

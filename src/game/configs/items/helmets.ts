@@ -214,7 +214,7 @@ export const helmets: Record<string, IEquipmentStats> = {
         name: 'Повязка Скитальца',
         defenseBonus: 3,
         hpBonus: 30,
-        priceGold: 200,
+        priceGold: 80,
         requiredLevel: 1,
         image: '/assets/images/items/helms/bandana.webp',
         rarity: 'COMMON',
@@ -240,7 +240,7 @@ export const helmets: Record<string, IEquipmentStats> = {
     starter_helm: {
         id: 'starter_helm',
         name: 'Кожаный Шлем',
-        priceGold: 0,
+        priceGold: 150,
         requiredLevel: 1,
         image: '/assets/images/items/helms/starter_helm.webp',
         rarity: 'COMMON',

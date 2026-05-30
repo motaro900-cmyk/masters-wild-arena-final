@@ -178,4 +178,6 @@ export interface RealPlayer {
         armor?: string;
         shield?: string;
     };
+    isTest?: boolean;
+    isDev?: boolean;
 }

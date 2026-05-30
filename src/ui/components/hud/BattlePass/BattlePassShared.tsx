@@ -164,6 +164,6 @@ export const BATTLE_PASS_REWARDS: Reward[] = [
     {
         level: 15,
         free: { id: 'chest_legendary', name: 'Легенд. Сундук', icon: 'sprite-gift', type: 'CHEST' },
-        premium: { id: 'weapon_dragon_blade', name: 'Эпич. Клинок Дракона', icon: '⚔️', type: 'WEAPON' },
+        premium: { id: 'panda_frost', name: 'Облик: Морозный Дзен', icon: '❄️', type: 'SKIN' },
     },
 ];

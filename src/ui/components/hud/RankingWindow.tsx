@@ -38,14 +38,15 @@ export const RankingWindow: React.FC = () => {
 
                 const mappedLeaders: LeaderboardEntry[] = players.map((p, index) => {
                     // Оставляем только имя (первое слово) для приватности
-                    const firstName = (p.name || 'Мастер').split(' ')[0];
+                    const nameVal = p.имя || p.name || 'Мастер';
+                    const firstName = nameVal.split(' ')[0];
 
                     return {
                         rank: index + 1,
                         name: firstName,
-                        level: p.лев || 1,
-                        trophies: p.rating || 0,
-                        avatar: p.photo || '🐺',
+                        level: p.уровень || p.лев || p.level || 1,
+                        trophies: p.рейтинг || p.rating || 0,
+                        avatar: p.фото || p.photo || p.avatar || '🐺',
                         change: 'stable',
                         isMe: p.id === useGameStore.getState().playerId || String(p.vkId) === String(vkUser?.id),
                     };
@@ -73,11 +74,13 @@ export const RankingWindow: React.FC = () => {
         return () => el?.removeEventListener('scroll', handleScroll);
     }, []);
 
-    // Динамический расчет времени до конца сезона (до конца месяца)
+    // Сезон I: РАССВЕТ ДИКОГО ЛЕСА — 1–15 июня 2026
+    const SEASON_END = new Date('2026-06-15T23:59:59');
     const getRemainingTime = () => {
         const now = new Date();
-        const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
-        const diff = endOfMonth.getTime() - now.getTime();
+        const diff = SEASON_END.getTime() - now.getTime();
+
+        if (diff <= 0) return 'ЗАВЕРШЁН';
 
         const days = Math.floor(diff / (1000 * 60 * 60 * 24));
         const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
@@ -159,7 +162,7 @@ export const RankingWindow: React.FC = () => {
                         Текущий Сезон
                     </div>
                     <div style={{ color: '#fff', fontSize: '16px', fontWeight: 800, fontFamily: "'Cinzel', serif" }}>
-                        ЯРОСТЬ ДЖУНГЛЕЙ
+                        СЕЗОН I · РАССВЕТ ДИКОГО ЛЕСА
                     </div>
                 </div>
 
@@ -561,7 +564,7 @@ export const RankingWindow: React.FC = () => {
                                         letterSpacing: '0.5px',
                                     }}
                                 >
-                                    КОНЕЦ СЕЗОНА: <span style={{ color: '#4ade80' }}>5 д. 12 ч.</span>
+                                    КОНЕЦ СЕЗОНА: <span style={{ color: '#4ade80' }}>{getRemainingTime()}</span>
                                 </span>
                             </div>
 

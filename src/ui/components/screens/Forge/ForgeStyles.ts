@@ -101,7 +101,7 @@ export const styles: Record<string, React.CSSProperties> = {
     screenContainer: {
         position: 'absolute',
         inset: 0,
-        background: '#0a0705',
+        background: 'transparent',
         overflow: 'hidden',
         display: 'flex',
         flexDirection: 'column',
@@ -109,13 +109,15 @@ export const styles: Record<string, React.CSSProperties> = {
         color: '#fff',
         fontFamily: "'Cinzel', serif",
         userSelect: 'none',
+        pointerEvents: 'auto',
     },
     bgOverlay: {
         position: 'absolute',
         inset: 0,
-        background: `#0d0a08 url(${AssetsMap.BACKGROUNDS.FORGE}) no-repeat center/cover`,
+        background: `#0d0a08 url("${AssetsMap.BACKGROUNDS.FORGE}") no-repeat center/cover`,
         filter: 'brightness(0.85)',
-        zIndex: -1,
+        zIndex: 0,
+        pointerEvents: 'none',
     },
     header: {
         position: 'relative',
@@ -151,6 +153,7 @@ export const styles: Record<string, React.CSSProperties> = {
         marginTop: '6px',
     },
     mainContent: {
+        position: 'relative',
         flex: 1,
         display: 'flex',
         gap: '40px',

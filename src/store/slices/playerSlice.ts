@@ -57,7 +57,8 @@ export const createPlayerSlice = (set: any, get: any) => ({
     tutorialStep: 0,
     canClaimDailyGift: false,
     lastWheelSpinTime: 0,
-    onboardingCompleted: false,
+    onboardingCompleted: true,
+    activeBuffs: {} as Record<string, number>,
     vkUser: null as any,
     isVkEnvironment:
         typeof window !== 'undefined' &&
@@ -116,6 +117,16 @@ export const createPlayerSlice = (set: any, get: any) => ({
     addCrystals: (amount: number) => set((state: any) => ({ crystals: state.crystals + amount })),
     spendDiamonds: (amount: number) => set((state: any) => ({ crystals: Math.max(0, state.crystals - amount) })),
     addEnergy: (amount: number) => set((state: any) => ({ energy: state.energy + amount })),
+    consumeEnergy: (amount: number) => {
+        const s = get();
+        if (s.hasInfiniteEnergy) return true;
+        set((state: any) => ({
+            energy: Math.max(0, state.energy - amount),
+            dailyBattles: state.dailyBattles + 1,
+        }));
+        syncService.syncPlayerData();
+        return true;
+    },
     addShards: (heroId: string, amount: number) =>
         set((state: any) => {
             const currentShards = state.shards?.[heroId] || 0;
@@ -408,7 +419,10 @@ export const createPlayerSlice = (set: any, get: any) => ({
         }),
 
     setCanClaimDailyGift: (val: boolean) => set({ canClaimDailyGift: val }),
-    setOnboardingCompleted: (val: boolean) => set({ onboardingCompleted: val }),
+    setOnboardingCompleted: (val: boolean) => {
+        set({ onboardingCompleted: val });
+        syncService.syncPlayerData();
+    },
     processReferralCode: (code: string) => {
         const state = get() as any;
         if (state.referralProcessed) return;
@@ -456,11 +470,14 @@ export const createPlayerSlice = (set: any, get: any) => ({
         const state = get() as any;
         const currentName = state.name;
         const newName = currentName === 'Мастер' || !currentName ? user.firstName : currentName;
+        const uid = user.id || user.uid;
+        const newPlayerId = uid ? `MW-VK-${uid}` : state.playerId;
 
         set({
             vkUser: user,
             name: newName,
             avatar: user.photo || state.avatar,
+            playerId: newPlayerId,
         });
     },
 

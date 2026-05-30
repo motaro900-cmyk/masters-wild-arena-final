@@ -5,18 +5,13 @@ import { syncService } from '../../services/SyncService';
 
 export const createInventorySlice = (set: any, get: any) => ({
     // --- СОСТОЯНИЕ ИНВЕНТАРЯ ---
-    inventory: [
-        { id: 'stick', type: 'WEAPONS', rarity: 'COMMON', level: 1 },
-        { id: 'starter_helm', type: 'HELMETS', rarity: 'COMMON', level: 1 },
-        { id: 'starter_armor', type: 'ARMOR', rarity: 'COMMON', level: 1 },
-        { id: 'starter_shield', type: 'SHIELDS', rarity: 'COMMON', level: 1 },
-    ],
+    inventory: [] as any[],
     heroEquipment: {
         panda: {
-            WEAPONS: 'stick',
-            HELMETS: 'starter_helm',
-            ARMOR: 'starter_armor',
-            SHIELDS: 'starter_shield',
+            WEAPONS: null,
+            HELMETS: null,
+            ARMOR: null,
+            SHIELDS: null,
             SHOULDERS: null,
             BOOTS: null,
             PANTS: null,
@@ -31,16 +26,16 @@ export const createInventorySlice = (set: any, get: any) => ({
             PANTS: null,
         },
     } as Record<string, any>,
-    coal: 35,
-    steel_bars: 20,
-    runic_shards: 10,
-    ancient_compass: 5,
-    astral_crystal: 5,
-    void_sphere: 5,
-    golden_sprout: 5,
-    dragon_scale: 5,
-    lava_heart: 5,
-    protection_stones: 5,
+    coal: 0,
+    steel_bars: 0,
+    runic_shards: 0,
+    ancient_compass: 0,
+    astral_crystal: 0,
+    void_sphere: 0,
+    golden_sprout: 0,
+    dragon_scale: 0,
+    lava_heart: 0,
+    protection_stones: 0,
     equippedWeaponId: null as string | null,
     equippedHelmId: null as string | null,
     equippedArmorId: null as string | null,
@@ -206,7 +201,7 @@ export const createInventorySlice = (set: any, get: any) => ({
 
         const isEquipped = Object.values(state.equippedItems).some((val) => val === id);
         if (isEquipped) {
-            alert('Нельзя продать экипированный предмет!');
+            console.warn('[inventorySlice] Cannot sell equipped item');
             return;
         }
 
@@ -510,7 +505,7 @@ export const createInventorySlice = (set: any, get: any) => ({
         const isEquipped = Object.values(equippedGear).includes(itemId);
 
         if (isEquipped) {
-            alert('Нельзя разобрать экипированный предмет!');
+            console.warn('[inventorySlice] Cannot dismantle equipped item');
             return false;
         }
 
@@ -595,6 +590,42 @@ export const createInventorySlice = (set: any, get: any) => ({
 
         syncService.syncPlayerData();
         return newMultiplier;
+    },
+
+    useConsumable: (itemId: string) => {
+        const state = get() as any;
+        const invItemIndex = state.inventory.findIndex((i: any) => String(i.id) === itemId);
+        if (invItemIndex === -1) return false;
+
+        const invItem = state.inventory[invItemIndex];
+        
+        // Decrease inventory amount
+        const newInventory = [...state.inventory];
+        if ((invItem.amount || 1) > 1) {
+            newInventory[invItemIndex] = { ...invItem, amount: invItem.amount - 1 };
+        } else {
+            newInventory.splice(invItemIndex, 1);
+        }
+
+        // Apply buff
+        const now = Date.now();
+        const duration = 60 * 60 * 1000; // 1 hour
+        const newBuffs = { ...(state.activeBuffs || {}) };
+        
+        // Potion types
+        if (itemId === 'hp_potion_1' || itemId === 'hp_potion_2' || itemId === 'hp_potion_3' || itemId === 'mana_potion_1') {
+            newBuffs[itemId] = now + duration;
+        } else {
+            return false; // Can't consume other items this way
+        }
+
+        set({
+            inventory: newInventory,
+            activeBuffs: newBuffs,
+        });
+
+        syncService.syncPlayerData();
+        return true;
     },
 
     // --- FORGE COOLDOWN ---

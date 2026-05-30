@@ -92,6 +92,7 @@ export const useGameStore = create<any>()(
                 winStreak: state.winStreak,
                 playerId: state.playerId,
                 onboardingCompleted: state.onboardingCompleted,
+                activeBuffs: state.activeBuffs,
                 friends: state.friends,
                 clanId: state.clanId,
                 clanCoins: state.clanCoins,

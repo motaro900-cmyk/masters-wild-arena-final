@@ -137,9 +137,9 @@ class MatchmakingServiceClass {
 
             const q = query(
                 playersRef,
-                where('rating', '>=', minRating),
-                where('rating', '<=', maxRating),
-                orderBy('rating'),
+                where('рейтинг', '>=', minRating),
+                where('рейтинг', '<=', maxRating),
+                orderBy('рейтинг'),
                 limit(20)
             );
 
@@ -153,6 +153,33 @@ class MatchmakingServiceClass {
                     if (p.id === myUserId) return false;
                     // Проверяем кулдаун атаки (не атаковали ли мы его недавно)
                     if (!this.canAttack(myUserId, p.id)) return false;
+
+                    // Исключаем тестовые имена
+                    const name = p.имя || p.name || '';
+                    const lowerName = name.toLowerCase();
+                    if (['мастер', 'разработчик', 'test'].some(w => lowerName.includes(w))) {
+                        return false;
+                    }
+
+                    if (p.тестовый || p.разработчик) {
+                        return false;
+                    }
+
+                    // Проверяем наличие выбранного героя
+                    const heroId = p.герой || p.heroId;
+                    if (!heroId) return false;
+
+                    const rating = p.рейтинг ?? p.rating ?? 0;
+                    const equipment = p.снаряжение || p.геройСнаряжение;
+
+                    // Если рейтинг > 50, требуем оружие и броню (защита от голых)
+                    if (rating > 50) {
+                        if (!equipment) return false;
+                        const weapon = equipment.WEAPONS || equipment.weapon;
+                        const armor = equipment.ARMOR || equipment.armor;
+                        if (!weapon || !armor) return false;
+                    }
+
                     // Проверяем winrate ±15%
                     const pWinRate = p.winRate ?? 50;
                     if (Math.abs(pWinRate - myWinRate) > 15) return false;
@@ -171,9 +198,10 @@ class MatchmakingServiceClass {
     }
 
     private buildOpponentFromSnapshot(snapshot: any): MatchOpponent {
-        const heroId = snapshot.heroId || 'panda';
+        const heroId = snapshot.герой || snapshot.heroId || 'panda';
         const heroData = HEROES_DB.find((h) => h.id === heroId) || HEROES_DB[0];
-        const rankInfo = getRankInfo(snapshot.rating || 0);
+        const rating = snapshot.рейтинг ?? snapshot.rating ?? 0;
+        const rankInfo = getRankInfo(rating);
 
         // Если в snapshot есть снаряжение — используем его, иначе генерируем
         const equipment = snapshot.снаряжение || {
@@ -184,13 +212,13 @@ class MatchmakingServiceClass {
             SHOULDERS: null, PANTS: null, BOOTS: null,
         };
 
-        const level = snapshot.лев || snapshot.level || 1;
+        const level = snapshot.уровень || snapshot.лев || snapshot.level || 1;
         const stats = buildStatsFromEquipment(heroId, level, equipment);
 
         return {
             id: heroId,
-            name: snapshot.name || 'Игрок',
-            rating: snapshot.rating || 0,
+            name: snapshot.имя || snapshot.name || 'Игрок',
+            rating,
             level,
             heroId,
             heroImage: snapshot.heroImage || heroData.image,

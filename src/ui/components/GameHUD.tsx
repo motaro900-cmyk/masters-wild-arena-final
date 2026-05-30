@@ -23,6 +23,7 @@ import { RankingWindow } from './hud/RankingWindow';
 import { ClanWindow } from './hud/ClanWindow';
 import { RanksListWindow } from './hud/RanksListWindow';
 import { InventoryPanel } from './hud/InventoryPanel';
+import { ITEMS_DATABASE } from '../../game/configs/ItemsConfig';
 import { AdminPanel } from './hud/AdminPanel';
 import { VIPWindow } from './hud/VIPWindow';
 import { UnderDevelopmentModal } from './hud/SharedUI';
@@ -31,6 +32,8 @@ import { MatchmakingOverlay } from './hud/MatchmakingOverlay';
 import { InboxScreen } from './hud/Inbox/InboxScreen';
 
 import { safeGetItem, safeSetItem } from '../../utils/SafeStorage';
+import { TutorialOverlay } from './hud/TutorialOverlay';
+
 
 export const GameHUD: React.FC = () => {
     const activeScreen = useGameStore((state) => state.activeScreen);
@@ -198,7 +201,7 @@ export const GameHUD: React.FC = () => {
             {/* 1. PLAYER PROFILE HUB */}
             {!isFullScreenScene && (
                 <div
-                    className="absolute top-[30px] left-[5px] hud-interactive w-[340px] md:w-[465px]"
+                    className="tutorial-profile-hub absolute top-[30px] left-[5px] hud-interactive w-[340px] md:w-[465px]"
                     style={{ transform: `scale(${hudScale})`, transformOrigin: 'top left' }}
                 >
                     <ProfileHub />
@@ -222,7 +225,7 @@ export const GameHUD: React.FC = () => {
                 activeScreen !== 'FORGE' &&
                 activeScreen !== 'SANCTUARY' && (
                     <div
-                        className="absolute top-[20px] right-[25px] hud-interactive flex flex-col items-end gap-1"
+                        className="tutorial-resource-bar absolute top-[20px] right-[25px] hud-interactive flex flex-col items-end gap-1"
                         style={isMobile ? { transform: `scale(${hudScale})`, transformOrigin: 'top right' } : {}}
                     >
                         <ResourceBar
@@ -381,7 +384,7 @@ export const GameHUD: React.FC = () => {
                     </div>
 
                     <div
-                        className="absolute bottom-[30px] left-1/2 -translate-x-1/2 hud-interactive"
+                        className="tutorial-battle-btn absolute bottom-[30px] left-1/2 -translate-x-1/2 hud-interactive"
                         style={isMobile ? { transform: `scale(${hudScale})`, transformOrigin: 'bottom center' } : {}}
                     >
                         <ActionButtons
@@ -621,7 +624,22 @@ export const GameHUD: React.FC = () => {
                                 width="1100px"
                             >
                                 <div style={{ padding: '30px', display: 'flex', justifyContent: 'center' }}>
-                                    <InventoryPanel onItemClick={() => {}} />
+                                    <InventoryPanel onItemClick={(itemId) => {
+                                        const item = ITEMS_DATABASE[itemId];
+                                        if (item && item.mainTab === 'ALCHEMY' && item.subTab !== 'RESOURCES') {
+                                            if (itemId === 'protection_stone') return;
+                                            
+                                            let effectDesc = '';
+                                            if (itemId === 'hp_potion_1') effectDesc = '+10% к макс. здоровью на 1 час';
+                                            if (itemId === 'hp_potion_2') effectDesc = '+20% к макс. здоровью на 1 час';
+                                            if (itemId === 'hp_potion_3') effectDesc = '+35% к макс. здоровью на 1 час';
+                                            if (itemId === 'mana_potion_1') effectDesc = '+15% к скорости атаки на 1 час';
+
+                                            if (window.confirm(`Выпить "${item.name}"?\nЭффект: ${effectDesc}`)) {
+                                                useGameStore.getState().useConsumable(itemId);
+                                            }
+                                        }
+                                    }} />
                                 </div>
                             </BaseWindow>
                         )}
@@ -687,6 +705,9 @@ export const GameHUD: React.FC = () => {
                     </div>
                 </div>
             )}
+
+            {/* --- TUTORIAL OVERLAY --- */}
+            <TutorialOverlay />
         </div>
     );
 };

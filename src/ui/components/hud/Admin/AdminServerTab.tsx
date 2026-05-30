@@ -39,6 +39,7 @@ export const AdminServerTab: React.FC<AdminServerTabProps> = ({
     const [muteDuration, setMuteDuration] = useState('1h');
     const [modReason, setModReason] = useState('');
     const [filterStatus, setFilterStatus] = useState<'ALL' | 'ONLINE' | 'BANNED'>('ALL');
+    const [filterType, setFilterType] = useState<'VK_REAL' | 'VK_TEST' | 'GUEST' | 'ALL'>('VK_REAL');
 
     // --- ЛОКАЛЬНЫЕ СОСТОЯНИЯ (СЕРВЕР - ПРАВКА ИГРОКА) ---
     const [serverPlayerGold, setServerPlayerGold] = useState('');
@@ -104,7 +105,9 @@ export const AdminServerTab: React.FC<AdminServerTabProps> = ({
                             onClick={() => setFilterStatus('ALL')}
                             style={{
                                 ...smallBtnStyle,
+                                flex: 1,
                                 background: filterStatus === 'ALL' ? '#222' : '#111',
+                                color: filterStatus === 'ALL' ? '#fff' : '#666',
                             }}
                         >
                             Все
@@ -113,7 +116,9 @@ export const AdminServerTab: React.FC<AdminServerTabProps> = ({
                             onClick={() => setFilterStatus('ONLINE')}
                             style={{
                                 ...smallBtnStyle,
+                                flex: 1,
                                 background: filterStatus === 'ONLINE' ? '#1b4332' : '#111',
+                                color: filterStatus === 'ONLINE' ? '#fff' : '#666',
                             }}
                         >
                             Online
@@ -122,10 +127,68 @@ export const AdminServerTab: React.FC<AdminServerTabProps> = ({
                             onClick={() => setFilterStatus('BANNED')}
                             style={{
                                 ...smallBtnStyle,
+                                flex: 1,
                                 background: filterStatus === 'BANNED' ? '#431b1b' : '#111',
+                                color: filterStatus === 'BANNED' ? '#fff' : '#666',
                             }}
                         >
                             Banned
+                        </button>
+                    </div>
+
+                    <div style={{ fontSize: '9px', color: '#555', marginTop: '10px', marginBottom: '4px', textTransform: 'uppercase', fontWeight: 'bold', letterSpacing: '0.5px' }}>Тип аккаунтов</div>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '4px' }}>
+                        <button
+                            onClick={() => setFilterType('VK_REAL')}
+                            style={{
+                                ...smallBtnStyle,
+                                padding: '6px 2px',
+                                fontSize: '10px',
+                                background: filterType === 'VK_REAL' ? '#1b4332' : '#111',
+                                borderColor: filterType === 'VK_REAL' ? '#4dff4d' : '#222',
+                                color: filterType === 'VK_REAL' ? '#4dff4d' : '#888',
+                            }}
+                        >
+                            👥 ВК Игроки
+                        </button>
+                        <button
+                            onClick={() => setFilterType('VK_TEST')}
+                            style={{
+                                ...smallBtnStyle,
+                                padding: '6px 2px',
+                                fontSize: '10px',
+                                background: filterType === 'VK_TEST' ? '#1d4ed8' : '#111',
+                                borderColor: filterType === 'VK_TEST' ? '#3b82f6' : '#222',
+                                color: filterType === 'VK_TEST' ? '#60a5fa' : '#888',
+                            }}
+                        >
+                            🧪 Тест ВК
+                        </button>
+                        <button
+                            onClick={() => setFilterType('GUEST')}
+                            style={{
+                                ...smallBtnStyle,
+                                padding: '6px 2px',
+                                fontSize: '10px',
+                                background: filterType === 'GUEST' ? '#451a03' : '#111',
+                                borderColor: filterType === 'GUEST' ? '#f97316' : '#222',
+                                color: filterType === 'GUEST' ? '#fdba74' : '#888',
+                            }}
+                        >
+                            🤖 Гости
+                        </button>
+                        <button
+                            onClick={() => setFilterType('ALL')}
+                            style={{
+                                ...smallBtnStyle,
+                                padding: '6px 2px',
+                                fontSize: '10px',
+                                background: filterType === 'ALL' ? '#222' : '#111',
+                                borderColor: filterType === 'ALL' ? '#444' : '#222',
+                                color: filterType === 'ALL' ? '#fff' : '#888',
+                            }}
+                        >
+                            🌐 Все типы
                         </button>
                     </div>
                 </div>
@@ -140,7 +203,15 @@ export const AdminServerTab: React.FC<AdminServerTabProps> = ({
                                 filterStatus === 'ALL' ||
                                 (filterStatus === 'ONLINE' && p.status === 'ONLINE') ||
                                 (filterStatus === 'BANNED' && p.status === 'BANNED');
-                            return matchesSearch && matchesStatus;
+                            
+                            const isVK = p.id.startsWith('VK-') || (p.vkId && p.vkId > 0);
+                            const matchesType =
+                                filterType === 'ALL' ||
+                                (filterType === 'VK_REAL' && isVK && !p.isTest) ||
+                                (filterType === 'VK_TEST' && isVK && p.isTest) ||
+                                (filterType === 'GUEST' && !isVK);
+
+                            return matchesSearch && matchesStatus && matchesType;
                         })
                         .map((p) => (
                             <div
@@ -235,18 +306,20 @@ export const AdminServerTab: React.FC<AdminServerTabProps> = ({
                                     VK ID: {selectedPlayer.vkId} | Регистрация: {selectedPlayer.regDate}
                                 </div>
                                 <div style={{ display: 'flex', gap: '15px', marginTop: '10px' }}>
-                                    <a
-                                        href={`https://vk.com/id${selectedPlayer.vkId}`}
-                                        target="_blank"
-                                        rel="noreferrer"
-                                        style={{
-                                            fontSize: '11px',
-                                            color: '#3b82f6',
-                                            textDecoration: 'none',
-                                        }}
-                                    >
-                                        ПРОФИЛЬ ВК 🔗
-                                    </a>
+                                    {selectedPlayer.vkId > 0 && (
+                                        <a
+                                            href={`https://vk.com/id${selectedPlayer.vkId}`}
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            style={{
+                                                fontSize: '11px',
+                                                color: '#3b82f6',
+                                                textDecoration: 'none',
+                                            }}
+                                        >
+                                            ПРОФИЛЬ ВК 🔗
+                                        </a>
+                                    )}
                                     <button
                                         onClick={() => alert('SPECTATING')}
                                         style={{
@@ -333,7 +406,7 @@ export const AdminServerTab: React.FC<AdminServerTabProps> = ({
                                         onChange={(e) => setServerPlayerLevel(e.target.value)}
                                     />
                                 </div>
-                                <button onClick={() => handleRemoteUpdate('лев', serverPlayerLevel)} style={applyBtn}>
+                                <button onClick={() => handleRemoteUpdate('уровень', serverPlayerLevel)} style={applyBtn}>
                                     SET
                                 </button>
                             </div>
@@ -376,7 +449,7 @@ export const AdminServerTab: React.FC<AdminServerTabProps> = ({
                                     border: '1px solid #111',
                                 }}
                             >
-                                {['weapon', 'helm', 'armor', 'shield'].map((slot) => (
+                                {['WEAPONS', 'HELMETS', 'ARMOR', 'SHIELDS', 'SHOULDERS', 'PANTS', 'BOOTS'].map((slot) => (
                                     <div
                                         key={slot}
                                         style={{
@@ -390,18 +463,19 @@ export const AdminServerTab: React.FC<AdminServerTabProps> = ({
                                             alignItems: 'center',
                                             justifyContent: 'center',
                                             textAlign: 'center',
+                                            minWidth: '50px',
                                         }}
                                     >
                                         <div
                                             style={{
-                                                fontSize: '7px',
-                                                color: '#333',
+                                                fontSize: '6px',
+                                                color: '#444',
                                                 textTransform: 'uppercase',
                                             }}
                                         >
                                             {slot}
                                         </div>
-                                        <div style={{ fontSize: '8px', color: '#888' }}>
+                                        <div style={{ fontSize: '8px', color: '#888', wordBreak: 'break-all' }}>
                                             {(selectedPlayer.gear as any)[slot] || 'EMPTY'}
                                         </div>
                                     </div>
@@ -567,9 +641,19 @@ export const AdminServerTab: React.FC<AdminServerTabProps> = ({
                                                 await syncService.updateRemotePlayerData(selectedPlayer.id, {
                                                     золото: 0,
                                                     кристаллы: 0,
-                                                    лев: 1,
+                                                    уровень: 1,
                                                     рейтинг: 0,
                                                     инвентарь: [],
+                                                    снаряжение: {
+                                                        WEAPONS: null,
+                                                        HELMETS: null,
+                                                        ARMOR: null,
+                                                        SHIELDS: null,
+                                                        SHOULDERS: null,
+                                                        PANTS: null,
+                                                        BOOTS: null,
+                                                    },
+                                                    полноеСостояниеJSON: '',
                                                 });
                                                 alert('Аккаунт полностью очищен');
                                                 refreshPlayers();

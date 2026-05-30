@@ -30,9 +30,20 @@ export const getAllShopItems = (): ShopItem[] => {
                 item.id === 'stick',
         )
         .sort((a, b) => {
+            // 1. Сортировка по требуемому уровню (requiredLevel)
+            const lvlA = a.requiredLevel || 1;
+            const lvlB = b.requiredLevel || 1;
+            if (lvlA !== lvlB) return lvlA - lvlB;
+
+            // 2. Сортировка по редкости
             const orderA = RARITY_ORDER[a.rarity as string] || 0;
             const orderB = RARITY_ORDER[b.rarity as string] || 0;
-            return orderA - orderB;
+            if (orderA !== orderB) return orderA - orderB;
+
+            // 3. Сортировка по цене (в золоте, либо условный эквивалент в гемах)
+            const priceA = a.priceGold || (a.priceGem ? a.priceGem * 10 : 0);
+            const priceB = b.priceGold || (b.priceGem ? b.priceGem * 10 : 0);
+            return priceA - priceB;
         });
 };
 

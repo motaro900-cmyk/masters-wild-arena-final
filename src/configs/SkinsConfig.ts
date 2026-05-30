@@ -41,9 +41,9 @@ export const SKINS_DB: ISkinConfig[] = [
         heroId: 'panda',
         image: '/assets/characters/panda/panda_frost.png',
         source: 'battle_pass',
-        sourceLabel: 'Боевой пропуск · Сезон 1 · Ур. 30',
+        sourceLabel: 'Боевой пропуск · Сезон 1 · Ур. 15',
         season: 1,
-        bpLevel: 30,
+        bpLevel: 15,
         rarity: 'EPIC',
     },
     // ── ЕНОТ ───────────────────────────────────────────────────────────

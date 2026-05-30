@@ -8,7 +8,7 @@ import {
     serverTimestamp,
 } from 'firebase/firestore';
 import { useGameStore } from '../store/useGameStore';
-import { syncService } from './SyncService';
+import { syncService, SyncService } from './SyncService';
 
 const MAX_OFFLINE_ATTACKS = 10; // Максимум атак пока офлайн
 
@@ -42,7 +42,7 @@ class PlayerSnapshotServiceClass {
     public async syncOnLogin(): Promise<OfflineSummary | null> {
         const state = useGameStore.getState();
         const vkUser = state.vkUser;
-        const userId = vkUser ? String(vkUser.id) : state.playerId;
+        const userId = SyncService.getPrefixedUserId(vkUser, state.playerId);
         if (!userId) return null;
 
         // 1. Обновляем snapshot
@@ -64,17 +64,23 @@ class PlayerSnapshotServiceClass {
             const stats = state.getCalculatedStats?.(selectedHeroId)?.total || {};
             const heroConfig = (await import('../configs/HeroesConfig')).HEROES_DB
                 .find((h: any) => h.id === selectedHeroId);
+            const vkUser = state.vkUser;
 
             const snapshotData = {
-                name: state.name || state.vkUser?.first_name || 'Мастер',
-                photo: state.avatar || state.vkUser?.photo || '',
-                rating: state.rating || 0,
-                лев: state.level || 1,
-                level: state.level || 1,
-                heroId: selectedHeroId,
-                heroImage: heroConfig?.image || '',
-                winRate: state.winRate || 50,
-                // Подробное снаряжение для матчмейкинга
+                id: userId,
+                vkId: vkUser ? Number(vkUser.id) : 0,
+                имя: state.name || (vkUser ? (vkUser.first_name || vkUser.firstName || '') : 'Мастер'),
+                имяВК: vkUser ? (vkUser.first_name || vkUser.firstName || '') : '',
+                фамилияВК: vkUser ? (vkUser.last_name || vkUser.lastName || '') : '',
+                ссылкаВК: vkUser ? `https://vk.com/id${vkUser.id}` : '',
+                уровень: state.level || 1,
+                золото: state.gold || 0,
+                кристаллы: state.crystals || 0,
+                рейтинг: state.rating || 0,
+                былВСети: serverTimestamp(),
+                активныйЭкран: state.activeScreen || 'MAIN_MENU',
+                герой: selectedHeroId,
+                фото: state.avatar || (vkUser ? (vkUser.photo200 || vkUser.photo || '') : ''),
                 снаряжение: {
                     WEAPONS: equipment.WEAPONS || null,
                     HELMETS: equipment.HELMETS || null,
@@ -90,7 +96,6 @@ class PlayerSnapshotServiceClass {
                     defense: stats.defense || 5,
                     speed: stats.speed || 1,
                 },
-                lastSeen: serverTimestamp(),
             };
 
             const playerRef = doc(db, 'пользователи', userId);

@@ -504,31 +504,91 @@ export const Root = () => {
                 console.log('✅ Game Ready!');
 
                 const state = useGameStore.getState();
-                const { syncService } = await import('./services/SyncService');
+                const { syncService, SyncService } = await import('./services/SyncService');
+
+                // Try to load player data from Firebase before checking onboarding status
+                const userId = SyncService.getPrefixedUserId(state.vkUser, state.playerId);
+                console.log('🔍 Checking Firebase profile for:', userId);
+                try {
+                    const fbProfile = await syncService.loadPlayerData(userId);
+                    if (fbProfile) {
+                        console.log('💾 Found remote profile, restoring state...', fbProfile.name);
+                        
+                        // Если в загруженном состоянии activeScreen равен 'INTRO', но при этом
+                        // onboardingCompleted равен true, принудительно переводим на 'MAIN_MENU'
+                        const restoredName = fbProfile.name;
+                        const onboardingDone = fbProfile.onboardingCompleted;
+                        
+                        let stateToRestore = { ...fbProfile };
+                        if (onboardingDone && restoredName && restoredName !== 'Мастер') {
+                            if (stateToRestore.activeScreen === 'INTRO') {
+                                stateToRestore.activeScreen = 'MAIN_MENU';
+                            }
+                        }
+                        
+                        useGameStore.setState(stateToRestore);
+
+                        // Если имя всё ещё дефолтное "Мастер" — игрок не прошёл регистрацию.
+                        // Сбрасываем onboarding чтобы показать обучение заново.
+                        if (!restoredName || restoredName === 'Мастер') {
+                            console.log('⚠️ Default name detected after restore — resetting onboarding.');
+                            useGameStore.setState({
+                                onboardingCompleted: false,
+                                tutorialStep: 0,
+                                activeScreen: 'INTRO',
+                            });
+                        }
+                    } else {
+                        console.log('👶 No remote profile found in Firestore.');
+                    }
+                } catch (loadErr) {
+                    console.error('❌ Failed to load remote profile:', loadErr);
+                }
+
+                const isLocalhost = typeof window !== 'undefined' && 
+                    (window.location.hostname === 'localhost' || 
+                     window.location.hostname === '127.0.0.1' || 
+                     window.location.protocol === 'file:');
+
+                if (isLocalhost) {
+                    const localState = useGameStore.getState();
+                    if (!localState.name || localState.name === 'Мастер') {
+                        console.log('🛠️ Localhost detected: Auto-logging in as "Разработчик"');
+                        useGameStore.setState({
+                            name: 'Разработчик',
+                            onboardingCompleted: true,
+                            activeScreen: 'MAIN_MENU',
+                        });
+                        syncService.syncPlayerData();
+                    }
+                }
+
+                // Get the updated state after restoring from Firebase
+                const updatedState = useGameStore.getState();
 
                 // 3. Audio & Sync Initialization
-                if (state.isMuted) {
+                if (updatedState.isMuted) {
                     audioService.setMusicVolume(0);
                     audioService.setSFXVolume(0);
                 } else {
-                    audioService.setMusicVolume(state.musicVolume / 100);
-                    audioService.setSFXVolume(state.soundVolume / 100);
+                    audioService.setMusicVolume(updatedState.musicVolume / 100);
+                    audioService.setSFXVolume(updatedState.soundVolume / 100);
                 }
 
                 syncService.startAutoSync(60000);
                 syncService.subscribeToChat((messages) => {
                     useGameStore.getState().setMessages(messages);
                 });
-                syncService.subscribeToFriendRequests(state.playerId, (requests) => {
+                syncService.subscribeToFriendRequests(updatedState.playerId, (requests) => {
                     useGameStore.getState().setFriendRequests(requests);
                 });
-                syncService.subscribeToMail(state.playerId, (mails) => {
+                syncService.subscribeToMail(updatedState.playerId, (mails) => {
                     useGameStore.getState().setMail(mails);
                 });
 
                 // Гарантируем наличие приветственных сообщений
-                const hasWelcome = state.messages.some((m: any) => m.id === 'welcome-1');
-                const hasCodex = state.messages.some((m: any) => m.id === 'codex-1');
+                const hasWelcome = updatedState.messages.some((m: any) => m.id === 'welcome-1');
+                const hasCodex = updatedState.messages.some((m: any) => m.id === 'codex-1');
 
                 if (!hasWelcome || !hasCodex) {
                     const welcomeMsgs = [];
@@ -555,7 +615,7 @@ export const Root = () => {
                             rankIcon: '',
                         });
 
-                    const merged = [...welcomeMsgs, ...state.messages];
+                    const merged = [...welcomeMsgs, ...updatedState.messages];
                     const unique = Array.from(new Map(merged.map((m) => [m.id, m])).values());
                     useGameStore.setState({
                         messages: unique.sort((a: any, b: any) => a.timestamp - b.timestamp).slice(-100),
@@ -571,27 +631,20 @@ export const Root = () => {
                     return Math.floor(nowMSK / DAY_MS) > Math.floor(lastMSK / DAY_MS);
                 };
 
-                // [Fix] Направляем игроков на Интро, если обучение не пройдено (пропускаем на localhost для разработчиков)
-                const isLocalhost = typeof window !== 'undefined' && 
-                    (window.location.hostname === 'localhost' || 
-                     window.location.hostname === '127.0.0.1' || 
-                     window.location.protocol === 'file:');
-
-                if (isLocalhost) {
-                    if (!state.onboardingCompleted || state.name === 'Мастер') {
-                        console.log('🛠️ Localhost dev mode: Auto-completing onboarding to speed up dev flow...');
-                        useGameStore.setState({
-                            onboardingCompleted: true,
-                            name: 'Разработчик',
-                            activeScreen: 'MAIN_MENU'
-                        });
+                // [Fix] Направляем игроков на Интро, если обучение не пройдено
+                // На localhost обучение тоже работает — для тестирования
+                // Чтобы пропустить обучение вручную в DevTools:
+                //   useGameStore.setState({ onboardingCompleted: true })
+                if (!updatedState.onboardingCompleted) {
+                    console.log('👶 New player or Onboarding not completed, forcing tutorial...');
+                    // Если имя не задано — сначала Intro, потом Tutorial
+                    if (!updatedState.name || updatedState.name === 'Мастер') {
+                        useGameStore.setState({ activeScreen: 'INTRO' });
                     }
-                } else if (!state.onboardingCompleted) {
-                    console.log('👶 New player or Onboarding not completed, forcing Intro...');
-                    useGameStore.setState({ activeScreen: 'INTRO' });
+                    // tutorialStep остаётся 0, TutorialOverlay сам покажется поверх игры
                 }
 
-                if (isNewDayMSK(state.lastDailyRefresh) || !state.dailyQuests || state.dailyQuests.length === 0) {
+                if (!state.dailyQuests || state.dailyQuests.length === 0) {
                     state.refreshDailyQuests();
                 }
 

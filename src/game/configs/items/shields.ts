@@ -7,7 +7,7 @@ export const shields: Record<string, IEquipmentStats> = {
         defenseBonus: 5,
         hpBonus: 50,
         rarity: 'COMMON',
-        priceGold: 300,
+        priceGold: 120,
         requiredLevel: 1,
         image: '/assets/images/items/shields/starter_shield.webp',
         mainTab: 'ARSENAL',

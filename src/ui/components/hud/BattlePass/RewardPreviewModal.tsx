@@ -1,5 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { SKINS_DB } from '../../../../configs/SkinsConfig';
+import { ITEMS_DATABASE } from '../../../../game/configs/ItemsConfig';
 
 export const RewardPreviewModal: React.FC<{ item: any; onClose: () => void }> = ({ item, onClose }) => {
     if (!item) return null;
@@ -7,13 +9,23 @@ export const RewardPreviewModal: React.FC<{ item: any; onClose: () => void }> = 
     let typeText = 'ПРЕДМЕТ';
     let description = 'Неизвестная награда.';
 
+    const skinConfig = item.type === 'SKIN' ? SKINS_DB.find(s => s.id === item.id) : null;
+
+    let mappedItemId = item.id;
+    if (item.id === 'potion_strength') mappedItemId = 'hp_potion_3';
+    else if (item.id === 'potion_strength_great') mappedItemId = 'hp_potion_3';
+    else if (item.id === 'potion_healing') mappedItemId = 'hp_potion_1';
+    else if (item.id === 'potion_defense') mappedItemId = 'hp_potion_2';
+
+    const dbItem = ITEMS_DATABASE[mappedItemId];
+
     if (item.type === 'WEAPON') {
         typeText = 'ОРУЖИЕ';
-        description =
+        description = dbItem?.desc ||
             'Эксклюзивное и могущественное снаряжение. Сразу же экипируется на ваших героев для увеличения их боевой мощи в бою.';
     } else if (item.type === 'SKIN') {
         typeText = 'ОБЛИК';
-        description =
+        description = skinConfig?.description ||
             'Уникальный косметический облик. Выделитесь на поле боя среди соперников и союзников с новым стилем.';
     } else if (item.type === 'CHEST') {
         typeText = 'СУНДУК';
@@ -29,7 +41,7 @@ export const RewardPreviewModal: React.FC<{ item: any; onClose: () => void }> = 
             'Премиальная валюта. Позволяет приобретать редчайших героев, открывать золотые сундуки и разблокировать Премиум Боевой Пропуск.';
     } else if (item.type === 'ITEM') {
         typeText = 'ПРЕДМЕТ / ЗЕЛЬЕ';
-        description =
+        description = dbItem?.desc ||
             'Полезный расходный материал для усиления характеристик персонажей или создания ценных артефактов.';
     }
 
@@ -106,7 +118,7 @@ export const RewardPreviewModal: React.FC<{ item: any; onClose: () => void }> = 
                     </span>
                 </div>
 
-                {/* РЕНДЕР ИКОНКИ / ЭМОДЗИ */}
+                {/* РЕНДЕР ИКОНКИ / ЭМОДЗИ / ИЗОБРАЖЕНИЯ */}
                 <div
                     style={{
                         width: '120px',
@@ -122,7 +134,31 @@ export const RewardPreviewModal: React.FC<{ item: any; onClose: () => void }> = 
                         margin: '10px 0',
                     }}
                 >
-                    {item.icon.startsWith('sprite-') ? '🎁' : item.icon}
+                    {skinConfig ? (
+                        <img
+                            src={skinConfig.image}
+                            alt={skinConfig.name}
+                            style={{
+                                width: '85%',
+                                height: '85%',
+                                objectFit: 'contain',
+                                filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.5))',
+                            }}
+                        />
+                    ) : dbItem?.image ? (
+                        <img
+                            src={dbItem.image}
+                            alt={dbItem.name}
+                            style={{
+                                width: '70%',
+                                height: '70%',
+                                objectFit: 'contain',
+                                filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.5))',
+                            }}
+                        />
+                    ) : (
+                        item.icon.startsWith('sprite-') ? '🎁' : item.icon
+                    )}
                 </div>
 
                 <p

@@ -60,6 +60,7 @@ const SideMenuItem: React.FC<{
     <motion.button
         whileTap={{ scale: 0.92 }}
         onClick={onClick}
+        className={`tutorial-${item.id.toLowerCase()}-btn`}
         style={{
             position: 'absolute',
             top: item.top,

@@ -44,9 +44,10 @@ export const useFriendsWindow = () => {
             const fiveMinutes = 5 * 60 * 1000;
 
             const onlinePlayers = players.filter((p) => {
-                if (!p.lastSeen) return false;
+                const lastSeenVal = p.былВСети || p.lastSeen;
+                if (!lastSeenVal) return false;
                 // Преобразуем Firebase Timestamp в миллисекунды
-                const lastSeenTime = p.lastSeen.toMillis ? p.lastSeen.toMillis() : p.lastSeen;
+                const lastSeenTime = lastSeenVal.toMillis ? lastSeenVal.toMillis() : lastSeenVal;
                 return now - lastSeenTime < fiveMinutes;
             });
 

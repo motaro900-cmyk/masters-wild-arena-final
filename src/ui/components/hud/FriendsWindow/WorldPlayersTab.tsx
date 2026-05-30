@@ -62,7 +62,7 @@ export const WorldPlayersTab: React.FC<WorldPlayersTabProps> = ({
                                     style={{
                                         width: '100%',
                                         height: '100%',
-                                        backgroundImage: `url(${resolveAssetPath(`/assets/images/avatars/${p.avatar || 'панда.webp'}`)})`,
+                                        backgroundImage: `url(${(p.фото || p.avatar || '').startsWith('http') ? (p.фото || p.avatar) : resolveAssetPath(`/assets/images/avatars/${(p.фото || p.avatar || 'панда.webp').replace(/\.(png|webp)$/, '')}.webp`)})`,
                                         backgroundSize: 'cover',
                                         backgroundPosition: 'center',
                                     }}
@@ -91,10 +91,10 @@ export const WorldPlayersTab: React.FC<WorldPlayersTabProps> = ({
                                         color: '#fff',
                                     }}
                                 >
-                                    {p.name ? p.name.split(' ')[0] : 'Мастер'}
+                                    {p.имя || p.name ? (p.имя || p.name).split(' ')[0] : 'Мастер'}
                                 </div>
                                 <div style={{ fontSize: 9, opacity: 0.6 }}>
-                                    ID: {p.id} • LVL {p.level || 1}
+                                    ID: {p.id} • LVL {p.уровень || p.level || 1}
                                 </div>
                             </div>
                             <motion.button

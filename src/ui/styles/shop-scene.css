@@ -94,6 +94,6 @@
         transform: translateY(0px) scale(1);
     }
     50% {
-        transform: translateY(-18px) scale(1.03);
+        transform: translateY(-8px) scale(1.01);
     }
 }

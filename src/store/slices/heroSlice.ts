@@ -15,7 +15,7 @@ export const createHeroSlice = (set: any, get: any) => ({
         panda: {},
         wolf_knight: {},
     } as Record<string, any>,
-    ownedSkins: ['default', 'panda_frost'] as string[],
+    ownedSkins: ['default'] as string[],
     equippedSkins: { panda: 'default', wolf_knight: 'default' } as Record<string, string>,
 
     // --- ЭКШЕНЫ ГЕРОЕВ ---
@@ -154,6 +154,22 @@ export const createHeroSlice = (set: any, get: any) => ({
             if (item.critDamage) total.critDamage += item.critDamage * mult;
             if (item.accuracy) total.accuracy += item.accuracy * mult;
         });
+
+        // Apply active potion buffs
+        const buffs = state.activeBuffs || {};
+        const now = Date.now();
+        if (buffs.hp_potion_1 && buffs.hp_potion_1 > now) {
+            total.hp = Math.round(total.hp * 1.10); // +10% HP
+        }
+        if (buffs.hp_potion_2 && buffs.hp_potion_2 > now) {
+            total.hp = Math.round(total.hp * 1.20); // +20% HP
+        }
+        if (buffs.hp_potion_3 && buffs.hp_potion_3 > now) {
+            total.hp = Math.round(total.hp * 1.35); // +35% HP
+        }
+        if (buffs.mana_potion_1 && buffs.mana_potion_1 > now) {
+            total.speed = +(total.speed * 1.15).toFixed(2); // +15% Speed
+        }
 
         // Cap crit/evasion at sensible max
         total.critChance = Math.min(75, total.critChance);

@@ -20,7 +20,7 @@ export const weapons: Record<string, IEquipmentStats> = {
         name: 'Бамбуковая Палка',
         attackBonus: 8,
         rarity: 'COMMON',
-        priceGold: 0,
+        priceGold: 100,
         requiredLevel: 1,
         image: '/assets/images/items/weapons/stick.webp',
         mainTab: 'ARSENAL',
@@ -52,19 +52,6 @@ export const weapons: Record<string, IEquipmentStats> = {
         subTab: 'WEAPONS',
         desc: 'Тяжелая, надежная и отлично звонит при ударе.',
     },
-    club_wooden: {
-        id: 'club_wooden',
-        name: 'Тяжелая Дубина',
-        attackBonus: 24,
-        rarity: 'COMMON',
-        priceGold: 600,
-        requiredLevel: 5,
-        image: '/assets/images/items/weapons/stick.webp',
-        mainTab: 'ARSENAL',
-        subTab: 'WEAPONS',
-        desc: 'Грубый кусок дерева, способный проломить череп.',
-    },
-
     // RARE - Уровень 10-20
     sword_broken: {
         id: 'sword_broken',

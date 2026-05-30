@@ -85,7 +85,7 @@ function HeroCard({ hero, isOwned, isActive, isSelected, activeSkin, onClick }: 
                 transition: 'box-shadow 0.22s, border-color 0.22s',
                 display: 'flex',
                 flexDirection: 'column',
-                height: '270px',
+                height: '330px',
             }}
         >
             {/* Background Rarity Glow inside Card */}
@@ -151,7 +151,7 @@ function HeroCard({ hero, isOwned, isActive, isSelected, activeSkin, onClick }: 
             }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '4px' }}>
                     <span style={{
-                        color: '#fff', fontSize: '13.5px', fontWeight: 900,
+                        color: '#fff', fontSize: '15.5px', fontWeight: 900,
                         fontFamily: "'Cinzel', serif", letterSpacing: '0.5px',
                         whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'
                     }}>{activeName}</span>
@@ -160,14 +160,14 @@ function HeroCard({ hero, isOwned, isActive, isSelected, activeSkin, onClick }: 
                     {isOwned ? (
                         isActive ? (
                             <span style={{
-                                color: '#4ade80', fontSize: '7.5px', fontWeight: 900,
+                                color: '#4ade80', fontSize: '9px', fontWeight: 900,
                                 background: 'rgba(34, 197, 94, 0.15)', border: '1px solid rgba(34, 197, 94, 0.4)',
                                 borderRadius: '5px', padding: '1px 4px',
                                 fontFamily: "'Nunito', sans-serif", letterSpacing: '0.3px',
                             }}>АКТИВ</span>
                         ) : null
                     ) : (
-                        <span style={{ fontSize: '11px', opacity: 0.5 }}>🔒</span>
+                        <span style={{ fontSize: '12px', opacity: 0.5 }}>🔒</span>
                     )}
                 </div>
 
@@ -175,7 +175,7 @@ function HeroCard({ hero, isOwned, isActive, isSelected, activeSkin, onClick }: 
                     display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px'
                 }}>
                     <span style={{
-                        color, fontSize: '7.5px', fontWeight: 900,
+                        color, fontSize: '9px', fontWeight: 900,
                         fontFamily: "'Nunito', sans-serif", letterSpacing: '1.2px',
                         textTransform: 'uppercase',
                     }}>{RARITY_LABELS[activeRarity]}</span>
@@ -183,7 +183,7 @@ function HeroCard({ hero, isOwned, isActive, isSelected, activeSkin, onClick }: 
                     <span style={{ color: 'rgba(255,255,255,0.15)', fontSize: '10px' }}>·</span>
 
                     <span style={{
-                        color: roleInfo.color, fontSize: '8px', fontWeight: 800,
+                        color: roleInfo.color, fontSize: '9.5px', fontWeight: 800,
                         fontFamily: "'Nunito', sans-serif", display: 'flex', alignItems: 'center', gap: '2px',
                         textTransform: 'uppercase', letterSpacing: '0.5px',
                     }}>
@@ -535,7 +535,7 @@ export const HeroList = ({
                 >
                     <div style={{
                         display: 'grid',
-                        gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
+                        gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
                         gap: '20px',
                         alignContent: 'start',
                     }}>
