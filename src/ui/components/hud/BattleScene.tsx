@@ -3,6 +3,7 @@ import { useGameStore } from '../../../store/useGameStore';
 import { HEROES_DB } from '../../../configs/HeroesConfig';
 import { MOBS_DB } from '../../../configs/MobsConfig';
 import { BattleEngine, BattleState } from '../../../engine/core/BattleEngine';
+import { EffectsManager } from '../../../engine/systems/EffectsManager';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BattleResultScreen, BattleResultData } from './BattleResultScreen';
 import { PreBattleScreen } from './PreBattleScreen';
@@ -246,38 +247,97 @@ export const BattleScene: React.FC = () => {
             const x = isPlayerTarget ? 480 : 1440;
             const y = 400; // Y-координата над головами бойцов
 
+            // Извлекаем роли участников для кастомного оформления
+            const attackerSide = isPlayerTarget ? 'enemy' : 'player';
+            const attackerHero = attackerSide === 'player' ? playerHero : rawEnemy;
+            const defenderHero = isPlayerTarget ? playerHero : rawEnemy;
+            const attackerRole = (attackerHero as any).role || 'WARRIOR';
+            const defenderRole = (defenderHero as any).role || 'WARRIOR';
+
+            // Находим целевой юнит в PIXI-рендерере
+            const targetUnit = isPlayerTarget ? engine.getPlayerUnit() : engine.getEnemyUnit();
+            if (targetUnit) {
+                EffectsManager.getInstance().applyHitResolution(
+                    attackerRole,
+                    defenderRole,
+                    event.type,
+                    targetUnit,
+                    isPlayerTarget
+                );
+            }
+
             let text = '';
-            let color = '';
+            let color = '#FFFFFF';
             let fontSize = '54px';
             let initialScale = 0.5;
             let animateScale = 1.0;
+            let fontStyle = 'normal';
+            let textShadow = '2px 2px 0px #000, -2px -2px 0px #000, 2px -2px 0px #000, -2px 2px 0px #000';
+            
+            // Направление полета текста урона в зависимости от класса
+            let animateX = 0;
+            let animateY = -150;
 
             switch (event.type) {
                 case 'HIT':
                     text = `-${Math.round(event.damage)}`;
-                    color = '#FFFFFF';
+                    if (attackerRole === 'TANK') {
+                        color = '#FFA500'; // Оранжевый для тяжелого танка
+                        fontSize = '62px';
+                        textShadow = '0 0 10px rgba(255, 165, 0, 0.7), 2px 2px 0px #000';
+                    } else if (attackerRole === 'ASSASSIN') {
+                        color = '#D8B4FE'; // Нежно-фиолетовый для ассасина
+                        fontStyle = 'italic';
+                        fontSize = '56px';
+                        textShadow = '0 0 8px rgba(216, 180, 254, 0.7), 2px 2px 0px #000';
+                        animateX = (Math.random() - 0.5) * 60; // Ассасины летят в стороны
+                        animateY = -180;
+                    } else {
+                        color = '#E0F2FE'; // Светло-голубой для воина/бойца
+                        fontSize = '54px';
+                        textShadow = '0 0 8px rgba(224, 242, 254, 0.7), 2px 2px 0px #000';
+                    }
                     break;
                 case 'CRIT':
                     text = `-${Math.round(event.damage)}!`;
-                    color = '#FFD700'; // Золотой
-                    fontSize = '80px'; // Увеличенный размер 1.8x
-                    initialScale = 0.5;
-                    animateScale = 1.8;
+                    if (attackerRole === 'TANK') {
+                        color = '#FF8C00'; // Огненно-рыжий крит танка
+                        fontSize = '96px';
+                        animateScale = 2.0;
+                        textShadow = '0 0 18px rgba(255, 140, 0, 0.9), 3px 3px 0px #000';
+                        animateY = -100; // Тяжелый крит висит ниже
+                    } else if (attackerRole === 'ASSASSIN') {
+                        color = '#A78BFA'; // Насыщенный фиолетовый крит ассасина
+                        fontStyle = 'italic';
+                        fontSize = '86px';
+                        animateScale = 1.8;
+                        textShadow = '0 0 15px rgba(167, 139, 250, 0.9), 3px 3px 0px #000';
+                        animateX = (Math.random() - 0.5) * 80;
+                        animateY = -200; // Быстрый вылет вверх
+                    } else {
+                        color = '#00E5FF'; // Кислотно-бирюзовый крит бойца
+                        fontSize = '80px';
+                        animateScale = 1.8;
+                        textShadow = '0 0 15px rgba(0, 229, 255, 0.9), 3px 3px 0px #000';
+                        animateY = -160;
+                    }
 
-                    // GPU-акселерированная тряскаtranslateX ±3px за 200мс
-                    setShake({ x: 3, y: 0 });
-                    setTimeout(() => setShake({ x: -3, y: 0 }), 50);
-                    setTimeout(() => setShake({ x: 3, y: 0 }), 100);
-                    setTimeout(() => setShake({ x: -3, y: 0 }), 150);
+                    // Дополнительная React-тряска интерфейса при критах
+                    setShake({ x: 4, y: 0 });
+                    setTimeout(() => setShake({ x: -4, y: 0 }), 50);
+                    setTimeout(() => setShake({ x: 4, y: 0 }), 100);
+                    setTimeout(() => setShake({ x: -4, y: 0 }), 150);
                     setTimeout(() => setShake({ x: 0, y: 0 }), 200);
                     break;
                 case 'DODGE':
                     text = 'УВОРОТ!';
                     color = '#FFB74D'; // Оранжевый
+                    animateX = isPlayerTarget ? -80 : 80; // Отлетает в сторону уворота
                     break;
                 case 'BLOCK':
                     text = `🛡️ БЛОК! (-${Math.round(event.damage)})`;
                     color = '#4FC3F7'; // Синий
+                    animateX = isPlayerTarget ? 40 : -40; // Слегка отскакивает в сторону щита
                     break;
                 case 'INSTINCT':
                     text = event.label || 'ИНСТИНКТ!';
@@ -329,7 +389,7 @@ export const BattleScene: React.FC = () => {
                 return [...prev.slice(-4), entry];
             });
 
-            // Add slight random offsets to prevent overlays of text tags
+            // Добавляем случайное смещение, чтобы тексты не слипались
             const offsetX = (Math.random() - 0.5) * 80;
             const offsetY = (Math.random() - 0.5) * 60;
 
@@ -343,6 +403,10 @@ export const BattleScene: React.FC = () => {
                 initialScale,
                 animateScale,
                 type: event.type,
+                fontStyle,
+                textShadow,
+                animateX,
+                animateY,
             };
 
             // Ограничение: не больше 5 одновременных тегов на экране
@@ -352,7 +416,7 @@ export const BattleScene: React.FC = () => {
                 return [...sliced, newDmg];
             });
 
-            // Автоматическое удаление через 1000мс (fade out в конце, slightly longer to view easily)
+            // Автоматическое удаление через 1000мс
             setTimeout(() => {
                 setDamageTexts((prev) => prev.filter((d) => d.id !== newDmg.id));
             }, 1000);
@@ -465,9 +529,8 @@ export const BattleScene: React.FC = () => {
             <AnimatePresence>
                 {damageTexts.map((dmg) => {
                     const isDodge = dmg.type === 'DODGE';
-                    // DODGE улетает по диагонали вправо-вверх (x+120, y-150), остальные летят вверх (y-150)
-                    const animateX = isDodge ? 120 : 0;
-                    const animateY = -150;
+                    const animateX = dmg.animateX !== undefined ? dmg.animateX : (isDodge ? 120 : 0);
+                    const animateY = dmg.animateY !== undefined ? dmg.animateY : -150;
 
                     return (
                         <motion.div
@@ -498,8 +561,8 @@ export const BattleScene: React.FC = () => {
                                 color: dmg.color,
                                 fontSize: dmg.fontSize,
                                 fontWeight: 900,
-                                textShadow:
-                                    '2px 2px 0px #000, -2px -2px 0px #000, 2px -2px 0px #000, -2px 2px 0px #000',
+                                textShadow: dmg.textShadow || '2px 2px 0px #000, -2px -2px 0px #000, 2px -2px 0px #000, -2px 2px 0px #000',
+                                fontStyle: dmg.fontStyle || 'normal',
                                 zIndex: 1000,
                                 fontFamily: "'Cinzel', serif",
                                 willChange: 'transform, opacity',

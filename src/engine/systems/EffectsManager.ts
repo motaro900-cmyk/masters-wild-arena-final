@@ -311,6 +311,192 @@ export class EffectsManager {
     }
 
     /**
+     * Стоп-кадр (Freeze Frame) для сочности критических ударов и способностей
+     * Замораживает игровой тикер на указанное время
+     *
+     * @param durationMs Длительность остановки в миллисекундах
+     * @param speedMultiplier Коэффициент замедления (0.05 = почти полная остановка)
+     */
+    public freezeFrame(durationMs: number = 60, speedMultiplier: number = 0.05): void {
+        try {
+            const pixiApp = this.pixiApp.getApp();
+            if (!pixiApp) return;
+
+            const effectId = `freeze_${this.effectCounter++}`;
+            const originalSpeed = pixiApp.ticker.speed;
+
+            // Устанавливаем замедленную скорость
+            pixiApp.ticker.speed = speedMultiplier;
+
+            // Запускаем таймер возврата через GSAP (который работает независимо от тикера Pixi)
+            const tween = gsap.delayedCall(durationMs / 1000, () => {
+                if (pixiApp && pixiApp.ticker) {
+                    pixiApp.ticker.speed = originalSpeed;
+                }
+                this.activeEffects.delete(effectId);
+            });
+
+            this.activeEffects.set(effectId, tween);
+            console.log(`❄️ Freeze Frame active: speed=${speedMultiplier} for ${durationMs}ms`);
+        } catch (error) {
+            console.error('❌ Freeze frame error:', error);
+        }
+     }
+
+    /**
+     * Отскок (Knockback) цели при получении урона
+     *
+     * @param target Целевой объект PIXI.Container
+     * @param isPlayerTarget Находится ли цель на стороне игрока
+     * @param type Тип попадания ('HIT' | 'CRIT' | 'HEAVY' | 'ULTIMATE')
+     */
+    public knockback(
+        target: any,
+        isPlayerTarget: boolean,
+        type: 'HIT' | 'CRIT' | 'HEAVY' | 'ULTIMATE' = 'HIT'
+    ): void {
+        try {
+            if (!target || target.destroyed) return;
+
+            // Таблица величин отскока
+            const knockbackTable = {
+                HIT: 12,
+                CRIT: 28,
+                HEAVY: 40,
+                ULTIMATE: 60
+            };
+
+            const distance = knockbackTable[type] || 12;
+            const direction = isPlayerTarget ? -1 : 1; // Удар отбрасывает игрока влево (-1), врага вправо (+1)
+            
+            // Запоминаем базовую x-координату персонажа если ее нет
+            if (target.defaultX === undefined) {
+                target.defaultX = target.x;
+            }
+
+            // Защита от наложения анимаций: сбрасываем предыдущие анимации X
+            gsap.killTweensOf(target, { x: true });
+
+            // Анимируем смещение и плавный возврат
+            gsap.to(target, {
+                x: target.defaultX + (distance * direction),
+                duration: 0.08,
+                yoyo: true,
+                repeat: 1,
+                ease: 'power2.out',
+                onComplete: () => {
+                    // Возвращаем в дефолтную позицию на случай микро-погрешностей
+                    if (!target.destroyed) {
+                        target.x = target.defaultX;
+                    }
+                }
+            });
+        } catch (error) {
+            console.error('❌ Knockback error:', error);
+        }
+    }
+
+    /**
+     * Комплексная визуализация попадания в зависимости от типа события и классов
+     *
+     * @param attackerRole Роль атакующего ('WARRIOR' | 'TANK' | 'ASSASSIN')
+     * @param defenderRole Роль защищающегося ('WARRIOR' | 'TANK' | 'ASSASSIN')
+     * @param hitType Тип попадания ('HIT' | 'CRIT' | 'DODGE' | 'BLOCK' | 'INSTINCT')
+     * @param targetUnit Ссылка на модель цели (PIXI.Container / HeroUnit)
+     * @param isPlayerTarget Является ли цель игроком
+     */
+    public applyHitResolution(
+        attackerRole: 'WARRIOR' | 'TANK' | 'ASSASSIN',
+        defenderRole: 'WARRIOR' | 'TANK' | 'ASSASSIN',
+        hitType: 'HIT' | 'CRIT' | 'DODGE' | 'BLOCK' | 'INSTINCT',
+        targetUnit: any,
+        isPlayerTarget: boolean
+    ): void {
+        try {
+            if (!targetUnit || targetUnit.destroyed) return;
+
+            // 1. Обработка уклонения (DODGE)
+            if (hitType === 'DODGE') {
+                this.dodgeEffect(targetUnit);
+                // Плавное быстрое отклонение в сторону
+                gsap.killTweensOf(targetUnit, { x: true });
+                const direction = isPlayerTarget ? 1 : -1; // Уворот смещает вперед/в сторону
+                gsap.to(targetUnit, {
+                    x: targetUnit.x + (25 * direction),
+                    duration: 0.1,
+                    yoyo: true,
+                    repeat: 1,
+                    ease: 'sine.inOut',
+                    onComplete: () => {
+                        if (!targetUnit.destroyed) {
+                            targetUnit.x = targetUnit.defaultX ?? targetUnit.x;
+                        }
+                    }
+                });
+                return;
+            }
+
+            // 2. Обработка блокирования (BLOCK)
+            if (hitType === 'BLOCK') {
+                this.blockEffect(targetUnit);
+                this.knockback(targetUnit, isPlayerTarget, 'HIT'); // Легкий отскок
+                return;
+            }
+
+            // 3. Цветная вспышка (Hit Flash)
+            let flashColor = 0xff6666; // Дефолтный красный
+            if (hitType === 'CRIT') {
+                if (attackerRole === 'TANK') flashColor = 0xffd700; // Золотая вспышка
+                else if (attackerRole === 'ASSASSIN') flashColor = 0xbd00ff; // Фиолетовая вспышка
+                else flashColor = 0x00ffff; // Бирюзовая вспышка
+            }
+            const flashSprite = targetUnit.bodySprite || targetUnit;
+            if (flashSprite) {
+                this.colorFlash(flashSprite, flashColor, hitType === 'CRIT' ? 0.25 : 0.15);
+            }
+
+            // 4. Физический отскок (Knockback)
+            const knockbackType = hitType === 'CRIT' ? 'CRIT' : 'HIT';
+            this.knockback(targetUnit, isPlayerTarget, knockbackType);
+
+            // 5. Тряска экрана (Camera Shake)
+            if (hitType === 'CRIT') {
+                const shakeIntensity = attackerRole === 'TANK' ? 14 : (attackerRole === 'ASSASSIN' ? 8 : 10);
+                this.screenShake(shakeIntensity, 0.93, 300);
+            } else {
+                const shakeIntensity = attackerRole === 'TANK' ? 6 : 3;
+                this.screenShake(shakeIntensity, 0.95, 150);
+            }
+
+            // 6. Стоп-кадр (Freeze Frame) для Критов
+            if (hitType === 'CRIT') {
+                const freezeDuration = attackerRole === 'TANK' ? 80 : (attackerRole === 'ASSASSIN' ? 50 : 65);
+                this.freezeFrame(freezeDuration, 0.05);
+            }
+
+            // 7. Взрыв искр/частиц (Particle Burst)
+            let pColor = 0xff8888;
+            if (attackerRole === 'TANK') pColor = 0xffbb00;
+            else if (attackerRole === 'ASSASSIN') pColor = 0xda70d6;
+            else pColor = 0x80ffdb;
+
+            let px = targetUnit.x;
+            let py = targetUnit.y - 80;
+            if (typeof targetUnit.getVisualCenter === 'function') {
+                const center = targetUnit.getVisualCenter();
+                if (center) {
+                    px = center.x;
+                    py = center.y;
+                }
+            }
+            this.particleBurst(px, py, hitType === 'CRIT' ? 16 : 6, pColor, hitType === 'CRIT' ? 220 : 130);
+
+        } catch (error) {
+            console.error('❌ applyHitResolution error:', error);
+        }
+    }
+
+    /**
      * Плавное появление (Fade In)
      *
      * @param target Целевой объект

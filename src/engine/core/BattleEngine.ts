@@ -68,6 +68,14 @@ export class BattleEngine {
     private player: HeroUnit | null = null;
     private enemy: HeroUnit | null = null;
 
+    public getPlayerUnit(): HeroUnit | null {
+        return this.player;
+    }
+
+    public getEnemyUnit(): HeroUnit | null {
+        return this.enemy;
+    }
+
     private playerStats: ICombatStats | null = null;
     private enemyStats: ICombatStats | null = null;
 
