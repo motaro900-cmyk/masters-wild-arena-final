@@ -460,7 +460,7 @@ export class BattleEngine {
             const hitX = victim.x;
             const hitY = victim.y - 120;
             EffectsManager.getInstance().particleBurst(hitX, hitY, 35, 0xffea00, 320);
-            EffectsManager.getInstance().slashEffect(hitX, hitY, isPlayer, attackerWeaponArchetype);
+            EffectsManager.getInstance().slashEffect(hitX, hitY, isPlayer, attacker.config?.role, true);
 
             // Сильный критический урон
             const targetStats = isPlayer ? this.enemyStats! : this.playerStats!;
@@ -517,7 +517,7 @@ export class BattleEngine {
         // Точка взмаха прямо перед атакующим
         const hitX = isPlayer ? attacker.x + 85 : attacker.x - 85;
         const hitY = attacker.y - 120;
-        EffectsManager.getInstance().slashEffect(hitX, hitY, isPlayer, attackerWeaponArchetype);
+        EffectsManager.getInstance().slashEffect(hitX, hitY, isPlayer, attacker.config?.role, isCrit);
 
         // Характеристики
         const targetStats = isPlayer ? this.enemyStats! : this.playerStats!;
@@ -597,7 +597,6 @@ export class BattleEngine {
 
         // Расчет базового урона
         let damage = stats.attack * (0.9 + Math.random() * 0.2);
-        isCrit = Math.random() < stats.critChance;
         if (isCrit) damage *= stats.critDamage || 1.5;
         if (instinctEvent?.type === 'RAGE') damage *= 1.5;
         if (isPlayer && isOneShot) damage = 999999;

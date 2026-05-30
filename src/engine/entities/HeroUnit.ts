@@ -900,12 +900,15 @@ export class HeroUnit extends PIXI.Container {
                 this.setFrame(2);
             }
 
-            // Start spawning ghost trails
-            const fxColor = isPlayer ? 0x00d2ff : 0xff4600;
+            // Start spawning ghost trails (only for ASSASSIN role)
+            const isAssassin = this.config?.role === 'ASSASSIN';
             if (this.trailInterval) clearInterval(this.trailInterval);
-            this.trailInterval = setInterval(() => {
-                EffectsManager.getInstance().spawnGhostTrail(this, 280, fxColor);
-            }, 50);
+            if (isAssassin) {
+                const fxColor = 0xbd00ff; // Фиолетовый шлейф Убийцы
+                this.trailInterval = setInterval(() => {
+                    EffectsManager.getInstance().spawnGhostTrail(this, 300, fxColor);
+                }, 40);
+            }
 
             const tl = gsap.timeline({
                 onComplete: () => {
@@ -970,10 +973,13 @@ export class HeroUnit extends PIXI.Container {
             this.currentResolve = resolve;
             const timeScale = useGameStore.getState().timeScale || 1;
 
+            const isAssassin = this.config?.role === 'ASSASSIN';
             if (this.trailInterval) clearInterval(this.trailInterval);
-            this.trailInterval = setInterval(() => {
-                EffectsManager.getInstance().spawnGhostTrail(this, 280, 0xaaaaaa);
-            }, 50);
+            if (isAssassin) {
+                this.trailInterval = setInterval(() => {
+                    EffectsManager.getInstance().spawnGhostTrail(this, 300, 0xbd00ff);
+                }, 40);
+            }
 
             const tl = gsap.timeline({
                 onComplete: () => {

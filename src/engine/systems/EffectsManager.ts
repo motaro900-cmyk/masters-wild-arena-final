@@ -58,6 +58,7 @@ export class EffectsManager {
     private activeEffects: Map<string, gsap.core.Tween | gsap.core.Timeline> = new Map();
     private timeScale: number = 1.0;
     private particlePool: PIXI.Graphics[] = [];
+    private activeTrails: PIXI.Sprite[] = [];
     private effectCounter: number = 0;
 
     /**
@@ -803,7 +804,13 @@ export class EffectsManager {
     /**
      * Эффект взмаха оружия (Slash/Swipe)
      */
-    public slashEffect(x: number, y: number, isPlayer: boolean, weaponArchetype?: string): void {
+    public slashEffect(
+        x: number,
+        y: number,
+        isPlayer: boolean,
+        attackerRole?: 'WARRIOR' | 'TANK' | 'ASSASSIN',
+        isCrit: boolean = false
+    ): void {
         try {
             const container = new PIXI.Container();
             this.pixiApp.effectsLayer.addChild(container);
@@ -816,60 +823,57 @@ export class EffectsManager {
             let pCount = 10;
             let pForce = 160;
 
-            if (weaponArchetype === 'STAFF') {
-                // Magic void/violet blast
+            if (attackerRole === 'TANK') {
+                // Тяжелый золотой/оранжевый удар
+                colorOuter = 0xffa500;
+                colorInner = 0xffe4b5;
+                pColor = 0xffbb00;
+                pCount = 18;
+                pForce = 240;
+                
+                slash.arc(0, 0, 130, -Math.PI / 3, Math.PI / 3)
+                     .stroke({ color: colorOuter, width: 32, cap: 'round' })
+                     .stroke({ color: colorInner, width: 10, cap: 'round' });
+            } else if (attackerRole === 'ASSASSIN') {
+                // Быстрый фиолетовый удар
                 colorOuter = 0xbd00ff;
                 colorInner = 0xffa6ff;
                 pColor = 0xda70d6;
-                pCount = 18;
-                pForce = 220;
-                
-                // Draw a mystical magic ring/spiral
-                slash.arc(0, 0, 90, 0, Math.PI * 1.5)
-                     .stroke({ color: colorOuter, width: 20, cap: 'round' })
-                     .stroke({ color: colorInner, width: 6, cap: 'round' });
-            } else if (weaponArchetype === 'BOW') {
-                // Wind swirl / arrow sparks
-                colorOuter = 0x00ff88;
-                colorInner = 0xe0ffff;
-                pColor = 0x80ffdb;
                 pCount = 12;
-                pForce = 200;
-                
-                // Draw a swift wind flow
-                slash.moveTo(-60, 0)
-                     .quadraticCurveTo(0, -90, 80, -20)
-                     .stroke({ color: colorOuter, width: 14, cap: 'round' })
-                     .stroke({ color: colorInner, width: 4, cap: 'round' });
-            } else if (weaponArchetype === 'DAGGER') {
-                // Double quick yellow critical cross slashes
-                colorOuter = 0xffd700;
-                colorInner = 0xffffff;
-                pColor = 0xffea00;
-                pCount = 14;
                 pForce = 180;
                 
-                // Draw cross slashes
-                slash.moveTo(-50, -50).lineTo(50, 50)
-                     .moveTo(50, -50).lineTo(-50, 50)
-                     .stroke({ color: colorOuter, width: 10, cap: 'round' })
-                     .stroke({ color: colorInner, width: 3, cap: 'round' });
-            } else if (weaponArchetype === 'SWORD') {
-                // Fire/heavy orange-red slash
-                colorOuter = 0xff4500;
-                colorInner = 0xffcc00;
-                pColor = 0xffaa00;
-                pCount = 20;
-                pForce = 240;
-
-                slash.arc(0, 0, 130, -Math.PI / 3, Math.PI / 3)
-                     .stroke({ color: colorOuter, width: 28, cap: 'round' })
-                     .stroke({ color: colorInner, width: 8, cap: 'round' });
+                if (isCrit) {
+                    // X-Slash двойной крестообразный разрез
+                    slash.moveTo(-60, -60).lineTo(60, 60)
+                         .moveTo(60, -60).lineTo(-60, 60)
+                         .stroke({ color: colorOuter, width: 14, cap: 'round' })
+                         .stroke({ color: colorInner, width: 4, cap: 'round' });
+                } else {
+                    // Тонкий быстрый разрез
+                    slash.arc(0, 0, 110, -Math.PI / 4, Math.PI / 4)
+                         .stroke({ color: colorOuter, width: 16, cap: 'round' })
+                         .stroke({ color: colorInner, width: 4, cap: 'round' });
+                }
             } else {
-                // Default: Standard sword slash
-                slash.arc(0, 0, 120, -Math.PI / 4, Math.PI / 4)
-                     .stroke({ color: 0xffffff, width: 24, cap: 'round' })
-                     .stroke({ color: 0x00ffff, width: 8, cap: 'round' });
+                // Боец (WARRIOR) - техничный синий удар
+                colorOuter = 0x00bfff;
+                colorInner = 0xffffff;
+                pColor = 0x00e5ff;
+                pCount = 14;
+                pForce = 200;
+
+                if (isCrit) {
+                    // X-Slash крестообразный разрез
+                    slash.moveTo(-65, -45).lineTo(65, 45)
+                         .moveTo(65, -45).lineTo(-65, 45)
+                         .stroke({ color: colorOuter, width: 18, cap: 'round' })
+                         .stroke({ color: colorInner, width: 5, cap: 'round' });
+                } else {
+                    // Красивая четкая двойная дуга
+                    slash.arc(0, 0, 120, -Math.PI / 4, Math.PI / 4)
+                         .stroke({ color: colorOuter, width: 22, cap: 'round' })
+                         .stroke({ color: colorInner, width: 6, cap: 'round' });
+                }
             }
 
             slash.scale.x = isPlayer ? 1 : -1;
@@ -910,11 +914,19 @@ export class EffectsManager {
         try {
             if (!target || !target.bodySprite || !target.bodySprite.texture) return;
             
+            // Фильтруем уничтоженные послеобразы
+            this.activeTrails = this.activeTrails.filter((t) => !t.destroyed);
+            
+            // Ограничение: максимум 3 послеобраза одновременно на персонажа
+            while (this.activeTrails.length >= 3) {
+                const oldest = this.activeTrails.shift();
+                if (oldest) oldest.destroy();
+            }
+
             const ghost = new PIXI.Sprite(target.bodySprite.texture);
             ghost.anchor.set(target.config?.anchors?.feet?.x ?? 0.5, target.config?.anchors?.feet?.y ?? 0.95);
             
             // Match position and scale (base scale and body Container scale combined)
-            // Slightly offset trail positions backwards depending on facing direction to make it clearly visible even in static/near-static states
             const isPlayerSide = target.x < 960;
             const offsetDir = isPlayerSide ? -1 : 1;
             const trailOffset = (target.trailCount || 0) * 15 * offsetDir;
@@ -931,6 +943,7 @@ export class EffectsManager {
             ghost.tint = tint;
             
             this.pixiApp.effectsLayer.addChild(ghost);
+            this.activeTrails.push(ghost);
             
             gsap.to(ghost, {
                 alpha: 0,
@@ -938,6 +951,7 @@ export class EffectsManager {
                 ease: 'power2.out',
                 onComplete: () => {
                     ghost.destroy();
+                    this.activeTrails = this.activeTrails.filter((t) => t !== ghost);
                 }
             });
         } catch (error) {
