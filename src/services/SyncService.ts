@@ -222,7 +222,47 @@ export class SyncService {
     public async updateRemotePlayerData(userId: string, data: any): Promise<void> {
         try {
             const playerRef = doc(db, 'пользователи', userId);
-            await setDoc(playerRef, data, { merge: true });
+            const playerSnap = await getDoc(playerRef);
+            
+            let updatedData = { ...data };
+            
+            if (playerSnap.exists()) {
+                const docData = playerSnap.data();
+                if (docData.полноеСостояниеJSON) {
+                    try {
+                        const parsed = JSON.parse(docData.полноеСостояниеJSON);
+                        
+                        // Map Firestore fields to Zustand state keys
+                        if (data.золото !== undefined) parsed.gold = Number(data.золото);
+                        if (data.кристаллы !== undefined) parsed.crystals = Number(data.кристаллы);
+                        if (data.уровень !== undefined) parsed.level = Number(data.уровень);
+                        if (data.рейтинг !== undefined) {
+                            parsed.rating = Number(data.рейтинг);
+                            parsed.trophies = Number(data.рейтинг);
+                        }
+                        if (data.инвентарь !== undefined) parsed.inventory = data.инвентарь;
+                        if (data.снаряжение !== undefined) parsed.heroEquipment = data.снаряжение;
+                        if (data.ownedSkins !== undefined) parsed.ownedSkins = data.ownedSkins;
+                        
+                        // Also support clean English keys if they are passed
+                        if (data.gold !== undefined) parsed.gold = Number(data.gold);
+                        if (data.crystals !== undefined) parsed.crystals = Number(data.crystals);
+                        if (data.level !== undefined) parsed.level = Number(data.level);
+                        if (data.rating !== undefined) {
+                            parsed.rating = Number(data.rating);
+                            parsed.trophies = Number(data.rating);
+                        }
+                        if (data.inventory !== undefined) parsed.inventory = data.inventory;
+                        if (data.heroEquipment !== undefined) parsed.heroEquipment = data.heroEquipment;
+                        
+                        updatedData.полноеСостояниеJSON = JSON.stringify(parsed);
+                    } catch (e) {
+                        console.error('[SyncService] Failed to parse полноеСостояниеJSON during remote update:', e);
+                    }
+                }
+            }
+            
+            await setDoc(playerRef, updatedData, { merge: true });
         } catch (error) {
             console.error('[SyncService] Remote update failed:', error);
             throw error;
@@ -558,6 +598,25 @@ export class SyncService {
     }
 
     /**
+     * Подписывается на обновления собственного документа игрока для обработки команд администратора в реальном времени
+     */
+    public subscribeToOwnProfile(userId: string, callback: (data: any) => void): () => void {
+        const playerRef = doc(db, 'пользователи', userId);
+
+        return onSnapshot(
+            playerRef,
+            (snapshot: any) => {
+                if (snapshot.exists()) {
+                    callback(snapshot.data());
+                }
+            },
+            (error: any) => {
+                console.error('[SyncService] Own profile subscription error:', error);
+            },
+        );
+    }
+
+    /**
      * Проверяет, свободно ли имя (никнейм) в базе данных
      */
     public async isNicknameUnique(name: string, currentUserId?: string): Promise<boolean> {
@@ -595,7 +654,12 @@ export class SyncService {
                         const parsed = JSON.parse(data.полноеСостояниеJSON);
                         return {
                             ...parsed,
-                            // onboardingCompleted берём из сохранённого состояния, не перезаписываем
+                            status: data.status || 'ONLINE',
+                            banReason: data.banReason || '',
+                            banUntil: data.banUntil || '',
+                            isMuted: data.isMuted || false,
+                            muteReason: data.muteReason || '',
+                            muteUntil: data.muteUntil || '',
                         };
                     } catch (e) {
                         console.error('[SyncService] Failed to parse полноеСостояниеJSON:', e);

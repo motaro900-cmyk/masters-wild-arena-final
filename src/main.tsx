@@ -138,9 +138,12 @@ export const SafeGameLayout = ({ containerRef }: { containerRef: React.RefObject
     );
     const [dismissedRotationWarning, setDismissedRotationWarning] = React.useState(false);
 
-    const { setShowFps, showFps } = useGameStore((state) => ({
+    const { setShowFps, showFps, isBanned, banReason, banUntil } = useGameStore((state) => ({
         setShowFps: state.setShowFps,
         showFps: state.showFps,
+        isBanned: state.isBanned,
+        banReason: state.banReason,
+        banUntil: state.banUntil,
     }));
 
     React.useEffect(() => {
@@ -220,6 +223,99 @@ export const SafeGameLayout = ({ containerRef }: { containerRef: React.RefObject
                 left: 0,
             }}
         >
+            {/* 🚫 Banned Overlay */}
+            <AnimatePresence>
+                {isBanned && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        style={{
+                            position: 'absolute',
+                            inset: 0,
+                            zIndex: 999999,
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            backdropFilter: 'blur(20px)',
+                            backgroundColor: 'rgba(15, 5, 5, 0.95)',
+                            color: '#fff',
+                            fontFamily: "'Outfit', 'Inter', sans-serif",
+                            padding: '24px',
+                            textAlign: 'center',
+                            pointerEvents: 'auto',
+                        }}
+                    >
+                        <div
+                            style={{
+                                fontSize: '80px',
+                                marginBottom: '20px',
+                                filter: 'drop-shadow(0 0 20px rgba(239, 68, 68, 0.5))',
+                            }}
+                        >
+                            🚫
+                        </div>
+                        <h2
+                            style={{
+                                fontSize: '32px',
+                                fontWeight: 800,
+                                background: 'linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)',
+                                WebkitBackgroundClip: 'text',
+                                WebkitTextFillColor: 'transparent',
+                                margin: '0 0 12px 0',
+                                textTransform: 'uppercase',
+                                letterSpacing: '2px',
+                            }}
+                        >
+                            ВАШ АККАУНТ ЗАБЛОКИРОВАН
+                        </h2>
+                        <div
+                            style={{
+                                background: 'rgba(239, 68, 68, 0.05)',
+                                border: '1px solid rgba(239, 68, 68, 0.2)',
+                                borderRadius: '12px',
+                                padding: '20px',
+                                maxWidth: '500px',
+                                marginBottom: '32px',
+                            }}
+                        >
+                            <p
+                                style={{
+                                    fontSize: '16px',
+                                    color: '#FCA5A5',
+                                    margin: '0 0 10px 0',
+                                    fontWeight: 'bold',
+                                }}
+                            >
+                                Причина: {banReason || 'Нарушение правил игры'}
+                            </p>
+                            {banUntil && (
+                                <p
+                                    style={{
+                                        fontSize: '14px',
+                                        color: '#F87171',
+                                        margin: 0,
+                                    }}
+                                >
+                                    Блокировка действует до: {banUntil === 'perm' ? 'Перманентно (навсегда)' : banUntil}
+                                </p>
+                            )}
+                        </div>
+                        <p
+                            style={{
+                                fontSize: '14px',
+                                color: '#71717A',
+                                maxWidth: '400px',
+                                lineHeight: 1.5,
+                            }}
+                        >
+                            Если вы считаете, что блокировка была выдана по ошибке, обратитесь в поддержку игры или напишите разработчикам.
+                        </p>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
             {/* 🔄 Screen Rotation Warning Overlay */}
             <AnimatePresence>
                 {isPortrait && isMobile && !dismissedRotationWarning && (
@@ -520,6 +616,9 @@ export const Root = () => {
                         const onboardingDone = fbProfile.onboardingCompleted;
                         
                         let stateToRestore = { ...fbProfile };
+                        if (stateToRestore.status === 'BANNED') {
+                            stateToRestore.isBanned = true;
+                        }
                         if (onboardingDone && restoredName && restoredName !== 'Мастер') {
                             if (stateToRestore.activeScreen === 'INTRO') {
                                 stateToRestore.activeScreen = 'MAIN_MENU';
@@ -550,10 +649,11 @@ export const Root = () => {
                      window.location.hostname === '127.0.0.1' || 
                      window.location.protocol === 'file:');
 
-                if (isLocalhost) {
+                const isAdminVk = state.vkUser && [212359386, 1035794378].includes(Number(state.vkUser.id));
+                if (isLocalhost || isAdminVk) {
                     const localState = useGameStore.getState();
                     if (!localState.name || localState.name === 'Мастер') {
-                        console.log('🛠️ Localhost detected: Auto-logging in as "Разработчик"');
+                        console.log('🛠️ Admin/Localhost detected: Auto-logging in as "Разработчик"');
                         useGameStore.setState({
                             name: 'Разработчик',
                             onboardingCompleted: true,
@@ -584,6 +684,73 @@ export const Root = () => {
                 });
                 syncService.subscribeToMail(updatedState.playerId, (mails) => {
                     useGameStore.getState().setMail(mails);
+                });
+
+                // Подписка на собственный профиль для мгновенного выполнения команд админа (кик, бан, ресурсы)
+                syncService.subscribeToOwnProfile(userId, (dbData) => {
+                    if (!dbData) return;
+
+                    // 1. Проверка бана
+                    if (dbData.status === 'BANNED') {
+                        useGameStore.setState({ 
+                            isBanned: true, 
+                            banReason: dbData.banReason || 'Нарушение правил игры', 
+                            banUntil: dbData.banUntil || '' 
+                        });
+                        return;
+                    } else {
+                        useGameStore.setState({ isBanned: false });
+                    }
+
+                    // 2. Проверка кика
+                    if (dbData.status === 'KICKED') {
+                        syncService.updateRemotePlayerData(userId, { status: 'OFFLINE' }).catch(() => {});
+                        alert('Соединение разорвано: Вы были отключены администратором (KICKED).');
+                        window.location.reload();
+                        return;
+                    }
+
+                    // 3. Синхронизация изменений ресурсов и обликов
+                    if (dbData.полноеСостояниеJSON) {
+                        try {
+                            const parsed = JSON.parse(dbData.полноеСостояниеJSON);
+                            const currentState = useGameStore.getState();
+
+                            let hasChanges = false;
+                            const updatePayload: any = {};
+
+                            const trackedFields = [
+                                'gold', 'crystals', 'level', 'rating', 'trophies', 
+                                'inventory', 'heroEquipment', 'ownedSkins', 'shards', 'ownedHeroes', 'energy', 'maxEnergy'
+                            ];
+
+                            for (const field of trackedFields) {
+                                if (parsed[field] !== undefined) {
+                                    const localVal = currentState[field];
+                                    const remoteVal = parsed[field];
+
+                                    if (typeof remoteVal === 'object') {
+                                        if (JSON.stringify(localVal) !== JSON.stringify(remoteVal)) {
+                                            updatePayload[field] = remoteVal;
+                                            hasChanges = true;
+                                        }
+                                    } else {
+                                        if (localVal !== remoteVal) {
+                                            updatePayload[field] = remoteVal;
+                                            hasChanges = true;
+                                        }
+                                    }
+                                }
+                            }
+
+                            if (hasChanges) {
+                                console.log('[SyncService] Admin updated player state, applying changes:', updatePayload);
+                                useGameStore.setState(updatePayload);
+                            }
+                        } catch (e) {
+                            console.error('[SyncService] Error parsing own profile JSON update:', e);
+                        }
+                    }
                 });
 
                 // Гарантируем наличие приветственных сообщений

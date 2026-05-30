@@ -22,7 +22,7 @@ import {
     contentGrid,
 } from './Admin/AdminShared';
 
-const ADMIN_VK_IDS = [212359386];
+const ADMIN_VK_IDS = [212359386, 1035794378];
 
 type AdminTab = 'ИГРОК' | 'БОЙ' | 'СЕРВЕР' | 'ПОЧТА' | 'ЧАТ' | 'ОТЗЫВЫ' | 'СИСТЕМА';
 
@@ -80,20 +80,30 @@ export const AdminPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                         ? 'ONLINE'
                         : 'OFFLINE';
 
+                // Парсим полноеСостояниеJSON для получения актуальных значений ресурсов игрока в реальном времени
+                let parsedState: any = {};
+                if (p.полноеСостояниеJSON) {
+                    try {
+                        parsedState = JSON.parse(p.полноеСостояниеJSON);
+                    } catch (e) {
+                        console.error('Failed to parse полноеСостояниеJSON in AdminPanel', e);
+                    }
+                }
+
                 return {
                     id: p.id,
                     vkId: p.vkId || 0,
                     name: nameVal,
                     photo: photoVal,
-                    status: statusVal,
+                    status: p.status === 'BANNED' ? 'BANNED' : statusVal,
                     screen: activeScreenVal,
-                    level: p.уровень || p.лев || p.level || 1,
-                    gold: p.золото !== undefined ? p.золото : (p.gold || 0),
-                    crystals: p.кристаллы !== undefined ? p.кристаллы : (p.crystals || 0),
+                    level: parsedState.level !== undefined ? parsedState.level : (p.уровень || p.лев || p.level || 1),
+                    gold: parsedState.gold !== undefined ? parsedState.gold : (p.золото !== undefined ? p.золото : (p.gold || 0)),
+                    crystals: parsedState.crystals !== undefined ? parsedState.crystals : (p.кристаллы !== undefined ? p.кристаллы : (p.crystals || 0)),
                     regDate: (p.былВСети || p.lastSeen)?.toDate?.().toLocaleDateString() || '10.05.2026',
                     reports: p.reports || 0,
                     reportLogs: p.reportLogs || [],
-                    gear: p.снаряжение || p.геройСнаряжение || {},
+                    gear: parsedState.heroEquipment || p.снаряжение || p.геройСнаряжение || {},
                     isTest: p.тестовый || false,
                     isDev: p.разработчик || false,
                 };

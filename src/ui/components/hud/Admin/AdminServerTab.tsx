@@ -358,8 +358,22 @@ export const AdminServerTab: React.FC<AdminServerTabProps> = ({
                                     {selectedPlayer.level}
                                 </div>
                                 <div style={statBox}>
+                                    <div style={statLabel}>GOLD</div>
+                                    <span style={{ color: '#ffd700', fontWeight: 'bold' }}>💰 {selectedPlayer.gold.toLocaleString()}</span>
+                                </div>
+                                <div style={statBox}>
+                                    <div style={statLabel}>GEMS</div>
+                                    <span style={{ color: '#00ffff', fontWeight: 'bold' }}>💎 {selectedPlayer.crystals.toLocaleString()}</span>
+                                </div>
+                                <div style={statBox}>
+                                    <div style={statLabel}>LVL</div>
+                                    <span style={{ color: '#a78bfa', fontWeight: 'bold' }}>🌟 {selectedPlayer.level}</span>
+                                </div>
+                                <div style={statBox}>
                                     <div style={statLabel}>REPORTS</div>
-                                    {selectedPlayer.reports}
+                                    <span style={{ color: selectedPlayer.reports > 0 ? '#ff4d4d' : '#888', fontWeight: 'bold' }}>
+                                        🚨 {selectedPlayer.reports}
+                                    </span>
                                 </div>
                             </div>
                         </Section>
@@ -412,6 +426,207 @@ export const AdminServerTab: React.FC<AdminServerTabProps> = ({
                             </div>
                         </Section>
 
+                        <Section title="ПАНЕЛЬ БЫСТРЫХ ЧИТОВ / ХЕЛПЕРЫ РАЗРАБОТЧИКА">
+                            <div
+                                style={{
+                                    display: 'grid',
+                                    gridTemplateColumns: 'repeat(2, 1fr)',
+                                    gap: '10px',
+                                    marginBottom: '15px',
+                                }}
+                            >
+                                <button
+                                    onClick={async () => {
+                                        audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
+                                        if (!selectedPlayer) return;
+                                        try {
+                                            await syncService.updateRemotePlayerData(selectedPlayer.id, {
+                                                ownedSkins: ['default', 'panda_frost', 'raccoon_default', 'skin_lava_golem'],
+                                            });
+                                            alert('Все облики успешно открыты игроку!');
+                                            refreshPlayers();
+                                        } catch {
+                                            alert('Ошибка при выдаче обликов');
+                                        }
+                                    }}
+                                    style={{
+                                        ...btnStyle,
+                                        background: 'linear-gradient(135deg, #d97706 0%, #b45309 100%)',
+                                        borderColor: '#f59e0b',
+                                        color: '#fff',
+                                        fontWeight: 'bold',
+                                        boxShadow: '0 0 10px rgba(245, 158, 11, 0.2)',
+                                        transition: 'all 0.2s ease',
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        e.currentTarget.style.transform = 'scale(1.03)';
+                                        e.currentTarget.style.boxShadow = '0 0 15px rgba(245, 158, 11, 0.4)';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        e.currentTarget.style.transform = 'scale(1)';
+                                        e.currentTarget.style.boxShadow = '0 0 10px rgba(245, 158, 11, 0.2)';
+                                    }}
+                                >
+                                    👑 ВЫДАТЬ ВСЕ СКИНЫ
+                                </button>
+
+                                <button
+                                    onClick={async () => {
+                                        audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
+                                        if (!selectedPlayer) return;
+                                        try {
+                                            await syncService.updateRemotePlayerData(selectedPlayer.id, {
+                                                ownedHeroes: ['panda', 'raccoon'],
+                                            });
+                                            alert('Все герои успешно разблокированы игроку!');
+                                            refreshPlayers();
+                                        } catch {
+                                            alert('Ошибка при разблокировке героев');
+                                        }
+                                    }}
+                                    style={{
+                                        ...btnStyle,
+                                        background: 'linear-gradient(135deg, #059669 0%, #047857 100%)',
+                                        borderColor: '#10b981',
+                                        color: '#fff',
+                                        fontWeight: 'bold',
+                                        boxShadow: '0 0 10px rgba(16, 185, 129, 0.2)',
+                                        transition: 'all 0.2s ease',
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        e.currentTarget.style.transform = 'scale(1.03)';
+                                        e.currentTarget.style.boxShadow = '0 0 15px rgba(16, 185, 129, 0.4)';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        e.currentTarget.style.transform = 'scale(1)';
+                                        e.currentTarget.style.boxShadow = '0 0 10px rgba(16, 185, 129, 0.2)';
+                                    }}
+                                >
+                                    👥 ОТКРЫТЬ ВСЕХ ГЕРОЕВ
+                                </button>
+                            </div>
+
+                            <div
+                                style={{
+                                    display: 'grid',
+                                    gridTemplateColumns: 'repeat(3, 1fr)',
+                                    gap: '8px',
+                                }}
+                            >
+                                <button
+                                    onClick={async () => {
+                                        audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
+                                        if (!selectedPlayer) return;
+                                        try {
+                                            const newGold = selectedPlayer.gold + 100000;
+                                            const newCrystals = selectedPlayer.crystals + 5000;
+                                            await syncService.updateRemotePlayerData(selectedPlayer.id, {
+                                                золото: newGold,
+                                                кристаллы: newCrystals,
+                                            });
+                                            alert('Ресурсный пак (+100к золота, +5к кристаллов) успешно начислен!');
+                                            refreshPlayers();
+                                        } catch {
+                                            alert('Ошибка при начислении ресурсов');
+                                        }
+                                    }}
+                                    style={{
+                                        ...btnStyle,
+                                        background: 'linear-gradient(135deg, #ca8a04 0%, #a16207 100%)',
+                                        borderColor: '#eab308',
+                                        color: '#fff',
+                                        fontSize: '10px',
+                                        fontWeight: 'bold',
+                                        boxShadow: '0 0 10px rgba(234, 179, 8, 0.15)',
+                                        transition: 'all 0.2s ease',
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        e.currentTarget.style.transform = 'scale(1.03)';
+                                        e.currentTarget.style.boxShadow = '0 0 15px rgba(234, 179, 8, 0.35)';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        e.currentTarget.style.transform = 'scale(1)';
+                                        e.currentTarget.style.boxShadow = '0 0 10px rgba(234, 179, 8, 0.15)';
+                                    }}
+                                >
+                                    💰 +100к, 💎 +5к
+                                </button>
+
+                                <button
+                                    onClick={async () => {
+                                        audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
+                                        if (!selectedPlayer) return;
+                                        try {
+                                            await syncService.updateRemotePlayerData(selectedPlayer.id, {
+                                                energy: 9999,
+                                                maxEnergy: 9999,
+                                            });
+                                            alert('Энергия игрока установлена на 9999/9999!');
+                                            refreshPlayers();
+                                        } catch {
+                                            alert('Ошибка при установке энергии');
+                                        }
+                                    }}
+                                    style={{
+                                        ...btnStyle,
+                                        background: 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)',
+                                        borderColor: '#0ea5e9',
+                                        color: '#fff',
+                                        fontSize: '10px',
+                                        fontWeight: 'bold',
+                                        boxShadow: '0 0 10px rgba(14, 165, 233, 0.15)',
+                                        transition: 'all 0.2s ease',
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        e.currentTarget.style.transform = 'scale(1.03)';
+                                        e.currentTarget.style.boxShadow = '0 0 15px rgba(14, 165, 233, 0.35)';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        e.currentTarget.style.transform = 'scale(1)';
+                                        e.currentTarget.style.boxShadow = '0 0 10px rgba(14, 165, 233, 0.15)';
+                                    }}
+                                >
+                                    ⚡ 9999 ЭНЕРГИИ
+                                </button>
+
+                                <button
+                                    onClick={async () => {
+                                        audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
+                                        if (!selectedPlayer) return;
+                                        try {
+                                            await syncService.updateRemotePlayerData(selectedPlayer.id, {
+                                                уровень: 100,
+                                            });
+                                            alert('Уровень игрока повышен до 100 LVL!');
+                                            refreshPlayers();
+                                        } catch {
+                                            alert('Ошибка при повышении уровня');
+                                        }
+                                    }}
+                                    style={{
+                                        ...btnStyle,
+                                        background: 'linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)',
+                                        borderColor: '#8b5cf6',
+                                        color: '#fff',
+                                        fontSize: '10px',
+                                        fontWeight: 'bold',
+                                        boxShadow: '0 0 10px rgba(139, 92, 246, 0.15)',
+                                        transition: 'all 0.2s ease',
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        e.currentTarget.style.transform = 'scale(1.03)';
+                                        e.currentTarget.style.boxShadow = '0 0 15px rgba(139, 92, 246, 0.35)';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        e.currentTarget.style.transform = 'scale(1)';
+                                        e.currentTarget.style.boxShadow = '0 0 10px rgba(139, 92, 246, 0.15)';
+                                    }}
+                                >
+                                    🌟 УРОВЕНЬ 100
+                                </button>
+                            </div>
+                        </Section>
+
                         <Section title="ИНСПЕКТОР (Stats & Gear)">
                             <div
                                 style={{
@@ -423,19 +638,19 @@ export const AdminServerTab: React.FC<AdminServerTabProps> = ({
                             >
                                 <div style={statBox}>
                                     <div style={statLabel}>GOLD</div>
-                                    {selectedPlayer.gold}
+                                    <span style={{ color: '#ffd700', fontWeight: 'bold' }}>💰 {selectedPlayer.gold.toLocaleString()}</span>
                                 </div>
                                 <div style={statBox}>
                                     <div style={statLabel}>GEMS</div>
-                                    {selectedPlayer.crystals}
+                                    <span style={{ color: '#00ffff', fontWeight: 'bold' }}>💎 {selectedPlayer.crystals.toLocaleString()}</span>
                                 </div>
                                 <div style={statBox}>
                                     <div style={statLabel}>LVL</div>
-                                    {selectedPlayer.level}
+                                    <span style={{ color: '#a78bfa', fontWeight: 'bold' }}>🌟 {selectedPlayer.level}</span>
                                 </div>
                                 <div style={statBox}>
                                     <div style={statLabel}>LOCATION</div>
-                                    {selectedPlayer.screen}
+                                    <span style={{ color: '#60a5fa', fontWeight: 'bold' }}>📍 {selectedPlayer.screen}</span>
                                 </div>
                             </div>
                             <div style={statLabel}>GEAR DUMP:</div>
