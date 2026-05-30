@@ -101,6 +101,7 @@ export class HeroUnit extends PIXI.Container {
     public parentDefaultScaleY: number = 1.0;
 
     public resetToIdle() {
+        if (this.destroyed || !this.scale) return;
         gsap.killTweensOf(this);
         gsap.killTweensOf(this.scale);
         if (this.trailInterval) {
@@ -108,9 +109,11 @@ export class HeroUnit extends PIXI.Container {
             this.trailInterval = null;
         }
         if (this.bodyContainer) {
-            gsap.killTweensOf(this.bodyContainer.scale);
-            gsap.killTweensOf(this.bodyContainer);
-            this.bodyContainer.scale.set(this.defaultScaleX, this.defaultScaleY);
+            if (!this.bodyContainer.destroyed && this.bodyContainer.scale) {
+                gsap.killTweensOf(this.bodyContainer.scale);
+                gsap.killTweensOf(this.bodyContainer);
+                this.bodyContainer.scale.set(this.defaultScaleX, this.defaultScaleY);
+            }
         }
         if (this.bodySprite) gsap.killTweensOf(this.bodySprite);
         if (this.defaultX) this.x = this.defaultX;

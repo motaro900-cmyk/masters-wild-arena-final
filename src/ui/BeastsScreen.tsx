@@ -236,8 +236,11 @@ const EquipmentTab: React.FC = () => {
     const [rightPanelTab, setRightPanelTab] = useState<'stats' | 'inventory' | 'lore'>('inventory');
     const pixiContainerRef = React.useRef<HTMLDivElement>(null);
     const appRef = React.useRef<any>(null);
+    const containerRef = React.useRef<any>(null);
+    const bodySpriteRef = React.useRef<any>(null);
+    const weaponSpriteRef = React.useRef<any>(null);
 
-    // Инициализация превью персонажа (PixiJS)
+    // Инициализация превью персонажа (PixiJS) - один раз при монтировании
     React.useEffect(() => {
         if (!pixiContainerRef.current) return;
         let app: any;
@@ -253,99 +256,22 @@ const EquipmentTab: React.FC = () => {
             appRef.current = app;
             pixiContainerRef.current?.appendChild(app.canvas);
 
-            let sheet;
-            try {
-                const sheetPath = beast.id === 'raccoon'
-                    ? '/assets/characters/raccoon/raccoon_poses.png.json'
-                    : '/assets/characters/panda/panda_poses.png.json';
-                sheet = await PIXI.Assets.load(sheetPath);
-            } catch (err) {
-                console.error(`Failed to load ${beast.id} sheet:`, err);
-                return;
-            }
-            if (!active) {
-                app.destroy(true, { children: true });
-                return;
-            }
-
             const container = new PIXI.Container();
             container.x = 300;
             container.y = 700;
             container.scale.set(1.1); // Scaled up slightly since the textures are trimmed smaller
             app.stage.addChild(container);
+            containerRef.current = container;
 
-            const idleTexture = sheet.textures['0_idle.png'] || Object.values(sheet.textures)[0];
-            const body = new PIXI.Sprite(idleTexture);
+            const body = new PIXI.Sprite();
             body.anchor.set(0.5, 0.95);
             container.addChild(body);
+            bodySpriteRef.current = body;
 
             const weapon = new PIXI.Sprite();
             weapon.anchor.set(0.5, 0.85); // Default anchor for swords
             container.addChild(weapon);
-
-            const updateWeapon = async (id: string | null) => {
-                if (!id) {
-                    weapon.visible = false;
-                    return;
-                }
-                const weaponFileMap: Record<string, string> = {
-                    '1': 'staff',
-                    '2': 'bow',
-                    '3': 'daggers',
-                    '4': 'axe',
-                    '8': 'moon_sword',
-                };
-                const file = weaponFileMap[id] || 'moon_sword';
-                try {
-                    const tex = await PIXI.Assets.load(resolveAssetPath(`/assets/items/${file}.png`));
-                    if (!active) return;
-                    if (tex && !weapon.destroyed) {
-                        weapon.texture = tex;
-                        weapon.visible = true;
-
-                        // Hand coordinates relative to the body pivot computed dynamically
-                        const feet = { x: 0.5, y: 0.95 };
-                        const rightHand = { x: 0.74, y: 0.4 };
-                        const texWidth = body.texture.width || 561;
-                        const texHeight = body.texture.height || 583;
-
-                        weapon.x = (rightHand.x - feet.x) * texWidth;
-                        weapon.y = (rightHand.y - feet.y) * texHeight * body.scale.y;
-
-                        // Align anchors, rotations, and scales per weapon type
-                        if (file === 'staff') {
-                            weapon.anchor.set(0.5, 0.7);
-                            weapon.rotation = -0.2;
-                            weapon.scale.set(1.1);
-                        } else if (file === 'bow') {
-                            weapon.anchor.set(0.5, 0.5);
-                            weapon.rotation = 0.0;
-                            weapon.scale.set(1.15);
-                        } else if (file === 'daggers') {
-                            weapon.anchor.set(0.5, 0.85);
-                            weapon.rotation = 0.3;
-                            weapon.scale.set(1.0);
-                        } else if (file === 'axe') {
-                            weapon.anchor.set(0.5, 0.85);
-                            weapon.rotation = 0.4;
-                            weapon.scale.set(1.2);
-                        } else {
-                            // Default for swords (e.g. moon_sword)
-                            weapon.anchor.set(0.5, 0.85);
-                            weapon.rotation = -0.5; // Upward-right angle
-                            weapon.scale.set(1.2);
-                        }
-                    }
-                } catch (e) {
-                    console.error('Failed to load weapon texture:', e);
-                }
-            };
-
-            await updateWeapon(equippedWeaponId);
-            if (!active) {
-                app.destroy(true, { children: true });
-                return;
-            }
+            weaponSpriteRef.current = weapon;
 
             let time = 0;
             const tickerCallback = (t: any) => {
@@ -364,11 +290,114 @@ const EquipmentTab: React.FC = () => {
             app.ticker.add(tickerCallback);
         };
         initPreview();
+
         return () => {
             active = false;
-            if (app) app.destroy(true, { children: true });
+            if (appRef.current) {
+                appRef.current.destroy(true, { children: true });
+                appRef.current = null;
+            }
+            containerRef.current = null;
+            bodySpriteRef.current = null;
+            weaponSpriteRef.current = null;
         };
-    }, [equippedWeaponId, selectedHeroId]);
+    }, []);
+
+    // Эффект обновления текстур при изменении выбранного героя или оружия
+    React.useEffect(() => {
+        let active = true;
+        const updateVisuals = async () => {
+            // Ожидаем инициализации Pixi приложения и спрайтов
+            while (active && (!appRef.current || !bodySpriteRef.current || !weaponSpriteRef.current)) {
+                await new Promise((resolve) => setTimeout(resolve, 50));
+            }
+            if (!active) return;
+
+            const body = bodySpriteRef.current;
+            const weapon = weaponSpriteRef.current;
+
+            let sheet;
+            try {
+                const sheetPath = selectedHeroId === 'raccoon'
+                    ? '/assets/characters/raccoon/raccoon_poses.png.json'
+                    : '/assets/characters/panda/panda_poses.png.json';
+                sheet = await PIXI.Assets.load(sheetPath);
+            } catch (err) {
+                console.error(`Failed to load ${selectedHeroId} sheet:`, err);
+                return;
+            }
+
+            if (!active || body.destroyed) return;
+
+            const idleTexture = sheet.textures['0_idle.png'] || Object.values(sheet.textures)[0];
+            if (idleTexture) {
+                body.texture = idleTexture;
+            }
+
+            if (!equippedWeaponId) {
+                weapon.visible = false;
+                return;
+            }
+
+            const weaponFileMap: Record<string, string> = {
+                '1': 'staff',
+                '2': 'bow',
+                '3': 'daggers',
+                '4': 'axe',
+                '8': 'moon_sword',
+            };
+            const file = weaponFileMap[equippedWeaponId] || 'moon_sword';
+            try {
+                const tex = await PIXI.Assets.load(resolveAssetPath(`/assets/items/${file}.png`));
+                if (!active || weapon.destroyed || body.destroyed) return;
+                if (tex) {
+                    weapon.texture = tex;
+                    weapon.visible = true;
+
+                    // Hand coordinates relative to the body pivot computed dynamically
+                    const feet = { x: 0.5, y: 0.95 };
+                    const rightHand = { x: 0.74, y: 0.4 };
+                    const texWidth = body.texture.width || 561;
+                    const texHeight = body.texture.height || 583;
+
+                    weapon.x = (rightHand.x - feet.x) * texWidth;
+                    weapon.y = (rightHand.y - feet.y) * texHeight * body.scale.y;
+
+                    // Align anchors, rotations, and scales per weapon type
+                    if (file === 'staff') {
+                        weapon.anchor.set(0.5, 0.7);
+                        weapon.rotation = -0.2;
+                        weapon.scale.set(1.1);
+                    } else if (file === 'bow') {
+                        weapon.anchor.set(0.5, 0.5);
+                        weapon.rotation = 0.0;
+                        weapon.scale.set(1.15);
+                    } else if (file === 'daggers') {
+                        weapon.anchor.set(0.5, 0.85);
+                        weapon.rotation = 0.3;
+                        weapon.scale.set(1.0);
+                    } else if (file === 'axe') {
+                        weapon.anchor.set(0.5, 0.85);
+                        weapon.rotation = 0.4;
+                        weapon.scale.set(1.2);
+                    } else {
+                        // Default for swords (e.g. moon_sword)
+                        weapon.anchor.set(0.5, 0.85);
+                        weapon.rotation = -0.5; // Upward-right angle
+                        weapon.scale.set(1.2);
+                    }
+                }
+            } catch (e) {
+                console.error('Failed to load weapon texture:', e);
+            }
+        };
+
+        updateVisuals();
+
+        return () => {
+            active = false;
+        };
+    }, [selectedHeroId, equippedWeaponId]);
 
     return (
         <div className="flex w-full h-full gap-4 relative overflow-hidden">

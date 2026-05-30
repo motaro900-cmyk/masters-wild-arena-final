@@ -600,3 +600,18 @@ canvas {
 }
 
 /* Keyframes moved to bestiary.css */
+
+@keyframes hud-avatar-breathe {
+    0% {
+        transform: scale(1);
+    }
+    100% {
+        transform: scale(0.95, 1.05);
+    }
+}
+
+.animate-hud-avatar-breathe {
+    animation: hud-avatar-breathe 1.5s ease-in-out infinite alternate;
+    will-change: transform;
+}
+
