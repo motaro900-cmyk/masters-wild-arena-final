@@ -138,12 +138,7 @@ export const HeroDetailsModal = ({ hero, isOwned, onClose, rarityColors, onBuy, 
 
                     {/* STATS */}
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-                        <DetailStat
-                            icon="❤️"
-                            label="ЗДОРОВЬЕ (BASE)"
-                            value={hero.stats.stamina * 10}
-                            color="#ef4444"
-                        />
+                        <DetailStat icon="❤️" label="ЗДОРОВЬЕ (BASE)" value={hero.stats.stamina * 10} color="#ef4444" />
                         <DetailStat
                             icon="⚔️"
                             label="СИЛА АТАКИ (BASE)"

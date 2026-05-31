@@ -32,6 +32,7 @@ export interface IBaseItem {
     spriteClass?: string;
     /** Минимальный уровень игрока для покупки. 1 = доступно сразу. */
     requiredLevel?: number;
+    expReward?: number;
 }
 
 /**

@@ -2,11 +2,19 @@ import React from 'react';
 import { motion } from 'framer-motion';
 
 export const BpLevelUpOverlay: React.FC<{ level: number; onClose: () => void }> = ({ level, onClose }) => {
+    React.useEffect(() => {
+        const timer = setTimeout(() => {
+            onClose();
+        }, 3000);
+        return () => clearTimeout(timer);
+    }, [onClose]);
+
     return (
         <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            onClick={onClose}
             style={{
                 position: 'fixed',
                 inset: 0,
@@ -17,6 +25,7 @@ export const BpLevelUpOverlay: React.FC<{ level: number; onClose: () => void }> 
                 justifyContent: 'center',
                 flexDirection: 'column',
                 backdropFilter: 'blur(15px)',
+                cursor: 'pointer',
             }}
         >
             <motion.div

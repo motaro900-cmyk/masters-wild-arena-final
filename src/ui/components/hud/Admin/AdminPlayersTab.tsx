@@ -17,24 +17,29 @@ import {
 } from './AdminShared';
 
 export const AdminPlayersTab: React.FC = () => {
-    const store = useGameStore();
+    const gold = useGameStore((state) => state.gold);
+    const crystals = useGameStore((state) => state.crystals);
+    const level = useGameStore((state) => state.level);
+    const talentPoints = useGameStore((state) => state.talentPoints);
+    const activeScreen = useGameStore((state) => state.activeScreen);
+    const hasInfiniteEnergy = useGameStore((state) => state.hasInfiniteEnergy);
 
     // --- ЛОКАЛЬНЫЕ СОСТОЯНИЯ (ИГРОК) ---
-    const [customGold, setCustomGold] = useState(String(store.gold));
-    const [customCrystals, setCustomCrystals] = useState(String(store.crystals));
-    const [customLevel, setCustomLevel] = useState(String(store.level));
-    const [customPoints, setCustomPoints] = useState(String(store.talentPoints));
+    const [customGold, setCustomGold] = useState(String(gold));
+    const [customCrystals, setCustomCrystals] = useState(String(crystals));
+    const [customLevel, setCustomLevel] = useState(String(level));
+    const [customPoints, setCustomPoints] = useState(String(talentPoints));
     const [selectedItemId, setSelectedItemId] = useState('');
 
     useEffect(() => {
         const timer = setTimeout(() => {
-            setCustomGold(String(store.gold));
-            setCustomCrystals(String(store.crystals));
-            setCustomLevel(String(store.level));
-            setCustomPoints(String(store.talentPoints));
+            setCustomGold(String(gold));
+            setCustomCrystals(String(crystals));
+            setCustomLevel(String(level));
+            setCustomPoints(String(talentPoints));
         }, 0);
         return () => clearTimeout(timer);
-    }, [store.gold, store.crystals, store.level, store.talentPoints]);
+    }, [gold, crystals, level, talentPoints]);
 
     return (
         <div style={contentGrid}>
@@ -52,7 +57,7 @@ export const AdminPlayersTab: React.FC = () => {
                     <button
                         onClick={() => {
                             audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
-                            store.setGold(Number(customGold));
+                            useGameStore.getState().setGold(Number(customGold));
                         }}
                         style={applyBtn}
                     >
@@ -72,7 +77,7 @@ export const AdminPlayersTab: React.FC = () => {
                     <button
                         onClick={() => {
                             audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
-                            store.setCrystals(Number(customCrystals));
+                            useGameStore.getState().setCrystals(Number(customCrystals));
                         }}
                         style={applyBtn}
                     >
@@ -92,7 +97,7 @@ export const AdminPlayersTab: React.FC = () => {
                     <button
                         onClick={() => {
                             audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
-                            store.setLevel(Number(customLevel));
+                            useGameStore.getState().setLevel(Number(customLevel));
                         }}
                         style={applyBtn}
                     >
@@ -112,7 +117,7 @@ export const AdminPlayersTab: React.FC = () => {
                     <button
                         onClick={() => {
                             audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
-                            store.setTalentPoints(Number(customPoints));
+                            useGameStore.getState().setTalentPoints(Number(customPoints));
                         }}
                         style={applyBtn}
                     >
@@ -123,7 +128,7 @@ export const AdminPlayersTab: React.FC = () => {
                     <button
                         onClick={() => {
                             audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
-                            store.addExp(store.level * 600);
+                            useGameStore.getState().addExp(level * 600);
                         }}
                         style={{ ...smallBtnStyle, flex: 1 }}
                     >
@@ -132,7 +137,7 @@ export const AdminPlayersTab: React.FC = () => {
                     <button
                         onClick={() => {
                             audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
-                            store.setLevel(store.level + 10);
+                            useGameStore.getState().setLevel(level + 10);
                         }}
                         style={{ ...smallBtnStyle, flex: 1, color: '#f0c040' }}
                     >
@@ -153,7 +158,8 @@ export const AdminPlayersTab: React.FC = () => {
                 <button
                     onClick={() => {
                         audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
-                        if (selectedItemId) store.addItemToInventory({ id: selectedItemId, level: 1 });
+                        if (selectedItemId)
+                            useGameStore.getState().addItemToInventory({ id: selectedItemId, level: 1 });
                     }}
                     style={{ ...bigBtnStyle, marginTop: '10px' }}
                 >
@@ -162,7 +168,7 @@ export const AdminPlayersTab: React.FC = () => {
                 <button
                     onClick={() => {
                         audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
-                        store.addItemToInventory({ id: 'season_chest', level: 1, amount: 1 });
+                        useGameStore.getState().addItemToInventory({ id: 'season_chest', level: 1, amount: 1 });
                     }}
                     style={{
                         ...bigBtnStyle,
@@ -177,7 +183,7 @@ export const AdminPlayersTab: React.FC = () => {
                 <button
                     onClick={() => {
                         audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
-                        if (confirm('Очистить инвентарь?')) store.clearInventory();
+                        if (confirm('Очистить инвентарь?')) useGameStore.getState().clearInventory();
                     }}
                     style={{ ...bigBtnStyle, marginTop: '5px', background: '#301010', color: '#ff4d4d' }}
                 >
@@ -186,7 +192,9 @@ export const AdminPlayersTab: React.FC = () => {
                 <button
                     onClick={() => {
                         audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
-                        Object.keys(ITEMS_DATABASE).forEach((id) => store.addItemToInventory({ id, level: 1 }));
+                        Object.keys(ITEMS_DATABASE).forEach((id) =>
+                            useGameStore.getState().addItemToInventory({ id, level: 1 }),
+                        );
                         alert('ВЕСЬ АРСЕНАЛ ВЫДАН!');
                     }}
                     style={{ ...bigBtnStyle, marginTop: '5px', background: '#1a1a2e', color: '#8888ff' }}
@@ -202,11 +210,11 @@ export const AdminPlayersTab: React.FC = () => {
                                 key={s}
                                 onClick={() => {
                                     audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
-                                    store.setScreen(s);
+                                    useGameStore.getState().setScreen(s);
                                 }}
                                 style={{
                                     ...btnStyle,
-                                    background: store.activeScreen === s ? '#222' : '#111',
+                                    background: activeScreen === s ? '#222' : '#111',
                                 }}
                             >
                                 {s}
@@ -217,10 +225,10 @@ export const AdminPlayersTab: React.FC = () => {
                 <button
                     onClick={() => {
                         audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
-                        store.setGold(999999);
-                        store.setCrystals(99999);
-                        store.setLevel(100);
-                        store.setTalentPoints(500);
+                        useGameStore.getState().setGold(999999);
+                        useGameStore.getState().setCrystals(99999);
+                        useGameStore.getState().setLevel(100);
+                        useGameStore.getState().setTalentPoints(500);
                     }}
                     style={{ ...bigBtnStyle, marginTop: '20px', background: '#1b4332', color: '#4dff4d' }}
                 >
@@ -229,7 +237,8 @@ export const AdminPlayersTab: React.FC = () => {
                 <button
                     onClick={() => {
                         audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
-                        if (confirm('ВЫПОЛНИТЬ ПОЛНЫЙ СБРОС ИГРОВОГО ПРОГРЕССА?')) store.resetAllProgress();
+                        if (confirm('ВЫПОЛНИТЬ ПОЛНЫЙ СБРОС ИГРОВОГО ПРОГРЕССА?'))
+                            useGameStore.getState().resetAllProgress();
                     }}
                     style={{ ...bigBtnStyle, marginTop: '10px', background: '#431b1b', color: '#ff4d4d' }}
                 >
@@ -237,8 +246,11 @@ export const AdminPlayersTab: React.FC = () => {
                 </button>
                 <ToggleRow
                     label="БЕСКОНЕЧНАЯ ЭНЕРГИЯ"
-                    active={store.hasInfiniteEnergy}
-                    onToggle={() => store.setHasInfiniteEnergy && store.setHasInfiniteEnergy(!store.hasInfiniteEnergy)}
+                    active={hasInfiniteEnergy}
+                    onToggle={() => {
+                        const action = useGameStore.getState().setHasInfiniteEnergy;
+                        if (action) action(!hasInfiniteEnergy);
+                    }}
                 />
             </Section>
         </div>

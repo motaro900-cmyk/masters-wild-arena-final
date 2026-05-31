@@ -126,6 +126,47 @@ export const createQuestSlice = (set: any, get: any) => ({
 
     hideBpLevelUpOverlay: () => set({ showBpLevelUpOverlay: false }),
 
+    buyBpLevel: () => {
+        const state = get() as any;
+        const cost = 150;
+        if (state.bpLevel >= 15) {
+            audioService.playSFX(AssetsMap.AUDIO.SFX_ERROR);
+            return false;
+        }
+        if (state.crystals >= cost) {
+            set({
+                crystals: state.crystals - cost,
+                bpLevel: state.bpLevel + 1,
+            });
+            audioService.playSFX(AssetsMap.AUDIO.SFX_BUY);
+            return true;
+        } else {
+            audioService.playSFX(AssetsMap.AUDIO.SFX_ERROR);
+            return false;
+        }
+    },
+
+    buyAllBpLevels: () => {
+        const state = get() as any;
+        const levelsToBuy = 15 - state.bpLevel;
+        if (levelsToBuy <= 0) {
+            audioService.playSFX(AssetsMap.AUDIO.SFX_ERROR);
+            return false;
+        }
+        const cost = levelsToBuy * 150;
+        if (state.crystals >= cost) {
+            set({
+                crystals: state.crystals - cost,
+                bpLevel: 15,
+            });
+            audioService.playSFX(AssetsMap.AUDIO.SFX_BUY);
+            return true;
+        } else {
+            audioService.playSFX(AssetsMap.AUDIO.SFX_ERROR);
+            return false;
+        }
+    },
+
     setPremium: (val: boolean) => {
         if (val) {
             const state = get() as any;
@@ -208,7 +249,6 @@ export const createQuestSlice = (set: any, get: any) => ({
             if (!newInventory.some((i) => i.id === 'hp_potion_2')) {
                 newInventory.push(itemObj);
             }
-
         } else if (rewardId === 'skin_lava_golem') {
             if (!newOwnedSkins.includes('skin_lava_golem')) {
                 newOwnedSkins.push('skin_lava_golem');

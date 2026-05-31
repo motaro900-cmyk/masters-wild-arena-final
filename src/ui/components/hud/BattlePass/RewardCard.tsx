@@ -2,9 +2,7 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AssetsMap } from '../../../../configs/AssetsMap';
 import { audioService } from '../../../../services/AudioService';
-import { RewardItem } from './BattlePassShared';
-import { SKINS_DB } from '../../../../configs/SkinsConfig';
-import { ITEMS_DATABASE } from '../../../../game/configs/ItemsConfig';
+import { RewardItem, getRewardImage } from './BattlePassShared';
 
 interface RewardCardProps {
     item: RewardItem;
@@ -16,6 +14,24 @@ interface RewardCardProps {
     isMilestone?: boolean;
 }
 
+const getTypeNameRu = (type: string) => {
+    switch (type) {
+        case 'WEAPON':
+            return 'ОРУЖИЕ';
+        case 'GEMS':
+        case 'GOLD':
+            return 'ВАЛЮТА';
+        case 'CHEST':
+            return 'СУНДУК';
+        case 'ITEM':
+            return 'ПРЕДМЕТ';
+        case 'SKIN':
+            return 'ОБЛИК';
+        default:
+            return type;
+    }
+};
+
 export const RewardCard: React.FC<RewardCardProps> = ({
     item,
     isPremiumCard,
@@ -25,57 +41,45 @@ export const RewardCard: React.FC<RewardCardProps> = ({
     onPreview,
     isMilestone,
 }) => {
-    const skinConfig = item.type === 'SKIN' ? SKINS_DB.find(s => s.id === item.id) : null;
+    const imgUrl = getRewardImage(item);
 
-    let mappedItemId = item.id;
-    if (item.id === 'potion_strength') mappedItemId = 'hp_potion_3';
-    else if (item.id === 'potion_strength_great') mappedItemId = 'hp_potion_3';
-    else if (item.id === 'potion_healing') mappedItemId = 'hp_potion_1';
-    else if (item.id === 'potion_defense') mappedItemId = 'hp_potion_2';
-
-    const dbItem = ITEMS_DATABASE[mappedItemId];
     return (
         <motion.div
             onClick={() => {
                 onPreview(item);
                 audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
             }}
-            className={isUnlocked && !isClaimed ? 'bp-card-hover' : ''}
-            animate={
+            whileHover={
                 isUnlocked && !isClaimed
                     ? {
+                          y: -6,
+                          scale: 1.03,
                           boxShadow: isPremiumCard
-                              ? [
-                                    '0 0 8px rgba(185,28,28,0.2)',
-                                    '0 0 20px rgba(220,38,38,0.5)',
-                                    '0 0 8px rgba(185,28,28,0.2)',
-                                ]
-                              : [
-                                    '0 0 8px rgba(240,192,64,0.2)',
-                                    '0 0 20px rgba(240,192,64,0.5)',
-                                    '0 0 8px rgba(240,192,64,0.2)',
-                                ],
-                          borderColor: isPremiumCard
-                              ? ['#991b1b', '#ffd700', '#991b1b']
-                              : ['#5c4033', '#f0c040', '#5c4033'],
+                              ? '0 12px 30px rgba(255,215,0,0.3)'
+                              : '0 12px 25px rgba(240,192,64,0.2)',
                       }
-                    : undefined
+                    : { scale: 1.01 }
             }
-            transition={{ repeat: Infinity, duration: 2.5 }}
             style={{
                 width: isMilestone ? '250px' : '200px',
                 height: '240px',
                 background: isPremiumCard
                     ? isUnlocked
-                        ? 'radial-gradient(circle at center, #420d0d 0%, #170404 100%)'
-                        : 'radial-gradient(circle at center, #2b0808 0%, #0f0202 100%)'
+                        ? 'radial-gradient(circle at center, #3a1515 0%, #150505 100%)'
+                        : 'radial-gradient(circle at center, #220b0b 0%, #0d0202 100%)'
                     : isUnlocked
                       ? 'radial-gradient(circle at center, #2e1c11 0%, #140c07 100%)'
                       : 'radial-gradient(circle at center, #1c110a 0%, #0c0704 100%)',
                 borderRadius: '12px',
                 border: isMilestone
                     ? `3px solid ${isPremiumCard ? '#ffd700' : '#c8a870'}`
-                    : `2px solid ${isPremiumCard ? '#991b1b' : '#5c4033'}`,
+                    : `2px solid ${isUnlocked ? (isPremiumCard ? '#ffd700' : '#f0c040') : isPremiumCard ? '#991b1b' : '#3d2314'}`,
+                boxShadow:
+                    isUnlocked && !isClaimed
+                        ? isPremiumCard
+                            ? '0 0 15px rgba(255,215,0,0.15)'
+                            : '0 0 12px rgba(240,192,64,0.1)'
+                        : 'none',
                 padding: '20px 15px',
                 display: 'flex',
                 flexDirection: 'column',
@@ -84,7 +88,7 @@ export const RewardCard: React.FC<RewardCardProps> = ({
                 position: 'relative',
                 overflow: 'hidden',
                 cursor: isUnlocked && !isClaimed ? 'pointer' : 'default',
-                transition: 'all 0.25s ease',
+                transition: 'border-color 0.25s ease, box-shadow 0.25s ease, background 0.25s ease',
             }}
         >
             {/* ГИЛЬДИРОВАННЫЕ УГОЛКИ ДЛЯ МИЛЬСТОУН КАРТ */}
@@ -185,48 +189,62 @@ export const RewardCard: React.FC<RewardCardProps> = ({
                         textShadow: '0 1px 2px rgba(0,0,0,0.8)',
                     }}
                 >
-                    {item.type}
+                    {getTypeNameRu(item.type)}
                 </div>
             </div>
 
             <div
                 style={{
-                    width: isMilestone ? '100px' : '80px',
-                    height: isMilestone ? '100px' : '80px',
-                    filter: isUnlocked ? 'drop-shadow(0 5px 15px rgba(0,0,0,0.6))' : 'brightness(0.3) blur(2px)',
+                    width: isMilestone ? '130px' : '110px',
+                    height: isMilestone ? '130px' : '110px',
+                    filter: isUnlocked
+                        ? 'drop-shadow(0 5px 15px rgba(0,0,0,0.6))'
+                        : 'drop-shadow(0 5px 15px rgba(0,0,0,0.3)) brightness(0.65)',
                     transition: 'all 0.3s',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     zIndex: 1,
+                    position: 'relative',
                 }}
             >
-                {skinConfig ? (
-                    <img
-                        src={skinConfig.image}
-                        alt={skinConfig.name}
+                {isMilestone && isUnlocked && (
+                    <motion.div
+                        animate={{ rotate: 360 }}
+                        transition={{ repeat: Infinity, duration: 12, ease: 'linear' }}
                         style={{
-                            width: '90%',
-                            height: '90%',
-                            objectFit: 'contain',
-                            filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.4))',
+                            position: 'absolute',
+                            width: '150px',
+                            height: '150px',
+                            background: `radial-gradient(circle, ${isPremiumCard ? 'rgba(255,215,0,0.22)' : 'rgba(240,192,64,0.15)'} 0%, transparent 70%)`,
+                            zIndex: 0,
+                            pointerEvents: 'none',
                         }}
                     />
-                ) : dbItem?.image ? (
+                )}
+                {imgUrl ? (
                     <img
-                        src={dbItem.image}
-                        alt={dbItem.name}
+                        src={imgUrl}
+                        alt={item.name}
                         style={{
-                            width: '80%',
-                            height: '80%',
+                            width: item.type === 'GOLD' || item.type === 'GEMS' ? '70%' : '100%',
+                            height: item.type === 'GOLD' || item.type === 'GEMS' ? '70%' : '100%',
                             objectFit: 'contain',
                             filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.4))',
                         }}
                     />
                 ) : item.icon.startsWith('sprite-') ? (
-                    <div className={item.icon} style={{ width: '100%', height: '100%', backgroundSize: '300% 100%' }} />
+                    <div
+                        className={item.icon}
+                        style={{
+                            width: '100%',
+                            height: '100%',
+                            backgroundSize: 'contain',
+                            backgroundRepeat: 'no-repeat',
+                        }}
+                    />
                 ) : (
-                    <span style={{ fontSize: isMilestone ? '80px' : '60px' }}>{item.icon}</span>
+                    <span style={{ fontSize: isMilestone ? '100px' : '80px' }}>{item.icon}</span>
                 )}
             </div>
 
@@ -266,87 +284,52 @@ export const RewardCard: React.FC<RewardCardProps> = ({
             </div>
 
             {isClaimed && (
-                <motion.div
-                    initial={{ scale: 0, rotate: -45 }}
-                    animate={{ scale: 1, rotate: -12 }}
+                <div
                     style={{
                         position: 'absolute',
-                        inset: 0,
-                        background: 'rgba(0, 0, 0, 0.65)',
-                        backdropFilter: 'blur(2px)',
+                        bottom: '12px',
+                        right: '12px',
+                        width: '24px',
+                        height: '24px',
+                        borderRadius: '50%',
+                        background: 'linear-gradient(180deg, #22c55e 0%, #15803d 100%)',
+                        border: '2.5px solid #ffffff',
+                        color: '#ffffff',
+                        fontSize: '13px',
+                        fontWeight: 900,
                         display: 'flex',
-                        flexDirection: 'column',
                         alignItems: 'center',
                         justifyContent: 'center',
+                        boxShadow: '0 0 12px rgba(34,197,94,0.6)',
                         zIndex: 10,
+                        textShadow: 'none',
                     }}
                 >
-                    <div
-                        style={{
-                            width: '75px',
-                            height: '75px',
-                            borderRadius: '50%',
-                            background: 'radial-gradient(circle, #b91c1c 0%, #5b0707 100%)',
-                            border: '3px dashed #ef4444',
-                            boxShadow: '0 4px 10px rgba(0,0,0,0.5), inset 0 0 10px rgba(0,0,0,0.8)',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            color: '#fff',
-                            fontWeight: 900,
-                            fontSize: '11px',
-                            fontFamily: "'Cinzel', serif",
-                            letterSpacing: '1px',
-                            transform: 'rotate(-5deg)',
-                        }}
-                    >
-                        ПОЛУЧЕНО
-                    </div>
-                </motion.div>
+                    ✓
+                </div>
             )}
 
             {!isUnlocked && !isClaimed && (
                 <div
                     style={{
                         position: 'absolute',
-                        inset: 0,
-                        background: 'rgba(0, 0, 0, 0.6)',
-                        backdropFilter: 'brightness(0.6) contrast(0.8)',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        justifyContent: 'center',
+                        bottom: '12px',
+                        left: '50%',
+                        transform: 'translateX(-50%)',
                         zIndex: 8,
                         pointerEvents: 'none',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        width: '28px',
+                        height: '28px',
+                        borderRadius: '50%',
+                        background: 'linear-gradient(180deg, #2a1b14 0%, #150f0c 100%)',
+                        border: '1.5px solid #b8860b',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.8), inset 0 0 4px rgba(255,255,255,0.1)',
                     }}
                 >
-                    <div
-                        style={{
-                            fontSize: '32px',
-                            filter: 'drop-shadow(0 2px 5px rgba(0,0,0,0.8))',
-                            marginBottom: '6px',
-                        }}
-                    >
-                        🔒
-                    </div>
-                    {isPremiumCard && (
-                        <div
-                            style={{
-                                fontSize: '10px',
-                                color: '#f0c040',
-                                fontWeight: 900,
-                                letterSpacing: '1px',
-                                background: '#2e080c',
-                                border: '1px solid #f0c040',
-                                padding: '3px 8px',
-                                borderRadius: '4px',
-                                textTransform: 'uppercase',
-                                textShadow: '0 1px 2px #000',
-                            }}
-                        >
-                            ПРЕМИУМ
-                        </div>
-                    )}
+                    <span style={{ fontSize: '13px', lineHeight: 1, marginTop: '-2px' }}>🔒</span>
                 </div>
             )}
         </motion.div>

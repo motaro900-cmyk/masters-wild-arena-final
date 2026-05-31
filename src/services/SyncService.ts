@@ -19,6 +19,8 @@ import { getVkUserInfo } from '../utils/VKBridge';
 export class SyncService {
     private static instance: SyncService;
     private syncInterval: any = null;
+    private syncTimeout: ReturnType<typeof setTimeout> | null = null;
+    private writeChain: Promise<any> = Promise.resolve();
 
     private constructor() {}
 
@@ -36,14 +38,33 @@ export class SyncService {
         if (playerId && playerId.startsWith('GUEST-')) {
             return playerId;
         }
-        const cleanGuest = playerId ? playerId.replace(/^MW-/, '') : Math.random().toString(36).substring(2, 11).toUpperCase();
+        const cleanGuest = playerId
+            ? playerId.replace(/^MW-/, '')
+            : Math.random().toString(36).substring(2, 11).toUpperCase();
         return `GUEST-${cleanGuest}`;
     }
 
     /**
-     * Синхронизирует текущее состояние игрока с Firebase
+     * Синхронизирует текущее состояние игрока с Firebase (в порядке очереди)
      */
     public async syncPlayerData(): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            this.writeChain = this.writeChain
+                .then(async () => {
+                    try {
+                        await this.performSync();
+                        resolve();
+                    } catch (error) {
+                        reject(error);
+                    }
+                })
+                .catch(() => {
+                    // Предотвращаем прерывание очереди
+                });
+        });
+    }
+
+    private async performSync(): Promise<void> {
         const state = useGameStore.getState();
 
         // Если пользователя нет в сторе, пробуем получить его из VK
@@ -133,19 +154,24 @@ export class SyncService {
                 shopLastRefreshTime: state.shopLastRefreshTime,
                 lastWheelSpinTime: state.lastWheelSpinTime,
                 activeBuffs: state.activeBuffs || {},
+                dailyQuests: state.dailyQuests,
+                weeklyQuests: state.weeklyQuests,
+                lastDailyRefresh: state.lastDailyRefresh,
+                lastWeeklyRefresh: state.lastWeeklyRefresh,
             };
 
-            const isLocalhost = typeof window !== 'undefined' && 
-                (window.location.hostname === 'localhost' || 
-                 window.location.hostname === '127.0.0.1' || 
-                 window.location.protocol === 'file:');
+            const isLocalhost =
+                typeof window !== 'undefined' &&
+                (window.location.hostname === 'localhost' ||
+                    window.location.hostname === '127.0.0.1' ||
+                    window.location.protocol === 'file:');
 
             const syncData = {
                 id: userId,
                 vkId: vkUser ? Number(vkUser.id) : 0,
                 имя: state.name || 'Мастер',
-                имяВК: vkUser ? (vkUser.first_name || vkUser.firstName || '') : '',
-                фамилияВК: vkUser ? (vkUser.last_name || vkUser.lastName || '') : '',
+                имяВК: vkUser ? vkUser.first_name || vkUser.firstName || '' : '',
+                фамилияВК: vkUser ? vkUser.last_name || vkUser.lastName || '' : '',
                 ссылкаВК: vkUser ? `https://vk.com/id${vkUser.id}` : '',
                 уровень: state.level || 1,
                 золото: state.gold || 0,
@@ -154,7 +180,7 @@ export class SyncService {
                 былВСети: serverTimestamp(),
                 активныйЭкран: state.activeScreen || 'MAIN_MENU',
                 герой: selectedHeroId,
-                фото: state.avatar || (vkUser ? (vkUser.photo200 || vkUser.photo || '') : ''),
+                фото: state.avatar || (vkUser ? vkUser.photo200 || vkUser.photo || '' : ''),
                 снаряжение: {
                     WEAPONS: state.heroEquipment?.[selectedHeroId]?.WEAPONS || null,
                     HELMETS: state.heroEquipment?.[selectedHeroId]?.HELMETS || null,
@@ -173,7 +199,18 @@ export class SyncService {
             await setDoc(playerRef, syncData, { merge: true });
         } catch (error) {
             console.error('[SyncService] Sync failed:', error);
+            throw error;
         }
+    }
+
+    public debouncedSync(delay = 2000): void {
+        if (this.syncTimeout) {
+            clearTimeout(this.syncTimeout);
+        }
+        this.syncTimeout = setTimeout(() => {
+            this.syncPlayerData();
+            this.syncTimeout = null;
+        }, delay);
     }
 
     /**
@@ -235,7 +272,7 @@ export class SyncService {
                 },
                 (error: any) => {
                     console.error('[SyncService] All players subscription error:', error);
-                }
+                },
             );
         } catch (error) {
             console.error('[SyncService] Failed to set up all players subscription:', error);
@@ -250,7 +287,7 @@ export class SyncService {
         try {
             const playerRef = doc(db, 'пользователи', userId);
             const playerSnap = await getDoc(playerRef);
-            
+
             const mapping: Record<string, string> = {
                 gold: 'золото',
                 crystals: 'кристаллы',
@@ -261,18 +298,18 @@ export class SyncService {
                 heroEquipment: 'снаряжение',
             };
 
-            let updatedData: any = {};
+            const updatedData: any = {};
             for (const key in data) {
                 const mappedKey = mapping[key] || key;
                 updatedData[mappedKey] = data[key];
             }
-            
+
             if (playerSnap.exists()) {
                 const docData = playerSnap.data();
                 if (docData.полноеСостояниеJSON) {
                     try {
                         const parsed = JSON.parse(docData.полноеСостояниеJSON);
-                        
+
                         // Map fields to Zustand state keys in parsed JSON
                         if (data.золото !== undefined || data.gold !== undefined) {
                             parsed.gold = Number(data.золото !== undefined ? data.золото : data.gold);
@@ -300,14 +337,14 @@ export class SyncService {
                         if (data.ownedHeroes !== undefined) {
                             parsed.ownedHeroes = data.ownedHeroes;
                         }
-                        
+
                         updatedData.полноеСостояниеJSON = JSON.stringify(parsed);
                     } catch (e) {
                         console.error('[SyncService] Failed to parse полноеСостояниеJSON during remote update:', e);
                     }
                 }
             }
-            
+
             await setDoc(playerRef, updatedData, { merge: true });
         } catch (error) {
             console.error('[SyncService] Remote update failed:', error);
@@ -455,7 +492,7 @@ export class SyncService {
                 },
                 (error: any) => {
                     console.error('[SyncService] Global leaders subscription error:', error);
-                }
+                },
             );
         } catch (error) {
             console.error('[SyncService] Failed to set up global leaders subscription:', error);
@@ -566,10 +603,10 @@ export class SyncService {
     public async wipeAllFirestoreCollections(): Promise<void> {
         try {
             console.log('[SyncService] Starting full database wipe (Beta Wipe)...');
-            
+
             // 1. Wipe chat
             await this.wipeGlobalChat();
-            
+
             // 2. Wipe отзывы
             const feedbackRef = collection(db, 'отзывы');
             const feedbackSnap = await getDocs(feedbackRef);
@@ -580,10 +617,10 @@ export class SyncService {
             // 3. Wipe пользователи
             const playersRef = collection(db, 'пользователи');
             const playersSnap = await getDocs(playersRef);
-            
+
             for (const playerDoc of playersSnap.docs) {
                 const userId = playerDoc.id;
-                
+
                 // Delete "запросы" subcollection
                 const requestsRef = collection(db, 'пользователи', userId, 'запросы');
                 const requestsSnap = await getDocs(requestsRef);
@@ -718,7 +755,7 @@ export class SyncService {
             // Если есть документ с таким именем, но его ID совпадает с ID текущего или гостевого игрока, то ник принадлежит ему же
             if (currentUserId || guestUserId) {
                 const matchesCurrentUser = snapshot.docs.some(
-                    (doc) => doc.id === currentUserId || (guestUserId && doc.id === guestUserId)
+                    (doc) => doc.id === currentUserId || (guestUserId && doc.id === guestUserId),
                 );
                 if (matchesCurrentUser) return true;
             }
@@ -755,7 +792,7 @@ export class SyncService {
                         console.error('[SyncService] Failed to parse полноеСостояниеJSON:', e);
                     }
                 }
-                
+
                 // Fallback для старых данных / fullStateJSON
                 if (data.fullStateJSON) {
                     try {
@@ -774,10 +811,10 @@ export class SyncService {
                 const legacyData: any = {
                     onboardingCompleted: true,
                 };
-                
+
                 const nameVal = data.имя || data.name;
                 if (nameVal) legacyData.name = nameVal;
-                
+
                 const avatarVal = data.avatar || data.photo;
                 if (avatarVal) legacyData.avatar = avatarVal;
 
@@ -808,7 +845,7 @@ export class SyncService {
                             SHOULDERS: gearVal.SHOULDERS || null,
                             PANTS: gearVal.PANTS || null,
                             BOOTS: gearVal.BOOTS || null,
-                        }
+                        },
                     };
                 }
 
@@ -818,6 +855,59 @@ export class SyncService {
         } catch (error) {
             console.error('[SyncService] Load player data failed:', error);
             return null;
+        }
+    }
+
+    /**
+     * Записывает действие игрока в Firestore для живого наблюдения (Spectator Mode)
+     */
+    public async logPlayerAction(actionText: string): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            this.writeChain = this.writeChain
+                .then(async () => {
+                    try {
+                        await this.performLogPlayerAction(actionText);
+                        resolve();
+                    } catch (error) {
+                        reject(error);
+                    }
+                })
+                .catch(() => {
+                    // Предотвращаем прерывание очереди
+                });
+        });
+    }
+
+    private async performLogPlayerAction(actionText: string): Promise<void> {
+        const state = useGameStore.getState();
+        const userId = SyncService.getPrefixedUserId(state.vkUser, state.playerId);
+        if (!userId) return;
+
+        try {
+            const playerRef = doc(db, 'пользователи', userId);
+            const playerSnap = await getDoc(playerRef);
+            if (playerSnap.exists()) {
+                const data = playerSnap.data();
+                const actions = data.последниеДействия || [];
+                const timestamp = new Date().toLocaleTimeString([], {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit',
+                });
+                const newActions = [...actions, `[${timestamp}] ${actionText}`].slice(-15);
+
+                await setDoc(
+                    playerRef,
+                    {
+                        последниеДействия: newActions,
+                        былВСети: serverTimestamp(),
+                    },
+                    { merge: true },
+                );
+            }
+        } catch (error) {
+            console.error('[SyncService] Failed to log player action:', error);
+            throw error;
         }
     }
 }

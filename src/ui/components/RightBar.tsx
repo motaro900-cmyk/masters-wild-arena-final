@@ -3,8 +3,10 @@ import { useGameStore } from '../../store/useGameStore';
 import { EditorPanel } from './EditorPanel';
 
 export const RightBar: React.FC = () => {
-    const store = useGameStore();
-    const statsObj = store.getCalculatedStats(store.currentHeroId);
+    const currentHeroId = useGameStore((state) => state.currentHeroId);
+    const getCalculatedStats = useGameStore((state) => state.getCalculatedStats);
+
+    const statsObj = getCalculatedStats(currentHeroId);
     const stats = statsObj ? statsObj.total : { hp: 0, attack: 0, speed: 0, critChance: 0 };
 
     const displayStats = [
@@ -19,7 +21,7 @@ export const RightBar: React.FC = () => {
             {/* Панель статов с эффектом "стекла" (Glassmorphism) */}
             <div className="bg-[#23283b]/90 rounded-2xl p-6 h-full flex flex-col backdrop-blur-md border-2 border-black/50 shadow-2xl pointer-events-auto">
                 <h2 className="text-center text-white font-black text-3xl tracking-widest text-stroke mb-8 uppercase">
-                    {store.currentHeroId || 'ПАНДА'}
+                    {currentHeroId || 'ПАНДА'}
                 </h2>
 
                 <div className="flex flex-col gap-6 my-auto">

@@ -130,7 +130,7 @@ export const AncientsSanctuaryScreen: React.FC = () => {
             return;
         }
         audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
-        startPveBattle(pveStage);
+        startPveBattle(selectedFloor);
     };
 
     const [particles, setParticles] = React.useState<
@@ -287,61 +287,6 @@ export const AncientsSanctuaryScreen: React.FC = () => {
                 </div>
             </div>
 
-            {/* Статус Рекордов / Серии */}
-            <div
-                style={{
-                    position: 'absolute',
-                    top: '80px',
-                    right: '40px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '6px',
-                    zIndex: 20,
-                    alignItems: 'flex-end',
-                }}
-            >
-                {maxPveStage > 1 && (
-                    <div
-                        style={{
-                            background: 'rgba(0, 0, 0, 0.6)',
-                            border: '1px solid rgba(196, 139, 59, 0.3)',
-                            borderRadius: '8px',
-                            padding: '5px 12px',
-                            fontSize: '10px',
-                            color: '#fbbf24',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '6px',
-                        }}
-                    >
-                        <img
-                            src={AssetsMap.UI.TROPHY_PREMIUM}
-                            style={{ width: '12px', height: '12px', objectFit: 'contain' }}
-                            alt="Trophy"
-                        />
-                        РЕКОРД: <span style={{ fontWeight: 900 }}>{maxPveStage - 1} ЭТАЖ</span>
-                    </div>
-                )}
-                {winStreak > 0 && (
-                    <motion.div
-                        animate={{ scale: [1, 1.02, 1] }}
-                        transition={{ repeat: Infinity, duration: 2 }}
-                        style={{
-                            background: 'rgba(69, 10, 10, 0.6)',
-                            border: '1px solid rgba(239, 68, 68, 0.4)',
-                            borderRadius: '8px',
-                            padding: '5px 12px',
-                            fontSize: '10px',
-                            color: '#f87171',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '6px',
-                        }}
-                    >
-                        🔥 СЕРИЯ: <span style={{ fontWeight: 900 }}>{winStreak} ПОБЕД</span>
-                    </motion.div>
-                )}
-            </div>
 
             {/* ЦЕНТРАЛЬНЫЙ БЛОК: МАРШРУТ (СЛЕВА) + ХАРАКТЕРИСТИКИ / ПОРТАЛ */}
             <div
@@ -718,8 +663,8 @@ export const AncientsSanctuaryScreen: React.FC = () => {
                     dailyAdWatchesCount={dailyAdWatchesCount}
                     adLoading={adLoading}
                     hasEnoughEnergy={hasEnoughEnergy}
-                    pveStage={pveStage}
-                    currentMob={currentMob}
+                    pveStage={selectedFloor}
+                    currentMob={selectedMob}
                     onBuyEnergy={handleBuyEnergy}
                     onWatchAd={handleWatchAd}
                     onEnterBattle={handleEnterBattle}

@@ -18,6 +18,12 @@ const getPlayerTitle = (level: number): string => {
     return 'Странник';
 };
 
+export const getExpNeeded = (level: number): number => {
+    if (level <= 40) return level * 600;
+    if (level <= 60) return level * 500;
+    return level * 400;
+};
+
 export const createPlayerSlice = (set: any, get: any) => ({
     // --- СОСТОЯНИЕ ИГРОКА ---
     level: 1,
@@ -39,7 +45,7 @@ export const createPlayerSlice = (set: any, get: any) => ({
     name: 'Мастер',
     lastNameChange: 0,
     avatar: 'sprite:sprite-avatar avatar-pos-1',
-    frame: 'Рамка 1.webp',
+    frame: 'harvest_wheat_frame.webp',
     title: 'Странник',
     trophies: 0,
     wins: 0,
@@ -124,7 +130,7 @@ export const createPlayerSlice = (set: any, get: any) => ({
             energy: Math.max(0, state.energy - amount),
             dailyBattles: state.dailyBattles + 1,
         }));
-        syncService.syncPlayerData();
+        syncService.debouncedSync();
         return true;
     },
     addShards: (heroId: string, amount: number) =>
@@ -171,12 +177,12 @@ export const createPlayerSlice = (set: any, get: any) => ({
         set((state: any) => {
             let newExp = state.exp + amount;
             let newLevel = state.level;
-            let maxExp = newLevel * 600;
+            let maxExp = getExpNeeded(newLevel);
 
             while (newExp >= maxExp) {
                 newExp -= maxExp;
                 newLevel += 1;
-                maxExp = newLevel * 600;
+                maxExp = getExpNeeded(newLevel);
             }
 
             return {
@@ -234,7 +240,7 @@ export const createPlayerSlice = (set: any, get: any) => ({
             set((s: any) => ({ dailyAdWatchesCount: (s.dailyAdWatchesCount || 0) + 1 }));
 
             // Синхронизируем сразу после награды
-            syncService.syncPlayerData();
+            syncService.debouncedSync();
             return true;
         }
         return false;
@@ -261,7 +267,7 @@ export const createPlayerSlice = (set: any, get: any) => ({
         safeSetItem('vipEndTime', newEndTime.toString());
 
         // Синхронизируем
-        syncService.syncPlayerData();
+        syncService.debouncedSync();
         return true;
     },
 
@@ -421,7 +427,7 @@ export const createPlayerSlice = (set: any, get: any) => ({
     setCanClaimDailyGift: (val: boolean) => set({ canClaimDailyGift: val }),
     setOnboardingCompleted: (val: boolean) => {
         set({ onboardingCompleted: val });
-        syncService.syncPlayerData();
+        syncService.debouncedSync();
     },
     processReferralCode: (code: string) => {
         const state = get() as any;
@@ -508,7 +514,7 @@ export const createPlayerSlice = (set: any, get: any) => ({
         }
 
         set({ name: cleanName, lastNameChange: now });
-        syncService.syncPlayerData();
+        syncService.debouncedSync();
         return { success: true };
     },
 

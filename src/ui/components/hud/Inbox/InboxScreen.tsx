@@ -178,15 +178,21 @@ export const InboxScreen: React.FC<InboxScreenProps> = ({ summary, onClose }) =>
             >
                 <div style={{ display: 'flex', gap: '20px' }}>
                     <div>
-                        <div style={{ fontSize: '10px', opacity: 0.5, fontFamily: "'Montserrat', sans-serif" }}>Всего атак</div>
+                        <div style={{ fontSize: '10px', opacity: 0.5, fontFamily: "'Montserrat', sans-serif" }}>
+                            Всего атак
+                        </div>
                         <div style={{ fontSize: '20px', fontWeight: 900, color: '#fff' }}>{summary.totalAttacks}</div>
                     </div>
                     <div>
-                        <div style={{ fontSize: '10px', opacity: 0.5, fontFamily: "'Montserrat', sans-serif" }}>Победы</div>
+                        <div style={{ fontSize: '10px', opacity: 0.5, fontFamily: "'Montserrat', sans-serif" }}>
+                            Победы
+                        </div>
                         <div style={{ fontSize: '20px', fontWeight: 900, color: colors.success }}>{summary.wins}</div>
                     </div>
                     <div>
-                        <div style={{ fontSize: '10px', opacity: 0.5, fontFamily: "'Montserrat', sans-serif" }}>Поражения</div>
+                        <div style={{ fontSize: '10px', opacity: 0.5, fontFamily: "'Montserrat', sans-serif" }}>
+                            Поражения
+                        </div>
                         <div style={{ fontSize: '20px', fontWeight: 900, color: colors.danger }}>{summary.losses}</div>
                     </div>
                 </div>
@@ -194,7 +200,16 @@ export const InboxScreen: React.FC<InboxScreenProps> = ({ summary, onClose }) =>
                 <div style={{ display: 'flex', gap: '24px', alignItems: 'center' }}>
                     {/* Суммарные кубки */}
                     <div>
-                        <div style={{ fontSize: '10px', opacity: 0.5, fontFamily: "'Montserrat', sans-serif", textAlign: 'right' }}>Итог кубков</div>
+                        <div
+                            style={{
+                                fontSize: '10px',
+                                opacity: 0.5,
+                                fontFamily: "'Montserrat', sans-serif",
+                                textAlign: 'right',
+                            }}
+                        >
+                            Итог кубков
+                        </div>
                         <div
                             style={{
                                 fontSize: '22px',
@@ -219,7 +234,16 @@ export const InboxScreen: React.FC<InboxScreenProps> = ({ summary, onClose }) =>
                     {/* Суммарное золото */}
                     {summary.totalGoldChange > 0 && (
                         <div>
-                            <div style={{ fontSize: '10px', opacity: 0.5, fontFamily: "'Montserrat', sans-serif", textAlign: 'right' }}>Награда золотом</div>
+                            <div
+                                style={{
+                                    fontSize: '10px',
+                                    opacity: 0.5,
+                                    fontFamily: "'Montserrat', sans-serif",
+                                    textAlign: 'right',
+                                }}
+                            >
+                                Награда золотом
+                            </div>
                             <div
                                 style={{
                                     fontSize: '22px',

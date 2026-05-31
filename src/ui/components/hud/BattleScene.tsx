@@ -11,7 +11,6 @@ import { BattleResultScreen, BattleResultData } from './BattleResultScreen';
 import { PreBattleScreen } from './PreBattleScreen';
 import { audioService } from '../../../services/AudioService';
 import { AssetsMap } from '../../../configs/AssetsMap';
-import { calculateBattleRewards } from '../../../game/configs/GameConstants';
 import { showInterstitialAd } from '../../../utils/VKBridge';
 import { BattleHUD } from './Battle/BattleHUD';
 
@@ -39,6 +38,8 @@ export const BattleScene: React.FC = () => {
         log: 'ПОДГОТОВКА...',
         playerMana: 0,
         playerMaxMana: 100,
+        playerStatuses: [],
+        enemyStatuses: [],
     });
     const [playerPulse, setPlayerPulse] = useState(false);
     const [enemyPulse, setEnemyPulse] = useState(false);
@@ -54,7 +55,6 @@ export const BattleScene: React.FC = () => {
     const [battleStarted, setBattleStarted] = useState(useGameStore.getState().battleMode === 'RANKED');
     // Реальный счётчик ходов
     const turnCountRef = useRef(0);
-
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -77,7 +77,7 @@ export const BattleScene: React.FC = () => {
 
     const playerHero = HEROES_DB.find((h) => h.id === selectedHeroId) || HEROES_DB[0];
     const equippedSkinId = equippedSkins?.[selectedHeroId] || 'default';
-    const activeSkin = SKINS_DB.find(s => s.id === equippedSkinId && s.heroId === selectedHeroId);
+    const activeSkin = SKINS_DB.find((s) => s.id === equippedSkinId && s.heroId === selectedHeroId);
     const displayPlayerName = activeSkin && activeSkin.id !== 'default' ? activeSkin.name : playerHero.name;
     const displayPlayerImage = activeSkin ? activeSkin.image : playerHero.image;
     const rawEnemy =
@@ -203,31 +203,37 @@ export const BattleScene: React.FC = () => {
                         store.completePveBattle(isVictory);
                     } else {
                         if (isWarmup) {
-                            const rewards = calculateBattleRewards(isVictory, store.rating || 0, store.rating || 0, true);
-                            gold = rewards.gold;
-                            xp = rewards.xp;
-                            trophies = rewards.trophies;
+                            gold = 0;
+                            xp = isVictory ? 200 : 50;
+                            trophies = 0;
                         } else {
-                            // Ranked
                             const opponent = store.activeRankedOpponent;
                             const myUserId = store.vkUser ? String(store.vkUser.id) : store.playerId;
                             const myName = store.name || 'Мастер';
                             const myRating = store.rating || 0;
+                            const myLevel = store.level || 1;
 
                             const { battleResultService } = await import('../../../services/BattleResultService');
-                            const { myCupsChange, myGoldChange } = await battleResultService.recordResult({
+                            const { myCupsChange, myGoldChange, myExpChange } = await battleResultService.recordResult({
                                 myUserId,
                                 myName,
                                 myRating,
+                                myLevel,
                                 opponentUserId: opponent?.realUserId,
                                 opponentName: opponent?.name || 'Противник',
                                 opponentRating: opponent?.rating || 0,
+                                opponentLevel: opponent?.level || 1,
                                 isOpponentBot: opponent?.isBot ?? true,
                                 attackerWon: isVictory,
                             });
 
+                            const { syncService } = await import('../../../services/SyncService');
+                            syncService.logPlayerAction(
+                                `Завершил рейтинговый бой против ${opponent?.name || 'Противник'}: ${isVictory ? 'Победа' : 'Поражение'}`,
+                            );
+
                             gold = myGoldChange;
-                            xp = isVictory ? 100 : 20;
+                            xp = myExpChange;
                             trophies = myCupsChange;
                         }
                     }
@@ -238,7 +244,7 @@ export const BattleScene: React.FC = () => {
                         store.addCombatLog(
                             `Бой завершен: ${isVictory ? 'Победа' : 'Поражение'}. Получено +${gold} золота, +${xp} опыта.`,
                         );
-                        
+
                         const newTrophies = Math.max(0, store.trophies + trophies);
                         const patch: any = {
                             trophies: newTrophies,
@@ -327,7 +333,7 @@ export const BattleScene: React.FC = () => {
                     targetUnit,
                     isPlayerTarget,
                     attackerUnit,
-                    event.damage
+                    event.damage,
                 );
             }
 
@@ -338,7 +344,7 @@ export const BattleScene: React.FC = () => {
             let animateScale = 1.0;
             let fontStyle = 'normal';
             let textShadow = '2px 2px 0px #000, -2px -2px 0px #000, 2px -2px 0px #000, -2px 2px 0px #000';
-            
+
             // Направление полета текста урона в зависимости от класса
             let animateX = 0;
             let animateY = -150;
@@ -533,7 +539,17 @@ export const BattleScene: React.FC = () => {
             engine.destroy();
             (window as any).__BATTLE_ENGINE__ = null;
         };
-    }, [selectedHeroId, selectedEnemyId, getCalculatedStats, enemyData, battleStarted, battleMode, activePveEnemy]);
+    }, [
+        selectedHeroId,
+        selectedEnemyId,
+        getCalculatedStats,
+        enemyData,
+        battleStarted,
+        battleMode,
+        activePveEnemy,
+        playerHero,
+        rawEnemy,
+    ]);
 
     const isMobile = useGameStore((state) => state.isMobile);
     const isBattleOver = battleState.playerHP <= 0 || battleState.enemyHP <= 0;
@@ -550,8 +566,6 @@ export const BattleScene: React.FC = () => {
     const handlePreBattleCancel = useCallback(() => {
         goToMainMenu();
     }, [goToMainMenu]);
-
-
 
     // Вычисляем статы врага для PreBattleScreen
     const playerStats4Pre = getCalculatedStats(selectedHeroId)?.total;
@@ -608,6 +622,7 @@ export const BattleScene: React.FC = () => {
                             }}
                             onStart={handleBattleStart}
                             onCancel={handlePreBattleCancel}
+                            battleMode={battleMode}
                         />
                     </motion.div>
                 )}
@@ -622,7 +637,7 @@ export const BattleScene: React.FC = () => {
             <AnimatePresence>
                 {damageTexts.map((dmg) => {
                     const isDodge = dmg.type === 'DODGE';
-                    const animateX = dmg.animateX !== undefined ? dmg.animateX : (isDodge ? 120 : 0);
+                    const animateX = dmg.animateX !== undefined ? dmg.animateX : isDodge ? 120 : 0;
                     const animateY = dmg.animateY !== undefined ? dmg.animateY : -150;
 
                     return (
@@ -654,7 +669,9 @@ export const BattleScene: React.FC = () => {
                                 color: dmg.color,
                                 fontSize: dmg.fontSize,
                                 fontWeight: 900,
-                                textShadow: dmg.textShadow || '2px 2px 0px #000, -2px -2px 0px #000, 2px -2px 0px #000, -2px 2px 0px #000',
+                                textShadow:
+                                    dmg.textShadow ||
+                                    '2px 2px 0px #000, -2px -2px 0px #000, 2px -2px 0px #000, -2px 2px 0px #000',
                                 fontStyle: dmg.fontStyle || 'normal',
                                 zIndex: 1000,
                                 fontFamily: "'Cinzel', serif",
@@ -796,8 +813,6 @@ export const BattleScene: React.FC = () => {
                     </>
                 )}
             </AnimatePresence>
-
-
 
             {/* ACTIVE ABILITY FLOATING BUTTON REMOVED (CASTS AUTOMATICALLY) */}
         </div>

@@ -62,7 +62,7 @@ export const WorldPlayersTab: React.FC<WorldPlayersTabProps> = ({
                                     style={{
                                         width: '100%',
                                         height: '100%',
-                                        backgroundImage: `url(${(p.фото || p.avatar || '').startsWith('http') ? (p.фото || p.avatar) : resolveAssetPath(`/assets/images/avatars/${(p.фото || p.avatar || 'панда.webp').replace(/\.(png|webp)$/, '')}.webp`)})`,
+                                        backgroundImage: `url(${(p.фото || p.avatar || '').startsWith('http') ? p.фото || p.avatar : resolveAssetPath(`/assets/images/avatars/${(p.фото || p.avatar || 'панда.webp').replace(/\.(png|webp)$/, '')}.webp`)})`,
                                         backgroundSize: 'cover',
                                         backgroundPosition: 'center',
                                     }}

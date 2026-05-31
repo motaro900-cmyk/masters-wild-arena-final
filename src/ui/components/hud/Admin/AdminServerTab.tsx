@@ -13,6 +13,7 @@ import {
     statLabel,
     editRow,
 } from './AdminShared';
+import { AdminSpectatorModal } from './AdminSpectatorModal';
 
 interface AdminServerTabProps {
     realPlayers: RealPlayer[];
@@ -40,6 +41,7 @@ export const AdminServerTab: React.FC<AdminServerTabProps> = ({
     const [modReason, setModReason] = useState('');
     const [filterStatus, setFilterStatus] = useState<'ALL' | 'ONLINE' | 'BANNED'>('ALL');
     const [filterType, setFilterType] = useState<'VK_REAL' | 'VK_TEST' | 'GUEST' | 'ALL'>('VK_REAL');
+    const [isSpectating, setIsSpectating] = useState(false);
 
     // --- ЛОКАЛЬНЫЕ СОСТОЯНИЯ (СЕРВЕР - ПРАВКА ИГРОКА) ---
     const [serverPlayerGold, setServerPlayerGold] = useState('');
@@ -136,7 +138,19 @@ export const AdminServerTab: React.FC<AdminServerTabProps> = ({
                         </button>
                     </div>
 
-                    <div style={{ fontSize: '9px', color: '#555', marginTop: '10px', marginBottom: '4px', textTransform: 'uppercase', fontWeight: 'bold', letterSpacing: '0.5px' }}>Тип аккаунтов</div>
+                    <div
+                        style={{
+                            fontSize: '9px',
+                            color: '#555',
+                            marginTop: '10px',
+                            marginBottom: '4px',
+                            textTransform: 'uppercase',
+                            fontWeight: 'bold',
+                            letterSpacing: '0.5px',
+                        }}
+                    >
+                        Тип аккаунтов
+                    </div>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '4px' }}>
                         <button
                             onClick={() => setFilterType('VK_REAL')}
@@ -203,7 +217,7 @@ export const AdminServerTab: React.FC<AdminServerTabProps> = ({
                                 filterStatus === 'ALL' ||
                                 (filterStatus === 'ONLINE' && p.status === 'ONLINE') ||
                                 (filterStatus === 'BANNED' && p.status === 'BANNED');
-                            
+
                             const isVK = p.id.startsWith('VK-') || (p.vkId && p.vkId > 0);
                             const matchesType =
                                 filterType === 'ALL' ||
@@ -237,22 +251,39 @@ export const AdminServerTab: React.FC<AdminServerTabProps> = ({
                                                 ? '#4dff4d'
                                                 : p.status === 'BATTLE'
                                                   ? '#3b82f6'
-                                                  : '#555',
+                                                  : '#777',
                                     }}
                                 />
                                 <img
                                     src={p.photo}
                                     style={{
-                                        width: '24px',
-                                        height: '24px',
+                                        width: '32px',
+                                        height: '32px',
                                         borderRadius: '50%',
-                                        border: '1px solid #333',
+                                        border: '1px solid #444',
                                     }}
                                     alt=""
                                 />
-                                <div style={{ flex: 1 }}>
-                                    <div style={{ fontSize: '13px', fontWeight: 'bold' }}>{p.name}</div>
-                                    <div style={{ fontSize: '8px', color: '#444' }}>ID: {p.id}</div>
+                                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                                    <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#ffffff' }}>
+                                        {p.name}
+                                    </div>
+                                    <div style={{ fontSize: '11px', color: '#aaaaaa' }}>ID: {p.id}</div>
+                                    <div
+                                        style={{
+                                            fontSize: '10px',
+                                            color:
+                                                p.status === 'ONLINE' || p.status === 'BATTLE' ? '#4dff4d' : '#888888',
+                                        }}
+                                    >
+                                        {p.status === 'ONLINE'
+                                            ? 'В сети'
+                                            : p.status === 'BATTLE'
+                                              ? 'В бою ⚔️'
+                                              : p.status === 'BANNED'
+                                                ? 'Забанен'
+                                                : `Был(а) в сети: ${p.lastSeenTime}`}
+                                    </div>
                                 </div>
                                 {p.reports > 0 && (
                                     <div
@@ -321,7 +352,7 @@ export const AdminServerTab: React.FC<AdminServerTabProps> = ({
                                         </a>
                                     )}
                                     <button
-                                        onClick={() => alert('SPECTATING')}
+                                        onClick={() => setIsSpectating(true)}
                                         style={{
                                             background: 'none',
                                             border: 'none',
@@ -359,19 +390,30 @@ export const AdminServerTab: React.FC<AdminServerTabProps> = ({
                                 </div>
                                 <div style={statBox}>
                                     <div style={statLabel}>GOLD</div>
-                                    <span style={{ color: '#ffd700', fontWeight: 'bold' }}>💰 {selectedPlayer.gold.toLocaleString()}</span>
+                                    <span style={{ color: '#ffd700', fontWeight: 'bold' }}>
+                                        💰 {selectedPlayer.gold.toLocaleString()}
+                                    </span>
                                 </div>
                                 <div style={statBox}>
                                     <div style={statLabel}>GEMS</div>
-                                    <span style={{ color: '#00ffff', fontWeight: 'bold' }}>💎 {selectedPlayer.crystals.toLocaleString()}</span>
+                                    <span style={{ color: '#00ffff', fontWeight: 'bold' }}>
+                                        💎 {selectedPlayer.crystals.toLocaleString()}
+                                    </span>
                                 </div>
                                 <div style={statBox}>
                                     <div style={statLabel}>LVL</div>
-                                    <span style={{ color: '#a78bfa', fontWeight: 'bold' }}>🌟 {selectedPlayer.level}</span>
+                                    <span style={{ color: '#a78bfa', fontWeight: 'bold' }}>
+                                        🌟 {selectedPlayer.level}
+                                    </span>
                                 </div>
                                 <div style={statBox}>
                                     <div style={statLabel}>REPORTS</div>
-                                    <span style={{ color: selectedPlayer.reports > 0 ? '#ff4d4d' : '#888', fontWeight: 'bold' }}>
+                                    <span
+                                        style={{
+                                            color: selectedPlayer.reports > 0 ? '#ff4d4d' : '#888',
+                                            fontWeight: 'bold',
+                                        }}
+                                    >
                                         🚨 {selectedPlayer.reports}
                                     </span>
                                 </div>
@@ -420,7 +462,10 @@ export const AdminServerTab: React.FC<AdminServerTabProps> = ({
                                         onChange={(e) => setServerPlayerLevel(e.target.value)}
                                     />
                                 </div>
-                                <button onClick={() => handleRemoteUpdate('уровень', serverPlayerLevel)} style={applyBtn}>
+                                <button
+                                    onClick={() => handleRemoteUpdate('уровень', serverPlayerLevel)}
+                                    style={applyBtn}
+                                >
                                     SET
                                 </button>
                             </div>
@@ -441,7 +486,12 @@ export const AdminServerTab: React.FC<AdminServerTabProps> = ({
                                         if (!selectedPlayer) return;
                                         try {
                                             await syncService.updateRemotePlayerData(selectedPlayer.id, {
-                                                ownedSkins: ['default', 'panda_frost', 'raccoon_default', 'skin_lava_golem'],
+                                                ownedSkins: [
+                                                    'default',
+                                                    'panda_frost',
+                                                    'raccoon_default',
+                                                    'skin_lava_golem',
+                                                ],
                                             });
                                             alert('Все облики успешно открыты игроку!');
                                             refreshPlayers();
@@ -638,19 +688,27 @@ export const AdminServerTab: React.FC<AdminServerTabProps> = ({
                             >
                                 <div style={statBox}>
                                     <div style={statLabel}>GOLD</div>
-                                    <span style={{ color: '#ffd700', fontWeight: 'bold' }}>💰 {selectedPlayer.gold.toLocaleString()}</span>
+                                    <span style={{ color: '#ffd700', fontWeight: 'bold' }}>
+                                        💰 {selectedPlayer.gold.toLocaleString()}
+                                    </span>
                                 </div>
                                 <div style={statBox}>
                                     <div style={statLabel}>GEMS</div>
-                                    <span style={{ color: '#00ffff', fontWeight: 'bold' }}>💎 {selectedPlayer.crystals.toLocaleString()}</span>
+                                    <span style={{ color: '#00ffff', fontWeight: 'bold' }}>
+                                        💎 {selectedPlayer.crystals.toLocaleString()}
+                                    </span>
                                 </div>
                                 <div style={statBox}>
                                     <div style={statLabel}>LVL</div>
-                                    <span style={{ color: '#a78bfa', fontWeight: 'bold' }}>🌟 {selectedPlayer.level}</span>
+                                    <span style={{ color: '#a78bfa', fontWeight: 'bold' }}>
+                                        🌟 {selectedPlayer.level}
+                                    </span>
                                 </div>
                                 <div style={statBox}>
                                     <div style={statLabel}>LOCATION</div>
-                                    <span style={{ color: '#60a5fa', fontWeight: 'bold' }}>📍 {selectedPlayer.screen}</span>
+                                    <span style={{ color: '#60a5fa', fontWeight: 'bold' }}>
+                                        📍 {selectedPlayer.screen}
+                                    </span>
                                 </div>
                             </div>
                             <div style={statLabel}>GEAR DUMP:</div>
@@ -664,37 +722,39 @@ export const AdminServerTab: React.FC<AdminServerTabProps> = ({
                                     border: '1px solid #111',
                                 }}
                             >
-                                {['WEAPONS', 'HELMETS', 'ARMOR', 'SHIELDS', 'SHOULDERS', 'PANTS', 'BOOTS'].map((slot) => (
-                                    <div
-                                        key={slot}
-                                        style={{
-                                            flex: 1,
-                                            height: '50px',
-                                            background: '#111',
-                                            border: '1px solid #222',
-                                            borderRadius: '4px',
-                                            display: 'flex',
-                                            flexDirection: 'column',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            textAlign: 'center',
-                                            minWidth: '50px',
-                                        }}
-                                    >
+                                {['WEAPONS', 'HELMETS', 'ARMOR', 'SHIELDS', 'SHOULDERS', 'PANTS', 'BOOTS'].map(
+                                    (slot) => (
                                         <div
+                                            key={slot}
                                             style={{
-                                                fontSize: '6px',
-                                                color: '#444',
-                                                textTransform: 'uppercase',
+                                                flex: 1,
+                                                height: '50px',
+                                                background: '#111',
+                                                border: '1px solid #222',
+                                                borderRadius: '4px',
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                textAlign: 'center',
+                                                minWidth: '50px',
                                             }}
                                         >
-                                            {slot}
+                                            <div
+                                                style={{
+                                                    fontSize: '6px',
+                                                    color: '#444',
+                                                    textTransform: 'uppercase',
+                                                }}
+                                            >
+                                                {slot}
+                                            </div>
+                                            <div style={{ fontSize: '8px', color: '#888', wordBreak: 'break-all' }}>
+                                                {(selectedPlayer.gear as any)[slot] || 'EMPTY'}
+                                            </div>
                                         </div>
-                                        <div style={{ fontSize: '8px', color: '#888', wordBreak: 'break-all' }}>
-                                            {(selectedPlayer.gear as any)[slot] || 'EMPTY'}
-                                        </div>
-                                    </div>
-                                ))}
+                                    ),
+                                )}
                             </div>
                         </Section>
 
@@ -910,6 +970,14 @@ export const AdminServerTab: React.FC<AdminServerTabProps> = ({
                     </div>
                 )}
             </div>
+
+            {isSpectating && selectedPlayer && (
+                <AdminSpectatorModal
+                    playerId={selectedPlayer.id}
+                    playerName={selectedPlayer.name}
+                    onClose={() => setIsSpectating(false)}
+                />
+            )}
         </div>
     );
 };

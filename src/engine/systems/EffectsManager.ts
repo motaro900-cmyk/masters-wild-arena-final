@@ -343,7 +343,7 @@ export class EffectsManager {
         } catch (error) {
             console.error('❌ Freeze frame error:', error);
         }
-     }
+    }
 
     /**
      * Отскок (Knockback) цели при получении урона
@@ -352,11 +352,7 @@ export class EffectsManager {
      * @param isPlayerTarget Находится ли цель на стороне игрока
      * @param type Тип попадания ('HIT' | 'CRIT' | 'HEAVY' | 'ULTIMATE')
      */
-    public knockback(
-        target: any,
-        isPlayerTarget: boolean,
-        type: 'HIT' | 'CRIT' | 'HEAVY' | 'ULTIMATE' = 'HIT'
-    ): void {
+    public knockback(target: any, isPlayerTarget: boolean, type: 'HIT' | 'CRIT' | 'HEAVY' | 'ULTIMATE' = 'HIT'): void {
         try {
             if (!target || target.destroyed) return;
 
@@ -365,12 +361,12 @@ export class EffectsManager {
                 HIT: 12,
                 CRIT: 28,
                 HEAVY: 40,
-                ULTIMATE: 60
+                ULTIMATE: 60,
             };
 
             const distance = knockbackTable[type] || 12;
             const direction = isPlayerTarget ? -1 : 1; // Удар отбрасывает игрока влево (-1), врага вправо (+1)
-            
+
             // Запоминаем базовую x-координату персонажа если ее нет
             if (target.defaultX === undefined) {
                 target.defaultX = target.x;
@@ -384,7 +380,7 @@ export class EffectsManager {
 
             // Анимируем смещение и плавный возврат
             gsap.to(target, {
-                x: target.defaultX + (distance * direction),
+                x: target.defaultX + distance * direction,
                 duration: 0.08,
                 yoyo: true,
                 repeat: 1,
@@ -394,7 +390,7 @@ export class EffectsManager {
                     if (!target.destroyed) {
                         target.x = target.defaultX;
                     }
-                }
+                },
             });
         } catch (error) {
             console.error('❌ Knockback error:', error);
@@ -411,13 +407,13 @@ export class EffectsManager {
      * @param isPlayerTarget Является ли цель игроком
      */
     public applyHitResolution(
-        attackerRole: 'WARRIOR' | 'TANK' | 'ASSASSIN',
-        defenderRole: 'WARRIOR' | 'TANK' | 'ASSASSIN',
-        hitType: 'HIT' | 'CRIT' | 'DODGE' | 'BLOCK' | 'INSTINCT',
+        attackerRole: 'WARRIOR' | 'TANK' | 'ASSASSIN' | 'MAGE' | 'SUPPORT' | undefined,
+        _defenderRole: 'WARRIOR' | 'TANK' | 'ASSASSIN' | 'MAGE' | 'SUPPORT' | undefined,
+        hitType: 'HIT' | 'CRIT' | 'DODGE' | 'BLOCK' | 'INSTINCT' | 'BURN' | 'POISON' | 'FREEZE' | 'STUN',
         targetUnit: any,
         isPlayerTarget: boolean,
         attackerUnit?: any,
-        damage?: number
+        damage?: number,
     ): void {
         try {
             if (!targetUnit || targetUnit.destroyed) return;
@@ -430,7 +426,7 @@ export class EffectsManager {
                     gsap.killTweensOf(targetUnit, { x: true });
                     const direction = isPlayerTarget ? 1 : -1; // Уворот смещает вперед/в сторону
                     gsap.to(targetUnit, {
-                        x: targetUnit.x + (25 * direction),
+                        x: targetUnit.x + 25 * direction,
                         duration: 0.1,
                         yoyo: true,
                         repeat: 1,
@@ -439,7 +435,7 @@ export class EffectsManager {
                             if (!targetUnit.destroyed) {
                                 targetUnit.x = targetUnit.defaultX ?? targetUnit.x;
                             }
-                        }
+                        },
                     });
                 }
                 return;
@@ -455,8 +451,10 @@ export class EffectsManager {
             // 3. Цветная вспышка (Hit Flash)
             let flashColor = 0xff6666; // Дефолтный красный
             if (hitType === 'CRIT') {
-                if (attackerRole === 'TANK') flashColor = 0xffd700; // Золотая вспышка
-                else if (attackerRole === 'ASSASSIN') flashColor = 0xbd00ff; // Фиолетовая вспышка
+                if (attackerRole === 'TANK')
+                    flashColor = 0xffd700; // Золотая вспышка
+                else if (attackerRole === 'ASSASSIN')
+                    flashColor = 0xbd00ff; // Фиолетовая вспышка
                 else flashColor = 0x00ffff; // Бирюзовая вспышка
             }
             const flashSprite = targetUnit.bodySprite || targetUnit;
@@ -470,7 +468,7 @@ export class EffectsManager {
 
             // 5. Тряска экрана (Camera Shake)
             if (hitType === 'CRIT') {
-                const shakeIntensity = attackerRole === 'TANK' ? 14 : (attackerRole === 'ASSASSIN' ? 8 : 10);
+                const shakeIntensity = attackerRole === 'TANK' ? 14 : attackerRole === 'ASSASSIN' ? 8 : 10;
                 this.screenShake(shakeIntensity, 0.93, 300);
             } else {
                 const shakeIntensity = attackerRole === 'TANK' ? 6 : 3;
@@ -479,7 +477,7 @@ export class EffectsManager {
 
             // 6. Стоп-кадр (Freeze Frame) для Критов
             if (hitType === 'CRIT') {
-                const freezeDuration = attackerRole === 'TANK' ? 80 : (attackerRole === 'ASSASSIN' ? 50 : 65);
+                const freezeDuration = attackerRole === 'TANK' ? 80 : attackerRole === 'ASSASSIN' ? 50 : 65;
                 this.freezeFrame(freezeDuration, 0.05);
             }
 
@@ -489,9 +487,9 @@ export class EffectsManager {
             else if (attackerRole === 'ASSASSIN') pColor = 0xda70d6;
             else pColor = 0x80ffdb;
 
-            if (targetUnit.isBurningStatus) pColor = 0xFF5500;
-            else if (targetUnit.isFrozenStatus) pColor = 0x88CCFF;
-            else if (targetUnit.isPoisonedStatus) pColor = 0x44FF44;
+            if (targetUnit.isBurningStatus) pColor = 0xff5500;
+            else if (targetUnit.isFrozenStatus) pColor = 0x88ccff;
+            else if (targetUnit.isPoisonedStatus) pColor = 0x44ff44;
 
             let px = targetUnit.x;
             let py = targetUnit.y - 80;
@@ -502,13 +500,12 @@ export class EffectsManager {
                     py = center.y;
                 }
             }
-            
+
             if (hitType === 'HIT' || hitType === 'CRIT') {
                 this.spawnImpactParticles(damage || 0, px, py, pColor);
             } else {
-                this.particleBurst(px, py, hitType === 'CRIT' ? 16 : 6, pColor, hitType === 'CRIT' ? 220 : 130);
+                this.particleBurst(px, py, 6, pColor, 130);
             }
-
         } catch (error) {
             console.error('❌ applyHitResolution error:', error);
         }
@@ -719,7 +716,11 @@ export class EffectsManager {
         try {
             let px = target.x;
             let py = target.y - 100;
-            if (attacker && typeof attacker.getSocketGlobalPosition === 'function' && typeof (target as any).getSocketGlobalPosition === 'function') {
+            if (
+                attacker &&
+                typeof attacker.getSocketGlobalPosition === 'function' &&
+                typeof (target as any).getSocketGlobalPosition === 'function'
+            ) {
                 const attackPos = attacker.getSocketGlobalPosition('rightHand');
                 const defendPos = (target as any).getSocketGlobalPosition('leftHand');
                 px = (attackPos.x + defendPos.x) / 2;
@@ -830,15 +831,15 @@ export class EffectsManager {
         x: number,
         y: number,
         isPlayer: boolean,
-        attackerRole?: 'WARRIOR' | 'TANK' | 'ASSASSIN',
-        isCrit: boolean = false
+        attackerRole?: 'WARRIOR' | 'TANK' | 'ASSASSIN' | 'MAGE' | 'SUPPORT',
+        isCrit: boolean = false,
     ): void {
         try {
             const container = new PIXI.Container();
             this.pixiApp.effectsLayer.addChild(container);
 
             const slash = new PIXI.Graphics();
-            
+
             let colorOuter = 0x00ffff;
             let colorInner = 0xffffff;
             let pColor = 0x00ffff;
@@ -852,10 +853,11 @@ export class EffectsManager {
                 pColor = 0xffbb00;
                 pCount = 18;
                 pForce = 240;
-                
-                slash.arc(0, 0, 130, -Math.PI / 3, Math.PI / 3)
-                     .stroke({ color: colorOuter, width: 32, cap: 'round' })
-                     .stroke({ color: colorInner, width: 10, cap: 'round' });
+
+                slash
+                    .arc(0, 0, 130, -Math.PI / 3, Math.PI / 3)
+                    .stroke({ color: colorOuter, width: 32, cap: 'round' })
+                    .stroke({ color: colorInner, width: 10, cap: 'round' });
             } else if (attackerRole === 'ASSASSIN') {
                 // Быстрый фиолетовый удар
                 colorOuter = 0xbd00ff;
@@ -863,18 +865,22 @@ export class EffectsManager {
                 pColor = 0xda70d6;
                 pCount = 12;
                 pForce = 180;
-                
+
                 if (isCrit) {
                     // X-Slash двойной крестообразный разрез
-                    slash.moveTo(-60, -60).lineTo(60, 60)
-                         .moveTo(60, -60).lineTo(-60, 60)
-                         .stroke({ color: colorOuter, width: 14, cap: 'round' })
-                         .stroke({ color: colorInner, width: 4, cap: 'round' });
+                    slash
+                        .moveTo(-60, -60)
+                        .lineTo(60, 60)
+                        .moveTo(60, -60)
+                        .lineTo(-60, 60)
+                        .stroke({ color: colorOuter, width: 14, cap: 'round' })
+                        .stroke({ color: colorInner, width: 4, cap: 'round' });
                 } else {
                     // Тонкий быстрый разрез
-                    slash.arc(0, 0, 110, -Math.PI / 4, Math.PI / 4)
-                         .stroke({ color: colorOuter, width: 16, cap: 'round' })
-                         .stroke({ color: colorInner, width: 4, cap: 'round' });
+                    slash
+                        .arc(0, 0, 110, -Math.PI / 4, Math.PI / 4)
+                        .stroke({ color: colorOuter, width: 16, cap: 'round' })
+                        .stroke({ color: colorInner, width: 4, cap: 'round' });
                 }
             } else {
                 // Боец (WARRIOR) - техничный синий удар
@@ -886,26 +892,30 @@ export class EffectsManager {
 
                 if (isCrit) {
                     // X-Slash крестообразный разрез
-                    slash.moveTo(-65, -45).lineTo(65, 45)
-                         .moveTo(65, -45).lineTo(-65, 45)
-                         .stroke({ color: colorOuter, width: 18, cap: 'round' })
-                         .stroke({ color: colorInner, width: 5, cap: 'round' });
+                    slash
+                        .moveTo(-65, -45)
+                        .lineTo(65, 45)
+                        .moveTo(65, -45)
+                        .lineTo(-65, 45)
+                        .stroke({ color: colorOuter, width: 18, cap: 'round' })
+                        .stroke({ color: colorInner, width: 5, cap: 'round' });
                 } else {
                     // Красивая четкая двойная дуга
-                    slash.arc(0, 0, 120, -Math.PI / 4, Math.PI / 4)
-                         .stroke({ color: colorOuter, width: 22, cap: 'round' })
-                         .stroke({ color: colorInner, width: 6, cap: 'round' });
+                    slash
+                        .arc(0, 0, 120, -Math.PI / 4, Math.PI / 4)
+                        .stroke({ color: colorOuter, width: 22, cap: 'round' })
+                        .stroke({ color: colorInner, width: 6, cap: 'round' });
                 }
             }
 
             slash.scale.x = isPlayer ? 1 : -1;
             slash.rotation = isPlayer ? -0.3 : 0.3;
-            
+
             container.addChild(slash);
             // Сдвигаем точку взмаха чуть ближе к цели для лучшего контакта
             container.position.set(x - (isPlayer ? 30 : -30), y - 90);
             container.alpha = 0.95;
-            
+
             // Начинаем с более крупного масштаба (0.65 вместо 0.2), чтобы взмах читался
             container.scale.set(isPlayer ? 0.65 : -0.65);
 
@@ -924,7 +934,7 @@ export class EffectsManager {
                     gsap.killTweensOf(container);
                     gsap.killTweensOf(container.scale);
                     container.destroy({ children: true });
-                }
+                },
             });
 
             // Trigger corresponding particle burst for extra impact juice!
@@ -943,10 +953,10 @@ export class EffectsManager {
     public spawnGhostTrail(target: any, durationMs: number = 320, tint: number = 0xffffff): void {
         try {
             if (!target || !target.bodySprite || !target.bodySprite.texture) return;
-            
+
             // Фильтруем уничтоженные послеобразы
             this.activeTrails = this.activeTrails.filter((t) => !t.destroyed);
-            
+
             // Ограничение: максимум 3 послеобраза одновременно на персонажа
             while (this.activeTrails.length >= 3) {
                 const oldest = this.activeTrails.shift();
@@ -955,7 +965,7 @@ export class EffectsManager {
 
             const ghost = new PIXI.Sprite(target.bodySprite.texture);
             ghost.anchor.set(target.config?.anchors?.feet?.x ?? 0.5, target.config?.anchors?.feet?.y ?? 0.95);
-            
+
             // Match position and scale (base scale and body Container scale combined)
             const isPlayerSide = target.x < 960;
             const offsetDir = isPlayerSide ? -1 : 1;
@@ -966,15 +976,15 @@ export class EffectsManager {
             ghost.y = target.y;
             ghost.scale.set(
                 target.scale.x * (target.bodyContainer?.scale?.x ?? 1),
-                target.scale.y * (target.bodyContainer?.scale?.y ?? 1)
+                target.scale.y * (target.bodyContainer?.scale?.y ?? 1),
             );
             ghost.rotation = target.rotation + (target.bodyContainer?.rotation ?? 0);
             ghost.alpha = 0.6;
             ghost.tint = tint;
-            
+
             this.pixiApp.effectsLayer.addChild(ghost);
             this.activeTrails.push(ghost);
-            
+
             gsap.to(ghost, {
                 alpha: 0,
                 duration: durationMs / 1000,
@@ -983,7 +993,7 @@ export class EffectsManager {
                     gsap.killTweensOf(ghost);
                     ghost.destroy();
                     this.activeTrails = this.activeTrails.filter((t) => t !== ghost);
-                }
+                },
             });
         } catch (error) {
             console.error('❌ Ghost trail spawn error:', error);
@@ -1034,13 +1044,13 @@ export class EffectsManager {
                             gsap.killTweensOf(puff);
                             puff.destroy();
                         }
-                    }
+                    },
                 });
             }
 
             setTimeout(() => {
                 if (container && !container.destroyed) {
-                    container.children.forEach(child => {
+                    container.children.forEach((child) => {
                         gsap.killTweensOf(child);
                     });
                     container.destroy({ children: true });
@@ -1061,18 +1071,18 @@ export class EffectsManager {
                 const spark = new PIXI.Graphics();
                 const length = 10 + Math.random() * 15; // 10-25px
                 const angle = Math.random() * Math.PI * 2;
-                
+
                 spark.beginPath();
                 spark.moveTo(0, 0);
                 spark.lineTo(Math.cos(angle) * length, Math.sin(angle) * length);
-                spark.stroke({ color: 0xFFEE88, width: 2 });
-                
+                spark.stroke({ color: 0xffee88, width: 2 });
+
                 spark.position.set(x, y);
                 this.pixiApp.effectsLayer.addChild(spark);
-                
+
                 const velocityX = Math.cos(angle) * (20 + Math.random() * 30);
                 const velocityY = Math.sin(angle) * (20 + Math.random() * 30);
-                
+
                 gsap.to(spark, {
                     x: x + velocityX,
                     y: y + velocityY,
@@ -1089,7 +1099,7 @@ export class EffectsManager {
                             gsap.killTweensOf(spark);
                             spark.destroy();
                         }
-                    }
+                    },
                 });
             }
         } catch (error) {
@@ -1113,14 +1123,14 @@ export class EffectsManager {
                 circle.beginPath();
                 circle.circle(0, 0, radius);
                 circle.fill({ color: 0x999999, alpha: 0.6 });
-                
+
                 circle.x = (Math.random() - 0.5) * 50;
                 circle.y = (Math.random() - 0.5) * 50 - 40;
                 container.addChild(circle);
-                
+
                 const angle = Math.random() * Math.PI * 2;
                 const distance = 40 + Math.random() * 50;
-                
+
                 gsap.to(circle, {
                     x: circle.x + Math.cos(angle) * distance,
                     y: circle.y + Math.sin(angle) * distance,
@@ -1137,13 +1147,13 @@ export class EffectsManager {
                             gsap.killTweensOf(circle);
                             circle.destroy();
                         }
-                    }
+                    },
                 });
             }
-            
+
             setTimeout(() => {
                 if (container && !container.destroyed) {
-                    container.children.forEach(child => {
+                    container.children.forEach((child) => {
                         gsap.killTweensOf(child);
                     });
                     container.destroy({ children: true });
@@ -1157,14 +1167,14 @@ export class EffectsManager {
     /**
      * Спавн брызг частиц от нанесенного урона
      */
-    public spawnImpactParticles(damage: number, x: number, y: number, color: number = 0xFF5533): void {
+    public spawnImpactParticles(damage: number, x: number, y: number, color: number = 0xff5533): void {
         try {
             let particlesCount = 4;
             let spread = 30;
             let shakeIntensity = 0;
             let shakeDuration = 0;
             let hasFlash = false;
-            
+
             if (damage > 50) {
                 particlesCount = 18;
                 spread = 100;
@@ -1177,18 +1187,18 @@ export class EffectsManager {
                 shakeIntensity = 3;
                 shakeDuration = 150;
             }
-            
+
             if (shakeIntensity > 0) {
                 this.screenShake(shakeIntensity, 0.95, shakeDuration);
             }
-            
+
             if (hasFlash) {
                 const flash = new PIXI.Graphics();
                 flash.beginPath();
                 flash.rect(0, 0, 1920, 1080);
-                flash.fill({ color: 0xFFFFFF, alpha: 0.35 });
+                flash.fill({ color: 0xffffff, alpha: 0.35 });
                 this.pixiApp.effectsLayer.addChild(flash);
-                
+
                 gsap.to(flash, {
                     alpha: 0,
                     duration: 0.05,
@@ -1197,19 +1207,19 @@ export class EffectsManager {
                             gsap.killTweensOf(flash);
                             flash.destroy();
                         }
-                    }
+                    },
                 });
             }
-            
+
             for (let i = 0; i < particlesCount; i++) {
                 const p = new PIXI.Graphics();
                 const radius = 3 + Math.random() * 4;
-                
+
                 p.beginPath();
                 if (Math.random() < 0.5) {
                     p.circle(0, 0, radius);
                 } else {
-                    let rot = Math.PI / 2 * 3;
+                    let rot = (Math.PI / 2) * 3;
                     const step = Math.PI / 5;
                     p.moveTo(0, -radius);
                     for (let j = 0; j < 5; j++) {
@@ -1224,14 +1234,14 @@ export class EffectsManager {
                     }
                     p.closePath();
                 }
-                
+
                 p.fill({ color: color });
                 p.position.set(x, y);
                 this.pixiApp.effectsLayer.addChild(p);
-                
+
                 const angle = Math.random() * Math.PI * 2;
                 const distance = Math.random() * spread;
-                
+
                 gsap.to(p, {
                     x: x + Math.cos(angle) * distance,
                     y: y + Math.sin(angle) * distance,
@@ -1243,7 +1253,7 @@ export class EffectsManager {
                             gsap.killTweensOf(p);
                             p.destroy();
                         }
-                    }
+                    },
                 });
             }
         } catch (error) {
@@ -1257,11 +1267,11 @@ export class EffectsManager {
     public spawnLightningStrike(targetX: number, targetY: number): void {
         try {
             const lightning = new PIXI.Graphics();
-            
+
             const pointsCount = 8 + Math.floor(Math.random() * 5);
             const points: PIXI.Point[] = [];
             points.push(new PIXI.Point(targetX, 0));
-            
+
             for (let i = 1; i < pointsCount; i++) {
                 const fraction = i / pointsCount;
                 const py = targetY * fraction;
@@ -1269,29 +1279,29 @@ export class EffectsManager {
                 points.push(new PIXI.Point(px, py));
             }
             points.push(new PIXI.Point(targetX, targetY));
-            
+
             lightning.beginPath();
             lightning.moveTo(points[0].x, points[0].y);
             for (let i = 1; i < points.length; i++) {
                 lightning.lineTo(points[i].x, points[i].y);
             }
-            lightning.stroke({ color: 0xCCEEFF, width: 3 });
-            
+            lightning.stroke({ color: 0xcceeff, width: 3 });
+
             try {
-                const glow = new GlowFilter({ distance: 15, outerStrength: 3, color: 0xCCEEFF });
+                const glow = new GlowFilter({ distance: 15, outerStrength: 3, color: 0xcceeff });
                 lightning.filters = [glow];
             } catch (e) {
                 console.warn('GlowFilter failed, playing lightning without glow:', e);
             }
-            
+
             this.pixiApp.effectsLayer.addChild(lightning);
-            
+
             const flash = new PIXI.Graphics();
             flash.beginPath();
             flash.rect(0, 0, 1920, 1080);
-            flash.fill({ color: 0xFFFFFF, alpha: 0.4 });
+            flash.fill({ color: 0xffffff, alpha: 0.4 });
             this.pixiApp.effectsLayer.addChild(flash);
-            
+
             gsap.to(flash, {
                 alpha: 0,
                 duration: 0.08,
@@ -1301,9 +1311,9 @@ export class EffectsManager {
                         gsap.killTweensOf(flash);
                         flash.destroy();
                     }
-                }
+                },
             });
-            
+
             gsap.to(lightning, {
                 alpha: 0,
                 duration: 0.15,
@@ -1313,11 +1323,10 @@ export class EffectsManager {
                         gsap.killTweensOf(lightning);
                         lightning.destroy();
                     }
-                }
+                },
             });
-            
+
             this.screenShake(8, 0.9, 300);
-            
         } catch (error) {
             console.error('❌ spawnLightningStrike error:', error);
         }
@@ -1331,13 +1340,13 @@ export class EffectsManager {
         startY: number,
         targetX: number,
         targetY: number,
-        victim: any
+        victim: any,
     ): void {
         try {
             const fireball = new PIXI.Graphics();
             fireball.beginPath();
             fireball.circle(0, 0, 16);
-            fireball.fill({ color: 0xFF5500 });
+            fireball.fill({ color: 0xff5500 });
             fireball.position.set(startX, startY);
             this.pixiApp.effectsLayer.addChild(fireball);
 
@@ -1349,15 +1358,18 @@ export class EffectsManager {
                 ease: 'power1.out',
                 onUpdate: () => {
                     if (fireball.destroyed) return;
-                    
+
                     const particle = new PIXI.Graphics();
                     const radius = 4 + Math.random() * 4;
                     particle.beginPath();
                     particle.circle(0, 0, radius);
-                    particle.fill({ color: 0xFF4400 });
-                    particle.position.set(fireball.x + (Math.random() - 0.5) * 8, fireball.y + (Math.random() - 0.5) * 8);
+                    particle.fill({ color: 0xff4400 });
+                    particle.position.set(
+                        fireball.x + (Math.random() - 0.5) * 8,
+                        fireball.y + (Math.random() - 0.5) * 8,
+                    );
                     this.pixiApp.effectsLayer.addChild(particle);
-                    
+
                     gsap.to(particle, {
                         alpha: 0,
                         duration: 0.3,
@@ -1367,7 +1379,7 @@ export class EffectsManager {
                                 gsap.killTweensOf(particle);
                                 particle.destroy();
                             }
-                        }
+                        },
                     });
                 },
                 onComplete: () => {
@@ -1376,14 +1388,14 @@ export class EffectsManager {
                         fireball.destroy();
                     }
                     this.spawnExplosion(targetX, targetY);
-                    
+
                     if (victim && !victim.destroyed) {
                         victim.isBurningStatus = true;
                         if (typeof victim.showBurnEffect === 'function') {
                             victim.showBurnEffect();
                         }
                         victim.updateTints();
-                        
+
                         setTimeout(() => {
                             if (victim && !victim.destroyed) {
                                 victim.isBurningStatus = false;
@@ -1394,7 +1406,7 @@ export class EffectsManager {
                             }
                         }, 2000);
                     }
-                }
+                },
             });
         } catch (error) {
             console.error('❌ spawnFireballProjectile error:', error);
@@ -1407,19 +1419,19 @@ export class EffectsManager {
     public spawnExplosion(x: number, y: number): void {
         try {
             this.screenShake(4, 0.95, 200);
-            
+
             for (let i = 0; i < 12; i++) {
                 const particle = new PIXI.Graphics();
                 const radius = 6 + Math.random() * 6;
                 particle.beginPath();
                 particle.circle(0, 0, radius);
-                particle.fill({ color: 0xFF5500 });
+                particle.fill({ color: 0xff5500 });
                 particle.position.set(x, y);
                 this.pixiApp.effectsLayer.addChild(particle);
-                
+
                 const angle = (i * Math.PI * 2) / 12 + (Math.random() - 0.5) * 0.2;
                 const distance = 50 + Math.random() * 60;
-                
+
                 gsap.to(particle, {
                     x: x + Math.cos(angle) * distance,
                     y: y + Math.sin(angle) * distance,
@@ -1431,7 +1443,7 @@ export class EffectsManager {
                             gsap.killTweensOf(particle);
                             particle.destroy();
                         }
-                    }
+                    },
                 });
             }
         } catch (error) {

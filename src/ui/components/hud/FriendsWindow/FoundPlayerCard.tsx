@@ -42,7 +42,7 @@ export const FoundPlayerCard: React.FC<FoundPlayerCardProps> = ({ foundPlayer, c
                             height: '100%',
                             borderRadius: 6,
                             overflow: 'hidden',
-                            backgroundImage: `url(${(foundPlayer.фото || foundPlayer.avatar || '').startsWith('http') ? (foundPlayer.фото || foundPlayer.avatar) : resolveAssetPath(`/assets/images/avatars/${(foundPlayer.фото || foundPlayer.avatar || 'панда.webp').replace(/\.(png|webp)$/, '')}.webp`)})`,
+                            backgroundImage: `url(${(foundPlayer.фото || foundPlayer.avatar || '').startsWith('http') ? foundPlayer.фото || foundPlayer.avatar : resolveAssetPath(`/assets/images/avatars/${(foundPlayer.фото || foundPlayer.avatar || 'панда.webp').replace(/\.(png|webp)$/, '')}.webp`)})`,
                             backgroundSize: 'cover',
                             backgroundPosition: 'center',
                         }}
@@ -59,7 +59,9 @@ export const FoundPlayerCard: React.FC<FoundPlayerCardProps> = ({ foundPlayer, c
                             color: colors.accent,
                         }}
                     >
-                        {foundPlayer.имя || foundPlayer.name ? (foundPlayer.имя || foundPlayer.name).split(' ')[0] : 'Мастер'}
+                        {foundPlayer.имя || foundPlayer.name
+                            ? (foundPlayer.имя || foundPlayer.name).split(' ')[0]
+                            : 'Мастер'}
                     </span>
                     <span
                         style={{

@@ -1,12 +1,5 @@
 import { db } from '../utils/firebase';
-import {
-    doc,
-    setDoc,
-    collection,
-    getDocs,
-    deleteDoc,
-    serverTimestamp,
-} from 'firebase/firestore';
+import { doc, setDoc, collection, getDocs, deleteDoc, serverTimestamp } from 'firebase/firestore';
 import { useGameStore } from '../store/useGameStore';
 import { syncService, SyncService } from './SyncService';
 
@@ -18,8 +11,8 @@ export interface PendingResult {
     attackerName: string;
     attackerRating: number;
     defenderResult: 'WIN' | 'LOSS';
-    cupsChange: number;      // изменение кубков защитника
-    goldChange: number;      // золото за защиту (если ghost победил)
+    cupsChange: number; // изменение кубков защитника
+    goldChange: number; // золото за защиту (если ghost победил)
     timestamp: any;
 }
 
@@ -62,16 +55,14 @@ class PlayerSnapshotServiceClass {
             const selectedHeroId = state.selectedHeroId || 'panda';
             const equipment = state.heroEquipment?.[selectedHeroId] || {};
             const stats = state.getCalculatedStats?.(selectedHeroId)?.total || {};
-            const heroConfig = (await import('../configs/HeroesConfig')).HEROES_DB
-                .find((h: any) => h.id === selectedHeroId);
             const vkUser = state.vkUser;
 
             const snapshotData = {
                 id: userId,
                 vkId: vkUser ? Number(vkUser.id) : 0,
-                имя: state.name || (vkUser ? (vkUser.first_name || vkUser.firstName || '') : 'Мастер'),
-                имяВК: vkUser ? (vkUser.first_name || vkUser.firstName || '') : '',
-                фамилияВК: vkUser ? (vkUser.last_name || vkUser.lastName || '') : '',
+                имя: state.name || (vkUser ? vkUser.first_name || vkUser.firstName || '' : 'Мастер'),
+                имяВК: vkUser ? vkUser.first_name || vkUser.firstName || '' : '',
+                фамилияВК: vkUser ? vkUser.last_name || vkUser.lastName || '' : '',
                 ссылкаВК: vkUser ? `https://vk.com/id${vkUser.id}` : '',
                 уровень: state.level || 1,
                 золото: state.gold || 0,
@@ -80,7 +71,7 @@ class PlayerSnapshotServiceClass {
                 былВСети: serverTimestamp(),
                 активныйЭкран: state.activeScreen || 'MAIN_MENU',
                 герой: selectedHeroId,
-                фото: state.avatar || (vkUser ? (vkUser.photo200 || vkUser.photo || '') : ''),
+                фото: state.avatar || (vkUser ? vkUser.photo200 || vkUser.photo || '' : ''),
                 снаряжение: {
                     WEAPONS: equipment.WEAPONS || null,
                     HELMETS: equipment.HELMETS || null,
@@ -116,7 +107,7 @@ class PlayerSnapshotServiceClass {
             if (snapshot.empty) return null;
 
             const results: PendingResult[] = snapshot.docs
-                .map((d) => ({ id: d.id, ...d.data() } as PendingResult))
+                .map((d) => ({ id: d.id, ...d.data() }) as PendingResult)
                 // Берём только последние MAX_OFFLINE_ATTACKS атак
                 .slice(0, MAX_OFFLINE_ATTACKS);
 

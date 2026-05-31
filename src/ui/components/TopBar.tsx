@@ -3,7 +3,8 @@ import { useGameStore } from '../../store/useGameStore';
 import { EditorPanel } from './EditorPanel';
 
 export const TopBar: React.FC = () => {
-    const store = useGameStore();
+    const gold = useGameStore((state) => state.gold);
+    const crystals = useGameStore((state) => state.crystals);
 
     return (
         <EditorPanel id="TopBar" className="absolute top-[30px] right-[160px] flex gap-4">
@@ -12,13 +13,13 @@ export const TopBar: React.FC = () => {
                 <div className="flex items-center gap-2">
                     <span className="text-2xl drop-shadow-md">💰</span>
                     <span className="text-[#ffcc00] font-black text-2xl text-stroke">
-                        {store.gold?.toLocaleString('ru-RU') || '0'}
+                        {gold?.toLocaleString('ru-RU') || '0'}
                     </span>
                 </div>
                 <div className="flex items-center gap-2">
                     <span className="text-2xl drop-shadow-md">💎</span>
                     <span className="text-[#00ffff] font-black text-2xl text-stroke">
-                        {store.crystals?.toLocaleString('ru-RU') || '0'}
+                        {crystals?.toLocaleString('ru-RU') || '0'}
                     </span>
                 </div>
             </div>

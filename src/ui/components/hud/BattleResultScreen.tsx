@@ -9,26 +9,56 @@ const RESOURCE_METADATA: Record<string, { name: string; image: string; rarity: s
     coal: { name: 'Уголь', image: '/assets/images/resources/coal.png', rarity: 'COMMON' },
     steel_bars: { name: 'Стальной слиток', image: '/assets/images/resources/steel_bar.png', rarity: 'RARE' },
     runic_shards: { name: 'Рунический осколок', image: '/assets/images/resources/runic_shard.png', rarity: 'EPIC' },
-    ancient_compass: { name: 'Древний компас', image: '/assets/images/resources/gemini-0-5-25-00-Photoroom (1)-export.png', rarity: 'RARE' },
-    astral_crystal: { name: 'Астральный кристалл', image: '/assets/images/resources/gemini-02-5-25-00-Photoroom (1)-export.png', rarity: 'RARE' },
-    void_sphere: { name: 'Сфера бездны', image: '/assets/images/resources/gemini-202-05-25-00-Photoroom (1)-export.png', rarity: 'EPIC' },
-    golden_sprout: { name: 'Золотой росток', image: '/assets/images/resources/gemini-2026-05-25-00-Photoroom (1)-export.png', rarity: 'EPIC' },
-    dragon_scale: { name: 'Чешуя дракона', image: '/assets/images/resources/gemini-2026-05-25-002-Photoroom (1)-export.png', rarity: 'LEGENDARY' },
-    lava_heart: { name: 'Сердце лавы', image: '/assets/images/resources/gemini-2026-05-25-0012-Photoroom (1)-export.png', rarity: 'LEGENDARY' },
+    ancient_compass: {
+        name: 'Древний компас',
+        image: '/assets/images/resources/gemini-0-5-25-00-Photoroom (1)-export.png',
+        rarity: 'RARE',
+    },
+    astral_crystal: {
+        name: 'Астральный кристалл',
+        image: '/assets/images/resources/gemini-02-5-25-00-Photoroom (1)-export.png',
+        rarity: 'RARE',
+    },
+    void_sphere: {
+        name: 'Сфера бездны',
+        image: '/assets/images/resources/gemini-202-05-25-00-Photoroom (1)-export.png',
+        rarity: 'EPIC',
+    },
+    golden_sprout: {
+        name: 'Золотой росток',
+        image: '/assets/images/resources/gemini-2026-05-25-00-Photoroom (1)-export.png',
+        rarity: 'EPIC',
+    },
+    dragon_scale: {
+        name: 'Чешуя дракона',
+        image: '/assets/images/resources/gemini-2026-05-25-002-Photoroom (1)-export.png',
+        rarity: 'LEGENDARY',
+    },
+    lava_heart: {
+        name: 'Сердце лавы',
+        image: '/assets/images/resources/gemini-2026-05-25-0012-Photoroom (1)-export.png',
+        rarity: 'LEGENDARY',
+    },
 };
 
 const getLootRarityColor = (rarity: string) => {
     switch (rarity) {
-        case 'COMMON': return '#b0c4de';
-        case 'UNCOMMON': return '#4ade80';
-        case 'RARE': return '#3b82f6';
-        case 'EPIC': return '#a855f7';
-        case 'LEGENDARY': return '#f97316';
-        case 'MYTHIC': return '#ef4444';
-        default: return '#ffffff';
+        case 'COMMON':
+            return '#b0c4de';
+        case 'UNCOMMON':
+            return '#4ade80';
+        case 'RARE':
+            return '#3b82f6';
+        case 'EPIC':
+            return '#a855f7';
+        case 'LEGENDARY':
+            return '#f97316';
+        case 'MYTHIC':
+            return '#ef4444';
+        default:
+            return '#ffffff';
     }
 };
-
 
 export interface BattleResultData {
     isVictory: boolean;
@@ -387,9 +417,7 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
                                 }}
                             >
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                    <span style={{ fontSize: '24px' }}>
-                                        {stat.icon}
-                                    </span>
+                                    <span style={{ fontSize: '24px' }}>{stat.icon}</span>
                                     <span
                                         style={{
                                             color: '#ffffff',
@@ -449,7 +477,7 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
                                 border: '1px solid rgba(255,255,255,0.2)',
                                 overflow: 'hidden',
                                 position: 'relative',
-                             }}
+                            }}
                         >
                             <div
                                 style={{
@@ -468,7 +496,13 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
 
                     {/* НАГРАДЫ ОБИТЕЛИ (ТОЛЬКО PVE ПОБЕДА) */}
                     {battleMode === 'PVE' && isVictory && pveLoot && (
-                        <div style={{ marginTop: '20px', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '15px' }}>
+                        <div
+                            style={{
+                                marginTop: '20px',
+                                borderTop: '1px solid rgba(255,255,255,0.08)',
+                                paddingTop: '15px',
+                            }}
+                        >
                             <div
                                 style={{
                                     fontSize: '14px',
@@ -485,19 +519,38 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
                             </div>
                             {(() => {
                                 const activeDrops = Object.entries(pveLoot).filter(
-                                    ([key, val]) => typeof val === 'number' && val > 0 && key !== 'gold' && key !== 'xp' && key !== 'crystals'
+                                    ([key, val]) =>
+                                        typeof val === 'number' &&
+                                        val > 0 &&
+                                        key !== 'gold' &&
+                                        key !== 'xp' &&
+                                        key !== 'crystals',
                                 );
 
                                 if (activeDrops.length === 0) {
                                     return (
-                                        <div style={{ textAlign: 'center', fontSize: '12px', color: 'rgba(255,255,255,0.4)', fontStyle: 'italic' }}>
+                                        <div
+                                            style={{
+                                                textAlign: 'center',
+                                                fontSize: '12px',
+                                                color: 'rgba(255,255,255,0.4)',
+                                                fontStyle: 'italic',
+                                            }}
+                                        >
                                             Ресурсы не выпали
                                         </div>
                                     );
                                 }
 
                                 return (
-                                    <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                                    <div
+                                        style={{
+                                            display: 'flex',
+                                            gap: '12px',
+                                            justifyContent: 'center',
+                                            flexWrap: 'wrap',
+                                        }}
+                                    >
                                         {activeDrops.map(([key, count]) => {
                                             const meta = RESOURCE_METADATA[key];
                                             if (!meta) return null;

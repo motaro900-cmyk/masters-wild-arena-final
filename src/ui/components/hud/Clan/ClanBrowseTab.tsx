@@ -132,6 +132,7 @@ interface ClanBrowseTabProps {
 export const ClanBrowseTab: React.FC<ClanBrowseTabProps> = ({ colors, playerTrophies, onJoin, onCreateClick }) => {
     const [searchQuery, setSearchQuery] = useState('');
     const [sortBy, setSortBy] = useState<'TROPHIES' | 'LEVEL' | 'MEMBERS'>('TROPHIES');
+    const [isSortOpen, setIsSortOpen] = useState(false);
 
     const filteredClans = useMemo(() => {
         return MOCK_CLANS.filter((c) => c.name.toLowerCase().includes(searchQuery.toLowerCase())).sort((a, b) => {
@@ -179,23 +180,98 @@ export const ClanBrowseTab: React.FC<ClanBrowseTabProps> = ({ colors, playerTrop
                     />
                 </div>
 
-                <select
-                    value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value as any)}
-                    style={{
-                        padding: '12px',
-                        background: colors.card,
-                        border: `1px solid ${colors.border}`,
-                        borderRadius: '12px',
-                        color: colors.text,
-                        outline: 'none',
-                        cursor: 'pointer',
-                    }}
-                >
-                    <option value="TROPHIES">По трофеям</option>
-                    <option value="LEVEL">По уровню</option>
-                    <option value="MEMBERS">По участникам</option>
-                </select>
+                <div style={{ position: 'relative' }}>
+                    <div
+                        onClick={() => setIsSortOpen(!isSortOpen)}
+                        style={{
+                            padding: '12px 24px',
+                            background: colors.card,
+                            border: `1px solid ${colors.border}`,
+                            borderRadius: '12px',
+                            color: colors.accent || '#f0c040',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '12px',
+                            userSelect: 'none',
+                            fontSize: '15px',
+                            fontWeight: 700,
+                            minWidth: '160px',
+                            justifyContent: 'space-between',
+                        }}
+                    >
+                        <span>
+                            {sortBy === 'TROPHIES' && 'По трофеям'}
+                            {sortBy === 'LEVEL' && 'По уровню'}
+                            {sortBy === 'MEMBERS' && 'По участникам'}
+                        </span>
+                        <span
+                            style={{
+                                fontSize: '10px',
+                                transition: 'transform 0.2s',
+                                transform: isSortOpen ? 'rotate(180deg)' : 'none',
+                                opacity: 0.8,
+                            }}
+                        >
+                            ▼
+                        </span>
+                    </div>
+
+                    {isSortOpen && (
+                        <>
+                            <div
+                                onClick={() => setIsSortOpen(false)}
+                                style={{ position: 'fixed', inset: 0, zIndex: 999 }}
+                            />
+                            <div
+                                style={{
+                                    position: 'absolute',
+                                    top: 'calc(100% + 6px)',
+                                    right: 0,
+                                    width: '180px',
+                                    background: '#1c150c',
+                                    border: `1.5px solid ${colors.border}`,
+                                    borderRadius: '12px',
+                                    boxShadow: '0 10px 25px rgba(0,0,0,0.8)',
+                                    zIndex: 1000,
+                                    overflow: 'hidden',
+                                    padding: '4px 0',
+                                }}
+                            >
+                                {[
+                                    { value: 'TROPHIES', label: 'По трофеям' },
+                                    { value: 'LEVEL', label: 'По уровню' },
+                                    { value: 'MEMBERS', label: 'По участникам' },
+                                ].map((opt) => (
+                                    <div
+                                        key={opt.value}
+                                        onClick={() => {
+                                            setSortBy(opt.value as any);
+                                            setIsSortOpen(false);
+                                        }}
+                                        style={{
+                                            padding: '10px 16px',
+                                            color: sortBy === opt.value ? colors.accent || '#f0c040' : colors.text,
+                                            background: sortBy === opt.value ? 'rgba(240,192,64,0.1)' : 'transparent',
+                                            cursor: 'pointer',
+                                            fontSize: '14px',
+                                            fontWeight: sortBy === opt.value ? 700 : 500,
+                                        }}
+                                        onMouseEnter={(e) => {
+                                            e.currentTarget.style.background = 'rgba(240,192,64,0.15)';
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            e.currentTarget.style.background =
+                                                sortBy === opt.value ? 'rgba(240,192,64,0.1)' : 'transparent';
+                                        }}
+                                    >
+                                        {opt.label}
+                                    </div>
+                                ))}
+                            </div>
+                        </>
+                    )}
+                </div>
 
                 <motion.button
                     whileHover={{ scale: 1.05 }}

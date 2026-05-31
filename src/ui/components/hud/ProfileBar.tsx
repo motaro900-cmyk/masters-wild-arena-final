@@ -10,7 +10,7 @@ interface ProfileBarProps {
 export const ProfileBar: React.FC<ProfileBarProps> = ({ onOpenProfile }) => {
     const store = useGameStore();
     const avatar = store.avatar || 'панда.png';
-    const frame = store.frame || 'Рамка 1.png';
+    const frame = store.frame || 'harvest_wheat_frame.webp';
     const trophies = store.trophies ?? 0;
     const exp = store.exp ?? 0;
     const level = store.level ?? 1;

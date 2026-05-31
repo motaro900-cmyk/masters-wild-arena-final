@@ -41,7 +41,7 @@ export const calculateBattleRewards = (
     isVictory: boolean,
     playerRating: number,
     opponentRating: number,
-    isWarmup: boolean = false
+    isWarmup: boolean = false,
 ) => {
     if (isWarmup) {
         return { gold: 0, xp: 0, trophies: 0 };

@@ -30,7 +30,10 @@ export const TopPanel: React.FC = () => {
                 <div className="ml-1 z-10">
                     <AvatarFrame
                         avatarFilename={useGameStore.getState().avatar.replace('.png', '')}
-                        frameFilename={(useGameStore.getState().frame || 'Рамка 1.png').replace('.png', '')}
+                        frameFilename={(useGameStore.getState().frame || 'harvest_wheat_frame.webp').replace(
+                            /\.(png|webp)$/,
+                            '',
+                        )}
                         size={64}
                     />
                 </div>

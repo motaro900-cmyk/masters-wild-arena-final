@@ -20,21 +20,30 @@ const shouldFlipEnemy = (src: string): boolean => {
     return !(s.includes('panther') || (s.includes('wolf') && !s.includes('wolf_knight')));
 };
 
-
-
 interface MatchmakingOverlayProps {
     onFound: (opponent: any) => void;
     onCancel: () => void;
 }
 
 export const MatchmakingOverlay: React.FC<MatchmakingOverlayProps> = ({ onFound, onCancel }) => {
-    const { name, rating, vipLevel, selectedHeroId, level, getCalculatedStats, avatar, vkUser, isMobile, equippedSkins } = useGameStore();
+    const {
+        name,
+        rating,
+        vipLevel,
+        selectedHeroId,
+        level,
+        getCalculatedStats,
+        avatar,
+        vkUser,
+        isMobile,
+        equippedSkins,
+    } = useGameStore();
 
     const playerName = name && name !== 'Мастер' ? name : vkUser?.first_name || vkUser?.firstName || 'Мастер';
     const playerAvatarSrc =
         avatar && avatar.startsWith('http')
             ? avatar
-            : vkUser?.photo_200 || vkUser?.photo || '/assets/images/avatars/панда.webp';
+            : vkUser?.photo_200 || vkUser?.photo || '/assets/images/avatars/panda.webp';
 
     const [state, setState] = useState<'SEARCHING' | 'FOUND'>('SEARCHING');
     const [seconds, setSeconds] = useState(0);
@@ -50,7 +59,15 @@ export const MatchmakingOverlay: React.FC<MatchmakingOverlayProps> = ({ onFound,
         level: number;
         equipment: Record<string, string | null>;
         winRate: number;
-        stats: { hp: number; attack: number; defense: number; speed: number; crit: number; evasion?: number; critChance?: number };
+        stats: {
+            hp: number;
+            attack: number;
+            defense: number;
+            speed: number;
+            crit: number;
+            evasion?: number;
+            critChance?: number;
+        };
     } | null>(null);
 
     // isBot — скрыто от UI, только для логики после боя
@@ -62,13 +79,15 @@ export const MatchmakingOverlay: React.FC<MatchmakingOverlayProps> = ({ onFound,
 
     const playerHero = {
         ...baseHeroConfig,
-        image: activeSkin && activeSkin.image ? activeSkin.image : baseHeroConfig.image
+        image: activeSkin && activeSkin.image ? activeSkin.image : baseHeroConfig.image,
     };
 
     const playerRank = getRankInfo(rating);
 
     useEffect(() => {
         if (state !== 'SEARCHING') return;
+
+        let isCancelled = false;
 
         const interval = setInterval(() => {
             setSeconds((s) => {
@@ -91,6 +110,7 @@ export const MatchmakingOverlay: React.FC<MatchmakingOverlayProps> = ({ onFound,
         const searchPromise = matchmakingService.findOpponent(myUserId, rating, level, myWinRate);
 
         Promise.all([searchPromise, minDelayPromise]).then(([found]) => {
+            if (isCancelled) return;
             setOpponent({
                 id: found.id,
                 name: found.name,
@@ -117,9 +137,10 @@ export const MatchmakingOverlay: React.FC<MatchmakingOverlayProps> = ({ onFound,
         });
 
         return () => {
+            isCancelled = true;
             clearInterval(interval);
         };
-    }, [state, rating, selectedHeroId, getCalculatedStats]);
+    }, [state, rating, selectedHeroId, getCalculatedStats, level]);
 
     const onFoundRef = React.useRef(onFound);
     useEffect(() => {

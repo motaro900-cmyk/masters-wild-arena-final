@@ -6,8 +6,10 @@ interface DragOverlayLayerProps {
 }
 
 export const DragOverlayLayer: React.FC<DragOverlayLayerProps> = ({ activeId, activeItemData }) => {
+    const container = typeof document !== 'undefined' ? document.getElementById('hero-scene-root') : null;
+
     return (
-        <DragOverlay dropAnimation={null}>
+        <DragOverlay dropAnimation={null} portalContainer={container || undefined}>
             {activeId && activeItemData ? (
                 <div
                     style={{
@@ -47,3 +49,5 @@ export const DragOverlayLayer: React.FC<DragOverlayLayerProps> = ({ activeId, ac
         </DragOverlay>
     );
 };
+
+

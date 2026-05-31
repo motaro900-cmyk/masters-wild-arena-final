@@ -709,7 +709,7 @@ export const DailyGiftWindow: React.FC<DailyGiftWindowProps> = ({ onClose }) => 
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
-                                cursor: (isSpinning || !isFreeSpinAvailable) ? 'default' : 'pointer',
+                                cursor: isSpinning || !isFreeSpinAvailable ? 'default' : 'pointer',
                                 zIndex: 12,
                                 boxShadow: '0 4px 10px rgba(0,0,0,0.8)',
                             }}
@@ -754,7 +754,9 @@ export const DailyGiftWindow: React.FC<DailyGiftWindowProps> = ({ onClose }) => 
                             </motion.button>
                         ) : (
                             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
-                                <p style={{ color: '#888', fontSize: '14px', margin: '4px 0 0 0' }}>Вы уже крутили колесо сегодня!</p>
+                                <p style={{ color: '#888', fontSize: '14px', margin: '4px 0 0 0' }}>
+                                    Вы уже крутили колесо сегодня!
+                                </p>
                                 {wheelTimeLeft && (
                                     <div
                                         style={{
@@ -767,7 +769,9 @@ export const DailyGiftWindow: React.FC<DailyGiftWindowProps> = ({ onClose }) => 
                                             alignItems: 'center',
                                         }}
                                     >
-                                        <span style={{ fontSize: '11px', color: '#a08860' }}>БЕСПЛАТНЫЙ СПИН ЧЕРЕЗ:</span>
+                                        <span style={{ fontSize: '11px', color: '#a08860' }}>
+                                            БЕСПЛАТНЫЙ СПИН ЧЕРЕЗ:
+                                        </span>
                                         <span
                                             style={{
                                                 fontSize: '18px',
@@ -814,10 +818,7 @@ export const DailyGiftWindow: React.FC<DailyGiftWindowProps> = ({ onClose }) => 
                 </div>
             )}
 
-            <GiftCongratsModal
-                rewardClaimed={rewardClaimed}
-                onClose={() => setRewardClaimed(null)}
-            />
+            <GiftCongratsModal rewardClaimed={rewardClaimed} onClose={() => setRewardClaimed(null)} />
         </div>
     );
 };

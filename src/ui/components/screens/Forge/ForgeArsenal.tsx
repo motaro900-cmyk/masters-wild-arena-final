@@ -3,13 +3,7 @@ import { motion } from 'framer-motion';
 import { ITEMS_DATABASE, calculateItemPower } from '../../../../game/configs/ItemsConfig';
 import { audioService } from '../../../../services/AudioService';
 import { AssetsMap } from '../../../../configs/AssetsMap';
-import {
-    styles,
-    rarityColors,
-    categories,
-    categoryIcons,
-    getPluralItems,
-} from './ForgeStyles';
+import { styles, rarityColors, categories, categoryIcons, getPluralItems } from './ForgeStyles';
 
 interface ForgeArsenalProps {
     inventory: any[];
@@ -83,9 +77,7 @@ export const ForgeArsenal: React.FC<ForgeArsenalProps> = ({
                         style={{
                             ...styles.categoryBtn,
                             border:
-                                activeCategory === cat.id
-                                    ? '1.5px solid #f0c040'
-                                    : '1px solid rgba(255,255,255,0.1)',
+                                activeCategory === cat.id ? '1.5px solid #f0c040' : '1px solid rgba(255,255,255,0.1)',
                             background: activeCategory === cat.id ? 'rgba(240,192,64,0.15)' : 'rgba(0,0,0,0.4)',
                             boxShadow: activeCategory === cat.id ? '0 0 10px rgba(240,192,64,0.2)' : 'none',
                         }}
@@ -125,9 +117,7 @@ export const ForgeArsenal: React.FC<ForgeArsenalProps> = ({
                                     style={{
                                         ...styles.itemCard,
                                         border: isSelected ? `2px solid #f0c040` : `1px solid ${rarityColor}33`,
-                                        background: isSelected
-                                            ? 'rgba(240,192,64,0.12)'
-                                            : 'rgba(20, 15, 10, 0.5)',
+                                        background: isSelected ? 'rgba(240,192,64,0.12)' : 'rgba(20, 15, 10, 0.5)',
                                         boxShadow: isSelected ? `0 0 15px ${rarityColor}55` : 'none',
                                     }}
                                 >
@@ -175,11 +165,7 @@ export const ForgeArsenal: React.FC<ForgeArsenalProps> = ({
             {/* Сортировка */}
             <div style={styles.sortSelector}>
                 <span style={{ fontSize: 11, opacity: 0.5, fontWeight: 800 }}>СОРТИРОВКА:</span>
-                <select
-                    value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value as any)}
-                    style={styles.dropdown}
-                >
+                <select value={sortBy} onChange={(e) => setSortBy(e.target.value as any)} style={styles.dropdown}>
                     <option value="RARITY">ПО РЕДКОСТИ</option>
                     <option value="LEVEL">ПО УРОВНЮ</option>
                     <option value="POWER">ПО МОЩНОСТИ</option>

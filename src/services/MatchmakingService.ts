@@ -1,18 +1,11 @@
 import { db } from '../utils/firebase';
-import {
-    collection,
-    getDocs,
-    query,
-    where,
-    orderBy,
-    limit,
-} from 'firebase/firestore';
+import { collection, getDocs, query, where, orderBy, limit } from 'firebase/firestore';
 import { HEROES_DB } from '../configs/HeroesConfig';
 import { ITEMS_DATABASE } from '../game/configs/ItemsConfig';
 import { getRandomBotName } from '../data/botNames';
 import { getRankInfo } from '../configs/RankSystem';
 
-const SEARCH_TIMEOUT_MS = 10000;        // 10 секунд поиск реального игрока
+const SEARCH_TIMEOUT_MS = 10000; // 10 секунд поиск реального игрока
 const ATTACK_COOLDOWN_MS = 60 * 60 * 1000; // 1 час — нельзя атаковать одного игрока
 
 export interface MatchOpponent {
@@ -34,19 +27,24 @@ export interface MatchOpponent {
         critChance: number;
     };
     winRate: number;
-    isBot: boolean;          // true — бот, false — реальный игрок
-    realUserId?: string;     // VK ID реального игрока (если не бот)
+    isBot: boolean; // true — бот, false — реальный игрок
+    realUserId?: string; // VK ID реального игрока (если не бот)
 }
 
 const generateOpponentEquipment = (oppLevel: number): Record<string, string | null> => {
     const equip: Record<string, string | null> = {
-        WEAPONS: null, HELMETS: null, ARMOR: null,
-        SHIELDS: null, SHOULDERS: null, PANTS: null, BOOTS: null,
+        WEAPONS: null,
+        HELMETS: null,
+        ARMOR: null,
+        SHIELDS: null,
+        SHOULDERS: null,
+        PANTS: null,
+        BOOTS: null,
     };
     const slots = ['WEAPONS', 'HELMETS', 'ARMOR', 'SHIELDS', 'SHOULDERS', 'PANTS', 'BOOTS'];
     slots.forEach((slot) => {
         const candidates = Object.values(ITEMS_DATABASE).filter(
-            (item: any) => item.subTab === slot && item.requiredLevel <= oppLevel
+            (item: any) => item.subTab === slot && item.requiredLevel <= oppLevel,
         );
         if (candidates.length > 0) {
             candidates.sort((a: any, b: any) => b.requiredLevel - a.requiredLevel);
@@ -58,11 +56,7 @@ const generateOpponentEquipment = (oppLevel: number): Record<string, string | nu
     return equip;
 };
 
-const buildStatsFromEquipment = (
-    heroId: string,
-    level: number,
-    equipment: Record<string, string | null>
-) => {
+const buildStatsFromEquipment = (heroId: string, level: number, equipment: Record<string, string | null>) => {
     const heroData = HEROES_DB.find((h) => h.id === heroId) || HEROES_DB[0];
     const levelMult = 1 + (level - 1) * 0.05;
     const total = {
@@ -99,7 +93,7 @@ class MatchmakingServiceClass {
         myUserId: string,
         myRating: number,
         myLevel: number,
-        myWinRate: number
+        myWinRate: number,
     ): Promise<MatchOpponent> {
         const realOpponent = await this.searchRealPlayer(myUserId, myRating, myWinRate);
         if (realOpponent) {
@@ -115,20 +109,14 @@ class MatchmakingServiceClass {
     private async searchRealPlayer(
         myUserId: string,
         myRating: number,
-        myWinRate: number
+        myWinRate: number,
     ): Promise<MatchOpponent | null> {
         const searchPromise = this.queryFirebase(myUserId, myRating, myWinRate);
-        const timeoutPromise = new Promise<null>((resolve) =>
-            setTimeout(() => resolve(null), SEARCH_TIMEOUT_MS)
-        );
+        const timeoutPromise = new Promise<null>((resolve) => setTimeout(() => resolve(null), SEARCH_TIMEOUT_MS));
         return Promise.race([searchPromise, timeoutPromise]);
     }
 
-    private async queryFirebase(
-        myUserId: string,
-        myRating: number,
-        myWinRate: number
-    ): Promise<MatchOpponent | null> {
+    private async queryFirebase(myUserId: string, myRating: number, myWinRate: number): Promise<MatchOpponent | null> {
         try {
             const playersRef = collection(db, 'пользователи');
             // Ищем игроков в диапазоне ±100 кубков
@@ -140,14 +128,14 @@ class MatchmakingServiceClass {
                 where('рейтинг', '>=', minRating),
                 where('рейтинг', '<=', maxRating),
                 orderBy('рейтинг'),
-                limit(20)
+                limit(20),
             );
 
             const snapshot = await getDocs(q);
             if (snapshot.empty) return null;
 
             const candidates = snapshot.docs
-                .map((d) => ({ id: d.id, ...d.data() } as any))
+                .map((d) => ({ id: d.id, ...d.data() }) as any)
                 .filter((p) => {
                     // Исключаем себя (сравнение с учетом префиксов и без)
                     const cleanPId = p.id.replace('VK-', '').replace('GUEST-', '');
@@ -159,7 +147,7 @@ class MatchmakingServiceClass {
                     // Исключаем тестовые имена
                     const name = p.имя || p.name || '';
                     const lowerName = name.toLowerCase();
-                    if (['мастер', 'разработчик', 'test'].some(w => lowerName.includes(w))) {
+                    if (['мастер', 'разработчик', 'test'].some((w) => lowerName.includes(w))) {
                         return false;
                     }
 
@@ -211,7 +199,9 @@ class MatchmakingServiceClass {
             HELMETS: snapshot.геройСнаряжение?.helm || null,
             ARMOR: snapshot.геройСнаряжение?.armor || null,
             SHIELDS: snapshot.геройСнаряжение?.shield || null,
-            SHOULDERS: null, PANTS: null, BOOTS: null,
+            SHOULDERS: null,
+            PANTS: null,
+            BOOTS: null,
         };
 
         const level = snapshot.уровень || snapshot.лев || snapshot.level || 1;
@@ -256,7 +246,7 @@ class MatchmakingServiceClass {
 
         return {
             id: randomHero.id,
-            name: getRandomBotName(),      // Реалистичное русское имя
+            name: getRandomBotName(), // Реалистичное русское имя
             rating: botRating,
             level: botLevel,
             heroId: randomHero.id,

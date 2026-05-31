@@ -32,26 +32,40 @@ export const TalentsView = ({ hero }: any) => {
             }}
         >
             {/* HEADER */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
-                <div style={{
-                    background: 'rgba(0,0,0,0.6)',
-                    padding: '15px 35px',
-                    borderRadius: '20px',
-                    backdropFilter: 'blur(10px)',
-                    border: '2px solid rgba(240,192,64,0.3)',
-                    boxShadow: '0 0 35px rgba(0,0,0,0.6)',
-                }}>
-                    <h2 style={{
-                        color: '#fff',
-                        fontSize: '36px',
-                        margin: 0,
-                        fontFamily: "'Cinzel', 'Philosopher', serif",
-                        textShadow: '0 4px 15px rgba(0,0,0,0.8)',
-                        letterSpacing: '2px',
-                    }}>
+            <div
+                style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}
+            >
+                <div
+                    style={{
+                        background: 'rgba(0,0,0,0.6)',
+                        padding: '15px 35px',
+                        borderRadius: '20px',
+                        backdropFilter: 'blur(10px)',
+                        border: '2px solid rgba(240,192,64,0.3)',
+                        boxShadow: '0 0 35px rgba(0,0,0,0.6)',
+                    }}
+                >
+                    <h2
+                        style={{
+                            color: '#fff',
+                            fontSize: '36px',
+                            margin: 0,
+                            fontFamily: "'Cinzel', 'Philosopher', serif",
+                            textShadow: '0 4px 15px rgba(0,0,0,0.8)',
+                            letterSpacing: '2px',
+                        }}
+                    >
                         ДРЕВО ТАЛАНТОВ
                     </h2>
-                    <p style={{ color: 'rgba(255,255,255,0.7)', margin: 0, fontSize: '14px', fontWeight: 600, letterSpacing: '1px' }}>
+                    <p
+                        style={{
+                            color: 'rgba(255,255,255,0.7)',
+                            margin: 0,
+                            fontSize: '14px',
+                            fontWeight: 600,
+                            letterSpacing: '1px',
+                        }}
+                    >
                         Улучшайте способности вашего героя
                     </p>
                 </div>
@@ -74,25 +88,29 @@ export const TalentsView = ({ hero }: any) => {
                         justifyContent: 'center',
                     }}
                 >
-                    <span style={{
-                        color: '#fff',
-                        fontSize: '48px',
-                        fontWeight: 950,
-                        fontFamily: "'Cinzel', serif",
-                        textShadow: '0 0 25px rgba(240,192,64,0.6)',
-                        lineHeight: 1,
-                    }}>
+                    <span
+                        style={{
+                            color: '#fff',
+                            fontSize: '48px',
+                            fontWeight: 950,
+                            fontFamily: "'Cinzel', serif",
+                            textShadow: '0 0 25px rgba(240,192,64,0.6)',
+                            lineHeight: 1,
+                        }}
+                    >
                         {String(availablePoints ?? 0)}
                     </span>
-                    <span style={{
-                        color: '#f0c040',
-                        fontSize: '15px',
-                        fontWeight: 900,
-                        letterSpacing: '1px',
-                        fontFamily: "'Cinzel', serif",
-                        textTransform: 'uppercase',
-                        marginTop: '4px',
-                    }}>
+                    <span
+                        style={{
+                            color: '#f0c040',
+                            fontSize: '15px',
+                            fontWeight: 900,
+                            letterSpacing: '1px',
+                            fontFamily: "'Cinzel', serif",
+                            textTransform: 'uppercase',
+                            marginTop: '4px',
+                        }}
+                    >
                         {(() => {
                             const n = availablePoints ?? 0;
                             let m = Math.abs(n) % 100;
@@ -107,7 +125,16 @@ export const TalentsView = ({ hero }: any) => {
             </div>
 
             {/* TREE COLUMNS */}
-            <div style={{ flex: 1, display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '24px', alignItems: 'stretch', minHeight: 0 }}>
+            <div
+                style={{
+                    flex: 1,
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(3, 1fr)',
+                    gap: '24px',
+                    alignItems: 'stretch',
+                    minHeight: 0,
+                }}
+            >
                 {TALENTS_CONFIG.map((branch) => {
                     const branchPoints = Object.entries(talents)
                         .filter(([id]) => id.startsWith(branch.id.substring(0, 3)))
@@ -131,98 +158,126 @@ export const TalentsView = ({ hero }: any) => {
                             }}
                         >
                             {/* BRANCH HEADER */}
-                            <div style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '12px',
-                                background: `linear-gradient(90deg, ${branch.color}18 0%, transparent 100%)`,
-                                padding: '10px 18px',
-                                borderRadius: '12px',
-                                borderLeft: `3px solid ${branch.color}`,
-                                marginBottom: '20px',
-                            }}>
+                            <div
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '12px',
+                                    background: `linear-gradient(90deg, ${branch.color}18 0%, transparent 100%)`,
+                                    padding: '10px 18px',
+                                    borderRadius: '12px',
+                                    borderLeft: `3px solid ${branch.color}`,
+                                    marginBottom: '20px',
+                                }}
+                            >
                                 <span style={{ fontSize: '28px', filter: `drop-shadow(0 0 8px ${branch.color})` }}>
                                     {branch.icon}
                                 </span>
-                                <span style={{
-                                    color: '#fff',
-                                    fontSize: '20px',
-                                    fontWeight: 900,
-                                    fontFamily: "'Cinzel', serif",
-                                    letterSpacing: '2px',
-                                    textShadow: `0 0 10px ${branch.color}44`,
-                                }}>
+                                <span
+                                    style={{
+                                        color: '#fff',
+                                        fontSize: '20px',
+                                        fontWeight: 900,
+                                        fontFamily: "'Cinzel', serif",
+                                        letterSpacing: '2px',
+                                        textShadow: `0 0 10px ${branch.color}44`,
+                                    }}
+                                >
                                     {branch.title}
                                 </span>
                             </div>
 
                             {/* Branch content container - absolute positioning context */}
-                            <div style={{
-                                flex: 1,
-                                position: 'relative',
-                                width: '100%',
-                                minHeight: 0,
-                                overflow: 'visible',
-                            }}>
-                                {/* SVG Connector Lines */}
-                                <svg style={{
-                                    position: 'absolute',
-                                    inset: 0,
+                            <div
+                                style={{
+                                    flex: 1,
+                                    position: 'relative',
                                     width: '100%',
-                                    height: '100%',
-                                    pointerEvents: 'none',
+                                    minHeight: 0,
                                     overflow: 'visible',
-                                }}>
+                                }}
+                            >
+                                {/* SVG Connector Lines */}
+                                <svg
+                                    style={{
+                                        position: 'absolute',
+                                        inset: 0,
+                                        width: '100%',
+                                        height: '100%',
+                                        pointerEvents: 'none',
+                                        overflow: 'visible',
+                                    }}
+                                >
                                     {/* Line 1: Tier 1 (50%, 18%) -> Tier 2 Left (25%, 50%) */}
                                     <line
-                                        x1="50%" y1="18%"
-                                        x2="25%" y2="50%"
-                                        stroke={branchPoints >= branch.tiers[1].requiredInBranch ? branch.color : '#222'}
+                                        x1="50%"
+                                        y1="18%"
+                                        x2="25%"
+                                        y2="50%"
+                                        stroke={
+                                            branchPoints >= branch.tiers[1].requiredInBranch ? branch.color : '#222'
+                                        }
                                         strokeWidth="4"
                                         style={{
-                                            filter: branchPoints >= branch.tiers[1].requiredInBranch 
-                                                ? `drop-shadow(0 0 6px ${branch.color})` 
-                                                : 'none',
-                                            transition: 'stroke 0.25s ease, filter 0.25s ease'
+                                            filter:
+                                                branchPoints >= branch.tiers[1].requiredInBranch
+                                                    ? `drop-shadow(0 0 6px ${branch.color})`
+                                                    : 'none',
+                                            transition: 'stroke 0.25s ease, filter 0.25s ease',
                                         }}
                                     />
                                     {/* Line 2: Tier 1 (50%, 18%) -> Tier 2 Right (75%, 50%) */}
                                     <line
-                                        x1="50%" y1="18%"
-                                        x2="75%" y2="50%"
-                                        stroke={branchPoints >= branch.tiers[1].requiredInBranch ? branch.color : '#222'}
+                                        x1="50%"
+                                        y1="18%"
+                                        x2="75%"
+                                        y2="50%"
+                                        stroke={
+                                            branchPoints >= branch.tiers[1].requiredInBranch ? branch.color : '#222'
+                                        }
                                         strokeWidth="4"
                                         style={{
-                                            filter: branchPoints >= branch.tiers[1].requiredInBranch 
-                                                ? `drop-shadow(0 0 6px ${branch.color})` 
-                                                : 'none',
-                                            transition: 'stroke 0.25s ease, filter 0.25s ease'
+                                            filter:
+                                                branchPoints >= branch.tiers[1].requiredInBranch
+                                                    ? `drop-shadow(0 0 6px ${branch.color})`
+                                                    : 'none',
+                                            transition: 'stroke 0.25s ease, filter 0.25s ease',
                                         }}
                                     />
                                     {/* Line 3: Tier 2 Left (25%, 50%) -> Tier 3 (50%, 82%) */}
                                     <line
-                                        x1="25%" y1="50%"
-                                        x2="50%" y2="82%"
-                                        stroke={branchPoints >= branch.tiers[2].requiredInBranch ? branch.color : '#222'}
+                                        x1="25%"
+                                        y1="50%"
+                                        x2="50%"
+                                        y2="82%"
+                                        stroke={
+                                            branchPoints >= branch.tiers[2].requiredInBranch ? branch.color : '#222'
+                                        }
                                         strokeWidth="4"
                                         style={{
-                                            filter: branchPoints >= branch.tiers[2].requiredInBranch 
-                                                ? `drop-shadow(0 0 6px ${branch.color})` 
-                                                : 'none',
-                                            transition: 'stroke 0.25s ease, filter 0.25s ease'
+                                            filter:
+                                                branchPoints >= branch.tiers[2].requiredInBranch
+                                                    ? `drop-shadow(0 0 6px ${branch.color})`
+                                                    : 'none',
+                                            transition: 'stroke 0.25s ease, filter 0.25s ease',
                                         }}
                                     />
                                     {/* Line 4: Tier 2 Right (75%, 50%) -> Tier 3 (50%, 82%) */}
                                     <line
-                                        x1="75%" y1="50%"
-                                        x2="50%" y2="82%"
-                                        stroke={branchPoints >= branch.tiers[2].requiredInBranch ? branch.color : '#222'}
+                                        x1="75%"
+                                        y1="50%"
+                                        x2="50%"
+                                        y2="82%"
+                                        stroke={
+                                            branchPoints >= branch.tiers[2].requiredInBranch ? branch.color : '#222'
+                                        }
                                         strokeWidth="4"
                                         style={{
-                                            filter: branchPoints >= branch.tiers[2].requiredInBranch 
-                                                ? `drop-shadow(0 0 6px ${branch.color})` 
-                                                : 'none',
-                                            transition: 'stroke 0.25s ease, filter 0.25s ease'
+                                            filter:
+                                                branchPoints >= branch.tiers[2].requiredInBranch
+                                                    ? `drop-shadow(0 0 6px ${branch.color})`
+                                                    : 'none',
+                                            transition: 'stroke 0.25s ease, filter 0.25s ease',
                                         }}
                                     />
                                 </svg>
@@ -233,17 +288,17 @@ export const TalentsView = ({ hero }: any) => {
                                     return tier.talents.map((talent, talentIndex) => {
                                         const lvl = talents[talent.id] || 0;
                                         // Calculate position
-                                        let left = "50%";
-                                        let top = "18%";
+                                        let left = '50%';
+                                        let top = '18%';
                                         if (tIndex === 0) {
-                                            left = "50%";
-                                            top = "18%";
+                                            left = '50%';
+                                            top = '18%';
                                         } else if (tIndex === 1) {
-                                            left = talentIndex === 0 ? "25%" : "75%";
-                                            top = "50%";
+                                            left = talentIndex === 0 ? '25%' : '75%';
+                                            top = '50%';
                                         } else if (tIndex === 2) {
-                                            left = "50%";
-                                            top = "82%";
+                                            left = '50%';
+                                            top = '82%';
                                         }
 
                                         return (
@@ -267,7 +322,8 @@ export const TalentsView = ({ hero }: any) => {
                                                     onMouseEnter={(e: any) => {
                                                         const rect = e.currentTarget.getBoundingClientRect();
                                                         const root = document.getElementById('hero-scene-root');
-                                                        const talentsRoot = document.getElementById('talents-view-root');
+                                                        const talentsRoot =
+                                                            document.getElementById('talents-view-root');
                                                         const rootRect = root?.getBoundingClientRect();
                                                         const talentsRect = talentsRoot?.getBoundingClientRect();
                                                         if (rootRect && talentsRect) {
@@ -279,7 +335,12 @@ export const TalentsView = ({ hero }: any) => {
                                                                 y: y > 500 ? y - 350 : y,
                                                             });
                                                         }
-                                                        setActiveTalent({ ...talent, branchPoints, required: tier.requiredInBranch, level: lvl });
+                                                        setActiveTalent({
+                                                            ...talent,
+                                                            branchPoints,
+                                                            required: tier.requiredInBranch,
+                                                            level: lvl,
+                                                        });
                                                     }}
                                                     onMouseLeave={() => setActiveTalent(null)}
                                                 />

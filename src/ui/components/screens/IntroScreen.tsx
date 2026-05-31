@@ -93,10 +93,11 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
 
             const doc = document.documentElement;
             const isFirstLaunch = !useGameStore.getState().name || useGameStore.getState().name === 'Мастер';
-            const isLocalhost = typeof window !== 'undefined' && 
-                (window.location.hostname === 'localhost' || 
-                 window.location.hostname === '127.0.0.1' || 
-                 window.location.protocol === 'file:');
+            const isLocalhost =
+                typeof window !== 'undefined' &&
+                (window.location.hostname === 'localhost' ||
+                    window.location.hostname === '127.0.0.1' ||
+                    window.location.protocol === 'file:');
 
             if (doc.requestFullscreen && !document.fullscreenElement && isFirstLaunch && !isLocalhost) {
                 doc.requestFullscreen().catch(() => console.warn('Fullscreen denied'));
@@ -118,7 +119,7 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
                 store.setOnboardingCompleted(true);
             } else {
                 useGameStore.setState({ onboardingCompleted: true });
-                syncService.syncPlayerData();
+                syncService.debouncedSync();
             }
             useGameStore.setState({ tutorialStep: 0 });
             audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);

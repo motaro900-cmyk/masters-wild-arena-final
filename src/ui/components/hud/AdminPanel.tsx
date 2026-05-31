@@ -31,11 +31,8 @@ const mapRawPlayerToRealPlayer = (p: any): RealPlayer => {
     const photoVal = p.фото || p.avatar || p.photo || 'https://vk.com/images/camera_100.png';
     const activeScreenVal = p.активныйЭкран || p.activeScreen || 'MAP';
     const lastSeenMillis = p.былВСети?.toMillis?.() || p.lastSeen?.toMillis?.() || 0;
-    const statusVal = activeScreenVal === 'BATTLE'
-        ? 'BATTLE'
-        : Date.now() - lastSeenMillis < 300000
-            ? 'ONLINE'
-            : 'OFFLINE';
+    const statusVal =
+        activeScreenVal === 'BATTLE' ? 'BATTLE' : Date.now() - lastSeenMillis < 300000 ? 'ONLINE' : 'OFFLINE';
 
     // Парсим полноеСостояниеJSON для получения актуальных значений ресурсов игрока в реальном времени
     let parsedState: any = {};
@@ -48,9 +45,21 @@ const mapRawPlayerToRealPlayer = (p: any): RealPlayer => {
     }
 
     const activeHero = parsedState.selectedHeroId || p.герой || 'panda';
-    const gearVal = (parsedState.heroEquipment && parsedState.heroEquipment[activeHero])
-        ? parsedState.heroEquipment[activeHero]
-        : (p.снаряжение || p.геройСнаряжение || {});
+    const gearVal =
+        parsedState.heroEquipment && parsedState.heroEquipment[activeHero]
+            ? parsedState.heroEquipment[activeHero]
+            : p.снаряжение || p.геройСнаряжение || {};
+
+    const lastSeenDate = (p.былВСети || p.lastSeen)?.toDate?.() || (lastSeenMillis ? new Date(lastSeenMillis) : null);
+    const lastSeenTimeVal = lastSeenDate
+        ? lastSeenDate.toLocaleString('ru-RU', {
+              day: '2-digit',
+              month: '2-digit',
+              year: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit',
+          })
+        : 'неизвестно';
 
     return {
         id: p.id,
@@ -59,44 +68,54 @@ const mapRawPlayerToRealPlayer = (p: any): RealPlayer => {
         photo: photoVal,
         status: p.status === 'BANNED' ? 'BANNED' : statusVal,
         screen: activeScreenVal,
-        level: parsedState.level !== undefined ? parsedState.level : (p.уровень || p.лев || p.level || 1),
-        gold: parsedState.gold !== undefined ? parsedState.gold : (p.золото !== undefined ? p.золото : (p.gold || 0)),
-        crystals: parsedState.crystals !== undefined ? parsedState.crystals : (p.кристаллы !== undefined ? p.кристаллы : (p.crystals || 0)),
-        regDate: (p.былВСети || p.lastSeen)?.toDate?.().toLocaleDateString() || '10.05.2026',
+        level: parsedState.level !== undefined ? parsedState.level : p.уровень || p.лев || p.level || 1,
+        gold: parsedState.gold !== undefined ? parsedState.gold : p.золото !== undefined ? p.золото : p.gold || 0,
+        crystals:
+            parsedState.crystals !== undefined
+                ? parsedState.crystals
+                : p.кристаллы !== undefined
+                  ? p.кристаллы
+                  : p.crystals || 0,
+        regDate: lastSeenTimeVal,
         reports: p.reports || 0,
         reportLogs: p.reportLogs || [],
         gear: gearVal as any,
         isTest: p.тестовый || false,
         isDev: p.разработчик || false,
+        lastSeenTime: lastSeenTimeVal,
     };
 };
 
-export const AdminPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
-    const store = useGameStore();
+const AdminPanelContent: React.FC<{ onClose: () => void }> = ({ onClose }) => {
+    const messages = useGameStore((state) => state.messages);
+    const combatLogs = useGameStore((state) => state.combatLogs);
+    const timeScale = useGameStore((state) => state.timeScale);
+    const isGodMode = useGameStore((state) => state.isGodMode);
+    const isOneShot = useGameStore((state) => state.isOneShot);
+    const isEnemyFrozen = useGameStore((state) => state.isEnemyFrozen);
+    const showFps = useGameStore((state) => state.showFps);
+    const showHitboxes = useGameStore((state) => state.showHitboxes);
+    const showSafeZone = useGameStore((state) => state.showSafeZone);
+    const debugPing = useGameStore((state) => state.debugPing);
+    const isOfflineMode = useGameStore((state) => state.isOfflineMode);
+
     const [activeTab, setActiveTab] = useState<AdminTab>('ИГРОК');
     const logEndRef = useRef<HTMLDivElement>(null);
     const chatEndRef = useRef<HTMLDivElement>(null);
 
-    // --- ЛОКАЛЬНЫЕ СОСТОЯНИЯ (БОЙ) ---
     const [selectedMobId, setSelectedMobId] = useState(MOBS_DB[0]?.id || '');
-
-    // --- ЛОКАЛЬНЫЕ СОСТОЯНИЯ (СЕРВЕР/ПОЧТА ШАРИНГ) ---
     const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
     const [mailRecipient, setMailRecipient] = useState<'ALL' | string>('ALL');
     const [realPlayers, setRealPlayers] = useState<RealPlayer[]>([]);
     const [isLoadingPlayers, setIsLoadingPlayers] = useState(false);
-
-    // --- ЛОКАЛЬНЫЕ СОСТОЯНИЯ (ЧАТ) ---
     const [adminChatMessage, setAdminChatMessage] = useState('');
-
-    // --- ЛОКАЛЬНЫЕ СОСТОЯНИЯ (ОТЗЫВЫ) ---
     const [feedbackList, setFeedbackList] = useState<any[]>([]);
     const [isLoadingFeedback, setIsLoadingFeedback] = useState(false);
 
     useEffect(() => {
         if (activeTab === 'ЧАТ') chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
         if (activeTab === 'БОЙ') logEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, [store.messages, store.combatLogs, activeTab]);
+    }, [messages, combatLogs, activeTab]);
 
     const refreshFeedback = async () => {
         setIsLoadingFeedback(true);
@@ -128,12 +147,7 @@ export const AdminPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
         let unsubscribePlayers: (() => void) | null = null;
 
         if (activeTab === 'СЕРВЕР') {
-            setIsLoadingPlayers(true);
-            refreshPlayers().finally(() => {
-                setIsLoadingPlayers(false);
-            });
-
-            // Подписываемся на обновления всех игроков в реальном времени
+            timer = setTimeout(() => refreshPlayers(), 0);
             unsubscribePlayers = syncService.subscribeToAllPlayers((players) => {
                 const mappedPlayers = players.map(mapRawPlayerToRealPlayer);
                 setRealPlayers(mappedPlayers);
@@ -144,24 +158,16 @@ export const AdminPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
 
         return () => {
             if (timer) clearTimeout(timer);
-            if (unsubscribePlayers) {
-                unsubscribePlayers();
-            }
+            if (unsubscribePlayers) unsubscribePlayers();
         };
     }, [activeTab]);
 
     const sendAdminChatMessage = () => {
         if (!adminChatMessage.trim()) return;
         audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
-        store.addMessage(adminChatMessage, 'СИСТЕМА', 'system');
+        useGameStore.getState().addMessage(adminChatMessage, 'СИСТЕМА', 'system');
         setAdminChatMessage('');
     };
-
-    const userVkId = store.vkUser?.id || store.vkUser?.uid;
-    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    const isAdmin = ADMIN_VK_IDS.includes(Number(userVkId)) || isLocal;
-
-    if (!isAdmin) return null;
 
     const renderTabContent = () => {
         switch (activeTab) {
@@ -176,11 +182,11 @@ export const AdminPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                                 {[0.1, 1, 2, 5, 10].map((s) => (
                                     <button
                                         key={s}
-                                        onClick={() => store.setTimeScale(s)}
+                                        onClick={() => useGameStore.getState().setTimeScale(s)}
                                         style={{
                                             ...btnStyle,
                                             flex: 1,
-                                            border: store.timeScale === s ? '1px solid #ff4d4d' : '1px solid #222',
+                                            border: timeScale === s ? '1px solid #ff4d4d' : '1px solid #222',
                                         }}
                                     >
                                         x{s}
@@ -189,13 +195,13 @@ export const AdminPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                             </div>
                             <ToggleRow
                                 label="БЕССМЕРТИЕ (God Mode)"
-                                active={store.isGodMode}
-                                onToggle={() => store.setGodMode(!store.isGodMode)}
+                                active={isGodMode}
+                                onToggle={() => useGameStore.getState().setGodMode(!isGodMode)}
                             />
                             <ToggleRow
                                 label="ONE-SHOT KILL"
-                                active={store.isOneShot}
-                                onToggle={() => store.setOneShot(!store.isOneShot)}
+                                active={isOneShot}
+                                onToggle={() => useGameStore.getState().setOneShot(!isOneShot)}
                             />
                             <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
                                 <button
@@ -219,8 +225,11 @@ export const AdminPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                             </div>
                             <ToggleRow
                                 label="ЗАМОРОЗИТЬ ВРАГА (Freeze)"
-                                active={store.isEnemyFrozen}
-                                onToggle={() => store.setIsEnemyFrozen && store.setIsEnemyFrozen(!store.isEnemyFrozen)}
+                                active={isEnemyFrozen}
+                                onToggle={() => {
+                                    const action = useGameStore.getState().setIsEnemyFrozen;
+                                    if (action) action(!isEnemyFrozen);
+                                }}
                             />
                         </Section>
                         <Section title="СПАВНЕР МОБОВ (Database Check)">
@@ -238,9 +247,11 @@ export const AdminPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                                 </select>
                                 <button
                                     onClick={() =>
-                                        store.addCombatLog(
-                                            `ВЫЗВАН: ${MOBS_DB.find((m) => m.id === selectedMobId)?.name}`,
-                                        )
+                                        useGameStore
+                                            .getState()
+                                            .addCombatLog(
+                                                `ВЫЗВАН: ${MOBS_DB.find((m) => m.id === selectedMobId)?.name}`,
+                                            )
                                     }
                                     style={applyBtn}
                                 >
@@ -249,13 +260,13 @@ export const AdminPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                             </div>
                             <div style={statLabel}>ЛОГИ ТЕКУЩЕГО БОЯ:</div>
                             <div style={terminalStyle}>
-                                {store.combatLogs?.map((log: string, i: number) => <div key={i}>&gt; {log}</div>) || (
+                                {combatLogs?.map((log: string, i: number) => <div key={i}>&gt; {log}</div>) || (
                                     <div>Логи пусты</div>
                                 )}
                                 <div ref={logEndRef} />
                             </div>
                             <button
-                                onClick={() => store.clearCombatLogs()}
+                                onClick={() => useGameStore.getState().clearCombatLogs()}
                                 style={{ ...btnStyle, width: '100%', marginTop: '5px' }}
                             >
                                 ОЧИСТИТЬ ТЕРМИНАЛ
@@ -299,7 +310,7 @@ export const AdminPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                                 gap: '10px',
                             }}
                         >
-                            {store.messages.map((msg: any) => (
+                            {messages.map((msg: any) => (
                                 <div
                                     key={msg.id}
                                     style={{
@@ -365,7 +376,7 @@ export const AdminPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                                         <button
                                             onClick={() => {
                                                 audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
-                                                store.removeMessage(msg.id);
+                                                useGameStore.getState().removeMessage(msg.id);
                                             }}
                                             style={{
                                                 background: 'none',
@@ -377,22 +388,6 @@ export const AdminPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                                             }}
                                         >
                                             [УДАЛИТЬ]
-                                        </button>
-                                        <button
-                                            onClick={() => {
-                                                setSelectedPlayerId(msg.id);
-                                                setActiveTab('СЕРВЕР');
-                                            }}
-                                            style={{
-                                                background: 'none',
-                                                border: 'none',
-                                                color: '#555',
-                                                fontSize: '10px',
-                                                cursor: 'pointer',
-                                                padding: 0,
-                                            }}
-                                        >
-                                            [МУТ]
                                         </button>
                                     </div>
                                 </div>
@@ -432,13 +427,13 @@ export const AdminPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                         <Section title="ДВИЖОК & ПРОФАЙЛЕР">
                             <ToggleRow
                                 label="SHOW FPS / MEMORY"
-                                active={store.showFps}
-                                onToggle={() => store.setShowFps(!store.showFps)}
+                                active={showFps}
+                                onToggle={() => useGameStore.getState().setShowFps(!showFps)}
                             />
                             <ToggleRow
                                 label="SHOW HITBOXES (Debug Bounds)"
-                                active={store.showHitboxes}
-                                onToggle={() => store.setShowHitboxes(!store.showHitboxes)}
+                                active={showHitboxes}
+                                onToggle={() => useGameStore.getState().setShowHitboxes(!showHitboxes)}
                             />
                             <div
                                 style={{
@@ -462,8 +457,6 @@ export const AdminPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                                 >
                                     <div style={{ color: '#2ecc71' }}>FPS: 60.0</div>
                                     <div style={{ color: '#3498db' }}>DRAW CALLS: 128</div>
-                                    <div style={{ color: '#e67e22' }}>MEM: 142MB</div>
-                                    <div style={{ color: '#9b59b6' }}>TEXTURES: 44</div>
                                 </div>
                             </div>
                         </Section>
@@ -483,17 +476,11 @@ export const AdminPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                                 <button style={btnStyle} onClick={() => alert('iPhone X Preset')}>
                                     iPhone X (Notch)
                                 </button>
-                                <button style={btnStyle} onClick={() => alert('iPad Air Preset')}>
-                                    iPad Air (4:3)
-                                </button>
-                                <button style={btnStyle} onClick={() => alert('Android Low-End')}>
-                                    Android (Low-Res)
-                                </button>
                             </div>
                             <ToggleRow
                                 label="SAFE ZONE OVERLAY (Mobile)"
-                                active={store.showSafeZone}
-                                onToggle={() => store.setShowSafeZone(!store.showSafeZone)}
+                                active={showSafeZone}
+                                onToggle={() => useGameStore.getState().setShowSafeZone(!showSafeZone)}
                             />
                         </Section>
                         <Section title="СЕТЕВАЯ ОТЛАДКА">
@@ -502,11 +489,11 @@ export const AdminPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                                 {[0, 50, 150, 500, 2000].map((p) => (
                                     <button
                                         key={p}
-                                        onClick={() => store.setDebugPing(p)}
+                                        onClick={() => useGameStore.getState().setDebugPing(p)}
                                         style={{
                                             ...btnStyle,
                                             flex: 1,
-                                            border: store.debugPing === p ? '1px solid #ff4d4d' : '1px solid #222',
+                                            border: debugPing === p ? '1px solid #ff4d4d' : '1px solid #222',
                                         }}
                                     >
                                         {p}ms
@@ -515,12 +502,12 @@ export const AdminPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                             </div>
                             <ToggleRow
                                 label="OFFLINE MODE (Stop Sync)"
-                                active={store.isOfflineMode}
-                                onToggle={() => store.setOfflineMode(!store.isOfflineMode)}
+                                active={isOfflineMode}
+                                onToggle={() => useGameStore.getState().setOfflineMode(!isOfflineMode)}
                             />
                         </Section>
                         <Section title="СИСТЕМНЫЙ СЕРВИС">
-                            <button onClick={() => store.copyDebugDump()} style={bigBtnStyle}>
+                            <button onClick={() => useGameStore.getState().copyDebugDump()} style={bigBtnStyle}>
                                 СКОПИРОВАТЬ DEBUG DUMP (JSON) 📄
                             </button>
                             <button
@@ -529,21 +516,6 @@ export const AdminPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                             >
                                 HARD RESET LOCAL DATA
                             </button>
-                            <button
-                                onClick={async () => {
-                                    if (confirm('ВНИМАНИЕ! ВЫ ПОДТВЕРЖДАЕТЕ ПОЛНЫЙ СБРОС ВСЕЙ БАЗЫ ДАННЫХ (БЕТА-ВАЙП)?\nЭто действие безвозвратно удалит всех пользователей, чаты и отзывы из Firestore!')) {
-                                        try {
-                                            await syncService.wipeAllFirestoreCollections();
-                                            alert('Вайп базы данных успешно завершен! 🎉');
-                                        } catch (err) {
-                                            alert('Произошла ошибка при вайпе базы данных: ' + err);
-                                        }
-                                    }
-                                }}
-                                style={{ ...bigBtnStyle, background: '#990000', color: '#fff', marginTop: '15px', fontWeight: 'bold' }}
-                            >
-                                СБРОСИТЬ ВСЮ БАЗУ ДАННЫХ (БЕТА-ВАЙП) 💥
-                            </button>
                         </Section>
                     </div>
                 );
@@ -551,7 +523,7 @@ export const AdminPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                 return (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', height: '700px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <div style={statLabel}>ПОСЛЕДНИЕ СООБЩЕНИЯ ОТ ИГРОКОВ (Limit 50)</div>
+                            <div style={statLabel}>ПОСЛЕДНИЕ СООБЩЕНИЯ ОТ ИГРОКОВ</div>
                             <button
                                 onClick={refreshFeedback}
                                 style={{ ...applyBtn, padding: '5px 15px' }}
@@ -568,98 +540,20 @@ export const AdminPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                                 flexDirection: 'column',
                                 gap: '10px',
                             }}
-                            className="leaderboard-scroll"
                         >
-                            {feedbackList.length > 0 ? (
-                                feedbackList.map((f: any) => (
-                                    <div
-                                        key={f.id}
-                                        style={{
-                                            background: '#0a0a0a',
-                                            border: '1px solid #222',
-                                            borderRadius: '12px',
-                                            padding: '20px',
-                                        }}
-                                    >
-                                        <div
-                                            style={{
-                                                display: 'flex',
-                                                justifyContent: 'space-between',
-                                                marginBottom: '12px',
-                                                borderBottom: '1px solid #111',
-                                                paddingBottom: '8px',
-                                            }}
-                                        >
-                                            <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
-                                                <span
-                                                    style={{
-                                                        background:
-                                                            f.category === 'BUG'
-                                                                ? '#ef4444'
-                                                                : f.category === 'IDEA'
-                                                                  ? '#3b82f6'
-                                                                  : '#f0c040',
-                                                        color: '#fff',
-                                                        fontSize: '9px',
-                                                        fontWeight: 900,
-                                                        padding: '2px 8px',
-                                                        borderRadius: '4px',
-                                                    }}
-                                                >
-                                                    {f.category}
-                                                </span>
-                                                <span
-                                                    style={{ color: '#f0c040', fontWeight: 'bold', fontSize: '13px' }}
-                                                >
-                                                    {f.userName || 'Мастер'}
-                                                </span>
-                                                <span style={{ color: '#444', fontSize: '10px' }}>ID: {f.userId}</span>
-                                            </div>
-                                            <span style={{ color: '#333', fontSize: '11px' }}>
-                                                {new Date(f.timestamp).toLocaleString()}
-                                            </span>
-                                        </div>
-                                        <div
-                                            style={{
-                                                color: '#ccc',
-                                                fontSize: '14px',
-                                                lineHeight: 1.6,
-                                                whiteSpace: 'pre-wrap',
-                                            }}
-                                        >
-                                            {f.text}
-                                        </div>
-                                        <div style={{ marginTop: '12px', display: 'flex', gap: '15px' }}>
-                                            <div style={{ fontSize: '10px', color: '#444' }}>
-                                                LVL: {f.level} | OS: {f.platform} | VER: {f.version}
-                                            </div>
-                                            <div style={{ flex: 1 }} />
-                                            <button
-                                                onClick={() => {
-                                                    setSelectedPlayerId(f.userId);
-                                                    setActiveTab('СЕРВЕР');
-                                                }}
-                                                style={{
-                                                    background: 'transparent',
-                                                    border: 'none',
-                                                    color: '#3b82f6',
-                                                    fontSize: '10px',
-                                                    cursor: 'pointer',
-                                                    padding: 0,
-                                                }}
-                                            >
-                                                [ПЕРЕЙТИ К ИГРОКУ]
-                                            </button>
-                                        </div>
-                                    </div>
-                                ))
-                            ) : (
+                            {feedbackList.map((f: any) => (
                                 <div
-                                    style={{ textAlign: 'center', marginTop: '200px', opacity: 0.2, fontSize: '40px' }}
+                                    key={f.id}
+                                    style={{
+                                        background: '#0a0a0a',
+                                        border: '1px solid #222',
+                                        borderRadius: '12px',
+                                        padding: '20px',
+                                    }}
                                 >
-                                    🦉
+                                    <div style={{ color: '#ccc', fontSize: '14px' }}>{f.text}</div>
                                 </div>
-                            )}
+                            ))}
                         </div>
                     </div>
                 );
@@ -669,23 +563,9 @@ export const AdminPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     return (
         <div style={overlayStyle}>
             <div style={headerStyle}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                    <h1 style={titleStyle}>
-                        GOD HUB <span style={{ color: '#444' }}>v3.0 MAXIMUM STATION</span>
-                    </h1>
-                    <div
-                        style={{
-                            background: '#111',
-                            padding: '4px 10px',
-                            borderRadius: '4px',
-                            fontSize: '10px',
-                            color: '#666',
-                            border: '1px solid #222',
-                        }}
-                    >
-                        INDUSTRIAL BUILD
-                    </div>
-                </div>
+                <h1 style={titleStyle}>
+                    GOD HUB <span style={{ color: '#444' }}>v3.0</span>
+                </h1>
                 <div style={{ display: 'flex', gap: '25px' }}>
                     {(['ИГРОК', 'БОЙ', 'СЕРВЕР', 'ПОЧТА', 'ЧАТ', 'ОТЗЫВЫ', 'СИСТЕМА'] as AdminTab[]).map((tab) => (
                         <button
@@ -697,20 +577,14 @@ export const AdminPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                             style={{
                                 ...tabButtonStyle,
                                 borderBottom: activeTab === tab ? '2px solid #ff4d4d' : 'none',
-                                color: activeTab === tab ? '#fff' : '#444',
+                                color: activeTab === tab ? '#fff' : '#888',
                             }}
                         >
                             {tab}
                         </button>
                     ))}
                 </div>
-                <button
-                    onClick={() => {
-                        audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
-                        onClose();
-                    }}
-                    style={closeButtonStyle}
-                >
+                <button onClick={onClose} style={closeButtonStyle}>
                     ЗАКРЫТЬ
                 </button>
             </div>
@@ -719,7 +593,17 @@ export const AdminPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     );
 };
 
-// --- LAYOUT STYLES ---
+export const AdminPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
+    const vkUser = useGameStore((state) => state.vkUser);
+    const userVkId = vkUser?.id || vkUser?.uid;
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const isAdmin = ADMIN_VK_IDS.includes(Number(userVkId)) || isLocal;
+
+    if (!isAdmin) return null;
+
+    return <AdminPanelContent onClose={onClose} />;
+};
+
 const overlayStyle: React.CSSProperties = {
     position: 'fixed',
     inset: 0,

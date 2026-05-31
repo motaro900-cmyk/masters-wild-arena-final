@@ -34,7 +34,7 @@ export const RankingWindow: React.FC = () => {
 
     React.useEffect(() => {
         let unsubscribe: (() => void) | undefined;
-        setIsLoading(true);
+        const timer = setTimeout(() => setIsLoading(true), 0);
 
         const setupSubscription = async () => {
             try {
@@ -66,6 +66,7 @@ export const RankingWindow: React.FC = () => {
         setupSubscription();
 
         return () => {
+            clearTimeout(timer);
             if (unsubscribe) {
                 unsubscribe();
             }
@@ -563,8 +564,18 @@ export const RankingWindow: React.FC = () => {
                                     boxShadow: 'inset 0 2px 5px rgba(0,0,0,0.5)',
                                 }}
                             >
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0 }}>
-                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z" fill="#f0c040"/>
+                                <svg
+                                    width="18"
+                                    height="18"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    style={{ flexShrink: 0 }}
+                                >
+                                    <path
+                                        d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"
+                                        fill="#f0c040"
+                                    />
                                 </svg>
                                 <span
                                     style={{
@@ -875,7 +886,12 @@ const LeaderItem: React.FC<{ player: LeaderboardEntry; onClick: () => void }> = 
                 <img
                     src={getRankInfo(player.trophies).icon}
                     alt="rank"
-                    style={{ width: '22px', height: '22px', objectFit: 'contain', filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.4))' }}
+                    style={{
+                        width: '22px',
+                        height: '22px',
+                        objectFit: 'contain',
+                        filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.4))',
+                    }}
                 />
                 {getRankInfo(player.trophies).name}
             </div>
@@ -890,7 +906,14 @@ const LeaderItem: React.FC<{ player: LeaderboardEntry; onClick: () => void }> = 
                     justifyContent: 'flex-end',
                 }}
             >
-                <span style={{ color: '#fff', fontSize: '22px', fontWeight: 900, textShadow: '0 2px 4px rgba(0,0,0,0.8)' }}>
+                <span
+                    style={{
+                        color: '#fff',
+                        fontSize: '22px',
+                        fontWeight: 900,
+                        textShadow: '0 2px 4px rgba(0,0,0,0.8)',
+                    }}
+                >
                     {player.trophies.toLocaleString().replace(',', ' ')}
                 </span>
                 <img
@@ -900,7 +923,7 @@ const LeaderItem: React.FC<{ player: LeaderboardEntry; onClick: () => void }> = 
                         width: '32px',
                         height: '32px',
                         objectFit: 'contain',
-                        filter: 'drop-shadow(0 2px 5px rgba(0,0,0,0.6)) drop-shadow(0 0 4px rgba(240,192,64,0.15))'
+                        filter: 'drop-shadow(0 2px 5px rgba(0,0,0,0.6)) drop-shadow(0 0 4px rgba(240,192,64,0.15))',
                     }}
                 />
             </div>

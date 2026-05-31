@@ -11,13 +11,13 @@ export const HudAvatar: React.FC<HudAvatarProps> = ({ heroId }) => {
     const heroConfig = getHeroConfig(heroId);
     const imageSrc = heroConfig ? resolveAssetPath(heroConfig.image) : '';
 
-    const emojis: Record<string, string> = { 
-        panda: '🐼', 
-        moose: '🫎', 
-        goose: '🦢', 
-        cat: '🐱', 
+    const emojis: Record<string, string> = {
+        panda: '🐼',
+        moose: '🫎',
+        goose: '🦢',
+        cat: '🐱',
         boar: '🐗',
-        raccoon: '🦝'
+        raccoon: '🦝',
     };
 
     const showFallback = hasError || !imageSrc;

@@ -63,7 +63,7 @@ export const ProfileHub: React.FC = () => {
                             src={
                                 avatar && avatar.startsWith('http')
                                     ? avatar
-                                    : vkUser?.photo_200 || vkUser?.photo || '/assets/images/avatars/панда.webp'
+                                    : vkUser?.photo_200 || vkUser?.photo || '/assets/images/avatars/panda.webp'
                             }
                             className="w-full h-full object-cover scale-105"
                             alt="avatar"

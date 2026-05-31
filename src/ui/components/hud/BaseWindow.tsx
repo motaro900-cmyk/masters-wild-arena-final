@@ -23,10 +23,30 @@ const CornerAccent: React.FC<{ position: 'tl' | 'tr' | 'bl' | 'br'; color: strin
         height: '18px',
         zIndex: 20,
         pointerEvents: 'none',
-        ...(position === 'tl' && { top: -2, left: -2, borderTop: `3px solid ${color}`, borderLeft: `3px solid ${color}` }),
-        ...(position === 'tr' && { top: -2, right: -2, borderTop: `3px solid ${color}`, borderRight: `3px solid ${color}` }),
-        ...(position === 'bl' && { bottom: -2, left: -2, borderBottom: `3px solid ${color}`, borderLeft: `3px solid ${color}` }),
-        ...(position === 'br' && { bottom: -2, right: -2, borderBottom: `3px solid ${color}`, borderRight: `3px solid ${color}` }),
+        ...(position === 'tl' && {
+            top: -2,
+            left: -2,
+            borderTop: `3px solid ${color}`,
+            borderLeft: `3px solid ${color}`,
+        }),
+        ...(position === 'tr' && {
+            top: -2,
+            right: -2,
+            borderTop: `3px solid ${color}`,
+            borderRight: `3px solid ${color}`,
+        }),
+        ...(position === 'bl' && {
+            bottom: -2,
+            left: -2,
+            borderBottom: `3px solid ${color}`,
+            borderLeft: `3px solid ${color}`,
+        }),
+        ...(position === 'br' && {
+            bottom: -2,
+            right: -2,
+            borderBottom: `3px solid ${color}`,
+            borderRight: `3px solid ${color}`,
+        }),
     };
     return <div style={style} />;
 };
@@ -121,7 +141,9 @@ export const BaseWindow: React.FC<BaseWindowProps> = ({
                                     margin: 0,
                                     textTransform: 'uppercase',
                                     letterSpacing: '2.5px',
-                                    textShadow: isLight ? 'none' : '0 2px 10px rgba(0,0,0,0.8), 0 0 15px rgba(251,191,36,0.25)',
+                                    textShadow: isLight
+                                        ? 'none'
+                                        : '0 2px 10px rgba(0,0,0,0.8), 0 0 15px rgba(251,191,36,0.25)',
                                 }}
                             >
                                 {title}
@@ -147,20 +169,25 @@ export const BaseWindow: React.FC<BaseWindowProps> = ({
                             onMouseEnter={(e) => (e.currentTarget.style.opacity = '1')}
                             onMouseLeave={(e) => (e.currentTarget.style.opacity = '0.8')}
                         >
-                            <X size={30} style={{ filter: isLight ? 'none' : 'drop-shadow(0 0 4px rgba(251,191,36,0.3))' }} />
+                            <X
+                                size={30}
+                                style={{ filter: isLight ? 'none' : 'drop-shadow(0 0 4px rgba(251,191,36,0.3))' }}
+                            />
                         </motion.button>
                     </div>
 
                     {/* Декоративная тонкая полоска под хедером */}
                     {!isLight && (
-                        <div style={{
-                            height: '1px',
-                            background: 'linear-gradient(90deg, transparent, rgba(251, 191, 36, 0.4), transparent)',
-                            width: '100%',
-                            position: 'absolute',
-                            top: '75px',
-                            zIndex: 16
-                        }} />
+                        <div
+                            style={{
+                                height: '1px',
+                                background: 'linear-gradient(90deg, transparent, rgba(251, 191, 36, 0.4), transparent)',
+                                width: '100%',
+                                position: 'absolute',
+                                top: '75px',
+                                zIndex: 16,
+                            }}
+                        />
                     )}
 
                     {/* Контент окна */}

@@ -6,6 +6,7 @@ import { audioService } from '../../services/AudioService';
 import { PixiApp } from './PixiApp';
 import { useGameStore } from '../../store/useGameStore';
 import { HEROES_DB } from '../../configs/HeroesConfig';
+import { ITEMS_DATABASE } from '../../game/configs/ItemsConfig';
 
 function getWeaponArchetype(itemId: string | null): 'SWORD' | 'BOW' | 'STAFF' | 'DAGGER' | 'OTHER' {
     if (!itemId) return 'OTHER';
@@ -47,7 +48,7 @@ export interface ICombatStats {
 }
 
 export interface CombatEvent {
-    type: 'HIT' | 'CRIT' | 'DODGE' | 'BLOCK' | 'INSTINCT' | 'BURN' | 'POISON' | 'FREEZE';
+    type: 'HIT' | 'CRIT' | 'DODGE' | 'BLOCK' | 'INSTINCT' | 'BURN' | 'POISON' | 'FREEZE' | 'STUN';
     damage: number;
     target: 'player' | 'enemy';
     label?: string;
@@ -182,7 +183,7 @@ export class BattleEngine {
             this.player.position.set(W * 0.25, H * 0.82);
             this.player.defaultX = this.player.x;
             this.player.defaultY = this.player.y;
-            
+
             // Player faces right (positive scale.x)
             const playerBaseScale = this.player.config?.baseScale || 1.0;
             this.player.parentDefaultScaleX = playerBaseScale;
@@ -192,13 +193,20 @@ export class BattleEngine {
             this.player.visible = true;
 
             // Enemy faces left (negative scale.x to flip from right)
-            this.enemy.position.set(W * 0.75, H * 0.82);
+            let enemyY = H * 0.82;
+            let enemyBaseScale = this.enemy.config?.baseScale || 1.0;
+            let enemyScaleX = -enemyBaseScale;
+            if (this.enemy.isMob) {
+                enemyBaseScale *= 0.72; // Make the mob 28% smaller
+                enemyY = H * 0.88;      // Lower it towards the ground
+                enemyScaleX = enemyBaseScale; // Mobs face left by default, so do not flip them!
+            }
+            this.enemy.position.set(W * 0.75, enemyY);
             this.enemy.defaultX = this.enemy.x;
             this.enemy.defaultY = this.enemy.y;
-            const enemyBaseScale = this.enemy.config?.baseScale || 1.0;
-            this.enemy.parentDefaultScaleX = -enemyBaseScale;
+            this.enemy.parentDefaultScaleX = enemyScaleX;
             this.enemy.parentDefaultScaleY = enemyBaseScale;
-            this.enemy.scale.set(-enemyBaseScale, enemyBaseScale);
+            this.enemy.scale.set(enemyScaleX, enemyBaseScale);
             this.enemy.alpha = 1;
             this.enemy.visible = true;
 
@@ -286,7 +294,7 @@ export class BattleEngine {
                 if (!this.isCombatRunning || this.state.playerHP <= 0 || this.state.enemyHP <= 0) break;
 
                 if (this.player!.isStunnedStatus) {
-                    const skipMsg = "Вы оглушены и пропускаете ход!";
+                    const skipMsg = 'Вы оглушены и пропускаете ход!';
                     this.updateState({ log: skipMsg });
                     useGameStore.getState().addCombatLog(`💫 ${skipMsg}`);
                     await new Promise((r) => setTimeout(r, 1500 / timeScale));
@@ -311,7 +319,7 @@ export class BattleEngine {
                     if (!this.isCombatRunning || this.state.playerHP <= 0 || this.state.enemyHP <= 0) break;
 
                     if (this.enemy!.isStunnedStatus) {
-                        const skipMsg = "Враг оглушен и пропускает ход!";
+                        const skipMsg = 'Враг оглушен и пропускает ход!';
                         this.updateState({ log: skipMsg });
                         useGameStore.getState().addCombatLog(`💫 ${skipMsg}`);
                         await new Promise((r) => setTimeout(r, 1500 / timeScale));
@@ -396,25 +404,25 @@ export class BattleEngine {
         if (weaponData) {
             const rarity = (weaponData.rarity || 'COMMON').toUpperCase();
             if (rarity === 'UNCOMMON') specialChance += 0.05;
-            else if (rarity === 'RARE') specialChance += 0.10;
+            else if (rarity === 'RARE') specialChance += 0.1;
             else if (rarity === 'EPIC') specialChance += 0.18;
             else if (rarity === 'LEGENDARY') specialChance += 0.28;
 
             const wLvl = weaponData.level || 1;
             specialChance += wLvl * 0.01;
         }
-        
+
         const stats = isPlayer ? this.playerStats! : this.enemyStats!;
-        let isCrit = Math.random() < stats.critChance;
+        const isCrit = Math.random() < stats.critChance;
         if (isCrit) specialChance += 0.12;
-        specialChance = Math.min(0.80, specialChance);
+        specialChance = Math.min(0.8, specialChance);
 
         const isSpecialStrike = Math.random() < specialChance;
 
         // Увеличиваем счетчик атак
         attacker.attackCounter = (attacker.attackCounter || 0) + 1;
         const isAssassin = attacker.config?.role === 'ASSASSIN';
-        const isShadowStep = isAssassin && (attacker.attackCounter % 4 === 0);
+        const isShadowStep = isAssassin && attacker.attackCounter % 4 === 0;
 
         // 2. РЫВОК ВПЕРЕД ИЛИ ТЕЛЕПОРТАЦИЯ ЗА СПИНУ (Shadow Step)
         if (isShadowStep) {
@@ -428,7 +436,7 @@ export class BattleEngine {
             // Вычисляем позицию за спиной цели
             const baseScale = attacker.config.baseScale || 1.0;
             const targetX = isPlayer ? victim.x + 85 : victim.x - 85;
-            const faceScaleX = (isPlayer ? -1 : 1) * baseScale; // Разворачиваемся лицом к жертве
+            const faceScaleX = -attacker.parentDefaultScaleX; // Разворачиваемся лицом к жертве
 
             await attacker.animateTeleportIn(targetX, faceScaleX);
         } else if (isSpecialStrike) {
@@ -449,7 +457,12 @@ export class BattleEngine {
             const baseScale = attacker.config.baseScale || 1.0;
 
             // Helper: smooth tween via requestAnimationFrame
-            const tweenTo = (obj: any, props: Record<string, number>, durationMs: number, easeIn = false): Promise<void> => {
+            const tweenTo = (
+                obj: any,
+                props: Record<string, number>,
+                durationMs: number,
+                easeIn = false,
+            ): Promise<void> => {
                 return new Promise((resolve) => {
                     const startVals: Record<string, number> = {};
                     for (const k in props) startVals[k] = obj[k];
@@ -468,10 +481,14 @@ export class BattleEngine {
             // 1. Взлетаем еще выше и копим энергию!
             const chargeDuration = Math.round(450 / timeScale);
             tweenTo(attacker, { y: startY - 460 }, chargeDuration);
-            tweenTo(attacker.scale, {
-                x: (isPlayer ? 1 : -1) * baseScale * 1.3,
-                y: baseScale * 1.3,
-            }, chargeDuration);
+            tweenTo(
+                attacker.scale,
+                {
+                    x: attacker.parentDefaultScaleX * 1.3,
+                    y: baseScale * 1.3,
+                },
+                chargeDuration,
+            );
 
             // Создаем искрящуюся синюю энергию над пандой
             EffectsManager.getInstance().particleBurst(attacker.x, attacker.y - 200, 12, 0x00ffff, 120);
@@ -486,10 +503,15 @@ export class BattleEngine {
             // 2. Мощный удар всем весом прямо в координаты противника!
             const smashDuration = Math.round(220 / timeScale);
             tweenTo(attacker, { x: victim.x, y: victim.y }, smashDuration, true);
-            tweenTo(attacker.scale, {
-                x: (isPlayer ? 1 : -1) * baseScale,
-                y: baseScale,
-            }, smashDuration, true);
+            tweenTo(
+                attacker.scale,
+                {
+                    x: attacker.parentDefaultScaleX,
+                    y: baseScale,
+                },
+                smashDuration,
+                true,
+            );
 
             await new Promise((r) => setTimeout(r, smashDuration));
 
@@ -559,7 +581,7 @@ export class BattleEngine {
         // Точка взмаха прямо перед атакующим
         const hitX = isPlayer ? attacker.x + 85 : attacker.x - 85;
         const hitY = attacker.y - 120;
-        
+
         if (attackerWeaponArchetype === 'STAFF') {
             const startX = attacker.x;
             const startY = attacker.y - 120;
@@ -647,8 +669,7 @@ export class BattleEngine {
             // Возвращаем атакующего на исходную
             if (isShadowStep) {
                 await attacker.animateTeleportOut();
-                const baseScale = attacker.config.baseScale || 1.0;
-                const originalFaceScaleX = (isPlayer ? 1 : -1) * baseScale;
+                const originalFaceScaleX = attacker.parentDefaultScaleX;
                 await attacker.animateTeleportIn(startX, originalFaceScaleX);
             } else {
                 await attacker.animateLungeReturn(startX, startY);
@@ -753,7 +774,7 @@ export class BattleEngine {
 
         if (attackerId === 'panda' || attackerRole === 'WARRIOR' || attackerId === 'ancient_golem') {
             // FIRE/BURN Alignment (Panda, Lava Golem): 30% chance to Ignite on hit
-            if (Math.random() < 0.30) {
+            if (Math.random() < 0.3) {
                 const burnDmg = Math.ceil(stats.attack * 0.12);
                 this.applyStatus(victim, 'BURN', 3, burnDmg, !isPlayer);
             }
@@ -824,8 +845,7 @@ export class BattleEngine {
         await new Promise((r) => setTimeout(r, 650 / timeScale));
         if (isShadowStep) {
             await attacker.animateTeleportOut();
-            const baseScale = attacker.config.baseScale || 1.0;
-            const originalFaceScaleX = (isPlayer ? 1 : -1) * baseScale;
+            const originalFaceScaleX = attacker.parentDefaultScaleX;
             await attacker.animateTeleportIn(startX, originalFaceScaleX);
         } else {
             await attacker.animateLungeReturn(startX, startY);
@@ -1060,7 +1080,7 @@ export class BattleEngine {
                 const burnDmg = Math.ceil(this.playerStats!.attack * 0.15);
                 this.applyStatus(this.enemy, 'BURN', 3, burnDmg, false);
             } else if (role === 'ASSASSIN') {
-                const poisonDmg = Math.ceil(this.playerStats!.attack * 0.10);
+                const poisonDmg = Math.ceil(this.playerStats!.attack * 0.1);
                 this.applyStatus(this.enemy, 'POISON', 4, poisonDmg, false);
             }
         }
@@ -1112,8 +1132,12 @@ export class BattleEngine {
 
     public updateStatusesState() {
         this.updateState({
-            playerStatuses: this.player ? this.player.statusEffects.map((s) => ({ type: s.type, stacks: s.stacks, duration: s.duration })) : [],
-            enemyStatuses: this.enemy ? this.enemy.statusEffects.map((s) => ({ type: s.type, stacks: s.stacks, duration: s.duration })) : []
+            playerStatuses: this.player
+                ? this.player.statusEffects.map((s) => ({ type: s.type, stacks: s.stacks, duration: s.duration }))
+                : [],
+            enemyStatuses: this.enemy
+                ? this.enemy.statusEffects.map((s) => ({ type: s.type, stacks: s.stacks, duration: s.duration }))
+                : [],
         });
     }
 
@@ -1122,7 +1146,7 @@ export class BattleEngine {
         type: 'STUN' | 'BURN' | 'FREEZE' | 'POISON',
         duration: number,
         damagePerTurn: number,
-        isPlayer: boolean
+        isPlayer: boolean,
     ) {
         if (!unit || unit.destroyed) return;
 
@@ -1141,7 +1165,7 @@ export class BattleEngine {
             }
         }
 
-        let existing = unit.statusEffects.find((s) => s.type === type);
+        const existing = unit.statusEffects.find((s) => s.type === type);
         if (existing) {
             if (type === 'POISON') {
                 existing.stacks = Math.min(5, existing.stacks + 1);
@@ -1195,7 +1219,7 @@ export class BattleEngine {
         for (const status of activeEffects) {
             if (status.type === 'BURN' || status.type === 'POISON') {
                 const tickDamage = Math.ceil(status.damagePerTurn * status.stacks);
-                
+
                 if (isPlayer) {
                     const nextHP = Math.max(0, this.state.playerHP - tickDamage);
                     this.updateState({ playerHP: nextHP });
@@ -1215,10 +1239,11 @@ export class BattleEngine {
                     target: isPlayer ? 'player' : 'enemy',
                 });
 
-                const logMsg = status.type === 'BURN'
-                    ? `🔥 [Горение] ${unit.config.name} получает ${tickDamage} урона от огня!`
-                    : `🤢 [Отравление] ${unit.config.name} получает ${tickDamage} урона от яда! (${status.stacks} стак.)`;
-                
+                const logMsg =
+                    status.type === 'BURN'
+                        ? `🔥 [Горение] ${unit.config.name} получает ${tickDamage} урона от огня!`
+                        : `🤢 [Отравление] ${unit.config.name} получает ${tickDamage} урона от яда! (${status.stacks} стак.)`;
+
                 this.updateState({ log: logMsg });
                 addCombatLog(logMsg);
 
@@ -1267,7 +1292,7 @@ export class BattleEngine {
         if (this.storeUnsubscribe) this.storeUnsubscribe();
         const pixiApp = PixiApp.getInstance();
         if (this.updateCallback) pixiApp.removeUpdateLoop(this.updateCallback);
-        
+
         if (this.player) {
             this.player.removeStunEffect();
             this.player.removeBurnEffect();
@@ -1285,7 +1310,7 @@ export class BattleEngine {
             this.enemy.resetToIdle();
         }
         this.updateStatusesState();
-        
+
         // We must clear the background layer as well, so the battle arena background is removed
         pixiApp.clearAllLayers();
 

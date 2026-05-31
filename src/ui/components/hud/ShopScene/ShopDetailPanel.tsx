@@ -69,9 +69,7 @@ export const ShopDetailPanel: React.FC<ShopDetailPanelProps> = ({
                     </span>
                 );
             } else {
-                compText = (
-                    <span style={{ color: '#94a3b8', fontSize: '11px' }}>=</span>
-                );
+                compText = <span style={{ color: '#94a3b8', fontSize: '11px' }}>=</span>;
             }
         }
 
@@ -149,7 +147,15 @@ export const ShopDetailPanel: React.FC<ShopDetailPanelProps> = ({
                         >
                             {rarityTranslation[selectedItem.rarity] || selectedItem.rarity}
                         </span>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '5px', gap: '5px' }}>
+                        <div
+                            style={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                                marginTop: '5px',
+                                gap: '5px',
+                            }}
+                        >
                             <h4
                                 style={{
                                     margin: 0,
@@ -163,23 +169,32 @@ export const ShopDetailPanel: React.FC<ShopDetailPanelProps> = ({
                                 {selectedItem.name}
                             </h4>
                             {selectedItem.mainTab !== 'BANK' && selectedItem.mainTab !== 'SKINS' && (
-                                <div style={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: isMobile ? '3px' : '6px',
-                                    background: 'rgba(240, 192, 64, 0.1)',
-                                    border: '1px solid rgba(240, 192, 64, 0.3)',
-                                    borderRadius: '6px',
-                                    padding: isMobile ? '2px 5px' : '3px 8px',
-                                    boxShadow: '0 2px 4px rgba(0,0,0,0.5)',
-                                    flexShrink: 0,
-                                }}>
+                                <div
+                                    style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: isMobile ? '3px' : '6px',
+                                        background: 'rgba(240, 192, 64, 0.1)',
+                                        border: '1px solid rgba(240, 192, 64, 0.3)',
+                                        borderRadius: '6px',
+                                        padding: isMobile ? '2px 5px' : '3px 8px',
+                                        boxShadow: '0 2px 4px rgba(0,0,0,0.5)',
+                                        flexShrink: 0,
+                                    }}
+                                >
                                     <img
                                         src="/assets/images/ui/mosh.png"
                                         style={{ width: '16px', height: '16px', objectFit: 'contain' }}
                                         alt="Мощь"
                                     />
-                                    <span style={{ color: '#f0c040', fontWeight: 900, fontSize: '13px', fontFamily: "'Inter', sans-serif" }}>
+                                    <span
+                                        style={{
+                                            color: '#f0c040',
+                                            fontWeight: 900,
+                                            fontSize: '13px',
+                                            fontFamily: "'Inter', sans-serif",
+                                        }}
+                                    >
                                         {itemPower}
                                     </span>
                                     {equippedItem && powerDiff !== 0 && (
@@ -198,47 +213,37 @@ export const ShopDetailPanel: React.FC<ShopDetailPanelProps> = ({
                             )}
                         </div>
                         {/* Required level badge */}
-                        {selectedItem.requiredLevel !== undefined &&
-                            selectedItem.requiredLevel > 1 && (
-                                <div
-                                    style={{
-                                        marginTop: '8px',
-                                        display: 'inline-flex',
-                                        alignItems: 'center',
-                                        gap: '5px',
-                                        fontSize: '11px',
-                                        color:
-                                            (playerLevel || 1) >= (selectedItem.requiredLevel || 1)
-                                                ? '#4ade80'
-                                                : '#ef4444',
-                                        fontWeight: 800,
-                                        background:
-                                            (playerLevel || 1) >= (selectedItem.requiredLevel || 1)
-                                                ? 'rgba(74,222,128,0.1)'
-                                                : 'rgba(239,68,68,0.1)',
-                                        border: `1px solid ${
-                                            (playerLevel || 1) >= (selectedItem.requiredLevel || 1)
-                                                ? 'rgba(74,222,128,0.3)'
-                                                : 'rgba(239,68,68,0.3)'
-                                        }`,
-                                        borderRadius: '6px',
-                                        padding: '3px 8px',
-                                    }}
-                                >
-                                    <span>
-                                        {(playerLevel || 1) >= (selectedItem.requiredLevel || 1)
-                                            ? '✓'
-                                            : '🔒'}
-                                    </span>
-                                    <span>Уровень {selectedItem.requiredLevel}</span>
-                                    {(playerLevel || 1) < (selectedItem.requiredLevel || 1) && (
-                                        <span style={{ color: 'rgba(255,255,255,0.5)' }}>
-                                            {' '}
-                                            (у вас: {playerLevel || 1})
-                                        </span>
-                                    )}
-                                </div>
-                            )}
+                        {selectedItem.requiredLevel !== undefined && selectedItem.requiredLevel > 1 && (
+                            <div
+                                style={{
+                                    marginTop: '8px',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '5px',
+                                    fontSize: '11px',
+                                    color:
+                                        (playerLevel || 1) >= (selectedItem.requiredLevel || 1) ? '#4ade80' : '#ef4444',
+                                    fontWeight: 800,
+                                    background:
+                                        (playerLevel || 1) >= (selectedItem.requiredLevel || 1)
+                                            ? 'rgba(74,222,128,0.1)'
+                                            : 'rgba(239,68,68,0.1)',
+                                    border: `1px solid ${
+                                        (playerLevel || 1) >= (selectedItem.requiredLevel || 1)
+                                            ? 'rgba(74,222,128,0.3)'
+                                            : 'rgba(239,68,68,0.3)'
+                                    }`,
+                                    borderRadius: '6px',
+                                    padding: '3px 8px',
+                                }}
+                            >
+                                <span>{(playerLevel || 1) >= (selectedItem.requiredLevel || 1) ? '✓' : '🔒'}</span>
+                                <span>Уровень {selectedItem.requiredLevel}</span>
+                                {(playerLevel || 1) < (selectedItem.requiredLevel || 1) && (
+                                    <span style={{ color: 'rgba(255,255,255,0.5)' }}> (у вас: {playerLevel || 1})</span>
+                                )}
+                            </div>
+                        )}
                     </div>
 
                     {/* Stats of the selected item */}

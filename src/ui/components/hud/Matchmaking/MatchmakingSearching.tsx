@@ -45,10 +45,10 @@ export const MatchmakingSearching: React.FC<MatchmakingSearchingProps> = ({
                 zIndex: 1,
                 background: 'linear-gradient(135deg, rgba(26, 17, 8, 0.75) 0%, rgba(10, 5, 2, 0.9) 100%)',
                 backdropFilter: 'blur(20px)',
-                border: '3px solid rgba(240, 192, 64, 0.45)',
+                border: 'none',
                 borderRadius: '32px',
                 boxShadow:
-                    '0 30px 80px rgba(0, 0, 0, 0.9), 0 0 50px rgba(240, 192, 64, 0.15), inset 0 0 25px rgba(255, 255, 255, 0.04)',
+                    '0 30px 80px rgba(0, 0, 0, 0.95), inset 0 0 25px rgba(255, 255, 255, 0.04)',
                 padding: '40px',
             }}
         >
@@ -245,9 +245,7 @@ export const MatchmakingSearching: React.FC<MatchmakingSearchingProps> = ({
                         textShadow: '0 2px 4px rgba(0,0,0,0.8)',
                     }}
                 >
-                    <span style={{ color: '#fbbf24', textShadow: '0 0 8px rgba(251, 191, 36, 0.4)' }}>
-                        {rating} 🏆
-                    </span>{' '}
+                    <span style={{ color: '#fbbf24', textShadow: '0 0 8px rgba(251, 191, 36, 0.4)' }}>{rating} 🏆</span>{' '}
                     • {playerRank.name}
                 </div>
 

@@ -81,8 +81,10 @@ export const ForgeScreen: React.FC = () => {
         if (sortBy === 'LEVEL') {
             return (b.level || 1) - (a.level || 1);
         }
-        const weightA = (dataA.rarity === 'LEGENDARY' ? 4 : dataA.rarity === 'EPIC' ? 3 : dataA.rarity === 'RARE' ? 2 : 1);
-        const weightB = (dataB.rarity === 'LEGENDARY' ? 4 : dataB.rarity === 'EPIC' ? 3 : dataB.rarity === 'RARE' ? 2 : 1);
+        const weightA =
+            dataA.rarity === 'LEGENDARY' ? 4 : dataA.rarity === 'EPIC' ? 3 : dataA.rarity === 'RARE' ? 2 : 1;
+        const weightB =
+            dataB.rarity === 'LEGENDARY' ? 4 : dataB.rarity === 'EPIC' ? 3 : dataB.rarity === 'RARE' ? 2 : 1;
         return weightB - weightA;
     });
 
@@ -377,10 +379,12 @@ export const ForgeScreen: React.FC = () => {
             exit={{ opacity: 0 }}
             style={styles.screenContainer}
         >
-            <div style={{
-                ...styles.bgOverlay,
-                background: `#0d0a08 url("${isMobile ? AssetsMap.BACKGROUNDS.FORGE_MOBILE : AssetsMap.BACKGROUNDS.FORGE}") no-repeat center/cover`
-            }} />
+            <div
+                style={{
+                    ...styles.bgOverlay,
+                    background: `#0d0a08 url("${isMobile ? AssetsMap.BACKGROUNDS.FORGE_MOBILE : AssetsMap.BACKGROUNDS.FORGE}") no-repeat center/cover`,
+                }}
+            />
 
             {/* ВСПЫШКА УСПЕХА */}
             <AnimatePresence>

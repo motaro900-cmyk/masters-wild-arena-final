@@ -78,7 +78,7 @@ export const statBox: React.CSSProperties = {
 };
 export const statLabel: React.CSSProperties = {
     fontSize: '10px',
-    color: '#444',
+    color: '#999',
     marginBottom: '6px',
     textTransform: 'uppercase',
 };
@@ -86,7 +86,7 @@ export const smallBtnStyle: React.CSSProperties = {
     padding: '8px 15px',
     background: '#111',
     border: '1px solid #222',
-    color: '#666',
+    color: '#999',
     fontSize: '11px',
     borderRadius: '6px',
     cursor: 'pointer',
@@ -180,4 +180,5 @@ export interface RealPlayer {
     };
     isTest?: boolean;
     isDev?: boolean;
+    lastSeenTime: string;
 }

@@ -179,7 +179,6 @@ export const VIPWindow: React.FC<VIPWindowProps> = () => {
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', padding: '4px', userSelect: 'none' }}>
-
             {/* ────────── 1. STATUS HEADER ────────── */}
             <motion.div
                 initial={{ opacity: 0, y: -8 }}
@@ -190,9 +189,7 @@ export const VIPWindow: React.FC<VIPWindowProps> = () => {
                         : 'linear-gradient(180deg, rgba(35,24,16,0.98) 0%, rgba(14,8,4,0.98) 100%)',
                     padding: '22px 20px 18px',
                     borderRadius: '16px',
-                    border: isActive
-                        ? '1.5px solid rgba(240,192,64,0.65)'
-                        : '1px solid rgba(255,255,255,0.05)',
+                    border: isActive ? '1.5px solid rgba(240,192,64,0.65)' : '1px solid rgba(255,255,255,0.05)',
                     boxShadow: isActive
                         ? '0 0 40px rgba(240,192,64,0.16), inset 0 0 24px rgba(240,192,64,0.06)'
                         : '0 6px 22px rgba(0,0,0,0.7)',
@@ -209,7 +206,9 @@ export const VIPWindow: React.FC<VIPWindowProps> = () => {
                     <div
                         style={{
                             position: 'absolute',
-                            top: 0, left: 0, right: 0,
+                            top: 0,
+                            left: 0,
+                            right: 0,
                             height: '60%',
                             background: 'radial-gradient(ellipse at 50% 0%, rgba(240,192,64,0.22) 0%, transparent 70%)',
                             pointerEvents: 'none',
@@ -248,7 +247,15 @@ export const VIPWindow: React.FC<VIPWindowProps> = () => {
                 </span>
 
                 {isActive ? (
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', zIndex: 1 }}>
+                    <div
+                        style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            gap: '10px',
+                            zIndex: 1,
+                        }}
+                    >
                         <span
                             style={{
                                 background: 'linear-gradient(to bottom, #fff8cc 0%, #f0c040 45%, #9a6200 100%)',
@@ -288,14 +295,28 @@ export const VIPWindow: React.FC<VIPWindowProps> = () => {
                             />
                             <span style={{ color: '#d1d5db', fontSize: '13px', fontWeight: 700 }}>
                                 Осталось:{' '}
-                                <span style={{ color: '#f0c040', textShadow: '0 0 8px rgba(240,192,64,0.4)', fontWeight: 900 }}>
+                                <span
+                                    style={{
+                                        color: '#f0c040',
+                                        textShadow: '0 0 8px rgba(240,192,64,0.4)',
+                                        fontWeight: 900,
+                                    }}
+                                >
                                     {daysLeft} дней
                                 </span>
                             </span>
                         </div>
                     </div>
                 ) : (
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', zIndex: 1 }}>
+                    <div
+                        style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            gap: '6px',
+                            zIndex: 1,
+                        }}
+                    >
                         <span
                             style={{
                                 color: '#a68f7b',
@@ -357,8 +378,8 @@ export const VIPWindow: React.FC<VIPWindowProps> = () => {
                                 hoveredBenefit === i
                                     ? 'linear-gradient(90deg, rgba(240,192,64,0.15) 0%, rgba(0,0,0,0.15) 100%)'
                                     : isActive
-                                    ? 'linear-gradient(90deg, rgba(240,192,64,0.08) 0%, rgba(0,0,0,0.2) 100%)'
-                                    : 'linear-gradient(90deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%)',
+                                      ? 'linear-gradient(90deg, rgba(240,192,64,0.08) 0%, rgba(0,0,0,0.2) 100%)'
+                                      : 'linear-gradient(90deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%)',
                             borderRadius: '10px',
                             border: `1px solid ${hoveredBenefit === i ? 'rgba(240,192,64,0.32)' : 'rgba(255,255,255,0.09)'}`,
                             borderLeft: `3px solid ${
@@ -367,8 +388,8 @@ export const VIPWindow: React.FC<VIPWindowProps> = () => {
                                         ? '#f0c040'
                                         : 'rgba(240,192,64,0.45)'
                                     : hoveredBenefit === i
-                                    ? 'rgba(220,180,100,0.65)'
-                                    : 'rgba(180,140,60,0.45)'
+                                      ? 'rgba(220,180,100,0.65)'
+                                      : 'rgba(180,140,60,0.45)'
                             }`,
                             transform: hoveredBenefit === i ? 'translateX(3px)' : 'translateX(0)',
                             transition: 'all 0.2s ease',
@@ -415,9 +436,7 @@ export const VIPWindow: React.FC<VIPWindowProps> = () => {
                                 letterSpacing: '0.8px',
                                 padding: '3px 9px 3px 7px',
                                 borderRadius: '20px',
-                                background: isActive
-                                    ? 'rgba(16,185,129,0.12)'
-                                    : 'rgba(90,60,20,0.65)',
+                                background: isActive ? 'rgba(16,185,129,0.12)' : 'rgba(90,60,20,0.65)',
                                 border: isActive
                                     ? '1px solid rgba(16,185,129,0.28)'
                                     : '1px solid rgba(160,110,40,0.55)',
@@ -425,9 +444,7 @@ export const VIPWindow: React.FC<VIPWindowProps> = () => {
                                 textShadow: isActive ? '0 0 6px rgba(52,211,153,0.35)' : 'none',
                             }}
                         >
-                            {!isActive && (
-                                <Lock size={8} color="#b8843a" style={{ flexShrink: 0 }} />
-                            )}
+                            {!isActive && <Lock size={8} color="#b8843a" style={{ flexShrink: 0 }} />}
                             {isActive ? 'ДОСТУПНО' : 'ЗАПЕРТО'}
                         </span>
                     </motion.div>
@@ -475,8 +492,8 @@ export const VIPWindow: React.FC<VIPWindowProps> = () => {
                                             ? 'linear-gradient(135deg, rgba(76,52,16,0.97) 0%, rgba(36,22,6,0.99) 100%)'
                                             : 'linear-gradient(135deg, rgba(58,40,12,0.94) 0%, rgba(26,15,4,0.97) 100%)'
                                         : isHov
-                                        ? 'linear-gradient(135deg, rgba(46,34,24,0.93) 0%, rgba(26,16,8,0.97) 100%)'
-                                        : 'linear-gradient(135deg, rgba(34,24,16,0.87) 0%, rgba(18,10,4,0.94) 100%)',
+                                          ? 'linear-gradient(135deg, rgba(46,34,24,0.93) 0%, rgba(26,16,8,0.97) 100%)'
+                                          : 'linear-gradient(135deg, rgba(34,24,16,0.87) 0%, rgba(18,10,4,0.94) 100%)',
                                     border: isBest
                                         ? `1.5px solid ${isHov ? '#f0c040' : 'rgba(240,192,64,0.52)'}`
                                         : `1px solid ${isHov ? 'rgba(240,192,64,0.35)' : 'rgba(255,255,255,0.055)'}`,
@@ -490,8 +507,8 @@ export const VIPWindow: React.FC<VIPWindowProps> = () => {
                                             ? '0 8px 26px rgba(240,192,64,0.28), inset 0 1px 0 rgba(255,255,255,0.06)'
                                             : '0 4px 18px rgba(240,192,64,0.14), inset 0 1px 0 rgba(255,255,255,0.03)'
                                         : isHov
-                                        ? '0 4px 16px rgba(0,0,0,0.45)'
-                                        : '0 2px 8px rgba(0,0,0,0.32)',
+                                          ? '0 4px 16px rgba(0,0,0,0.45)'
+                                          : '0 2px 8px rgba(0,0,0,0.32)',
                                 }}
                             >
                                 {/* Gold line shimmer on top of best package */}
@@ -499,9 +516,12 @@ export const VIPWindow: React.FC<VIPWindowProps> = () => {
                                     <div
                                         style={{
                                             position: 'absolute',
-                                            top: 0, left: 0, right: 0,
+                                            top: 0,
+                                            left: 0,
+                                            right: 0,
                                             height: '1px',
-                                            background: 'linear-gradient(90deg, transparent 0%, rgba(240,192,64,0.6) 50%, transparent 100%)',
+                                            background:
+                                                'linear-gradient(90deg, transparent 0%, rgba(240,192,64,0.6) 50%, transparent 100%)',
                                         }}
                                     />
                                 )}

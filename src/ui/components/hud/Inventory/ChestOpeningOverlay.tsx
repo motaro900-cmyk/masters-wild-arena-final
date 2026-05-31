@@ -498,8 +498,7 @@ export const ChestOpeningOverlay: React.FC<ChestOpeningOverlayProps> = ({
                                         ? '#f0c040'
                                         : openingResult.type === 'UPGRADE'
                                           ? '#10b981'
-                                          : RARITY_COLORS[openingResult.item?.rarity || 'COMMON']?.color ||
-                                            '#fff',
+                                          : RARITY_COLORS[openingResult.item?.rarity || 'COMMON']?.color || '#fff',
                                 fontSize: '28px',
                                 fontWeight: 900,
                                 fontFamily: "'Cinzel', serif",
@@ -525,8 +524,7 @@ export const ChestOpeningOverlay: React.FC<ChestOpeningOverlayProps> = ({
                                 'Все предметы арсенала улучшены до максимума! Вы получили компенсацию.'}
                             {openingResult.type === 'UPGRADE' &&
                                 'Все доступные предметы разблокированы! Повышен уровень одной из вещей.'}
-                            {openingResult.type === 'NEW' &&
-                                'Вы получили новый уникальный предмет из магазина!'}
+                            {openingResult.type === 'NEW' && 'Вы получили новый уникальный предмет из магазина!'}
                         </p>
                     </div>
 

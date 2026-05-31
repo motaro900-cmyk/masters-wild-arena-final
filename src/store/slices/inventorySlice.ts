@@ -157,7 +157,7 @@ export const createInventorySlice = (set: any, get: any) => ({
         }
 
         get().updateQuestProgress('OPEN_CHEST', 1);
-        syncService.syncPlayerData();
+        syncService.debouncedSync();
 
         return rewardResult;
     },
@@ -246,6 +246,10 @@ export const createInventorySlice = (set: any, get: any) => ({
         if (subTab === 'SHOULDERS') set({ equippedShouldersId: id });
         if (subTab === 'BOOTS') set({ equippedBootsId: id });
         if (subTab === 'PANTS') set({ equippedPantsId: id });
+
+        const itemName = data.name || id;
+        syncService.logPlayerAction(`Надел снаряжение: ${itemName}`);
+        syncService.debouncedSync();
     },
 
     unequipItem: (id: string) => {
@@ -269,6 +273,10 @@ export const createInventorySlice = (set: any, get: any) => ({
         if (data?.subTab === 'SHOULDERS') set({ equippedShouldersId: null });
         if (data?.subTab === 'BOOTS') set({ equippedBootsId: null });
         if (data?.subTab === 'PANTS') set({ equippedPantsId: null });
+
+        const itemName = data?.name || id;
+        syncService.logPlayerAction(`Снял снаряжение: ${itemName}`);
+        syncService.debouncedSync();
     },
 
     getHeroByItemId: (itemId: string) => {
@@ -489,7 +497,7 @@ export const createInventorySlice = (set: any, get: any) => ({
         set(updatedState);
 
         get().updateQuestProgress('UPGRADE', 1);
-        syncService.syncPlayerData();
+        syncService.debouncedSync();
 
         return { success, degraded, protectionUsed, newLevel: finalLevel };
     },
@@ -555,7 +563,7 @@ export const createInventorySlice = (set: any, get: any) => ({
             inventory: newInventory,
         });
 
-        syncService.syncPlayerData();
+        syncService.debouncedSync();
         return { goldGained, coalGained, steelGained, shardGained };
     },
 
@@ -588,7 +596,7 @@ export const createInventorySlice = (set: any, get: any) => ({
             inventory: newInventory,
         });
 
-        syncService.syncPlayerData();
+        syncService.debouncedSync();
         return newMultiplier;
     },
 
@@ -598,7 +606,9 @@ export const createInventorySlice = (set: any, get: any) => ({
         if (invItemIndex === -1) return false;
 
         const invItem = state.inventory[invItemIndex];
-        
+        const itemConfig = ITEMS_DATABASE[itemId] as any;
+        if (!itemConfig) return false;
+
         // Decrease inventory amount
         const newInventory = [...state.inventory];
         if ((invItem.amount || 1) > 1) {
@@ -607,13 +617,26 @@ export const createInventorySlice = (set: any, get: any) => ({
             newInventory.splice(invItemIndex, 1);
         }
 
+        // Apply XP reward if present
+        if (itemConfig.expReward) {
+            state.addExp(itemConfig.expReward);
+            set({ inventory: newInventory });
+            syncService.debouncedSync();
+            return true;
+        }
+
         // Apply buff
         const now = Date.now();
         const duration = 60 * 60 * 1000; // 1 hour
         const newBuffs = { ...(state.activeBuffs || {}) };
-        
+
         // Potion types
-        if (itemId === 'hp_potion_1' || itemId === 'hp_potion_2' || itemId === 'hp_potion_3' || itemId === 'mana_potion_1') {
+        if (
+            itemId === 'hp_potion_1' ||
+            itemId === 'hp_potion_2' ||
+            itemId === 'hp_potion_3' ||
+            itemId === 'mana_potion_1'
+        ) {
             newBuffs[itemId] = now + duration;
         } else {
             return false; // Can't consume other items this way
@@ -624,7 +647,7 @@ export const createInventorySlice = (set: any, get: any) => ({
             activeBuffs: newBuffs,
         });
 
-        syncService.syncPlayerData();
+        syncService.debouncedSync();
         return true;
     },
 

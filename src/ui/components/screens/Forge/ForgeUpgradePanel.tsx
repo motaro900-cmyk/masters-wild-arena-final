@@ -4,12 +4,7 @@ import { ITEMS_DATABASE } from '../../../../game/configs/ItemsConfig';
 import { audioService } from '../../../../services/AudioService';
 import { AssetsMap } from '../../../../configs/AssetsMap';
 import { resolveAssetPath } from '../../../../utils/assetPath';
-import {
-    styles,
-    rarityColors,
-    rarityTranslation,
-    itemTypeTranslation,
-} from './ForgeStyles';
+import { styles, rarityColors, rarityTranslation, itemTypeTranslation } from './ForgeStyles';
 
 interface ForgeUpgradePanelProps {
     itemData: any;
@@ -95,9 +90,7 @@ export const ForgeUpgradePanel: React.FC<ForgeUpgradePanelProps> = ({
             {itemData ? (
                 <>
                     <div style={styles.itemDetailsCard}>
-                        <span
-                            style={{ ...styles.itemSubtitle, color: rarityColors[itemData.rarity] || '#fff' }}
-                        >
+                        <span style={{ ...styles.itemSubtitle, color: rarityColors[itemData.rarity] || '#fff' }}>
                             {rarityTranslation[itemData.rarity] || 'ОБЫЧНЫЙ'}{' '}
                             {itemTypeTranslation[(itemData as any).subTab] || 'СНАРЯЖЕНИЕ'}
                         </span>
@@ -206,8 +199,7 @@ export const ForgeUpgradePanel: React.FC<ForgeUpgradePanelProps> = ({
                                     />
                                     <span
                                         style={{
-                                            color:
-                                                (runic_shards || 0) >= reqs.shardCost ? '#4ade80' : '#f87171',
+                                            color: (runic_shards || 0) >= reqs.shardCost ? '#4ade80' : '#f87171',
                                             fontSize: 14,
                                             fontWeight: 900,
                                         }}
@@ -231,10 +223,7 @@ export const ForgeUpgradePanel: React.FC<ForgeUpgradePanelProps> = ({
                                             />
                                             <span
                                                 style={{
-                                                    color:
-                                                        currentRareCount >= reqs.rareCost
-                                                            ? '#4ade80'
-                                                            : '#f87171',
+                                                    color: currentRareCount >= reqs.rareCost ? '#4ade80' : '#f87171',
                                                     fontSize: 14,
                                                     fontWeight: 900,
                                                 }}

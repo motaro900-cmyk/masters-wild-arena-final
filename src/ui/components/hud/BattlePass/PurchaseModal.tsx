@@ -110,7 +110,20 @@ export const PurchaseModal: React.FC<{ onClose: () => void; onBuy: () => void }>
                                 textShadow: '0 2px 4px rgba(0,0,0,0.8)',
                             }}
                         >
-                            ⚠️ НЕДОСТАТОЧНО АЛМАЗОВ (ВАШ БАЛАНС: {crystals} 💎)
+                            ⚠️ НЕДОСТАТОЧНО АЛМАЗОВ (ВАШ БАЛАНС: {crystals}{' '}
+                            <img
+                                src="/assets/images/ui/icons/almaz.webp"
+                                alt="Gems"
+                                style={{
+                                    width: '18px',
+                                    height: '18px',
+                                    objectFit: 'contain',
+                                    display: 'inline-block',
+                                    verticalAlign: 'middle',
+                                    marginTop: '-3px',
+                                }}
+                            />
+                            )
                         </div>
                     )}
 
@@ -123,7 +136,14 @@ export const PurchaseModal: React.FC<{ onClose: () => void; onBuy: () => void }>
                         }}
                     >
                         <div
-                            style={{ fontSize: '28px', fontWeight: 900, fontFamily: "'Cinzel', serif", color: '#fff' }}
+                            style={{
+                                fontSize: '28px',
+                                fontWeight: 900,
+                                fontFamily: "'Cinzel', serif",
+                                color: '#fff',
+                                display: 'flex',
+                                alignItems: 'center',
+                            }}
                         >
                             <span
                                 style={{
@@ -135,7 +155,12 @@ export const PurchaseModal: React.FC<{ onClose: () => void; onBuy: () => void }>
                             >
                                 1999
                             </span>
-                            999 <span style={{ color: '#ffd700' }}>💎</span>
+                            <span style={{ marginRight: '6px' }}>999</span>
+                            <img
+                                src="/assets/images/ui/icons/almaz.webp"
+                                alt="Gems"
+                                style={{ width: '26px', height: '26px', objectFit: 'contain' }}
+                            />
                         </div>
                         <motion.button
                             whileHover={hasEnough ? { scale: 1.05 } : {}}

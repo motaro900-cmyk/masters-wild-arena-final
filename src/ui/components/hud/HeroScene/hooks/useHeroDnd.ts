@@ -2,11 +2,15 @@ import { useState } from 'react';
 import { useSensor, useSensors, PointerSensor, closestCenter } from '@dnd-kit/core';
 import { ITEMS_DATABASE } from '../../../../../game/configs/ItemsConfig';
 
-const getScale = () => {
+const getScaleAndOffset = () => {
     const wrapper = document.querySelector('.game-scale-wrapper');
-    if (!wrapper) return 1;
+    if (!wrapper) return { scale: 1, left: 0, top: 0 };
     const rect = wrapper.getBoundingClientRect();
-    return rect.width / 1920;
+    return {
+        scale: rect.width / 1920,
+        left: rect.left,
+        top: rect.top,
+    };
 };
 
 // @ts-expect-error - ScaledPointerSensor is a custom sensor extending PointerSensor but doesn't fully match the types
@@ -17,18 +21,18 @@ export class ScaledPointerSensor extends PointerSensor {
         const originalAdd = self.listeners.add.bind(self.listeners);
         self.listeners.add = (eventName: string, handler: (...args: any[]) => void, options: any) => {
             const wrappedHandler = (event: any) => {
-                const scale = getScale();
+                const { scale, left, top } = getScaleAndOffset();
                 const scaledEvent = new Proxy(event, {
                     get(target, prop) {
-                        if (prop === 'clientX') return target.clientX / scale;
-                        if (prop === 'clientY') return target.clientY / scale;
+                        if (prop === 'clientX') return (target.clientX - left) / scale;
+                        if (prop === 'clientY') return (target.clientY - top) / scale;
                         if (prop === 'touches') {
                             return Array.from(target.touches || []).map(
                                 (touch: any) =>
                                     new Proxy(touch, {
                                         get(t, p) {
-                                            if (p === 'clientX') return t.clientX / scale;
-                                            if (p === 'clientY') return t.clientY / scale;
+                                            if (p === 'clientX') return (t.clientX - left) / scale;
+                                            if (p === 'clientY') return (t.clientY - top) / scale;
                                             return Reflect.get(t, p);
                                         },
                                     }),
@@ -39,8 +43,8 @@ export class ScaledPointerSensor extends PointerSensor {
                                 (touch: any) =>
                                     new Proxy(touch, {
                                         get(t, p) {
-                                            if (p === 'clientX') return t.clientX / scale;
-                                            if (p === 'clientY') return t.clientY / scale;
+                                            if (p === 'clientX') return (t.clientX - left) / scale;
+                                            if (p === 'clientY') return (t.clientY - top) / scale;
                                             return Reflect.get(t, p);
                                         },
                                     }),
@@ -58,6 +62,7 @@ export class ScaledPointerSensor extends PointerSensor {
         super.attach();
     }
 }
+
 
 export const useHeroDnd = (
     selectedHeroId: string,
@@ -129,3 +134,5 @@ export const useHeroDnd = (
         collisionDetection: closestCenter,
     };
 };
+
+

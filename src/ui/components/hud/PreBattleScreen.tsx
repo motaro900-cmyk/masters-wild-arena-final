@@ -115,12 +115,18 @@ import { AssetsMap } from '../../../configs/AssetsMap';
 
 const getRarityColor = (rarity: string) => {
     switch (rarity?.toUpperCase()) {
-        case 'MYTHIC': return '#ef4444';
-        case 'LEGENDARY': return '#f59e0b';
-        case 'EPIC': return '#a855f7';
-        case 'RARE': return '#3b82f6';
-        case 'UNCOMMON': return '#10b981';
-        default: return '#78716c';
+        case 'MYTHIC':
+            return '#ef4444';
+        case 'LEGENDARY':
+            return '#f59e0b';
+        case 'EPIC':
+            return '#a855f7';
+        case 'RARE':
+            return '#3b82f6';
+        case 'UNCOMMON':
+            return '#10b981';
+        default:
+            return '#78716c';
     }
 };
 
@@ -143,90 +149,175 @@ const slots = [
     { id: 'BOOTS', label: 'САПОГИ', gridArea: '4 / 2' },
 ] as const;
 
+const GearSlot: React.FC<{
+    slotId: string;
+    item: any;
+    label: string;
+}> = ({ slotId, item, label }) => {
+    const color = item ? getRarityColor(item.rarity) : 'rgba(255,255,255,0.05)';
+    const [hovered, setHovered] = React.useState(false);
+
+    let blueprintSrc = '';
+    if (slotId === 'HELMETS') blueprintSrc = AssetsMap.UI.BLUEPRINT_HELMET;
+    else if (slotId === 'ARMOR') blueprintSrc = AssetsMap.UI.BLUEPRINT_ARMOR;
+    else if (slotId === 'WEAPONS') blueprintSrc = AssetsMap.UI.BLUEPRINT_WEAPON;
+    else if (slotId === 'SHIELDS') blueprintSrc = AssetsMap.UI.BLUEPRINT_SHIELD;
+    else if (slotId === 'SHOULDERS') blueprintSrc = AssetsMap.UI.BLUEPRINT_SHOULDERS;
+    else if (slotId === 'PANTS') blueprintSrc = AssetsMap.UI.BLUEPRINT_PANTS;
+    else if (slotId === 'BOOTS') blueprintSrc = AssetsMap.UI.BLUEPRINT_BOOTS;
+
+    return (
+        <div
+            onMouseEnter={() => setHovered(true)}
+            onMouseLeave={() => setHovered(false)}
+            style={{
+                width: '80px',
+                height: '80px',
+                borderRadius: '12px',
+                background: item ? 'rgba(0,0,0,0.7)' : 'rgba(0,0,0,0.35)',
+                border: `2px solid ${item ? color : 'rgba(240, 192, 64, 0.18)'}`,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                position: 'relative',
+                boxShadow: item ? `0 0 14px ${color}44, 0 4px 8px rgba(0,0,0,0.5)` : 'none',
+                cursor: item ? 'help' : 'default',
+                flexShrink: 0,
+                transition: 'all 0.2s ease-in-out',
+            }}
+        >
+            {item ? (
+                <img
+                    src={item.image || item.icon}
+                    alt={item.name}
+                    style={{ width: '78%', height: '78%', objectFit: 'contain' }}
+                />
+            ) : (
+                <div
+                    style={{
+                        opacity: 0.3,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        width: '100%',
+                        height: '100%',
+                    }}
+                >
+                    {blueprintSrc && (
+                        <img
+                            src={blueprintSrc}
+                            style={{
+                                width: '55%',
+                                height: '45%',
+                                objectFit: 'contain',
+                                filter: 'drop-shadow(0 0 4px rgba(240,192,64,0.5)) grayscale(0.5)',
+                            }}
+                            alt=""
+                        />
+                    )}
+                    <span
+                        style={{
+                            fontSize: '8px',
+                            fontWeight: 900,
+                            marginTop: '2px',
+                            color: '#f0c040',
+                            letterSpacing: '0.5px',
+                            textTransform: 'uppercase',
+                        }}
+                    >
+                        {label}
+                    </span>
+                </div>
+            )}
+
+            {item && (
+                <div
+                    style={{
+                        position: 'absolute',
+                        bottom: '-6px',
+                        background: color,
+                        padding: '1px 5px',
+                        borderRadius: '4px',
+                        fontSize: '7px',
+                        fontWeight: 900,
+                        color: '#000',
+                        textTransform: 'uppercase',
+                        boxShadow: '0 2px 4px rgba(0,0,0,0.5)',
+                        whiteSpace: 'nowrap',
+                    }}
+                >
+                    {RARITY_RU[item.rarity] || item.rarity}
+                </div>
+            )}
+
+            {hovered && item && (
+                <div
+                    style={{
+                        position: 'absolute',
+                        bottom: '110%',
+                        left: '50%',
+                        transform: 'translateX(-50%)',
+                        background: 'rgba(15,10,5,0.98)',
+                        border: `1.5px solid ${color}`,
+                        borderRadius: '10px',
+                        padding: '10px 14px',
+                        width: '180px',
+                        zIndex: 9999,
+                        fontSize: '12px',
+                        color: '#fff',
+                        boxShadow: '0 12px 24px rgba(0,0,0,0.95)',
+                        pointerEvents: 'none',
+                        textAlign: 'center',
+                        fontFamily: "'Montserrat', sans-serif",
+                    }}
+                >
+                    <div style={{ color, fontWeight: 'bold', marginBottom: '4px', fontSize: '13px' }}>{item.name}</div>
+                    <div
+                        style={{
+                            fontSize: '10px',
+                            opacity: 0.6,
+                            marginBottom: '6px',
+                            textTransform: 'uppercase',
+                            fontWeight: 'bold',
+                        }}
+                    >
+                        {RARITY_RU[item.rarity] || item.rarity} • {label}
+                    </div>
+                    {item.hpBonus && <div style={{ color: '#22c55e', fontSize: '11px' }}>+{item.hpBonus} Здоровье</div>}
+                    {item.attackBonus && (
+                        <div style={{ color: '#ef4444', fontSize: '11px' }}>+{item.attackBonus} Атака</div>
+                    )}
+                    {item.defenseBonus && (
+                        <div style={{ color: '#3b82f6', fontSize: '11px' }}>+{item.defenseBonus} Защита</div>
+                    )}
+                </div>
+            )}
+        </div>
+    );
+};
+
 const CircularGearLayout: React.FC<{ equipment: Record<string, string | null> }> = ({ equipment }) => {
     const topRow = ['HELMETS', 'WEAPONS', 'ARMOR', 'SHIELDS'];
     const botRow = ['SHOULDERS', 'PANTS', 'BOOTS'];
 
-    const renderSlot = (slotId: string) => {
-        const s = slots.find(sl => sl.id === slotId);
-        const itemId = equipment[slotId];
-        const item = itemId ? (ITEMS_DATABASE as any)[itemId] : null;
-        const color = item ? getRarityColor(item.rarity) : 'rgba(255,255,255,0.05)';
-        const [hovered, setHovered] = React.useState(false);
-
-        let blueprintSrc = '';
-        if (slotId === 'HELMETS') blueprintSrc = AssetsMap.UI.BLUEPRINT_HELMET;
-        else if (slotId === 'ARMOR') blueprintSrc = AssetsMap.UI.BLUEPRINT_ARMOR;
-        else if (slotId === 'WEAPONS') blueprintSrc = AssetsMap.UI.BLUEPRINT_WEAPON;
-        else if (slotId === 'SHIELDS') blueprintSrc = AssetsMap.UI.BLUEPRINT_SHIELD;
-        else if (slotId === 'SHOULDERS') blueprintSrc = AssetsMap.UI.BLUEPRINT_SHOULDERS;
-        else if (slotId === 'PANTS') blueprintSrc = AssetsMap.UI.BLUEPRINT_PANTS;
-        else if (slotId === 'BOOTS') blueprintSrc = AssetsMap.UI.BLUEPRINT_BOOTS;
-
-        return (
-            <div
-                key={slotId}
-                onMouseEnter={() => setHovered(true)}
-                onMouseLeave={() => setHovered(false)}
-                style={{
-                    width: '80px',
-                    height: '80px',
-                    borderRadius: '12px',
-                    background: item ? 'rgba(0,0,0,0.7)' : 'rgba(0,0,0,0.35)',
-                    border: `2px solid ${item ? color : 'rgba(240, 192, 64, 0.18)'}`,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    position: 'relative',
-                    boxShadow: item ? `0 0 14px ${color}44, 0 4px 8px rgba(0,0,0,0.5)` : 'none',
-                    cursor: item ? 'help' : 'default',
-                    flexShrink: 0,
-                    transition: 'all 0.2s ease-in-out',
-                }}
-            >
-                {item ? (
-                    <img
-                        src={item.image || item.icon}
-                        alt={item.name}
-                        style={{ width: '78%', height: '78%', objectFit: 'contain' }}
-                    />
-                ) : (
-                    <div style={{ opacity: 0.3, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%' }}>
-                        {blueprintSrc && (
-                            <img src={blueprintSrc} style={{ width: '55%', height: '45%', objectFit: 'contain', filter: 'drop-shadow(0 0 4px rgba(240,192,64,0.5)) grayscale(0.5)' }} alt="" />
-                        )}
-                        <span style={{ fontSize: '8px', fontWeight: 900, marginTop: '2px', color: '#f0c040', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
-                            {s?.label}
-                        </span>
-                    </div>
-                )}
-
-                {item && (
-                    <div style={{ position: 'absolute', bottom: '-6px', background: color, padding: '1px 5px', borderRadius: '4px', fontSize: '7px', fontWeight: 900, color: '#000', textTransform: 'uppercase', boxShadow: '0 2px 4px rgba(0,0,0,0.5)', whiteSpace: 'nowrap' }}>
-                        {RARITY_RU[item.rarity] || item.rarity}
-                    </div>
-                )}
-
-                {hovered && item && (
-                    <div style={{ position: 'absolute', bottom: '110%', left: '50%', transform: 'translateX(-50%)', background: 'rgba(15,10,5,0.98)', border: `1.5px solid ${color}`, borderRadius: '10px', padding: '10px 14px', width: '180px', zIndex: 9999, fontSize: '12px', color: '#fff', boxShadow: '0 12px 24px rgba(0,0,0,0.95)', pointerEvents: 'none', textAlign: 'center', fontFamily: "'Montserrat', sans-serif" }}>
-                        <div style={{ color, fontWeight: 'bold', marginBottom: '4px', fontSize: '13px' }}>{item.name}</div>
-                        <div style={{ fontSize: '10px', opacity: 0.6, marginBottom: '6px', textTransform: 'uppercase', fontWeight: 'bold' }}>{RARITY_RU[item.rarity] || item.rarity} • {s?.label}</div>
-                        {item.hpBonus && <div style={{ color: '#22c55e', fontSize: '11px' }}>+{item.hpBonus} Здоровье</div>}
-                        {item.attackBonus && <div style={{ color: '#ef4444', fontSize: '11px' }}>+{item.attackBonus} Атака</div>}
-                        {item.defenseBonus && <div style={{ color: '#3b82f6', fontSize: '11px' }}>+{item.defenseBonus} Защита</div>}
-                    </div>
-                )}
-            </div>
-        );
-    };
-
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', alignItems: 'center', paddingTop: '8px' }}>
             <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
-                {topRow.map(renderSlot)}
+                {topRow.map((slotId) => {
+                    const s = slots.find((sl) => sl.id === slotId);
+                    const itemId = equipment[slotId];
+                    const item = itemId ? (ITEMS_DATABASE as any)[itemId] : null;
+                    return <GearSlot key={slotId} slotId={slotId} item={item} label={s?.label || ''} />;
+                })}
             </div>
             <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
-                {botRow.map(renderSlot)}
+                {botRow.map((slotId) => {
+                    const s = slots.find((sl) => sl.id === slotId);
+                    const itemId = equipment[slotId];
+                    const item = itemId ? (ITEMS_DATABASE as any)[itemId] : null;
+                    return <GearSlot key={slotId} slotId={slotId} item={item} label={s?.label || ''} />;
+                })}
             </div>
         </div>
     );
@@ -253,6 +344,7 @@ interface PreBattleScreenProps {
     };
     onStart: () => void;
     onCancel: () => void;
+    battleMode?: string;
 }
 
 export const PreBattleScreen: React.FC<PreBattleScreenProps> = ({
@@ -266,6 +358,7 @@ export const PreBattleScreen: React.FC<PreBattleScreenProps> = ({
     enemyStats,
     onStart,
     onCancel,
+    battleMode,
 }) => {
     const { rating, heroEquipment, selectedHeroId } = useGameStore();
     const playerRank = getRankInfo(rating);
@@ -371,7 +464,16 @@ export const PreBattleScreen: React.FC<PreBattleScreenProps> = ({
                             ВЫ
                         </div>
 
-                        <div style={{ position: 'relative', width: '220px', height: '210px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <div
+                            style={{
+                                position: 'relative',
+                                width: '220px',
+                                height: '210px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                            }}
+                        >
                             <img
                                 src={playerImage}
                                 alt={playerName}
@@ -451,7 +553,16 @@ export const PreBattleScreen: React.FC<PreBattleScreenProps> = ({
                             ВРАГ
                         </div>
 
-                        <div style={{ position: 'relative', width: '220px', height: '210px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <div
+                            style={{
+                                position: 'relative',
+                                width: '220px',
+                                height: '210px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                            }}
+                        >
                             {enemyImage ? (
                                 <img
                                     src={enemyImage}
@@ -460,7 +571,7 @@ export const PreBattleScreen: React.FC<PreBattleScreenProps> = ({
                                         width: '200px',
                                         height: '200px',
                                         objectFit: 'contain',
-                                        transform: 'scaleX(-1)',
+                                        transform: battleMode === 'PVE' ? 'none' : 'scaleX(-1)',
                                         filter: 'drop-shadow(0 10px 20px rgba(0,0,0,0.5))',
                                     }}
                                     onError={(e) => {
@@ -473,7 +584,7 @@ export const PreBattleScreen: React.FC<PreBattleScreenProps> = ({
                         </div>
 
                         {/* Equipment rows below enemy character */}
-                        <CircularGearLayout equipment={enemyEq} />
+                        {battleMode !== 'PVE' && <CircularGearLayout equipment={enemyEq} />}
 
                         <div
                             style={{

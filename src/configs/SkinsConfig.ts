@@ -20,14 +20,16 @@ export interface ISkinConfig {
     bpLevel?: number;
     /** Цвет редкости */
     rarity: 'COMMON' | 'RARE' | 'EPIC' | 'LEGENDARY' | 'MYTHIC';
+    skinLore?: string;
+    color?: string;
 }
 
 export const SKINS_DB: ISkinConfig[] = [
     // ── ПАНДА ──────────────────────────────────────────────────────────
     {
         id: 'default',
-        name: 'Базовый облик',
-        description: 'Классический наряд Панды-воина. Испытан в сотнях битв.',
+        name: 'Страж Окраин',
+        description: 'Традиционное снаряжение защитника Туманной Долины. Проверенное временем и надежное в бою.',
         heroId: 'panda',
         image: '/assets/characters/panda/panda_base.png',
         source: 'default',
@@ -36,8 +38,9 @@ export const SKINS_DB: ISkinConfig[] = [
     },
     {
         id: 'panda_frost',
-        name: 'Морозный Дзен',
-        description: 'Окутанный вечным льдом. Говорят, этот облик дарует ледяное спокойствие.',
+        name: 'Лазурный Дракон',
+        description:
+            'Легендарные серебряные латы, заряженные чистой энергией Лазурного Дракона. Облик дарует силу ветра и шторма.',
         heroId: 'panda',
         image: '/assets/characters/panda/panda_frost.png',
         source: 'battle_pass',
@@ -45,12 +48,15 @@ export const SKINS_DB: ISkinConfig[] = [
         season: 1,
         bpLevel: 15,
         rarity: 'EPIC',
+        color: '#00d2ff',
+        skinLore:
+            'Когда тьма начала грозить не только Окраинам, но и самому Храму Небес, Фэн Лун совершил паломничество на Драконий Пик. Там, преодолев бурю и доказав чистоту своих намерений, он удостоился благословения Древнего Духа ветра.\n\nЕго отцовские бронзовые доспехи переродились в великолепные серебряные латы с чешуйками бирюзового цвета, а деревянный шест наполнился чистой космической энергией, увенчавшись парящей сферой Лазурного Дракона. Фэн Лун принял титул Лазурного Дракона — хранителя небесного баланса и штормов.',
     },
     // ── ЕНОТ ───────────────────────────────────────────────────────────
     {
         id: 'raccoon_default',
-        name: 'Базовый облик',
-        description: 'Классическое снаряжение Енота-инстинкта.',
+        name: 'Дикий Страж',
+        description: 'Легкие и бесшумные доспехи скрытного защитника Древнего Леса.',
         heroId: 'raccoon',
         image: '/assets/characters/raccoon/raccoon_base.png',
         source: 'default',
@@ -60,5 +66,4 @@ export const SKINS_DB: ISkinConfig[] = [
 ];
 
 /** Возвращает скины для конкретного героя */
-export const getSkinsForHero = (heroId: string): ISkinConfig[] =>
-    SKINS_DB.filter((s) => s.heroId === heroId);
+export const getSkinsForHero = (heroId: string): ISkinConfig[] => SKINS_DB.filter((s) => s.heroId === heroId);

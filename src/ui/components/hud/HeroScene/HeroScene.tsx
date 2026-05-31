@@ -25,6 +25,33 @@ import { DragOverlayLayer } from './components/shared/DragOverlayLayer';
 import { UnderDevelopmentModal } from '../SharedUI';
 import { ResourceBar } from '../ResourceBar';
 
+const getScaleAndOffset = () => {
+    const wrapper = document.querySelector('.game-scale-wrapper');
+    if (!wrapper) return { scale: 1, left: 0, top: 0 };
+    const rect = wrapper.getBoundingClientRect();
+    return {
+        scale: rect.width / 1920,
+        left: rect.left,
+        top: rect.top,
+    };
+};
+
+const scaleRect = (element: HTMLElement) => {
+    const rect = element.getBoundingClientRect();
+    const { scale, left, top } = getScaleAndOffset();
+    return {
+        x: (rect.left - left) / scale,
+        y: (rect.top - top) / scale,
+        left: (rect.left - left) / scale,
+        top: (rect.top - top) / scale,
+        right: (rect.right - left) / scale,
+        bottom: (rect.bottom - top) / scale,
+        width: rect.width / scale,
+        height: rect.height / scale,
+    };
+};
+
+
 export const HeroScene: React.FC = () => {
     const {
         getCalculatedStats,
@@ -100,6 +127,14 @@ export const HeroScene: React.FC = () => {
             collisionDetection={collisionDetection}
             onDragStart={handleDragStart}
             onDragEnd={handleDragEnd}
+            measuring={{
+                draggable: {
+                    measure: scaleRect,
+                },
+                droppable: {
+                    measure: scaleRect,
+                },
+            }}
         >
             <div
                 id="hero-scene-root"
@@ -285,8 +320,6 @@ export const HeroScene: React.FC = () => {
                                     <div style={{ color: '#fff' }}>В разработке...</div>
                                 )}
                             </AnimatePresence>
-
-
                         </div>
                     </div>
 

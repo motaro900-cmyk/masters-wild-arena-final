@@ -7,12 +7,12 @@ import { resolveAssetPath } from '../../utils/assetPath';
 import { useGameStore } from '../../store/useGameStore';
 
 const ENEMY_NAMES: Record<string, string> = {
-    'лось.webp': 'Лось',
-    'тигр.webp': 'Тигр',
-    'лев.webp': 'Лев',
-    'медведь.webp': 'Медведь',
-    'кабан.webp': 'Кабан',
-    'крокодил.webp': 'Крокодил',
+    'moose.webp': 'Лось',
+    'tiger.webp': 'Тигр',
+    'lion.webp': 'Лев',
+    'bear.webp': 'Медведь',
+    'boar.webp': 'Кабан',
+    'crocodile.webp': 'Крокодил',
 };
 
 export class BattleScreen extends Container {
@@ -38,7 +38,7 @@ export class BattleScreen extends Container {
     // Статистика матча
     private totalDamageDealt = 0;
     private turnsPlayed = 0;
-    private enemyFileName = 'лось.webp';
+    private enemyFileName = 'moose.webp';
 
     // Callback для передачи результата в React
     public onBattleEnd: ((result: BattleResultData) => void) | null = null;
@@ -97,7 +97,7 @@ export class BattleScreen extends Container {
             this.addChildAt(this.player, 1);
 
             // ВРАГ (СЛУЧАЙНЫЙ) — правая сторона
-            const enemies = ['лось.webp', 'тигр.webp', 'лев.webp', 'медведь.webp', 'кабан.webp', 'крокодил.webp'];
+            const enemies = ['moose.webp', 'tiger.webp', 'lion.webp', 'bear.webp', 'boar.webp', 'crocodile.webp'];
             this.enemyFileName = enemies[Math.floor(Math.random() * enemies.length)];
             const enemyTex = await PIXI.Assets.load(resolveAssetPath(`/assets/images/avatars/${this.enemyFileName}`));
             this.enemy = new Sprite(enemyTex);

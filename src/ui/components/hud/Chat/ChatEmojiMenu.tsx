@@ -14,12 +14,7 @@ interface ChatEmojiMenuProps {
     addEmoji: (emoji: string) => void;
 }
 
-export const ChatEmojiMenu: React.FC<ChatEmojiMenuProps> = ({
-    showEmoji,
-    activeTab,
-    setActiveTab,
-    addEmoji,
-}) => {
+export const ChatEmojiMenu: React.FC<ChatEmojiMenuProps> = ({ showEmoji, activeTab, setActiveTab, addEmoji }) => {
     const currentEmojis = EMOJI_TABS.find((t) => t.id === activeTab)?.list || [];
 
     return (

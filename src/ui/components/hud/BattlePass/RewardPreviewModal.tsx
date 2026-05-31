@@ -3,13 +3,15 @@ import { motion } from 'framer-motion';
 import { SKINS_DB } from '../../../../configs/SkinsConfig';
 import { ITEMS_DATABASE } from '../../../../game/configs/ItemsConfig';
 
+import { getRewardImage } from './BattlePassShared';
+
 export const RewardPreviewModal: React.FC<{ item: any; onClose: () => void }> = ({ item, onClose }) => {
     if (!item) return null;
 
     let typeText = 'ПРЕДМЕТ';
     let description = 'Неизвестная награда.';
 
-    const skinConfig = item.type === 'SKIN' ? SKINS_DB.find(s => s.id === item.id) : null;
+    const skinConfig = item.type === 'SKIN' ? SKINS_DB.find((s) => s.id === item.id) : null;
 
     let mappedItemId = item.id;
     if (item.id === 'potion_strength') mappedItemId = 'hp_potion_3';
@@ -21,11 +23,13 @@ export const RewardPreviewModal: React.FC<{ item: any; onClose: () => void }> = 
 
     if (item.type === 'WEAPON') {
         typeText = 'ОРУЖИЕ';
-        description = dbItem?.desc ||
+        description =
+            dbItem?.desc ||
             'Эксклюзивное и могущественное снаряжение. Сразу же экипируется на ваших героев для увеличения их боевой мощи в бою.';
     } else if (item.type === 'SKIN') {
         typeText = 'ОБЛИК';
-        description = skinConfig?.description ||
+        description =
+            skinConfig?.description ||
             'Уникальный косметический облик. Выделитесь на поле боя среди соперников и союзников с новым стилем.';
     } else if (item.type === 'CHEST') {
         typeText = 'СУНДУК';
@@ -41,9 +45,12 @@ export const RewardPreviewModal: React.FC<{ item: any; onClose: () => void }> = 
             'Премиальная валюта. Позволяет приобретать редчайших героев, открывать золотые сундуки и разблокировать Премиум Боевой Пропуск.';
     } else if (item.type === 'ITEM') {
         typeText = 'ПРЕДМЕТ / ЗЕЛЬЕ';
-        description = dbItem?.desc ||
+        description =
+            dbItem?.desc ||
             'Полезный расходный материал для усиления характеристик персонажей или создания ценных артефактов.';
     }
+
+    const imgUrl = getRewardImage(item);
 
     return (
         <motion.div
@@ -134,10 +141,21 @@ export const RewardPreviewModal: React.FC<{ item: any; onClose: () => void }> = 
                         margin: '10px 0',
                     }}
                 >
-                    {skinConfig ? (
+                    {imgUrl ? (
                         <img
-                            src={skinConfig.image}
-                            alt={skinConfig.name}
+                            src={imgUrl}
+                            alt={item.name}
+                            style={{
+                                width: item.type === 'GOLD' || item.type === 'GEMS' ? '65%' : '85%',
+                                height: item.type === 'GOLD' || item.type === 'GEMS' ? '65%' : '85%',
+                                objectFit: 'contain',
+                                filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.5))',
+                            }}
+                        />
+                    ) : item.icon.startsWith('sprite-') ? (
+                        <img
+                            src="/assets/images/ui/gift_premium.png"
+                            alt="Gift"
                             style={{
                                 width: '85%',
                                 height: '85%',
@@ -145,19 +163,8 @@ export const RewardPreviewModal: React.FC<{ item: any; onClose: () => void }> = 
                                 filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.5))',
                             }}
                         />
-                    ) : dbItem?.image ? (
-                        <img
-                            src={dbItem.image}
-                            alt={dbItem.name}
-                            style={{
-                                width: '70%',
-                                height: '70%',
-                                objectFit: 'contain',
-                                filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.5))',
-                            }}
-                        />
                     ) : (
-                        item.icon.startsWith('sprite-') ? '🎁' : item.icon
+                        item.icon
                     )}
                 </div>
 

@@ -34,14 +34,16 @@ const BankCoinParticle: React.FC<{ style: React.CSSProperties; symbol: string }>
 );
 
 export const BankItemShowcase: React.FC<BankItemShowcaseProps> = ({ item, rarityColor, isMobile = false }) => {
-    const particles = isMobile ? [] : [
-        { left: '15%', bottom: '30%', delay: '0s', duration: '3.2s', anim: 'coin-float-1', symbol: '🪙' },
-        { left: '25%', bottom: '22%', delay: '0.7s', duration: '2.8s', anim: 'coin-float-2', symbol: '💰' },
-        { left: '75%', bottom: '32%', delay: '0.3s', duration: '3.5s', anim: 'coin-float-1', symbol: '✨' },
-        { left: '80%', bottom: '20%', delay: '1.2s', duration: '2.6s', anim: 'coin-float-3', symbol: '🔷' },
-        { left: '48%', bottom: '10%', delay: '0.5s', duration: '3.1s', anim: 'coin-float-2', symbol: '💵' },
-        { left: '60%', bottom: '25%', delay: '1.8s', duration: '2.9s', anim: 'coin-float-3', symbol: '🔸' },
-    ];
+    const particles = isMobile
+        ? []
+        : [
+              { left: '15%', bottom: '30%', delay: '0s', duration: '3.2s', anim: 'coin-float-1', symbol: '🪙' },
+              { left: '25%', bottom: '22%', delay: '0.7s', duration: '2.8s', anim: 'coin-float-2', symbol: '💰' },
+              { left: '75%', bottom: '32%', delay: '0.3s', duration: '3.5s', anim: 'coin-float-1', symbol: '✨' },
+              { left: '80%', bottom: '20%', delay: '1.2s', duration: '2.6s', anim: 'coin-float-3', symbol: '🔷' },
+              { left: '48%', bottom: '10%', delay: '0.5s', duration: '3.1s', anim: 'coin-float-2', symbol: '💵' },
+              { left: '60%', bottom: '25%', delay: '1.8s', duration: '2.9s', anim: 'coin-float-3', symbol: '🔸' },
+          ];
 
     const outerGlow = 'radial-gradient(circle, ' + rarityColor + '28 0%, ' + rarityColor + '05 50%, transparent 70%)';
     const shimmerBg = 'radial-gradient(ellipse, ' + rarityColor + '33 0%, transparent 70%)';

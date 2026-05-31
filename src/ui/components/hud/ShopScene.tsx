@@ -94,7 +94,12 @@ export const ShopScene: React.FC = () => {
                 position: 'absolute',
                 top: 0,
                 left: 0,
-                backgroundImage: 'url("' + (isMobile ? AssetsMap.BACKGROUNDS.SHOP.replace('.webp', '_mobile.webp') : AssetsMap.BACKGROUNDS.SHOP) + '")',
+                backgroundImage:
+                    'url("' +
+                    (isMobile
+                        ? AssetsMap.BACKGROUNDS.SHOP.replace('.webp', '_mobile.webp')
+                        : AssetsMap.BACKGROUNDS.SHOP) +
+                    '")',
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
                 backgroundColor: 'rgba(10, 5, 5, 0.45)',
@@ -305,7 +310,15 @@ export const ShopScene: React.FC = () => {
 
                     {/* MAIN MIDDLE ROW (PEDESTAL & INSPECTION CARD) */}
                     {selectedItem ? (
-                        <div style={{ flex: 1, display: 'flex', gap: isMobile ? '15px' : '30px', alignItems: 'stretch', minWidth: 0 }}>
+                        <div
+                            style={{
+                                flex: 1,
+                                display: 'flex',
+                                gap: isMobile ? '15px' : '30px',
+                                alignItems: 'stretch',
+                                minWidth: 0,
+                            }}
+                        >
                             {/* CENTRAL SHOWCASE PEDESTAL */}
                             <div
                                 style={{
@@ -387,10 +400,17 @@ export const ShopScene: React.FC = () => {
                                                     borderRadius: '50%',
                                                     background:
                                                         'linear-gradient(180deg, rgba(35,30,30,0.96) 0%, rgba(10,5,5,0.98) 100%)',
-                                                    border: (isMobile ? '1px solid ' : '2px solid ') + getRarityColor(selectedItem.rarity) + '88',
+                                                    border:
+                                                        (isMobile ? '1px solid ' : '2px solid ') +
+                                                        getRarityColor(selectedItem.rarity) +
+                                                        '88',
                                                     boxShadow: isMobile
-                                                        ? '0 4px 10px rgba(0,0,0,0.8), 0 0 10px ' + getRarityColor(selectedItem.rarity) + '33'
-                                                        : '0 8px 25px rgba(0,0,0,0.8), 0 0 15px ' + getRarityColor(selectedItem.rarity) + '33, inset 0 2px 4px rgba(255,255,255,0.15)',
+                                                        ? '0 4px 10px rgba(0,0,0,0.8), 0 0 10px ' +
+                                                          getRarityColor(selectedItem.rarity) +
+                                                          '33'
+                                                        : '0 8px 25px rgba(0,0,0,0.8), 0 0 15px ' +
+                                                          getRarityColor(selectedItem.rarity) +
+                                                          '33, inset 0 2px 4px rgba(255,255,255,0.15)',
                                                     transform: 'rotateX(65deg)',
                                                     display: 'flex',
                                                     alignItems: 'center',
@@ -450,34 +470,36 @@ export const ShopScene: React.FC = () => {
                                     </div>
                                 )}
 
-                                 {/* Dot Indicators for Bottom Shelf items (usually 6) - Hidden on mobile to prevent layout clutter */}
-                                 {!isMobile && (
-                                     <div style={{ display: 'flex', gap: '8px', zIndex: 10, margin: '5px 0' }}>
-                                         {filteredItems.map((item: ShopItem) => (
-                                             <button
-                                                 key={item.id}
-                                                 onClick={() => setSelectedItem(item)}
-                                                 style={{
-                                                     width: '10px',
-                                                     height: '10px',
-                                                     minWidth: 'auto',
-                                                     minHeight: 'auto',
-                                                     borderRadius: '50%',
-                                                     backgroundColor:
-                                                         selectedItem.id === item.id ? '#f0c040' : 'rgba(255,255,255,0.2)',
-                                                     border: 'none',
-                                                     cursor: 'pointer',
-                                                     padding: 0,
-                                                     boxShadow:
-                                                         selectedItem.id === item.id
-                                                             ? '0 0 8px #f0c040, 0 0 3px #f0c040'
-                                                             : 'none',
-                                                     transition: 'all 0.2s',
-                                                 }}
-                                             />
-                                         ))}
-                                     </div>
-                                 )}
+                                {/* Dot Indicators for Bottom Shelf items (usually 6) - Hidden on mobile to prevent layout clutter */}
+                                {!isMobile && (
+                                    <div style={{ display: 'flex', gap: '8px', zIndex: 10, margin: '5px 0' }}>
+                                        {filteredItems.map((item: ShopItem) => (
+                                            <button
+                                                key={item.id}
+                                                onClick={() => setSelectedItem(item)}
+                                                style={{
+                                                    width: '10px',
+                                                    height: '10px',
+                                                    minWidth: 'auto',
+                                                    minHeight: 'auto',
+                                                    borderRadius: '50%',
+                                                    backgroundColor:
+                                                        selectedItem.id === item.id
+                                                            ? '#f0c040'
+                                                            : 'rgba(255,255,255,0.2)',
+                                                    border: 'none',
+                                                    cursor: 'pointer',
+                                                    padding: 0,
+                                                    boxShadow:
+                                                        selectedItem.id === item.id
+                                                            ? '0 0 8px #f0c040, 0 0 3px #f0c040'
+                                                            : 'none',
+                                                    transition: 'all 0.2s',
+                                                }}
+                                            />
+                                        ))}
+                                    </div>
+                                )}
                             </div>
 
                             {/* RIGHT SIDE DETAILED INSPECTION CARD */}
@@ -514,24 +536,38 @@ export const ShopScene: React.FC = () => {
 
                         return (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', width: '100%' }}>
-                                <div style={{
-                                    display: 'flex',
-                                    justifyContent: 'space-between',
-                                    alignItems: 'center',
-                                    padding: '8px 16px',
-                                    background: 'linear-gradient(90deg, rgba(30, 20, 15, 0.85) 0%, rgba(15, 10, 10, 0.6) 50%, rgba(30, 20, 15, 0.85) 100%)',
-                                    border: '1px solid rgba(240, 192, 64, 0.25)',
-                                    borderRadius: '8px',
-                                    fontSize: '13px',
-                                    fontFamily: "'Cinzel', serif",
-                                    fontWeight: 800,
-                                    textTransform: 'uppercase',
-                                    textShadow: '0 2px 4px rgba(0,0,0,1)',
-                                    boxShadow: '0 4px 15px rgba(0,0,0,0.4), inset 0 1px 2px rgba(255,255,255,0.05)',
-                                    backdropFilter: 'blur(4px)',
-                                }}>
+                                <div
+                                    style={{
+                                        display: 'flex',
+                                        justifyContent: 'space-between',
+                                        alignItems: 'center',
+                                        padding: '8px 16px',
+                                        background:
+                                            'linear-gradient(90deg, rgba(30, 20, 15, 0.85) 0%, rgba(15, 10, 10, 0.6) 50%, rgba(30, 20, 15, 0.85) 100%)',
+                                        border: '1px solid rgba(240, 192, 64, 0.25)',
+                                        borderRadius: '8px',
+                                        fontSize: '13px',
+                                        fontFamily: "'Cinzel', serif",
+                                        fontWeight: 800,
+                                        textTransform: 'uppercase',
+                                        textShadow: '0 2px 4px rgba(0,0,0,1)',
+                                        boxShadow: '0 4px 15px rgba(0,0,0,0.4), inset 0 1px 2px rgba(255,255,255,0.05)',
+                                        backdropFilter: 'blur(4px)',
+                                    }}
+                                >
                                     <span style={{ color: '#f0c040', letterSpacing: '1px' }}>
-                                        КАТАЛОГ ТОВАРОВ {(activeMainTab === 'ARSENAL' || activeMainTab === 'ALCHEMY') && <span style={{ color: '#ffcc00', marginLeft: '15px', textShadow: '0 0 10px rgba(255,204,0,0.4), 0 2px 4px rgba(0,0,0,1)' }}>★ АКЦИИ И СКИДКИ ДНЯ ПОКАЗАНЫ ПЕРВЫМИ</span>}
+                                        КАТАЛОГ ТОВАРОВ{' '}
+                                        {(activeMainTab === 'ARSENAL' || activeMainTab === 'ALCHEMY') && (
+                                            <span
+                                                style={{
+                                                    color: '#ffcc00',
+                                                    marginLeft: '15px',
+                                                    textShadow: '0 0 10px rgba(255,204,0,0.4), 0 2px 4px rgba(0,0,0,1)',
+                                                }}
+                                            >
+                                                ★ АКЦИИ И СКИДКИ ДНЯ ПОКАЗАНЫ ПЕРВЫМИ
+                                            </span>
+                                        )}
                                     </span>
                                     <span style={{ color: 'rgba(255,255,255,0.6)', letterSpacing: '0.5px' }}>
                                         СТРАНИЦА {currentPage + 1} ИЗ {totalPages || 1}
@@ -541,7 +577,15 @@ export const ShopScene: React.FC = () => {
                                     {/* LEFT ARROW */}
                                     {totalPages > 1 && (
                                         <motion.button
-                                            whileHover={currentPage !== 0 ? { scale: 1.1, borderColor: '#f0c040', boxShadow: '0 0 15px rgba(240,192,64,0.5)' } : {}}
+                                            whileHover={
+                                                currentPage !== 0
+                                                    ? {
+                                                          scale: 1.1,
+                                                          borderColor: '#f0c040',
+                                                          boxShadow: '0 0 15px rgba(240,192,64,0.5)',
+                                                      }
+                                                    : {}
+                                            }
                                             whileTap={currentPage !== 0 ? { scale: 0.95 } : {}}
                                             onClick={() => setCurrentPage((prev) => Math.max(0, prev - 1))}
                                             disabled={currentPage === 0}
@@ -563,12 +607,25 @@ export const ShopScene: React.FC = () => {
                                                 display: 'flex',
                                                 alignItems: 'center',
                                                 justifyContent: 'center',
-                                                boxShadow: currentPage === 0 ? 'none' : '0 4px 10px rgba(0,0,0,0.5), 0 0 10px rgba(240,192,64,0.2)',
+                                                boxShadow:
+                                                    currentPage === 0
+                                                        ? 'none'
+                                                        : '0 4px 10px rgba(0,0,0,0.5), 0 0 10px rgba(240,192,64,0.2)',
                                                 transition: 'all 0.2s',
                                                 flexShrink: 0,
                                             }}
                                         >
-                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'block', transform: 'translateX(-1px)' }}>
+                                            <svg
+                                                width="16"
+                                                height="16"
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                strokeWidth="3"
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                style={{ display: 'block', transform: 'translateX(-1px)' }}
+                                            >
                                                 <polyline points="15 18 9 12 15 6" />
                                             </svg>
                                         </motion.button>
@@ -607,7 +664,15 @@ export const ShopScene: React.FC = () => {
                                     {/* RIGHT ARROW */}
                                     {totalPages > 1 && (
                                         <motion.button
-                                            whileHover={currentPage !== totalPages - 1 ? { scale: 1.1, borderColor: '#f0c040', boxShadow: '0 0 15px rgba(240,192,64,0.5)' } : {}}
+                                            whileHover={
+                                                currentPage !== totalPages - 1
+                                                    ? {
+                                                          scale: 1.1,
+                                                          borderColor: '#f0c040',
+                                                          boxShadow: '0 0 15px rgba(240,192,64,0.5)',
+                                                      }
+                                                    : {}
+                                            }
                                             whileTap={currentPage !== totalPages - 1 ? { scale: 0.95 } : {}}
                                             onClick={() => setCurrentPage((prev) => Math.min(totalPages - 1, prev + 1))}
                                             disabled={currentPage === totalPages - 1}
@@ -640,7 +705,17 @@ export const ShopScene: React.FC = () => {
                                                 flexShrink: 0,
                                             }}
                                         >
-                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'block', transform: 'translateX(1px)' }}>
+                                            <svg
+                                                width="16"
+                                                height="16"
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                strokeWidth="3"
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                style={{ display: 'block', transform: 'translateX(1px)' }}
+                                            >
                                                 <polyline points="9 18 15 12 9 6" />
                                             </svg>
                                         </motion.button>
@@ -720,14 +795,14 @@ export const ShopScene: React.FC = () => {
             <AnimatePresence>
                 {toastMessage && (
                     <motion.div
-                        initial={{ opacity: 0, y: -20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -20 }}
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.9 }}
                         style={{
                             position: 'absolute',
-                            top: '120px',
+                            top: '50%',
                             left: '50%',
-                            transform: 'translateX(-50%)',
+                            transform: 'translate(-50%, -50%)',
                             background: 'rgba(10,20,40,0.95)',
                             border: '1px solid #f59e0b',
                             borderRadius: '12px',

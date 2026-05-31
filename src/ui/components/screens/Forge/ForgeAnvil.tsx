@@ -65,11 +65,7 @@ export const ForgeAnvil: React.FC<ForgeAnvilProps> = ({
                         const isPassed = lvl < currentLevel;
                         const isLocked = lvl > currentLevel;
 
-                        const borderColor = isCurrent
-                            ? '#60a5fa'
-                            : isPassed
-                              ? '#f0c040'
-                              : 'rgba(255,255,255,0.2)';
+                        const borderColor = isCurrent ? '#60a5fa' : isPassed ? '#f0c040' : 'rgba(255,255,255,0.2)';
                         const bg = isCurrent
                             ? 'linear-gradient(135deg, #0f172a, #1e293b)'
                             : isPassed
@@ -154,9 +150,7 @@ export const ForgeAnvil: React.FC<ForgeAnvilProps> = ({
                                         marginTop: '10px',
                                     }}
                                 >
-                                    {isCurrent && (
-                                        <span style={styles.currentIndicatorLabel}>ТЕКУЩИЙ УРОВЕНЬ</span>
-                                    )}
+                                    {isCurrent && <span style={styles.currentIndicatorLabel}>ТЕКУЩИЙ УРОВЕНЬ</span>}
                                 </div>
                             </div>
                         );
@@ -168,9 +162,7 @@ export const ForgeAnvil: React.FC<ForgeAnvilProps> = ({
             {itemData && (
                 <div style={styles.statsBadgesRow}>
                     {getStatsList().map((st, i) => {
-                        const currentVal = Math.round(
-                            st.val * getStatMultiplier(currentLevel) * itemReforgeMultiplier,
-                        );
+                        const currentVal = Math.round(st.val * getStatMultiplier(currentLevel) * itemReforgeMultiplier);
                         const nextVal = Math.round(
                             st.val * getStatMultiplier(currentLevel + 1) * itemReforgeMultiplier,
                         );

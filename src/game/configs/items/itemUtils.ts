@@ -35,5 +35,7 @@ export const calculateItemPower = (item: any): number => {
  * Утилита для обработки путей изображений в базе данных
  */
 export const processItemImage = (image: string): string => {
-    return resolveAssetPath(image);
+    if (!image) return image;
+    const webpImage = image.replace(/\.(png|jpg|jpeg)$/i, '.webp');
+    return resolveAssetPath(webpImage);
 };

@@ -60,9 +60,12 @@ export const RewardColumn: React.FC<RewardColumnProps> = ({
                         left: '-20px',
                         right: '-20px',
                         height: '6px',
-                        background: 'linear-gradient(90deg, #333 0%, #1a1a1a 50%, #333 100%)',
-                        borderTop: '1px solid #555',
-                        borderBottom: '1px solid #111',
+                        background: isUnlocked
+                            ? 'linear-gradient(90deg, #8a640f 0%, #ffd700 50%, #8a640f 100%)'
+                            : 'linear-gradient(90deg, #333 0%, #1a1a1a 50%, #333 100%)',
+                        borderTop: isUnlocked ? '1px solid #ffea80' : '1px solid #555',
+                        borderBottom: isUnlocked ? '1px solid #5c4033' : '1px solid #111',
+                        boxShadow: isUnlocked ? '0 0 10px rgba(240,192,64,0.5)' : 'none',
                         zIndex: 0,
                     }}
                 />
@@ -76,7 +79,9 @@ export const RewardColumn: React.FC<RewardColumnProps> = ({
                         background: isUnlocked
                             ? 'radial-gradient(circle, #f0c040 0%, #8a640f 100%)'
                             : 'radial-gradient(circle, #4a4a4a 0%, #222222 100%)',
-                        border: isUnlocked ? '3px solid #ffd700' : '3px solid #555',
+                        border: isUnlocked ? '2px solid #ffd700' : '2px solid #555',
+                        outline: isUnlocked ? '1.5px dashed #ffd700' : '1.5px dashed #555',
+                        outlineOffset: '2.5px',
                         zIndex: 1,
                         display: 'flex',
                         alignItems: 'center',
@@ -84,7 +89,9 @@ export const RewardColumn: React.FC<RewardColumnProps> = ({
                         fontWeight: 950,
                         color: isUnlocked ? '#1a0d00' : '#888',
                         fontSize: isMilestone ? '20px' : '16px',
-                        fontFamily: "'Cinzel', serif",
+                        fontFamily: "'Outfit', 'Nunito', sans-serif",
+                        lineHeight: 1,
+                        paddingBottom: '1px',
                         boxShadow: isUnlocked
                             ? '0 0 15px rgba(240,192,64,0.4), inset 0 0 8px rgba(0,0,0,0.8)'
                             : 'inset 0 0 8px rgba(0,0,0,0.8)',

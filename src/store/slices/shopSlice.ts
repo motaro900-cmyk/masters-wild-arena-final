@@ -37,7 +37,7 @@ const generateShopRotation = (playerLevel: number = 1) => {
 
     subTabs.forEach((subTab) => {
         let pool = allItems.filter((item) => item.subTab === subTab);
-        
+
         // Filter by player level first
         const levelAppropriate = pool.filter((item) => {
             const reqLvl = (item as any).requiredLevel || 1;
@@ -99,7 +99,6 @@ const generateShopDiscounts = (rotation: Record<string, string[]>) => {
     return discounts;
 };
 
-
 export const createShopSlice = (set: any, get: any) => ({
     // --- СОСТОЯНИЕ МАГАЗИНА ---
     shopRotation: null as any,
@@ -113,7 +112,7 @@ export const createShopSlice = (set: any, get: any) => ({
     goToShop: (tab = 'ARSENAL', subTab = null) => {
         get().initializeShop();
         const currentScreen = get().activeScreen;
-        const returnScreen = currentScreen !== 'SHOP' ? currentScreen : (get().shopReturnScreen || 'MAIN_MENU');
+        const returnScreen = currentScreen !== 'SHOP' ? currentScreen : get().shopReturnScreen || 'MAIN_MENU';
         set({
             activeScreen: 'SHOP',
             shopInitialTab: tab,
@@ -128,6 +127,29 @@ export const createShopSlice = (set: any, get: any) => ({
             activeScreen: returnScreen,
             shopReturnScreen: null,
         });
+
+        // Lazily switch the PIXI scene back to MainScreen to keep UI in sync and prevent getting stuck
+        import('../../engine/core/SceneManager')
+            .then(({ SceneManager }) => {
+                import('../../ui/screens/MainScreen')
+                    .then(({ MainScreen }) => {
+                        try {
+                            const sceneManager = SceneManager.getInstance();
+                            const currentScene = sceneManager.getCurrentScene();
+                            if (
+                                currentScene &&
+                                (currentScene.label === 'ShopScreen' || currentScene.name === 'ShopScreen')
+                            ) {
+                                console.log('[ShopSlice] exitShop: Switching PIXI scene back to MainScreen');
+                                sceneManager.switchScene(new MainScreen());
+                            }
+                        } catch (e) {
+                            console.error('Error switching PIXI scene on exitShop:', e);
+                        }
+                    })
+                    .catch((err) => console.error('Failed to load MainScreen on exitShop:', err));
+            })
+            .catch((err) => console.error('Failed to load SceneManager on exitShop:', err));
     },
 
     initializeShop: () => {
@@ -147,7 +169,7 @@ export const createShopSlice = (set: any, get: any) => ({
                 shopDiscounts: newDiscounts,
                 shopLastRefreshTime: now,
             });
-            syncService.syncPlayerData();
+            syncService.debouncedSync();
         }
     },
 
@@ -186,7 +208,7 @@ export const createShopSlice = (set: any, get: any) => ({
                 shopDiscounts: newDiscounts,
                 shopLastRefreshTime: Date.now(),
             });
-            syncService.syncPlayerData();
+            syncService.debouncedSync();
             return true;
         }
         return false;
@@ -203,6 +225,7 @@ export const createShopSlice = (set: any, get: any) => ({
             if (amount > 0) {
                 get().addCrystals(amount);
                 get().addVipExp(amount); // 1 Алмаз = 1 VIP XP
+                syncService.logPlayerAction(`Купил пак кристаллов: +${amount} 💎`);
                 syncService.syncPlayerData();
                 return true;
             }
@@ -312,6 +335,10 @@ export const createShopSlice = (set: any, get: any) => ({
             if (currencyType === 'gold') {
                 get().updateQuestProgress('SPEND_GOLD', price);
             }
+
+            const itemName = itemData.name || itemId;
+            syncService.logPlayerAction(`Купил в магазине: ${itemName}`);
+            syncService.syncPlayerData();
 
             return true;
         }

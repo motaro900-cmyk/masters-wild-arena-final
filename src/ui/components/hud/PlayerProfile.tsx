@@ -17,7 +17,7 @@ export const PlayerProfile: React.FC<PlayerProfileProps> = ({ onOpenProfile }) =
     const store = useGameStore();
     const selectedHeroId = store.selectedHeroId || 'panda_warrior';
     const avatar = store.avatar || 'панда.png';
-    const frame = store.frame || 'Рамка 1.png';
+    const frame = store.frame || 'harvest_wheat_frame.webp';
     const title = store.title || 'СТРАННИК';
     const trophies = store.trophies ?? 0;
     const level = store.level ?? 1;

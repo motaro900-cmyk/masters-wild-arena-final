@@ -24,8 +24,8 @@ import { ClanWindow } from './hud/ClanWindow';
 import { RanksListWindow } from './hud/RanksListWindow';
 import { InventoryPanel } from './hud/InventoryPanel';
 import { ITEMS_DATABASE } from '../../game/configs/ItemsConfig';
-import { AdminPanel } from './hud/AdminPanel';
 import { VIPWindow } from './hud/VIPWindow';
+const AdminPanel = React.lazy(() => import('./hud/AdminPanel').then((m) => ({ default: m.AdminPanel })));
 import { UnderDevelopmentModal } from './hud/SharedUI';
 import { BestiaryWindow } from './hud/BestiaryWindow';
 import { MatchmakingOverlay } from './hud/MatchmakingOverlay';
@@ -33,7 +33,6 @@ import { InboxScreen } from './hud/Inbox/InboxScreen';
 
 import { safeGetItem, safeSetItem } from '../../utils/SafeStorage';
 import { TutorialOverlay } from './hud/TutorialOverlay';
-
 
 export const GameHUD: React.FC = () => {
     const activeScreen = useGameStore((state) => state.activeScreen);
@@ -624,22 +623,31 @@ export const GameHUD: React.FC = () => {
                                 width="1100px"
                             >
                                 <div style={{ padding: '30px', display: 'flex', justifyContent: 'center' }}>
-                                    <InventoryPanel onItemClick={(itemId) => {
-                                        const item = ITEMS_DATABASE[itemId];
-                                        if (item && item.mainTab === 'ALCHEMY' && item.subTab !== 'RESOURCES') {
-                                            if (itemId === 'protection_stone') return;
-                                            
-                                            let effectDesc = '';
-                                            if (itemId === 'hp_potion_1') effectDesc = '+10% к макс. здоровью на 1 час';
-                                            if (itemId === 'hp_potion_2') effectDesc = '+20% к макс. здоровью на 1 час';
-                                            if (itemId === 'hp_potion_3') effectDesc = '+35% к макс. здоровью на 1 час';
-                                            if (itemId === 'mana_potion_1') effectDesc = '+15% к скорости атаки на 1 час';
+                                    <InventoryPanel
+                                        onItemClick={(itemId) => {
+                                            const item = ITEMS_DATABASE[itemId];
+                                            if (item && item.mainTab === 'ALCHEMY' && item.subTab !== 'RESOURCES') {
+                                                if (itemId === 'protection_stone') return;
 
-                                            if (window.confirm(`Выпить "${item.name}"?\nЭффект: ${effectDesc}`)) {
-                                                useGameStore.getState().useConsumable(itemId);
+                                                let effectDesc = '';
+                                                if (itemId === 'hp_potion_1')
+                                                    effectDesc = '+10% к макс. здоровью на 1 час';
+                                                if (itemId === 'hp_potion_2')
+                                                    effectDesc = '+20% к макс. здоровью на 1 час';
+                                                if (itemId === 'hp_potion_3')
+                                                    effectDesc = '+35% к макс. здоровью на 1 час';
+                                                if (itemId === 'mana_potion_1')
+                                                    effectDesc = '+15% к скорости атаки на 1 час';
+                                                if (itemId === 'exp_potion_small') effectDesc = '+2 000 опыта';
+                                                if (itemId === 'exp_potion_medium') effectDesc = '+10 000 опыта';
+                                                if (itemId === 'exp_potion_large') effectDesc = '+50 000 опыта';
+
+                                                if (window.confirm(`Выпить "${item.name}"?\nЭффект: ${effectDesc}`)) {
+                                                    useGameStore.getState().useConsumable(itemId);
+                                                }
                                             }
-                                        }
-                                    }} />
+                                        }}
+                                    />
                                 </div>
                             </BaseWindow>
                         )}
@@ -657,7 +665,11 @@ export const GameHUD: React.FC = () => {
                 </div>
             )}
             {/* --- ADMIN PANEL (GLOBAL OVERLAY) --- */}
-            {showAdmin && <AdminPanel onClose={() => setShowAdmin(false)} />}
+            {showAdmin && (
+                <React.Suspense fallback={null}>
+                    <AdminPanel onClose={() => setShowAdmin(false)} />
+                </React.Suspense>
+            )}
 
             {activeWindow === 'RANKED_LOBBY' && (
                 <MatchmakingOverlay
@@ -666,10 +678,14 @@ export const GameHUD: React.FC = () => {
                         setActiveWindow(null);
 
                         // Use the selected mob from matchmaking
-                        useGameStore.setState({ 
-                            selectedEnemyId: opp.id, 
+                        useGameStore.setState({
+                            selectedEnemyId: opp.id,
                             battleMode: 'RANKED',
-                            activeRankedOpponent: opp
+                            activeRankedOpponent: opp,
+                        });
+
+                        import('../../services/SyncService').then(({ syncService }) => {
+                            syncService.logPlayerAction(`Начал рейтинговый бой против: ${opp.name}`);
                         });
 
                         // Switch screen to battle!

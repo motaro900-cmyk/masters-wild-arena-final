@@ -130,17 +130,10 @@ export class PixiApp {
                     this._debugLayer,
                 );
 
-                // Add brightness filter to UI layer
-                const brightnessFilter = new PIXI.ColorMatrixFilter();
-                brightnessFilter.brightness(1.0, false);
-                this._uiLayer.filters = [brightnessFilter];
-
-                // GPU color grading via PIXI ColorMatrixFilter — single GLSL pass, zero CPU cost
-                const colorGrade = new PIXI.ColorMatrixFilter();
-                colorGrade.contrast(0.05, false);
-                colorGrade.saturate(0.15, false);
-                colorGrade.brightness(0.96, false);
-                this.pixiApp.stage.filters = [colorGrade];
+                // CSS filter replaces PIXI filters for single-pass compositor performance
+                if (this.pixiApp.canvas) {
+                    this.applyCanvasStyles(this.pixiApp.canvas);
+                }
 
                 this.pixiApp.ticker.start();
             }
@@ -158,6 +151,7 @@ export class PixiApp {
         canvas.style.top = '0';
         canvas.style.left = '0';
         canvas.style.zIndex = '1'; // Ensure it's above parent background
+        canvas.style.filter = 'contrast(1.1) saturate(1.2) brightness(1.05)';
     }
 
     public returnToHomeContainer(): void {
@@ -266,31 +260,58 @@ export class PixiApp {
         return this._debugLayer;
     }
 
-    /**
-     * Очищает слои боя (gameLayer, effectsLayer, uiLayer, debugLayer).
-     * НЕ трогает backgroundLayer — он содержит фон главного меню.
-     */
     public clearBattleLayers(): void {
         [this.gameLayer, this.effectsLayer, this.uiLayer, this.debugLayer].forEach((l) => {
+            const isEffects = l === this.effectsLayer;
             l.removeChildren().forEach((child) => {
                 if (!child.destroyed) {
-                    child.destroy({ children: true, texture: false });
+                    const isBattleSpecific = isEffects ||
+                        child.name === 'mobs' ||
+                        child.name === 'projectile' ||
+                        child.name === 'battle_fx' ||
+                        (child as any).isBattleSpecific === true ||
+                        (child.constructor.name === 'HeroUnit' && (child as any).isMob === true);
+                    child.destroy({ children: true, texture: isBattleSpecific });
                 }
             });
         });
         this.updateLoops = [];
+
+        // Выгружаем специфичные для боя ассеты из кэша PIXI
+        try {
+            PIXI.Assets.unload('battle-specific-assets');
+        } catch (e) {
+            console.warn('Could not unload battle-specific-assets:', e);
+        }
     }
 
     /** Полная очистка всех слоёв включая фон (используется только при переинициализации) */
     public clearAllLayers(): void {
         [this.backgroundLayer, this.gameLayer, this.effectsLayer, this.uiLayer, this.debugLayer].forEach((l) => {
+            const isEffects = l === this.effectsLayer;
             l.removeChildren().forEach((child) => {
                 if (!child.destroyed) {
-                    child.destroy({ children: true, texture: false });
+                    const isBattleSpecific = isEffects ||
+                        l === this.backgroundLayer ||
+                        child.name === 'mobs' ||
+                        child.name === 'projectile' ||
+                        child.name === 'battle_fx' ||
+                        (child as any).isBattleSpecific === true ||
+                        (child.constructor.name === 'HeroUnit' && (child as any).isMob === true);
+                    child.destroy({ children: true, texture: isBattleSpecific });
                 }
             });
         });
         this.updateLoops = [];
+
+        // Force rendering a blank/cleared frame to immediately update canvas
+        if (this.pixiApp) {
+            try {
+                this.pixiApp.render();
+            } catch (e) {
+                console.warn('[PixiApp] Render failure on clearAllLayers:', e);
+            }
+        }
     }
 
     public static destroy(): void {

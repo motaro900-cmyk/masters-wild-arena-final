@@ -54,20 +54,20 @@ export const ShopItemCard: React.FC<ShopItemCardProps> = ({
                 background: isSelected
                     ? `radial-gradient(circle, rgba(240,192,64,0.2) 0%, rgba(20,20,25,0.96) 100%)`
                     : isLocked
-                    ? 'linear-gradient(180deg, rgba(25,20,15,0.5) 0%, rgba(15,10,10,0.75) 100%)'
-                    : 'linear-gradient(180deg, rgba(30,25,25,0.85) 0%, rgba(15,15,20,0.95) 100%)',
+                      ? 'linear-gradient(180deg, rgba(25,20,15,0.5) 0%, rgba(15,10,10,0.75) 100%)'
+                      : 'linear-gradient(180deg, rgba(30,25,25,0.85) 0%, rgba(15,15,20,0.95) 100%)',
                 border: isSelected
                     ? `2.5px solid #f0c040`
                     : discount > 0 && !isLocked
-                    ? `1.5px solid #e11d48`
-                    : isLocked
-                    ? '1.5px solid rgba(240, 192, 64, 0.15)'
-                    : `1.5px solid ${glow}44`,
+                      ? `1.5px solid #e11d48`
+                      : isLocked
+                        ? '1.5px solid rgba(240, 192, 64, 0.15)'
+                        : `1.5px solid ${glow}44`,
                 boxShadow: isSelected
                     ? `0 0 15px #f0c04066`
                     : discount > 0 && !isLocked
-                    ? `0 4px 10px rgba(0,0,0,0.6), 0 0 10px rgba(225, 29, 72, 0.4)`
-                    : `0 4px 10px rgba(0,0,0,0.5), 0 0 5px ${glow}11`,
+                      ? `0 4px 10px rgba(0,0,0,0.6), 0 0 10px rgba(225, 29, 72, 0.4)`
+                      : `0 4px 10px rgba(0,0,0,0.5), 0 0 5px ${glow}11`,
                 borderRadius: '10px',
                 padding: isMobile ? '5px 5px 4px 5px' : '10px 10px 8px 10px',
                 display: 'flex',

@@ -27,7 +27,7 @@ export const GearView = ({
     const equippedSkins = useGameStore((s: any) => s.equippedSkins) || {};
     const equippedSkinId = equippedSkins[hero.id] || 'default';
     const activeSkin = SKINS_DB.find((s) => s.id === equippedSkinId && s.heroId === hero.id);
-    const displayHeroName = activeSkin && activeSkin.id !== 'default' ? activeSkin.name : hero.name;
+    const displayHeroName = hero.name;
     const activeRarity = activeSkin && activeSkin.id !== 'default' ? activeSkin.rarity : hero.rarity;
     const activeRarityColor = rarityColors[activeRarity] || '#f0c040';
 
@@ -455,14 +455,17 @@ export const GearView = ({
                     </h2>
                     <p
                         style={{
-                            color: activeRarityColor,
+                            color:
+                                activeSkin && activeSkin.id !== 'default' && activeSkin.color
+                                    ? activeSkin.color
+                                    : activeRarityColor,
                             margin: 0,
                             fontWeight: 900,
                             letterSpacing: '4px',
                             fontSize: '12px',
                         }}
                     >
-                        {activeSkin && activeSkin.id !== 'default' ? `${hero.title} · ${activeSkin.sourceLabel}` : hero.title}
+                        {activeSkin && activeSkin.id !== 'default' ? activeSkin.name : hero.title}
                     </p>
                 </div>
             </div>
@@ -504,7 +507,7 @@ export const GearView = ({
                                     transition: 'all 0.2s ease',
                                 }}
                             >
-                                {tab === 'STATS' ? 'СТАТЫ' : tab === 'INVENTORY' ? 'РЮКЗАК' : 'ЛОР'}
+                                {tab === 'STATS' ? 'АТРИБУТЫ' : tab === 'INVENTORY' ? 'ИНВЕНТАРЬ' : 'ЛЕГЕНДА'}
                             </button>
                         );
                     })}
@@ -512,12 +515,13 @@ export const GearView = ({
                 <div
                     style={{
                         flex: 1,
+                        minHeight: 0,
                         background: 'rgba(20, 20, 25, 0.6)',
                         backdropFilter: 'blur(20px)',
                         borderRadius: '30px',
                         border: '1px solid rgba(240,192,64,0.3)',
                         padding: '25px',
-                        overflow: 'visible',
+                        overflow: 'hidden',
                         boxShadow: '0 20px 60px rgba(0,0,0,1)',
                         display: 'flex',
                         flexDirection: 'column',
@@ -596,13 +600,70 @@ export const GearView = ({
                             style={{
                                 flex: 1,
                                 display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                opacity: 0.3,
-                                fontWeight: 900,
+                                flexDirection: 'column',
+                                overflowY: 'auto',
+                                paddingRight: '5px',
+                                paddingTop: '5px',
                             }}
+                            className="custom-scrollbar"
                         >
-                            LORE COMING SOON...
+                            <div style={{ textAlign: 'center', marginBottom: '15px' }}>
+                                <h4
+                                    style={{
+                                        margin: 0,
+                                        color: '#f0c040',
+                                        fontFamily: "'Cinzel', 'Philosopher', serif",
+                                        fontSize: '18px',
+                                        letterSpacing: '2px',
+                                        fontWeight: 800,
+                                    }}
+                                >
+                                    ИСТОРИЯ ПЕРСОНАЖА
+                                </h4>
+                                <div
+                                    style={{
+                                        height: '1px',
+                                        background:
+                                            'linear-gradient(90deg, transparent, rgba(240, 192, 64, 0.4), transparent)',
+                                        marginTop: '8px',
+                                    }}
+                                />
+                            </div>
+                            <div
+                                style={{
+                                    color: '#dddddd',
+                                    fontSize: '14px',
+                                    lineHeight: '1.7',
+                                    fontFamily: "'Philosopher', 'Inter', sans-serif",
+                                    textAlign: 'justify',
+                                    whiteSpace: 'pre-wrap',
+                                    padding: '0 5px 15px 5px',
+                                }}
+                            >
+                                {hero.lore || 'История этого героя пока покрыта тайной...'}
+                                {activeSkin && activeSkin.skinLore && (
+                                    <div
+                                        style={{
+                                            marginTop: '20px',
+                                            paddingTop: '20px',
+                                            borderTop: '1px dashed rgba(240, 192, 64, 0.25)',
+                                        }}
+                                    >
+                                        <div
+                                            style={{
+                                                color: '#f0c040',
+                                                fontWeight: 800,
+                                                marginBottom: '8px',
+                                                fontSize: '15px',
+                                                letterSpacing: '1px',
+                                            }}
+                                        >
+                                            ✨ {activeSkin.name.toUpperCase()}
+                                        </div>
+                                        {activeSkin.skinLore}
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     )}
                 </div>

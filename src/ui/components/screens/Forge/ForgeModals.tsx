@@ -213,41 +213,66 @@ export const ForgeStatusModal: React.FC<ForgeStatusModalProps> = ({
                         onClick={(e) => e.stopPropagation()}
                     >
                         <div style={{ fontSize: '48px', marginBottom: '15px' }}>{getIcon()}</div>
-                        <h3 style={{ margin: '0 0 10px 0', color: getHeaderColor(), fontFamily: "'Cinzel', serif", letterSpacing: '1.5px' }}>
+                        <h3
+                            style={{
+                                margin: '0 0 10px 0',
+                                color: getHeaderColor(),
+                                fontFamily: "'Cinzel', serif",
+                                letterSpacing: '1.5px',
+                            }}
+                        >
                             {title}
                         </h3>
-                        <p style={{ fontSize: 13, opacity: 0.9, marginBottom: 20, whiteSpace: 'pre-line', lineHeight: '1.5' }}>
+                        <p
+                            style={{
+                                fontSize: 13,
+                                opacity: 0.9,
+                                marginBottom: 20,
+                                whiteSpace: 'pre-line',
+                                lineHeight: '1.5',
+                            }}
+                        >
                             {message}
                         </p>
 
                         {rewards && (
-                            <div style={{
-                                display: 'grid',
-                                gridTemplateColumns: '1fr 1fr',
-                                gap: '12px',
-                                width: '100%',
-                                marginBottom: '20px',
-                                background: 'rgba(0,0,0,0.3)',
-                                padding: '15px',
-                                borderRadius: '14px',
-                                border: '1px solid rgba(255,255,255,0.05)',
-                                textAlign: 'left'
-                            }}>
+                            <div
+                                style={{
+                                    display: 'grid',
+                                    gridTemplateColumns: '1fr 1fr',
+                                    gap: '12px',
+                                    width: '100%',
+                                    marginBottom: '20px',
+                                    background: 'rgba(0,0,0,0.3)',
+                                    padding: '15px',
+                                    borderRadius: '14px',
+                                    border: '1px solid rgba(255,255,255,0.05)',
+                                    textAlign: 'left',
+                                }}
+                            >
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px' }}>
                                     <span>🪙</span>
-                                    <span>Золото: <strong>+{rewards.goldGained}</strong></span>
+                                    <span>
+                                        Золото: <strong>+{rewards.goldGained}</strong>
+                                    </span>
                                 </div>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px' }}>
                                     <span>🪵</span>
-                                    <span>Уголь: <strong>+{rewards.coalGained}</strong></span>
+                                    <span>
+                                        Уголь: <strong>+{rewards.coalGained}</strong>
+                                    </span>
                                 </div>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px' }}>
                                     <span>🔩</span>
-                                    <span>Сталь: <strong>+{rewards.steelGained}</strong></span>
+                                    <span>
+                                        Сталь: <strong>+{rewards.steelGained}</strong>
+                                    </span>
                                 </div>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px' }}>
                                     <span>💎</span>
-                                    <span>Осколки: <strong>+{rewards.shardGained}</strong></span>
+                                    <span>
+                                        Осколки: <strong>+{rewards.shardGained}</strong>
+                                    </span>
                                 </div>
                             </div>
                         )}
@@ -260,7 +285,7 @@ export const ForgeStatusModal: React.FC<ForgeStatusModalProps> = ({
                                 color: type === 'success' || type === 'protection' ? '#fff' : '#000',
                                 width: '100%',
                                 fontSize: '13px',
-                                fontWeight: 900
+                                fontWeight: 900,
                             }}
                         >
                             ПОНЯТНО
@@ -271,4 +296,3 @@ export const ForgeStatusModal: React.FC<ForgeStatusModalProps> = ({
         </AnimatePresence>
     );
 };
-

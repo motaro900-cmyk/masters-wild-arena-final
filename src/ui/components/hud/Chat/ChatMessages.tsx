@@ -153,8 +153,7 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
                             <span
                                 style={{
                                     color: msg.author === 'ГЕРОЛЬД' ? '#fff9e6' : 'inherit',
-                                    textShadow:
-                                        msg.author === 'ГЕРОЛЬД' ? '0 0 8px rgba(240, 192, 64, 0.6)' : 'none',
+                                    textShadow: msg.author === 'ГЕРОЛЬД' ? '0 0 8px rgba(240, 192, 64, 0.6)' : 'none',
                                     fontSize: msg.author === 'ГЕРОЛЬД' ? '15px' : '14px',
                                     fontWeight: 900,
                                 }}
@@ -223,9 +222,7 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
                             {msg.rankIcon && (
                                 <img
                                     src={
-                                        msg.rankIcon.includes('rank_')
-                                            ? msg.rankIcon
-                                            : `/assets/images/ui/rank_01.png`
+                                        msg.rankIcon.includes('rank_') ? msg.rankIcon : `/assets/images/ui/rank_01.png`
                                     }
                                     alt="rank"
                                     style={{

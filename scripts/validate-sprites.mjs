@@ -8,14 +8,14 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const RULES = {
-  'weapons': { w: 256, h: 256 },
-  'helmets': { w: 256, h: 256 },
-  'characters':  { w: 512, h: 512 }, // В проекте папка называется characters
+  'images/items/weapons': { w: 256, h: 256 },
+  'images/items/helms': { w: 256, h: 256 },
+  'characters':  { w: 512, h: 512 },
 };
 
 async function validateFolder(folderPath, rule) {
   try {
-    const files = readdirSync(folderPath).filter(f => f.endsWith('.png'));
+    const files = readdirSync(folderPath).filter(f => f.endsWith('.png') || f.endsWith('.webp'));
     let errors = 0;
     
     for (const file of files) {

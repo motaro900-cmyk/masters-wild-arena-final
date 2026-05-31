@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useGameStore } from '../../../../store/useGameStore';
 import { syncService } from '../../../../services/SyncService';
 
@@ -35,7 +35,7 @@ export const useFriendsWindow = () => {
     const totalPages = Math.ceil(worldPlayers.length / playersPerPage);
     const paginatedWorldPlayers = worldPlayers.slice((currentPage - 1) * playersPerPage, currentPage * playersPerPage);
 
-    const fetchWorldPlayers = async () => {
+    const fetchWorldPlayers = useCallback(async () => {
         setIsLoadingWorld(true);
         try {
             // Запрашиваем 100 последних игроков, чтобы отфильтровать тех, кто реально в сети
@@ -44,6 +44,7 @@ export const useFriendsWindow = () => {
             const fiveMinutes = 5 * 60 * 1000;
 
             const onlinePlayers = players.filter((p) => {
+                if (p.id === playerId) return false; // Не показываем самого себя
                 const lastSeenVal = p.былВСети || p.lastSeen;
                 if (!lastSeenVal) return false;
                 // Преобразуем Firebase Timestamp в миллисекунды
@@ -57,7 +58,7 @@ export const useFriendsWindow = () => {
         } finally {
             setIsLoadingWorld(false);
         }
-    };
+    }, [playerId]);
 
     useEffect(() => {
         if (activeTab === 'WORLD') {
@@ -66,7 +67,7 @@ export const useFriendsWindow = () => {
             }, 0);
             return () => clearTimeout(timer);
         }
-    }, [activeTab]);
+    }, [activeTab, fetchWorldPlayers]);
 
     const handleSearch = async () => {
         if (!searchQuery.trim()) return;

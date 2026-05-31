@@ -37,10 +37,6 @@ const HERO_TEXTURE_DIMENSIONS: Record<string, { width: number; height: number }>
 export const useAvatarRenderer = (heroId: string, size: number = 512) => {
     const heroConfig = HEROES_DB.find((h) => h.id === heroId) || HEROES_DB[0];
 
-    console.log(
-        `[AvatarRenderer] Rendering Hero: ${heroId}, Found Config: ${heroConfig.id}, Image: ${heroConfig.image}`,
-    );
-
     // const currentEquipment = heroEquipment[heroId] || {};
 
     const BASE_SIZE = 512;

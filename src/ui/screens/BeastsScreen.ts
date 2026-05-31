@@ -15,14 +15,14 @@ export class BeastsScreen extends PIXI.Container {
     private titleContainer: PIXI.Container;
 
     private readonly beastList = [
-        { id: 'panda', name: 'ПАНДА', file: 'панда.webp' },
-        { id: 'tiger', name: 'ТИГР', file: 'тигр.webp' },
-        { id: 'lion', name: 'ЛЕВ', file: 'лев.webp' },
-        { id: 'bear', name: 'МЕДВЕДЬ', file: 'медведь.webp' },
-        { id: 'rhino', name: 'НОСОРОГ', file: 'носорог.webp' },
-        { id: 'croc', name: 'КРОКОДИЛ', file: 'крокодил.webp' },
-        { id: 'boar', name: 'КАБАН', file: 'кабан.webp' },
-        { id: 'elk', name: 'ЛОСЬ', file: 'лось.webp' },
+        { id: 'panda', name: 'ПАНДА', file: 'panda.webp' },
+        { id: 'tiger', name: 'ТИГР', file: 'tiger.webp' },
+        { id: 'lion', name: 'ЛЕВ', file: 'lion.webp' },
+        { id: 'bear', name: 'МЕДВЕДЬ', file: 'bear.webp' },
+        { id: 'rhino', name: 'НОСОРОГ', file: 'rhino.webp' },
+        { id: 'croc', name: 'КРОКОДИЛ', file: 'crocodile.webp' },
+        { id: 'boar', name: 'КАБАН', file: 'boar.webp' },
+        { id: 'elk', name: 'ЛОСЬ', file: 'moose.webp' },
     ];
 
     constructor() {

@@ -7,9 +7,6 @@ import { MainTab, getSubTabs } from './shopHelpers';
 
 export const useShopScene = () => {
     const {
-        addGold,
-        addCrystals,
-        addEnergy,
         shopInitialTab,
         shopInitialSubTab,
         exitShop,
@@ -17,7 +14,6 @@ export const useShopScene = () => {
         buyCrystalsPack,
         isMobile,
         dailyAdWatchesCount,
-        shopRotation,
         shopDiscounts,
         shopLastRefreshTime,
         initializeShop,
@@ -97,28 +93,30 @@ export const useShopScene = () => {
     }, [activeMainTab, shopInitialSubTab]);
 
     // Get all items in the sub-tab (full catalog)
-    const getRotationItems = (): ShopItem[] => {
-        if (activeMainTab === 'BANK') {
-            return getAllShopItems().filter((item) => {
-                const matchesMain = item.mainTab === activeMainTab;
-                if (!matchesMain) return false;
-                if (activeSubTab === 'FREE') return item.isAd === true;
-                if (item.isAd) return false;
-                return item.subTab === activeSubTab;
-            });
-        }
-        if (activeMainTab === 'SKINS') {
-            return getAllShopItems().filter((item) => item.mainTab === 'SKINS');
-        }
+    const filteredItems = useMemo(() => {
+        const getRotationItems = (): ShopItem[] => {
+            if (activeMainTab === 'BANK') {
+                return getAllShopItems().filter((item) => {
+                    const matchesMain = item.mainTab === activeMainTab;
+                    if (!matchesMain) return false;
+                    if (activeSubTab === 'FREE') return item.isAd === true;
+                    if (item.isAd) return false;
+                    return item.subTab === activeSubTab;
+                });
+            }
+            if (activeMainTab === 'SKINS') {
+                return getAllShopItems().filter((item) => item.mainTab === 'SKINS');
+            }
 
-        if (activeMainTab === 'ARSENAL' || activeMainTab === 'ALCHEMY') {
-            return getAllShopItems().filter((item) => item.mainTab === activeMainTab && item.subTab === activeSubTab);
-        }
+            if (activeMainTab === 'ARSENAL' || activeMainTab === 'ALCHEMY') {
+                return getAllShopItems().filter(
+                    (item) => item.mainTab === activeMainTab && item.subTab === activeSubTab,
+                );
+            }
 
-        return [];
-    };
+            return [];
+        };
 
-    const getSortedFilteredItems = () => {
         const items = getRotationItems();
         return [...items].sort((a, b) => {
             const hasDiscountA = (shopDiscounts?.[a.id] || 0) > 0;
@@ -127,12 +125,7 @@ export const useShopScene = () => {
             if (!hasDiscountA && hasDiscountB) return 1;
             return 0;
         });
-    };
-
-    const filteredItems = useMemo(() => {
-        return getSortedFilteredItems();
-    }, [activeMainTab, activeSubTab, shopRotation, shopDiscounts]);
-
+    }, [activeMainTab, activeSubTab, shopDiscounts]);
 
     // Auto-select first item when tab changes
     useEffect(() => {
@@ -144,7 +137,7 @@ export const useShopScene = () => {
             }
         }, 0);
         return () => clearTimeout(timer);
-    }, [activeMainTab, activeSubTab]);
+    }, [activeMainTab, activeSubTab, filteredItems]);
 
     const handleItemClick = (item: ShopItem) => {
         audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
@@ -176,13 +169,6 @@ export const useShopScene = () => {
                 success = await buyCrystalsPack(item.id);
             } else {
                 success = useGameStore.getState().buyItem(String(item.id), currency);
-
-                if (success && item.mainTab === 'BANK') {
-                    const amount = item.amount || 0;
-                    if (item.subTab === 'GOLD') addGold(amount);
-                    else if (item.subTab === 'GEMS') addCrystals(amount);
-                    else if (item.subTab === 'ENERGY') addEnergy(amount);
-                }
             }
 
             if (success) {

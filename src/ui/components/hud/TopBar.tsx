@@ -9,7 +9,17 @@ interface TopBarProps {
 }
 
 export const TopBar: React.FC<TopBarProps> = ({ onOpenWindow, mode }) => {
-    const { avatar, title, level, crystals, gold, energy, maxEnergy, exp, vkUser, name } = useGameStore();
+    const avatar = useGameStore((state) => state.avatar);
+    const title = useGameStore((state) => state.title);
+    const level = useGameStore((state) => state.level);
+    const crystals = useGameStore((state) => state.crystals);
+    const gold = useGameStore((state) => state.gold);
+    const energy = useGameStore((state) => state.energy);
+    const maxEnergy = useGameStore((state) => state.maxEnergy);
+    const exp = useGameStore((state) => state.exp);
+    const vkUser = useGameStore((state) => state.vkUser);
+    const name = useGameStore((state) => state.name);
+    const frame = useGameStore((state) => state.frame);
     const textShadow = { textShadow: '0 2px 4px rgba(0,0,0,1), 0 0 10px rgba(0,0,0,0.5)' };
 
     if (mode === 'profile_only') {
@@ -24,7 +34,10 @@ export const TopBar: React.FC<TopBarProps> = ({ onOpenWindow, mode }) => {
                 <div className="absolute top-[28px] left-[42px] z-10">
                     <AvatarFrame
                         avatarFilename={avatar.replace('.png', '')}
-                        frameFilename={(useGameStore.getState().frame || 'Рамка 1.png').replace('.png', '')}
+                        frameFilename={(frame || 'harvest_wheat_frame.webp').replace(
+                            /\.(png|webp)$/,
+                            '',
+                        )}
                         size={92}
                     />
                 </div>

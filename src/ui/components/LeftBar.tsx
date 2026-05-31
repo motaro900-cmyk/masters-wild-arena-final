@@ -12,9 +12,12 @@ export const LeftBar: React.FC = () => {
         { id: 'ARENA', label: 'АРЕНА', icon: '⚔️' },
     ];
 
-    const store = useGameStore();
-    const expNeeded = (store.level || 1) * 600;
-    const expPercent = Math.min(100, ((store.exp || 0) / expNeeded) * 100);
+    const level = useGameStore((state) => state.level);
+    const exp = useGameStore((state) => state.exp);
+    const currentHeroId = useGameStore((state) => state.currentHeroId);
+
+    const expNeeded = (level || 1) * 600;
+    const expPercent = Math.min(100, ((exp || 0) / expNeeded) * 100);
 
     return (
         <EditorPanel id="LeftBar" className="flex flex-col gap-6 h-full py-2">
@@ -22,12 +25,12 @@ export const LeftBar: React.FC = () => {
             <div className="relative bg-[#11131a]/90 border-2 border-black/80 rounded-2xl p-4 flex flex-col gap-3 backdrop-blur-md shadow-2xl pointer-events-auto">
                 <div className="flex items-center gap-4">
                     {/* Аватарка */}
-                    <HudAvatar heroId={store.currentHeroId || 'panda'} />
+                    <HudAvatar heroId={currentHeroId || 'panda'} />
                     <div className="flex flex-col">
                         <h2 className="text-white font-black text-xl tracking-wide text-stroke uppercase">
-                            {store.currentHeroId || 'ПАНДА'}
+                            {currentHeroId || 'ПАНДА'}
                         </h2>
-                        <p className="text-[#ffcc00] font-bold text-sm text-stroke">Уровень {store.level || 1}</p>
+                        <p className="text-[#ffcc00] font-bold text-sm text-stroke">Уровень {level || 1}</p>
                     </div>
                 </div>
                 {/* Полоска EXP */}

@@ -231,7 +231,13 @@ const StatsView = ({ beastId: _beastId }: { beastId: string }) => {
 };
 
 const EquipmentTab: React.FC = () => {
-    const { selectedHeroId, inventory, equipment, equipWeapon, equippedWeaponId } = useGameStore();
+    const selectedHeroId = useGameStore((state) => state.selectedHeroId);
+    const inventory = useGameStore((state) => state.inventory);
+    const equipment = useGameStore((state) => state.equipment);
+    const equipWeapon = useGameStore((state) => state.equipWeapon);
+    const equippedWeaponId = useGameStore((state) => state.equippedWeaponId);
+    const equippedSkins = useGameStore((state) => state.equippedSkins);
+
     const beast = BEASTS_DATABASE.find((b) => b.id === selectedHeroId) || BEASTS_DATABASE[0];
     const [rightPanelTab, setRightPanelTab] = useState<'stats' | 'inventory' | 'lore'>('inventory');
     const pixiContainerRef = React.useRef<HTMLDivElement>(null);
@@ -239,6 +245,9 @@ const EquipmentTab: React.FC = () => {
     const containerRef = React.useRef<any>(null);
     const bodySpriteRef = React.useRef<any>(null);
     const weaponSpriteRef = React.useRef<any>(null);
+
+    const currentSheetPathRef = React.useRef<string>('');
+    const currentWeaponPathRef = React.useRef<string>('');
 
     // Инициализация превью персонажа (PixiJS) - один раз при монтировании
     React.useEffect(() => {
@@ -300,6 +309,18 @@ const EquipmentTab: React.FC = () => {
             containerRef.current = null;
             bodySpriteRef.current = null;
             weaponSpriteRef.current = null;
+
+            // Unload dynamic assets from memory to prevent VRAM memory leak
+            if (currentSheetPathRef.current) {
+                PIXI.Assets.unload(currentSheetPathRef.current).catch((err) =>
+                    console.error('Failed to unload sheet on unmount:', err),
+                );
+            }
+            if (currentWeaponPathRef.current) {
+                PIXI.Assets.unload(currentWeaponPathRef.current).catch((err) =>
+                    console.error('Failed to unload weapon on unmount:', err),
+                );
+            }
         };
     }, []);
 
@@ -322,12 +343,22 @@ const EquipmentTab: React.FC = () => {
                 if (selectedHeroId === 'raccoon') {
                     sheetPath = '/assets/characters/raccoon/raccoon_poses.png.json';
                 } else if (selectedHeroId === 'panda') {
-                    const equippedSkin = useGameStore.getState().equippedSkins?.['panda'] || 'default';
+                    const equippedSkin = equippedSkins?.['panda'] || 'default';
                     if (equippedSkin === 'panda_frost') {
                         sheetPath = '/assets/characters/panda/panda_frost_poses.png.json';
                     }
                 }
                 sheet = await PIXI.Assets.load(sheetPath);
+
+                if (!active || body.destroyed) return;
+
+                // If sheet changed, unload the previous one
+                if (currentSheetPathRef.current && currentSheetPathRef.current !== sheetPath) {
+                    PIXI.Assets.unload(currentSheetPathRef.current).catch((err) =>
+                        console.error('Failed to unload sheet:', err),
+                    );
+                }
+                currentSheetPathRef.current = sheetPath;
             } catch (err) {
                 console.error(`Failed to load ${selectedHeroId} sheet:`, err);
                 return;
@@ -342,6 +373,12 @@ const EquipmentTab: React.FC = () => {
 
             if (!equippedWeaponId) {
                 weapon.visible = false;
+                if (currentWeaponPathRef.current) {
+                    PIXI.Assets.unload(currentWeaponPathRef.current).catch((err) =>
+                        console.error('Failed to unload weapon:', err),
+                    );
+                    currentWeaponPathRef.current = '';
+                }
                 return;
             }
 
@@ -354,11 +391,20 @@ const EquipmentTab: React.FC = () => {
             };
             const file = weaponFileMap[equippedWeaponId] || 'moon_sword';
             try {
-                const tex = await PIXI.Assets.load(resolveAssetPath(`/assets/items/${file}.png`));
+                const weaponPath = resolveAssetPath(`/assets/items/${file}.png`);
+                const tex = await PIXI.Assets.load(weaponPath);
                 if (!active || weapon.destroyed || body.destroyed) return;
                 if (tex) {
                     weapon.texture = tex;
                     weapon.visible = true;
+
+                    // Unload the previous weapon texture if it changed
+                    if (currentWeaponPathRef.current && currentWeaponPathRef.current !== weaponPath) {
+                        PIXI.Assets.unload(currentWeaponPathRef.current).catch((err) =>
+                            console.error('Failed to unload weapon:', err),
+                        );
+                    }
+                    currentWeaponPathRef.current = weaponPath;
 
                     // Hand coordinates relative to the body pivot computed dynamically
                     const feet = { x: 0.5, y: 0.95 };
@@ -403,7 +449,7 @@ const EquipmentTab: React.FC = () => {
         return () => {
             active = false;
         };
-    }, [selectedHeroId, equippedWeaponId]);
+    }, [selectedHeroId, equippedWeaponId, equippedSkins]);
 
     return (
         <div className="flex w-full h-full gap-4 relative overflow-hidden">

@@ -10,7 +10,6 @@ import { DraggableItem } from './Inventory/DraggableItem';
 import { ItemTooltip } from './Inventory/ItemTooltip';
 import { ChestOpeningOverlay } from './Inventory/ChestOpeningOverlay';
 
-
 interface InventoryPanelProps {
     onItemClick?: (id: string) => void;
     mode?: 'FULL' | 'COMPACT';
@@ -212,8 +211,6 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ mode = 'FULL', o
         });
     };
 
-
-
     return (
         <div
             ref={containerRef}
@@ -382,23 +379,7 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ mode = 'FULL', o
                 ))}
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <button
-                    onClick={handleSellJunk}
-                    style={{
-                        background: 'transparent',
-                        border: '1px solid #ef4444',
-                        color: '#ef4444',
-                        padding: '6px 12px',
-                        borderRadius: '6px',
-                        fontSize: '10px',
-                        fontWeight: 800,
-                        cursor: 'pointer',
-                    }}
-                >
-                    🗑️ ПРОДАТЬ ВЕСЬ ХЛАМ (ОБЫЧНЫЕ)
-                </button>
-            </div>
+
 
             <ConfirmDialog
                 isOpen={confirmData.isOpen}

@@ -130,8 +130,8 @@ const rawAssetsMap = {
         BATTLE_PASS_MOBILE: '/assets/images/backgrounds/bg_battle_pass_mobile.webp', // was кириллица
         CITY_HUB: '/assets/images/backgrounds/bg_city_hub.webp',
         CITY_HUB_MOBILE: '/assets/images/backgrounds/bg_city_hub_mobile.webp',
-        RANKED_LOBBY: '/assets/images/backgrounds/bg_ranked_lobby_new.png',
-        RANKED_LOBBY_MOBILE: '/assets/images/backgrounds/bg_ranked_lobby_new.png',
+        RANKED_LOBBY: '/assets/images/backgrounds/bg_ranked_lobby_new.webp',
+        RANKED_LOBBY_MOBILE: '/assets/images/backgrounds/bg_ranked_lobby_new_mobile.webp',
         SANCTUARY: '/assets/images/backgrounds/gemini-2026-05-22-001.webp',
         SANCTUARY_MOBILE: '/assets/images/backgrounds/gemini-2026-05-22-001_mobile.webp',
     },

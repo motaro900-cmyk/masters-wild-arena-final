@@ -13,6 +13,7 @@ import * as PIXI from 'pixi.js';
 import { AssetsMap } from './configs/AssetsMap';
 import { audioService } from './services/AudioService';
 import { ITEMS_DATABASE } from './game/configs/ItemsConfig';
+import { ItemBuilder } from './components/dev/ItemBuilder';
 
 // Ленивая загрузка экранов и сцен для оптимизации размера бандла (Шаг 11)
 const ShopScene = React.lazy(() => import('./ui/components/hud/ShopScene').then((m) => ({ default: m.ShopScene })));
@@ -22,6 +23,8 @@ const BattlePassScene = React.lazy(() =>
 const HeroScene = React.lazy(() =>
     import('./ui/components/hud/HeroScene/index').then((m) => ({ default: m.HeroScene })),
 );
+import { AncientsSanctuaryScreen } from './ui/components/screens/AncientsSanctuaryScreen';
+
 const IntroScreen = React.lazy(() =>
     import('./ui/components/screens/IntroScreen').then((m) => ({ default: m.IntroScreen })),
 );
@@ -30,9 +33,6 @@ const CityScreen = React.lazy(() =>
 );
 const ForgeScreen = React.lazy(() =>
     import('./ui/components/screens/ForgeScreen').then((m) => ({ default: m.ForgeScreen })),
-);
-const AncientsSanctuaryScreen = React.lazy(() =>
-    import('./ui/components/screens/AncientsSanctuaryScreen').then((m) => ({ default: m.AncientsSanctuaryScreen })),
 );
 const BattleScene = React.lazy(() =>
     import('./ui/components/hud/BattleScene').then((m) => ({ default: m.BattleScene })),
@@ -137,6 +137,11 @@ export const SafeGameLayout = ({ containerRef }: { containerRef: React.RefObject
         typeof window !== 'undefined' && window.innerWidth < window.innerHeight,
     );
     const [dismissedRotationWarning, setDismissedRotationWarning] = React.useState(false);
+    const [showItemBuilder, setShowItemBuilder] = React.useState(false);
+
+    const isDev =
+        typeof window !== 'undefined' &&
+        (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
 
     const { setShowFps, showFps, isBanned, banReason, banUntil } = useGameStore((state) => ({
         setShowFps: state.setShowFps,
@@ -310,7 +315,8 @@ export const SafeGameLayout = ({ containerRef }: { containerRef: React.RefObject
                                 lineHeight: 1.5,
                             }}
                         >
-                            Если вы считаете, что блокировка была выдана по ошибке, обратитесь в поддержку игры или напишите разработчикам.
+                            Если вы считаете, что блокировка была выдана по ошибке, обратитесь в поддержку игры или
+                            напишите разработчикам.
                         </p>
                     </motion.div>
                 )}
@@ -482,6 +488,32 @@ export const SafeGameLayout = ({ containerRef }: { containerRef: React.RefObject
                 </div>
             </div>
             {showFps && <FpsCounter />}
+            {isDev && (
+                <>
+                    <button
+                        onClick={() => setShowItemBuilder(true)}
+                        style={{
+                            position: 'fixed',
+                            bottom: '10px',
+                            left: '10px',
+                            zIndex: 999999,
+                            background: 'linear-gradient(135deg, #1e1b4b 0%, #311042 100%)',
+                            color: '#f0c040',
+                            border: '1px solid rgba(240, 192, 64, 0.4)',
+                            borderRadius: '8px',
+                            padding: '6px 12px',
+                            fontSize: '12px',
+                            fontWeight: 'bold',
+                            cursor: 'pointer',
+                            boxShadow: '0 4px 15px rgba(0,0,0,0.6)',
+                            pointerEvents: 'auto',
+                        }}
+                    >
+                        🛠️ Item Builder
+                    </button>
+                    {showItemBuilder && <ItemBuilder onClose={() => setShowItemBuilder(false)} />}
+                </>
+            )}
         </div>
     );
 };
@@ -550,6 +582,12 @@ export const Root = () => {
         if (isAppInitialized || !containerRef.current) return;
         isAppInitialized = true;
 
+        let unsubChat: (() => void) | null = null;
+        let unsubFriends: (() => void) | null = null;
+        let unsubMail: (() => void) | null = null;
+        let unsubProfile: (() => void) | null = null;
+        let refreshInterval: any = null;
+
         const initApp = async () => {
             // [Anti-Grey] Loading Timeout (20s)
             const timeoutId = setTimeout(() => {
@@ -599,8 +637,8 @@ export const Root = () => {
                 clearTimeout(timeoutId); // [Anti-Grey] Success! Cancel timeout
                 console.log('✅ Game Ready!');
 
-                const state = useGameStore.getState();
                 const { syncService, SyncService } = await import('./services/SyncService');
+                let state = useGameStore.getState();
 
                 // Try to load player data from Firebase before checking onboarding status
                 const userId = SyncService.getPrefixedUserId(state.vkUser, state.playerId);
@@ -609,23 +647,22 @@ export const Root = () => {
                     const fbProfile = await syncService.loadPlayerData(userId);
                     if (fbProfile) {
                         console.log('💾 Found remote profile, restoring state...', fbProfile.name);
-                        
+
                         // Если в загруженном состоянии activeScreen равен 'INTRO', но при этом
                         // onboardingCompleted равен true, принудительно переводим на 'MAIN_MENU'
                         const restoredName = fbProfile.name;
                         const onboardingDone = fbProfile.onboardingCompleted;
-                        
-                        let stateToRestore = { ...fbProfile };
+
+                        const stateToRestore = { ...fbProfile };
                         if (stateToRestore.status === 'BANNED') {
                             stateToRestore.isBanned = true;
                         }
                         if (onboardingDone && restoredName && restoredName !== 'Мастер') {
-                            if (stateToRestore.activeScreen === 'INTRO') {
-                                stateToRestore.activeScreen = 'MAIN_MENU';
-                            }
+                            stateToRestore.activeScreen = 'MAIN_MENU';
                         }
-                        
+
                         useGameStore.setState(stateToRestore);
+                        state = useGameStore.getState();
 
                         // Если имя всё ещё дефолтное "Мастер" — игрок не прошёл регистрацию.
                         // Сбрасываем onboarding чтобы показать обучение заново.
@@ -644,11 +681,13 @@ export const Root = () => {
                     console.error('❌ Failed to load remote profile:', loadErr);
                 }
 
-                const isLocalhost = typeof window !== 'undefined' && 
-                    (window.location.hostname === 'localhost' || 
-                     window.location.hostname === '127.0.0.1' || 
-                     window.location.protocol === 'file:');
+                const isLocalhost =
+                    typeof window !== 'undefined' &&
+                    (window.location.hostname === 'localhost' ||
+                        window.location.hostname === '127.0.0.1' ||
+                        window.location.protocol === 'file:');
 
+                state = useGameStore.getState();
                 const isAdminVk = state.vkUser && [212359386, 1035794378].includes(Number(state.vkUser.id));
                 if (isLocalhost || isAdminVk) {
                     const localState = useGameStore.getState();
@@ -676,26 +715,49 @@ export const Root = () => {
                 }
 
                 syncService.startAutoSync(60000);
-                syncService.subscribeToChat((messages) => {
+
+                // Слушатель смены экранов для Spectator Mode логов в реальном времени
+                let lastScreen = useGameStore.getState().activeScreen;
+                useGameStore.subscribe((state: any) => {
+                    if (state.activeScreen && state.activeScreen !== lastScreen) {
+                        const screenNames: Record<string, string> = {
+                            INTRO: 'Вступление / Выбор имени',
+                            CITY: 'Город',
+                            HEROES: 'Герои (Снаряжение)',
+                            SHOP: 'Магазин',
+                            BATTLE_PASS: 'Боевой Пропуск',
+                            BATTLE: 'Арена сражений',
+                            FORGE: 'Кузница',
+                            SANCTUARY: 'Святилище Древних',
+                            MAIN_MENU: 'Главное меню',
+                        };
+                        const name = screenNames[state.activeScreen] || state.activeScreen;
+                        lastScreen = state.activeScreen;
+                        syncService.logPlayerAction(`Перешёл на экран: ${name}`);
+                        syncService.debouncedSync();
+                    }
+                });
+
+                unsubChat = syncService.subscribeToChat((messages) => {
                     useGameStore.getState().setMessages(messages);
                 });
-                syncService.subscribeToFriendRequests(updatedState.playerId, (requests) => {
+                unsubFriends = syncService.subscribeToFriendRequests(updatedState.playerId, (requests) => {
                     useGameStore.getState().setFriendRequests(requests);
                 });
-                syncService.subscribeToMail(updatedState.playerId, (mails) => {
+                unsubMail = syncService.subscribeToMail(updatedState.playerId, (mails) => {
                     useGameStore.getState().setMail(mails);
                 });
 
                 // Подписка на собственный профиль для мгновенного выполнения команд админа (кик, бан, ресурсы)
-                syncService.subscribeToOwnProfile(userId, (dbData) => {
+                unsubProfile = syncService.subscribeToOwnProfile(userId, (dbData) => {
                     if (!dbData) return;
 
                     // 1. Проверка бана
                     if (dbData.status === 'BANNED') {
-                        useGameStore.setState({ 
-                            isBanned: true, 
-                            banReason: dbData.banReason || 'Нарушение правил игры', 
-                            banUntil: dbData.banUntil || '' 
+                        useGameStore.setState({
+                            isBanned: true,
+                            banReason: dbData.banReason || 'Нарушение правил игры',
+                            banUntil: dbData.banUntil || '',
                         });
                         return;
                     } else {
@@ -720,8 +782,18 @@ export const Root = () => {
                             const updatePayload: any = {};
 
                             const trackedFields = [
-                                'gold', 'crystals', 'level', 'rating', 'trophies', 
-                                'inventory', 'heroEquipment', 'ownedSkins', 'shards', 'ownedHeroes', 'energy', 'maxEnergy'
+                                'gold',
+                                'crystals',
+                                'level',
+                                'rating',
+                                'trophies',
+                                'inventory',
+                                'heroEquipment',
+                                'ownedSkins',
+                                'shards',
+                                'ownedHeroes',
+                                'energy',
+                                'maxEnergy',
                             ];
 
                             for (const field of trackedFields) {
@@ -744,7 +816,10 @@ export const Root = () => {
                             }
 
                             if (hasChanges) {
-                                console.log('[SyncService] Admin updated player state, applying changes:', updatePayload);
+                                console.log(
+                                    '[SyncService] Admin updated player state, applying changes:',
+                                    updatePayload,
+                                );
                                 useGameStore.setState(updatePayload);
                             }
                         } catch (e) {
@@ -811,15 +886,16 @@ export const Root = () => {
                     // tutorialStep остаётся 0, TutorialOverlay сам покажется поверх игры
                 }
 
-                if (!state.dailyQuests || state.dailyQuests.length === 0) {
-                    state.refreshDailyQuests();
+                const finalState = useGameStore.getState();
+                if (!finalState.dailyQuests || finalState.dailyQuests.length === 0) {
+                    finalState.refreshDailyQuests();
                 }
 
-                if (!state.weeklyQuests || state.weeklyQuests.length === 0) {
-                    state.refreshWeeklyQuests();
+                if (!finalState.weeklyQuests || finalState.weeklyQuests.length === 0) {
+                    finalState.refreshWeeklyQuests();
                 }
 
-                state.updateQuestProgress('LOGIN', 1);
+                finalState.updateQuestProgress('LOGIN', 1);
 
                 // Очистка тестовых сообщений
                 if (state.messages.some((m: any) => m.author === 'Мастер' && m.text === 'Привет')) {
@@ -842,15 +918,13 @@ export const Root = () => {
                 }
 
                 // [Optimization] Background refresh check every minute (MSK Aligned)
-                const refreshInterval = setInterval(() => {
+                refreshInterval = setInterval(() => {
                     const currentState = useGameStore.getState();
                     if (isNewDayMSK(currentState.lastDailyRefresh)) {
                         console.log('🔄 MSK Midnight: Auto-refreshing daily quests...');
                         currentState.refreshDailyQuests();
                     }
                 }, 60000);
-
-                return () => clearInterval(refreshInterval);
             } catch (err: any) {
                 clearTimeout(timeoutId);
                 console.error('❌ Critical Init Error:', err);
@@ -859,6 +933,14 @@ export const Root = () => {
         };
 
         initApp();
+
+        return () => {
+            if (unsubChat) unsubChat();
+            if (unsubFriends) unsubFriends();
+            if (unsubMail) unsubMail();
+            if (unsubProfile) unsubProfile();
+            if (refreshInterval) clearInterval(refreshInterval);
+        };
     }, []);
 
     if (initError) {

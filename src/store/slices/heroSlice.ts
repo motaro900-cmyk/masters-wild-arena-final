@@ -93,9 +93,9 @@ export const createHeroSlice = (set: any, get: any) => ({
             hp: heroData.stats.stamina * 10,
             attack: heroData.stats.strength * 2,
             defense: Math.round(heroData.stats.stamina * 0.5),
-            speed: 1 + heroData.stats.agility * 0.05,   // internal ATB speed multiplier
-            critChance: heroData.stats.agility * 0.5,   // stored as % (e.g. 6%)
-            evasion: heroData.stats.agility * 0.2,      // stored as % (e.g. 2.4%)
+            speed: 1 + heroData.stats.agility * 0.05, // internal ATB speed multiplier
+            critChance: heroData.stats.agility * 0.5, // stored as % (e.g. 6%)
+            evasion: heroData.stats.agility * 0.2, // stored as % (e.g. 2.4%)
             resilience: heroData.stats.stamina * 0.1,
             lifesteal: 0,
             penetration: 0,
@@ -159,10 +159,10 @@ export const createHeroSlice = (set: any, get: any) => ({
         const buffs = state.activeBuffs || {};
         const now = Date.now();
         if (buffs.hp_potion_1 && buffs.hp_potion_1 > now) {
-            total.hp = Math.round(total.hp * 1.10); // +10% HP
+            total.hp = Math.round(total.hp * 1.1); // +10% HP
         }
         if (buffs.hp_potion_2 && buffs.hp_potion_2 > now) {
-            total.hp = Math.round(total.hp * 1.20); // +20% HP
+            total.hp = Math.round(total.hp * 1.2); // +20% HP
         }
         if (buffs.hp_potion_3 && buffs.hp_potion_3 > now) {
             total.hp = Math.round(total.hp * 1.35); // +35% HP

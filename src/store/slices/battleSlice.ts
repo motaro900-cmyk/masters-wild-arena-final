@@ -95,7 +95,7 @@ export const createBattleSlice = (set: any, get: any) => ({
         const finalAuthor =
             author === 'Игрок' || author === 'Мастер' || author === 'Motar' || !author ? state.name : author;
 
-        const finalAvatar = state.vkUser?.photo_200 || state.vkUser?.photo || '/assets/images/avatars/панда.webp';
+        const finalAvatar = state.vkUser?.photo_200 || state.vkUser?.photo || '/assets/images/avatars/panda.webp';
 
         const newMessage = {
             author: finalAuthor,
@@ -310,6 +310,8 @@ export const createBattleSlice = (set: any, get: any) => ({
             selectedEnemyId: mobId,
             battleMode: 'PVE',
         });
+        syncService.logPlayerAction(`Начал бой против моба: ${enemy.name}`);
+        syncService.debouncedSync();
     },
 
     completePveBattle: (win: boolean) => {
@@ -431,6 +433,8 @@ export const createBattleSlice = (set: any, get: any) => ({
             get().updateQuestProgress('WIN', 1);
             get().updateQuestProgress('WIN_STREAK', newStreak);
             get().updateQuestProgress('PLAY', 1);
+
+            syncService.logPlayerAction(`Победа в бою (Этап PvE: ${pveStage})`);
         } else {
             get().addBpExp(20);
 
@@ -441,6 +445,8 @@ export const createBattleSlice = (set: any, get: any) => ({
             }));
             get().updateQuestProgress('WIN_STREAK', 0);
             get().updateQuestProgress('PLAY', 1);
+
+            syncService.logPlayerAction(`Поражение в бою (Этап PvE: ${pveStage})`);
         }
 
         syncService.syncPlayerData();

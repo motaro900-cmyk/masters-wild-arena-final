@@ -268,8 +268,21 @@ export const DailyTaskPanel: React.FC = () => {
                                                                 boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
                                                             }}
                                                         >
-                                                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0 }}>
-                                                                <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l.73-.73" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+                                                            <svg
+                                                                width="11"
+                                                                height="11"
+                                                                viewBox="0 0 24 24"
+                                                                fill="none"
+                                                                xmlns="http://www.w3.org/2000/svg"
+                                                                style={{ flexShrink: 0 }}
+                                                            >
+                                                                <path
+                                                                    d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l.73-.73"
+                                                                    stroke="currentColor"
+                                                                    strokeWidth="3"
+                                                                    strokeLinecap="round"
+                                                                    strokeLinejoin="round"
+                                                                />
                                                             </svg>
                                                         </motion.button>
                                                     )}

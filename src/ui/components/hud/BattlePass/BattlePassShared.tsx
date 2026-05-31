@@ -1,6 +1,9 @@
 /* eslint-disable react-refresh/only-export-components */
 import React from 'react';
 
+import { SKINS_DB } from '../../../../configs/SkinsConfig';
+import { ITEMS_DATABASE } from '../../../../game/configs/ItemsConfig';
+
 export const BattlePassStyles = () => (
     <style>{`
         @keyframes bpEmberFloat {
@@ -104,17 +107,17 @@ export const BATTLE_PASS_REWARDS: Reward[] = [
     {
         level: 3,
         free: { id: 'potion_strength', name: 'Зелье Силы', icon: '🧪', type: 'ITEM' },
-        premium: { id: 'gems_150', name: '150 Алмазов', icon: '💎', amount: 150, type: 'GEMS' },
+        premium: { id: 'chest_epic', name: 'Эпич. Сундук', icon: 'sprite-gift', type: 'CHEST' },
     },
     {
         level: 4,
         free: { id: 'gold_1000', name: '1000 Золота', icon: '💰', amount: 1000, type: 'GOLD' },
-        premium: { id: 'chest_epic', name: 'Эпич. Сундук', icon: 'sprite-gift', type: 'CHEST' },
+        premium: { id: 'gems_150', name: '150 Алмазов', icon: '💎', amount: 150, type: 'GEMS' },
     },
     {
         level: 5,
         free: { id: 'shard_rare', name: 'Редкий Осколок', icon: '✨', type: 'ITEM' },
-        premium: { id: 'pedestal_legendary', name: 'Легенд. Пьедестал', icon: '🏛️', type: 'ITEM' },
+        premium: { id: 'pedestal_legendary', name: 'Легенд. Плащ', icon: '🏛️', type: 'ITEM' },
     },
     {
         level: 6,
@@ -167,3 +170,47 @@ export const BATTLE_PASS_REWARDS: Reward[] = [
         premium: { id: 'panda_frost', name: 'Облик: Морозный Дзен', icon: '❄️', type: 'SKIN' },
     },
 ];
+
+export const getRewardImage = (item: RewardItem): string => {
+    if (item.type === 'SKIN') {
+        const skin = SKINS_DB.find((s) => s.id === item.id);
+        if (skin) return skin.image;
+    }
+    if (item.type === 'GOLD') {
+        return '/assets/images/ui/icons/Gold.webp';
+    }
+    if (item.type === 'GEMS') {
+        return '/assets/images/ui/icons/almaz.webp';
+    }
+    if (item.type === 'CHEST') {
+        return '/assets/images/ui/icons/season_chest.webp';
+    }
+    if (item.id.includes('potion_strength')) {
+        return '/assets/images/items/potions/strength.webp';
+    }
+    if (item.id.includes('potion_healing')) {
+        return '/assets/images/items/potions/hp_small.webp';
+    }
+    if (item.id.includes('potion_defense')) {
+        return '/assets/images/items/potions/defense.webp';
+    }
+    if (item.id.includes('shard')) {
+        return '/assets/images/resources/runic_shard.webp';
+    }
+    if (item.id === 'pedestal_legendary') {
+        return '/assets/images/items/armor/armor_phoenix.webp';
+    }
+
+    let mappedItemId = item.id;
+    if (item.id === 'potion_strength') mappedItemId = 'hp_potion_3';
+    else if (item.id === 'potion_strength_great') mappedItemId = 'hp_potion_3';
+    else if (item.id === 'potion_healing') mappedItemId = 'hp_potion_1';
+    else if (item.id === 'potion_defense') mappedItemId = 'hp_potion_2';
+
+    const dbItem = ITEMS_DATABASE[mappedItemId];
+    if (dbItem?.image) {
+        return dbItem.image;
+    }
+
+    return '';
+};
