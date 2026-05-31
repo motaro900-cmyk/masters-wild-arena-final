@@ -80,7 +80,15 @@ export const createPlayerSlice = (set: any, get: any) => ({
     isMuted: false,
     referralProcessed: false,
     referredBy: null as string | null,
-    playerId: 'MW-' + Math.random().toString(36).substr(2, 9).toUpperCase(),
+    playerId: (typeof window !== 'undefined' &&
+        (window.location.hostname === 'localhost' ||
+            window.location.hostname === '127.0.0.1' ||
+            window.location.hostname.startsWith('192.168.') ||
+            window.location.hostname.startsWith('10.') ||
+            window.location.hostname.endsWith('.local') ||
+            window.location.protocol === 'file:'))
+        ? 'DEVELOPER'
+        : 'MW-' + Math.random().toString(36).substr(2, 9).toUpperCase(),
     musicVolume: 70,
     soundVolume: 85,
     graphicsQuality:

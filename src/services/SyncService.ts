@@ -35,6 +35,9 @@ export class SyncService {
         if (vkUser) {
             return `VK-${vkUser.id}`;
         }
+        if (playerId === 'DEVELOPER') {
+            return 'DEVELOPER';
+        }
         if (playerId && playerId.startsWith('GUEST-')) {
             return playerId;
         }
