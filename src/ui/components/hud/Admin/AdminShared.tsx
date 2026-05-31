@@ -181,4 +181,11 @@ export interface RealPlayer {
     isTest?: boolean;
     isDev?: boolean;
     lastSeenTime: string;
+    rating: number;
+    vipLevel: number;
+    isVipActive: boolean;
+    vipDaysRemaining: number;
+    energy: number;
+    maxEnergy: number;
+    inventory: any[];
 }

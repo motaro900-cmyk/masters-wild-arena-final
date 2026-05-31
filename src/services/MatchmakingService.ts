@@ -125,13 +125,24 @@ class MatchmakingServiceClass {
 
             const q = query(
                 playersRef,
-                where('рейтинг', '>=', minRating),
-                where('рейтинг', '<=', maxRating),
-                orderBy('рейтинг'),
+                where('rating', '>=', minRating),
+                where('rating', '<=', maxRating),
+                orderBy('rating'),
                 limit(20),
             );
 
-            const snapshot = await getDocs(q);
+            let snapshot = await getDocs(q);
+            if (snapshot.empty) {
+                const qLegacy = query(
+                    playersRef,
+                    where('рейтинг', '>=', minRating),
+                    where('рейтинг', '<=', maxRating),
+                    orderBy('рейтинг'),
+                    limit(20),
+                );
+                snapshot = await getDocs(qLegacy);
+            }
+
             if (snapshot.empty) return null;
 
             const candidates = snapshot.docs
@@ -145,22 +156,22 @@ class MatchmakingServiceClass {
                     if (!this.canAttack(myUserId, p.id)) return false;
 
                     // Исключаем тестовые имена
-                    const name = p.имя || p.name || '';
+                    const name = p.name || p.имя || '';
                     const lowerName = name.toLowerCase();
                     if (['мастер', 'разработчик', 'test'].some((w) => lowerName.includes(w))) {
                         return false;
                     }
 
-                    if (p.тестовый || p.разработчик) {
+                    if (p.isTestPlayer || p.isDeveloper || p.тестовый || p.разработчик) {
                         return false;
                     }
 
                     // Проверяем наличие выбранного героя
-                    const heroId = p.герой || p.heroId;
+                    const heroId = p.hero || p.герой || p.heroId;
                     if (!heroId) return false;
 
-                    const rating = p.рейтинг ?? p.rating ?? 0;
-                    const equipment = p.снаряжение || p.геройСнаряжение;
+                    const rating = p.rating ?? p.рейтинг ?? 0;
+                    const equipment = p.equipment || p.снаряжение || p.геройСнаряжение;
 
                     // Если рейтинг > 50, требуем оружие и броню (защита от голых)
                     if (rating > 50) {
@@ -188,13 +199,13 @@ class MatchmakingServiceClass {
     }
 
     private buildOpponentFromSnapshot(snapshot: any): MatchOpponent {
-        const heroId = snapshot.герой || snapshot.heroId || 'panda';
+        const heroId = snapshot.hero || snapshot.герой || snapshot.heroId || 'panda';
         const heroData = HEROES_DB.find((h) => h.id === heroId) || HEROES_DB[0];
-        const rating = snapshot.рейтинг ?? snapshot.rating ?? 0;
+        const rating = snapshot.rating ?? snapshot.рейтинг ?? 0;
         const rankInfo = getRankInfo(rating);
 
         // Если в snapshot есть снаряжение — используем его, иначе генерируем
-        const equipment = snapshot.снаряжение || {
+        const equipment = snapshot.equipment || snapshot.снаряжение || {
             WEAPONS: snapshot.геройСнаряжение?.weapon || null,
             HELMETS: snapshot.геройСнаряжение?.helm || null,
             ARMOR: snapshot.геройСнаряжение?.armor || null,
@@ -204,12 +215,12 @@ class MatchmakingServiceClass {
             BOOTS: null,
         };
 
-        const level = snapshot.уровень || snapshot.лев || snapshot.level || 1;
+        const level = snapshot.level || snapshot.уровень || snapshot.level || 1;
         const stats = buildStatsFromEquipment(heroId, level, equipment);
 
         return {
             id: heroId,
-            name: snapshot.имя || snapshot.name || 'Игрок',
+            name: snapshot.name || snapshot.имя || 'Игрок',
             rating,
             level,
             heroId,

@@ -169,22 +169,26 @@ export class SyncService {
                     window.location.hostname === '127.0.0.1' ||
                     window.location.protocol === 'file:');
 
+            const vipEndTime = state.vipEndTime || 0;
+            const isVipActive = state.vipLevel > 0 && vipEndTime > Date.now();
+            const vipDaysRemaining = isVipActive ? Math.ceil((vipEndTime - Date.now()) / (24 * 60 * 60 * 1000)) : 0;
+
             const syncData = {
                 id: userId,
                 vkId: vkUser ? Number(vkUser.id) : 0,
-                имя: state.name || 'Мастер',
-                имяВК: vkUser ? vkUser.first_name || vkUser.firstName || '' : '',
-                фамилияВК: vkUser ? vkUser.last_name || vkUser.lastName || '' : '',
-                ссылкаВК: vkUser ? `https://vk.com/id${vkUser.id}` : '',
-                уровень: state.level || 1,
-                золото: state.gold || 0,
-                кристаллы: state.crystals || 0,
-                рейтинг: state.rating || 0,
-                былВСети: serverTimestamp(),
-                активныйЭкран: state.activeScreen || 'MAIN_MENU',
-                герой: selectedHeroId,
-                фото: state.avatar || (vkUser ? vkUser.photo200 || vkUser.photo || '' : ''),
-                снаряжение: {
+                name: state.name || 'Мастер',
+                vkFirstName: vkUser ? vkUser.first_name || vkUser.firstName || '' : '',
+                vkLastName: vkUser ? vkUser.last_name || vkUser.lastName || '' : '',
+                vkLink: vkUser ? `https://vk.com/id${vkUser.id}` : '',
+                level: state.level || 1,
+                gold: state.gold || 0,
+                crystals: state.crystals || 0,
+                rating: state.rating || 0,
+                wasOnline: serverTimestamp(),
+                activeScreen: state.activeScreen || 'MAIN_MENU',
+                hero: selectedHeroId,
+                avatar: state.avatar || (vkUser ? vkUser.photo200 || vkUser.photo || '' : ''),
+                equipment: {
                     WEAPONS: state.heroEquipment?.[selectedHeroId]?.WEAPONS || null,
                     HELMETS: state.heroEquipment?.[selectedHeroId]?.HELMETS || null,
                     ARMOR: state.heroEquipment?.[selectedHeroId]?.ARMOR || null,
@@ -193,10 +197,15 @@ export class SyncService {
                     PANTS: state.heroEquipment?.[selectedHeroId]?.PANTS || null,
                     BOOTS: state.heroEquipment?.[selectedHeroId]?.BOOTS || null,
                 },
-                инвентарь: state.inventory || [],
-                полноеСостояниеJSON: JSON.stringify(fullState),
-                тестовый: isLocalhost || state.name === 'Разработчик' || state.name?.toLowerCase().includes('test'),
-                разработчик: isLocalhost || state.name === 'Разработчик',
+                inventory: state.inventory || [],
+                fullStateJSON: JSON.stringify(fullState),
+                isTestPlayer: isLocalhost || state.name === 'Разработчик' || state.name?.toLowerCase().includes('test'),
+                isDeveloper: isLocalhost || state.name === 'Разработчик',
+                vipLevel: state.vipLevel || 0,
+                isVipActive,
+                vipDaysRemaining,
+                energy: state.energy || 0,
+                maxEnergy: state.maxEnergy || 0,
             };
 
             await setDoc(playerRef, syncData, { merge: true });
@@ -312,9 +321,10 @@ export class SyncService {
                 const currentAdminVersion = Number(docData.adminVersion || 0);
                 updatedData.adminVersion = currentAdminVersion + 1;
 
-                if (docData.полноеСостояниеJSON) {
+                const fullStateStr = docData.fullStateJSON || docData.полноеСостояниеJSON;
+                if (fullStateStr) {
                     try {
-                        const parsed = JSON.parse(docData.полноеСостояниеJSON);
+                        const parsed = JSON.parse(fullStateStr);
 
                         // Map fields to Zustand state keys in parsed JSON
                         if (data.золото !== undefined || data.gold !== undefined) {
@@ -344,9 +354,9 @@ export class SyncService {
                             parsed.ownedHeroes = data.ownedHeroes;
                         }
 
-                        updatedData.полноеСостояниеJSON = JSON.stringify(parsed);
+                        updatedData.fullStateJSON = JSON.stringify(parsed);
                     } catch (e) {
-                        console.error('[SyncService] Failed to parse полноеСостояниеJSON during remote update:', e);
+                        console.error('[SyncService] Failed to parse fullStateJSON during remote update:', e);
                     }
                 }
             } else {
@@ -749,20 +759,25 @@ export class SyncService {
         );
     }
 
-    /**
-     * Проверяет, свободно ли имя (никнейм) в базе данных
-     */
     public async isNicknameUnique(name: string, currentUserId?: string, guestUserId?: string): Promise<boolean> {
         try {
             const playersRef = collection(db, 'пользователи');
-            // Ищем точное совпадение имени
-            const q = query(playersRef, where('имя', '==', name));
-            const snapshot = await getDocs(q);
-            if (snapshot.empty) return true;
+            // Ищем точное совпадение имени (поддерживаем новый и старый ключи)
+            const qName = query(playersRef, where('name', '==', name));
+            const snapName = await getDocs(qName);
+            
+            let docs = [...snapName.docs];
+            if (snapName.empty) {
+                const qLegacy = query(playersRef, where('имя', '==', name));
+                const snapLegacy = await getDocs(qLegacy);
+                docs = [...snapLegacy.docs];
+            }
+            
+            if (docs.length === 0) return true;
 
             // Если есть документ с таким именем, но его ID совпадает с ID текущего или гостевого игрока, то ник принадлежит ему же
             if (currentUserId || guestUserId) {
-                const matchesCurrentUser = snapshot.docs.some(
+                const matchesCurrentUser = docs.some(
                     (doc) => doc.id === currentUserId || (guestUserId && doc.id === guestUserId),
                 );
                 if (matchesCurrentUser) return true;
@@ -896,7 +911,7 @@ export class SyncService {
             const playerSnap = await getDoc(playerRef);
             if (playerSnap.exists()) {
                 const data = playerSnap.data();
-                const actions = data.последниеДействия || [];
+                const actions = data.lastActions || data.последниеДействия || [];
                 const timestamp = new Date().toLocaleTimeString([], {
                     hour: '2-digit',
                     minute: '2-digit',
@@ -907,8 +922,8 @@ export class SyncService {
                 await setDoc(
                     playerRef,
                     {
-                        последниеДействия: newActions,
-                        былВСети: serverTimestamp(),
+                        lastActions: newActions,
+                        wasOnline: serverTimestamp(),
                     },
                     { merge: true },
                 );

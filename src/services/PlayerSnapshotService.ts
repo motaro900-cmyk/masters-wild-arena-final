@@ -57,22 +57,26 @@ class PlayerSnapshotServiceClass {
             const stats = state.getCalculatedStats?.(selectedHeroId)?.total || {};
             const vkUser = state.vkUser;
 
+            const vipEndTime = state.vipEndTime || 0;
+            const isVipActive = state.vipLevel > 0 && vipEndTime > Date.now();
+            const vipDaysRemaining = isVipActive ? Math.ceil((vipEndTime - Date.now()) / (24 * 60 * 60 * 1000)) : 0;
+
             const snapshotData = {
                 id: userId,
                 vkId: vkUser ? Number(vkUser.id) : 0,
-                имя: state.name || (vkUser ? vkUser.first_name || vkUser.firstName || '' : 'Мастер'),
-                имяВК: vkUser ? vkUser.first_name || vkUser.firstName || '' : '',
-                фамилияВК: vkUser ? vkUser.last_name || vkUser.lastName || '' : '',
-                ссылкаВК: vkUser ? `https://vk.com/id${vkUser.id}` : '',
-                уровень: state.level || 1,
-                золото: state.gold || 0,
-                кристаллы: state.crystals || 0,
-                рейтинг: state.rating || 0,
-                былВСети: serverTimestamp(),
-                активныйЭкран: state.activeScreen || 'MAIN_MENU',
-                герой: selectedHeroId,
-                фото: state.avatar || (vkUser ? vkUser.photo200 || vkUser.photo || '' : ''),
-                снаряжение: {
+                name: state.name || (vkUser ? vkUser.first_name || vkUser.firstName || '' : 'Мастер'),
+                vkFirstName: vkUser ? vkUser.first_name || vkUser.firstName || '' : '',
+                vkLastName: vkUser ? vkUser.last_name || vkUser.lastName || '' : '',
+                vkLink: vkUser ? `https://vk.com/id${vkUser.id}` : '',
+                level: state.level || 1,
+                gold: state.gold || 0,
+                crystals: state.crystals || 0,
+                rating: state.rating || 0,
+                wasOnline: serverTimestamp(),
+                activeScreen: state.activeScreen || 'MAIN_MENU',
+                hero: selectedHeroId,
+                avatar: state.avatar || (vkUser ? vkUser.photo200 || vkUser.photo || '' : ''),
+                equipment: {
                     WEAPONS: equipment.WEAPONS || null,
                     HELMETS: equipment.HELMETS || null,
                     ARMOR: equipment.ARMOR || null,
@@ -87,6 +91,11 @@ class PlayerSnapshotServiceClass {
                     defense: stats.defense || 5,
                     speed: stats.speed || 1,
                 },
+                vipLevel: state.vipLevel || 0,
+                isVipActive,
+                vipDaysRemaining,
+                energy: state.energy || 0,
+                maxEnergy: state.maxEnergy || 0,
             };
 
             const playerRef = doc(db, 'пользователи', userId);

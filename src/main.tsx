@@ -689,18 +689,31 @@ export const Root = () => {
                             });
                         }
                     } else {
-                        console.log('👶 No remote profile found in Firestore.');
+                        console.log('👶 No remote profile found in Firestore. Resetting onboarding for new player.');
+                        useGameStore.setState({
+                            name: 'Мастер',
+                            onboardingCompleted: false,
+                            tutorialStep: 0,
+                            activeScreen: 'INTRO',
+                            gold: 300,
+                            crystals: 50,
+                            level: 1,
+                            rating: 0,
+                            vipLevel: 0,
+                            vipEndTime: 0,
+                            inventory: [],
+                            heroEquipment: {},
+                        });
                     }
                 } catch (loadErr) {
                     console.error('❌ Failed to load remote profile:', loadErr);
                 }
 
                 state = useGameStore.getState();
-                const isAdminVk = state.vkUser && [212359386, 1035794378].includes(Number(state.vkUser.id));
-                if (isLocalhost || isAdminVk) {
+                if (isLocalhost) {
                     const localState = useGameStore.getState();
                     if (!localState.name || localState.name === 'Мастер') {
-                        console.log('🛠️ Admin/Localhost detected: Auto-logging in as "Разработчик"');
+                        console.log('🛠️ Localhost detected: Auto-logging in as "Разработчик"');
                         useGameStore.setState({
                             name: 'Разработчик',
                             onboardingCompleted: true,
@@ -791,7 +804,8 @@ export const Root = () => {
                     }
 
                     // 3. Синхронизация изменений ресурсов и обликов
-                    if (dbData.полноеСостояниеJSON) {
+                    const fullStateStr = dbData.fullStateJSON || dbData.полноеСостояниеJSON;
+                    if (fullStateStr) {
                         try {
                             const dbAdminVersion = Number(dbData.adminVersion || 0);
                             if (lastAppliedAdminVersion === null) {
@@ -802,7 +816,7 @@ export const Root = () => {
                                 lastAppliedAdminVersion = dbAdminVersion;
                             }
 
-                            const parsed = JSON.parse(dbData.полноеСостояниеJSON);
+                            const parsed = JSON.parse(fullStateStr);
                             const currentState = useGameStore.getState();
 
                             let hasChanges = false;
