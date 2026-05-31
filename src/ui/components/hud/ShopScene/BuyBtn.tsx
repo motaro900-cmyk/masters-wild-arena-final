@@ -61,27 +61,7 @@ export const BuyBtn: React.FC<BuyBtnProps> = ({ item, onTrigger, discount = 0 })
         );
     }
 
-    if (isArsenalItem && isOwned) {
-        return (
-            <button
-                disabled
-                style={{
-                    width: '100%',
-                    height: '50px',
-                    background: 'linear-gradient(180deg, #374151 0%, #1f2937 100%)',
-                    border: '1px solid #4b5563',
-                    borderRadius: '8px',
-                    color: '#9ca3af',
-                    fontWeight: 900,
-                    fontFamily: "'Cinzel', 'Philosopher', serif",
-                    fontSize: '15px',
-                    cursor: 'not-allowed',
-                }}
-            >
-                {isEquipped ? 'НАДЕТО' : 'КУПЛЕНО'}
-            </button>
-        );
-    }
+
 
     const originalPrice = item.priceGold ?? item.priceGem ?? item.priceStars;
     const hasDiscount = discount > 0 && originalPrice !== undefined;

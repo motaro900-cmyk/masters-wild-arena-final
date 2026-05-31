@@ -253,16 +253,6 @@ export const createShopSlice = (set: any, get: any) => ({
                 console.warn('[Shop] Skin already owned');
                 return false;
             }
-                } else if (
-            !isBankItem &&
-            itemData.mainTab !== 'ALCHEMY' &&
-            (state.inventory.some((i: any) => String(i.id) === itemId) ||
-                Object.values(state.heroEquipment || {}).some((gear: any) =>
-                    gear && Object.values(gear).some((eqId) => String(eqId) === itemId)
-                ))
-        ) {
-            console.warn('[Shop] Item already owned or equipped');
-            return false;
         }
 
         let price = currencyType === 'gold' ? itemData.priceGold : itemData.priceGem;

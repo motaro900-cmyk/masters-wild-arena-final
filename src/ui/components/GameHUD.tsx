@@ -626,7 +626,17 @@ export const GameHUD: React.FC = () => {
                                     <InventoryPanel
                                         onItemClick={(itemId) => {
                                             const item = ITEMS_DATABASE[itemId];
-                                            if (item && item.mainTab === 'ALCHEMY' && item.subTab !== 'RESOURCES') {
+                                            if (!item) return;
+                                            if (item.mainTab === 'ARSENAL') {
+                                                const store = useGameStore.getState();
+                                                const currentHero = store.selectedHeroId || 'panda';
+                                                const equippedHero = store.getHeroByItemId(itemId);
+                                                if (equippedHero === currentHero) {
+                                                    store.unequipItem(itemId);
+                                                } else {
+                                                    store.equipItem(itemId);
+                                                }
+                                            } else if (item && item.mainTab === 'ALCHEMY' && item.subTab !== 'RESOURCES') {
                                                 if (itemId === 'protection_stone') return;
 
                                                 let effectDesc = '';

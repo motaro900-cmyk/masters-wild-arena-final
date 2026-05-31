@@ -246,15 +246,23 @@ export const BattleScene: React.FC = () => {
                         );
 
                         const newTrophies = Math.max(0, store.trophies + trophies);
+                        const newStreak = isVictory ? store.winStreak + 1 : 0;
                         const patch: any = {
                             trophies: newTrophies,
                             rating: newTrophies,
                             totalBattles: store.totalBattles + 1,
+                            winStreak: newStreak,
                         };
                         if (isVictory) {
                             patch.wins = store.wins + 1;
                         }
                         store.updateProfile(patch);
+
+                        if (isVictory) {
+                            store.updateQuestProgress('WIN', 1);
+                        }
+                        store.updateQuestProgress('PLAY', 1);
+                        store.updateQuestProgress('WIN_STREAK', newStreak);
 
                         const { syncService } = await import('../../../services/SyncService');
                         syncService.syncPlayerData();

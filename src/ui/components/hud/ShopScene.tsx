@@ -40,7 +40,7 @@ export const ShopScene: React.FC = () => {
         confirmPurchase,
     } = useShopScene();
 
-    const equippedItems = useGameStore((state: any) => state.equippedItems);
+    const equippedItems = useGameStore((state: any) => state.heroEquipment?.[state.selectedHeroId || 'panda'] || {});
 
     const itemPower = selectedItem ? calculateItemPower(selectedItem) : 0;
     const equippedItemId = selectedItem ? equippedItems?.[selectedItem.subTab] : null;

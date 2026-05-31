@@ -461,7 +461,10 @@ export class SyncService {
                 .filter((p: any) => {
                     const name = p.имя || p.name || '';
                     const lowerName = name.toLowerCase();
-                    if (['мастер', 'разработчик', 'test'].some((w) => lowerName.includes(w))) {
+                    const myId = useGameStore.getState().playerId;
+                    const isMe = p.id === myId || (p.vkId && String(p.vkId) === String(useGameStore.getState().vkUser?.id));
+                    if (isMe) return true;
+                    if (['разработчик', 'test'].some((w) => lowerName.includes(w))) {
                         return false;
                     }
                     if (p.тестовый || p.разработчик) {
@@ -496,7 +499,10 @@ export class SyncService {
                         .filter((p: any) => {
                             const name = p.имя || p.name || '';
                             const lowerName = name.toLowerCase();
-                            if (['мастер', 'разработчик', 'test'].some((w) => lowerName.includes(w))) {
+                            const myId = useGameStore.getState().playerId;
+                            const isMe = p.id === myId || (p.vkId && String(p.vkId) === String(useGameStore.getState().vkUser?.id));
+                            if (isMe) return true;
+                            if (['разработчик', 'test'].some((w) => lowerName.includes(w))) {
                                 return false;
                             }
                             if (p.тестовый || p.разработчик) {

@@ -278,106 +278,97 @@ export const RankingWindow: React.FC = () => {
                 )}
             </div>
 
-            {/* ВАША ПОЗИЦИЯ (SMART FOOTER) */}
-            <AnimatePresence>
-                {showFooter && (
-                    <motion.div
-                        initial={{ y: 50, opacity: 0 }}
-                        animate={{ y: 0, opacity: 1 }}
-                        exit={{ y: 50, opacity: 0 }}
+            {/* ВАША ПОЗИЦИЯ (ALWAYS VISIBLE FOOTER) */}
+            <div
+                style={{
+                    padding: '12px 25px',
+                    background: 'linear-gradient(180deg, rgba(30,20,10,0.95) 0%, rgba(15,10,5,0.98) 100%)',
+                    borderRadius: '16px',
+                    border: '1px solid #f0c040',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    boxShadow: '0 10px 30px rgba(0,0,0,0.8)',
+                    zIndex: 10,
+                    marginTop: '5px',
+                    flexShrink: 0,
+                }}
+            >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                    <div style={{ position: 'relative' }}>
+                        <span style={{ color: '#f0c040', fontSize: '20px', fontWeight: 900 }}>{myRank}</span>
+                        {myLeaderboardEntry?.rank === 1 && (
+                            <img
+                                src={AssetsMap.UI.ICON_CROWN}
+                                alt="crown"
+                                style={{
+                                    position: 'absolute',
+                                    top: -14,
+                                    left: -12,
+                                    width: '22px',
+                                    height: '22px',
+                                    objectFit: 'contain',
+                                    filter: 'drop-shadow(0 0 5px rgba(240,192,64,0.7))',
+                                }}
+                            />
+                        )}
+                    </div>
+                    <div
                         style={{
-                            position: 'absolute',
-                            bottom: 20,
-                            left: 20,
-                            right: 30,
-                            padding: '12px 25px',
-                            background: 'linear-gradient(180deg, rgba(30,20,10,0.95) 0%, rgba(15,10,5,0.98) 100%)',
-                            borderRadius: '16px',
-                            border: '1px solid #f0c040',
+                            width: '45px',
+                            height: '45px',
+                            background: '#333',
+                            borderRadius: '12px',
+                            border: '2px solid #f0c040',
+                            overflow: 'hidden',
                             display: 'flex',
                             alignItems: 'center',
-                            justifyContent: 'space-between',
-                            boxShadow: '0 10px 30px rgba(0,0,0,0.8)',
-                            zIndex: 10,
+                            justifyContent: 'center',
                         }}
                     >
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                            <div style={{ position: 'relative' }}>
-                                <span style={{ color: '#f0c040', fontSize: '20px', fontWeight: 900 }}>{myRank}</span>
-                                {myLeaderboardEntry?.rank === 1 && (
-                                    <img
-                                        src={AssetsMap.UI.ICON_CROWN}
-                                        alt="crown"
-                                        style={{
-                                            position: 'absolute',
-                                            top: -14,
-                                            left: -12,
-                                            width: '22px',
-                                            height: '22px',
-                                            objectFit: 'contain',
-                                            filter: 'drop-shadow(0 0 5px rgba(240,192,64,0.7))',
-                                        }}
-                                    />
-                                )}
-                            </div>
-                            <div
-                                style={{
-                                    width: '45px',
-                                    height: '45px',
-                                    background: '#333',
-                                    borderRadius: '12px',
-                                    border: '2px solid #f0c040',
-                                    overflow: 'hidden',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                }}
-                            >
-                                <img
-                                    src={vkUser?.photo_200 || playerAvatar || '🐺'}
-                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                    alt="avatar"
-                                />
-                            </div>
-                            <div>
-                                <div style={{ color: '#fff', fontSize: '16px', fontWeight: 800 }}>
-                                    {vkUser?.first_name || 'Мастер'}{' '}
-                                    <span style={{ fontSize: '10px', opacity: 0.5 }}>(ВЫ)</span>
-                                </div>
-                                <div
-                                    style={{
-                                        color: getRankInfo(rating).color,
-                                        fontSize: '11px',
-                                        fontWeight: 800,
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: '4px',
-                                    }}
-                                >
-                                    <img
-                                        src={getRankInfo(rating).icon}
-                                        alt="rank"
-                                        style={{ width: '18px', height: '18px', objectFit: 'contain' }}
-                                    />
-                                    {getRankInfo(rating).name}
-                                </div>
-                            </div>
+                        <img
+                            src={vkUser?.photo_200 || playerAvatar || '🐺'}
+                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                            alt="avatar"
+                        />
+                    </div>
+                    <div>
+                        <div style={{ color: '#fff', fontSize: '16px', fontWeight: 800 }}>
+                            {vkUser?.first_name || 'Мастер'}{' '}
+                            <span style={{ fontSize: '10px', opacity: 0.5 }}>(ВЫ)</span>
                         </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <span style={{ color: '#fff', fontSize: '24px', fontWeight: 900 }}>
-                                    {rating.toLocaleString().replace(',', ' ')}
-                                </span>
-                                <img
-                                    src={resolveAssetPath('/assets/images/ui/trophy_premium.webp')}
-                                    alt="trophy"
-                                    style={{ width: '32px', height: '32px', objectFit: 'contain' }}
-                                />
-                            </div>
+                        <div
+                            style={{
+                                color: getRankInfo(rating).color,
+                                fontSize: '11px',
+                                fontWeight: 800,
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '4px',
+                            }}
+                        >
+                            <img
+                                src={getRankInfo(rating).icon}
+                                alt="rank"
+                                style={{ width: '18px', height: '18px', objectFit: 'contain' }}
+                            />
+                            {getRankInfo(rating).name}
                         </div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
+                    </div>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ color: '#fff', fontSize: '24px', fontWeight: 900 }}>
+                            {rating.toLocaleString().replace(',', ' ')}
+                        </span>
+                        <img
+                            src={resolveAssetPath('/assets/images/ui/trophy_premium.webp')}
+                            alt="trophy"
+                            style={{ width: '32px', height: '32px', objectFit: 'contain' }}
+                        />
+                    </div>
+                </div>
+            </div>
 
             {/* PLAYER INSPECT MODAL */}
             <AnimatePresence>
