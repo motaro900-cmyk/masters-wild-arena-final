@@ -11,7 +11,7 @@ interface BuyBtnProps {
 }
 
 export const BuyBtn: React.FC<BuyBtnProps> = ({ item, onTrigger, discount = 0 }) => {
-    const { ownedSkins, equippedSkins, equipSkin, unequipSkin } = useGameStore();
+    const { ownedSkins, equippedSkins, equipSkin, unequipSkin, inventory, heroEquipment } = useGameStore();
 
     const isSkinOwned = item.mainTab === 'SKINS' && (ownedSkins || []).includes(String(item.id));
     let skinHeroId = '';
@@ -19,6 +19,13 @@ export const BuyBtn: React.FC<BuyBtnProps> = ({ item, onTrigger, discount = 0 })
     else if (String(item.id).includes('wolf')) skinHeroId = 'wolf_knight';
 
     const isSkinEquipped = item.mainTab === 'SKINS' && skinHeroId && equippedSkins?.[skinHeroId] === String(item.id);
+
+    const isArsenalItem = item.mainTab === 'ARSENAL';
+    const isEquipped = isArsenalItem && Object.values(heroEquipment || {}).some((gear: any) => 
+        gear && Object.values(gear).some((eqId) => String(eqId) === String(item.id))
+    );
+    const isOwnedInInventory = isArsenalItem && (inventory || []).some((i: any) => String(i.id) === String(item.id));
+    const isOwned = isEquipped || isOwnedInInventory;
 
     const handleSkinEquip = (e: React.MouseEvent) => {
         e.stopPropagation();
@@ -50,6 +57,28 @@ export const BuyBtn: React.FC<BuyBtnProps> = ({ item, onTrigger, discount = 0 })
                 }}
             >
                 {isSkinEquipped ? 'СНЯТЬ ОБЛИК' : 'НАДЕТЬ ОБЛИК'}
+            </button>
+        );
+    }
+
+    if (isArsenalItem && isOwned) {
+        return (
+            <button
+                disabled
+                style={{
+                    width: '100%',
+                    height: '50px',
+                    background: 'linear-gradient(180deg, #374151 0%, #1f2937 100%)',
+                    border: '1px solid #4b5563',
+                    borderRadius: '8px',
+                    color: '#9ca3af',
+                    fontWeight: 900,
+                    fontFamily: "'Cinzel', 'Philosopher', serif",
+                    fontSize: '15px',
+                    cursor: 'not-allowed',
+                }}
+            >
+                {isEquipped ? 'НАДЕТО' : 'КУПЛЕНО'}
             </button>
         );
     }

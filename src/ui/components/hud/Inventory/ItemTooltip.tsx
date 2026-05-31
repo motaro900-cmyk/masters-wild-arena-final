@@ -1,4 +1,5 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 import { motion } from 'framer-motion';
 import { useGameStore } from '../../../../store/useGameStore';
 import { ITEMS_DATABASE, calculateItemPower } from '../../../../game/configs/ItemsConfig';
@@ -53,17 +54,23 @@ export const ItemTooltip: React.FC<ItemTooltipProps> = ({ item }) => {
 
     const rarity = RARITY_COLORS[data.rarity || 'COMMON'] || RARITY_COLORS.COMMON;
     const tooltipWidth = 280;
-    const isTooRight = item.x > 500;
+    
+    // Bounds calculations
+    const left = item.x + tooltipWidth + 20 > window.innerWidth 
+        ? Math.max(10, item.x - tooltipWidth - 20) 
+        : item.x + 20;
+        
+    const top = Math.max(10, Math.min(window.innerHeight - 360, item.y - 120));
 
-    return (
+    return createPortal(
         <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             style={{
-                position: 'absolute',
-                left: isTooRight ? item.x - tooltipWidth - 20 : item.x + 20,
-                top: item.y + 20,
-                zIndex: 10000,
+                position: 'fixed',
+                left: `${left}px`,
+                top: `${top}px`,
+                zIndex: 2000000,
                 width: `${tooltipWidth}px`,
                 background: 'rgba(15, 10, 5, 0.95)',
                 backdropFilter: 'blur(10px)',
@@ -192,6 +199,7 @@ export const ItemTooltip: React.FC<ItemTooltipProps> = ({ item }) => {
                     </>
                 )}
             </div>
-        </motion.div>
+        </motion.div>,
+        document.body
     );
 };

@@ -89,9 +89,21 @@ export class BattleEngine {
     public battleTime: number = 0;
     public totalDamageDealt: number = 0;
     public totalDamageTaken: number = 0;
+    public totalTurnsPlayed: number = 0;
 
     public onStateChange: (state: BattleState) => void = () => {};
-    public onCombatEvent: (event: CombatEvent) => void = () => {};
+    private _onCombatEvent: (event: CombatEvent) => void = () => {};
+    public get onCombatEvent() {
+        return this._onCombatEvent;
+    }
+    public set onCombatEvent(cb: (event: CombatEvent) => void) {
+        this._onCombatEvent = (event: CombatEvent) => {
+            if (event.type === 'HIT' || event.type === 'CRIT') {
+                this.totalTurnsPlayed += 1;
+            }
+            cb(event);
+        };
+    }
     private state: BattleState = {
         playerHP: 100,
         playerMaxHP: 100,
@@ -116,6 +128,7 @@ export class BattleEngine {
         try {
             this.totalDamageDealt = 0;
             this.totalDamageTaken = 0;
+            this.totalTurnsPlayed = 0;
 
             // Нормализация процентов крита и уклонения (из 0-100% в 0.0-1.0)
             const pCrit = Number(playerStats?.critChance) || 10;
@@ -918,6 +931,8 @@ export class BattleEngine {
                     const rawDmg = pStats.attack * mult * (0.9 + Math.random() * 0.2);
                     const finalActiveDmg = Math.ceil(Math.max(1, rawDmg - eStats.defense * 0.25));
                     eHP = Math.max(0, eHP - finalActiveDmg);
+                    this.totalDamageDealt += finalActiveDmg;
+                    this.totalTurnsPlayed += 1;
                     store.updateQuestProgress('DAMAGE', finalActiveDmg);
 
                     if (role === 'SUPPORT') {
@@ -947,6 +962,8 @@ export class BattleEngine {
                         }
 
                         eHP = Math.max(0, eHP - finalDmg);
+                        this.totalDamageDealt += finalDmg;
+                        this.totalTurnsPlayed += 1;
                         store.updateQuestProgress('DAMAGE', finalDmg);
                     }
                 }
@@ -981,6 +998,8 @@ export class BattleEngine {
                     }
 
                     pHP = Math.max(0, pHP - finalDmg);
+                    this.totalDamageTaken += finalDmg;
+                    this.totalTurnsPlayed += 1;
                 }
                 eTimer = eMax;
             }

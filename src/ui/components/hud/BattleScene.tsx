@@ -268,7 +268,7 @@ export const BattleScene: React.FC = () => {
                         crystalsEarned: crystals,
                         damageDealt: engineRef.current?.totalDamageDealt ?? (playerStats?.attack || 50) * 10,
                         damageTaken: engineRef.current?.totalDamageTaken ?? 0,
-                        turnsPlayed: turnCountRef.current,
+                        turnsPlayed: engineRef.current?.totalTurnsPlayed ?? turnCountRef.current,
                         enemyName: isPve && activePveEnemy ? activePveEnemy.name : enemyData.name,
                         playerStats: playerStats
                             ? {

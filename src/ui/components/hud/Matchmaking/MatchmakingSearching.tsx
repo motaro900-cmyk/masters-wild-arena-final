@@ -202,15 +202,15 @@ export const MatchmakingSearching: React.FC<MatchmakingSearchingProps> = ({
                     {vipLevel > 0 && (
                         <span
                             style={{
-                                background: 'linear-gradient(135deg, #00f2ff 0%, #0066ff 100%)',
+                                background: 'linear-gradient(135deg, #ef4444 0%, #991b1b 100%)',
                                 color: '#fff',
                                 fontSize: '11px',
                                 fontWeight: 900,
                                 padding: '3px 8px',
                                 borderRadius: '6px',
                                 letterSpacing: '1.5px',
-                                boxShadow: '0 0 10px rgba(0,242,255,0.6)',
-                                border: '1px solid rgba(255,255,255,0.3)',
+                                boxShadow: '0 0 10px rgba(239, 68, 68, 0.6)',
+                                border: '1px solid rgba(255, 255, 255, 0.3)',
                                 fontFamily: "'Cinzel', serif",
                             }}
                         >

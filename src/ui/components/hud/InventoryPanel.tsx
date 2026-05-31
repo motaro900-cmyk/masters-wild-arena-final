@@ -353,12 +353,8 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ mode = 'FULL', o
                                 }
                             }}
                             setGlobalHoveredItem={(id: string | null, x: number, y: number) => {
-                                if (id && containerRef.current) {
-                                    const rect = containerRef.current.getBoundingClientRect();
-                                    const scale = rect.width / containerRef.current.offsetWidth;
-                                    const relX = (x - rect.left) / scale;
-                                    const relY = (y - rect.top) / scale;
-                                    setHoveredItem({ id, x: relX, y: relY });
+                                if (id) {
+                                    setHoveredItem({ id, x, y });
                                 } else {
                                     setHoveredItem(null);
                                 }
@@ -390,7 +386,7 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ mode = 'FULL', o
                 variant={confirmData.variant}
             />
 
-            {hoveredItem && <ItemTooltip item={hoveredItem} />}
+            {hoveredItem && !setGlobalHoveredItem && <ItemTooltip item={hoveredItem} />}
 
             <ChestOpeningOverlay
                 isOpening={isOpening}
