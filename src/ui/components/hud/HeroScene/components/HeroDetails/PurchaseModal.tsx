@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { useGameStore } from '../../../../../../store/useGameStore';
 import { audioService } from '../../../../../../services/AudioService';
 import { AssetsMap } from '../../../../../../configs/AssetsMap';
+import { resolveAssetPath } from '../../../../../../utils/assetPath';
 
 export const PurchaseModal = ({ hero, onClose, rarityColors }: any) => {
     const { gold, crystals, unlockHero, spendGold, spendDiamonds } = useGameStore();
@@ -76,7 +77,7 @@ export const PurchaseModal = ({ hero, onClose, rarityColors }: any) => {
                     </div>
                 </div>
 
-                <img src={hero.image} style={{ width: '220px', filter: `drop-shadow(0 0 30px ${color}44)` }} alt="" />
+                <img src={resolveAssetPath(hero.image)} style={{ width: '220px', filter: `drop-shadow(0 0 30px ${color}44)` }} alt="" />
 
                 <div
                     style={{

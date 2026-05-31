@@ -2,6 +2,7 @@ import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ITEMS_DATABASE } from '../../../../../../game/configs/ItemsConfig';
 import { rarityColors } from '../../constants/roleIcons';
+import { resolveAssetPath } from '../../../../../../utils/assetPath';
 
 interface ItemTooltipPortalProps {
     hoveredItem: { id: string; x: number; y: number } | null;
@@ -57,7 +58,7 @@ export const ItemTooltipPortal: React.FC<ItemTooltipPortalProps> = ({ hoveredIte
                                 <div className={itemData.spriteClass} style={{ width: '120px', height: '120px' }} />
                             ) : (
                                 <img
-                                    src={itemData.image}
+                                    src={resolveAssetPath(itemData.image)}
                                     style={{ width: '85%', height: '85%', objectFit: 'contain' }}
                                     alt=""
                                 />

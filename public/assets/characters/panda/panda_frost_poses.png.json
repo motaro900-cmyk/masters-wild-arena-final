@@ -196,7 +196,7 @@
   "meta": {
     "app": "http://free-tex-packer.com",
     "version": "0.6.7",
-    "image": "panda_frost_poses.png",
+    "image": "panda_frost_poses.webp",
     "format": "RGBA8888",
     "size": {
       "w": 2240,

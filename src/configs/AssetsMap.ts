@@ -138,10 +138,10 @@ const rawAssetsMap = {
     CHARACTERS: {
         PANDA_AVATAR: '/assets/images/avatars/panda.webp', // was кириллица
         PANDA_FULL: '/assets/images/avatars/panda.webp', // was кириллица
-        PANDA_ATLAS: '/assets/characters/panda/panda_poses.png.png',
+        PANDA_ATLAS: '/assets/characters/panda/panda_poses.png.webp',
         SKINS: {
-            DEFAULT: '/assets/characters/panda/panda_poses.png.png',
-            FROST: '/assets/characters/panda/frost_panda_atlas.png',
+            DEFAULT: '/assets/characters/panda/panda_poses.png.webp',
+            FROST: '/assets/characters/panda/panda_frost_poses.webp',
         },
     },
     ITEMS: {

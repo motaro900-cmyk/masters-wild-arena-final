@@ -761,6 +761,7 @@ export const Root = () => {
                 });
 
                 // Подписка на собственный профиль для мгновенного выполнения команд админа (кик, бан, ресурсы)
+                let lastAppliedAdminVersion: number | null = null;
                 unsubProfile = syncService.subscribeToOwnProfile(userId, (dbData) => {
                     if (!dbData) return;
 
@@ -787,6 +788,15 @@ export const Root = () => {
                     // 3. Синхронизация изменений ресурсов и обликов
                     if (dbData.полноеСостояниеJSON) {
                         try {
+                            const dbAdminVersion = Number(dbData.adminVersion || 0);
+                            if (lastAppliedAdminVersion === null) {
+                                lastAppliedAdminVersion = dbAdminVersion;
+                            } else if (dbAdminVersion <= lastAppliedAdminVersion) {
+                                return;
+                            } else {
+                                lastAppliedAdminVersion = dbAdminVersion;
+                            }
+
                             const parsed = JSON.parse(dbData.полноеСостояниеJSON);
                             const currentState = useGameStore.getState();
 

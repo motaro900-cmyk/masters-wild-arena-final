@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { ROLE_ICONS } from '../../constants/roleIcons';
+import { resolveAssetPath } from '../../../../../../utils/assetPath';
 
 interface CompactHeroCardProps {
     hero: any;
@@ -98,7 +99,7 @@ export const CompactHeroCard: React.FC<CompactHeroCardProps> = ({ hero, isOwned,
             {/* КАРТИНКА ГЕРОЯ */}
             <div style={{ width: '100%', height: '110px', position: 'relative', marginBottom: '8px' }}>
                 <img
-                    src={hero.image}
+                    src={resolveAssetPath(hero.image)}
                     style={{ width: '100%', height: '100%', objectFit: 'contain', zIndex: 2, position: 'relative' }}
                     alt=""
                 />

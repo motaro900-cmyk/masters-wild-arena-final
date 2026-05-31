@@ -4,6 +4,7 @@ import { ITEMS_DATABASE } from '../../../../../../game/configs/ItemsConfig';
 import { AssetsMap } from '../../../../../../configs/AssetsMap';
 import { rarityColors } from '../../constants/roleIcons';
 import { useGameStore } from '../../../../../../store/useGameStore';
+import { resolveAssetPath } from '../../../../../../utils/assetPath';
 
 const RARITY_RU: Record<string, string> = {
     COMMON: 'ОБЫЧНЫЙ',
@@ -71,7 +72,7 @@ export const EquipmentSlot = ({ id, label, itemId, activeDraggingId, onClick, se
                 itemData.spriteClass ? (
                     <div className={itemData.spriteClass} style={{ width: '110px', height: '110px' }} />
                 ) : (
-                    <img src={itemData.image} style={{ width: '80%', height: '80%', objectFit: 'contain' }} alt="" />
+                    <img src={resolveAssetPath(itemData.image)} style={{ width: '80%', height: '80%', objectFit: 'contain' }} alt="" />
                 )
             ) : (
                 <div

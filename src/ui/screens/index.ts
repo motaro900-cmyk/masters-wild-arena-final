@@ -1,27 +1,27 @@
 import { resolveAssetObject } from '../../utils/assetPath';
 
 const rawCharacters = {
-    panda: '/assets/characters/panda.png',
-    moose: '/assets/characters/moose.png',
-    goose: '/assets/characters/goose.png',
-    cat: '/assets/characters/cat.png',
+    panda: '/assets/characters/panda.webp',
+    moose: '/assets/characters/moose.webp',
+    goose: '/assets/characters/goose.webp',
+    cat: '/assets/characters/cat.webp',
 };
 
 const rawUI = {
-    heroPanel: '/assets/panels/hero.png',
-    statsPanel: '/assets/panels/stats.png',
-    inventory: '/assets/panels/inventory.png',
+    heroPanel: '/assets/panels/hero.webp',
+    statsPanel: '/assets/panels/stats.webp',
+    inventory: '/assets/panels/inventory.webp',
 };
 
 const rawButtons = {
-    fight: '/assets/buttons/fight.png',
-    small: '/assets/buttons/small.png',
+    fight: '/assets/buttons/fight.webp',
+    small: '/assets/buttons/small.webp',
 };
 
 const rawHUD = {
-    hp: '/assets/hud/hp.png',
-    energy: '/assets/hud/energy.png',
-    xp: '/assets/hud/xp.png',
+    hp: '/assets/hud/hp.webp',
+    energy: '/assets/hud/energy.webp',
+    xp: '/assets/hud/xp.webp',
 };
 
 export const Characters = resolveAssetObject(rawCharacters) as typeof rawCharacters;

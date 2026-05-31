@@ -4,6 +4,7 @@ import { useGameStore } from '../../../../../../store/useGameStore';
 import { getSkinsForHero, ISkinConfig } from '../../../../../../configs/SkinsConfig';
 import { rarityColors } from '../../constants/roleIcons';
 import { audioService } from '../../../../../../services/AudioService';
+import { resolveAssetPath } from '../../../../../../utils/assetPath';
 
 const RARITY_LABELS: Record<string, string> = {
     COMMON: 'ОБЫЧНЫЙ',
@@ -72,7 +73,7 @@ export const SkinsView = ({ hero }: { hero: any }) => {
                 <AnimatePresence mode="wait">
                     <motion.img
                         key={displaySkin?.id}
-                        src={displaySkin?.image}
+                        src={resolveAssetPath(displaySkin?.image || '')}
                         initial={{ opacity: 0, scale: 0.96, y: 10 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 1.02, y: -6 }}
@@ -338,7 +339,7 @@ export const SkinsView = ({ hero }: { hero: any }) => {
                                         }}
                                     />
                                     <img
-                                        src={skin.image}
+                                        src={resolveAssetPath(skin.image)}
                                         style={{
                                             height: '90%',
                                             width: 'auto',

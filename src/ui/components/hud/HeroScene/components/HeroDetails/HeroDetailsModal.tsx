@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { ROLE_ICONS } from '../../constants/roleIcons';
 import { DetailStat } from './DetailStat';
 import { SkillItem } from './SkillItem';
+import { resolveAssetPath } from '../../../../../../utils/assetPath';
 
 export const HeroDetailsModal = ({ hero, isOwned, onClose, rarityColors, onBuy, onSelect }: any) => {
     const color = rarityColors[hero.rarity];
@@ -52,7 +53,7 @@ export const HeroDetailsModal = ({ hero, isOwned, onClose, rarityColors, onBuy, 
                     <motion.img
                         initial={{ opacity: 0, x: -50 }}
                         animate={{ opacity: 1, x: 0 }}
-                        src={hero.image}
+                        src={resolveAssetPath(hero.image)}
                         style={{
                             width: '100%',
                             height: '100%',

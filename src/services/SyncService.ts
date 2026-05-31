@@ -306,6 +306,9 @@ export class SyncService {
 
             if (playerSnap.exists()) {
                 const docData = playerSnap.data();
+                const currentAdminVersion = Number(docData.adminVersion || 0);
+                updatedData.adminVersion = currentAdminVersion + 1;
+
                 if (docData.полноеСостояниеJSON) {
                     try {
                         const parsed = JSON.parse(docData.полноеСостояниеJSON);
@@ -343,6 +346,8 @@ export class SyncService {
                         console.error('[SyncService] Failed to parse полноеСостояниеJSON during remote update:', e);
                     }
                 }
+            } else {
+                updatedData.adminVersion = 1;
             }
 
             await setDoc(playerRef, updatedData, { merge: true });

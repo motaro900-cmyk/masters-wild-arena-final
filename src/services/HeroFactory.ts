@@ -48,12 +48,12 @@ export async function createHeroFromAI(
     const heroId = `hero_${Date.now()}`;
     const weaponId = `weapon_${Date.now()}`;
 
-    await Promise.all([saveAsset(`bodies/${heroId}.png`, bodyPng), saveAsset(`weapons/${weaponId}.png`, weaponPng)]);
+    await Promise.all([saveAsset(`bodies/${heroId}.webp`, bodyPng), saveAsset(`weapons/${weaponId}.webp`, weaponPng)]);
 
     // 4. Автоматическая регистрация в системе
     registerHero(heroId, {
         name: `${heroClass} (AI)`,
-        image: `/assets/characters/${heroId}.png`,
+        image: `/assets/characters/${heroId}.webp`,
         anchors: {
             feet: { x: 0.5, y: 0.95 },
             rightHand: { x: 0.7, y: 0.45 }, // Дефолтный сокет для новых героев
@@ -63,7 +63,7 @@ export async function createHeroFromAI(
 
     registerItem(weaponId, {
         name: `${weaponType} (AI)`,
-        image: `/assets/weapons/${weaponId}.png`,
+        image: `/assets/weapons/${weaponId}.webp`,
         type: 'WEAPON',
     });
 

@@ -236,7 +236,7 @@ export class HeroUnit extends PIXI.Container {
                     err,
                 );
                 try {
-                    const posesBaseTex = await PIXI.Assets.load('/assets/characters/panda/panda_poses.png.png');
+                    const posesBaseTex = await PIXI.Assets.load('/assets/characters/panda/panda_poses.png.webp');
                     this.posesTextures = [];
                     const frameW = posesBaseTex.width / 4;
                     const frameH = posesBaseTex.height / 2;

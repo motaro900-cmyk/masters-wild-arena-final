@@ -1,4 +1,5 @@
 import { DragOverlay } from '@dnd-kit/core';
+import { resolveAssetPath } from '../../../../../../utils/assetPath';
 
 interface DragOverlayLayerProps {
     activeId: string | null;
@@ -30,7 +31,7 @@ export const DragOverlayLayer: React.FC<DragOverlayLayerProps> = ({ activeId, ac
                         <div className={activeItemData.spriteClass} style={{ width: '120px', height: '120px' }} />
                     ) : (
                         <img
-                            src={activeItemData.image}
+                            src={resolveAssetPath(activeItemData.image)}
                             style={{
                                 width: '80%',
                                 height: '80%',

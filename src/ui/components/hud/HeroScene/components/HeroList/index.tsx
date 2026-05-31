@@ -5,6 +5,7 @@ import { useGameStore } from '../../../../../../store/useGameStore';
 import { ROLE_ICONS, rarityColors } from '../../constants/roleIcons';
 import { audioService } from '../../../../../../services/AudioService';
 import { getSkinsForHero } from '../../../../../../configs/SkinsConfig';
+import { resolveAssetPath } from '../../../../../../utils/assetPath';
 
 const RARITY_LABELS: Record<string, string> = {
     COMMON: 'ОБЫЧНЫЙ',
@@ -143,7 +144,7 @@ function HeroCard({ hero, isOwned, isActive, isSelected, activeSkin, onClick }: 
                 }}
             >
                 <img
-                    src={activeSkinImage}
+                    src={resolveAssetPath(activeSkinImage)}
                     style={{
                         height: '88%',
                         width: 'auto',
@@ -584,7 +585,7 @@ function HeroDetailPanel({
                                     }}
                                 >
                                     <img
-                                        src={skin.image}
+                                        src={resolveAssetPath(skin.image)}
                                         style={{
                                             height: '70%',
                                             width: 'auto',

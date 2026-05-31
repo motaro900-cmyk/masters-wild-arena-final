@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { useGameStore } from '../../../../../../store/useGameStore';
 import { AssetsMap } from '../../../../../../configs/AssetsMap';
 import { ROLE_ICONS } from '../../constants/roleIcons';
+import { resolveAssetPath } from '../../../../../../utils/assetPath';
 
 export const HeroCard = ({
     hero,
@@ -157,7 +158,7 @@ export const HeroCard = ({
             {/* HERO IMAGE */}
             <div style={{ width: '100%', height: '220px', position: 'relative', marginBottom: '15px' }}>
                 <img
-                    src={hero.image}
+                    src={resolveAssetPath(hero.image)}
                     style={{ width: '100%', height: '100%', objectFit: 'contain', zIndex: 2, position: 'relative' }}
                     alt=""
                 />
