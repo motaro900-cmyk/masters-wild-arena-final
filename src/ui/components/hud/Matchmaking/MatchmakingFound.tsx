@@ -578,7 +578,20 @@ export const MatchmakingFound: React.FC<MatchmakingFoundProps> = ({
             goldMax = 500;
         }
 
-        const xpAmount = isPremium ? 625 : 500;
+        const getXPReward = (lvl: number, won: boolean): number => {
+            if (won) {
+                if (lvl <= 10) return 100 + lvl * 20;
+                if (lvl <= 30) return 300 + (lvl - 10) * 10;
+                return Math.min(500 + (lvl - 30) * 5, 600);
+            } else {
+                if (lvl <= 10) return 20 + lvl * 4;
+                if (lvl <= 30) return 60 + (lvl - 10) * 2;
+                return Math.min(100 + (lvl - 30) * 1, 120);
+            }
+        };
+
+        const xpBase = getXPReward(pLevel, true);
+        const xpAmount = Math.round(xpBase * (isPremium ? 1.25 : 1.0));
 
         const diff = (opponent.rating || 0) - (rating || 0);
         let trophies = 20;

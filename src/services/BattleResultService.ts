@@ -43,6 +43,18 @@ function getGoldReward(level: number, won: boolean): number {
     return Math.min(Math.round(base), cap);
 }
 
+function getXPReward(level: number, won: boolean): number {
+    if (won) {
+        if (level <= 10) return 100 + level * 20; // 120 to 300 XP
+        if (level <= 30) return 300 + (level - 10) * 10; // 310 to 500 XP
+        return Math.min(500 + (level - 30) * 5, 600); // 505 to 600 XP
+    } else {
+        if (level <= 10) return 20 + level * 4; // 24 to 60 XP
+        if (level <= 30) return 60 + (level - 10) * 2; // 62 to 100 XP
+        return Math.min(100 + (level - 30) * 1, 120); // 101 to 120 XP
+    }
+}
+
 class BattleResultServiceClass {
     /**
      * Вызывается после каждого боя.
@@ -76,8 +88,8 @@ class BattleResultServiceClass {
         const myCupsChange = calcCupsChange(myRating, opponentRating, attackerWon);
         const myGoldChange = getGoldReward(myLevel, attackerWon);
 
-        // Experience rewards calculation with Premium BP bonus multiplier
-        const baseXP = attackerWon ? 500 : 100;
+        // Experience rewards calculation with Premium BP bonus multiplier and level-based scaling
+        const baseXP = getXPReward(myLevel, attackerWon);
         const { useGameStore } = await import('../store/useGameStore');
         const state = useGameStore.getState();
         const hasPremiumBP = state.isPremium;

@@ -578,6 +578,8 @@ export const Root = () => {
     const containerRef = React.useRef<HTMLDivElement>(null);
     const [initError, setInitError] = React.useState<string | null>(null);
     const [notInVk, setNotInVk] = React.useState(false);
+    const [isAppLoading, setIsAppLoading] = React.useState(true);
+    const [loadingText, setLoadingText] = React.useState('Инициализация приложения...');
 
     React.useEffect(() => {
         if (isAppInitialized || !containerRef.current) return;
@@ -602,6 +604,7 @@ export const Root = () => {
 
             try {
                 console.log('🏁 Root: Initializing App...');
+                setLoadingText('Подключение к VK Bridge...');
 
                 // 1. VK Bridge
                 try {
@@ -631,6 +634,7 @@ export const Root = () => {
                 }
 
                 // 2. Load Player Data from Firebase first to prevent overwrite with default values
+                setLoadingText('Загрузка профиля игрока...');
                 const { syncService, SyncService } = await import('./services/SyncService');
                 let state = useGameStore.getState();
 
@@ -710,6 +714,7 @@ export const Root = () => {
                 const updatedState = useGameStore.getState();
 
                 // 3. Game Engine
+                setLoadingText('Инициализация графического ядра Pixi...');
                 console.log('🎮 Starting GameEngine...');
                 const game = new GameApp();
                 await game.init(containerRef.current!);
@@ -947,6 +952,9 @@ export const Root = () => {
                         currentState.refreshDailyQuests();
                     }
                 }, 60000);
+
+                // Загрузка полностью завершена
+                setIsAppLoading(false);
             } catch (err: any) {
                 clearTimeout(timeoutId);
                 console.error('❌ Critical Init Error:', err);
@@ -1124,6 +1132,110 @@ export const Root = () => {
     return (
         <ErrorBoundary>
             <SafeGameLayout containerRef={containerRef} />
+            
+            {/* Premium Loading Overlay */}
+            <AnimatePresence>
+                {isAppLoading && (
+                    <motion.div
+                        initial={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.5, ease: 'easeInOut' }}
+                        style={{
+                            position: 'fixed',
+                            inset: 0,
+                            backgroundColor: '#0c0c0d',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: '#fff',
+                            fontFamily: "'Cinzel', 'Outfit', sans-serif",
+                            zIndex: 999999,
+                            pointerEvents: 'auto',
+                        }}
+                    >
+                        {/* Background decorative elements */}
+                        <div
+                            style={{
+                                position: 'absolute',
+                                inset: 0,
+                                background: 'radial-gradient(circle at center, rgba(30,22,12,0.35) 0%, rgba(10,7,5,0.95) 100%)',
+                                pointerEvents: 'none',
+                            }}
+                        />
+                        
+                        {/* Circular pulsing container */}
+                        <div
+                            style={{
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                position: 'relative',
+                                zIndex: 10,
+                            }}
+                        >
+                            {/* Glowing Logo Text */}
+                            <h1
+                                style={{
+                                    fontSize: '36px',
+                                    fontWeight: 900,
+                                    letterSpacing: '0.25em',
+                                    margin: '0 0 40px 0',
+                                    textTransform: 'uppercase',
+                                    background: 'linear-gradient(135deg, #ffe082 0%, #c8952a 50%, #ffe082 100%)',
+                                    WebkitBackgroundClip: 'text',
+                                    WebkitTextFillColor: 'transparent',
+                                    filter: 'drop-shadow(0 0 15px rgba(200, 149, 42, 0.4))',
+                                    textAlign: 'center',
+                                    fontFamily: "'Cinzel Decorative', serif",
+                                }}
+                            >
+                                Masters of the Wild
+                            </h1>
+
+                            {/* Premium Loader Ring */}
+                            <div
+                                style={{
+                                    width: '64px',
+                                    height: '64px',
+                                    borderRadius: '50%',
+                                    border: '3px solid rgba(200, 149, 42, 0.1)',
+                                    borderTop: '3px solid #c8952a',
+                                    animation: 'spin 1.2s linear infinite',
+                                    marginBottom: '30px',
+                                    boxShadow: '0 0 15px rgba(200, 149, 42, 0.2)',
+                                }}
+                            />
+
+                            {/* Loading Status Text */}
+                            <div
+                                style={{
+                                    fontSize: '14px',
+                                    color: 'rgba(255, 255, 255, 0.7)',
+                                    letterSpacing: '0.15em',
+                                    textTransform: 'uppercase',
+                                    fontFamily: "'Outfit', sans-serif",
+                                    animation: 'pulse 2s infinite ease-in-out',
+                                }}
+                            >
+                                {loadingText}
+                            </div>
+                        </div>
+
+                        <style>{`
+                            @keyframes spin {
+                                0% { transform: rotate(0deg); }
+                                100% { transform: rotate(360deg); }
+                            }
+                            @keyframes pulse {
+                                0%, 100% { opacity: 0.6; }
+                                50% { opacity: 1; }
+                            }
+                        `}</style>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </ErrorBoundary>
     );
 };
