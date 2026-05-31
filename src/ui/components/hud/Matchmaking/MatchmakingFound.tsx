@@ -555,11 +555,47 @@ export const MatchmakingFound: React.FC<MatchmakingFoundProps> = ({
     onCancel,
     onStartFight,
 }) => {
-    const { heroEquipment, selectedHeroId, title, name, wins, totalBattles } = useGameStore();
+    const { heroEquipment, selectedHeroId, title, name, wins, totalBattles, isPremium } = useGameStore();
 
     const winRewards = React.useMemo(() => {
-        return calculateBattleRewards(true, rating || 0, opponent.rating || 0, false);
-    }, [rating, opponent.rating]);
+        const pLevel = level || 1;
+        let goldMin = 70;
+        let goldMax = 120;
+        if (pLevel <= 10) {
+            goldMin = 70;
+            goldMax = 120;
+        } else if (pLevel <= 20) {
+            goldMin = 150;
+            goldMax = 250;
+        } else if (pLevel <= 40) {
+            goldMin = 300;
+            goldMax = 450;
+        } else if (pLevel <= 60) {
+            goldMin = 400;
+            goldMax = 500;
+        } else {
+            goldMin = 450;
+            goldMax = 500;
+        }
+
+        const xpAmount = isPremium ? 625 : 500;
+
+        const diff = (opponent.rating || 0) - (rating || 0);
+        let trophies = 20;
+        if (diff >= 100) {
+            trophies = 30;
+        } else if (diff >= 0) {
+            trophies = 20;
+        } else {
+            trophies = 10;
+        }
+
+        return {
+            goldRange: `${goldMin}-${goldMax}`,
+            xp: xpAmount,
+            trophies
+        };
+    }, [level, isPremium, rating, opponent.rating]);
 
     const pRank = getRankInfo(rating);
     const eRank = getRankInfo(opponent.rating);
@@ -1617,7 +1653,7 @@ export const MatchmakingFound: React.FC<MatchmakingFoundProps> = ({
                                 />
                                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
                                     <span style={{ fontSize: '11px', fontWeight: 900, color: '#fff', lineHeight: '1' }}>
-                                        {winRewards.gold}
+                                        {winRewards.goldRange}
                                     </span>
                                     <span
                                         style={{

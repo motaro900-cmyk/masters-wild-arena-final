@@ -630,14 +630,7 @@ export const Root = () => {
                     console.warn('⚠️ VK Bridge failed to init, continuing in standalone mode', vkErr);
                 }
 
-                // 2. Game Engine
-                console.log('🎮 Starting GameEngine...');
-                const game = new GameApp();
-                await game.init(containerRef.current!);
-
-                clearTimeout(timeoutId); // [Anti-Grey] Success! Cancel timeout
-                console.log('✅ Game Ready!');
-
+                // 2. Load Player Data from Firebase first to prevent overwrite with default values
                 const { syncService, SyncService } = await import('./services/SyncService');
                 let state = useGameStore.getState();
 
@@ -698,7 +691,6 @@ export const Root = () => {
                     console.error('❌ Failed to load remote profile:', loadErr);
                 }
 
-
                 state = useGameStore.getState();
                 const isAdminVk = state.vkUser && [212359386, 1035794378].includes(Number(state.vkUser.id));
                 if (isLocalhost || isAdminVk) {
@@ -716,6 +708,14 @@ export const Root = () => {
 
                 // Get the updated state after restoring from Firebase
                 const updatedState = useGameStore.getState();
+
+                // 3. Game Engine
+                console.log('🎮 Starting GameEngine...');
+                const game = new GameApp();
+                await game.init(containerRef.current!);
+
+                clearTimeout(timeoutId); // [Anti-Grey] Success! Cancel timeout
+                console.log('✅ Game Ready!');
 
                 // 3. Audio & Sync Initialization
                 if (updatedState.isMuted) {
