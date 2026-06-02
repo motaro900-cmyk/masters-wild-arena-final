@@ -72,8 +72,8 @@ export class GameApp {
                     if (summary) {
                         console.log('📬 Loaded offline PvP defense summary:', summary);
 
-                        // 1. Сохраняем в стор для показа во всплывающем окне
-                        useGameStore.setState({ offlineSummary: summary });
+                        // 1. Сохраняем в стор для показа во всплывающем окне (Убрано по запросу: отчет теперь только в почте)
+                        // useGameStore.setState({ offlineSummary: summary });
 
                         // 2. Создаем письмо во входящие почты
                         const newMail = {

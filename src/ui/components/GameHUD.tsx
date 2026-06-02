@@ -29,8 +29,6 @@ const AdminPanel = React.lazy(() => import('./hud/AdminPanel').then((m) => ({ de
 import { UnderDevelopmentModal } from './hud/SharedUI';
 import { BestiaryWindow } from './hud/BestiaryWindow';
 import { MatchmakingOverlay } from './hud/MatchmakingOverlay';
-import { InboxScreen } from './hud/Inbox/InboxScreen';
-
 import { safeGetItem, safeSetItem } from '../../utils/SafeStorage';
 import { TutorialOverlay } from './hud/TutorialOverlay';
 
@@ -38,7 +36,6 @@ export const GameHUD: React.FC = () => {
     const activeScreen = useGameStore((state) => state.activeScreen);
     const mails = useGameStore((state) => state.mail) || [];
     const unreadMailCount = mails.filter((m: any) => m.tab === 'INBOX' && !m.isRead).length;
-    const offlineSummary = useGameStore((state) => state.offlineSummary);
     const vipLevel = useGameStore((state) => state.vipLevel);
     const isMobile = useGameStore((state) => state.isMobile);
     const [activeWindow, setActiveWindow] = useState<string | null>(null);
@@ -710,27 +707,7 @@ export const GameHUD: React.FC = () => {
                 onClose={() => setDevModal({ ...devModal, isOpen: false })}
             />
 
-            {/* --- OFFLINE SUMMARY WINDOW --- */}
-            {offlineSummary && (
-                <div
-                    className="absolute inset-0 z-[200] pointer-events-auto bg-black/60 backdrop-blur-sm flex items-center justify-center"
-                    onClick={() => useGameStore.setState({ offlineSummary: null })}
-                >
-                    <div onClick={(e) => e.stopPropagation()}>
-                        <BaseWindow
-                            title="ОТЧЕТ О ЗАЩИТЕ АРЕНЫ"
-                            isOpen={true}
-                            onClose={() => useGameStore.setState({ offlineSummary: null })}
-                            width="900px"
-                        >
-                            <InboxScreen
-                                summary={offlineSummary}
-                                onClose={() => useGameStore.setState({ offlineSummary: null })}
-                            />
-                        </BaseWindow>
-                    </div>
-                </div>
-            )}
+
 
             {/* --- TUTORIAL OVERLAY --- */}
             <TutorialOverlay />
