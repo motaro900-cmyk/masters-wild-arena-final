@@ -206,6 +206,25 @@ export class SyncService {
                 vipDaysRemaining,
                 energy: state.energy || 0,
                 maxEnergy: state.maxEnergy || 0,
+                
+                // Russian legacy keys compatibility:
+                золото: state.gold || 0,
+                кристаллы: state.crystals || 0,
+                уровень: state.level || 1,
+                рейтинг: state.rating || 0,
+                былВСети: serverTimestamp(),
+                имя: state.name || 'Мастер',
+                фото: state.avatar || (vkUser ? vkUser.photo200 || vkUser.photo || '' : ''),
+                инвентарь: state.inventory || [],
+                снаряжение: {
+                    WEAPONS: state.heroEquipment?.[selectedHeroId]?.WEAPONS || null,
+                    HELMETS: state.heroEquipment?.[selectedHeroId]?.HELMETS || null,
+                    ARMOR: state.heroEquipment?.[selectedHeroId]?.ARMOR || null,
+                    SHIELDS: state.heroEquipment?.[selectedHeroId]?.SHIELDS || null,
+                    SHOULDERS: state.heroEquipment?.[selectedHeroId]?.SHOULDERS || null,
+                    PANTS: state.heroEquipment?.[selectedHeroId]?.PANTS || null,
+                    BOOTS: state.heroEquipment?.[selectedHeroId]?.BOOTS || null,
+                },
             };
 
             await setDoc(playerRef, syncData, { merge: true });

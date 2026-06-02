@@ -237,36 +237,24 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
                             {msg.vipLevel > 0 && (
                                 <div
                                     style={{
-                                        position: 'relative',
+                                        background: 'linear-gradient(180deg, #ef4444 0%, #991b1b 100%)',
+                                        border: '1px solid #f87171',
+                                        borderRadius: '6px',
+                                        color: '#fff',
+                                        fontWeight: 900,
+                                        fontFamily: "'Cinzel', 'Philosopher', serif",
+                                        fontSize: '10px',
+                                        padding: '2px 8px',
+                                        letterSpacing: '1px',
+                                        boxShadow: '0 0 10px rgba(239, 68, 68, 0.5)',
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'center',
+                                        height: '20px',
                                         marginRight: '2px',
                                     }}
                                 >
-                                    <img
-                                        src="/assets/images/ui/vip.webp"
-                                        alt="VIP"
-                                        style={{
-                                            width: 38,
-                                            height: 'auto',
-                                            filter: 'drop-shadow(0 0 10px rgba(255, 51, 0, 0.9))',
-                                        }}
-                                    />
-                                    <span
-                                        style={{
-                                            position: 'absolute',
-                                            fontSize: '8px',
-                                            fontWeight: 900,
-                                            color: '#fff',
-                                            fontFamily: "'Cinzel', serif",
-                                            textShadow: '0 0 3px #000',
-                                            marginTop: '-1px',
-                                            pointerEvents: 'none',
-                                        }}
-                                    >
-                                        VIP
-                                    </span>
+                                    VIP
                                 </div>
                             )}
 

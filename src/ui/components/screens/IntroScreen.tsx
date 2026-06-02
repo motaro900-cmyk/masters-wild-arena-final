@@ -121,6 +121,28 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
                 useGameStore.setState({ onboardingCompleted: true });
                 syncService.debouncedSync();
             }
+
+            // Send welcome mail to Firestore
+            const currentUserId = SyncService.getPrefixedUserId(store.vkUser, store.playerId);
+            const welcomeMail = {
+                id: 'welcome-mail',
+                tab: 'INBOX',
+                type: 'SYSTEM',
+                from: 'МУДРЫЙ ФИЛИН',
+                subject: 'ПРИВЕТСТВЕННЫЙ ПОДАРOК!',
+                body: 'Приветствуем тебя, защитник Диких Земель! Рады видеть тебя в нашей дружной игре Masters of the Wild. Мы подготовили для тебя этот приятный подарок в знак нашего гостеприимства и поддержки на старте твоего путешествия. Пусть эти ресурсы принесут тебе удачу в первых битвах, а твоё восхождение к вершинам Арены будет увлекательным и славным! Исследуй мир, находи верных друзей и побеждай!',
+                date: 'СЕГОДНЯ',
+                isRead: false,
+                isStarred: false,
+                timestamp: Date.now(),
+                expiresAt: Date.now() + 30 * 24 * 60 * 60 * 1000,
+                rewards: [
+                    { type: 'GOLD', amount: 1000 },
+                    { type: 'CRYSTALS', amount: 50 },
+                ],
+            };
+            syncService.sendMail(currentUserId, welcomeMail).catch((e) => console.error('Failed to send welcome mail:', e));
+
             useGameStore.setState({ tutorialStep: 0 });
             audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
             onComplete();

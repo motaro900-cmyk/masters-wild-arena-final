@@ -52,6 +52,8 @@ export const RankingWindow: React.FC = () => {
                             avatar: p.фото ?? p.photo ?? p.avatar ?? '🐺',
                             change: 'stable',
                             isMe: p.id === useGameStore.getState().playerId || String(p.vkId) === String(vkUser?.id),
+                            vipLevel: p.vipLevel || 0,
+                            isVipActive: p.isVipActive || false,
                         };
                     });
                     setGlobalLeaders(mappedLeaders);
@@ -848,9 +850,28 @@ const LeaderItem: React.FC<{ player: LeaderboardEntry; onClick: () => void }> = 
 
             {/* ИМЯ И УРОВЕНЬ */}
             <div style={{ flex: 1 }}>
-                <div style={{ color: player.isMe ? '#f0c040' : '#fff', fontWeight: 700, fontSize: '18px' }}>
-                    {player.name}
-                    {player.isMe && <span style={{ fontSize: '12px', marginLeft: '8px', opacity: 0.7 }}>(ВЫ)</span>}
+                <div style={{ color: player.isMe ? '#f0c040' : '#fff', fontWeight: 700, fontSize: '18px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span>{player.name}</span>
+                    {player.vipLevel !== undefined && player.vipLevel > 0 && (
+                        <span
+                            style={{
+                                background: 'linear-gradient(180deg, #ef4444 0%, #991b1b 100%)',
+                                border: '1px solid #f87171',
+                                borderRadius: '4px',
+                                color: '#fff',
+                                fontWeight: 900,
+                                fontFamily: "'Cinzel', 'Philosopher', serif",
+                                fontSize: '9px',
+                                padding: '1px 6px',
+                                letterSpacing: '0.5px',
+                                boxShadow: '0 0 5px rgba(239, 68, 68, 0.4)',
+                                lineHeight: '1',
+                            }}
+                        >
+                            VIP
+                        </span>
+                    )}
+                    {player.isMe && <span style={{ fontSize: '12px', opacity: 0.7 }}>(ВЫ)</span>}
                 </div>
                 <div style={{ color: '#c8a870', fontSize: '12px' }}>Уровень {player.level}</div>
             </div>
