@@ -17,16 +17,22 @@ import { ItemBuilder } from './components/dev/ItemBuilder';
 import * as Sentry from '@sentry/react';
 
 // Инициализация Sentry для отслеживания ошибок на клиенте
-Sentry.init({
-    dsn: "https://examplePublicKey@o0.ingest.sentry.io/0", // Замените на ваш реальный DSN ключ в Sentry
-    integrations: [
-        Sentry.browserTracingIntegration(),
-        Sentry.replayIntegration(),
-    ],
-    tracesSampleRate: 1.0,
-    replaysSessionSampleRate: 0.1,
-    replaysOnErrorSampleRate: 1.0,
-});
+const sentryDsn = import.meta.env.VITE_SENTRY_DSN;
+if (sentryDsn) {
+    Sentry.init({
+        dsn: sentryDsn,
+        integrations: [
+            Sentry.browserTracingIntegration(),
+            Sentry.replayIntegration(),
+        ],
+        tracesSampleRate: 1.0,
+        replaysSessionSampleRate: 0.1,
+        replaysOnErrorSampleRate: 1.0,
+    });
+    console.log('[Sentry] Telemetry initialized successfully.');
+} else {
+    console.warn('[Sentry] DSN is not provided. Remote error monitoring is disabled.');
+}
 
 // Ленивая загрузка экранов и сцен для оптимизации размера бандла (Шаг 11)
 const ShopScene = React.lazy(() => import('./ui/components/hud/ShopScene').then((m) => ({ default: m.ShopScene })));
