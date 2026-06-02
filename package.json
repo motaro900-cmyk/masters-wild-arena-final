@@ -20,6 +20,7 @@
     "@iconify/react": "^6.0.2",
     "@pixi/react": "^7.1.2",
     "@radix-ui/react-tooltip": "^1.2.8",
+    "@sentry/react": "^10.55.0",
     "@vkontakte/vk-bridge": "^3.0.1",
     "clsx": "^2.1.1",
     "firebase": "^12.13.0",

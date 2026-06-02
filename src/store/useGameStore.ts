@@ -212,6 +212,4 @@ export const useGameStore = create<any>()(
     ),
 );
 
-if (typeof window !== 'undefined') {
-    (window as any).useGameStore = useGameStore;
-}
+
