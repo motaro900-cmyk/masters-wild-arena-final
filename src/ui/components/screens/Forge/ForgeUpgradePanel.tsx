@@ -158,7 +158,7 @@ export const ForgeUpgradePanel: React.FC<ForgeUpgradePanelProps> = ({
                             {/* Уголь */}
                             <div style={styles.resourceReqItem}>
                                 <img
-                                    src={resolveAssetPath('/assets/images/resources/coal.png')}
+                                    src={resolveAssetPath('/assets/images/resources/coal.webp')}
                                     style={styles.resIcon}
                                     alt="Coal"
                                 />
@@ -175,7 +175,7 @@ export const ForgeUpgradePanel: React.FC<ForgeUpgradePanelProps> = ({
                             {/* Сталь */}
                             <div style={styles.resourceReqItem}>
                                 <img
-                                    src={resolveAssetPath('/assets/images/resources/steel_bar.png')}
+                                    src={resolveAssetPath('/assets/images/resources/steel_bar.webp')}
                                     style={styles.resIcon}
                                     alt="Steel"
                                 />
@@ -193,7 +193,7 @@ export const ForgeUpgradePanel: React.FC<ForgeUpgradePanelProps> = ({
                             {reqs.shardCost > 0 && (
                                 <div style={styles.resourceReqItem}>
                                     <img
-                                        src={resolveAssetPath('/assets/images/resources/runic_shard.png')}
+                                        src={resolveAssetPath('/assets/images/resources/runic_shard.webp')}
                                         style={styles.resIcon}
                                         alt="Runic Shard"
                                     />
@@ -270,7 +270,7 @@ export const ForgeUpgradePanel: React.FC<ForgeUpgradePanelProps> = ({
                                 </div>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                                     <img
-                                        src={resolveAssetPath('/assets/images/resources/protection_stone.png')}
+                                        src={resolveAssetPath('/assets/images/resources/protection_stone.webp')}
                                         style={{ width: 20, height: 20 }}
                                         alt=""
                                     />

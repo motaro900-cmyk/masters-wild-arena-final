@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { ShopItem } from '../../../../configs/ShopConfig';
 import { AssetsMap } from '../../../../configs/AssetsMap';
 import { rarityTranslation } from './shopHelpers';
+import { resolveAssetPath } from '../../../../utils/assetPath';
 
 interface ShopItemCardProps {
     item: ShopItem;
@@ -172,7 +173,7 @@ export const ShopItemCard: React.FC<ShopItemCardProps> = ({
                     />
                 ) : (
                     <img
-                        src={item.image}
+                        src={resolveAssetPath(item.image)}
                         onError={(e) => (e.currentTarget.src = AssetsMap.UI.ICON_DAILY_CHEST)}
                         style={{
                             width: isMobile ? '45px' : '80px',

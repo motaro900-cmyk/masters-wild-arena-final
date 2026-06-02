@@ -5,8 +5,10 @@ import { SpriteValidator } from '../../utils/SpriteValidator';
 import { ITEMS_DATABASE } from '../../game/configs/ItemsConfig';
 import { useGameStore } from '../../store/useGameStore';
 import { audioService } from '../../services/AudioService';
+import { resolveAssetPath } from '../../utils/assetPath';
 
-import { EffectsManager } from '../systems/EffectsManager';
+import { EffectsManager, IEffectTarget } from '../systems/EffectsManager';
+import { StatusEffectController } from './StatusEffectController';
 
 interface WeaponVisualConfig {
     anchorX: number;
@@ -73,7 +75,7 @@ const SLOT_CONFIG = {
  * HeroUnit — Ядро визуализации героя (Approach E).
  * Специализирован на сборке тела и оружия с использованием "Железной математики".
  */
-export class HeroUnit extends PIXI.Container {
+export class HeroUnit extends PIXI.Container implements IEffectTarget {
     public baseSize = 512;
     public bodyContainer!: PIXI.Container;
     public bodySprite!: PIXI.Sprite;
@@ -90,16 +92,34 @@ export class HeroUnit extends PIXI.Container {
     public posesTextures: PIXI.Texture[] = [];
     public calculatedBaseScale: number = 1.0;
     public nextAttackPose: number = 3;
-    public isStunnedStatus: boolean = false;
-    public isBurningStatus: boolean = false;
-    public isFrozenStatus: boolean = false;
-    public isPoisonedStatus: boolean = false;
+    public statusEffectController: StatusEffectController;
 
-    public stunEffectContainer: PIXI.Container | null = null;
-    public stunTween: gsap.core.Tween | null = null;
-    public burnEffectContainer: PIXI.Container | null = null;
-    public freezeEffectContainer: PIXI.Container | null = null;
-    public poisonEffectContainer: PIXI.Container | null = null;
+    public get isStunnedStatus(): boolean { return this.statusEffectController.isStunned; }
+    public set isStunnedStatus(val: boolean) { this.statusEffectController.isStunned = val; }
+
+    public get isBurningStatus(): boolean { return this.statusEffectController.isBurning; }
+    public set isBurningStatus(val: boolean) { this.statusEffectController.isBurning = val; }
+
+    public get isFrozenStatus(): boolean { return this.statusEffectController.isFrozen; }
+    public set isFrozenStatus(val: boolean) { this.statusEffectController.isFrozen = val; }
+
+    public get isPoisonedStatus(): boolean { return this.statusEffectController.isPoisoned; }
+    public set isPoisonedStatus(val: boolean) { this.statusEffectController.isPoisoned = val; }
+
+    public get stunEffectContainer(): PIXI.Container | null { return this.statusEffectController.stunEffectContainer; }
+    public set stunEffectContainer(val: PIXI.Container | null) { this.statusEffectController.stunEffectContainer = val; }
+
+    public get stunTween(): gsap.core.Tween | null { return (this.statusEffectController as any).stunTween; }
+    public set stunTween(val: gsap.core.Tween | null) { (this.statusEffectController as any).stunTween = val; }
+
+    public get burnEffectContainer(): PIXI.Container | null { return this.statusEffectController.burnEffectContainer; }
+    public set burnEffectContainer(val: PIXI.Container | null) { this.statusEffectController.burnEffectContainer = val; }
+
+    public get freezeEffectContainer(): PIXI.Container | null { return this.statusEffectController.freezeEffectContainer; }
+    public set freezeEffectContainer(val: PIXI.Container | null) { this.statusEffectController.freezeEffectContainer = val; }
+
+    public get poisonEffectContainer(): PIXI.Container | null { return this.statusEffectController.poisonEffectContainer; }
+    public set poisonEffectContainer(val: PIXI.Container | null) { this.statusEffectController.poisonEffectContainer = val; }
 
     public currentWeaponId: string | null = null;
     private weaponTrailPositions: PIXI.Point[] = [];
@@ -118,6 +138,8 @@ export class HeroUnit extends PIXI.Container {
     public defaultScaleY: number = 1.0;
     public parentDefaultScaleX: number = 1.0;
     public parentDefaultScaleY: number = 1.0;
+    public get _burnCleanupTimer(): any { return (this.statusEffectController as any).burnCleanupTimer; }
+    public set _burnCleanupTimer(val: any) { (this.statusEffectController as any).burnCleanupTimer = val; }
 
     public resetToIdle() {
         if (this.destroyed || !this.scale) return;
@@ -155,6 +177,7 @@ export class HeroUnit extends PIXI.Container {
 
     constructor() {
         super();
+        this.statusEffectController = new StatusEffectController(this);
         this.sortableChildren = true;
         this.bodyContainer = new PIXI.Container();
         this.bodyContainer.sortableChildren = true;
@@ -186,10 +209,11 @@ export class HeroUnit extends PIXI.Container {
         if (this.config.id === 'panda' || this.config.image.includes('panda')) {
             try {
                 const equippedSkin = useGameStore.getState().equippedSkins?.['panda'] || 'default';
-                const jsonPath =
+                const jsonPath = resolveAssetPath(
                     equippedSkin === 'panda_frost'
                         ? '/assets/characters/panda/panda_frost_poses.png.json'
-                        : '/assets/characters/panda/panda_poses.png.json';
+                        : '/assets/characters/panda/panda_poses.png.json'
+                );
                 const sheet = await PIXI.Assets.load(jsonPath);
                 this.posesTextures = [];
                 const frameKeys = Object.keys(sheet.data.frames);
@@ -208,7 +232,7 @@ export class HeroUnit extends PIXI.Container {
             }
         } else if (this.config.id === 'raccoon' || this.config.image.includes('raccoon')) {
             try {
-                const sheet = await PIXI.Assets.load('/assets/characters/raccoon/raccoon_poses.png.json');
+                const sheet = await PIXI.Assets.load(resolveAssetPath('/assets/characters/raccoon/raccoon_poses.png.json'));
                 this.posesTextures = [];
                 const frameKeys = Object.keys(sheet.data.frames);
                 for (const key of frameKeys) {
@@ -226,7 +250,7 @@ export class HeroUnit extends PIXI.Container {
             }
         } else {
             try {
-                tex = await PIXI.Assets.load(this.config.image);
+                tex = await PIXI.Assets.load(resolveAssetPath(this.config.image));
                 console.log(
                     `[DEBUG_HERO_UNIT] ID: ${id}, Config Image: ${this.config.image}, Texture: ${tex.width}x${tex.height}`,
                 );
@@ -236,7 +260,7 @@ export class HeroUnit extends PIXI.Container {
                     err,
                 );
                 try {
-                    const posesBaseTex = await PIXI.Assets.load('/assets/characters/panda/panda_poses.png.webp');
+                    const posesBaseTex = await PIXI.Assets.load(resolveAssetPath('/assets/characters/panda/panda_poses.png.webp'));
                     this.posesTextures = [];
                     const frameW = posesBaseTex.width / 4;
                     const frameH = posesBaseTex.height / 2;
@@ -335,7 +359,7 @@ export class HeroUnit extends PIXI.Container {
 
         let tex: PIXI.Texture;
         try {
-            tex = await PIXI.Assets.load(itemData.image);
+            tex = await PIXI.Assets.load(resolveAssetPath(itemData.image));
             console.log(`[HeroUnit] Weapon loaded: ${itemId} (${tex.width}x${tex.height})`);
             SpriteValidator.validate(tex, 'WEAPONS');
         } catch (err) {
@@ -404,7 +428,7 @@ export class HeroUnit extends PIXI.Container {
 
         let tex: PIXI.Texture;
         try {
-            tex = await PIXI.Assets.load(itemData.image);
+            tex = await PIXI.Assets.load(resolveAssetPath(itemData.image));
         } catch (err) {
             console.warn(`[HeroUnit] Failed to load helmet image ${itemData.image}, using fallback texture:`, err);
             tex = PIXI.Texture.WHITE;
@@ -463,7 +487,7 @@ export class HeroUnit extends PIXI.Container {
 
         let tex: PIXI.Texture;
         try {
-            tex = await PIXI.Assets.load(itemData.image);
+            tex = await PIXI.Assets.load(resolveAssetPath(itemData.image));
         } catch (err) {
             console.warn(`[HeroUnit] Failed to load armor image ${itemData.image}, using fallback texture:`, err);
             tex = PIXI.Texture.WHITE;
@@ -522,7 +546,7 @@ export class HeroUnit extends PIXI.Container {
 
         let tex: PIXI.Texture;
         try {
-            tex = await PIXI.Assets.load(itemData.image);
+            tex = await PIXI.Assets.load(resolveAssetPath(itemData.image));
         } catch (err) {
             console.warn(`[HeroUnit] Failed to load shield image ${itemData.image}, using fallback texture:`, err);
             tex = PIXI.Texture.WHITE;
@@ -921,156 +945,8 @@ export class HeroUnit extends PIXI.Container {
             this.bodyContainer.scale.x = (this.bodyContainer.scale.x >= 0 ? 1 : -1) * (baseScale + breathX);
         }
 
-        // 1. Покачивание персонажа при оглушении
-        if (this.isStunnedStatus) {
-            this.bodyContainer.rotation = Math.sin(this.animTime * 1.5) * 0.08;
-            this.bodyContainer.y = Math.sin(this.animTime * 3) * 6;
-        } else {
-            this.bodyContainer.rotation = 0;
-            this.bodyContainer.y = 0;
-        }
-
-        // 2. Генерация пламени при горении (сочные языки пламени с блендингом add)
-        if (this.isBurningStatus && this.burnEffectContainer) {
-            if (Math.random() < 0.45) {
-                const flame = new PIXI.Graphics();
-                const height = 65 + Math.random() * 95;
-                const width = 18 + Math.random() * 25;
-
-                flame.beginPath();
-                flame.moveTo(0, 0);
-                flame.quadraticCurveTo(-width, -height * 0.3, -width * 0.3, -height * 0.75);
-                flame.quadraticCurveTo(0, -height, width * 0.3, -height * 0.75);
-                flame.quadraticCurveTo(width, -height * 0.3, 0, 0);
-                flame.closePath();
-
-                const colors = [0xff3300, 0xff6600, 0xffaa00, 0xffdd00];
-                flame.fill({ color: colors[Math.floor(Math.random() * colors.length)] });
-                flame.alpha = 0.85;
-                flame.blendMode = 'add';
-
-                // Распределяем по всему телу от ног до головы
-                flame.x = (Math.random() - 0.5) * 160;
-                flame.y = -Math.random() * 320;
-                flame.scale.set(0.15);
-                this.burnEffectContainer.addChild(flame);
-
-                gsap.to(flame.scale, {
-                    x: 1.1 + Math.random() * 0.4,
-                    y: 1.1 + Math.random() * 0.4,
-                    duration: 0.6,
-                });
-
-                gsap.to(flame, {
-                    y: flame.y - 100 - Math.random() * 60,
-                    x: flame.x + (Math.random() - 0.5) * 50,
-                    alpha: 0,
-                    duration: 0.5 + Math.random() * 0.4,
-                    ease: 'power1.out',
-                    onComplete: () => {
-                        if (flame && !flame.destroyed) {
-                            gsap.killTweensOf(flame);
-                            gsap.killTweensOf(flame.scale);
-                            flame.destroy();
-                        }
-                    },
-                });
-            }
-        }
-
-        // 3. Генерация пузырьков и ядовитого облака при отравлении (зеленая дымка)
-        if (this.isPoisonedStatus && this.poisonEffectContainer) {
-            // Зеленое облако испарений
-            if (Math.random() < 0.22) {
-                const puff = new PIXI.Graphics();
-                const radius = 18 + Math.random() * 22;
-                puff.beginPath();
-                puff.circle(0, 0, radius);
-                puff.fill({ color: 0x228b22, alpha: 0.18 });
-                puff.blendMode = 'add';
-                puff.x = (Math.random() - 0.5) * 160;
-                puff.y = -Math.random() * 320;
-                this.poisonEffectContainer.addChild(puff);
-
-                gsap.to(puff, {
-                    y: puff.y - 120,
-                    x: puff.x + (Math.random() - 0.5) * 35,
-                    alpha: 0,
-                    duration: 1.4,
-                    ease: 'sine.out',
-                    onComplete: () => {
-                        if (puff && !puff.destroyed) {
-                            gsap.killTweensOf(puff);
-                            puff.destroy();
-                        }
-                    },
-                });
-            }
-
-            // Токсичные пузырьки
-            if (Math.random() < 0.25) {
-                const p = new PIXI.Graphics();
-                const radius = 2.5 + Math.random() * 4.5;
-                p.beginPath();
-                p.circle(0, 0, radius);
-                p.fill({ color: 0xadff2f, alpha: 0.75 });
-                p.stroke({ color: 0x32cd32, width: 1.5 });
-
-                p.x = (Math.random() - 0.5) * 160;
-                p.y = -Math.random() * 300;
-                p.alpha = 0.8;
-                this.poisonEffectContainer.addChild(p);
-
-                gsap.to(p, {
-                    y: p.y - 160,
-                    x: p.x + Math.sin(Math.random() * Math.PI) * 25,
-                    alpha: 0,
-                    duration: 1.0 + Math.random() * 0.5,
-                    ease: 'power1.out',
-                    onComplete: () => {
-                        if (p && !p.destroyed) {
-                            gsap.killTweensOf(p);
-                            p.destroy();
-                        }
-                    },
-                });
-            }
-        }
-
-        // 4. Генерация снежинок при заморозке (плавный дрифт морозного воздуха)
-        if (this.isFrozenStatus && this.freezeEffectContainer) {
-            if (Math.random() < 0.25) {
-                const p = new PIXI.Graphics();
-                const size = 3 + Math.random() * 4.5;
-                p.beginPath();
-                p.moveTo(0, -size);
-                p.lineTo(size * 0.6, 0);
-                p.lineTo(0, size);
-                p.lineTo(-size * 0.6, 0);
-                p.closePath();
-                p.fill({ color: 0xe0f7fa });
-                p.stroke({ color: 0x80deea, width: 1 });
-
-                p.x = (Math.random() - 0.5) * 160;
-                p.y = -Math.random() * 320;
-                p.alpha = 0.8;
-                this.freezeEffectContainer.addChild(p);
-
-                gsap.to(p, {
-                    y: p.y + 40,
-                    x: p.x + (Math.random() - 0.5) * 20,
-                    alpha: 0,
-                    duration: 0.9 + Math.random() * 0.9,
-                    ease: 'sine.inOut',
-                    onComplete: () => {
-                        if (p && !p.destroyed) {
-                            gsap.killTweensOf(p);
-                            p.destroy();
-                        }
-                    },
-                });
-            }
-        }
+        // Update Status Effects
+        this.statusEffectController.update(dt);
 
         // Update Weapon Trail
         try {
@@ -1153,6 +1029,14 @@ export class HeroUnit extends PIXI.Container {
     }
 
     public destroy(options?: any) {
+        // Bug fix: clear ghost-trail interval immediately to prevent it firing on a destroyed object
+        if (this.trailInterval) {
+            clearInterval(this.trailInterval);
+            this.trailInterval = null;
+        }
+
+        this.statusEffectController.destroy();
+
         if (this.weaponTrailGraphics) {
             if (this.weaponTrailGraphics.parent) {
                 this.weaponTrailGraphics.parent.removeChild(this.weaponTrailGraphics);
@@ -1178,11 +1062,6 @@ export class HeroUnit extends PIXI.Container {
         if (this.armorSprite) gsap.killTweensOf(this.armorSprite);
         if (this.shieldSocketContainer) gsap.killTweensOf(this.shieldSocketContainer);
         if (this.shieldSprite) gsap.killTweensOf(this.shieldSprite);
-
-        this.removeStunEffect();
-        this.removeFreezeEffect();
-        this.removeBurnEffect();
-        this.removePoisonEffect();
 
         super.destroy(options);
     }
@@ -1595,287 +1474,16 @@ export class HeroUnit extends PIXI.Container {
         });
     }
 
-    public showStunEffect() {
-        if (this.stunEffectContainer) return;
-        this.isStunnedStatus = true;
-        this.stunEffectContainer = new PIXI.Container();
-        this.stunEffectContainer.zIndex = 35;
-        this.addChild(this.stunEffectContainer);
-
-        const headSocket = this.config?.anchors?.head || { x: 0.5, y: 0.2 };
-        const feetSocket = this.config?.anchors?.feet || { x: 0.5, y: 0.95 };
-        const texWidth = this.bodySprite?.texture?.width || 512;
-        const texHeight = this.bodySprite?.texture?.height || 512;
-
-        const hx = (headSocket.x - feetSocket.x) * texWidth * (this.bodyContainer?.scale?.x || 1);
-        const hy = (headSocket.y - feetSocket.y) * texHeight * (this.bodyContainer?.scale?.y || 1) - 75; // Positioned right above the head
-        this.stunEffectContainer.position.set(hx, hy);
-
-        const stars: PIXI.Graphics[] = [];
-        const drawStar = (g: PIXI.Graphics, outerRadius: number, innerRadius: number) => {
-            let rot = (Math.PI / 2) * 3;
-            const step = Math.PI / 5;
-            g.moveTo(0, -outerRadius);
-            for (let i = 0; i < 5; i++) {
-                let x = Math.cos(rot) * outerRadius;
-                let y = Math.sin(rot) * outerRadius;
-                g.lineTo(x, y);
-                rot += step;
-
-                x = Math.cos(rot) * innerRadius;
-                y = Math.sin(rot) * innerRadius;
-                g.lineTo(x, y);
-                rot += step;
-            }
-            g.lineTo(0, -outerRadius);
-            g.closePath();
-        };
-
-        for (let i = 0; i < 3; i++) {
-            const star = new PIXI.Graphics();
-            star.beginPath();
-            drawStar(star, 14, 6); // Larger stars (14px outer radius instead of 10px)
-            star.fill({ color: 0xffea00 });
-            star.stroke({ color: 0xffaa00, width: 2.0 });
-            this.stunEffectContainer.addChild(star);
-            stars.push(star);
-        }
-
-        const animObj = { angle: 0 };
-        const tween = gsap.to(animObj, {
-            angle: Math.PI * 2,
-            duration: 1.8,
-            repeat: -1,
-            ease: 'none',
-            onUpdate: () => {
-                if (!this.stunEffectContainer) return;
-                stars.forEach((star, index) => {
-                    const offset = (index * Math.PI * 2) / 3;
-                    const a = animObj.angle + offset;
-                    star.x = Math.cos(a) * 45; // slightly wider orbit path
-                    star.y = Math.sin(a) * 15;
-                    star.scale.set(0.85 + Math.sin(a) * 0.4); // larger base scale
-                    star.rotation = animObj.angle * 2.5;
-                });
-            },
-        });
-        (this.stunEffectContainer as any).gsapTween = tween;
-
-        // Покачивание (rotation oscillation) во время оглушения
-        this.stunTween = gsap.to(this.bodyContainer, {
-            rotation: 0.08,
-            yoyo: true,
-            repeat: -1,
-            duration: 0.15,
-            ease: 'sine.inOut',
-        });
-    }
-
-    public removeStunEffect() {
-        this.isStunnedStatus = false;
-        if (this.stunTween) {
-            this.stunTween.kill();
-            this.stunTween = null;
-        }
-        if (this.bodyContainer) {
-            this.bodyContainer.rotation = 0;
-        }
-        if (this.stunEffectContainer) {
-            const tween = (this.stunEffectContainer as any).gsapTween;
-            if (tween) {
-                tween.kill();
-            }
-            gsap.killTweensOf(this.stunEffectContainer);
-            this.removeChild(this.stunEffectContainer);
-            this.stunEffectContainer.destroy({ children: true });
-            this.stunEffectContainer = null;
-        }
-    }
-
-    public updateTints() {
-        if (!this.bodySprite) return;
-        if (this.isFrozenStatus) {
-            this.bodySprite.tint = 0x88ccff;
-        } else if (this.isBurningStatus) {
-            this.bodySprite.tint = 0xff8844;
-        } else if (this.isPoisonedStatus) {
-            this.bodySprite.tint = 0x8dffa9;
-        } else {
-            this.bodySprite.tint = 0xffffff;
-        }
-    }
-
-    public showBurnEffect() {
-        if (this.burnEffectContainer) return;
-        this.isBurningStatus = true;
-        this.burnEffectContainer = new PIXI.Container();
-        this.burnEffectContainer.zIndex = 35;
-        this.addChild(this.burnEffectContainer);
-        this.updateTints();
-    }
-
-    public removeBurnEffect() {
-        this.isBurningStatus = false;
-        if (this.burnEffectContainer) {
-            gsap.killTweensOf(this.burnEffectContainer);
-            this.burnEffectContainer.children.forEach((child) => {
-                gsap.killTweensOf(child);
-                gsap.killTweensOf(child.scale);
-            });
-            this.removeChild(this.burnEffectContainer);
-            this.burnEffectContainer.destroy({ children: true });
-            this.burnEffectContainer = null;
-        }
-        this.updateTints();
-    }
-
-    public showFreezeEffect() {
-        if (this.freezeEffectContainer) return;
-        this.isFrozenStatus = true;
-        this.freezeEffectContainer = new PIXI.Container();
-        this.freezeEffectContainer.zIndex = 35;
-        this.addChild(this.freezeEffectContainer);
-        this.updateTints();
-
-        // 1. Рисуем красивую полупрозрачную ледяную глыбу вокруг персонажа
-        const iceBlock = new PIXI.Graphics();
-
-        // Координаты глыбы льда (покрывает персонажа снизу до головы)
-        const points = [
-            { x: -125, y: 5 },
-            { x: 125, y: 5 },
-            { x: 145, y: -150 },
-            { x: 90, y: -340 },
-            { x: -90, y: -340 },
-            { x: -145, y: -150 },
-        ];
-
-        iceBlock.beginPath();
-        iceBlock.moveTo(points[0].x, points[0].y);
-        for (let i = 1; i < points.length; i++) {
-            iceBlock.lineTo(points[i].x, points[i].y);
-        }
-        iceBlock.closePath();
-
-        // Полупрозрачный циановый лед
-        iceBlock.fill({ color: 0x80deea, alpha: 0.55 });
-        // Четкая светящаяся ледяная кайма
-        iceBlock.stroke({ color: 0xe0f7fa, width: 3.5, alpha: 0.85 });
-
-        // 2. Рисуем внутренние грани/трещины кристалла для 3D объема
-        const facets = new PIXI.Graphics();
-        facets.beginPath();
-
-        // Линии граней
-        facets.moveTo(-50, -170);
-        facets.lineTo(50, -170);
-        facets.lineTo(90, -340);
-
-        facets.moveTo(-50, -170);
-        facets.lineTo(-90, -340);
-
-        facets.moveTo(-50, -170);
-        facets.lineTo(-145, -150);
-
-        facets.moveTo(50, -170);
-        facets.lineTo(145, -150);
-
-        facets.moveTo(-50, -170);
-        facets.lineTo(-125, 5);
-
-        facets.moveTo(50, -170);
-        facets.lineTo(125, 5);
-
-        facets.closePath();
-        facets.stroke({ color: 0xffffff, width: 2.0, alpha: 0.65 });
-        facets.blendMode = 'add';
-
-        this.freezeEffectContainer.addChild(iceBlock);
-        this.freezeEffectContainer.addChild(facets);
-
-        // 3. Добавление 5–7 ледяных кристаллов вокруг персонажа в форме ромба
-        const crystalCount = 5 + Math.floor(Math.random() * 3);
-        for (let i = 0; i < crystalCount; i++) {
-            const crystal = new PIXI.Graphics();
-            const size = 8 + Math.random() * 8; // 8-16px
-
-            crystal.beginPath();
-            crystal.moveTo(0, -size);
-            crystal.lineTo(size * 0.6, 0);
-            crystal.lineTo(0, size);
-            crystal.lineTo(-size * 0.6, 0);
-            crystal.closePath();
-            crystal.fill({ color: 0xaaddff });
-            crystal.stroke({ color: 0xffffff, width: 1.5 });
-
-            const angle = Math.random() * Math.PI * 2;
-            const distance = 40 + Math.random() * 20;
-            crystal.x = Math.cos(angle) * distance;
-            crystal.y = Math.sin(angle) * distance * 0.4 - 20;
-
-            crystal.scale.set(0);
-            gsap.to(crystal.scale, {
-                x: 1,
-                y: 1,
-                duration: 0.2,
-                ease: 'back.out(1.5)',
-            });
-
-            this.freezeEffectContainer.addChild(crystal);
-        }
-
-        // Легкое ледяное мерцание (плавное пульсирование)
-        gsap.killTweensOf(this.freezeEffectContainer.scale);
-        this.freezeEffectContainer.scale.set(1.0);
-        gsap.to(this.freezeEffectContainer.scale, {
-            x: 1.02,
-            y: 1.02,
-            duration: 2.0,
-            repeat: -1,
-            yoyo: true,
-            ease: 'sine.inOut',
-        });
-    }
-
-    public removeFreezeEffect() {
-        this.isFrozenStatus = false;
-        if (this.freezeEffectContainer) {
-            gsap.killTweensOf(this.freezeEffectContainer);
-            gsap.killTweensOf(this.freezeEffectContainer.scale);
-            this.freezeEffectContainer.children.forEach((child) => {
-                gsap.killTweensOf(child);
-                gsap.killTweensOf(child.scale);
-            });
-            this.removeChild(this.freezeEffectContainer);
-            this.freezeEffectContainer.destroy({ children: true });
-            this.freezeEffectContainer = null;
-        }
-        this.updateTints();
-    }
-
-    public showPoisonEffect() {
-        if (this.poisonEffectContainer) return;
-        this.isPoisonedStatus = true;
-        this.poisonEffectContainer = new PIXI.Container();
-        this.poisonEffectContainer.zIndex = 35;
-        this.addChild(this.poisonEffectContainer);
-        this.updateTints();
-    }
-
-    public removePoisonEffect() {
-        this.isPoisonedStatus = false;
-        if (this.poisonEffectContainer) {
-            gsap.killTweensOf(this.poisonEffectContainer);
-            this.poisonEffectContainer.children.forEach((child) => {
-                gsap.killTweensOf(child);
-                gsap.killTweensOf(child.scale);
-            });
-            this.removeChild(this.poisonEffectContainer);
-            this.poisonEffectContainer.destroy({ children: true });
-            this.poisonEffectContainer = null;
-        }
-        this.updateTints();
-    }
+    public showStunEffect() { this.statusEffectController.showStunEffect(); }
+    public removeStunEffect() { this.statusEffectController.removeStunEffect(); }
+    public showBurnEffect() { this.statusEffectController.showBurnEffect(); }
+    public applyBurnStatus(durationMs: number = 2000) { this.statusEffectController.applyBurnStatus(durationMs); }
+    public removeBurnEffect() { this.statusEffectController.removeBurnEffect(); }
+    public showFreezeEffect() { this.statusEffectController.showFreezeEffect(); }
+    public removeFreezeEffect() { this.statusEffectController.removeFreezeEffect(); }
+    public showPoisonEffect() { this.statusEffectController.showPoisonEffect(); }
+    public removePoisonEffect() { this.statusEffectController.removePoisonEffect(); }
+    public updateTints() { this.statusEffectController.updateTints(); }
 
     /**
      * GSAP-анимация смерти (плавный наклон + растворение + улетание оружия)
@@ -1886,6 +1494,15 @@ export class HeroUnit extends PIXI.Container {
             this.currentResolve = resolve;
             const timeScale = useGameStore.getState().timeScale || 1;
 
+            // Bug fix: safety timer prevents BattleEngine from hanging if GSAP timeline
+            // is killed externally (e.g. scene reset during death animation)
+            const safetyTimer = setTimeout(() => {
+                if (this.currentResolve === resolve) {
+                    this.currentResolve = null;
+                    resolve();
+                }
+            }, 3000);
+
             gsap.killTweensOf(this);
             if (this.bodyContainer) gsap.killTweensOf(this.bodyContainer);
             if (this.bodySprite) gsap.killTweensOf(this.bodySprite);
@@ -1893,6 +1510,7 @@ export class HeroUnit extends PIXI.Container {
 
             const tl = gsap.timeline({
                 onComplete: () => {
+                    clearTimeout(safetyTimer);
                     if (this.currentResolve === resolve) {
                         this.currentResolve = null;
                     }

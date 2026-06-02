@@ -10,6 +10,8 @@ import { createHeroSlice } from './slices/heroSlice';
 import { createQuestSlice } from './slices/questSlice';
 import { createClanSlice } from './slices/clanSlice';
 import { createBattleSlice } from './slices/battleSlice';
+import { createChatSlice } from './slices/chatSlice';
+import { createMailSlice } from './slices/mailSlice';
 
 export { WEEKLY_QUESTS_POOL } from './slices/questSlice';
 
@@ -23,6 +25,8 @@ export const useGameStore = create<any>()(
             ...createQuestSlice(set, get),
             ...createClanSlice(set, get),
             ...createBattleSlice(set, get),
+            ...createChatSlice(set, get),
+            ...createMailSlice(set, get),
             get equippedItems() {
                 const currentHeroId = get().selectedHeroId || 'panda';
                 return get().heroEquipment?.[currentHeroId] || {};

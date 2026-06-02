@@ -31,6 +31,21 @@ export interface IEffectConfig {
 }
 
 /**
+ * Contract interface for any unit/sprite that can be target of visual combat effects.
+ * Decouples EffectsManager from the internal structure of HeroUnit.
+ */
+export interface IEffectTarget extends PIXI.Container {
+    defaultX?: number;
+    isLunging: boolean;
+    bodySprite?: PIXI.Sprite | null;
+    isBurningStatus: boolean;
+    isFrozenStatus: boolean;
+    isPoisonedStatus: boolean;
+    getVisualCenter?(): { x: number; y: number } | null;
+    getSocketGlobalPosition?(socketName: string): { x: number; y: number };
+}
+
+/**
  * @class EffectsManager
  * Singleton для управления игровыми эффектами
  *
@@ -172,17 +187,27 @@ export class EffectsManager {
      * @param color Цвет вспышки (0xRRGGBB)
      * @param duration Длительность вспышки
      */
-    public colorFlash(target: PIXI.Sprite, color: number = 0xffffff, duration: number = 0.2): void {
+    public colorFlash(target: PIXI.Container, color: number = 0xffffff, duration: number = 0.2): void {
         try {
             const effectId = `flash_${this.effectCounter++}`;
 
             const filter = new PIXI.ColorMatrixFilter();
-            target.filters = [filter];
+            // Preserve any existing filters (e.g. GlowFilter on frozen/stunned units)
+            // instead of clobbering them with a single-element array
+            const prevFilters: PIXI.Filter[] = Array.isArray(target.filters)
+                ? [...(target.filters as PIXI.Filter[])]
+                : [];
+            target.filters = [...prevFilters, filter];
 
             // Вспышка на максимум
             const timeline = gsap.timeline({
                 onComplete: () => {
-                    target.filters = [];
+                    // Remove only our filter — leave any pre-existing filters intact
+                    if (Array.isArray(target.filters)) {
+                        target.filters = (target.filters as PIXI.Filter[]).filter(
+                            (f) => f !== filter,
+                        );
+                    }
                     this.activeEffects.delete(effectId);
                 },
             });
@@ -352,7 +377,7 @@ export class EffectsManager {
      * @param isPlayerTarget Находится ли цель на стороне игрока
      * @param type Тип попадания ('HIT' | 'CRIT' | 'HEAVY' | 'ULTIMATE')
      */
-    public knockback(target: any, isPlayerTarget: boolean, type: 'HIT' | 'CRIT' | 'HEAVY' | 'ULTIMATE' = 'HIT'): void {
+    public knockback(target: IEffectTarget, isPlayerTarget: boolean, type: 'HIT' | 'CRIT' | 'HEAVY' | 'ULTIMATE' = 'HIT'): void {
         try {
             if (!target || target.destroyed) return;
 
@@ -388,7 +413,7 @@ export class EffectsManager {
                 onComplete: () => {
                     // Возвращаем в дефолтную позицию на случай микро-погрешностей
                     if (!target.destroyed) {
-                        target.x = target.defaultX;
+                        target.x = target.defaultX ?? target.x;
                     }
                 },
             });
@@ -410,9 +435,9 @@ export class EffectsManager {
         attackerRole: 'WARRIOR' | 'TANK' | 'ASSASSIN' | 'MAGE' | 'SUPPORT' | undefined,
         _defenderRole: 'WARRIOR' | 'TANK' | 'ASSASSIN' | 'MAGE' | 'SUPPORT' | undefined,
         hitType: 'HIT' | 'CRIT' | 'DODGE' | 'BLOCK' | 'INSTINCT' | 'BURN' | 'POISON' | 'FREEZE' | 'STUN',
-        targetUnit: any,
+        targetUnit: IEffectTarget,
         isPlayerTarget: boolean,
-        attackerUnit?: any,
+        attackerUnit?: IEffectTarget | null,
         damage?: number,
     ): void {
         try {
@@ -613,7 +638,7 @@ export class EffectsManager {
      * @param target Целевой объект
      * @param intensity Интенсивность эффекта
      */
-    public criticalHit(target: PIXI.Container, intensity: number = 1.5): void {
+    public criticalHit(target: IEffectTarget, intensity: number = 1.5): void {
         try {
             console.log(`🌟 CRITICAL HIT EFFECT!`);
 
@@ -624,7 +649,7 @@ export class EffectsManager {
             this.screenShake(15 * intensity, 0.92, 400);
 
             // Вспышка желтого
-            const flashSprite = (target as any).bodySprite || target;
+            const flashSprite = target.bodySprite || target;
             if (flashSprite instanceof PIXI.Sprite) {
                 this.colorFlash(flashSprite, 0xffff00, 0.3);
             }
@@ -632,8 +657,8 @@ export class EffectsManager {
             // Нахождение центра мишени
             let px = target.x;
             let py = target.y - 100;
-            if (typeof (target as any).getVisualCenter === 'function') {
-                const center = (target as any).getVisualCenter();
+            if (typeof target.getVisualCenter === 'function') {
+                const center = target.getVisualCenter();
                 if (center) {
                     px = center.x;
                     py = center.y;
@@ -658,12 +683,12 @@ export class EffectsManager {
      * Эффект обычного удара
      * @param target Целевой объект
      */
-    public normalHit(target: PIXI.Container): void {
+    public normalHit(target: IEffectTarget): void {
         try {
             SoundManager.getInstance().playHit();
             this.screenShake(5, 0.95, 200);
 
-            const flashSprite = (target as any).bodySprite || target;
+            const flashSprite = target.bodySprite || target;
             if (flashSprite instanceof PIXI.Sprite) {
                 this.colorFlash(flashSprite, 0xff6666, 0.15);
             }
@@ -671,8 +696,8 @@ export class EffectsManager {
             // Нахождение центра мишени
             let px = target.x;
             let py = target.y - 100;
-            if (typeof (target as any).getVisualCenter === 'function') {
-                const center = (target as any).getVisualCenter();
+            if (typeof target.getVisualCenter === 'function') {
+                const center = target.getVisualCenter();
                 if (center) {
                     px = center.x;
                     py = center.y;
@@ -692,12 +717,12 @@ export class EffectsManager {
     /**
      * Эффект уклонения
      */
-    public dodgeEffect(target: PIXI.Container): void {
+    public dodgeEffect(target: IEffectTarget): void {
         try {
             let px = target.x;
             let py = target.y - 100;
-            if (typeof (target as any).getVisualCenter === 'function') {
-                const center = (target as any).getVisualCenter();
+            if (typeof target.getVisualCenter === 'function') {
+                const center = target.getVisualCenter();
                 if (center) {
                     px = center.x;
                     py = center.y;
@@ -712,21 +737,21 @@ export class EffectsManager {
     /**
      * Эффект блокирования
      */
-    public blockEffect(target: PIXI.Container, attacker?: any): void {
+    public blockEffect(target: IEffectTarget, attacker?: IEffectTarget | null): void {
         try {
             let px = target.x;
             let py = target.y - 100;
             if (
                 attacker &&
                 typeof attacker.getSocketGlobalPosition === 'function' &&
-                typeof (target as any).getSocketGlobalPosition === 'function'
+                typeof target.getSocketGlobalPosition === 'function'
             ) {
                 const attackPos = attacker.getSocketGlobalPosition('rightHand');
-                const defendPos = (target as any).getSocketGlobalPosition('leftHand');
+                const defendPos = target.getSocketGlobalPosition('leftHand');
                 px = (attackPos.x + defendPos.x) / 2;
                 py = (attackPos.y + defendPos.y) / 2;
-            } else if (typeof (target as any).getVisualCenter === 'function') {
-                const center = (target as any).getVisualCenter();
+            } else if (typeof target.getVisualCenter === 'function') {
+                const center = target.getVisualCenter();
                 if (center) {
                     px = center.x;
                     py = center.y;
@@ -742,15 +767,15 @@ export class EffectsManager {
      * Эффект смерти персонажа
      * @param target Целевой объект
      */
-    public deathEffect(target: PIXI.Container): void {
+    public deathEffect(target: IEffectTarget): void {
         try {
             this.screenShake(8, 0.9, 300);
 
             // Нахождение центра мишени
             let px = target.x;
             let py = target.y - 100;
-            if (typeof (target as any).getVisualCenter === 'function') {
-                const center = (target as any).getVisualCenter();
+            if (typeof target.getVisualCenter === 'function') {
+                const center = target.getVisualCenter();
                 if (center) {
                     px = center.x;
                     py = center.y;
@@ -1389,22 +1414,11 @@ export class EffectsManager {
                     }
                     this.spawnExplosion(targetX, targetY);
 
-                    if (victim && !victim.destroyed) {
-                        victim.isBurningStatus = true;
-                        if (typeof victim.showBurnEffect === 'function') {
-                            victim.showBurnEffect();
-                        }
-                        victim.updateTints();
-
-                        setTimeout(() => {
-                            if (victim && !victim.destroyed) {
-                                victim.isBurningStatus = false;
-                                if (typeof victim.removeBurnEffect === 'function') {
-                                    victim.removeBurnEffect();
-                                }
-                                victim.updateTints();
-                            }
-                        }, 2000);
+                    // Decoupled: HeroUnit now owns its entire burn lifecycle via applyBurnStatus().
+                    // No direct field mutation from EffectsManager — eliminates the coupling
+                    // and the race-condition where the cleanup setTimeout fired on a destroyed victim.
+                    if (victim && !victim.destroyed && typeof victim.applyBurnStatus === 'function') {
+                        victim.applyBurnStatus(2000);
                     }
                 },
             });

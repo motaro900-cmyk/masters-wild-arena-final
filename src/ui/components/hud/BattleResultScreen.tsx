@@ -6,37 +6,37 @@ import { shareBattleResult } from '../../../utils/VKBridge';
 import { audioService } from '../../../services/AudioService';
 
 const RESOURCE_METADATA: Record<string, { name: string; image: string; rarity: string }> = {
-    coal: { name: 'Уголь', image: '/assets/images/resources/coal.png', rarity: 'COMMON' },
-    steel_bars: { name: 'Стальной слиток', image: '/assets/images/resources/steel_bar.png', rarity: 'RARE' },
-    runic_shards: { name: 'Рунический осколок', image: '/assets/images/resources/runic_shard.png', rarity: 'EPIC' },
+    coal: { name: 'Уголь', image: '/assets/images/resources/coal.webp', rarity: 'COMMON' },
+    steel_bars: { name: 'Стальной слиток', image: '/assets/images/resources/steel_bar.webp', rarity: 'RARE' },
+    runic_shards: { name: 'Рунический осколок', image: '/assets/images/resources/runic_shard.webp', rarity: 'EPIC' },
     ancient_compass: {
         name: 'Древний компас',
-        image: '/assets/images/resources/gemini-0-5-25-00-Photoroom (1)-export.png',
+        image: '/assets/images/resources/ancient_compass.webp',
         rarity: 'RARE',
     },
     astral_crystal: {
         name: 'Астральный кристалл',
-        image: '/assets/images/resources/gemini-02-5-25-00-Photoroom (1)-export.png',
+        image: '/assets/images/resources/astral_crystal.webp',
         rarity: 'RARE',
     },
     void_sphere: {
         name: 'Сфера бездны',
-        image: '/assets/images/resources/gemini-202-05-25-00-Photoroom (1)-export.png',
+        image: '/assets/images/resources/void_sphere.webp',
         rarity: 'EPIC',
     },
     golden_sprout: {
         name: 'Золотой росток',
-        image: '/assets/images/resources/gemini-2026-05-25-00-Photoroom (1)-export.png',
+        image: '/assets/images/resources/golden_sprout.webp',
         rarity: 'EPIC',
     },
     dragon_scale: {
         name: 'Чешуя дракона',
-        image: '/assets/images/resources/gemini-2026-05-25-002-Photoroom (1)-export.png',
+        image: '/assets/images/resources/dragon_scale.webp',
         rarity: 'LEGENDARY',
     },
     lava_heart: {
         name: 'Сердце лавы',
-        image: '/assets/images/resources/gemini-2026-05-25-0012-Photoroom (1)-export.png',
+        image: '/assets/images/resources/lava_heart.webp',
         rarity: 'LEGENDARY',
     },
 };

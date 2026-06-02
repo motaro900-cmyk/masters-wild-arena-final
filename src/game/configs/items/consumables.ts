@@ -190,7 +190,7 @@ export const consumables: Record<string, IEquipmentStats> = {
     coal: {
         id: 'coal',
         name: 'Уголь',
-        image: '/assets/images/resources/coal.png',
+        image: '/assets/images/resources/coal.webp',
         rarity: 'COMMON',
         mainTab: 'ALCHEMY',
         subTab: 'RESOURCES',
@@ -199,7 +199,7 @@ export const consumables: Record<string, IEquipmentStats> = {
     steel_bar: {
         id: 'steel_bar',
         name: 'Стальной слиток',
-        image: '/assets/images/resources/steel_bar.png',
+        image: '/assets/images/resources/steel_bar.webp',
         rarity: 'RARE',
         mainTab: 'ALCHEMY',
         subTab: 'RESOURCES',
@@ -208,7 +208,7 @@ export const consumables: Record<string, IEquipmentStats> = {
     runic_shard: {
         id: 'runic_shard',
         name: 'Рунический осколок',
-        image: '/assets/images/resources/runic_shard.png',
+        image: '/assets/images/resources/runic_shard.webp',
         rarity: 'EPIC',
         mainTab: 'ALCHEMY',
         subTab: 'RESOURCES',
@@ -217,7 +217,7 @@ export const consumables: Record<string, IEquipmentStats> = {
     ancient_compass: {
         id: 'ancient_compass',
         name: 'Древний компас',
-        image: '/assets/images/resources/gemini-0-5-25-00-Photoroom (1)-export.png',
+        image: '/assets/images/resources/ancient_compass.webp',
         rarity: 'RARE',
         mainTab: 'ALCHEMY',
         subTab: 'RESOURCES',
@@ -226,7 +226,7 @@ export const consumables: Record<string, IEquipmentStats> = {
     astral_crystal: {
         id: 'astral_crystal',
         name: 'Астральный кристалл',
-        image: '/assets/images/resources/gemini-02-5-25-00-Photoroom (1)-export.png',
+        image: '/assets/images/resources/astral_crystal.webp',
         rarity: 'RARE',
         mainTab: 'ALCHEMY',
         subTab: 'RESOURCES',
@@ -235,7 +235,7 @@ export const consumables: Record<string, IEquipmentStats> = {
     void_sphere: {
         id: 'void_sphere',
         name: 'Сфера бездны',
-        image: '/assets/images/resources/gemini-202-05-25-00-Photoroom (1)-export.png',
+        image: '/assets/images/resources/void_sphere.webp',
         rarity: 'EPIC',
         mainTab: 'ALCHEMY',
         subTab: 'RESOURCES',
@@ -244,7 +244,7 @@ export const consumables: Record<string, IEquipmentStats> = {
     golden_sprout: {
         id: 'golden_sprout',
         name: 'Золотой росток',
-        image: '/assets/images/resources/gemini-2026-05-25-00-Photoroom (1)-export.png',
+        image: '/assets/images/resources/golden_sprout.webp',
         rarity: 'EPIC',
         mainTab: 'ALCHEMY',
         subTab: 'RESOURCES',
@@ -253,7 +253,7 @@ export const consumables: Record<string, IEquipmentStats> = {
     dragon_scale: {
         id: 'dragon_scale',
         name: 'Чешуя дракона',
-        image: '/assets/images/resources/gemini-2026-05-25-002-Photoroom (1)-export.png',
+        image: '/assets/images/resources/dragon_scale.webp',
         rarity: 'LEGENDARY',
         mainTab: 'ALCHEMY',
         subTab: 'RESOURCES',
@@ -262,7 +262,7 @@ export const consumables: Record<string, IEquipmentStats> = {
     lava_heart: {
         id: 'lava_heart',
         name: 'Сердце лавы',
-        image: '/assets/images/resources/gemini-2026-05-25-0012-Photoroom (1)-export.png',
+        image: '/assets/images/resources/lava_heart.webp',
         rarity: 'LEGENDARY',
         mainTab: 'ALCHEMY',
         subTab: 'RESOURCES',
@@ -272,7 +272,7 @@ export const consumables: Record<string, IEquipmentStats> = {
         id: 'protection_stone',
         name: 'Камень Защиты',
         priceGem: 80,
-        image: '/assets/images/resources/protection_stone.png',
+        image: '/assets/images/resources/protection_stone.webp',
         rarity: 'EPIC',
         mainTab: 'ALCHEMY',
         subTab: 'POTIONS',
