@@ -34,26 +34,28 @@ if (sentryDsn) {
     console.warn('[Sentry] DSN is not provided. Remote error monitoring is disabled.');
 }
 
+import { lazyWithRetry } from './utils/LazyWithRetry';
+
 // Ленивая загрузка экранов и сцен для оптимизации размера бандла (Шаг 11)
-const ShopScene = React.lazy(() => import('./ui/components/hud/ShopScene').then((m) => ({ default: m.ShopScene })));
-const BattlePassScene = React.lazy(() =>
+const ShopScene = lazyWithRetry(() => import('./ui/components/hud/ShopScene').then((m) => ({ default: m.ShopScene })));
+const BattlePassScene = lazyWithRetry(() =>
     import('./ui/components/hud/BattlePassScene').then((m) => ({ default: m.BattlePassScene })),
 );
-const HeroScene = React.lazy(() =>
+const HeroScene = lazyWithRetry(() =>
     import('./ui/components/hud/HeroScene/index').then((m) => ({ default: m.HeroScene })),
 );
 import { AncientsSanctuaryScreen } from './ui/components/screens/AncientsSanctuaryScreen';
 
-const IntroScreen = React.lazy(() =>
+const IntroScreen = lazyWithRetry(() =>
     import('./ui/components/screens/IntroScreen').then((m) => ({ default: m.IntroScreen })),
 );
-const CityScreen = React.lazy(() =>
+const CityScreen = lazyWithRetry(() =>
     import('./ui/components/screens/CityScreen').then((m) => ({ default: m.CityScreen })),
 );
-const ForgeScreen = React.lazy(() =>
+const ForgeScreen = lazyWithRetry(() =>
     import('./ui/components/screens/ForgeScreen').then((m) => ({ default: m.ForgeScreen })),
 );
-const BattleScene = React.lazy(() =>
+const BattleScene = lazyWithRetry(() =>
     import('./ui/components/hud/BattleScene').then((m) => ({ default: m.BattleScene })),
 );
 
@@ -93,17 +95,12 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { has
     }
     componentDidCatch(error: any, errorInfo: any) {
         console.error('ErrorBoundary caught an error', error, errorInfo);
-        fetch('/api/log-error', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                message: `[React UI Error] ${error?.message || 'Unknown Error'}`,
+        Sentry.captureException(error, {
+            extra: {
+                componentStack: errorInfo?.componentStack,
                 source: 'ErrorBoundary',
-                line: 0,
-                col: 0,
-                stack: (error?.stack || '') + '\nComponent Stack:\n' + (errorInfo?.componentStack || ''),
-            }),
-        }).catch(() => {});
+            },
+        });
     }
     render() {
         if (this.state.hasError) {

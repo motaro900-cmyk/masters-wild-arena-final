@@ -11,8 +11,12 @@ type VkUser = {
 
 export const isVkMiniApp = (): boolean => {
     if (typeof window === 'undefined') return false;
-    const params = new URLSearchParams(window.location.search);
-    return params.has('vk_app_id') || (window as any).isVkMiniApp === true;
+    const search = window.location.search;
+    const params = new URLSearchParams(search);
+    const hasVkQuery = params.has('vk_app_id') || params.has('vk_platform') || Array.from(params.keys()).some(k => k.startsWith('vk_'));
+    const hasVkReferrer = document.referrer && (document.referrer.includes('vk.com') || document.referrer.includes('vk-apps.com') || document.referrer.includes('vk.ru'));
+    const hasVkName = window.name && window.name.includes('fXD');
+    return hasVkQuery || hasVkReferrer || hasVkName || (window as any).isVkMiniApp === true;
 };
 
 export const initVK = async (): Promise<boolean> => {
@@ -21,9 +25,9 @@ export const initVK = async (): Promise<boolean> => {
     // [Lead Architect]: Страховка от зависания VK Bridge
     const timeoutPromise = new Promise<boolean>((resolve) => {
         setTimeout(() => {
-            console.warn('⚠️ VK Bridge Init Timeout (7s). Starting anyway...');
+            console.warn('⚠️ VK Bridge Init Timeout (5s). Starting anyway...');
             resolve(false);
-        }, 7000);
+        }, 5000);
     });
 
     const initPromise = (async () => {
