@@ -869,11 +869,14 @@ export const Root = () => {
                     }
                 });
 
-                // Гарантируем наличие приветственных сообщений
-                const hasWelcome = updatedState.messages.some((m: any) => m.id === 'welcome-1');
-                const hasCodex = updatedState.messages.some((m: any) => m.id === 'codex-1');
+                // Гарантируем наличие приветственных сообщений (только один раз при первом входе)
+                const welcomeKey = `seen_welcome_msgs_${updatedState.playerId}`;
+                const hasSeenWelcome = localStorage.getItem(welcomeKey);
+                const hasWelcome = hasSeenWelcome ? true : updatedState.messages.some((m: any) => m.id === 'welcome-1');
+                const hasCodex = hasSeenWelcome ? true : updatedState.messages.some((m: any) => m.id === 'codex-1');
 
-                if (!hasWelcome || !hasCodex) {
+                if (!hasSeenWelcome && (!hasWelcome || !hasCodex)) {
+                    localStorage.setItem(welcomeKey, 'true');
                     const welcomeMsgs = [];
                     if (!hasWelcome)
                         welcomeMsgs.push({

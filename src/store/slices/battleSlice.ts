@@ -63,11 +63,7 @@ export const createBattleSlice = (set: any, get: any) => ({
     },
 
     setMail: (newMail: any[]) => {
-        set((state: any) => {
-            const allMail = [...state.mail, ...newMail];
-            const uniqueMail = Array.from(new Map(allMail.map((m) => [m.id, m])).values());
-            return { mail: uniqueMail };
-        });
+        set({ mail: newMail });
     },
 
     addMessage: async (text: string, author = 'Motar', type = 'common') => {
