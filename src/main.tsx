@@ -787,10 +787,11 @@ export const Root = () => {
                 unsubChat = syncService.subscribeToChat((messages) => {
                     useGameStore.getState().setMessages(messages);
                 });
-                unsubFriends = syncService.subscribeToFriendRequests(updatedState.playerId, (requests) => {
+                const prefixedId = SyncService.getPrefixedUserId(updatedState.vkUser, updatedState.playerId);
+                unsubFriends = syncService.subscribeToFriendRequests(prefixedId, (requests) => {
                     useGameStore.getState().setFriendRequests(requests);
                 });
-                unsubMail = syncService.subscribeToMail(updatedState.playerId, (mails) => {
+                unsubMail = syncService.subscribeToMail(prefixedId, (mails) => {
                     useGameStore.getState().setMail(mails);
                 });
 
