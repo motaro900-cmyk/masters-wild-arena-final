@@ -27,6 +27,12 @@ const BattleScene = lazyWithRetry(() =>
 
 export const SceneSwitcher = () => {
     const activeScreen = useGameStore((state) => state.activeScreen);
+    const profileStatus = useGameStore((state) => state.profileStatus);
+
+    if (profileStatus !== 'loaded') {
+        return null;
+    }
+
     return (
         <>
             {activeScreen === 'INTRO' && (

@@ -274,6 +274,12 @@ export const SafeGameLayout = ({ containerRef }: { containerRef: React.RefObject
 
 export const SceneSwitcher = () => {
     const activeScreen = useGameStore((state) => state.activeScreen);
+    const profileStatus = useGameStore((state) => state.profileStatus);
+
+    if (profileStatus !== 'loaded') {
+        return null;
+    }
+
     return (
         <>
             {activeScreen === 'INTRO' && (
@@ -486,6 +492,7 @@ export const Root = () => {
                 }
 
                 const updatedState = useGameStore.getState();
+                useGameStore.setState({ profileStatus: 'loaded' });
 
                 // 3. Game Engine
                 setLoadingText('Инициализация графического ядра Pixi...');

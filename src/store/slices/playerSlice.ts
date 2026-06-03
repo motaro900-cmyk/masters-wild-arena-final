@@ -74,6 +74,7 @@ export const createPlayerSlice = (set: any, get: any) => ({
     canClaimDailyGift: false,
     lastWheelSpinTime: 0,
     onboardingCompleted: true,
+    profileStatus: 'loading' as 'loading' | 'loaded' | 'error',
     activeBuffs: {} as Record<string, number>,
     vkUser: null as any,
     isVkEnvironment:
