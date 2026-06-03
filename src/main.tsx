@@ -77,7 +77,7 @@ export const SafeGameLayout = ({ containerRef }: { containerRef: React.RefObject
     const [isPortrait, setIsPortrait] = React.useState(
         typeof window !== 'undefined' && window.innerWidth < window.innerHeight,
     );
-    const [dismissedRotationWarning, setDismissedRotationWarning] = React.useState(false);
+
     const [showItemBuilder, setShowItemBuilder] = React.useState(false);
 
     const isDev =
@@ -169,7 +169,7 @@ export const SafeGameLayout = ({ containerRef }: { containerRef: React.RefObject
             <RotationWarningOverlay
                 isPortrait={isPortrait}
                 isMobile={isMobile}
-                onDismiss={() => setDismissedRotationWarning(true)}
+                onDismiss={() => {}}
             />
 
             {/* Unified 1920x1080 Scaled Container */}
