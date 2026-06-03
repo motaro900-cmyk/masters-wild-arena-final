@@ -82,8 +82,6 @@ export class BattleEngine {
     private playerStats: ICombatStats | null = null;
     private enemyStats: ICombatStats | null = null;
 
-    private playerAttackTimer: number = 0;
-    private enemyAttackTimer: number = 0;
     private isCombatRunning: boolean = false;
     public isInitialized: boolean = false;
     public battleTime: number = 0;
@@ -893,12 +891,6 @@ export class BattleEngine {
         let pHP = this.state.playerHP;
         let eHP = this.state.enemyHP;
 
-        let pTimer = this.playerAttackTimer;
-        let eTimer = this.enemyAttackTimer;
-
-        const pMax = 2000 / Math.max(0.1, pStats.speed);
-        const eMax = 2000 / Math.max(0.1, eStats.speed);
-
         let safetyCounter = 0;
         const maxTicks = 10000;
 
@@ -907,105 +899,214 @@ export class BattleEngine {
         const playerEquipment = store.heroEquipment[playerHeroId] || {};
         const playerWeaponArchetype = getWeaponArchetype(playerEquipment.WEAPONS || null);
 
+        const getEffectiveSpeed = (unit: HeroUnit, stats: ICombatStats) => {
+            return unit.isFrozenStatus ? Math.ceil(stats.speed * 0.5) : stats.speed;
+        };
+
+        const simulateStatusEffects = (
+            attacker: HeroUnit,
+            victim: HeroUnit,
+            attStats: ICombatStats,
+            isAttackerPlayer: boolean,
+            isCrit: boolean,
+        ) => {
+            if (isCrit && Math.random() < 0.35) {
+                this.applyStatus(victim, 'STUN', 1, 0, !isAttackerPlayer);
+            }
+
+            const attackerId = attacker.config?.id;
+            const attackerRole = attacker.config?.role;
+
+            if (attackerId === 'panda' || attackerRole === 'WARRIOR' || attackerId === 'ancient_golem') {
+                if (Math.random() < 0.3) {
+                    const burnDmg = Math.ceil(attStats.attack * 0.12);
+                    this.applyStatus(victim, 'BURN', 3, burnDmg, !isAttackerPlayer);
+                }
+            } else if (attackerId === 'raccoon' || attackerRole === 'ASSASSIN' || attackerId === 'ancient_spider') {
+                if (Math.random() < 0.35) {
+                    const poisonDmg = Math.ceil(attStats.attack * 0.09);
+                    this.applyStatus(victim, 'POISON', 4, poisonDmg, !isAttackerPlayer);
+                }
+            } else if (attackerId === 'ancient_wolf') {
+                if (Math.random() < 0.25) {
+                    this.applyStatus(victim, 'FREEZE', 2, 0, !isAttackerPlayer);
+                }
+            }
+        };
+
+        const ATB_THRESHOLD = 100;
+        let playerTicks = getEffectiveSpeed(this.player!, pStats);
+        let enemyTicks = getEffectiveSpeed(this.enemy!, eStats);
+
+        const firstIsPlayer = playerTicks >= enemyTicks;
+        if (firstIsPlayer) {
+            playerTicks = ATB_THRESHOLD;
+        } else {
+            enemyTicks = ATB_THRESHOLD;
+        }
+
         while (pHP > 0 && eHP > 0 && safetyCounter < maxTicks) {
             safetyCounter++;
 
-            const dt = Math.min(pTimer, eTimer);
-            pTimer -= dt;
-            eTimer -= dt;
+            const isPlayerTurn = playerTicks >= enemyTicks;
 
-            // Ход игрока
-            if (pTimer <= 0) {
-                // Накопление маны
-                let currentMana = this.state.playerMana;
-                currentMana = Math.min(100, currentMana + 25);
-                this.state.playerMana = currentMana;
-
-                if (currentMana >= 100) {
-                    // Использование суперспособности в симуляции
-                    this.state.playerMana = 0;
-                    const hero = HEROES_DB.find((h) => h.id === playerHeroId) || HEROES_DB[0];
-                    const role = hero.role;
-                    let mult = 2.0;
-                    if (role === 'WARRIOR') mult = 2.5;
-                    else if (role === 'ASSASSIN') mult = 3.5;
-                    else if (role === 'TANK') mult = 1.8;
-                    else mult = 2.2;
-
-                    const rawDmg = pStats.attack * mult * (0.9 + Math.random() * 0.2);
-                    const finalActiveDmg = Math.ceil(Math.max(1, rawDmg - eStats.defense * 0.25));
-                    eHP = Math.max(0, eHP - finalActiveDmg);
-                    this.totalDamageDealt += finalActiveDmg;
-                    this.totalTurnsPlayed += 1;
-                    store.updateQuestProgress('DAMAGE', finalActiveDmg);
-
-                    if (role === 'SUPPORT') {
-                        pHP = Math.min(pStats.hp, pHP + Math.ceil(pStats.hp * 0.2));
-                    } else if (role === 'TANK') {
-                        pHP = Math.min(pStats.hp + Math.ceil(pStats.hp * 0.25), pHP + Math.ceil(pStats.hp * 0.25));
+            if (isPlayerTurn) {
+                // Применяем периодический урон в начале хода
+                const playerEffects = [...this.player!.statusEffects];
+                for (const status of playerEffects) {
+                    if (status.type === 'BURN' || status.type === 'POISON') {
+                        const tickDamage = Math.ceil(status.damagePerTurn * status.stacks);
+                        pHP = Math.max(0, pHP - tickDamage);
+                        this.totalDamageTaken += tickDamage;
+                        this.onCombatEvent({
+                            type: status.type,
+                            damage: tickDamage,
+                            target: 'player',
+                        });
                     }
+                }
+                if (pHP <= 0) break;
+
+                if (this.player!.isStunnedStatus) {
+                    this.onCombatEvent({
+                        type: 'STUN',
+                        damage: 0,
+                        target: 'player',
+                        label: '💫 ОГЛУШЕНИЕ!',
+                    });
                 } else {
-                    const dodgeCheck = Math.random() < eStats.dodge;
-                    if (!dodgeCheck || isOneShot) {
-                        let baseDmg = pStats.attack * (0.9 + Math.random() * 0.2);
-                        const isCrit = Math.random() < pStats.critChance;
-                        if (isCrit) baseDmg *= pStats.critDamage || 1.5;
-                        if (isOneShot) baseDmg = 999999;
+                    // Накопление маны
+                    let currentMana = this.state.playerMana;
+                    currentMana = Math.min(100, currentMana + 25);
+                    this.state.playerMana = currentMana;
 
-                        let targetDefense = eStats.defense;
-                        if (playerWeaponArchetype === 'STAFF') {
-                            targetDefense *= 0.5; // Игнорирование половины защиты цели
-                        }
+                    if (currentMana >= 100) {
+                        // Использование суперспособности в симуляции
+                        this.state.playerMana = 0;
+                        const hero = HEROES_DB.find((h) => h.id === playerHeroId) || HEROES_DB[0];
+                        const role = hero.role;
+                        let mult = 2.0;
+                        if (role === 'WARRIOR') mult = 2.5;
+                        else if (role === 'ASSASSIN') mult = 3.5;
+                        else if (role === 'TANK') mult = 1.8;
+                        else mult = 2.2;
 
-                        const mitigated = Math.max(0, baseDmg - targetDefense * 0.5);
-                        const blockCheck = Math.random() < (eStats.defense > 0 ? 0.15 : 0.05);
-
-                        let finalDmg = Math.ceil(mitigated);
-                        if (blockCheck && !isOneShot) {
-                            finalDmg = Math.max(1, Math.ceil(mitigated * 0.3));
-                        }
-
-                        eHP = Math.max(0, eHP - finalDmg);
-                        this.totalDamageDealt += finalDmg;
+                        const rawDmg = pStats.attack * mult * (0.9 + Math.random() * 0.2);
+                        const finalActiveDmg = Math.ceil(Math.max(1, rawDmg - eStats.defense * 0.25));
+                        eHP = Math.max(0, eHP - finalActiveDmg);
+                        this.totalDamageDealt += finalActiveDmg;
                         this.totalTurnsPlayed += 1;
-                        store.updateQuestProgress('DAMAGE', finalDmg);
+                        store.updateQuestProgress('DAMAGE', finalActiveDmg);
+
+                        if (role === 'SUPPORT') {
+                            pHP = Math.min(pStats.hp, pHP + Math.ceil(pStats.hp * 0.2));
+                        } else if (role === 'TANK') {
+                            pHP = Math.min(pStats.hp, pHP + Math.ceil(pStats.hp * 0.25));
+                        }
+                    } else {
+                        const dodgeCheck = Math.random() < eStats.dodge;
+                        if (!dodgeCheck || isOneShot) {
+                            let baseDmg = pStats.attack * (0.9 + Math.random() * 0.2);
+                            const isCrit = Math.random() < pStats.critChance;
+                            if (isCrit) baseDmg *= pStats.critDamage || 1.5;
+                            if (isOneShot) baseDmg = 999999;
+
+                            let targetDefense = eStats.defense;
+                            if (playerWeaponArchetype === 'STAFF') {
+                                targetDefense *= 0.5;
+                            }
+
+                            const mitigated = Math.max(0, baseDmg - targetDefense * 0.5);
+                            const blockCheck = Math.random() < (eStats.defense > 0 ? 0.15 : 0.05);
+
+                            let finalDmg = Math.ceil(mitigated);
+                            if (blockCheck && !isOneShot) {
+                                finalDmg = Math.max(1, Math.ceil(mitigated * 0.3));
+                            }
+
+                            eHP = Math.max(0, eHP - finalDmg);
+                            this.totalDamageDealt += finalDmg;
+                            this.totalTurnsPlayed += 1;
+                            store.updateQuestProgress('DAMAGE', finalDmg);
+
+                            // Применяем статусы
+                            simulateStatusEffects(this.player!, this.enemy!, pStats, true, isCrit && !blockCheck);
+                        }
                     }
                 }
-                pTimer = pMax;
-            }
+                // Уменьшаем длительность статусов в конце хода
+                this.decrementStatusDurations(this.player!);
 
-            // Ход врага
-            if (eHP > 0 && !isEnemyFrozen && eTimer <= 0) {
-                // При получении урона игрок копит ману
-                let currentMana = this.state.playerMana;
-                currentMana = Math.min(100, currentMana + 15);
-                this.state.playerMana = currentMana;
-
-                let playerDodgeChance = pStats.dodge;
-                if (playerWeaponArchetype === 'BOW') {
-                    playerDodgeChance += 0.15; // Бонус к уклонению от лука
-                }
-                const dodgeCheck = Math.random() < playerDodgeChance;
-                if (!dodgeCheck) {
-                    let baseDmg = eStats.attack * (0.9 + Math.random() * 0.2);
-                    const isCrit = Math.random() < eStats.critChance;
-                    if (isCrit) baseDmg *= eStats.critDamage || 1.5;
-
-                    let mitigated = Math.max(0, baseDmg - pStats.defense * 0.5);
-                    if (isGodMode) mitigated = 0;
-
-                    const blockCheck = Math.random() < (pStats.defense > 0 ? 0.15 : 0.05);
-
-                    let finalDmg = Math.ceil(mitigated);
-                    if (blockCheck) {
-                        finalDmg = Math.max(1, Math.ceil(mitigated * 0.3));
+                // Сбрасываем свои очки и добавляем обоим
+                playerTicks = 0;
+                playerTicks += getEffectiveSpeed(this.player!, pStats);
+                enemyTicks += getEffectiveSpeed(this.enemy!, eStats);
+            } else {
+                // Ход врага
+                if (!isEnemyFrozen) {
+                    // Применяем периодический урон в начале хода
+                    const enemyEffects = [...this.enemy!.statusEffects];
+                    for (const status of enemyEffects) {
+                        if (status.type === 'BURN' || status.type === 'POISON') {
+                            const tickDamage = Math.ceil(status.damagePerTurn * status.stacks);
+                            eHP = Math.max(0, eHP - tickDamage);
+                            this.totalDamageDealt += tickDamage;
+                            this.onCombatEvent({
+                                type: status.type,
+                                damage: tickDamage,
+                                target: 'enemy',
+                            });
+                        }
                     }
+                    if (eHP <= 0) break;
 
-                    pHP = Math.max(0, pHP - finalDmg);
-                    this.totalDamageTaken += finalDmg;
-                    this.totalTurnsPlayed += 1;
+                    if (this.enemy!.isStunnedStatus) {
+                        this.onCombatEvent({
+                            type: 'STUN',
+                            damage: 0,
+                            target: 'enemy',
+                            label: '💫 ОГЛУШЕНИЕ!',
+                        });
+                    } else {
+                        // При получении урона игрок копит ману
+                        let currentMana = this.state.playerMana;
+                        currentMana = Math.min(100, currentMana + 15);
+                        this.state.playerMana = currentMana;
+
+                        let playerDodgeChance = pStats.dodge;
+                        if (playerWeaponArchetype === 'BOW') {
+                            playerDodgeChance += 0.15;
+                        }
+                        const dodgeCheck = Math.random() < playerDodgeChance;
+                        if (!dodgeCheck) {
+                            let baseDmg = eStats.attack * (0.9 + Math.random() * 0.2);
+                            const isCrit = Math.random() < eStats.critChance;
+                            if (isCrit) baseDmg *= eStats.critDamage || 1.5;
+
+                            let mitigated = Math.max(0, baseDmg - pStats.defense * 0.5);
+                            if (isGodMode) mitigated = 0;
+
+                            const blockCheck = Math.random() < (pStats.defense > 0 ? 0.15 : 0.05);
+
+                            let finalDmg = Math.ceil(mitigated);
+                            if (blockCheck) {
+                                finalDmg = Math.max(1, Math.ceil(mitigated * 0.3));
+                            }
+
+                            pHP = Math.max(0, pHP - finalDmg);
+                            this.totalDamageTaken += finalDmg;
+                            this.totalTurnsPlayed += 1;
+
+                            // Применяем статусы
+                            simulateStatusEffects(this.enemy!, this.player!, eStats, false, isCrit && !blockCheck);
+                        }
+                    }
+                    // Уменьшаем длительность статусов в конце хода
+                    this.decrementStatusDurations(this.enemy!);
                 }
-                eTimer = eMax;
+                enemyTicks = 0;
+                playerTicks += getEffectiveSpeed(this.player!, pStats);
+                enemyTicks += getEffectiveSpeed(this.enemy!, eStats);
             }
         }
 
