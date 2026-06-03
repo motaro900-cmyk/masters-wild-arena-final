@@ -6,31 +6,8 @@ import { AssetsMap } from '../../../../configs/AssetsMap';
 import { ITEMS_DATABASE, calculateItemPower } from '../../../../game/configs/ItemsConfig';
 import { calculateBattleRewards } from '../../../../game/configs/GameConstants';
 
-const getRarityColor = (rarity: string) => {
-    switch (rarity?.toUpperCase()) {
-        case 'MYTHIC':
-            return '#ef4444';
-        case 'LEGENDARY':
-            return '#f59e0b';
-        case 'EPIC':
-            return '#a855f7';
-        case 'RARE':
-            return '#3b82f6';
-        case 'UNCOMMON':
-            return '#10b981';
-        default:
-            return '#78716c';
-    }
-};
-
-const RARITY_RU: Record<string, string> = {
-    COMMON: 'ОБЫЧНЫЙ',
-    UNCOMMON: 'НЕОБЫЧНЫЙ',
-    RARE: 'РЕДКИЙ',
-    EPIC: 'ЭПИЧЕСКИЙ',
-    MYTHIC: 'МИФИЧЕСКИЙ',
-    LEGENDARY: 'ЛЕГЕНДАРНЫЙ',
-};
+import { LocalStatRow } from './components/LocalStatRow';
+import { CircularGearLayout } from './components/CircularGearLayout';
 
 const LaurelLeft: React.FC = () => (
     <svg
@@ -73,440 +50,6 @@ const LaurelRight: React.FC = () => (
     </svg>
 );
 
-const LocalStatRow: React.FC<{
-    label: string;
-    pVal: number;
-    eVal: number;
-    icon: React.ReactNode;
-}> = ({ label, pVal, eVal, icon }) => {
-    const maxVal = Math.max(pVal, eVal, 1) * 1.15;
-    const pPct = Math.min(100, Math.max(5, (pVal / maxVal) * 100));
-    const ePct = Math.min(100, Math.max(5, (eVal / maxVal) * 100));
-
-    return (
-        <div style={{ display: 'flex', alignItems: 'center', width: '100%', gap: '10px', height: '42px' }}>
-            {/* Player value */}
-            <div
-                style={{
-                    width: '40px',
-                    textAlign: 'right',
-                    color: '#22c55e',
-                    fontSize: '15px',
-                    fontWeight: 'bold',
-                    fontFamily: "'Montserrat', sans-serif",
-                }}
-            >
-                {Math.round(pVal)}
-            </div>
-
-            {/* Left Fill (Player) - flowing from right to left */}
-            <div
-                style={{
-                    flex: 1,
-                    height: '6px',
-                    background: 'rgba(255,255,255,0.06)',
-                    borderRadius: '3px',
-                    display: 'flex',
-                    justifyContent: 'flex-end',
-                    overflow: 'hidden',
-                }}
-            >
-                <div
-                    style={{
-                        width: `${pPct}%`,
-                        height: '100%',
-                        background: '#10b981',
-                        borderRadius: '3px',
-                        boxShadow: '0 0 6px rgba(16,185,129,0.3)',
-                    }}
-                />
-            </div>
-
-            {/* Icon + Stat Label in Center */}
-            <div
-                style={{
-                    width: '90px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '1px',
-                }}
-            >
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '16px' }}>
-                    {icon}
-                </div>
-                <div
-                    style={{
-                        color: '#b5a695',
-                        fontSize: '8px',
-                        fontWeight: 900,
-                        fontFamily: "'Cinzel', serif",
-                        letterSpacing: '0.5px',
-                        textTransform: 'uppercase',
-                    }}
-                >
-                    {label}
-                </div>
-            </div>
-
-            {/* Right Fill (Opponent) - flowing from left to right */}
-            <div
-                style={{
-                    flex: 1,
-                    height: '6px',
-                    background: 'rgba(255,255,255,0.06)',
-                    borderRadius: '3px',
-                    overflow: 'hidden',
-                }}
-            >
-                <div
-                    style={{
-                        width: `${ePct}%`,
-                        height: '100%',
-                        background: '#ef4444',
-                        borderRadius: '3px',
-                        boxShadow: '0 0 6px rgba(239,68,68,0.3)',
-                    }}
-                />
-            </div>
-
-            {/* Enemy value */}
-            <div
-                style={{
-                    width: '40px',
-                    textAlign: 'left',
-                    color: '#ef4444',
-                    fontSize: '15px',
-                    fontWeight: 'bold',
-                    fontFamily: "'Montserrat', sans-serif",
-                }}
-            >
-                {Math.round(eVal)}
-            </div>
-        </div>
-    );
-};
-
-const slots = [
-    { id: 'HELMETS', label: 'ШЛЕМ', gridArea: '1 / 2' },
-    { id: 'SHOULDERS', label: 'ПЛЕЧИ', gridArea: '2 / 1' },
-    { id: 'ARMOR', label: 'ДОСПЕХ', gridArea: '2 / 2' },
-    { id: 'WEAPONS', label: 'ОРУЖИЕ', gridArea: '3 / 1' },
-    { id: 'PANTS', label: 'ПОНОЖИ', gridArea: '3 / 2' },
-    { id: 'SHIELDS', label: 'ЩИТ', gridArea: '3 / 3' },
-    { id: 'BOOTS', label: 'САПОГИ', gridArea: '4 / 2' },
-] as const;
-
-const EquipmentSlotItem: React.FC<{
-    slotId: string;
-    slotLabel: string;
-    gridArea: string;
-    equipment: Record<string, string | null>;
-    isMirrored?: boolean;
-}> = ({ slotId, slotLabel, gridArea, equipment, isMirrored }) => {
-    const [hovered, setHovered] = React.useState(false);
-    const itemId = equipment[slotId];
-    const item = itemId ? (ITEMS_DATABASE as any)[itemId] : null;
-    const color = item ? getRarityColor(item.rarity) : 'rgba(255,255,255,0.05)';
-
-    // Берём уровень предмета из инвентаря игрока (не из конфига!)
-    const inventory = useGameStore((s: any) => s.inventory);
-    const inventoryItem = itemId ? inventory.find((i: any) => String(i.id) === String(itemId)) : null;
-    const itemLevel = inventoryItem?.level ?? null;
-
-    let blueprintSrc = '';
-    if (slotId === 'HELMETS') blueprintSrc = AssetsMap.UI.BLUEPRINT_HELMET;
-    else if (slotId === 'ARMOR') blueprintSrc = AssetsMap.UI.BLUEPRINT_ARMOR;
-    else if (slotId === 'WEAPONS') blueprintSrc = AssetsMap.UI.BLUEPRINT_WEAPON;
-    else if (slotId === 'SHIELDS') blueprintSrc = AssetsMap.UI.BLUEPRINT_SHIELD;
-    else if (slotId === 'SHOULDERS') blueprintSrc = AssetsMap.UI.BLUEPRINT_SHOULDERS;
-    else if (slotId === 'PANTS') blueprintSrc = AssetsMap.UI.BLUEPRINT_PANTS;
-    else if (slotId === 'BOOTS') blueprintSrc = AssetsMap.UI.BLUEPRINT_BOOTS;
-
-    return (
-        <div
-            onMouseEnter={() => setHovered(true)}
-            onMouseLeave={() => setHovered(false)}
-            onClick={() => {
-                if (item) {
-                    setHovered((prev) => !prev);
-                }
-            }}
-            style={{
-                gridArea,
-                width: '92px',
-                height: '92px',
-                borderRadius: '14px',
-                background: 'rgba(0,0,0,0.7)',
-                border: `2px solid ${item ? color : 'rgba(240, 192, 64, 0.3)'}`,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                position: 'relative',
-                boxShadow: item ? `0 0 14px ${color}55` : 'none',
-                cursor: item ? 'help' : 'default',
-                zIndex: hovered ? 200 : 1,
-                transition: 'all 0.2s ease-in-out',
-            }}
-        >
-            {item ? (
-                <img
-                    src={item.image || item.icon}
-                    alt={item.name}
-                    style={{
-                        width: '80%',
-                        height: '80%',
-                        objectFit: 'contain',
-                        transform: isMirrored ? 'scaleX(-1)' : 'none',
-                    }}
-                />
-            ) : (
-                <div
-                    style={{
-                        opacity: 0.4,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        width: '100%',
-                        height: '100%',
-                    }}
-                >
-                    {blueprintSrc && (
-                        <img
-                            src={blueprintSrc}
-                            style={{
-                                width: '65%',
-                                height: '55%',
-                                objectFit: 'contain',
-                                filter: 'drop-shadow(0 0 5px rgba(240,192,64,0.5)) grayscale(0.3)',
-                                transform: isMirrored ? 'scaleX(-1)' : 'none',
-                            }}
-                            alt=""
-                        />
-                    )}
-                    <span
-                        style={{
-                            fontSize: '9px',
-                            fontWeight: 900,
-                            marginTop: '2px',
-                            color: '#f0c040',
-                            letterSpacing: '0.5px',
-                            textTransform: 'uppercase',
-                            transform: isMirrored ? 'scaleX(-1)' : 'none',
-                            display: 'inline-block',
-                        }}
-                    >
-                        {slotLabel}
-                    </span>
-                </div>
-            )}
-
-            {item && itemLevel !== null && (
-                <div
-                    style={{
-                        position: 'absolute',
-                        top: '4px',
-                        left: '4px',
-                        background: 'rgba(0,0,0,0.75)',
-                        border: '1px solid rgba(240,192,64,0.5)',
-                        padding: '1px 5px',
-                        borderRadius: '4px',
-                        fontSize: '9px',
-                        fontWeight: 900,
-                        color: '#f0c040',
-                        fontFamily: "'Russo One', sans-serif",
-                        letterSpacing: '0.5px',
-                        transform: isMirrored ? 'scaleX(-1)' : 'none',
-                        zIndex: 2,
-                    }}
-                >
-                    L{itemLevel}
-                </div>
-            )}
-
-            {item && (
-                <div
-                    style={{
-                        position: 'absolute',
-                        bottom: '-6px',
-                        background: color,
-                        padding: '1px 5px',
-                        borderRadius: '4px',
-                        fontSize: '8px',
-                        fontWeight: 900,
-                        color: '#000',
-                        textTransform: 'uppercase',
-                        boxShadow: '0 2px 5px rgba(0,0,0,0.6)',
-                        transform: isMirrored ? 'scaleX(-1)' : 'none',
-                    }}
-                >
-                    {RARITY_RU[item.rarity] || item.rarity}
-                </div>
-            )}
-
-            {hovered &&
-                item &&
-                (() => {
-                    const isTopSlot = ['HELMETS', 'SHOULDERS', 'ARMOR'].includes(slotId);
-                    const itemPower = calculateItemPower(item);
-                    return (
-                        <div
-                            style={{
-                                position: 'absolute',
-                                ...(isTopSlot ? { top: '120%' } : { bottom: '120%' }),
-                                left: '50%',
-                                transform: isMirrored ? 'translateX(-50%) scaleX(-1)' : 'translateX(-50%)',
-                                background: 'rgba(15,10,5,0.98)',
-                                border: `2px solid ${color}`,
-                                borderRadius: '12px',
-                                padding: '12px 16px',
-                                width: '200px',
-                                zIndex: 9999,
-                                fontSize: '13px',
-                                color: '#fff',
-                                boxShadow: '0 16px 30px rgba(0,0,0,0.95), 0 0 20px rgba(240,192,64,0.15)',
-                                pointerEvents: 'none',
-                                textAlign: 'center',
-                                fontFamily: "'Montserrat', sans-serif",
-                            }}
-                        >
-                            <div style={{ color, fontWeight: 'bold', marginBottom: '5px', fontSize: '14px' }}>
-                                {item.name}
-                            </div>
-                            <div
-                                style={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    gap: '5px',
-                                    marginBottom: '8px',
-                                }}
-                            >
-                                <span
-                                    style={{
-                                        fontSize: '11px',
-                                        opacity: 0.6,
-                                        textTransform: 'uppercase',
-                                        fontWeight: 'bold',
-                                    }}
-                                >
-                                    {RARITY_RU[item.rarity] || item.rarity} • {slotLabel}
-                                </span>
-                                <div
-                                    style={{
-                                        display: 'inline-flex',
-                                        alignItems: 'center',
-                                        gap: '3px',
-                                        background: 'rgba(251, 191, 36, 0.15)',
-                                        padding: '1px 5px',
-                                        borderRadius: '4px',
-                                        border: '1px solid rgba(251, 191, 36, 0.3)',
-                                    }}
-                                >
-                                    <img
-                                        src={AssetsMap.UI.ICON_POWER}
-                                        style={{ width: '10px', height: '10px', objectFit: 'contain' }}
-                                        alt="power"
-                                    />
-                                    <span
-                                        style={{
-                                            fontSize: '10px',
-                                            fontWeight: 'bold',
-                                            color: '#fbbf24',
-                                            fontFamily: "'Russo One', sans-serif",
-                                        }}
-                                    >
-                                        {itemPower}
-                                    </span>
-                                </div>
-                            </div>
-                            {item.hpBonus && (
-                                <div style={{ color: '#22c55e', fontSize: '12px' }}>+{item.hpBonus} Здоровье</div>
-                            )}
-                            {item.attackBonus && (
-                                <div style={{ color: '#ef4444', fontSize: '12px' }}>+{item.attackBonus} Атака</div>
-                            )}
-                            {item.defenseBonus && (
-                                <div style={{ color: '#3b82f6', fontSize: '12px' }}>+{item.defenseBonus} Защита</div>
-                            )}
-                        </div>
-                    );
-                })()}
-        </div>
-    );
-};
-
-const CircularGearLayout: React.FC<{
-    equipment: Record<string, string | null>;
-    style?: React.CSSProperties;
-    isMirrored?: boolean;
-}> = ({ equipment, style, isMirrored }) => {
-    return (
-        <div
-            style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(3, 92px)',
-                gridTemplateRows: 'repeat(4, 92px)',
-                gap: '8px',
-                justifyContent: 'center',
-                position: 'relative',
-                width: '292px',
-                height: '392px',
-                transform: isMirrored ? 'scaleX(-1)' : 'none',
-                pointerEvents: 'auto',
-                ...style,
-            }}
-        >
-            <motion.div
-                animate={{ rotate: 360 }}
-                transition={{ duration: 50, repeat: Infinity, ease: 'linear' }}
-                style={{
-                    position: 'absolute',
-                    top: '50%',
-                    left: '50%',
-                    width: '240px',
-                    height: '240px',
-                    marginLeft: '-120px',
-                    marginTop: '-120px',
-                    border: '1.5px dashed rgba(240,192,64,0.12)',
-                    borderRadius: '50%',
-                    pointerEvents: 'none',
-                    zIndex: 0,
-                }}
-            />
-            <motion.div
-                animate={{ rotate: -360 }}
-                transition={{ duration: 70, repeat: Infinity, ease: 'linear' }}
-                style={{
-                    position: 'absolute',
-                    top: '50%',
-                    left: '50%',
-                    width: '180px',
-                    height: '180px',
-                    marginLeft: '-90px',
-                    marginTop: '-90px',
-                    border: '1.5px solid rgba(160,64,255,0.09)',
-                    borderRadius: '50%',
-                    pointerEvents: 'none',
-                    zIndex: 0,
-                }}
-            />
-
-            {slots.map((s) => (
-                <EquipmentSlotItem
-                    key={s.id}
-                    slotId={s.id}
-                    slotLabel={s.label}
-                    gridArea={s.gridArea}
-                    equipment={equipment}
-                    isMirrored={isMirrored}
-                />
-            ))}
-        </div>
-    );
-};
 
 interface MatchmakingFoundProps {
     opponent: {
@@ -518,6 +61,7 @@ interface MatchmakingFoundProps {
         level?: number;
         equipment?: Record<string, string | null>;
         winRate?: number;
+        vipLevel?: number;
         stats: {
             hp: number;
             attack: number;
@@ -546,6 +90,7 @@ export const MatchmakingFound: React.FC<MatchmakingFoundProps> = ({
     opponent,
     playerHero,
     playerName,
+    vipLevel,
     playerRank,
     rating,
     level,
@@ -726,18 +271,44 @@ export const MatchmakingFound: React.FC<MatchmakingFoundProps> = ({
                         gap: '4px',
                     }}
                 >
-                    <span
-                        style={{
-                            fontFamily: "'Georgia', serif",
-                            fontSize: '21px',
-                            fontWeight: 'bold',
-                            color: '#fff',
-                            textShadow: '0 2px 4px rgba(0,0,0,0.85)',
-                            lineHeight: 1.1,
-                        }}
-                    >
-                        {name || playerName || 'Мастер'}
-                    </span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span
+                            style={{
+                                fontFamily: "'Georgia', serif",
+                                fontSize: '21px',
+                                fontWeight: 'bold',
+                                color: '#fff',
+                                textShadow: '0 2px 4px rgba(0,0,0,0.85)',
+                                lineHeight: 1.1,
+                            }}
+                        >
+                            {name || playerName || 'Мастер'}
+                        </span>
+                        {vipLevel > 0 && (
+                            <div
+                                style={{
+                                    backgroundImage: 'url(/assets/images/ui/vip.webp)',
+                                    backgroundSize: '100% 100%',
+                                    backgroundPosition: 'center',
+                                    width: '45px',
+                                    height: '18px',
+                                    color: '#fff',
+                                    fontWeight: 900,
+                                    fontFamily: "'Cinzel', 'Philosopher', serif",
+                                    fontSize: '9px',
+                                    letterSpacing: '0.5px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    textShadow: '0 1px 3px rgba(0,0,0,0.8)',
+                                    boxShadow: '0 2px 5px rgba(0,0,0,0.4)',
+                                    flexShrink: 0,
+                                }}
+                            >
+                                VIP
+                            </div>
+                        )}
+                    </div>
 
                     {/* Stats Grid */}
                     <div
@@ -967,18 +538,44 @@ export const MatchmakingFound: React.FC<MatchmakingFoundProps> = ({
                         gap: '4px',
                     }}
                 >
-                    <span
-                        style={{
-                            fontFamily: "'Georgia', serif",
-                            fontSize: '21px',
-                            fontWeight: 'bold',
-                            color: '#fff',
-                            textShadow: '0 2px 4px rgba(0,0,0,0.85)',
-                            lineHeight: 1.1,
-                        }}
-                    >
-                        {opponent.name}
-                    </span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span
+                            style={{
+                                fontFamily: "'Georgia', serif",
+                                fontSize: '21px',
+                                fontWeight: 'bold',
+                                color: '#fff',
+                                textShadow: '0 2px 4px rgba(0,0,0,0.85)',
+                                lineHeight: 1.1,
+                            }}
+                        >
+                            {opponent.name}
+                        </span>
+                        {opponent.vipLevel !== undefined && opponent.vipLevel > 0 && (
+                            <div
+                                style={{
+                                    backgroundImage: 'url(/assets/images/ui/vip.webp)',
+                                    backgroundSize: '100% 100%',
+                                    backgroundPosition: 'center',
+                                    width: '45px',
+                                    height: '18px',
+                                    color: '#fff',
+                                    fontWeight: 900,
+                                    fontFamily: "'Cinzel', 'Philosopher', serif",
+                                    fontSize: '9px',
+                                    letterSpacing: '0.5px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    textShadow: '0 1px 3px rgba(0,0,0,0.8)',
+                                    boxShadow: '0 2px 5px rgba(0,0,0,0.4)',
+                                    flexShrink: 0,
+                                }}
+                            >
+                                VIP
+                            </div>
+                        )}
+                    </div>
 
                     {/* Stats Grid */}
                     <div

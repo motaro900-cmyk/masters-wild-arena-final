@@ -29,6 +29,7 @@ export interface MatchOpponent {
     winRate: number;
     isBot: boolean; // true — бот, false — реальный игрок
     realUserId?: string; // VK ID реального игрока (если не бот)
+    vipLevel?: number;
 }
 
 const generateOpponentEquipment = (oppLevel: number): Record<string, string | null> => {
@@ -239,6 +240,7 @@ class MatchmakingServiceClass {
             winRate: snapshot.winRate || 50,
             isBot: false,
             realUserId: snapshot.id,
+            vipLevel: snapshot.vipLevel !== undefined ? snapshot.vipLevel : (snapshot.vip !== undefined ? (typeof snapshot.vip === 'boolean' ? (snapshot.vip ? 1 : 0) : snapshot.vip) : (Math.random() < 0.15 ? 1 : 0)),
         };
     }
 
@@ -275,6 +277,7 @@ class MatchmakingServiceClass {
             },
             winRate: Math.floor(48 + (botRating % 15)),
             isBot: true,
+            vipLevel: Math.random() < 0.2 ? Math.floor(Math.random() * 3) + 1 : 0,
         };
     }
 

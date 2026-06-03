@@ -59,6 +59,7 @@ export const MatchmakingOverlay: React.FC<MatchmakingOverlayProps> = ({ onFound,
         level: number;
         equipment: Record<string, string | null>;
         winRate: number;
+        vipLevel?: number;
         stats: {
             hp: number;
             attack: number;
@@ -120,6 +121,7 @@ export const MatchmakingOverlay: React.FC<MatchmakingOverlayProps> = ({ onFound,
                 level: found.level,
                 equipment: found.equipment,
                 winRate: found.winRate,
+                vipLevel: found.vipLevel !== undefined ? found.vipLevel : (Math.random() < 0.25 ? 1 : 0),
                 stats: {
                     hp: found.stats.hp,
                     attack: found.stats.attack,

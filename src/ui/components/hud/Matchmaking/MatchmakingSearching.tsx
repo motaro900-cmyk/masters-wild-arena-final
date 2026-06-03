@@ -202,16 +202,20 @@ export const MatchmakingSearching: React.FC<MatchmakingSearchingProps> = ({
                     {vipLevel > 0 && (
                         <span
                             style={{
-                                background: 'linear-gradient(135deg, #ef4444 0%, #991b1b 100%)',
+                                backgroundImage: 'url(/assets/images/ui/vip.webp)',
+                                backgroundSize: '100% 100%',
+                                backgroundPosition: 'center',
+                                width: '45px',
+                                height: '18px',
                                 color: '#fff',
-                                fontSize: '11px',
+                                fontSize: '9px',
                                 fontWeight: 900,
-                                padding: '3px 8px',
-                                borderRadius: '6px',
-                                letterSpacing: '1.5px',
-                                boxShadow: '0 0 10px rgba(239, 68, 68, 0.6)',
-                                border: '1px solid rgba(255, 255, 255, 0.3)',
-                                fontFamily: "'Cinzel', serif",
+                                letterSpacing: '0.5px',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                fontFamily: "'Cinzel', 'Philosopher', serif",
+                                textShadow: '0 1px 3px rgba(0,0,0,0.8)',
                             }}
                         >
                             VIP

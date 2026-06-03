@@ -14,6 +14,7 @@ interface LeaderboardEntry {
     avatar: string;
     change: 'up' | 'down' | 'stable';
     isMe?: boolean;
+    vipLevel?: number;
 }
 
 // Список лидеров формируется динамически в компоненте
