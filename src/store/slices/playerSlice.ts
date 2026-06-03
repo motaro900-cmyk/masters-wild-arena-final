@@ -18,6 +18,14 @@ const getPlayerTitle = (level: number): string => {
     return 'Странник';
 };
 
+const calculateMaxEnergy = (isPremium: boolean, isVip: boolean): number => {
+    const base = ENERGY_CONFIG.MAX_ENERGY; // 50
+    const premiumBonus = isPremium ? 50 : 0; // +50 for Premium (max 100)
+    const vipBonus = isVip ? 10 : 0; // +10 for VIP
+    // Decision: Premium and VIP energy bonuses are summed up (base 50 + Premium 50 + VIP 10 = 110 max energy)
+    return base + premiumBonus + vipBonus;
+};
+
 export const getExpNeeded = (level: number): number => {
     if (level <= 40) return level * 600;
     if (level <= 60) return level * 500;
@@ -267,7 +275,7 @@ export const createPlayerSlice = (set: any, get: any) => ({
         set({
             crystals: state.crystals - price,
             vipLevel: 1,
-            maxEnergy: 60,
+            maxEnergy: calculateMaxEnergy(state.isPremium, true),
             vipEndTime: newEndTime,
         });
 
@@ -332,8 +340,9 @@ export const createPlayerSlice = (set: any, get: any) => ({
         const s = get();
         const now = Date.now();
         const regenMs = s.isPremium ? ENERGY_CONFIG.PREMIUM_REGEN_MS : ENERGY_CONFIG.REGEN_MS;
+        const isVip = s.vipLevel > 0 || (s.vipEndTime && s.vipEndTime > now);
         // Always compute maxEnergy from config — ignore stale persisted maxEnergy
-        const maxEnergy = s.isPremium ? ENERGY_CONFIG.PREMIUM_MAX_ENERGY : ENERGY_CONFIG.MAX_ENERGY;
+        const maxEnergy = calculateMaxEnergy(!!s.isPremium, isVip);
 
         // Sync maxEnergy in store if it's out of date (e.g. was persisted as 50)
         if (s.maxEnergy !== maxEnergy) {

@@ -97,16 +97,13 @@ export const GameHUD: React.FC = () => {
         const now = Date.now();
         const isActive = endTimeStr ? parseInt(endTimeStr) > now : false;
 
-        // Синхронизируем vipLevel и maxEnergy в сторе
+        // Синхронизируем vipLevel в сторе
         const expectedVipLevel = isActive ? 1 : 0;
-        const expectedMaxEnergy = isActive ? 60 : 50;
 
-        const currentMaxEnergy = useGameStore.getState().maxEnergy;
-        if (vipLevel !== expectedVipLevel || currentMaxEnergy !== expectedMaxEnergy) {
+        if (vipLevel !== expectedVipLevel) {
             setTimeout(() => {
                 useGameStore.setState({
                     vipLevel: expectedVipLevel,
-                    maxEnergy: expectedMaxEnergy,
                 });
             }, 0);
         }
