@@ -161,6 +161,7 @@ export class SyncService {
                 weeklyQuests: state.weeklyQuests,
                 lastDailyRefresh: state.lastDailyRefresh,
                 lastWeeklyRefresh: state.lastWeeklyRefresh,
+                lastWeeklyQuestReset: state.lastWeeklyQuestReset,
             };
 
             const isLocalhost =

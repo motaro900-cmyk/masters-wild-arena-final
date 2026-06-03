@@ -80,6 +80,7 @@ export const useGameStore = create<any>()(
                 dailyQuests: state.dailyQuests,
                 weeklyQuests: state.weeklyQuests,
                 lastDailyRefresh: state.lastDailyRefresh,
+                lastWeeklyQuestReset: state.lastWeeklyQuestReset,
                 trophies: state.trophies,
                 wins: state.wins,
                 totalBattles: state.totalBattles,

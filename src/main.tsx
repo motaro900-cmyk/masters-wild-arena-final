@@ -954,6 +954,13 @@ export const Root = () => {
 
                 if (!finalState.weeklyQuests || finalState.weeklyQuests.length === 0) {
                     finalState.refreshWeeklyQuests();
+                } else {
+                    const lastReset = finalState.lastWeeklyQuestReset || 0;
+                    const now = Date.now();
+                    const msInWeek = 7 * 24 * 60 * 60 * 1000;
+                    if (now - lastReset >= msInWeek) {
+                        finalState.refreshWeeklyQuests();
+                    }
                 }
 
                 finalState.updateQuestProgress('LOGIN', 1);
@@ -984,6 +991,13 @@ export const Root = () => {
                     if (isNewDayMSK(currentState.lastDailyRefresh)) {
                         console.log('🔄 MSK Midnight: Auto-refreshing daily quests...');
                         currentState.refreshDailyQuests();
+                    }
+                    const lastReset = currentState.lastWeeklyQuestReset || 0;
+                    const now = Date.now();
+                    const msInWeek = 7 * 24 * 60 * 60 * 1000;
+                    if (now - lastReset >= msInWeek) {
+                        console.log('🔄 Auto-refreshing weekly quests...');
+                        currentState.refreshWeeklyQuests();
                     }
                 }, 60000);
 

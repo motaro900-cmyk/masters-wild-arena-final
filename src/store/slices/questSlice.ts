@@ -41,6 +41,7 @@ export const createQuestSlice = (set: any, get: any) => ({
     dailyQuests: [] as any[],
     lastDailyRefresh: 0,
     weeklyQuests: [] as any[],
+    lastWeeklyQuestReset: 0,
 
     // --- ЭКШЕНЫ КВЕСТОВ ---
     refreshDailyQuests: () => {
@@ -292,7 +293,10 @@ export const createQuestSlice = (set: any, get: any) => ({
             progress: 0,
             isClaimed: false,
         }));
-        set({ weeklyQuests: selected });
+        set({
+            weeklyQuests: selected,
+            lastWeeklyQuestReset: Date.now(),
+        });
     },
 
     claimWeeklyQuestReward: (questId: string) => {
