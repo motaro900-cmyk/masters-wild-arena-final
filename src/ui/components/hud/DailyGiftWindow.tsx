@@ -2,13 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useGameStore } from '../../../store/useGameStore';
 import { AssetsMap } from '../../../configs/AssetsMap';
-import { safeGetItem, safeSetItem } from '../../../utils/SafeStorage';
 import { audioService } from '../../../services/AudioService';
 import { GiftCongratsModal } from './DailyGift/GiftCongratsModal';
+import { db } from '../../../utils/firebase';
+import { SyncService } from '../../../services/SyncService';
+import { doc, getDoc, updateDoc, serverTimestamp, Timestamp } from 'firebase/firestore';
 
 // Pure helper functions outside component to satisfy react-hooks/purity
-const getNowString = () => Date.now().toString();
-const getNow = () => Date.now();
 const getRandomSectorIndex = () => Math.floor(Math.random() * 8);
 const rollMegaChest = () => {
     const rand = Math.random();
@@ -83,101 +83,106 @@ export const DailyGiftWindow: React.FC<DailyGiftWindowProps> = ({ onClose }) => 
 
     const [isSpinning, setIsSpinning] = useState<boolean>(false);
     const [wheelRotation, setWheelRotation] = useState<number>(0);
-    const lastWheelSpinTime = useGameStore((state) => state.lastWheelSpinTime || 0);
     const [isFreeSpinAvailable, setIsFreeSpinAvailable] = useState<boolean>(false);
     const [wheelTimeLeft, setWheelTimeLeft] = useState<string>('');
 
-    useEffect(() => {
-        const updateWheelTimer = () => {
-            const now = Date.now();
-            const isAvail = now - lastWheelSpinTime >= 24 * 60 * 60 * 1000;
-            setIsFreeSpinAvailable(isAvail);
+    // Firestore server dates
+    const [lastGiftClaimedTime, setLastGiftClaimedTime] = useState<Timestamp | null>(null);
+    const [lastWheelSpinTimeServer, setLastWheelSpinTimeServer] = useState<Timestamp | null>(null);
+    const [dbLoginStreak, setDbLoginStreak] = useState<number>(0);
+    const [isLoading, setIsLoading] = useState(true);
 
-            if (isAvail) {
-                setWheelTimeLeft('');
-                return;
+    useEffect(() => {
+        const loadDoc = async () => {
+            try {
+                const state = useGameStore.getState();
+                const userId = SyncService.getPrefixedUserId(state.vkUser, state.playerId);
+                const userDocRef = doc(db, 'пользователи', userId);
+                const userSnap = await getDoc(userDocRef);
+                
+                if (userSnap.exists()) {
+                    const data = userSnap.data();
+                    setLastGiftClaimedTime(data.lastDailyGiftClaimed || null);
+                    setLastWheelSpinTimeServer(data.lastWheelSpinTimeServer || null);
+                    setDbLoginStreak(data.loginStreak || 0);
+                }
+            } catch (e) {
+                console.error("Failed to load daily gift data from Firestore:", e);
+            } finally {
+                setIsLoading(false);
             }
-            const diff = 24 * 60 * 60 * 1000 - (now - lastWheelSpinTime);
-            if (diff <= 0) {
-                setWheelTimeLeft('');
-                return;
-            }
-            const h = Math.floor(diff / (3600 * 1000));
-            const m = Math.floor((diff % (3600 * 1000)) / (60 * 1000));
-            const s = Math.floor((diff % (60 * 1000)) / 1000);
-            setWheelTimeLeft(`${h}ч ${String(m).padStart(2, '0')}м ${String(s).padStart(2, '0')}с`);
         };
-
-        const wheelTimer = setInterval(updateWheelTimer, 1000);
-        updateWheelTimer();
-        return () => clearInterval(wheelTimer);
-    }, [lastWheelSpinTime]);
+        loadDoc();
+    }, []);
 
     useEffect(() => {
-        const checkStreakStatus = () => {
-            const lastClaim = safeGetItem('lastGiftClaim');
-            const streakStr = safeGetItem('loginStreak') || '0';
-            let currentStreak = parseInt(streakStr);
+        if (isLoading) return;
 
-            if (!lastClaim) {
+        const updateTimers = () => {
+            const nowSeconds = Math.floor(Date.now() / 1000);
+
+            // 1. Daily Gift Check
+            if (!lastGiftClaimedTime) {
                 setStreak(1);
                 setClaimedToday(false);
                 setCanClaimDailyGift(true);
-                return;
-            }
-
-            const now = Date.now();
-            const lastClaimTime = parseInt(lastClaim);
-            const diffTime = now - lastClaimTime;
-            const oneDayMs = 24 * 60000 * 60; // 24 hours
-
-            const lastClaimDate = new Date(lastClaimTime);
-            const nowDate = new Date(now);
-
-            // check if same calendar day (based on local timezone)
-            const isSameDay =
-                lastClaimDate.getDate() === nowDate.getDate() &&
-                lastClaimDate.getMonth() === nowDate.getMonth() &&
-                lastClaimDate.getFullYear() === nowDate.getFullYear();
-
-            if (isSameDay) {
-                setClaimedToday(true);
-                setStreak(currentStreak);
-                setCanClaimDailyGift(false);
             } else {
-                setClaimedToday(false);
-                setCanClaimDailyGift(true);
-                // If last claim was more than 48 hours ago, reset streak
-                if (diffTime > 2 * oneDayMs) {
-                    currentStreak = 0;
-                    safeSetItem('loginStreak', '0');
-                } else if (currentStreak >= 7) {
-                    // If all 7 days claimed, reset back to 0
-                    currentStreak = 0;
-                    safeSetItem('loginStreak', '0');
-                }
-                setStreak(currentStreak + 1);
-            }
-        };
+                const diffSeconds = nowSeconds - lastGiftClaimedTime.seconds;
+                const hoursSinceLast = diffSeconds / 3600;
 
-        const timer = setInterval(() => {
-            checkStreakStatus();
+                if (hoursSinceLast < 24) {
+                    setClaimedToday(true);
+                    setStreak(dbLoginStreak || 1);
+                    setCanClaimDailyGift(false);
+                } else {
+                    setClaimedToday(false);
+                    setCanClaimDailyGift(true);
+                    let currentStreak = dbLoginStreak || 0;
+                    if (diffSeconds > 2 * 24 * 3600) {
+                        currentStreak = 0;
+                    } else if (currentStreak >= 7) {
+                        currentStreak = 0;
+                    }
+                    setStreak(currentStreak + 1);
+                }
+            }
+
+            // 2. Wheel check
+            if (!lastWheelSpinTimeServer) {
+                setIsFreeSpinAvailable(true);
+                setWheelTimeLeft('');
+            } else {
+                const diffSeconds = nowSeconds - lastWheelSpinTimeServer.seconds;
+                if (diffSeconds >= 24 * 3600) {
+                    setIsFreeSpinAvailable(true);
+                    setWheelTimeLeft('');
+                } else {
+                    setIsFreeSpinAvailable(false);
+                    const remainingSeconds = 24 * 3600 - diffSeconds;
+                    const h = Math.floor(remainingSeconds / 3600);
+                    const m = Math.floor((remainingSeconds % 3600) / 60);
+                    const s = Math.floor(remainingSeconds % 60);
+                    setWheelTimeLeft(`${h}ч ${String(m).padStart(2, '0')}м ${String(s).padStart(2, '0')}с`);
+                }
+            }
+
+            // 3. Time left until next calendar day (midnight)
             const now = new Date();
             const midnight = new Date(now);
             midnight.setHours(24, 0, 0, 0);
             const diff = midnight.getTime() - now.getTime();
-
             const h = Math.floor(diff / (3600 * 1000));
             const m = Math.floor((diff % (3600 * 1000)) / (60 * 1000));
             const s = Math.floor((diff % (60 * 1000)) / 1000);
             setTimeLeft(`${h}ч ${String(m).padStart(2, '0')}м ${String(s).padStart(2, '0')}с`);
-        }, 1000);
+        };
 
-        checkStreakStatus();
-        return () => clearInterval(timer);
-    }, [setCanClaimDailyGift]);
+        const interval = setInterval(updateTimers, 1000);
+        updateTimers();
+        return () => clearInterval(interval);
+    }, [isLoading, lastGiftClaimedTime, lastWheelSpinTimeServer, dbLoginStreak, setCanClaimDailyGift]);
 
-    const handleClaim = () => {
+    const handleClaim = async () => {
         if (claimedToday) return;
 
         audioService.playSFX(AssetsMap.AUDIO.SFX_BUY || AssetsMap.AUDIO.SFX_CLICK);
@@ -204,9 +209,21 @@ export const DailyGiftWindow: React.FC<DailyGiftWindowProps> = ({ onClose }) => 
             else if (rolled.type === 'ENERGY') addEnergy(rolled.amount);
         }
 
-        // Update storage
-        safeSetItem('lastGiftClaim', getNowString());
-        safeSetItem('loginStreak', streak.toString());
+        try {
+            const state = useGameStore.getState();
+            const userId = SyncService.getPrefixedUserId(state.vkUser, state.playerId);
+            const userDocRef = doc(db, 'пользователи', userId);
+
+            await updateDoc(userDocRef, {
+                lastDailyGiftClaimed: serverTimestamp(),
+                loginStreak: streak,
+            });
+        } catch (e) {
+            console.error("Failed to update daily gift in Firestore:", e);
+        }
+
+        setLastGiftClaimedTime(Timestamp.now());
+        setDbLoginStreak(streak);
 
         setRewardClaimed({
             type: claimedType,
@@ -246,8 +263,6 @@ export const DailyGiftWindow: React.FC<DailyGiftWindowProps> = ({ onClose }) => 
         // Generate target sector index
         const sectorIndex = getRandomSectorIndex();
         const sectorDegrees = 45;
-        // Pointer is at the top (0 deg). To align a sector at the top:
-        // We need to rotate by: 360 - (sectorIndex * 45) - 22.5 (for center of wedge)
         const targetAngle = 360 - sectorIndex * sectorDegrees - 22.5;
 
         // Add 5 full rotations (1800 deg) for a premium feel
@@ -265,7 +280,7 @@ export const DailyGiftWindow: React.FC<DailyGiftWindowProps> = ({ onClose }) => 
             }
         }, 180);
 
-        setTimeout(() => {
+        setTimeout(async () => {
             clearInterval(tickInterval);
             setIsSpinning(false);
             const wonReward = WHEEL_REWARDS[sectorIndex];
@@ -279,8 +294,18 @@ export const DailyGiftWindow: React.FC<DailyGiftWindowProps> = ({ onClose }) => 
                 store.addEnergy(wonReward.amount);
             }
 
-            // Save spin time (one spin per day)
-            useGameStore.setState({ lastWheelSpinTime: getNow() });
+            try {
+                const userId = SyncService.getPrefixedUserId(store.vkUser, store.playerId);
+                const userDocRef = doc(db, 'пользователи', userId);
+
+                await updateDoc(userDocRef, {
+                    lastWheelSpinTimeServer: serverTimestamp(),
+                });
+            } catch (e) {
+                console.error("Failed to update wheel spin in Firestore:", e);
+            }
+
+            setLastWheelSpinTimeServer(Timestamp.now());
 
             audioService.playSFX(AssetsMap.AUDIO.SFX_BUY || AssetsMap.AUDIO.SFX_CLICK);
 
