@@ -464,8 +464,11 @@ export const Root = () => {
                             heroEquipment: {},
                         });
                     }
-                } catch (loadErr) {
+                } catch (loadErr: any) {
                     console.error('❌ Failed to load remote profile:', loadErr);
+                    setInitError('Не удалось загрузить данные вашего профиля. Пожалуйста, проверьте интернет-соединение и попробуйте снова.');
+                    clearTimeout(timeoutId);
+                    return;
                 }
 
                 state = useGameStore.getState();
