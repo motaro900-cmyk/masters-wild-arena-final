@@ -215,6 +215,13 @@ export const createShopSlice = (set: any, get: any) => ({
     },
 
     buyCrystalsPack: async (packId: string) => {
+        // TODO: требует серверной валидации через VK Pay Receipt
+        // Временная защита: проверка через VK Bridge
+        if (process.env.NODE_ENV !== 'development' && typeof window !== 'undefined' && !(window as any).vkBridgeInitialized) {
+            console.warn('[Shop] Direct purchase blocked outside VK environment');
+            return false;
+        }
+
         const success = await purchaseStars(packId);
         if (success) {
             let amount = 0;
