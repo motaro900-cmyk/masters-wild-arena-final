@@ -87,7 +87,7 @@ export interface BattleResultData {
 
 interface BattleResultScreenProps {
     data: BattleResultData;
-    onContinue: () => void;
+    onContinue: (target?: string | (() => void)) => void;
 }
 
 export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, onContinue }) => {
@@ -658,8 +658,11 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
                     </div>
                     <button
                         onClick={() => {
-                            onContinue();
-                            recommendation.action();
+                            let target: string | (() => void) = recommendation.action;
+                            if (recommendation.buttonText === 'В КУЗНИЦУ') target = 'Forge';
+                            else if (recommendation.buttonText === 'К ТАЛАНТАМ') target = 'Talents';
+                            else if (recommendation.buttonText === 'В АРСЕНАЛ') target = 'Arsenal';
+                            onContinue(target);
                         }}
                         style={{
                             padding: '12px 28px',
@@ -743,7 +746,7 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
 
                 {/* В ЛОББИ */}
                 <button
-                    onClick={onContinue}
+                    onClick={() => onContinue()}
                     style={{
                         padding: '12px 48px',
                         background: isVictory

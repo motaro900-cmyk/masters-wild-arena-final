@@ -806,16 +806,36 @@ export const BattleScene: React.FC = () => {
                             data={resultData}
                             onContinue={
                                 battleMode === 'PVE'
-                                    ? async () => {
+                                    ? async (target?: string | (() => void)) => {
                                           await showInterstitialAd();
-                                          useGameStore.setState({
-                                              activeScreen: 'SANCTUARY',
-                                              activePveEnemy: null,
-                                          });
+                                          if (typeof target === 'function') {
+                                              target();
+                                          } else if (target === 'Forge') {
+                                              useGameStore.getState().goToForge();
+                                          } else if (target === 'Talents') {
+                                              useGameStore.getState().goToHeroes('TALENTS');
+                                          } else if (target === 'Arsenal') {
+                                              useGameStore.getState().goToHeroes('HERO');
+                                          } else {
+                                              useGameStore.setState({
+                                                  activeScreen: 'SANCTUARY',
+                                                  activePveEnemy: null,
+                                              });
+                                          }
                                       }
-                                    : async () => {
+                                    : async (target?: string | (() => void)) => {
                                           await showInterstitialAd();
-                                          goToMainMenu();
+                                          if (typeof target === 'function') {
+                                              target();
+                                          } else if (target === 'Forge') {
+                                              useGameStore.getState().goToForge();
+                                          } else if (target === 'Talents') {
+                                              useGameStore.getState().goToHeroes('TALENTS');
+                                          } else if (target === 'Arsenal') {
+                                              useGameStore.getState().goToHeroes('HERO');
+                                          } else {
+                                              goToMainMenu();
+                                          }
                                       }
                             }
                         />
