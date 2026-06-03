@@ -272,32 +272,57 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ mode = 'FULL', o
                             {inventory.length}/{MAX_SLOTS}
                         </span>
                     </div>
-                    <button
-                        onClick={() => {
-                            setSortBy(sortBy === 'POWER' ? 'RARITY' : 'POWER');
-                            audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK || 'SFX_CLICK');
-                        }}
-                        style={{
-                            background: 'rgba(240,192,64,0.05)',
-                            color: '#f0c040',
-                            border: '1px solid rgba(240,192,64,0.25)',
-                            borderRadius: '8px',
-                            padding: '6px 12px',
-                            fontSize: '10px',
-                            fontWeight: 900,
-                            cursor: 'pointer',
-                            fontFamily: "'Cinzel', serif",
-                            letterSpacing: '1px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '6px',
-                            boxShadow: '0 2px 6px rgba(0,0,0,0.2)',
-                            transition: 'all 0.2s ease',
-                        }}
-                    >
-                        <span>⇅</span>
-                        <span>{sortBy === 'POWER' ? 'ПО МОЩИ' : 'ПО РЕДКОСТИ'}</span>
-                    </button>
+                    <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                        <button
+                            onClick={handleSellJunk}
+                            style={{
+                                background: 'rgba(239,68,68,0.1)',
+                                color: '#ef4444',
+                                border: '1px solid rgba(239,68,68,0.3)',
+                                borderRadius: '8px',
+                                padding: '6px 12px',
+                                fontSize: '10px',
+                                fontWeight: 900,
+                                cursor: 'pointer',
+                                fontFamily: "'Cinzel', serif",
+                                letterSpacing: '1px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '6px',
+                                boxShadow: '0 2px 6px rgba(0,0,0,0.2)',
+                                transition: 'all 0.2s ease',
+                            }}
+                        >
+                            <span>🗑️</span>
+                            <span>ПРОДАТЬ ХЛАМ</span>
+                        </button>
+                        <button
+                            onClick={() => {
+                                setSortBy(sortBy === 'POWER' ? 'RARITY' : 'POWER');
+                                audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK || 'SFX_CLICK');
+                            }}
+                            style={{
+                                background: 'rgba(240,192,64,0.05)',
+                                color: '#f0c040',
+                                border: '1px solid rgba(240,192,64,0.25)',
+                                borderRadius: '8px',
+                                padding: '6px 12px',
+                                fontSize: '10px',
+                                fontWeight: 900,
+                                cursor: 'pointer',
+                                fontFamily: "'Cinzel', serif",
+                                letterSpacing: '1px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '6px',
+                                boxShadow: '0 2px 6px rgba(0,0,0,0.2)',
+                                transition: 'all 0.2s ease',
+                            }}
+                        >
+                            <span>⇅</span>
+                            <span>{sortBy === 'POWER' ? 'ПО МОЩИ' : 'ПО РЕДКОСТИ'}</span>
+                        </button>
+                    </div>
                 </div>
             </div>
 
