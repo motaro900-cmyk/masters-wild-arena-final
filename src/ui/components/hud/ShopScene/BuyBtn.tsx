@@ -73,19 +73,19 @@ export const BuyBtn: React.FC<BuyBtnProps> = ({ item, onTrigger, discount = 0 })
 
     return (
         <button
-            disabled={isLevelLocked}
-            onClick={isLevelLocked ? undefined : onTrigger}
+            disabled={isLevelLocked || isOwned}
+            onClick={(isLevelLocked || isOwned) ? undefined : onTrigger}
             style={{
                 width: '100%',
                 height: '50px',
-                background: isLevelLocked
+                background: (isLevelLocked || isOwned)
                     ? 'linear-gradient(180deg, #4b5563 0%, #1f2937 100%)'
                     : item.isAd
                       ? 'linear-gradient(180deg, #10b981 0%, #047857 100%)'
                       : item.priceStars !== undefined
                         ? 'linear-gradient(180deg, #2b82c9 0%, #1a5c96 100%)'
                         : 'linear-gradient(180deg, #f0c040 0%, #a67c00 100%)',
-                border: isLevelLocked
+                border: (isLevelLocked || isOwned)
                     ? '1px solid #4b5563'
                     : item.isAd
                       ? '1px solid #059669'
@@ -93,11 +93,11 @@ export const BuyBtn: React.FC<BuyBtnProps> = ({ item, onTrigger, discount = 0 })
                         ? '1px solid #52a1e5'
                         : '1px solid #ffdf00',
                 borderRadius: '8px',
-                color: isLevelLocked ? '#9ca3af' : item.priceStars !== undefined || item.isAd ? '#fff' : '#1a0f00',
+                color: (isLevelLocked || isOwned) ? '#9ca3af' : item.priceStars !== undefined || item.isAd ? '#fff' : '#1a0f00',
                 fontWeight: 900,
                 fontFamily: "'Cinzel', 'Philosopher', serif",
                 fontSize: '16px',
-                cursor: isLevelLocked ? 'not-allowed' : 'pointer',
+                cursor: (isLevelLocked || isOwned) ? 'not-allowed' : 'pointer',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -107,6 +107,8 @@ export const BuyBtn: React.FC<BuyBtnProps> = ({ item, onTrigger, discount = 0 })
         >
             {isLevelLocked ? (
                 <>ТРЕБУЕТСЯ УР. {item.requiredLevel} 🔒</>
+            ) : isOwned ? (
+                <>КУПЛЕНО</>
             ) : item.isAd ? (
                 <>СМОТРЕТЬ РЕКЛАМУ 📺</>
             ) : item.priceStars !== undefined ? (
