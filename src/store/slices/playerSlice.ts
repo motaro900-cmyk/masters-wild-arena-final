@@ -508,10 +508,14 @@ export const createPlayerSlice = (set: any, get: any) => ({
     setCrystals: (val: number) => set({ crystals: val }),
     setVkUser: (user: any) => {
         const state = get() as any;
+        const uid = user?.id || user?.uid;
+        if (!uid) {
+            console.error('setVkUser: невалидный объект пользователя', user);
+            return;
+        }
         const currentName = state.name;
         const newName = currentName === 'Мастер' || !currentName ? user.firstName : currentName;
-        const uid = user.id || user.uid;
-        const newPlayerId = uid ? `MW-VK-${uid}` : state.playerId;
+        const newPlayerId = `MW-VK-${uid}`;
 
         set({
             vkUser: user,
