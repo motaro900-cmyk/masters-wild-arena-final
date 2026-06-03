@@ -68,7 +68,8 @@ export const useGameStore = create<any>()(
         {
             name: 'game-storage',
             storage: createJSONStorage(() => getStorage()),
-            version: 28, // v28: Fix maxEnergy sync from config
+            version: 29, // v29: Pet daily reward fields
+
             partialize: (state: any) => ({
                 level: state.level,
                 vipLevel: state.vipLevel,
@@ -222,6 +223,30 @@ export const useGameStore = create<any>()(
                     }
                     // Reset lastEnergyUpdate so regen starts fresh
                     persistedState.lastEnergyUpdate = Date.now();
+                }
+
+                if (version < 29) {
+                    console.log('🔄 Migrating store to v29: Adding pet daily rewards fields...');
+                    if (!persistedState.pet || typeof persistedState.pet !== 'object') {
+                        persistedState.pet = {
+                            id: 'baby_dragon',
+                            name: 'Дракоша',
+                            level: 1,
+                            exp: 0,
+                            hunger: 100,
+                            happiness: 100,
+                            lastFed: Date.now(),
+                            lastHungerDecay: Date.now(),
+                            lastHappinessDecay: Date.now(),
+                            petCharges: 5,
+                            lastPetTime: Date.now(),
+                            lastDailyCollectDate: null,
+                            hasDailyPetReward: false,
+                        };
+                    } else {
+                        persistedState.pet.lastDailyCollectDate = persistedState.pet.lastDailyCollectDate || null;
+                        persistedState.pet.hasDailyPetReward = persistedState.pet.hasDailyPetReward || false;
+                    }
                 }
 
                 return persistedState;
