@@ -21,6 +21,7 @@ export const useShopScene = () => {
         level: playerLevel,
         gold,
         crystals,
+        shopRotation,
     } = useGameStore();
 
     const [activeMainTab, setActiveMainTab] = useState<MainTab>((shopInitialTab as MainTab) || 'ARSENAL');
@@ -109,8 +110,17 @@ export const useShopScene = () => {
             }
 
             if (activeMainTab === 'ARSENAL' || activeMainTab === 'ALCHEMY') {
+                const rotationIds = shopRotation?.[activeSubTab];
+                if (!rotationIds || rotationIds.length === 0) {
+                    return getAllShopItems().filter(
+                        (item) => item.mainTab === activeMainTab && item.subTab === activeSubTab,
+                    );
+                }
                 return getAllShopItems().filter(
-                    (item) => item.mainTab === activeMainTab && item.subTab === activeSubTab,
+                    (item) =>
+                        item.mainTab === activeMainTab &&
+                        item.subTab === activeSubTab &&
+                        rotationIds.includes(item.id),
                 );
             }
 
