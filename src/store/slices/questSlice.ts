@@ -1,6 +1,7 @@
 import { QUESTS_POOL } from '../../configs/QuestsConfig';
 import { audioService } from '../../services/AudioService';
 import { AssetsMap } from '../../configs/AssetsMap';
+import { BATTLE_PASS_REWARDS } from '../../ui/components/hud/BattlePass/BattlePassShared';
 
 export const WEEKLY_QUESTS_POOL = [
     {
@@ -229,25 +230,30 @@ export const createQuestSlice = (set: any, get: any) => ({
         } else if (rewardId === 'chest_legendary') {
             goldToAdd = 10000;
             gemsToAdd = 200;
-        } else if (rewardId === 'potion_strength') {
-            const itemObj = { id: 'hp_potion_3', type: 'POTIONS', rarity: 'EPIC', level: 1 };
-            if (!newInventory.some((i) => i.id === 'hp_potion_3')) {
-                newInventory.push(itemObj);
-            }
-        } else if (rewardId === 'potion_strength_great') {
-            const itemObj = { id: 'hp_potion_3', type: 'POTIONS', rarity: 'EPIC', level: 2 };
-            if (!newInventory.some((i) => i.id === 'hp_potion_3')) {
-                newInventory.push(itemObj);
-            }
-        } else if (rewardId === 'potion_healing') {
-            const itemObj = { id: 'hp_potion_1', type: 'POTIONS', rarity: 'COMMON', level: 1 };
-            if (!newInventory.some((i) => i.id === 'hp_potion_1')) {
-                newInventory.push(itemObj);
-            }
-        } else if (rewardId === 'potion_defense') {
-            const itemObj = { id: 'hp_potion_2', type: 'POTIONS', rarity: 'RARE', level: 1 };
-            if (!newInventory.some((i) => i.id === 'hp_potion_2')) {
-                newInventory.push(itemObj);
+        } else if (['potion_strength', 'potion_strength_great', 'potion_healing', 'potion_defense'].includes(rewardId)) {
+            const getPotionData = (rId: string) => {
+                if (rId === 'potion_strength') return { potionId: 'hp_potion_3', type: 'POTIONS', rarity: 'EPIC', level: 1 };
+                if (rId === 'potion_strength_great') return { potionId: 'hp_potion_3', type: 'POTIONS', rarity: 'EPIC', level: 2 };
+                if (rId === 'potion_healing') return { potionId: 'hp_potion_1', type: 'POTIONS', rarity: 'COMMON', level: 1 };
+                if (rId === 'potion_defense') return { potionId: 'hp_potion_2', type: 'POTIONS', rarity: 'RARE', level: 1 };
+                return null;
+            };
+            const pData = getPotionData(rewardId);
+            if (pData) {
+                const rewardItem = BATTLE_PASS_REWARDS.flatMap(r => [r.free, r.premium]).find(item => item && item.id === rewardId);
+                const rewardAmount = rewardItem?.amount || 1;
+                const existingPotion = newInventory.find(i => i.id === pData.potionId);
+                if (existingPotion) {
+                    existingPotion.amount = (existingPotion.amount || 1) + rewardAmount;
+                } else {
+                    newInventory.push({
+                        id: pData.potionId,
+                        type: pData.type,
+                        rarity: pData.rarity,
+                        level: pData.level,
+                        amount: rewardAmount
+                    });
+                }
             }
         } else if (rewardId === 'skin_lava_golem') {
             if (!newOwnedSkins.includes('skin_lava_golem')) {
