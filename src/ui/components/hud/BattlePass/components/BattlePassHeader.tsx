@@ -1,8 +1,8 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { AssetsMap } from '../../../../configs/AssetsMap';
-import { audioService } from '../../../../services/AudioService';
-import { TabButton } from '../BattlePass/TabButton';
+import { AssetsMap } from '../../../../../configs/AssetsMap';
+import { audioService } from '../../../../../services/AudioService';
+import { TabButton } from '../TabButton';
 
 interface BattlePassHeaderProps {
     bpLevel: number;

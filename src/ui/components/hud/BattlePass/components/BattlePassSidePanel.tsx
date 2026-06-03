@@ -1,5 +1,5 @@
 import React from 'react';
-import { AssetsMap } from '../../../../configs/AssetsMap';
+import { AssetsMap } from '../../../../../configs/AssetsMap';
 
 /**
  * Левая фиксированная панель с названиями дорожек наград:
