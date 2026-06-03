@@ -32,7 +32,7 @@ export class StatusEffectController {
 
         // 1. Stun wobble oscillation
         if (this.isStunned && this.unit.bodyContainer) {
-            this.unit.bodyContainer.rotation = Math.sin(animTime * 1.5) * 0.08;
+            // rotation is managed by GSAP stunTween, do not override here to avoid flickering conflict
             this.unit.bodyContainer.y = Math.sin(animTime * 3) * 6;
         }
 
