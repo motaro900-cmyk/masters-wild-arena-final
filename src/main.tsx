@@ -406,11 +406,19 @@ export const Root = () => {
                         window.location.protocol === 'file:');
 
                 const isVk = isVkMiniApp();
-                if (!isLocalhost && !isVk && !state.vkUser) {
-                    console.warn('❌ Blocked access: Guest access is forbidden in production.');
-                    clearTimeout(timeoutId);
-                    setNotInVk(true);
-                    return;
+                if (!isLocalhost) {
+                    if (isVk && !state.vkUser) {
+                        console.error('❌ VK User Info not loaded inside VK platform. Aborting initialization to prevent guest accounts.');
+                        setInitError('Не удалось загрузить ваш профиль ВКонтакте. Пожалуйста, перезапустите игру или обновите страницу.');
+                        clearTimeout(timeoutId);
+                        return;
+                    }
+                    if (!isVk && !state.vkUser) {
+                        console.warn('❌ Blocked access: Guest access is forbidden in production.');
+                        clearTimeout(timeoutId);
+                        setNotInVk(true);
+                        return;
+                    }
                 }
 
                 const userId = SyncService.getPrefixedUserId(state.vkUser, state.playerId);
