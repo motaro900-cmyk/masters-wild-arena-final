@@ -38,6 +38,20 @@ export const createHeroSlice = (set: any, get: any) => ({
             const currentHeroTalents = state.heroTalents[heroId] || {};
             const currentLevel = currentHeroTalents[talentId] || 0;
 
+            const getTalentUpgradeCost = (tId: string): number => {
+                if (['atk_base', 'def_base', 'mas_base'].includes(tId)) return 1;
+                if (['atk_crit', 'atk_pen', 'def_res', 'def_eva', 'mas_spd', 'mas_focus'].includes(tId)) return 2;
+                if (['atk_ult', 'def_ult', 'mas_ult'].includes(tId)) return 3;
+                return 1;
+            };
+
+            const cost = getTalentUpgradeCost(talentId);
+            const availablePoints = get().talentPoints;
+            if (availablePoints < cost) {
+                console.warn('upgradeTalent: недостаточно очков талантов');
+                return state;
+            }
+
             get().updateQuestProgress('UPGRADE', 1);
 
             return {
