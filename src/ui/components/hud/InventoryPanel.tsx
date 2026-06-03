@@ -78,6 +78,7 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ mode = 'FULL', o
     const [activeTab, setActiveTab] = useState<'ALL' | 'EQUIPMENT' | 'POTIONS' | 'RESOURCES'>('ALL');
     const [sortBy, setSortBy] = useState<'POWER' | 'RARITY'>('POWER');
     const [hoveredItem, setHoveredItem] = useState<{ id: string; x: number; y: number } | null>(null);
+    const [isProcessing, setIsProcessing] = useState(false);
     const containerRef = React.useRef<HTMLDivElement>(null);
 
     const [confirmData, setConfirmData] = useState<{
@@ -360,21 +361,34 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ mode = 'FULL', o
                             isEquippedOnCurrent={isEquippedOnCurrent}
                             isEquippedOnOther={isEquippedOnOther}
                             equippedHeroId={equippedHeroId}
-                            onItemClick={(id: string) => {
+                            onItemClick={async (id: string) => {
+                                if (isProcessing) return;
+                                setIsProcessing(true);
+
                                 if (id === 'season_chest') {
                                     handleOpenChest();
+                                    setIsProcessing(false);
                                     return;
                                 }
+
+                                const executeEquip = async () => {
+                                    if (onItemClick) {
+                                        await onItemClick(id);
+                                    }
+                                    setTimeout(() => setIsProcessing(false), 500);
+                                };
+
                                 if (isEquippedOnOther) {
                                     setConfirmData({
                                         isOpen: true,
                                         title: 'ПЕРЕДАЧА ВЕЩИ',
                                         message: `Этот предмет надет на ${HEROES_DB.find((h) => h.id === equippedHeroId)?.name || equippedHeroId}. Передать его текущему герою?`,
                                         variant: 'normal',
-                                        onConfirm: () => onItemClick?.(id),
+                                        onConfirm: executeEquip,
                                     });
+                                    setIsProcessing(false);
                                 } else {
-                                    onItemClick?.(id);
+                                    await executeEquip();
                                 }
                             }}
                             setGlobalHoveredItem={(id: string | null, x: number, y: number) => {

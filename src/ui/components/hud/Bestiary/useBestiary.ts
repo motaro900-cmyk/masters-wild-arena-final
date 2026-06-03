@@ -34,7 +34,7 @@ export const declinePetName = (name: string) => {
 };
 
 export const useBestiary = () => {
-    const { pet, gold, crystals } = useGameStore();
+    const { pet, gold, crystals, collectPetDailyReward } = useGameStore();
     const [actionLog, setActionLog] = useState<string>('Ваш питомец счастлив видеть вас!');
     const [isAnimating, setIsAnimating] = useState(false);
     const [particles, setParticles] = useState<Particle[]>([]);
@@ -435,5 +435,6 @@ export const useBestiary = () => {
         resetIdle,
         getDragonSprite,
         getPetBubbleText,
+        collectPetDailyReward,
     };
 };
