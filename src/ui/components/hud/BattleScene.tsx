@@ -13,6 +13,7 @@ import { audioService } from '../../../services/AudioService';
 import { AssetsMap } from '../../../configs/AssetsMap';
 import { showInterstitialAd } from '../../../utils/VKBridge';
 import { BattleHUD } from './Battle/BattleHUD';
+import { BATTLE_CONFIG } from '../../../game/configs/constants';
 
 export const BattleScene: React.FC = () => {
     const {
@@ -142,7 +143,7 @@ export const BattleScene: React.FC = () => {
         // Списываем энергию при входе в рейтинговый бой, если он начинается сразу
         const store = useGameStore.getState() as any;
         if (store.battleMode === 'RANKED' && store.consumeEnergy) {
-            store.consumeEnergy(10);
+            store.consumeEnergy(BATTLE_CONFIG.ENERGY_COST);
         }
 
         return () => {
@@ -566,7 +567,7 @@ export const BattleScene: React.FC = () => {
     const handleBattleStart = useCallback(() => {
         const store = useGameStore.getState() as any;
         if (store.battleMode !== 'WARMUP' && store.consumeEnergy) {
-            store.consumeEnergy(10);
+            store.consumeEnergy(BATTLE_CONFIG.ENERGY_COST);
         }
         setShowPreBattle(false);
         setBattleStarted(true);

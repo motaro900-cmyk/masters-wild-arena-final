@@ -9,7 +9,7 @@ export const ENERGY_CONFIG = {
 export const BATTLE_CONFIG = {
     DAILY_LIMIT: 50,
     PREMIUM_DAILY_LIMIT: 100,
-    ENERGY_COST: 1,
+    ENERGY_COST: 10,
     RESET_HOUR_UTC: 0,
 } as const;
 
