@@ -272,7 +272,8 @@ export const createShopSlice = (set: any, get: any) => ({
                 const subTab = itemData.subTab;
 
                 if (subTab === 'GOLD') {
-                    set({ [newBalanceKey]: balance - price, gold: state.gold + amount });
+                    set({ [newBalanceKey]: get()[newBalanceKey] - price });
+                    set({ gold: get().gold + amount });
                 } else if (subTab === 'GEMS') {
                     set({ [newBalanceKey]: balance - price, crystals: state.crystals + amount });
                 } else if (subTab === 'ENERGY') {
