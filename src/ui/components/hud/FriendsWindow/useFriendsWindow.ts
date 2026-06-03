@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useGameStore } from '../../../../store/useGameStore';
-import { syncService } from '../../../../services/SyncService';
+import { syncService, SyncService } from '../../../../services/SyncService';
 
 export const useFriendsWindow = () => {
     const {
@@ -99,8 +99,10 @@ export const useFriendsWindow = () => {
     });
 
     const handleSendFriendRequest = async (targetPlayerId: string) => {
+        const state = useGameStore.getState();
+        const prefixedSenderId = SyncService.getPrefixedUserId(state.vkUser, state.playerId);
         const senderData = {
-            id: playerId,
+            id: prefixedSenderId,
             name: name || 'Мастер',
             avatar: avatar,
             level: level,

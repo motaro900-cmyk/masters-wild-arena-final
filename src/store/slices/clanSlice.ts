@@ -1,4 +1,6 @@
-import { syncService } from '../../services/SyncService';
+import { db } from '../../utils/firebase';
+import { doc, updateDoc, arrayUnion } from 'firebase/firestore';
+import { syncService, SyncService } from '../../services/SyncService';
 
 export const createClanSlice = (set: any, get: any) => ({
     // --- СОСТОЯНИЕ КЛАНОВ И ДРУЗЕЙ ---
@@ -16,21 +18,47 @@ export const createClanSlice = (set: any, get: any) => ({
             friends: state.friends.filter((f: any) => f.id !== id),
         })),
 
-    acceptFriendRequest: (id: string) => {
+    acceptFriendRequest: async (id: string) => {
         const state = get();
         const request = state.friendRequests.find((r: any) => r.id === id);
         if (!request) return;
 
-        syncService.deleteFriendRequest(state.playerId, id);
+        const currentUserId = SyncService.getPrefixedUserId(state.vkUser, state.playerId);
+        let senderId = id;
+        if (!senderId.startsWith('VK-') && !senderId.startsWith('GUEST-') && senderId !== 'DEVELOPER') {
+            senderId = SyncService.getPrefixedUserId(null, senderId);
+        }
 
+        try {
+            // 1. Добавляем senderId в список друзей текущего игрока в Firestore
+            const currentUserDoc = doc(db, 'пользователи', currentUserId);
+            await updateDoc(currentUserDoc, {
+                friends: arrayUnion(senderId),
+            });
+
+            // 2. Добавляем текущего игрока в список друзей отправителя
+            const senderDocRef = doc(db, 'пользователи', senderId);
+            await updateDoc(senderDocRef, {
+                friends: arrayUnion(currentUserId),
+            });
+
+            // 3. Удаляем запрос после обоих обновлений
+            await syncService.deleteFriendRequest(currentUserId, id);
+        } catch (error) {
+            console.error('[clanSlice] Failed to accept friend request in Firestore:', error);
+        }
+
+        const updatedRequest = { ...request, id: senderId };
         set((state: any) => ({
-            friends: [...state.friends, request],
+            friends: [...state.friends, updatedRequest],
             friendRequests: state.friendRequests.filter((r: any) => r.id !== id),
         }));
     },
 
     declineFriendRequest: (id: string) => {
-        syncService.deleteFriendRequest(get().playerId, id);
+        const state = get();
+        const currentUserId = SyncService.getPrefixedUserId(state.vkUser, state.playerId);
+        syncService.deleteFriendRequest(currentUserId, id);
         set((state: any) => ({
             friendRequests: state.friendRequests.filter((r: any) => r.id !== id),
         }));
