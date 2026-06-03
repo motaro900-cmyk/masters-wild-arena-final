@@ -11,7 +11,7 @@ interface BuyBtnProps {
 }
 
 export const BuyBtn: React.FC<BuyBtnProps> = ({ item, onTrigger, discount = 0 }) => {
-    const { ownedSkins, equippedSkins, equipSkin, unequipSkin, inventory, heroEquipment } = useGameStore();
+    const { ownedSkins, equippedSkins, equipSkin, unequipSkin, inventory, heroEquipment, level } = useGameStore();
 
     const isSkinOwned = item.mainTab === 'SKINS' && (ownedSkins || []).includes(String(item.id));
     let skinHeroId = '';
@@ -26,6 +26,8 @@ export const BuyBtn: React.FC<BuyBtnProps> = ({ item, onTrigger, discount = 0 })
     );
     const isOwnedInInventory = isArsenalItem && (inventory || []).some((i: any) => String(i.id) === String(item.id));
     const isOwned = isEquipped || isOwnedInInventory;
+
+    const isLevelLocked = item.requiredLevel !== undefined && item.requiredLevel > (level || 1);
 
     const handleSkinEquip = (e: React.MouseEvent) => {
         e.stopPropagation();
@@ -71,33 +73,41 @@ export const BuyBtn: React.FC<BuyBtnProps> = ({ item, onTrigger, discount = 0 })
 
     return (
         <button
-            onClick={onTrigger}
+            disabled={isLevelLocked}
+            onClick={isLevelLocked ? undefined : onTrigger}
             style={{
                 width: '100%',
                 height: '50px',
-                background: item.isAd
-                    ? 'linear-gradient(180deg, #10b981 0%, #047857 100%)'
-                    : item.priceStars !== undefined
-                      ? 'linear-gradient(180deg, #2b82c9 0%, #1a5c96 100%)'
-                      : 'linear-gradient(180deg, #f0c040 0%, #a67c00 100%)',
-                border: item.isAd
-                    ? '1px solid #059669'
-                    : item.priceStars !== undefined
-                      ? '1px solid #52a1e5'
-                      : '1px solid #ffdf00',
+                background: isLevelLocked
+                    ? 'linear-gradient(180deg, #4b5563 0%, #1f2937 100%)'
+                    : item.isAd
+                      ? 'linear-gradient(180deg, #10b981 0%, #047857 100%)'
+                      : item.priceStars !== undefined
+                        ? 'linear-gradient(180deg, #2b82c9 0%, #1a5c96 100%)'
+                        : 'linear-gradient(180deg, #f0c040 0%, #a67c00 100%)',
+                border: isLevelLocked
+                    ? '1px solid #4b5563'
+                    : item.isAd
+                      ? '1px solid #059669'
+                      : item.priceStars !== undefined
+                        ? '1px solid #52a1e5'
+                        : '1px solid #ffdf00',
                 borderRadius: '8px',
-                color: item.priceStars !== undefined || item.isAd ? '#fff' : '#1a0f00',
+                color: isLevelLocked ? '#9ca3af' : item.priceStars !== undefined || item.isAd ? '#fff' : '#1a0f00',
                 fontWeight: 900,
                 fontFamily: "'Cinzel', 'Philosopher', serif",
                 fontSize: '16px',
-                cursor: 'pointer',
+                cursor: isLevelLocked ? 'not-allowed' : 'pointer',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: '8px',
             }}
+            title={isLevelLocked ? `Требуется уровень ${item.requiredLevel}` : undefined}
         >
-            {item.isAd ? (
+            {isLevelLocked ? (
+                <>ТРЕБУЕТСЯ УР. {item.requiredLevel} 🔒</>
+            ) : item.isAd ? (
                 <>СМОТРЕТЬ РЕКЛАМУ 📺</>
             ) : item.priceStars !== undefined ? (
                 <>{item.priceStars} ⭐</>
