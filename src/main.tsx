@@ -327,6 +327,7 @@ export const SceneSwitcher = () => {
 };
 
 let isAppInitialized = false;
+let refreshInterval: any = null;
 
 export const Root = () => {
     const containerRef = React.useRef<HTMLDivElement>(null);
@@ -344,9 +345,12 @@ export const Root = () => {
         let unsubMail: (() => void) | null = null;
         let unsubProfile: (() => void) | null = null;
         let unsubLeaderboard: (() => void) | null = null;
-        let refreshInterval: any = null;
 
         const initApp = async () => {
+            if (refreshInterval) {
+                clearInterval(refreshInterval);
+                refreshInterval = null;
+            }
             // [Anti-Grey] Loading Timeout (20s)
             const timeoutId = setTimeout(() => {
                 if (!isAppInitialized || (containerRef.current && containerRef.current.children.length === 0)) {
@@ -656,7 +660,12 @@ export const Root = () => {
                 }
 
                 const finalState = useGameStore.getState();
+                if (finalState.checkPetDailyReward) {
+                    finalState.checkPetDailyReward();
+                }
+
                 if (!finalState.dailyQuests || finalState.dailyQuests.length === 0) {
+
                     finalState.refreshDailyQuests();
                 }
                 if (!finalState.weeklyQuests || finalState.weeklyQuests.length === 0) {
@@ -697,7 +706,11 @@ export const Root = () => {
                         console.log('🔄 MSK Midnight: Auto-refreshing daily quests...');
                         currentState.refreshDailyQuests();
                     }
+                    if (currentState.checkPetDailyReward) {
+                        currentState.checkPetDailyReward();
+                    }
                     const lastReset = currentState.lastWeeklyQuestReset || 0;
+
                     const now = Date.now();
                     const msInWeek = 7 * 24 * 60 * 60 * 1000;
                     if (now - lastReset >= msInWeek) {
