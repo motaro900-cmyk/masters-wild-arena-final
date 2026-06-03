@@ -718,7 +718,8 @@ export class HeroUnit extends PIXI.Container implements IEffectTarget {
         }
 
         if (isPanda) {
-            const chosenPose = this.nextAttackPose;
+            const pandaAttackPoses = [3, 4, 5, 6];
+            const chosenPose = pandaAttackPoses[Math.floor(Math.random() * pandaAttackPoses.length)];
             this.setFrame(chosenPose);
 
             if (chosenPose === 6) {
