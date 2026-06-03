@@ -320,7 +320,7 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ mode = 'FULL', o
                     const data = ITEMS_DATABASE[item.id] as any;
                     if (!data) return null;
 
-                    const equippedHeroId = getHeroByItemId(item.id);
+                    const equippedHeroId = getHeroByItemId(item.instanceId || item.id);
                     const isEquippedOnCurrent = String(equippedHeroId) === String(selectedHeroId || 'panda');
                     const isEquippedOnOther = equippedHeroId && !isEquippedOnCurrent;
 

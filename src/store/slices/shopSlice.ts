@@ -315,11 +315,15 @@ export const createShopSlice = (set: any, get: any) => ({
                         });
                     }
                 } else {
+                    const itemTemplate = { id: itemId, type: itemData.subTab, rarity: itemData.rarity, level: 1 };
                     set({
                         [newBalanceKey]: balance - price,
                         inventory: [
                             ...state.inventory,
-                            { id: itemId, type: itemData.subTab, rarity: itemData.rarity, level: 1 },
+                            {
+                                ...itemTemplate,
+                                instanceId: `${itemTemplate.id}_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+                            },
                         ],
                     });
                 }

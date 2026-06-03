@@ -25,15 +25,18 @@ export const ForgeWindow: React.FC = () => {
 
     // Состояние выбора предмета
     const [selectedItemId, setSelectedItemId] = useState<string | null>(
-        equipped.WEAPONS || inventory.find((i: any) => i.type === 'WEAPONS' || i.subTab === 'WEAPONS')?.id || null,
+        equipped.WEAPONS || (() => {
+            const firstWep = inventory.find((i: any) => i.type === 'WEAPONS' || i.subTab === 'WEAPONS');
+            return firstWep ? (firstWep.instanceId || firstWep.id) : null;
+        })()
     );
 
     // Состояние для эффектов
     const [isUpgrading, setIsUpgrading] = useState(false);
     const [showSuccess, setShowSuccess] = useState(false);
 
-    const invItem = inventory.find((i: any) => String(i.id) === selectedItemId);
-    const itemData = selectedItemId ? ITEMS_DATABASE[selectedItemId] : null;
+    const invItem = inventory.find((i: any) => i.instanceId === selectedItemId || String(i.id) === selectedItemId);
+    const itemData = invItem ? ITEMS_DATABASE[invItem.id] : null;
 
     const currentLevel = invItem?.level || 1;
     const maxLevel = 3; // максимальный уровень соответствует useGameStore
@@ -171,15 +174,16 @@ export const ForgeWindow: React.FC = () => {
                         .map((item: any) => {
                             const data = ITEMS_DATABASE[item.id] as any;
                             if (!data) return null;
-                            const isSelected = selectedItemId === item.id;
-                            const isEquipped = Object.values(equipped).includes(item.id);
+                            const itemKey = item.instanceId || item.id;
+                            const isSelected = selectedItemId === itemKey;
+                            const isEquipped = Object.values(equipped).includes(itemKey) || Object.values(equipped).includes(item.id);
 
                             return (
                                 <motion.button
-                                    key={item.id}
+                                    key={itemKey}
                                     whileHover={{ scale: 1.05 }}
                                     whileTap={{ scale: 0.92 }}
-                                    onClick={() => setSelectedItemId(item.id)}
+                                    onClick={() => setSelectedItemId(itemKey)}
                                     style={{
                                         aspectRatio: '1/1',
                                         background: isSelected ? 'rgba(240,192,64,0.15)' : 'rgba(255,255,255,0.03)',

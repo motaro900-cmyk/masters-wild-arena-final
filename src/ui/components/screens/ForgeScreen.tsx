@@ -92,7 +92,7 @@ export const ForgeScreen: React.FC = () => {
     useEffect(() => {
         if (sortedInventory.length > 0 && !selectedItemId) {
             const timer = setTimeout(() => {
-                setSelectedItemId(sortedInventory[0].id);
+                setSelectedItemId(sortedInventory[0].instanceId || sortedInventory[0].id);
             }, 0);
             return () => clearTimeout(timer);
         }
@@ -114,8 +114,8 @@ export const ForgeScreen: React.FC = () => {
         return () => clearTimeout(timer);
     }, [isUpgrading]);
 
-    const invItem = inventory.find((i: any) => String(i.id) === selectedItemId);
-    const itemData = selectedItemId ? ITEMS_DATABASE[selectedItemId] : null;
+    const invItem = inventory.find((i: any) => i.instanceId === selectedItemId || String(i.id) === selectedItemId);
+    const itemData = invItem ? ITEMS_DATABASE[invItem.id] : null;
 
     const currentLevel = invItem?.level || 1;
     const maxLevel = 10;

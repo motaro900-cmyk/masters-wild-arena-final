@@ -103,16 +103,17 @@ export const ForgeArsenal: React.FC<ForgeArsenalProps> = ({
                         .map((item: any) => {
                             const data = ITEMS_DATABASE[item.id] as any;
                             if (!data) return null;
-                            const isSelected = selectedItemId === item.id;
+                            const itemKey = item.instanceId || item.id;
+                            const isSelected = selectedItemId === itemKey;
                             const rarityColor = rarityColors[data.rarity] || '#9e9e9e';
 
                             return (
                                 <motion.button
-                                    key={item.id}
+                                    key={itemKey}
                                     whileHover={{ scale: 1.05 }}
                                     onClick={() => {
                                         audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
-                                        setSelectedItemId(item.id);
+                                        setSelectedItemId(itemKey);
                                     }}
                                     style={{
                                         ...styles.itemCard,

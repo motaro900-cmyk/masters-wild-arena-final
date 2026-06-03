@@ -26,7 +26,7 @@ export const DraggableItem: React.FC<DraggableItemProps> = ({
     setGlobalHoveredItem,
 }) => {
     const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
-        id: item.id,
+        id: item.instanceId || item.id,
         data: item,
         disabled: !!item.isResource,
     });
@@ -39,12 +39,12 @@ export const DraggableItem: React.FC<DraggableItemProps> = ({
                 boxShadow: `${rarity?.glow ? `0 0 25px ${rarity.glow}` : ''}, 0 10px 30px rgba(0,0,0,0.5)`,
             }}
             whileTap={{ scale: 0.95 }}
-            onMouseMove={(e: any) => setGlobalHoveredItem?.(item.id, e.clientX, e.clientY)}
-            onMouseEnter={(e: any) => setGlobalHoveredItem?.(item.id, e.clientX, e.clientY)}
+            onMouseMove={(e: any) => setGlobalHoveredItem?.(item.instanceId || item.id, e.clientX, e.clientY)}
+            onMouseEnter={(e: any) => setGlobalHoveredItem?.(item.instanceId || item.id, e.clientX, e.clientY)}
             onMouseLeave={() => setGlobalHoveredItem?.(null, 0, 0)}
             onClick={() => {
                 if (!isDragging && !item.isResource) {
-                    onItemClick(item.id);
+                    onItemClick(item.instanceId || item.id);
                 }
             }}
             style={{
@@ -94,7 +94,7 @@ export const DraggableItem: React.FC<DraggableItemProps> = ({
                         }}
                         onClick={(e) => {
                             e.stopPropagation();
-                            onItemClick?.(item.id);
+                            onItemClick?.(item.instanceId || item.id);
                         }}
                     >
                         {item.id === 'season_chest' ? 'ОТКРЫТЬ' : isEquippedOnCurrent ? 'СНЯТЬ' : 'НАДЕТЬ'}

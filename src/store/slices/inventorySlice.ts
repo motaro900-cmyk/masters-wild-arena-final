@@ -323,14 +323,14 @@ export const createInventorySlice = (set: any, get: any) => ({
 
     upgradeItem: (itemId: string, useProtectionStone?: boolean) => {
         const state = get() as any;
-        const invItemIndex = state.inventory.findIndex((i: any) => String(i.id) === itemId);
+        const invItemIndex = state.inventory.findIndex((i: any) => i.instanceId === itemId || String(i.id) === itemId);
         if (invItemIndex === -1) return null;
 
         const invItem = state.inventory[invItemIndex];
         const currentLevel = invItem.level || 1;
         if (currentLevel >= 10) return null;
 
-        const itemData = ITEMS_DATABASE[itemId];
+        const itemData = ITEMS_DATABASE[invItem.id];
         if (!itemData) return null;
 
         // Helper для расчета ресурсов
