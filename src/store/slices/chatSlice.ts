@@ -39,8 +39,11 @@ export const createChatSlice = (set: any, get: any) => ({
     ] as any[],
 
     combatLogs: [] as string[],
+    leaderboard: [] as any[],
 
     // --- Actions ---
+
+    setLeaderboard: (leaders: any[]) => set({ leaderboard: leaders }),
 
     setMessages: (newMessages: any[]) => {
         set((state: any) => {
@@ -74,6 +77,16 @@ export const createChatSlice = (set: any, get: any) => ({
             state.vkUser?.photo ||
             '/assets/images/avatars/panda.webp';
 
+        const leaderboard = get().leaderboard || [];
+        const top1 = leaderboard[0];
+        const isTop1 = top1 !== undefined && (
+            top1.id === state.playerId ||
+            top1.playerId === state.playerId ||
+            (state.vkUser && String(top1.vkId) === String(state.vkUser.id)) ||
+            top1.id === `GUEST-${state.playerId}` ||
+            (state.vkUser && top1.id === `VK-${state.vkUser.id}`)
+        );
+
         const newMessage = {
             author: finalAuthor,
             avatar: finalAvatar,
@@ -83,7 +96,7 @@ export const createChatSlice = (set: any, get: any) => ({
             level: state.level || 1,
             rankIcon: rankInfo.icon,
             vipLevel: state.vipLevel || 0,
-            isTop1: finalAuthor === state.name,
+            isTop1,
         };
 
         if (type === 'system' && author === 'СИСТЕМА') {

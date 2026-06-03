@@ -605,6 +605,7 @@ export const Root = () => {
         let unsubFriends: (() => void) | null = null;
         let unsubMail: (() => void) | null = null;
         let unsubProfile: (() => void) | null = null;
+        let unsubLeaderboard: (() => void) | null = null;
         let refreshInterval: any = null;
 
         const initApp = async () => {
@@ -786,6 +787,9 @@ export const Root = () => {
 
                 unsubChat = syncService.subscribeToChat((messages) => {
                     useGameStore.getState().setMessages(messages);
+                });
+                unsubLeaderboard = syncService.subscribeToGlobalLeaders(10, (leaders) => {
+                    useGameStore.getState().setLeaderboard(leaders);
                 });
                 const prefixedId = SyncService.getPrefixedUserId(updatedState.vkUser, updatedState.playerId);
                 unsubFriends = syncService.subscribeToFriendRequests(prefixedId, (requests) => {
@@ -1017,6 +1021,7 @@ export const Root = () => {
             if (unsubFriends) unsubFriends();
             if (unsubMail) unsubMail();
             if (unsubProfile) unsubProfile();
+            if (unsubLeaderboard) unsubLeaderboard();
             if (refreshInterval) clearInterval(refreshInterval);
         };
     }, []);
