@@ -3,7 +3,7 @@ import { getRankInfo } from '../../configs/RankSystem';
 import { syncService } from '../../services/SyncService';
 import { audioService } from '../../services/AudioService';
 import { safeSetItem } from '../../utils/SafeStorage';
-import { showRewardedVideo } from '../../utils/VKBridge';
+import { showRewardedVideo, isGroupMember } from '../../utils/VKBridge';
 
 const getPlayerTitle = (level: number): string => {
     if (level >= 72) return 'Хранитель Равновесия';
@@ -303,22 +303,35 @@ export const createPlayerSlice = (set: any, get: any) => ({
         }
     },
 
-    claimFavoriteReward: () => {
+    claimFavoriteReward: async () => {
         const state = get() as any;
         const rewards = state.claimedSocialRewards || [];
-        if (!rewards.includes('favorites')) {
-            state.addCrystals(50);
-            set({ claimedSocialRewards: [...rewards, 'favorites'] });
+        if (rewards.includes('favorites')) return;
+
+        const params = new URLSearchParams(window.location.search);
+        const isFav = params.get('vk_is_favorite') === '1' || window.location.hostname === 'localhost';
+        if (!isFav) {
+            console.warn('claimFavoriteReward: приложение не добавлено в избранное');
+            return;
         }
+
+        state.addCrystals(50);
+        set({ claimedSocialRewards: [...rewards, 'favorites'] });
     },
 
-    claimGroupReward: () => {
+    claimGroupReward: async () => {
         const state = get() as any;
         const rewards = state.claimedSocialRewards || [];
-        if (!rewards.includes('group')) {
-            state.addCrystals(50);
-            set({ claimedSocialRewards: [...rewards, 'group'] });
+        if (rewards.includes('group')) return;
+
+        const isMember = await isGroupMember();
+        if (!isMember) {
+            console.warn('claimGroupReward: пользователь не состоит в группе');
+            return;
         }
+
+        state.addCrystals(50);
+        set({ claimedSocialRewards: [...rewards, 'group'] });
     },
 
     canBattle: () => {
