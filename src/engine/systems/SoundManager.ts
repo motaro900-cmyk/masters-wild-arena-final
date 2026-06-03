@@ -1,3 +1,5 @@
+import { useGameStore } from '../../store/useGameStore';
+
 /**
  * @class SoundManager
  * Процедурный генератор звуков (Web Audio API).
@@ -31,6 +33,12 @@ export class SoundManager {
 
     private playTone(type: OscillatorType, freq: number, duration: number, vol: number = 0.1, slideFreq?: number) {
         if (!this.ctx || !this.enabled) return;
+
+        const { soundVolume, isMuted } = useGameStore.getState() as any;
+        if (isMuted) return; // тишина
+
+        const finalVol = vol * (soundVolume / 100);
+
         // Политика браузеров: нужно возобновить контекст после первого клика
         if (this.ctx.state === 'suspended') this.ctx.resume().catch(() => {});
 
@@ -47,7 +55,7 @@ export class SoundManager {
             osc.frequency.exponentialRampToValueAtTime(Math.max(1, slideFreq), now + duration);
         }
 
-        gain.gain.setValueAtTime(vol, now);
+        gain.gain.setValueAtTime(finalVol, now);
         gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
 
         osc.start(now);
