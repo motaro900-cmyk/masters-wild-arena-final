@@ -123,7 +123,8 @@ export const createBattleSlice = (set: any, get: any) => ({
             const newStreak = winStreak + 1;
             const xpReward = pveStage * 50;
 
-            get().addExp(xpReward);
+            const activeHeroId = get().selectedHeroId || 'panda';
+            get().addHeroExp(activeHeroId, xpReward);
             get().addBpExp(100);
 
             let coalGained = 0,

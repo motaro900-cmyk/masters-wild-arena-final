@@ -12,6 +12,10 @@ export const TalentsView = ({ hero }: any) => {
     const talents = heroTalents[hero.id] || {};
     const availablePoints = talentPoints;
 
+    const heroesState = useGameStore((s: any) => s.heroes) || {};
+    const heroState = heroesState[hero.id] || { level: 1 };
+    const heroLevel = heroState.level || 1;
+
     const [activeTalent, setActiveTalent] = useState<any>(null);
     const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
 
@@ -284,7 +288,10 @@ export const TalentsView = ({ hero }: any) => {
 
                                 {/* Nodes positioning */}
                                 {branch.tiers.map((tier, tIndex) => {
-                                    const isUnlocked = branchPoints >= tier.requiredInBranch;
+                                    const requiredLevel = tIndex === 1 ? 4 : tIndex === 2 ? 8 : 1;
+                                    const isLevelUnlocked = heroLevel >= requiredLevel;
+                                    const isUnlocked = branchPoints >= tier.requiredInBranch && isLevelUnlocked;
+
                                     return tier.talents.map((talent, talentIndex) => {
                                         const lvl = talents[talent.id] || 0;
                                         // Calculate position
@@ -318,7 +325,11 @@ export const TalentsView = ({ hero }: any) => {
                                                     branchColor={branch.color}
                                                     isUnlocked={isUnlocked}
                                                     canAfford={availablePoints > 0}
-                                                    onClick={() => handleUpgrade(talent, branch.id)}
+                                                    onClick={() => {
+                                                        if (isLevelUnlocked) {
+                                                            handleUpgrade(talent, branch.id);
+                                                        }
+                                                    }}
                                                     onMouseEnter={(e: any) => {
                                                         const rect = e.currentTarget.getBoundingClientRect();
                                                         const root = document.getElementById('hero-scene-root');
@@ -339,6 +350,8 @@ export const TalentsView = ({ hero }: any) => {
                                                             ...talent,
                                                             branchPoints,
                                                             required: tier.requiredInBranch,
+                                                            requiredLevel,
+                                                            isLevelUnlocked,
                                                             level: lvl,
                                                         });
                                                     }}

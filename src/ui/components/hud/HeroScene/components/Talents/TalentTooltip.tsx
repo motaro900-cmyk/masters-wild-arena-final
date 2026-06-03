@@ -171,6 +171,27 @@ export const TalentTooltip = ({ talent, pos, color }: any) => {
                     ⚠️ ТРЕБУЕТСЯ {talent.required} ОЧКОВ ВЕТКИ
                 </div>
             )}
+
+            {!talent.isLevelUnlocked && talent.requiredLevel && (
+                <div
+                    style={{
+                        marginTop: '10px',
+                        background: 'linear-gradient(90deg, rgba(239, 68, 68, 0.4), rgba(239, 68, 68, 0.1))',
+                        padding: '15px',
+                        borderRadius: '14px',
+                        border: '1px solid #ef4444',
+                        color: '#fff',
+                        fontSize: '14px',
+                        fontWeight: 900,
+                        textAlign: 'center',
+                        letterSpacing: '1.5px',
+                        fontFamily: "'Cinzel', serif",
+                        boxShadow: '0 10px 20px rgba(0,0,0,0.3)',
+                    }}
+                >
+                    ⚠️ ТРЕБУЕТСЯ {talent.requiredLevel} УРОВЕНЬ ГЕРОЯ
+                </div>
+            )}
         </motion.div>
     );
 };

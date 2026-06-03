@@ -68,7 +68,7 @@ export const useGameStore = create<any>()(
         {
             name: 'game-storage',
             storage: createJSONStorage(() => getStorage()),
-            version: 29, // v29: Pet daily reward fields
+            version: 30, // v30: Hero levels and exp
 
             partialize: (state: any) => ({
                 level: state.level,
@@ -249,10 +249,32 @@ export const useGameStore = create<any>()(
                     }
                 }
 
+                if (version < 30) {
+                    console.log('🔄 Migrating store to v30: Adding hero level/exp...');
+                    if (!persistedState.heroes) {
+                        persistedState.heroes = {
+                            panda: { level: 1, exp: 0, strength: 52, agility: 20, stamina: 32 },
+                            wolf_knight: { level: 1, exp: 0, strength: 65, agility: 25, stamina: 45 },
+                        };
+                    } else {
+                        if (persistedState.heroes.panda) {
+                            persistedState.heroes.panda.level = persistedState.heroes.panda.level || 1;
+                            persistedState.heroes.panda.exp = persistedState.heroes.panda.exp || 0;
+                        } else {
+                            persistedState.heroes.panda = { level: 1, exp: 0, strength: 52, agility: 20, stamina: 32 };
+                        }
+                        if (persistedState.heroes.wolf_knight) {
+                            persistedState.heroes.wolf_knight.level = persistedState.heroes.wolf_knight.level || 1;
+                            persistedState.heroes.wolf_knight.exp = persistedState.heroes.wolf_knight.exp || 0;
+                        } else {
+                            persistedState.heroes.wolf_knight = { level: 1, exp: 0, strength: 65, agility: 25, stamina: 45 };
+                        }
+                    }
+                }
+
                 return persistedState;
             },
         },
     ),
 );
-
 

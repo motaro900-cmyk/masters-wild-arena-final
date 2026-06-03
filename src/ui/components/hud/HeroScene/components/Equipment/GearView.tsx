@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ITEMS_DATABASE, calculateItemPower } from '../../../../../../game/configs/ItemsConfig';
 import { useGameStore } from '../../../../../../store/useGameStore';
+import { getHeroExpNeeded } from '../../../../../../store/slices/heroSlice';
 import { audioService } from '../../../../../../services/AudioService';
 import { AssetsMap } from '../../../../../../configs/AssetsMap';
 import { EquipmentSlot } from './EquipmentSlot';
@@ -27,6 +28,13 @@ export const GearView = ({
     const equippedSkins = useGameStore((s: any) => s.equippedSkins) || {};
     const equippedSkinId = equippedSkins[hero.id] || 'default';
     const activeSkin = SKINS_DB.find((s) => s.id === equippedSkinId && s.heroId === hero.id);
+    
+    const heroesState = useGameStore((s: any) => s.heroes) || {};
+    const heroState = heroesState[hero.id] || { level: 1, exp: 0 };
+    const heroLevel = heroState.level || 1;
+    const heroExp = heroState.exp || 0;
+    const xpNeeded = getHeroExpNeeded(heroLevel);
+    const xpPercentage = heroLevel >= 10 ? 100 : Math.min(100, (heroExp / xpNeeded) * 100);
     const displayHeroName = hero.name;
     const activeRarity = activeSkin && activeSkin.id !== 'default' ? activeSkin.rarity : hero.rarity;
     const activeRarityColor = rarityColors[activeRarity] || '#f0c040';
@@ -451,7 +459,7 @@ export const GearView = ({
                             fontFamily: "'Cinzel', 'Philosopher', serif",
                         }}
                     >
-                        {displayHeroName}
+                        {displayHeroName} <span style={{ color: '#fff', fontSize: '20px', marginLeft: '10px' }}>Ур. {heroLevel}</span>
                     </h2>
                     <p
                         style={{
@@ -459,7 +467,7 @@ export const GearView = ({
                                 activeSkin && activeSkin.id !== 'default' && activeSkin.color
                                     ? activeSkin.color
                                     : activeRarityColor,
-                            margin: 0,
+                            margin: '0 0 10px 0',
                             fontWeight: 900,
                             letterSpacing: '4px',
                             fontSize: '12px',
@@ -467,6 +475,39 @@ export const GearView = ({
                     >
                         {activeSkin && activeSkin.id !== 'default' ? activeSkin.name : hero.title}
                     </p>
+
+                    {/* XP Progress Bar */}
+                    {heroLevel < 10 ? (
+                        <div style={{ width: '220px', margin: '0 auto' }}>
+                            <div
+                                style={{
+                                    height: '8px',
+                                    background: 'rgba(255, 255, 255, 0.1)',
+                                    borderRadius: '4px',
+                                    overflow: 'hidden',
+                                    border: '1px solid rgba(240, 192, 64, 0.2)',
+                                    position: 'relative',
+                                }}
+                            >
+                                <div
+                                    style={{
+                                        width: `${xpPercentage}%`,
+                                        height: '100%',
+                                        background: 'linear-gradient(90deg, #a855f7 0%, #f0c040 100%)',
+                                        borderRadius: '4px',
+                                        transition: 'width 0.3s ease',
+                                    }}
+                                />
+                            </div>
+                            <div style={{ fontSize: '10px', color: '#a88020', marginTop: '4px', fontWeight: 'bold' }}>
+                                ОПЫТ: {heroExp} / {xpNeeded}
+                            </div>
+                        </div>
+                    ) : (
+                        <div style={{ fontSize: '11px', color: '#f0c040', fontWeight: 'bold', letterSpacing: '1px' }}>
+                            🌟 МАКСИМАЛЬНЫЙ УРОВЕНЬ 🌟
+                        </div>
+                    )}
                 </div>
             </div>
 

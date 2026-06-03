@@ -1,6 +1,12 @@
 import { HEROES_DB } from '../../configs/HeroesConfig';
 import { ITEMS_DATABASE, IEquipmentStats } from '../../game/configs/ItemsConfig';
 
+export const getHeroExpNeeded = (level: number): number => {
+    if (level <= 1) return 100;
+    if (level === 2) return 200;
+    return (level - 1) * 200;
+};
+
 export const createHeroSlice = (set: any, get: any) => ({
     // --- СОСТОЯНИЕ ГЕРОЕВ ---
     selectedHeroId: 'panda',
@@ -8,8 +14,8 @@ export const createHeroSlice = (set: any, get: any) => ({
     heroGalleryId: 'panda',
     ownedHeroes: ['panda'],
     heroes: {
-        panda: { strength: 52, agility: 20, stamina: 32 },
-        wolf_knight: { strength: 65, agility: 25, stamina: 45 },
+        panda: { level: 1, exp: 0, strength: 52, agility: 20, stamina: 32 },
+        wolf_knight: { level: 1, exp: 0, strength: 65, agility: 25, stamina: 45 },
     } as Record<string, any>,
     heroTalents: {
         panda: {},
@@ -24,7 +30,60 @@ export const createHeroSlice = (set: any, get: any) => ({
     unlockHero: (heroId: string) =>
         set((state: any) => {
             if (state.ownedHeroes.includes(heroId)) return state;
-            return { ownedHeroes: [...state.ownedHeroes, heroId] };
+            // Initialize default stats, level 1, exp 0 when unlocking a hero
+            const heroData = HEROES_DB.find((h) => h.id === heroId);
+            const initialHeroStats = heroData
+                ? { level: 1, exp: 0, strength: heroData.stats.strength, agility: heroData.stats.agility, stamina: heroData.stats.stamina }
+                : { level: 1, exp: 0, strength: 50, agility: 20, stamina: 30 };
+            return {
+                ownedHeroes: [...state.ownedHeroes, heroId],
+                heroes: {
+                    ...state.heroes,
+                    [heroId]: initialHeroStats,
+                },
+            };
+        }),
+    addHeroExp: (heroId: string, amount: number) =>
+        set((state: any) => {
+            const hero = state.heroes[heroId] || { level: 1, exp: 0, strength: 50, agility: 20, stamina: 30 };
+            let level = hero.level || 1;
+            let exp = (hero.exp || 0) + amount;
+
+            if (level >= 10) {
+                return state;
+            }
+
+            let leveledUp = false;
+            while (level < 10) {
+                const needed = getHeroExpNeeded(level);
+                if (exp >= needed) {
+                    exp -= needed;
+                    level += 1;
+                    leveledUp = true;
+                } else {
+                    break;
+                }
+            }
+
+            if (leveledUp) {
+                console.log(`[heroSlice] Hero ${heroId} leveled up to ${level}!`);
+                setTimeout(() => {
+                    if (get().updateQuestProgress) {
+                        get().updateQuestProgress('UPGRADE', 1);
+                    }
+                }, 0);
+            }
+
+            return {
+                heroes: {
+                    ...state.heroes,
+                    [heroId]: {
+                        ...hero,
+                        level,
+                        exp,
+                    },
+                },
+            };
         }),
     setTalentPoints: (val: number) =>
         set((state: any) => ({
@@ -92,6 +151,10 @@ export const createHeroSlice = (set: any, get: any) => ({
         const heroData = HEROES_DB.find((h) => h.id === heroId);
         if (!heroData) return null;
 
+        const heroState = state.heroes[heroId] || {};
+        const heroLevel = heroState.level || 1;
+        const levelMultiplier = 1 + (heroLevel - 1) * 0.05;
+
         const equipment = state.heroEquipment[heroId] || {};
         const weapon = equipment.WEAPONS ? ITEMS_DATABASE[equipment.WEAPONS] : null;
         const helm = equipment.HELMETS ? ITEMS_DATABASE[equipment.HELMETS] : null;
@@ -104,8 +167,8 @@ export const createHeroSlice = (set: any, get: any) => ({
         const allItems = [weapon, helm, armor, shield, shoulders, boots, pants].filter(Boolean) as IEquipmentStats[];
 
         const base = {
-            hp: heroData.stats.stamina * 10,
-            attack: heroData.stats.strength * 2,
+            hp: Math.round(heroData.stats.stamina * 10 * levelMultiplier),
+            attack: Math.round(heroData.stats.strength * 2 * levelMultiplier),
             defense: Math.round(heroData.stats.stamina * 0.5),
             speed: 1 + heroData.stats.agility * 0.05, // internal ATB speed multiplier
             critChance: heroData.stats.agility * 0.5, // stored as % (e.g. 6%)

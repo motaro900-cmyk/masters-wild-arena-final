@@ -241,9 +241,10 @@ export const BattleScene: React.FC = () => {
 
                     if (!isPve) {
                         store.addGold(gold);
-                        store.addExp(xp);
+                        const activeHeroId = store.selectedHeroId || 'panda';
+                        store.addHeroExp(activeHeroId, xp);
                         store.addCombatLog(
-                            `Бой завершен: ${isVictory ? 'Победа' : 'Поражение'}. Получено +${gold} золота, +${xp} опыта.`,
+                            `Бой завершен: ${isVictory ? 'Победа' : 'Поражение'}. Получено +${gold} золота, +${xp} опыта героя.`,
                         );
 
                         const newTrophies = Math.max(0, store.trophies + trophies);
