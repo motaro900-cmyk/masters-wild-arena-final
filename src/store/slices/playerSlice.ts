@@ -101,11 +101,12 @@ export const createPlayerSlice = (set: any, get: any) => ({
         : 'MW-' + Math.random().toString(36).substr(2, 9).toUpperCase(),
     musicVolume: 70,
     soundVolume: 85,
-    graphicsQuality:
-        typeof navigator !== 'undefined' &&
-        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
-            ? 'LOW'
-            : 'ULTRA',
+    graphicsQuality: (typeof navigator !== 'undefined')
+        ? (() => {
+            const memory = (navigator as any).deviceMemory || 4;
+            return memory >= 6 ? 'HIGH' : memory >= 4 ? 'MEDIUM' : 'LOW';
+          })()
+        : 'ULTRA',
     showFps: false,
     notificationsEnabled: true,
     uiTheme: 'DARK',
