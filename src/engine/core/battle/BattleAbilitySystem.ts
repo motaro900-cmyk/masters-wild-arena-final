@@ -1,8 +1,6 @@
-import { HeroUnit } from '../../entities/HeroUnit';
 import type { BattleEngine } from '../BattleEngine';
 import { useGameStore } from '../../../store/useGameStore';
 import { audioService } from '../../../services/AudioService';
-import { HEROES_DB } from '../../../configs/HeroesConfig';
 import { EffectsManager } from '../../systems/EffectsManager';
 
 export async function castActiveAbility(engine: BattleEngine) {
