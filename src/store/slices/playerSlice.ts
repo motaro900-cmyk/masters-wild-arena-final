@@ -4,6 +4,8 @@ import { syncService } from '../../services/SyncService';
 import { audioService } from '../../services/AudioService';
 import { safeSetItem } from '../../utils/SafeStorage';
 import { showRewardedVideo, isGroupMember } from '../../utils/VKBridge';
+import { getMskDateKey, calculatePetDailyReward } from '../../ui/components/hud/Bestiary/utils/petRewards';
+
 
 const getPlayerTitle = (level: number): string => {
     if (level >= 72) return 'Хранитель Равновесия';
@@ -120,6 +122,8 @@ export const createPlayerSlice = (set: any, get: any) => ({
         lastHappinessDecay: Date.now(),
         petCharges: 5,
         lastPetTime: Date.now(),
+        lastDailyCollectDate: null as string | null,
+        hasDailyPetReward: false,
     },
 
     // --- ЭКШЕНЫ ПРОФИЛЯ/ИГРОКА ---
@@ -484,7 +488,7 @@ export const createPlayerSlice = (set: any, get: any) => ({
             const state = get();
             audioService.setMusicVolume(state.musicVolume / 100);
             audioService.setSFXVolume(state.soundVolume / 100);
-            if (!audioService.isPlaying()) {
+            if (state.musicVolume > 0 && !audioService.isPlaying()) {
                 audioService.toggleMusic();
             }
         }
@@ -552,4 +556,58 @@ export const createPlayerSlice = (set: any, get: any) => ({
     setFrame: (frame: string) => set({ frame }),
     setTitle: (title: string) => set({ title }),
     setRating: (rating: number) => set({ rating: Math.max(0, rating) }),
+
+    checkPetDailyReward: () => {
+        const state = get() as any;
+        if (!state.pet) return;
+        const currentMskDate = getMskDateKey();
+        if (state.pet.lastDailyCollectDate !== currentMskDate) {
+            set((s: any) => ({
+                pet: {
+                    ...s.pet,
+                    hasDailyPetReward: true,
+                },
+            }));
+        }
+    },
+
+    collectPetDailyReward: () => {
+        const state = get() as any;
+        if (!state.pet || !state.pet.hasDailyPetReward) return null;
+
+        const currentMskDate = getMskDateKey();
+        const rewards = calculatePetDailyReward(state.pet.level, state.pet.hunger, state.pet.happiness);
+
+        set((s: any) => {
+            const nextPet = {
+                ...s.pet,
+                hasDailyPetReward: false,
+                lastDailyCollectDate: currentMskDate,
+            };
+
+            const patch: any = {
+                gold: s.gold + rewards.gold,
+                crystals: s.crystals + rewards.crystals,
+                pet: nextPet,
+            };
+
+            if (rewards.loot) {
+                const lootId = rewards.loot.id;
+                if (lootId === 'protection_stone') {
+                    patch.protection_stones = (s.protection_stones || 0) + rewards.loot.amount;
+                } else if (lootId === 'runic_shard') {
+                    patch.runic_shards = (s.runic_shards || 0) + rewards.loot.amount;
+                } else if (lootId === 'steel_bar') {
+                    patch.steel_bars = (s.steel_bars || 0) + rewards.loot.amount;
+                } else if (lootId === 'coal') {
+                    patch.coal = (s.coal || 0) + rewards.loot.amount;
+                }
+            }
+
+            return patch;
+        });
+
+        syncService.debouncedSync();
+        return rewards;
+    },
 });
