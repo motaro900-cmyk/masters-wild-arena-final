@@ -20,10 +20,10 @@ const getPlayerTitle = (level: number): string => {
 
 const calculateMaxEnergy = (isPremium: boolean, isVip: boolean): number => {
     const base = ENERGY_CONFIG.MAX_ENERGY; // 50
-    const premiumBonus = isPremium ? 50 : 0; // +50 for Premium (max 100)
-    const vipBonus = isVip ? 10 : 0; // +10 for VIP
-    // Decision: Premium and VIP energy bonuses are summed up (base 50 + Premium 50 + VIP 10 = 110 max energy)
-    return base + premiumBonus + vipBonus;
+    const premiumBonus = isPremium ? 15 : 0; // +15 for Premium
+    const vipBonus = isVip ? 15 : 0; // +15 for VIP
+    // Решение по балансу: не суммируем бонусы, берем наибольший из них (максимум 65 энергии), чтобы предотвратить бесконечный гринд
+    return base + Math.max(premiumBonus, vipBonus);
 };
 
 export const getExpNeeded = (level: number): number => {
