@@ -108,13 +108,13 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
         try {
             const store = useGameStore.getState() as any;
             const { syncService, SyncService } = await import('../../../services/SyncService');
-            const { db } = await import('../../../utils/firebase');
+            const { db, USERS_COLLECTION } = await import('../../../utils/firebase');
             const { doc, deleteDoc } = await import('firebase/firestore');
 
             // 1. Удаляем документы пользователя из Firebase (чтобы сбросить аватар и имя)
             const userId = SyncService.getPrefixedUserId(store.vkUser, store.playerId);
             if (userId) {
-                const playerRef = doc(db, 'пользователи', userId);
+                const playerRef = doc(db, USERS_COLLECTION, userId);
                 await deleteDoc(playerRef);
                 console.log('Player doc deleted:', userId);
             }

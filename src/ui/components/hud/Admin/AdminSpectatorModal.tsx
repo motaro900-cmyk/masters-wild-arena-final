@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { doc, onSnapshot } from 'firebase/firestore';
-import { db } from '../../../../utils/firebase';
+import { db, USERS_COLLECTION } from '../../../../utils/firebase';
 import { BaseWindow } from '../BaseWindow';
 
 interface AdminSpectatorModalProps {
@@ -16,7 +16,7 @@ export const AdminSpectatorModal: React.FC<AdminSpectatorModalProps> = ({ player
     useEffect(() => {
         if (!playerId) return;
 
-        const unsubscribe = onSnapshot(doc(db, 'пользователи', playerId), (docSnap) => {
+        const unsubscribe = onSnapshot(doc(db, USERS_COLLECTION, playerId), (docSnap) => {
             if (docSnap.exists()) {
                 setPlayerState(docSnap.data());
             } else {

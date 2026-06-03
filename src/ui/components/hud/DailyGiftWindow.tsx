@@ -4,7 +4,7 @@ import { useGameStore } from '../../../store/useGameStore';
 import { AssetsMap } from '../../../configs/AssetsMap';
 import { audioService } from '../../../services/AudioService';
 import { GiftCongratsModal } from './DailyGift/GiftCongratsModal';
-import { db } from '../../../utils/firebase';
+import { db, USERS_COLLECTION } from '../../../utils/firebase';
 import { SyncService } from '../../../services/SyncService';
 import { doc, getDoc, updateDoc, serverTimestamp, Timestamp } from 'firebase/firestore';
 
@@ -97,7 +97,7 @@ export const DailyGiftWindow: React.FC<DailyGiftWindowProps> = ({ onClose }) => 
             try {
                 const state = useGameStore.getState();
                 const userId = SyncService.getPrefixedUserId(state.vkUser, state.playerId);
-                const userDocRef = doc(db, 'пользователи', userId);
+                const userDocRef = doc(db, USERS_COLLECTION, userId);
                 const userSnap = await getDoc(userDocRef);
                 
                 if (userSnap.exists()) {
@@ -212,7 +212,7 @@ export const DailyGiftWindow: React.FC<DailyGiftWindowProps> = ({ onClose }) => 
         try {
             const state = useGameStore.getState();
             const userId = SyncService.getPrefixedUserId(state.vkUser, state.playerId);
-            const userDocRef = doc(db, 'пользователи', userId);
+            const userDocRef = doc(db, USERS_COLLECTION, userId);
 
             await updateDoc(userDocRef, {
                 lastDailyGiftClaimed: serverTimestamp(),
@@ -296,7 +296,7 @@ export const DailyGiftWindow: React.FC<DailyGiftWindowProps> = ({ onClose }) => 
 
             try {
                 const userId = SyncService.getPrefixedUserId(store.vkUser, store.playerId);
-                const userDocRef = doc(db, 'пользователи', userId);
+                const userDocRef = doc(db, USERS_COLLECTION, userId);
 
                 await updateDoc(userDocRef, {
                     lastWheelSpinTimeServer: serverTimestamp(),

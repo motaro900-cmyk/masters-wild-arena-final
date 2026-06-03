@@ -1,4 +1,4 @@
-import { db } from '../utils/firebase';
+import { db, USERS_COLLECTION } from '../utils/firebase';
 import { doc, setDoc, collection, getDocs, deleteDoc, serverTimestamp } from 'firebase/firestore';
 import { useGameStore } from '../store/useGameStore';
 import { syncService, SyncService } from './SyncService';
@@ -98,7 +98,7 @@ class PlayerSnapshotServiceClass {
                 maxEnergy: state.maxEnergy || 0,
             };
 
-            const playerRef = doc(db, 'пользователи', userId);
+            const playerRef = doc(db, USERS_COLLECTION, userId);
             await setDoc(playerRef, snapshotData, { merge: true });
         } catch (error) {
             console.error('[PlayerSnapshotService] Failed to save snapshot:', error);
@@ -110,7 +110,7 @@ class PlayerSnapshotServiceClass {
      */
     private async applyPendingResults(userId: string, state: any): Promise<OfflineSummary | null> {
         try {
-            const pendingRef = collection(db, 'пользователи', userId, 'pendingResults');
+            const pendingRef = collection(db, USERS_COLLECTION, userId, 'pendingResults');
             const snapshot = await getDocs(pendingRef);
 
             if (snapshot.empty) return null;

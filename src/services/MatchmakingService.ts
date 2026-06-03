@@ -1,4 +1,4 @@
-import { db } from '../utils/firebase';
+import { db, USERS_COLLECTION } from '../utils/firebase';
 import { collection, getDocs, query, where, orderBy, limit } from 'firebase/firestore';
 import { HEROES_DB } from '../configs/HeroesConfig';
 import { ITEMS_DATABASE } from '../game/configs/ItemsConfig';
@@ -119,7 +119,7 @@ class MatchmakingServiceClass {
 
     private async queryFirebase(myUserId: string, myRating: number, myWinRate: number): Promise<MatchOpponent | null> {
         try {
-            const playersRef = collection(db, 'пользователи');
+            const playersRef = collection(db, USERS_COLLECTION);
             // Ищем игроков в диапазоне ±100 кубков
             const minRating = Math.max(0, myRating - 100);
             const maxRating = myRating + 100;

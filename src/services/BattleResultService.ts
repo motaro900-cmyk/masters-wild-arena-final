@@ -1,4 +1,4 @@
-import { db } from '../utils/firebase';
+import { db, USERS_COLLECTION } from '../utils/firebase';
 import { collection, doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { matchmakingService } from './MatchmakingService';
 
@@ -117,7 +117,7 @@ class BattleResultServiceClass {
 
     private async writePendingResult(targetUserId: string, data: any): Promise<void> {
         try {
-            const pendingRef = doc(collection(db, 'пользователи', targetUserId, 'pendingResults'));
+            const pendingRef = doc(collection(db, USERS_COLLECTION, targetUserId, 'pendingResults'));
             await setDoc(pendingRef, {
                 ...data,
                 timestamp: serverTimestamp(),

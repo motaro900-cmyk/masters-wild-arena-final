@@ -1,4 +1,4 @@
-import { db } from '../../utils/firebase';
+import { db, USERS_COLLECTION } from '../../utils/firebase';
 import { doc, updateDoc, arrayUnion } from 'firebase/firestore';
 import { syncService, SyncService } from '../../services/SyncService';
 
@@ -31,13 +31,13 @@ export const createClanSlice = (set: any, get: any) => ({
 
         try {
             // 1. Добавляем senderId в список друзей текущего игрока в Firestore
-            const currentUserDoc = doc(db, 'пользователи', currentUserId);
+            const currentUserDoc = doc(db, USERS_COLLECTION, currentUserId);
             await updateDoc(currentUserDoc, {
                 friends: arrayUnion(senderId),
             });
 
             // 2. Добавляем текущего игрока в список друзей отправителя
-            const senderDocRef = doc(db, 'пользователи', senderId);
+            const senderDocRef = doc(db, USERS_COLLECTION, senderId);
             await updateDoc(senderDocRef, {
                 friends: arrayUnion(currentUserId),
             });

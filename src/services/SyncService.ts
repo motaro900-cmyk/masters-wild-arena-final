@@ -1,4 +1,4 @@
-import { db } from '../utils/firebase';
+import { db, USERS_COLLECTION, CHAT_COLLECTION, FEEDBACK_COLLECTION } from '../utils/firebase';
 import {
     doc,
     setDoc,
@@ -94,7 +94,7 @@ export class SyncService {
         }
 
         try {
-            const playerRef = doc(db, 'пользователи', userId);
+            const playerRef = doc(db, USERS_COLLECTION, userId);
 
             const selectedHeroId = state.selectedHeroId || 'panda';
             const fullState = {
@@ -271,7 +271,7 @@ export class SyncService {
      */
     public async getAllPlayers(): Promise<any[]> {
         try {
-            const playersRef = collection(db, 'пользователи');
+            const playersRef = collection(db, USERS_COLLECTION);
             const q = query(playersRef, orderBy('былВСети', 'desc'), limit(100));
             const querySnapshot = await getDocs(q);
 
@@ -290,7 +290,7 @@ export class SyncService {
      */
     public subscribeToAllPlayers(callback: (players: any[]) => void): () => void {
         try {
-            const playersRef = collection(db, 'пользователи');
+            const playersRef = collection(db, USERS_COLLECTION);
             const q = query(playersRef, orderBy('былВСети', 'desc'), limit(100));
 
             return onSnapshot(
@@ -317,7 +317,7 @@ export class SyncService {
      */
     public async updateRemotePlayerData(userId: string, data: any): Promise<void> {
         try {
-            const playerRef = doc(db, 'пользователи', userId);
+            const playerRef = doc(db, USERS_COLLECTION, userId);
             const playerSnap = await getDoc(playerRef);
 
             const mapping: Record<string, string> = {
@@ -395,7 +395,7 @@ export class SyncService {
      */
     public async sendFeedback(data: any): Promise<void> {
         try {
-            const feedbackRef = doc(collection(db, 'отзывы'));
+            const feedbackRef = doc(collection(db, FEEDBACK_COLLECTION));
             await setDoc(feedbackRef, {
                 ...data,
                 serverTimestamp: serverTimestamp(),
@@ -411,7 +411,7 @@ export class SyncService {
      */
     public async getAllFeedback(): Promise<any[]> {
         try {
-            const feedbackRef = collection(db, 'отзывы');
+            const feedbackRef = collection(db, FEEDBACK_COLLECTION);
             const q = query(feedbackRef, orderBy('timestamp', 'desc'), limit(50));
             const querySnapshot = await getDocs(q);
 
@@ -436,16 +436,16 @@ export class SyncService {
             }
 
             // Пробуем найти напрямую (например, VK-12345 или GUEST-XYZ)
-            let playerRef = doc(db, 'пользователи', id);
+            let playerRef = doc(db, USERS_COLLECTION, id);
             let playerSnap = await getDoc(playerRef);
 
             // Если не нашли и ID не содержит префиксов, пробуем добавить GUEST- или ГОСТЬ-
             if (!playerSnap.exists() && !id.startsWith('VK-') && !id.startsWith('GUEST-') && !id.startsWith('ГОСТЬ-')) {
-                playerRef = doc(db, 'пользователи', `GUEST-${id}`);
+                playerRef = doc(db, USERS_COLLECTION, `GUEST-${id}`);
                 playerSnap = await getDoc(playerRef);
 
                 if (!playerSnap.exists()) {
-                    playerRef = doc(db, 'пользователи', `ГОСТЬ-${id}`);
+                    playerRef = doc(db, USERS_COLLECTION, `ГОСТЬ-${id}`);
                     playerSnap = await getDoc(playerRef);
                 }
             }
@@ -468,7 +468,7 @@ export class SyncService {
      */
     public async getGlobalPlayers(limitCount: number = 20): Promise<any[]> {
         try {
-            const playersRef = collection(db, 'пользователи');
+            const playersRef = collection(db, USERS_COLLECTION);
             // Запрашиваем чуть больше игроков с запасом, чтобы отфильтровать тестовые аккаунты
             const q = query(playersRef, orderBy('былВСети', 'desc'), limit(limitCount + 15));
             const snapshot = await getDocs(q);
@@ -504,7 +504,7 @@ export class SyncService {
      */
     public subscribeToGlobalLeaders(limitCount: number = 50, callback: (leaders: any[]) => void): () => void {
         try {
-            const playersRef = collection(db, 'пользователи');
+            const playersRef = collection(db, USERS_COLLECTION);
             const q = query(playersRef, orderBy('рейтинг', 'desc'), limit(limitCount + 15));
 
             return onSnapshot(
@@ -549,7 +549,7 @@ export class SyncService {
      */
     public async sendFriendRequest(targetId: string, senderData: any): Promise<boolean> {
         try {
-            const requestsRef = collection(db, 'пользователи', targetId, 'запросы');
+            const requestsRef = collection(db, USERS_COLLECTION, targetId, 'запросы');
             const requestDoc = doc(requestsRef, senderData.id);
             await setDoc(requestDoc, {
                 ...senderData,
@@ -566,7 +566,7 @@ export class SyncService {
      * Подписывается на входящие запросы в друзья
      */
     public subscribeToFriendRequests(userId: string, callback: (requests: any[]) => void): () => void {
-        const requestsRef = collection(db, 'пользователи', userId, 'запросы');
+        const requestsRef = collection(db, USERS_COLLECTION, userId, 'запросы');
 
         return onSnapshot(
             requestsRef,
@@ -588,7 +588,7 @@ export class SyncService {
      */
     public async deleteFriendRequest(userId: string, requestId: string): Promise<void> {
         try {
-            const requestRef = doc(db, 'пользователи', userId, 'запросы', requestId);
+            const requestRef = doc(db, USERS_COLLECTION, userId, 'запросы', requestId);
             await deleteDoc(requestRef);
         } catch (error) {
             console.error('[SyncService] Failed to delete friend request:', error);
@@ -600,7 +600,7 @@ export class SyncService {
      */
     public async sendChatMessage(message: any): Promise<void> {
         try {
-            const chatRef = doc(collection(db, 'чат'));
+            const chatRef = doc(collection(db, CHAT_COLLECTION));
             await setDoc(chatRef, {
                 ...message,
                 serverTimestamp: serverTimestamp(),
@@ -615,7 +615,7 @@ export class SyncService {
      */
     public async deletePlayerMessages(playerName: string): Promise<void> {
         try {
-            const chatRef = collection(db, 'чат');
+            const chatRef = collection(db, CHAT_COLLECTION);
             const q = query(chatRef, where('author', '==', playerName));
             const snapshot = await getDocs(q);
             const promises = snapshot.docs.map((doc) => deleteDoc(doc.ref));
@@ -631,7 +631,7 @@ export class SyncService {
      */
     public async wipeGlobalChat(): Promise<void> {
         try {
-            const chatRef = collection(db, 'чат');
+            const chatRef = collection(db, CHAT_COLLECTION);
             const snapshot = await getDocs(chatRef);
             const promises = snapshot.docs.map((doc) => deleteDoc(doc.ref));
             await Promise.all(promises);
@@ -652,27 +652,27 @@ export class SyncService {
             await this.wipeGlobalChat();
 
             // 2. Wipe отзывы
-            const feedbackRef = collection(db, 'отзывы');
+            const feedbackRef = collection(db, FEEDBACK_COLLECTION);
             const feedbackSnap = await getDocs(feedbackRef);
             const feedbackPromises = feedbackSnap.docs.map((doc) => deleteDoc(doc.ref));
             await Promise.all(feedbackPromises);
             console.log(`[SyncService] Wiped ${feedbackSnap.docs.length} feedback documents.`);
 
             // 3. Wipe пользователи
-            const playersRef = collection(db, 'пользователи');
+            const playersRef = collection(db, USERS_COLLECTION);
             const playersSnap = await getDocs(playersRef);
 
             for (const playerDoc of playersSnap.docs) {
                 const userId = playerDoc.id;
 
                 // Delete "запросы" subcollection
-                const requestsRef = collection(db, 'пользователи', userId, 'запросы');
+                const requestsRef = collection(db, USERS_COLLECTION, userId, 'запросы');
                 const requestsSnap = await getDocs(requestsRef);
                 const requestsPromises = requestsSnap.docs.map((d) => deleteDoc(d.ref));
                 await Promise.all(requestsPromises);
 
                 // Delete "почта" subcollection
-                const mailRef = collection(db, 'пользователи', userId, 'почта');
+                const mailRef = collection(db, USERS_COLLECTION, userId, 'почта');
                 const mailSnap = await getDocs(mailRef);
                 const mailPromises = mailSnap.docs.map((d) => deleteDoc(d.ref));
                 await Promise.all(mailPromises);
@@ -692,7 +692,7 @@ export class SyncService {
      * Подписывается на обновления чата
      */
     public subscribeToChat(callback: (messages: any[]) => void): () => void {
-        const chatRef = collection(db, 'чат');
+        const chatRef = collection(db, CHAT_COLLECTION);
         const q = query(chatRef, orderBy('serverTimestamp', 'desc'), limit(50));
 
         return onSnapshot(
@@ -717,7 +717,7 @@ export class SyncService {
      */
     public async sendMail(userId: string, mailData: any): Promise<void> {
         try {
-            const mailRef = doc(collection(db, 'пользователи', userId, 'почта'));
+            const mailRef = doc(collection(db, USERS_COLLECTION, userId, 'почта'));
             await setDoc(mailRef, {
                 ...mailData,
                 timestamp: serverTimestamp(),
@@ -748,7 +748,7 @@ export class SyncService {
      * Подписывается на входящую почту игрока
      */
     public subscribeToMail(userId: string, callback: (mails: any[]) => void): () => void {
-        const mailRef = collection(db, 'пользователи', userId, 'почта');
+        const mailRef = collection(db, USERS_COLLECTION, userId, 'почта');
         const q = query(mailRef, orderBy('timestamp', 'desc'), limit(50));
 
         return onSnapshot(
@@ -770,7 +770,7 @@ export class SyncService {
      * Подписывается на обновления собственного документа игрока для обработки команд администратора в реальном времени
      */
     public subscribeToOwnProfile(userId: string, callback: (data: any) => void): () => void {
-        const playerRef = doc(db, 'пользователи', userId);
+        const playerRef = doc(db, USERS_COLLECTION, userId);
 
         return onSnapshot(
             playerRef,
@@ -787,7 +787,7 @@ export class SyncService {
 
     public async isNicknameUnique(name: string, currentUserId?: string, guestUserId?: string): Promise<boolean> {
         try {
-            const playersRef = collection(db, 'пользователи');
+            const playersRef = collection(db, USERS_COLLECTION);
             // Ищем точное совпадение имени (поддерживаем новый и старый ключи)
             const qName = query(playersRef, where('name', '==', name));
             const snapName = await getDocs(qName);
@@ -820,7 +820,7 @@ export class SyncService {
      */
     public async loadPlayerData(userId: string): Promise<any | null> {
         try {
-            const playerRef = doc(db, 'пользователи', userId);
+            const playerRef = doc(db, USERS_COLLECTION, userId);
             const playerSnap = await getDoc(playerRef);
 
             if (playerSnap.exists()) {
@@ -933,7 +933,7 @@ export class SyncService {
         if (!userId) return;
 
         try {
-            const playerRef = doc(db, 'пользователи', userId);
+            const playerRef = doc(db, USERS_COLLECTION, userId);
             const playerSnap = await getDoc(playerRef);
             if (playerSnap.exists()) {
                 const data = playerSnap.data();
