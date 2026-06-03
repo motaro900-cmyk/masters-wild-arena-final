@@ -58,7 +58,7 @@ export class EffectsManager {
     private pixiApp: PixiApp;
     private activeEffects: Map<string, gsap.core.Tween | gsap.core.Timeline> = new Map();
     private timeScale: number = 1.0;
-    private activeTrails: PIXI.Sprite[] = [];
+    public activeTrails: PIXI.Sprite[] = [];
     private effectCounter: number = 0;
 
     /**
@@ -484,6 +484,17 @@ export class EffectsManager {
                 if (effect) effect.kill();
             }
             this.activeEffects.clear();
+
+            this.activeTrails.forEach((trail) => {
+                if (trail) {
+                    gsap.killTweensOf(trail);
+                    if (!trail.destroyed) {
+                        trail.destroy();
+                    }
+                }
+            });
+            this.activeTrails = [];
+
             console.log('🛑 All effects stopped');
         } catch (error) {
             console.error('❌ Stop all effects error:', error);
