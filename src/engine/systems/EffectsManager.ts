@@ -121,17 +121,33 @@ export class EffectsManager {
         // Фильтруем уничтоженные частицы из пула (например, после очистки слоев)
         this.particlePool = this.particlePool.filter((p) => !p.destroyed);
 
-        // Если пул опустел, пересоздаем его
-        if (this.particlePool.length === 0) {
-            this.initParticlePool();
+        // Ищем свободную частицу
+        const free = this.particlePool.find((p) => !p.visible);
+        if (free) {
+            free.visible = true;
+            return free;
         }
 
-        for (const particle of this.particlePool) {
-            if (!particle.visible) {
-                particle.visible = true;
-                return particle;
-            }
+        const MAX_POOL_SIZE = 200;
+        // Пул исчерпан — динамически расширяем
+        if (this.particlePool.length < MAX_POOL_SIZE) {
+            const newParticle = new PIXI.Graphics();
+            newParticle.visible = true;
+            this.pixiApp.effectsLayer.addChild(newParticle);
+            this.particlePool.push(newParticle);
+            return newParticle;
         }
+
+        // Жёсткий лимит достигнут — переиспользуем самую старую частицу
+        const oldest = this.particlePool[0];
+        if (oldest) {
+            oldest.visible = true;
+            oldest.clear();
+            // Перемещаем в конец пула, чтобы не переиспользовать сразу же на следующем шаге
+            this.particlePool.push(this.particlePool.shift()!);
+            return oldest;
+        }
+
         return null;
     }
 
