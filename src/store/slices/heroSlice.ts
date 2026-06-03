@@ -143,9 +143,12 @@ export const createHeroSlice = (set: any, get: any) => ({
         allItems.forEach((item) => {
             const invItem = state.inventory.find((i: any) => String(i.id) === item.id);
             const lvl = invItem?.level || 1;
-            let mult = 1.0;
-            if (lvl === 2) mult = 1.15;
-            if (lvl === 3) mult = 1.35;
+            // Multipliers table for item levels 1 to 10 as per game design balance
+            const multTable: Record<number, number> = {
+                1: 1.0, 2: 1.15, 3: 1.35, 4: 1.50, 5: 1.65,
+                6: 1.80, 7: 2.00, 8: 2.20, 9: 2.45, 10: 2.75,
+            };
+            const mult = multTable[lvl] ?? 1.0;
 
             if (item.hpBonus) total.hp = Math.round(total.hp + item.hpBonus * mult);
             if (item.attackBonus) total.attack = Math.round(total.attack + item.attackBonus * mult);
