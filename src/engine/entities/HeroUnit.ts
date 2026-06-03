@@ -116,7 +116,7 @@ export class HeroUnit extends PIXI.Container implements IEffectTarget, IStatusEf
         this.setFrame(0);
     }
 
-    private clearCurrentResolve() {
+    public clearCurrentResolve() {
         if (this.currentResolve) {
             const res = this.currentResolve;
             this.currentResolve = null;
