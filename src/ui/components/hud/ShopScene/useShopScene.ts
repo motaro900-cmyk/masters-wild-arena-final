@@ -21,7 +21,6 @@ export const useShopScene = () => {
         level: playerLevel,
         gold,
         crystals,
-        shopRotation,
     } = useGameStore();
 
     const [activeMainTab, setActiveMainTab] = useState<MainTab>((shopInitialTab as MainTab) || 'ARSENAL');
@@ -93,11 +92,13 @@ export const useShopScene = () => {
         }
     }, [activeMainTab, shopInitialSubTab]);
 
+    const allItems = useMemo(() => getAllShopItems(), []);
+
     // Get all items in the sub-tab (full catalog)
     const filteredItems = useMemo(() => {
         const getRotationItems = (): ShopItem[] => {
             if (activeMainTab === 'BANK') {
-                return getAllShopItems().filter((item) => {
+                return allItems.filter((item) => {
                     const matchesMain = item.mainTab === activeMainTab;
                     if (!matchesMain) return false;
                     if (activeSubTab === 'FREE') return item.isAd === true;
@@ -110,17 +111,8 @@ export const useShopScene = () => {
             }
 
             if (activeMainTab === 'ARSENAL' || activeMainTab === 'ALCHEMY') {
-                const rotationIds = shopRotation?.[activeSubTab];
-                if (!rotationIds || rotationIds.length === 0) {
-                    return getAllShopItems().filter(
-                        (item) => item.mainTab === activeMainTab && item.subTab === activeSubTab,
-                    );
-                }
-                return getAllShopItems().filter(
-                    (item) =>
-                        item.mainTab === activeMainTab &&
-                        item.subTab === activeSubTab &&
-                        rotationIds.includes(item.id),
+                return allItems.filter(
+                    (item) => item.mainTab === activeMainTab && item.subTab === activeSubTab,
                 );
             }
 
@@ -135,7 +127,7 @@ export const useShopScene = () => {
             if (!hasDiscountA && hasDiscountB) return 1;
             return 0;
         });
-    }, [activeMainTab, activeSubTab, shopDiscounts]);
+    }, [allItems, activeMainTab, activeSubTab, shopDiscounts]);
 
     // Auto-select first item when tab changes
     useEffect(() => {
