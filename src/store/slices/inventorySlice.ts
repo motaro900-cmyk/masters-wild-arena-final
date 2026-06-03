@@ -199,9 +199,11 @@ export const createInventorySlice = (set: any, get: any) => ({
         const itemInInv = state.inventory.find((i: any) => i.id === id);
         if (!itemInInv) return;
 
-        const isEquipped = Object.values(state.equippedItems).some((val) => val === id);
-        if (isEquipped) {
-            console.warn('[inventorySlice] Cannot sell equipped item');
+        const isEquippedByAnyHero = Object.values(state.heroEquipment).some(
+            (heroGear: any) => heroGear && Object.values(heroGear).includes(id)
+        );
+        if (isEquippedByAnyHero) {
+            console.warn('sellItem: предмет надет на одного из героев, продажа заблокирована');
             return;
         }
 
@@ -508,12 +510,12 @@ export const createInventorySlice = (set: any, get: any) => ({
         if (invItemIndex === -1) return false;
 
         const invItem = state.inventory[invItemIndex];
-        const heroId = state.selectedHeroId || 'panda';
-        const equippedGear = state.heroEquipment[heroId] || {};
-        const isEquipped = Object.values(equippedGear).includes(itemId);
+        const isEquippedByAnyHero = Object.values(state.heroEquipment).some(
+            (heroGear: any) => heroGear && Object.values(heroGear).includes(itemId)
+        );
 
-        if (isEquipped) {
-            console.warn('[inventorySlice] Cannot dismantle equipped item');
+        if (isEquippedByAnyHero) {
+            console.warn('dismantleItem: предмет надет на одного из героев, продажа заблокирована');
             return false;
         }
 
