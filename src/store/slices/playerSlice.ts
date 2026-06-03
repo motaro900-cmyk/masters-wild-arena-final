@@ -131,11 +131,7 @@ export const createPlayerSlice = (set: any, get: any) => ({
     updateProfile: (data: any) =>
         set((state: any) => {
             const patch = { ...data };
-            if ('trophies' in patch && !('rating' in patch)) {
-                patch.rating = patch.trophies;
-            } else if ('rating' in patch && !('trophies' in patch)) {
-                patch.trophies = patch.rating;
-            }
+            // TODO: разделить rating и trophies в следующем сезоне
             return { ...state, ...patch };
         }),
 
