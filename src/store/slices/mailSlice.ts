@@ -76,6 +76,9 @@ export const createMailSlice = (set: any, get: any) => ({
                     if (r.type === 'GOLD') totalGold += r.amount;
                     if (r.type === 'CRYSTALS') totalCrystals += r.amount;
                     if (r.type === 'ENERGY') totalEnergy += r.amount;
+                    if (r.type === 'ITEM' && r.itemId) {
+                        get().addItemToInventory({ id: r.itemId, level: 1, amount: r.amount || 1 });
+                    }
                 });
             }
         });
