@@ -130,9 +130,13 @@ export const getRandomBotName = (): string => {
     if (isRussian) {
         const isMale = Math.random() < 0.65;
         if (isMale) {
-            return FIRST_NAMES_MALE[Math.floor(Math.random() * FIRST_NAMES_MALE.length)];
+            const firstName = FIRST_NAMES_MALE[Math.floor(Math.random() * FIRST_NAMES_MALE.length)];
+            const lastName = LAST_NAMES_MALE[Math.floor(Math.random() * LAST_NAMES_MALE.length)];
+            return `${firstName} ${lastName}`;
         } else {
-            return FIRST_NAMES_FEMALE[Math.floor(Math.random() * FIRST_NAMES_FEMALE.length)];
+            const firstName = FIRST_NAMES_FEMALE[Math.floor(Math.random() * FIRST_NAMES_FEMALE.length)];
+            const lastName = LAST_NAMES_FEMALE[Math.floor(Math.random() * LAST_NAMES_FEMALE.length)];
+            return `${firstName} ${lastName}`;
         }
     } else {
         return ENGLISH_NICKNAMES[Math.floor(Math.random() * ENGLISH_NICKNAMES.length)];
