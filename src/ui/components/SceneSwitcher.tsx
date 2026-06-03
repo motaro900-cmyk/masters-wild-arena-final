@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../../store/useGameStore';
 import { lazyWithRetry } from '../../utils/LazyWithRetry';
