@@ -412,7 +412,11 @@ export class BattleEngine {
         const startY = attacker.y;
 
         // Вычисляем шанс особого удара (спецприема) на основе силы оружия и характеристик
-        const weaponData = attackerWeaponId ? ITEMS_DATABASE[attackerWeaponId] : null;
+        const inventoryItem = useGameStore.getState().inventory.find(
+            (i: any) => i.id === attackerWeaponId || i.instanceId === attackerWeaponId,
+        );
+        const weaponBaseId = inventoryItem ? inventoryItem.id : attackerWeaponId;
+        const weaponData = weaponBaseId ? ITEMS_DATABASE[weaponBaseId] : null;
         let specialChance = 0.08; // базовый шанс 8%
         if (weaponData) {
             const rarity = (weaponData.rarity || 'COMMON').toUpperCase();
@@ -421,7 +425,7 @@ export class BattleEngine {
             else if (rarity === 'EPIC') specialChance += 0.18;
             else if (rarity === 'LEGENDARY') specialChance += 0.28;
 
-            const wLvl = weaponData.level || 1;
+            const wLvl = inventoryItem?.level || 1;
             specialChance += wLvl * 0.01;
         }
 
