@@ -5,9 +5,11 @@ import { AssetsMap } from '../../../configs/AssetsMap';
 import { audioService } from '../../../services/AudioService';
 import '../../styles/profile-hub.css';
 import { UnderDevelopmentModal } from './SharedUI';
+import { getAvatarFrameStyle, getAvatarFramePath, getAvatarImageStyle } from '../../../configs/ProfileCustomization';
 
 export const ProfileHub: React.FC = () => {
-    const { level, vipLevel, exp, vkUser, title, name, avatar } = useGameStore();
+    const { level, vipLevel, exp, vkUser, title, name, avatar, frame } = useGameStore();
+    const activeFrameStyle = getAvatarFrameStyle(frame);
 
     const getBadgeColor = (lvl: number) => {
         if (lvl >= 72) return 'from-[#8c6a3d] to-[#1a150f]'; // Эфир (Золотое сияние)
@@ -58,22 +60,22 @@ export const ProfileHub: React.FC = () => {
             >
                 {/* АВАТАР И РАМКА */}
                 <div className="absolute left-[-18px] top-[-20px] w-[160px] h-[160px] flex items-center justify-center">
-                    <div className="w-[108px] h-[108px] rounded-full overflow-hidden bg-black/40 z-10 flex items-center justify-center relative translate-y-[1px]">
+                    <div className="w-[108px] h-[108px] rounded-full overflow-hidden z-10 flex items-center justify-center relative translate-y-[1px]" style={{ backgroundColor: '#000' }}>
                         <img
                             src={
-                                avatar && avatar.startsWith('http')
+                                avatar && !avatar.startsWith('sprite:')
                                     ? avatar
                                     : vkUser?.photo_200 || vkUser?.photo || '/assets/images/avatars/panda.webp'
                             }
-                            className="w-full h-full object-cover scale-105"
+                            style={getAvatarImageStyle(avatar || '')}
                             alt="avatar"
                         />
                     </div>
 
-                    {/* VIP Аура (Свечение) */}
-                    {vipLevel > 0 && (
+                    {/* VIP / Custom Аура (Свечение) */}
+                    {activeFrameStyle.glowClass ? (
                         <div
-                            className="vip-avatar-glow absolute z-15"
+                            className={activeFrameStyle.glowClass}
                             style={{
                                 width: '110px',
                                 height: '110px',
@@ -82,11 +84,24 @@ export const ProfileHub: React.FC = () => {
                                 pointerEvents: 'none',
                             }}
                         />
+                    ) : (
+                        vipLevel > 0 && (
+                            <div
+                                className="vip-avatar-glow absolute z-15"
+                                style={{
+                                    width: '110px',
+                                    height: '110px',
+                                    borderRadius: '50%',
+                                    transform: 'translateY(1px)',
+                                    pointerEvents: 'none',
+                                }}
+                            />
+                        )
                     )}
 
                     <img
-                        src={AssetsMap.UI.AVATAR_FRAME_NEW}
-                        className="absolute inset-0 w-full h-full pointer-events-none z-20"
+                        src={getAvatarFramePath(frame)}
+                        className="absolute inset-0 w-full h-full pointer-events-none z-20 transition-all duration-300"
                         alt="frame"
                     />
 
@@ -303,7 +318,7 @@ export const ProfileHub: React.FC = () => {
                         e.stopPropagation();
                         audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
                         if ((window as any).setActiveHUDWindow) {
-                            (window as any).setActiveHUDWindow('SETTINGS');
+                            (window as any).setActiveHUDWindow('PROFILE_CUSTOMIZE');
                         }
                     }}
                     onPointerDown={(e) => e.stopPropagation()}

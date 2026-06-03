@@ -1,6 +1,8 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { AssetsMap } from '../../../../configs/AssetsMap';
+import { useGameStore } from '../../../../store/useGameStore';
+import { getAvatarFrameStyle, getAvatarFramePath, getAvatarImageStyle } from '../../../../configs/ProfileCustomization';
 
 interface MatchmakingSearchingProps {
     playerAvatarSrc: string;
@@ -27,6 +29,9 @@ export const MatchmakingSearching: React.FC<MatchmakingSearchingProps> = ({
     searchRange,
     onCancel,
 }) => {
+    const { frame } = useGameStore();
+    const activeFrameStyle = getAvatarFrameStyle(frame);
+
     return (
         <motion.div
             key="searching-lobby"
@@ -110,7 +115,7 @@ export const MatchmakingSearching: React.FC<MatchmakingSearchingProps> = ({
                             height: '108px',
                             borderRadius: '50%',
                             overflow: 'hidden',
-                            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                            backgroundColor: '#000',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
@@ -121,20 +126,15 @@ export const MatchmakingSearching: React.FC<MatchmakingSearchingProps> = ({
                     >
                         <img
                             src={playerAvatarSrc}
-                            style={{
-                                width: '100%',
-                                height: '100%',
-                                objectFit: 'cover',
-                                transform: 'scale(1.05)',
-                            }}
+                            style={getAvatarImageStyle(playerAvatarSrc || '')}
                             alt="Player Avatar"
                         />
                     </div>
 
-                    {/* VIP Аура вокруг аватара */}
-                    {vipLevel > 0 && (
+                    {/* VIP / Custom Аура вокруг аватара */}
+                    {activeFrameStyle.glowClass ? (
                         <div
-                            className="vip-avatar-glow"
+                            className={activeFrameStyle.glowClass}
                             style={{
                                 position: 'absolute',
                                 width: '110px',
@@ -145,11 +145,26 @@ export const MatchmakingSearching: React.FC<MatchmakingSearchingProps> = ({
                                 zIndex: 15,
                             }}
                         />
+                    ) : (
+                        vipLevel > 0 && (
+                            <div
+                                className="vip-avatar-glow"
+                                style={{
+                                    position: 'absolute',
+                                    width: '110px',
+                                    height: '110px',
+                                    borderRadius: '50%',
+                                    transform: 'translateY(1px)',
+                                    pointerEvents: 'none',
+                                    zIndex: 15,
+                                }}
+                            />
+                        )
                     )}
 
                     {/* Золотая рамка поверх аватара */}
                     <img
-                        src={AssetsMap.UI.AVATAR_FRAME_NEW}
+                        src={getAvatarFramePath(frame)}
                         style={{
                             position: 'absolute',
                             inset: 0,

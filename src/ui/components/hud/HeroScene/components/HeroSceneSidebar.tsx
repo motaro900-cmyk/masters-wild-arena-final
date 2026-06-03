@@ -78,7 +78,6 @@ const IconTalents = ({ active }: { active: boolean }) => (
 const TAB_CONFIG: { id: SceneTab; label: string; Icon: React.FC<{ active: boolean }> }[] = [
     { id: 'LIST', label: 'ГЕРОИ', Icon: IconHeroes },
     { id: 'HERO', label: 'СНАРЯЖЕНИЕ', Icon: IconEquipment },
-    { id: 'TALENTS', label: 'ТАЛАНТЫ', Icon: IconTalents },
 ];
 
 export const HeroSceneSidebar: React.FC<HeroSceneSidebarProps> = ({ activeTab, setActiveTab }) => {

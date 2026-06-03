@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ITEMS_DATABASE, calculateItemPower } from '../../../../../../game/configs/ItemsConfig';
 import { useGameStore } from '../../../../../../store/useGameStore';
-import { getHeroExpNeeded } from '../../../../../../store/slices/heroSlice';
+import { getHeroExpNeeded } from '../../../../../../utils/HeroLevelCalculator';
 import { audioService } from '../../../../../../services/AudioService';
 import { AssetsMap } from '../../../../../../configs/AssetsMap';
 import { EquipmentSlot } from './EquipmentSlot';
@@ -11,6 +11,7 @@ import { InventoryPanel } from '../../../InventoryPanel';
 import { StatCard } from './StatCard';
 import { rarityColors } from '../../constants/roleIcons';
 import { SKINS_DB } from '../../../../../../configs/SkinsConfig';
+import { TalentsView } from '../Talents/TalentsView';
 
 export const GearView = ({
     hero,
@@ -478,34 +479,83 @@ export const GearView = ({
 
                     {/* XP Progress Bar */}
                     {heroLevel < 10 ? (
-                        <div style={{ width: '220px', margin: '0 auto' }}>
+                        <div style={{ width: '280px', margin: '12px auto 0' }}>
                             <div
                                 style={{
-                                    height: '8px',
-                                    background: 'rgba(255, 255, 255, 0.1)',
-                                    borderRadius: '4px',
+                                    height: '10px',
+                                    background: 'rgba(10, 10, 15, 0.6)',
+                                    borderRadius: '5px',
                                     overflow: 'hidden',
-                                    border: '1px solid rgba(240, 192, 64, 0.2)',
+                                    border: '1px solid rgba(240, 192, 64, 0.35)',
                                     position: 'relative',
+                                    boxShadow: 'inset 0 2px 5px rgba(0, 0, 0, 0.8), 0 0 10px rgba(240, 192, 64, 0.15)',
                                 }}
                             >
-                                <div
+                                <motion.div
+                                    initial={{ width: 0 }}
+                                    animate={{ width: `${xpPercentage}%` }}
+                                    transition={{ duration: 0.8, ease: 'easeOut' }}
                                     style={{
-                                        width: `${xpPercentage}%`,
                                         height: '100%',
-                                        background: 'linear-gradient(90deg, #a855f7 0%, #f0c040 100%)',
-                                        borderRadius: '4px',
-                                        transition: 'width 0.3s ease',
+                                        background: 'linear-gradient(90deg, #7c3aed 0%, #d946ef 50%, #eab308 100%)',
+                                        borderRadius: '5px',
+                                        position: 'relative',
+                                        boxShadow: '0 0 12px rgba(217, 70, 239, 0.8), 0 0 20px rgba(234, 179, 8, 0.4)',
                                     }}
-                                />
+                                >
+                                    {/* Animated gleam effect */}
+                                    <div
+                                        style={{
+                                            position: 'absolute',
+                                            top: 0,
+                                            left: 0,
+                                            right: 0,
+                                            bottom: 0,
+                                            backgroundImage: 'linear-gradient(45deg, rgba(255,255,255,0.15) 25%, transparent 25%, transparent 50%, rgba(255,255,255,0.15) 50%, rgba(255,255,255,0.15) 75%, transparent 75%, transparent)',
+                                            backgroundSize: '15px 15px',
+                                            opacity: 0.3,
+                                            animation: 'move-stripes 2s linear infinite',
+                                        }}
+                                    />
+                                    <style>{`
+                                        @keyframes move-stripes {
+                                            0% { background-position: 0 0; }
+                                            100% { background-position: 30px 0; }
+                                        }
+                                    `}</style>
+                                </motion.div>
                             </div>
-                            <div style={{ fontSize: '10px', color: '#a88020', marginTop: '4px', fontWeight: 'bold' }}>
-                                ОПЫТ: {heroExp} / {xpNeeded}
+                            <div 
+                                style={{ 
+                                    display: 'flex', 
+                                    justifyContent: 'space-between', 
+                                    alignItems: 'center',
+                                    fontSize: '11px', 
+                                    color: '#d97706', 
+                                    marginTop: '6px', 
+                                    fontWeight: 800,
+                                    letterSpacing: '1px',
+                                    fontFamily: "'Philosopher', 'Inter', sans-serif",
+                                    textShadow: '0 1px 3px rgba(0,0,0,0.8)'
+                                }}
+                            >
+                                <span style={{ color: 'rgba(255, 255, 255, 0.6)' }}>ОПЫТ ГЕРОЯ</span>
+                                <span>{heroExp} <span style={{ color: 'rgba(255, 255, 255, 0.4)' }}>/</span> {xpNeeded} ({Math.round(xpPercentage)}%)</span>
                             </div>
                         </div>
                     ) : (
-                        <div style={{ fontSize: '11px', color: '#f0c040', fontWeight: 'bold', letterSpacing: '1px' }}>
-                            🌟 МАКСИМАЛЬНЫЙ УРОВЕНЬ 🌟
+                        <div 
+                            style={{ 
+                                fontSize: '12px', 
+                                color: '#eab308', 
+                                fontWeight: 900, 
+                                letterSpacing: '2px',
+                                marginTop: '12px',
+                                textShadow: '0 0 10px rgba(234, 179, 8, 0.5)',
+                                fontFamily: "'Cinzel', serif"
+                            }}
+                        >
+                            🏆 МАКСИМАЛЬНЫЙ УРОВЕНЬ 🏆
                         </div>
                     )}
                 </div>
@@ -523,7 +573,7 @@ export const GearView = ({
                         border: '1px solid rgba(255, 255, 255, 0.05)',
                     }}
                 >
-                    {['STATS', 'INVENTORY', 'LORE'].map((tab) => {
+                    {['STATS', 'INVENTORY', 'TALENTS', 'LORE'].map((tab) => {
                         const active = detailSubTab === tab;
                         return (
                             <button
@@ -533,22 +583,22 @@ export const GearView = ({
                                 }}
                                 style={{
                                     flex: 1,
-                                    padding: '10px',
+                                    padding: '10px 4px',
                                     background: active ? 'rgba(240, 192, 64, 0.12)' : 'transparent',
                                     color: active ? '#f0c040' : 'rgba(255, 255, 255, 0.5)',
                                     border: active ? '1px solid #f0c040' : '1px solid transparent',
                                     borderRadius: '8px',
                                     cursor: 'pointer',
                                     fontWeight: 900,
-                                    fontSize: '11px',
+                                    fontSize: '10px',
                                     fontFamily: "'Cinzel', 'Philosopher', serif",
-                                    letterSpacing: '1px',
+                                    letterSpacing: '0.5px',
                                     textShadow: active ? '0 0 8px rgba(240, 192, 64, 0.3)' : 'none',
                                     boxShadow: active ? 'inset 0 0 8px rgba(240, 192, 64, 0.05)' : 'none',
                                     transition: 'all 0.2s ease',
                                 }}
                             >
-                                {tab === 'STATS' ? 'АТРИБУТЫ' : tab === 'INVENTORY' ? 'ИНВЕНТАРЬ' : 'ЛЕГЕНДА'}
+                                {tab === 'STATS' ? 'АТРИБУТЫ' : tab === 'INVENTORY' ? 'ИНВЕНТАРЬ' : tab === 'TALENTS' ? 'ТАЛАНТЫ' : 'ЛЕГЕНДА'}
                             </button>
                         );
                     })}
@@ -569,7 +619,9 @@ export const GearView = ({
                         position: 'relative',
                     }}
                 >
-                    {detailSubTab === 'INVENTORY' ? (
+                    {detailSubTab === 'TALENTS' ? (
+                        <TalentsView hero={hero} isCompact={true} />
+                    ) : detailSubTab === 'INVENTORY' ? (
                         <InventoryPanel
                             mode="COMPACT"
                             onItemClick={onInternalItemClick}

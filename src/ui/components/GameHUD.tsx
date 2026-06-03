@@ -18,6 +18,7 @@ import { BaseWindow } from './hud/BaseWindow';
 import { FriendsWindow } from './hud/FriendsWindow';
 import { MailWindow } from './hud/MailWindow';
 import { SettingsWindow } from './hud/SettingsWindow';
+import { ProfileCustomizeWindow } from './hud/ProfileCustomizeWindow';
 import { DailyGiftWindow } from './hud/DailyGiftWindow';
 import { RankingWindow } from './hud/RankingWindow';
 import { ClanWindow } from './hud/ClanWindow';
@@ -31,6 +32,7 @@ import { BestiaryWindow } from './hud/BestiaryWindow';
 import { MatchmakingOverlay } from './hud/MatchmakingOverlay';
 import { safeGetItem, safeSetItem } from '../../utils/SafeStorage';
 import { TutorialOverlay } from './hud/TutorialOverlay';
+import { LevelUpOverlay } from './hud/LevelUpOverlay';
 
 export const GameHUD: React.FC = () => {
     const activeScreen = useGameStore((state) => state.activeScreen);
@@ -569,6 +571,17 @@ export const GameHUD: React.FC = () => {
                                 />
                             </BaseWindow>
                         )}
+                        {activeWindow === 'PROFILE_CUSTOMIZE' && (
+                            <BaseWindow
+                                title="НАСТРОЙКА ПРОФИЛЯ"
+                                isOpen={true}
+                                onClose={() => setActiveWindow(null)}
+                                width="1100px"
+                                height="740px"
+                            >
+                                <ProfileCustomizeWindow onClose={() => setActiveWindow(null)} />
+                            </BaseWindow>
+                        )}
                         {activeWindow === 'GIFT' && (
                             <BaseWindow
                                 title="КАЛЕНДАРЬ НАГРАД"
@@ -708,6 +721,7 @@ export const GameHUD: React.FC = () => {
 
             {/* --- TUTORIAL OVERLAY --- */}
             <TutorialOverlay />
+            <LevelUpOverlay />
         </div>
     );
 };

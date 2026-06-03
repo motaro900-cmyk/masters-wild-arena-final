@@ -1,11 +1,8 @@
 import { HEROES_DB } from '../../configs/HeroesConfig';
 import { ITEMS_DATABASE, IEquipmentStats } from '../../game/configs/ItemsConfig';
-
-export const getHeroExpNeeded = (level: number): number => {
-    if (level <= 1) return 100;
-    if (level === 2) return 200;
-    return (level - 1) * 200;
-};
+import { HeroLevelService } from '../../features/heroes/leveling/HeroLevelService';
+import { MAX_HERO_LEVEL } from '../../features/heroes/leveling/HeroLevelConfig';
+import { getLevelMultiplier } from '../../features/heroes/leveling/HeroLevelCalculator';
 
 export const createHeroSlice = (set: any, get: any) => ({
     // --- СОСТОЯНИЕ ГЕРОЕВ ---
@@ -23,10 +20,12 @@ export const createHeroSlice = (set: any, get: any) => ({
     } as Record<string, any>,
     ownedSkins: ['default'] as string[],
     equippedSkins: { panda: 'default', wolf_knight: 'default' } as Record<string, string>,
+    latestLevelUp: null as any,
 
     // --- ЭКШЕНЫ ГЕРОЕВ ---
     setSelectedHeroId: (id: string) => set({ selectedHeroId: id }),
     setHeroGalleryId: (id: string) => set({ heroGalleryId: id }),
+    setLatestLevelUp: (val: any) => set({ latestLevelUp: val }),
     unlockHero: (heroId: string) =>
         set((state: any) => {
             if (state.ownedHeroes.includes(heroId)) return state;
@@ -46,27 +45,20 @@ export const createHeroSlice = (set: any, get: any) => ({
     addHeroExp: (heroId: string, amount: number) =>
         set((state: any) => {
             const hero = state.heroes[heroId] || { level: 1, exp: 0, strength: 50, agility: 20, stamina: 30 };
-            let level = hero.level || 1;
-            let exp = (hero.exp || 0) + amount;
+            const heroData = HEROES_DB.find((h) => h.id === heroId);
+            const baseStats = heroData
+                ? { strength: heroData.stats.strength, stamina: heroData.stats.stamina }
+                : { strength: 50, stamina: 30 };
 
-            if (level >= 10) {
-                return state;
-            }
+            const { updatedProgress, delta } = HeroLevelService.addExp(
+                heroId,
+                hero,
+                amount,
+                baseStats
+            );
 
-            let leveledUp = false;
-            while (level < 10) {
-                const needed = getHeroExpNeeded(level);
-                if (exp >= needed) {
-                    exp -= needed;
-                    level += 1;
-                    leveledUp = true;
-                } else {
-                    break;
-                }
-            }
-
-            if (leveledUp) {
-                console.log(`[heroSlice] Hero ${heroId} leveled up to ${level}!`);
+            if (delta) {
+                console.log(`[heroSlice] Hero ${heroId} leveled up to ${delta.newLevel}!`);
                 setTimeout(() => {
                     if (get().updateQuestProgress) {
                         get().updateQuestProgress('UPGRADE', 1);
@@ -79,10 +71,10 @@ export const createHeroSlice = (set: any, get: any) => ({
                     ...state.heroes,
                     [heroId]: {
                         ...hero,
-                        level,
-                        exp,
+                        ...updatedProgress,
                     },
                 },
+                latestLevelUp: delta ? delta : state.latestLevelUp,
             };
         }),
     setTalentPoints: (val: number) =>
@@ -146,6 +138,7 @@ export const createHeroSlice = (set: any, get: any) => ({
             return { equippedSkins: equipped };
         });
     },
+    clearLatestLevelUp: () => set({ latestLevelUp: null }),
     getCalculatedStats: (heroId: string) => {
         const state = get() as any;
         const heroData = HEROES_DB.find((h) => h.id === heroId);
@@ -153,7 +146,7 @@ export const createHeroSlice = (set: any, get: any) => ({
 
         const heroState = state.heroes[heroId] || {};
         const heroLevel = heroState.level || 1;
-        const levelMultiplier = 1 + (heroLevel - 1) * 0.05;
+        const levelMultiplier = getLevelMultiplier(heroLevel);
 
         const equipment = state.heroEquipment[heroId] || {};
         const weapon = equipment.WEAPONS ? ITEMS_DATABASE[equipment.WEAPONS] : null;

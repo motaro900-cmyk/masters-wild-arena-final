@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../../../../store/useGameStore';
 import { getRankInfo } from '../../../../configs/RankSystem';
 import { AssetsMap } from '../../../../configs/AssetsMap';
+import { getAvatarFrameStyle, getAvatarFramePath, getAvatarImageStyle } from '../../../../configs/ProfileCustomization';
 
 interface BattleHUDProps {
     playerHero: any;
@@ -278,15 +279,20 @@ export const BattleHUD: React.FC<BattleHUDProps> = ({
         return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
     };
 
+    const selectedHeroId = useGameStore((s) => s.selectedHeroId) || 'panda';
+    const heroes = useGameStore((s) => s.heroes) || {};
+    const heroLevel = heroes[selectedHeroId]?.level || 1;
     const playerLevel = useGameStore((s) => s.level) || 1;
     const playerRating = useGameStore((s) => s.rating || s.trophies || 0);
     const playerRank = getRankInfo(playerRating);
     const playerName = useGameStore((s) => s.name) || 'Мастер';
     const rawAvatar = useGameStore((s) => s.avatar);
     const vkUser = useGameStore((s) => s.vkUser);
+    const playerFrame = useGameStore((s) => s.frame) || 'default';
+    const vipLevel = useGameStore((s) => s.vipLevel) || 0;
 
     const playerAvatar = useMemo(() => {
-        if (rawAvatar && rawAvatar.startsWith('http')) return rawAvatar;
+        if (rawAvatar && !rawAvatar.startsWith('sprite:')) return rawAvatar;
         return vkUser?.photo_200 || vkUser?.photo || '/assets/images/avatars/panda.webp';
     }, [rawAvatar, vkUser]);
 
@@ -303,8 +309,8 @@ export const BattleHUD: React.FC<BattleHUDProps> = ({
                 enemyRating: activeRankedOpponent.rating || 0,
             };
         }
-        return { enemyLevel: Math.max(1, playerLevel), enemyRating: Math.max(0, playerRating) };
-    }, [battleMode, activePveEnemy, playerLevel, playerRating, activeRankedOpponent]);
+        return { enemyLevel: Math.max(1, heroLevel), enemyRating: Math.max(0, playerRating) };
+    }, [battleMode, activePveEnemy, heroLevel, playerRating, activeRankedOpponent]);
 
     const enemyRank = getRankInfo(enemyRating);
 
@@ -381,7 +387,7 @@ export const BattleHUD: React.FC<BattleHUDProps> = ({
                                 height: '108px',
                                 borderRadius: '50%',
                                 overflow: 'hidden',
-                                background: 'rgba(0,0,0,0.4)',
+                                background: '#000',
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
@@ -392,13 +398,50 @@ export const BattleHUD: React.FC<BattleHUDProps> = ({
                             <img
                                 src={playerAvatar}
                                 alt="Player Avatar"
-                                style={{ width: '100%', height: '100%', objectFit: 'cover', transform: 'scale(1.05)' }}
+                                style={getAvatarImageStyle(playerAvatar || '')}
                             />
                         </div>
 
+                        {/* VIP / Custom Аура (Свечение) */}
+                        {(() => {
+                            const frameStyle = getAvatarFrameStyle(playerFrame);
+                            if (frameStyle.glowClass) {
+                                return (
+                                    <div
+                                        className={frameStyle.glowClass}
+                                        style={{
+                                            position: 'absolute',
+                                            width: '84px',
+                                            height: '84px',
+                                            borderRadius: '50%',
+                                            transform: 'translateY(1px)',
+                                            pointerEvents: 'none',
+                                            zIndex: 15,
+                                        }}
+                                    />
+                                );
+                            } else if (vipLevel > 0) {
+                                return (
+                                    <div
+                                        className="vip-avatar-glow"
+                                        style={{
+                                            position: 'absolute',
+                                            width: '84px',
+                                            height: '84px',
+                                            borderRadius: '50%',
+                                            transform: 'translateY(1px)',
+                                            pointerEvents: 'none',
+                                            zIndex: 15,
+                                        }}
+                                    />
+                                );
+                            }
+                            return null;
+                        })()}
+
                         {/* Round Frame */}
                         <img
-                            src={AssetsMap.UI.AVATAR_FRAME_NEW}
+                            src={getAvatarFramePath(playerFrame)}
                             style={{
                                 position: 'absolute',
                                 inset: 0,
@@ -509,7 +552,7 @@ export const BattleHUD: React.FC<BattleHUDProps> = ({
                                     }}
                                 />
                             )}
-                            <span>{playerName}</span>
+                            <span>{playerName} <span style={{ color: '#a1a1aa', fontSize: '12px', textTransform: 'none', marginLeft: '6px', fontWeight: 'bold' }}>Lv.{heroLevel}</span></span>
                         </div>
                         <div
                             style={{
@@ -849,7 +892,7 @@ export const BattleHUD: React.FC<BattleHUDProps> = ({
                                     }}
                                 />
                             )}
-                            <span>{enemyName}</span>
+                            <span><span style={{ color: '#a1a1aa', fontSize: '12px', textTransform: 'none', marginRight: '6px', fontWeight: 'bold' }}>Lv.{enemyLevel}</span>{enemyName}</span>
                         </div>
                         <div
                             style={{

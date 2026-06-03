@@ -609,6 +609,7 @@ export const BattleScene: React.FC = () => {
                             playerName={displayPlayerName}
                             playerImage={displayPlayerImage}
                             playerLevel={useGameStore.getState().level}
+                            heroLevel={useGameStore.getState().heroes[selectedHeroId]?.level || 1}
                             playerStats={{
                                 hp: playerStats4Pre.hp,
                                 attack: playerStats4Pre.attack,
@@ -630,6 +631,13 @@ export const BattleScene: React.FC = () => {
                                         : enemyData.baseStats.defense,
                                 speed: Math.round(enemyData.baseStats.speed),
                             }}
+                            enemyLevel={
+                                battleMode === 'PVE' && activePveEnemy
+                                    ? activePveEnemy.level
+                                    : battleMode === 'RANKED' && activeRankedOpponent
+                                      ? activeRankedOpponent.level
+                                      : 1
+                            }
                             onStart={handleBattleStart}
                             onCancel={handlePreBattleCancel}
                             battleMode={battleMode}

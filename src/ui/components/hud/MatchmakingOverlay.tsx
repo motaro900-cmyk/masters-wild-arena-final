@@ -41,7 +41,7 @@ export const MatchmakingOverlay: React.FC<MatchmakingOverlayProps> = ({ onFound,
 
     const playerName = name && name !== 'Мастер' ? name : vkUser?.first_name || vkUser?.firstName || 'Мастер';
     const playerAvatarSrc =
-        avatar && avatar.startsWith('http')
+        avatar && !avatar.startsWith('sprite:')
             ? avatar
             : vkUser?.photo_200 || vkUser?.photo || '/assets/images/avatars/panda.webp';
 

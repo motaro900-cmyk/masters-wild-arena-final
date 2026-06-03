@@ -15,12 +15,14 @@ export const HeroCard = ({
     onMouseMove,
     onMouseLeave,
 }: any) => {
-    const { gold, crystals, level, trophies } = useGameStore((s) => ({
+    const { gold, crystals, level, trophies, heroes } = useGameStore((s: any) => ({
         gold: s.gold,
         crystals: s.crystals,
         level: s.level ?? 1,
         trophies: s.trophies ?? 0,
+        heroes: s.heroes || {},
     }));
+    const heroLevel = heroes[hero.id]?.level || 1;
 
     const role = ROLE_ICONS[hero.role] || ROLE_ICONS.WARRIOR;
     const isGold = hero.unlockType === 'gold';
@@ -186,7 +188,7 @@ export const HeroCard = ({
                         lineHeight: 1.2,
                     }}
                 >
-                    {hero.name}
+                    {hero.name} {isOwned && <span style={{ color: '#f0c040', fontSize: '13px', marginLeft: '6px' }}>Lv.{heroLevel}</span>}
                 </h3>
                 <div
                     style={{
