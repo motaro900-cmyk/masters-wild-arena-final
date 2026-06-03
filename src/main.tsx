@@ -8,7 +8,7 @@ import { FpsCounter } from './ui/components/hud/FpsCounter';
 import { AppConfig } from './configs/AppConfig';
 import { useGameStore } from './store/useGameStore';
 import { AnimatePresence } from 'framer-motion';
-import { initVK, getVkUserInfo } from './utils/VKBridge';
+import { initVK, getVkUserInfo, isVkMiniApp } from './utils/VKBridge';
 import * as PIXI from 'pixi.js';
 import { AssetsMap } from './configs/AssetsMap';
 import { audioService } from './services/AudioService';
@@ -405,7 +405,8 @@ export const Root = () => {
                         window.location.hostname.endsWith('.local') ||
                         window.location.protocol === 'file:');
 
-                if (!isLocalhost && !state.vkUser) {
+                const isVk = isVkMiniApp();
+                if (!isLocalhost && !isVk && !state.vkUser) {
                     console.warn('❌ Blocked access: Guest access is forbidden in production.');
                     clearTimeout(timeoutId);
                     setNotInVk(true);
