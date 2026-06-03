@@ -524,10 +524,10 @@ export const BattleScene: React.FC = () => {
                 return [...sliced, newDmg];
             });
 
-            // Автоматическое удаление через 1000мс
+            // Автоматическое удаление через 1000мс / timeScale
             setTimeout(() => {
                 setDamageTexts((prev) => prev.filter((d) => d.id !== newDmg.id));
-            }, 1000);
+            }, 1000 / useGameStore.getState().timeScale);
         };
 
         const run = async () => {
@@ -663,11 +663,11 @@ export const BattleScene: React.FC = () => {
                                 transform: `translate3d(${dmg.x + animateX}px, ${dmg.y + animateY}px, 0)`,
                             }}
                             transition={{
-                                duration: 1.0,
+                                duration: 1.0 / timeScale,
                                 ease: 'easeOut',
                                 opacity: {
                                     times: [0, 0.15, 0.75, 1],
-                                    duration: 1.0,
+                                    duration: 1.0 / timeScale,
                                 },
                             }}
                             style={{
