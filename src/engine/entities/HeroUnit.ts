@@ -1,75 +1,15 @@
 import * as PIXI from 'pixi.js';
 import { gsap } from 'gsap';
-import { IHeroConfig, IHeroAnchors } from '../../configs/HeroesConfig';
-import { SpriteValidator } from '../../utils/SpriteValidator';
-import { ITEMS_DATABASE } from '../../game/configs/ItemsConfig';
+import { IHeroConfig } from '../../configs/HeroesConfig';
 import { useGameStore } from '../../store/useGameStore';
-import { audioService } from '../../services/AudioService';
 import { resolveAssetPath } from '../../utils/assetPath';
-
-import { EffectsManager, IEffectTarget } from '../systems/EffectsManager';
+import { IEffectTarget } from '../systems/EffectsManager';
 import { StatusEffectController } from './StatusEffectController';
 
-interface WeaponVisualConfig {
-    anchorX: number;
-    anchorY: number;
-    angleOffset?: number;
-    scaleMultiplier?: number;
-}
-
-const WEAPON_VISUAL_CONFIGS: Record<string, WeaponVisualConfig> = {
-    // Staffs (held in upper middle part, slightly angled)
-    stick_oak: { anchorX: 0.5, anchorY: 0.7, angleOffset: -10, scaleMultiplier: 1.0 },
-    staff_shadow: { anchorX: 0.5, anchorY: 0.7, angleOffset: -10, scaleMultiplier: 1.0 },
-    staff_celestial: { anchorX: 0.5, anchorY: 0.7, angleOffset: -10, scaleMultiplier: 1.0 },
-    staff_gold: { anchorX: 0.5, anchorY: 0.7, angleOffset: -10, scaleMultiplier: 1.0 },
-    staff_galaxy: { anchorX: 0.5, anchorY: 0.7, angleOffset: -10, scaleMultiplier: 1.0 },
-    staff_skull_green: { anchorX: 0.5, anchorY: 0.7, angleOffset: -10, scaleMultiplier: 1.0 },
-    staff_sun_burst: { anchorX: 0.5, anchorY: 0.7, angleOffset: -10, scaleMultiplier: 1.0 },
-
-    // Bows (held exactly in the middle)
-    bow_griffin: { anchorX: 0.5, anchorY: 0.5, angleOffset: 0, scaleMultiplier: 1.15 },
-
-    // Claws (centered)
-    claws_ice_fire: { anchorX: 0.5, anchorY: 0.5, angleOffset: 0, scaleMultiplier: 1.0 },
-
-    // Slings (centered)
-    sling_leather: { anchorX: 0.5, anchorY: 0.5, angleOffset: 0, scaleMultiplier: 0.95 },
-
-    // Frying Pan
-    pan_master: { anchorX: 0.5, anchorY: 0.9, angleOffset: 15, scaleMultiplier: 1.0 },
-
-    // Default Swords, Axes, Daggers (held at hilt/handle)
-    default: { anchorX: 0.5, anchorY: 0.85, angleOffset: 0, scaleMultiplier: 1.0 },
-};
-
-function getWeaponVisualConfig(itemId: string): WeaponVisualConfig {
-    if (WEAPON_VISUAL_CONFIGS[itemId]) return WEAPON_VISUAL_CONFIGS[itemId];
-    const idLower = itemId.toLowerCase();
-    if (idLower.includes('staff') || idLower.includes('stick') || idLower.includes('wand')) {
-        return WEAPON_VISUAL_CONFIGS['stick_oak'];
-    }
-    if (idLower.includes('bow')) {
-        return WEAPON_VISUAL_CONFIGS['bow_griffin'];
-    }
-    if (idLower.includes('claws')) {
-        return WEAPON_VISUAL_CONFIGS['claws_ice_fire'];
-    }
-    if (idLower.includes('sling')) {
-        return WEAPON_VISUAL_CONFIGS['sling_leather'];
-    }
-    if (idLower.includes('pan')) {
-        return WEAPON_VISUAL_CONFIGS['pan_master'];
-    }
-    return WEAPON_VISUAL_CONFIGS['default'];
-}
-
-const SLOT_CONFIG = {
-    WEAPON: { baseSize: 256, socketKey: 'rightHand' as keyof IHeroAnchors, zIndex: 25 },
-    HELMET: { baseSize: 100, socketKey: 'head' as keyof IHeroAnchors, zIndex: 30 },
-    ARMOR: { baseSize: 210, socketKey: 'center' as keyof IHeroAnchors, zIndex: 15 },
-    SHIELD: { baseSize: 105, socketKey: 'leftHand' as keyof IHeroAnchors, zIndex: 18 },
-} as const;
+// New imports from extracted modular files
+import { SLOT_CONFIG, getWeaponVisualConfig } from './HeroUnitConfigs';
+import * as EquipmentManager from './HeroEquipmentManager';
+import * as Animations from './HeroUnitAnimations';
 
 /**
  * HeroUnit — Ядро визуализации героя (Approach E).
@@ -80,13 +20,13 @@ export class HeroUnit extends PIXI.Container implements IEffectTarget {
     public bodyContainer!: PIXI.Container;
     public bodySprite!: PIXI.Sprite;
     public weaponSocketContainer: PIXI.Container | null = null;
-    private weaponSprite: PIXI.Sprite | null = null;
+    public weaponSprite: PIXI.Sprite | null = null;
     public helmetSocketContainer: PIXI.Container | null = null;
-    private helmetSprite: PIXI.Sprite | null = null;
+    public helmetSprite: PIXI.Sprite | null = null;
     public armorSocketContainer: PIXI.Container | null = null;
-    private armorSprite: PIXI.Sprite | null = null;
+    public armorSprite: PIXI.Sprite | null = null;
     public shieldSocketContainer: PIXI.Container | null = null;
-    private shieldSprite: PIXI.Sprite | null = null;
+    public shieldSprite: PIXI.Sprite | null = null;
     public config!: IHeroConfig;
     public heroInstanceId: string = Math.random().toString(36).substr(2, 9);
     public posesTextures: PIXI.Texture[] = [];
@@ -296,14 +236,7 @@ export class HeroUnit extends PIXI.Container implements IEffectTarget {
         const safeHeight = tex.height || 512;
         const isFallback = tex === PIXI.Texture.WHITE || safeWidth < 30 || safeHeight < 30;
         this.calculatedBaseScale = this.baseSize / Math.max(safeWidth, safeHeight, isFallback ? 512 : 0);
-        // Ensure the character faces RIGHT by default internally.
-        // Both Panda and Raccoon poses spritesheets face right by default.
-        const facesRightByDefault =
-            this.config.id === 'raccoon' ||
-            this.config.id === 'panda' ||
-            this.config.image.includes('raccoon') ||
-            this.config.image.includes('panda');
-        const internalScaleX = facesRightByDefault ? this.calculatedBaseScale : this.calculatedBaseScale;
+        const internalScaleX = this.calculatedBaseScale;
         this.bodyContainer.scale.set(internalScaleX, this.calculatedBaseScale);
         this.defaultScaleX = internalScaleX;
         this.defaultScaleY = this.calculatedBaseScale;
@@ -311,7 +244,6 @@ export class HeroUnit extends PIXI.Container implements IEffectTarget {
         // Установка точки опоры (Feet)
         this.bodySprite.anchor.set(this.config.anchors.feet.x, this.config.anchors.feet.y);
         this.bodySprite.zIndex = 10;
-
         this.bodySprite.tint = 0xffffff;
 
         this.bodyContainer.addChild(this.bodySprite);
@@ -326,267 +258,21 @@ export class HeroUnit extends PIXI.Container implements IEffectTarget {
         this.addChild(shadow);
     }
 
-    /**
-     * Экипировка оружия с использованием контейнера-сокета
-     */
-    async equipWeapon(itemId: string | null) {
-        this.currentWeaponId = itemId;
-        const isPanda = this.config?.id === 'panda' || this.config?.image.includes('panda');
-        const isRaccoon = this.config?.id === 'raccoon' || this.config?.image.includes('raccoon');
-        if (isPanda || isRaccoon) return;
-        // Очистка старых спрайтов и контейнеров
-        if (this.weaponSprite) {
-            gsap.killTweensOf(this.weaponSprite);
-            this.weaponSprite.destroy({ children: true, texture: false });
-            this.weaponSprite = null;
-        }
-        if (this.weaponSocketContainer) {
-            gsap.killTweensOf(this.weaponSocketContainer);
-            if (this.weaponSocketContainer.parent) {
-                this.weaponSocketContainer.parent.removeChild(this.weaponSocketContainer);
-            }
-            this.weaponSocketContainer.destroy({ children: true });
-            this.weaponSocketContainer = null;
-        }
-
-        if (!itemId || !this.config) return;
-
-        const itemData = ITEMS_DATABASE[itemId];
-        if (!itemData) return;
-
-        const socket = this.config.anchors.rightHand;
-        const feet = this.config.anchors.feet;
-
-        let tex: PIXI.Texture;
-        try {
-            tex = await PIXI.Assets.load(resolveAssetPath(itemData.image));
-            console.log(`[HeroUnit] Weapon loaded: ${itemId} (${tex.width}x${tex.height})`);
-            SpriteValidator.validate(tex, 'WEAPONS');
-        } catch (err) {
-            console.warn(`[HeroUnit] Failed to load weapon image ${itemData.image}, using fallback texture:`, err);
-            tex = PIXI.Texture.WHITE;
-        }
-
-        // Создаем контейнер-сокет
-        this.weaponSocketContainer = new PIXI.Container();
-        this.weaponSocketContainer.zIndex = SLOT_CONFIG.WEAPON.zIndex;
-        this.bodyContainer.addChild(this.weaponSocketContainer);
-
-        // Позиционируем контейнер-сокет по координатам руки
-        const texWidth = this.bodySprite.texture.width || 1;
-        const texHeight = this.bodySprite.texture.height || 1;
-        this.weaponSocketContainer.position.set((socket.x - feet.x) * texWidth, (socket.y - feet.y) * texHeight);
-        this.weaponSocketContainer.angle = socket.angle ?? 0;
-
-        // Создаем и настраиваем спрайт оружия
-        const s = new PIXI.Sprite(tex);
-        const wVisual = getWeaponVisualConfig(itemId);
-        s.anchor.set(wVisual.anchorX, wVisual.anchorY);
-
-        const weaponTexWidth = tex.width || 256;
-        const weaponTexHeight = tex.height || 256;
-        const weaponScale = SLOT_CONFIG.WEAPON.baseSize / Math.max(weaponTexWidth, weaponTexHeight, 256);
-        const socketScale = socket.scale ?? 1.0;
-        const visualScale = wVisual.scaleMultiplier ?? 1.0;
-        const parentScaleX = this.bodyContainer.scale.x || 1;
-
-        s.scale.set((weaponScale * socketScale * visualScale) / Math.abs(parentScaleX));
-        s.angle = wVisual.angleOffset ?? 0;
-        s.position.set(0, 0);
-
-        this.weaponSocketContainer.addChild(s);
-        this.weaponSprite = s;
-
-        console.log(`[HeroUnit] Weapon ${itemId} attached to body via socket container.`);
+    // --- Equipment Delegation ---
+    public equipWeapon(itemId: string | null): Promise<void> {
+        return EquipmentManager.equipWeapon(this, itemId);
     }
-
-    async equipHelmet(itemId: string | null) {
-        const isPanda = this.config?.id === 'panda' || this.config?.image.includes('panda');
-        const isRaccoon = this.config?.id === 'raccoon' || this.config?.image.includes('raccoon');
-        if (isPanda || isRaccoon) return;
-        if (this.helmetSprite) {
-            gsap.killTweensOf(this.helmetSprite);
-            this.helmetSprite.destroy({ children: true, texture: false });
-            this.helmetSprite = null;
-        }
-        if (this.helmetSocketContainer) {
-            gsap.killTweensOf(this.helmetSocketContainer);
-            if (this.helmetSocketContainer.parent) {
-                this.helmetSocketContainer.parent.removeChild(this.helmetSocketContainer);
-            }
-            this.helmetSocketContainer.destroy({ children: true });
-            this.helmetSocketContainer = null;
-        }
-
-        if (!itemId || !this.config) return;
-
-        const itemData = ITEMS_DATABASE[itemId];
-        if (!itemData) return;
-
-        const socket = this.config.anchors.head;
-        const feet = this.config.anchors.feet;
-
-        let tex: PIXI.Texture;
-        try {
-            tex = await PIXI.Assets.load(resolveAssetPath(itemData.image));
-        } catch (err) {
-            console.warn(`[HeroUnit] Failed to load helmet image ${itemData.image}, using fallback texture:`, err);
-            tex = PIXI.Texture.WHITE;
-        }
-
-        this.helmetSocketContainer = new PIXI.Container();
-        this.helmetSocketContainer.zIndex = SLOT_CONFIG.HELMET.zIndex;
-        this.bodyContainer.addChild(this.helmetSocketContainer);
-
-        const texWidth = this.bodySprite.texture.width || 1;
-        const texHeight = this.bodySprite.texture.height || 1;
-        this.helmetSocketContainer.position.set((socket.x - feet.x) * texWidth, (socket.y - feet.y) * texHeight);
-        this.helmetSocketContainer.angle = socket.angle ?? 0;
-
-        const s = new PIXI.Sprite(tex);
-        s.anchor.set(0.5, 0.5);
-
-        const itemTexWidth = tex.width || 256;
-        const itemTexHeight = tex.height || 256;
-        const helmetScale = SLOT_CONFIG.HELMET.baseSize / Math.max(itemTexWidth, itemTexHeight, 256);
-        const socketScale = socket.scale ?? 1.0;
-        const parentScaleX = this.bodyContainer.scale.x || 1;
-
-        s.scale.set((helmetScale * socketScale) / Math.abs(parentScaleX));
-        s.position.set(0, 0);
-
-        this.helmetSocketContainer.addChild(s);
-        this.helmetSprite = s;
+    public equipHelmet(itemId: string | null): Promise<void> {
+        return EquipmentManager.equipHelmet(this, itemId);
     }
-
-    async equipArmor(itemId: string | null) {
-        const isPanda = this.config?.id === 'panda' || this.config?.image.includes('panda');
-        const isRaccoon = this.config?.id === 'raccoon' || this.config?.image.includes('raccoon');
-        if (isPanda || isRaccoon) return;
-        if (this.armorSprite) {
-            gsap.killTweensOf(this.armorSprite);
-            this.armorSprite.destroy({ children: true, texture: false });
-            this.armorSprite = null;
-        }
-        if (this.armorSocketContainer) {
-            gsap.killTweensOf(this.armorSocketContainer);
-            if (this.armorSocketContainer.parent) {
-                this.armorSocketContainer.parent.removeChild(this.armorSocketContainer);
-            }
-            this.armorSocketContainer.destroy({ children: true });
-            this.armorSocketContainer = null;
-        }
-
-        if (!itemId || !this.config) return;
-
-        const itemData = ITEMS_DATABASE[itemId];
-        if (!itemData) return;
-
-        const socket = this.config.anchors.center;
-        const feet = this.config.anchors.feet;
-
-        let tex: PIXI.Texture;
-        try {
-            tex = await PIXI.Assets.load(resolveAssetPath(itemData.image));
-        } catch (err) {
-            console.warn(`[HeroUnit] Failed to load armor image ${itemData.image}, using fallback texture:`, err);
-            tex = PIXI.Texture.WHITE;
-        }
-
-        this.armorSocketContainer = new PIXI.Container();
-        this.armorSocketContainer.zIndex = SLOT_CONFIG.ARMOR.zIndex;
-        this.bodyContainer.addChild(this.armorSocketContainer);
-
-        const texWidth = this.bodySprite.texture.width || 1;
-        const texHeight = this.bodySprite.texture.height || 1;
-        this.armorSocketContainer.position.set((socket.x - feet.x) * texWidth, (socket.y - feet.y) * texHeight);
-        this.armorSocketContainer.angle = socket.angle ?? 0;
-
-        const s = new PIXI.Sprite(tex);
-        s.anchor.set(0.5, 0.5);
-
-        const itemTexWidth = tex.width || 256;
-        const itemTexHeight = tex.height || 256;
-        const armorScale = SLOT_CONFIG.ARMOR.baseSize / Math.max(itemTexWidth, itemTexHeight, 256);
-        const socketScale = socket.scale ?? 1.0;
-        const parentScaleX = this.bodyContainer.scale.x || 1;
-
-        s.scale.set((armorScale * socketScale) / Math.abs(parentScaleX));
-        s.position.set(0, 0);
-
-        this.armorSocketContainer.addChild(s);
-        this.armorSprite = s;
+    public equipArmor(itemId: string | null): Promise<void> {
+        return EquipmentManager.equipArmor(this, itemId);
     }
-
-    async equipShield(itemId: string | null) {
-        const isPanda = this.config?.id === 'panda' || this.config?.image.includes('panda');
-        const isRaccoon = this.config?.id === 'raccoon' || this.config?.image.includes('raccoon');
-        if (isPanda || isRaccoon) return;
-        if (this.shieldSprite) {
-            gsap.killTweensOf(this.shieldSprite);
-            this.shieldSprite.destroy({ children: true, texture: false });
-            this.shieldSprite = null;
-        }
-        if (this.shieldSocketContainer) {
-            gsap.killTweensOf(this.shieldSocketContainer);
-            if (this.shieldSocketContainer.parent) {
-                this.shieldSocketContainer.parent.removeChild(this.shieldSocketContainer);
-            }
-            this.shieldSocketContainer.destroy({ children: true });
-            this.shieldSocketContainer = null;
-        }
-
-        if (!itemId || !this.config) return;
-
-        const itemData = ITEMS_DATABASE[itemId];
-        if (!itemData) return;
-
-        const socket = this.config.anchors.leftHand || this.config.anchors.center;
-        const feet = this.config.anchors.feet;
-
-        let tex: PIXI.Texture;
-        try {
-            tex = await PIXI.Assets.load(resolveAssetPath(itemData.image));
-        } catch (err) {
-            console.warn(`[HeroUnit] Failed to load shield image ${itemData.image}, using fallback texture:`, err);
-            tex = PIXI.Texture.WHITE;
-        }
-
-        this.shieldSocketContainer = new PIXI.Container();
-        this.shieldSocketContainer.zIndex = SLOT_CONFIG.SHIELD.zIndex;
-        this.bodyContainer.addChild(this.shieldSocketContainer);
-
-        const texWidth = this.bodySprite.texture.width || 1;
-        const texHeight = this.bodySprite.texture.height || 1;
-        this.shieldSocketContainer.position.set((socket.x - feet.x) * texWidth, (socket.y - feet.y) * texHeight);
-        this.shieldSocketContainer.angle = socket.angle ?? 0;
-
-        const s = new PIXI.Sprite(tex);
-        s.anchor.set(0.5, 0.5);
-
-        const itemTexWidth = tex.width || 256;
-        const itemTexHeight = tex.height || 256;
-        const shieldScale = SLOT_CONFIG.SHIELD.baseSize / Math.max(itemTexWidth, itemTexHeight, 256);
-        const socketScale = socket.scale ?? 1.0;
-        const parentScaleX = this.bodyContainer.scale.x || 1;
-
-        s.scale.set((shieldScale * socketScale) / Math.abs(parentScaleX));
-        s.position.set(0, 0);
-
-        this.shieldSocketContainer.addChild(s);
-        this.shieldSprite = s;
+    public equipShield(itemId: string | null): Promise<void> {
+        return EquipmentManager.equipShield(this, itemId);
     }
-
-    /**
-     * Массовое обновление (для совместимости с BattleEngine)
-     */
-    async updateEquipment(equipment: Record<string, string | null>) {
-        await Promise.all([
-            this.equipWeapon(equipment['WEAPONS'] || null),
-            this.equipHelmet(equipment['HELMETS'] || null),
-            this.equipArmor(equipment['ARMOR'] || null),
-            this.equipShield(equipment['SHIELDS'] || null),
-        ]);
+    public updateEquipment(equipment: Record<string, string | null>): Promise<void> {
+        return EquipmentManager.updateEquipment(this, equipment);
     }
 
     /**
@@ -723,7 +409,6 @@ export class HeroUnit extends PIXI.Container implements IEffectTarget {
             this.setFrame(chosenPose);
 
             if (chosenPose === 6) {
-                // Jump strike animation: squash and stretch on impact (subtle)
                 gsap.killTweensOf(this.bodyContainer.scale);
                 const baseScale = this.calculatedBaseScale;
                 const squashTl = gsap.timeline();
@@ -745,7 +430,6 @@ export class HeroUnit extends PIXI.Container implements IEffectTarget {
                     this.setFrame(0); // return to Idle
                 }, 700 / timeScale);
             } else if (chosenPose === 4) {
-                // Thrust: Horizontal stretch to simulate pierce (subtle)
                 gsap.killTweensOf(this.bodyContainer.scale);
                 const baseScale = this.calculatedBaseScale;
                 const stretchTl = gsap.timeline();
@@ -767,7 +451,6 @@ export class HeroUnit extends PIXI.Container implements IEffectTarget {
                     this.setFrame(0);
                 }, 600 / timeScale);
             } else if (chosenPose === 5) {
-                // Sweep: rotation elastic snap
                 gsap.killTweensOf(this.bodyContainer);
                 const rotationTl = gsap.timeline();
                 rotationTl.timeScale(timeScale);
@@ -786,7 +469,6 @@ export class HeroUnit extends PIXI.Container implements IEffectTarget {
                     this.setFrame(0);
                 }, 650 / timeScale);
             } else {
-                // Swing (Pose 3)
                 gsap.killTweensOf(this.bodyContainer);
                 const swingAnimTl = gsap.timeline();
                 swingAnimTl.timeScale(timeScale);
@@ -815,24 +497,21 @@ export class HeroUnit extends PIXI.Container implements IEffectTarget {
             const swingTl = gsap.timeline();
             swingTl.timeScale(timeScale);
 
-            // 1. Замах назад (Slower)
             swingTl.to(this.weaponSocketContainer, {
                 angle: originalAngle - 45,
-                duration: 0.2, // Slowed down from 0.08
+                duration: 0.2,
                 ease: 'power1.out',
             });
 
-            // 2. Резкий и мощный удар вперед (Slower)
             swingTl.to(this.weaponSocketContainer, {
                 angle: originalAngle + 75,
-                duration: 0.25, // Slowed down from 0.1
+                duration: 0.25,
                 ease: 'power3.out',
             });
 
-            // 3. Плавный возврат в исходное положение (Slower)
             swingTl.to(this.weaponSocketContainer, {
                 angle: originalAngle,
-                duration: 0.5, // Slowed down from 0.25
+                duration: 0.5,
                 ease: 'power2.out',
             });
         }
@@ -842,15 +521,14 @@ export class HeroUnit extends PIXI.Container implements IEffectTarget {
             const bodyTl = gsap.timeline();
             bodyTl.timeScale(timeScale);
 
-            // Легкий наклон корпуса вперед при ударе (Slower)
             bodyTl.to(this.bodyContainer, {
                 rotation: 0.08,
-                duration: 0.25, // Slowed down from 0.1
+                duration: 0.25,
                 ease: 'power1.out',
             });
             bodyTl.to(this.bodyContainer, {
                 rotation: 0,
-                duration: 0.5, // Slowed down from 0.2
+                duration: 0.5,
                 ease: 'power2.out',
             });
         }
@@ -1030,7 +708,6 @@ export class HeroUnit extends PIXI.Container implements IEffectTarget {
     }
 
     public destroy(options?: any) {
-        // Bug fix: clear ghost-trail interval immediately to prevent it firing on a destroyed object
         if (this.trailInterval) {
             clearInterval(this.trailInterval);
             this.trailInterval = null;
@@ -1067,629 +744,44 @@ export class HeroUnit extends PIXI.Container implements IEffectTarget {
         super.destroy(options);
     }
 
-    /**
-     * Телепортация персонажа с эффектом тумана
-     */
+    // --- Animation Delegation ---
     public teleportTo(newX: number, newY: number): Promise<void> {
-        return new Promise((resolve) => {
-            EffectsManager.getInstance().spawnSmokePuff(this.x, this.y);
-
-            gsap.to(this, {
-                alpha: 0,
-                duration: 0.2,
-                onComplete: () => {
-                    this.x = newX;
-                    this.y = newY;
-                    EffectsManager.getInstance().spawnSmokePuff(newX, newY);
-
-                    gsap.to(this, {
-                        alpha: 1,
-                        duration: 0.2,
-                        onComplete: () => {
-                            resolve();
-                        },
-                    });
-                },
-            });
-        });
+        return Animations.teleportTo(this, newX, newY);
     }
 
-    /**
-     * Прыжок + приземление с ударом (Landing Slam)
-     */
     public jumpSlam(targetX: number): Promise<void> {
-        return new Promise((resolve) => {
-            const originalY = this.y;
-
-            // 1. Прыжок вверх
-            gsap.to(this, {
-                y: this.y - 120,
-                duration: 0.3,
-                ease: 'power2.out',
-                onComplete: () => {
-                    // 2. Падение на цель
-                    gsap.to(this, {
-                        y: originalY,
-                        x: targetX,
-                        duration: 0.2,
-                        ease: 'power2.in',
-                        onComplete: () => {
-                            this.spawnLandingEffect();
-                            resolve();
-                        },
-                    });
-                },
-            });
-        });
+        return Animations.jumpSlam(this, targetX);
     }
 
-    /**
-     * Визуальный эффект приземления после прыжка
-     */
-    private spawnLandingEffect(): void {
-        try {
-            if (!this.parent) return;
-
-            const ring = new PIXI.Graphics();
-            ring.beginPath();
-            ring.circle(0, 0, 30);
-            ring.stroke({ color: 0xdddddd, width: 4 });
-            ring.position.set(this.x, this.y);
-            this.parent.addChild(ring);
-
-            ring.scale.set(0);
-            gsap.to(ring.scale, {
-                x: 3,
-                y: 3,
-                duration: 0.3,
-                ease: 'power1.out',
-                onComplete: () => {
-                    if (ring && !ring.destroyed) {
-                        gsap.killTweensOf(ring);
-                        gsap.killTweensOf(ring.scale);
-                        ring.destroy();
-                    }
-                },
-            });
-            gsap.to(ring, {
-                alpha: 0,
-                duration: 0.3,
-                ease: 'power1.out',
-            });
-
-            const dustCount = 6 + Math.floor(Math.random() * 3);
-            for (let i = 0; i < dustCount; i++) {
-                const dust = new PIXI.Graphics();
-                const radius = 6 + Math.random() * 8;
-                dust.beginPath();
-                dust.circle(0, 0, radius);
-                dust.fill({ color: 0xcccccc, alpha: 0.5 });
-
-                dust.position.set(this.x, this.y);
-                this.parent.addChild(dust);
-
-                const angle = Math.PI + Math.random() * Math.PI;
-                const distance = 30 + Math.random() * 50;
-
-                gsap.to(dust, {
-                    x: this.x + Math.cos(angle) * distance,
-                    y: this.y + Math.sin(angle) * distance * 0.4,
-                    alpha: 0,
-                    duration: 0.35,
-                    ease: 'power1.out',
-                    onComplete: () => {
-                        if (dust && !dust.destroyed) {
-                            gsap.killTweensOf(dust);
-                            dust.destroy();
-                        }
-                    },
-                });
-            }
-
-            EffectsManager.getInstance().screenShake(5, 0.95, 200);
-        } catch (e) {
-            console.error('❌ spawnLandingEffect error:', e);
-        }
+    public spawnLandingEffect(): void {
+        Animations.spawnLandingEffect(this);
     }
 
-    /**
-     * GSAP-рывок вперед для атаки
-     */
     public animateLungeForward(isPlayer: boolean, poseOverride?: number, victimX?: number): Promise<void> {
-        this.clearCurrentResolve();
-        this.isLunging = true;
-        // Спавним облако пыли под ногами при разгоне
-        EffectsManager.getInstance().spawnDustPuff(this.x, this.y);
-        return new Promise((resolve) => {
-            // Safety timeout: resolve after 2s max to prevent freeze
-            const safetyTimer = setTimeout(() => {
-                if (this.isLunging) {
-                    this.isLunging = false;
-                    resolve();
-                }
-            }, 2000);
-            const wrappedResolve = () => {
-                clearTimeout(safetyTimer);
-                this.isLunging = false;
-                resolve();
-            };
-            this.currentResolve = wrappedResolve;
-            const timeScale = useGameStore.getState().timeScale || 1;
-            const startX = this.x;
-            const startY = this.y;
-            // Дамажим вплотную: останавливаемся в 135px перед целью
-            const targetX =
-                victimX !== undefined ? (isPlayer ? victimX - 135 : victimX + 135) : startX + 540 * (isPlayer ? 1 : -1);
-
-            gsap.killTweensOf(this);
-
-            const isRaccoon = this.config?.id === 'raccoon' || this.config?.image.includes('raccoon');
-            const isPanda = this.config?.id === 'panda' || this.config?.image.includes('panda');
-
-            if (poseOverride !== undefined) {
-                this.nextAttackPose = poseOverride;
-                this.setFrame(2);
-            } else if (isPanda) {
-                // Randomly select next attack pose index: Swing (3), Thrust (4), Sweep (5), Jump Strike (6)
-                this.nextAttackPose = [3, 4, 5, 6][Math.floor(Math.random() * 4)];
-                this.setFrame(2); // Set run/lunge pose frame initially
-            } else if (isRaccoon) {
-                this.nextAttackPose = [3, 4, 5, 6][Math.floor(Math.random() * 4)];
-                this.setFrame(2);
-            }
-
-            // Start spawning ghost trails (only for ASSASSIN role)
-            const isAssassin = this.config?.role === 'ASSASSIN';
-            if (this.trailInterval) clearInterval(this.trailInterval);
-            if (isAssassin) {
-                const fxColor = 0x222222; // Черный/теневой шлейф Убийцы
-                this.trailInterval = setInterval(() => {
-                    EffectsManager.getInstance().spawnGhostTrail(this, 300, fxColor);
-                }, 40);
-            }
-
-            const tl = gsap.timeline({
-                onComplete: () => {
-                    if (this.trailInterval) {
-                        clearInterval(this.trailInterval);
-                        this.trailInterval = null;
-                    }
-                    if (this.currentResolve === wrappedResolve) {
-                        this.currentResolve = null;
-                    }
-                    wrappedResolve();
-                },
-            });
-            tl.timeScale(timeScale);
-
-            if (this.nextAttackPose === 6) {
-                // 1. Jump strike lunge: high arc (Y: -360px) to targets
-                tl.to(this, {
-                    x: targetX,
-                    y: startY - 360,
-                    duration: 0.35,
-                    ease: 'power1.out',
-                });
-                // 2. Slam down
-                tl.to(this, {
-                    y: startY,
-                    duration: 0.2,
-                    ease: 'power2.in',
-                });
-            } else if (this.nextAttackPose === 4) {
-                // 2. Thrust: ultra fast straight line dash
-                tl.to(this, {
-                    x: targetX,
-                    duration: 0.18,
-                    ease: 'power3.out',
-                });
-                tl.to(this, {
-                    x: targetX + 15 * (isPlayer ? 1 : -1),
-                    duration: 0.12,
-                    ease: 'sine.inOut',
-                });
-            } else {
-                // 3. Swing (normal lunge): small hop curve
-                tl.to(this, {
-                    x: targetX,
-                    y: startY - 40,
-                    duration: 0.25,
-                    ease: 'sine.out',
-                });
-                tl.to(this, {
-                    y: startY,
-                    duration: 0.15,
-                    ease: 'sine.in',
-                });
-            }
-        });
+        return Animations.animateLungeForward(this, isPlayer, poseOverride, victimX);
     }
 
     public animateLungeReturn(startX: number, startY: number): Promise<void> {
-        this.clearCurrentResolve();
-        this.isLunging = true;
-        // Спавним облако пыли при резком отскоке
-        EffectsManager.getInstance().spawnDustPuff(this.x, this.y);
-        return new Promise((resolve) => {
-            // Safety timeout: resolve after 2s max to prevent freeze
-            const safetyTimer = setTimeout(() => {
-                if (this.isLunging) {
-                    this.isLunging = false;
-                    this.x = startX;
-                    this.y = startY;
-                    this.setFrame(0);
-                    resolve();
-                }
-            }, 2000);
-            const wrappedResolve = () => {
-                clearTimeout(safetyTimer);
-                this.isLunging = false;
-                resolve();
-            };
-            this.currentResolve = wrappedResolve;
-            const timeScale = useGameStore.getState().timeScale || 1;
-
-            const isAssassin = this.config?.role === 'ASSASSIN';
-            if (this.trailInterval) clearInterval(this.trailInterval);
-            if (isAssassin) {
-                this.trailInterval = setInterval(() => {
-                    EffectsManager.getInstance().spawnGhostTrail(this, 300, 0x222222);
-                }, 40);
-            }
-
-            const tl = gsap.timeline({
-                onComplete: () => {
-                    if (this.trailInterval) {
-                        clearInterval(this.trailInterval);
-                        this.trailInterval = null;
-                    }
-                    this.x = startX;
-                    this.y = startY;
-                    this.setFrame(0); // return to Idle
-                    if (this.currentResolve === wrappedResolve) {
-                        this.currentResolve = null;
-                    }
-                    wrappedResolve();
-                },
-            });
-            tl.timeScale(timeScale);
-
-            tl.to(this, {
-                x: startX,
-                y: startY,
-                duration: 0.45,
-                ease: 'power2.inOut',
-            });
-        });
+        return Animations.animateLungeReturn(this, startX, startY);
     }
 
-    /**
-     * Телепортация: Исчезновение (Shadow step out)
-     * Сжимает и растягивает персонажа по вертикали (эффект искажения), убирает альфу
-     */
     public animateTeleportOut(): Promise<void> {
-        this.clearCurrentResolve();
-        return new Promise((resolve) => {
-            this.currentResolve = resolve;
-            const timeScale = useGameStore.getState().timeScale || 1;
-
-            gsap.killTweensOf(this);
-            if (this.bodyContainer) {
-                gsap.killTweensOf(this.bodyContainer.scale);
-                gsap.killTweensOf(this.bodyContainer);
-            }
-
-            // Звук исчезновения
-            audioService.playSFX('/assets/audio/sfx/dodge.mp3');
-
-            // Небольшой взрыв частиц в месте исчезновения
-            EffectsManager.getInstance().particleBurst(this.x, this.y - 80, 8, 0x5a189a, 120);
-
-            const tl = gsap.timeline({
-                onComplete: () => {
-                    this.alpha = 0;
-                    if (this.currentResolve === resolve) {
-                        this.currentResolve = null;
-                    }
-                    resolve();
-                },
-            });
-            tl.timeScale(timeScale);
-
-            // Эффект растягивания по вертикали (Distortion)
-            if (this.bodyContainer) {
-                tl.to(this.bodyContainer.scale, {
-                    x: this.defaultScaleX * 0.4,
-                    y: this.defaultScaleY * 1.8,
-                    duration: 0.08,
-                    ease: 'power2.in',
-                });
-            }
-
-            tl.to(
-                this,
-                {
-                    alpha: 0,
-                    duration: 0.08,
-                    ease: 'power2.in',
-                },
-                0,
-            );
-        });
+        return Animations.animateTeleportOut(this);
     }
 
-    /**
-     * Телепортация: Появление (Shadow step in)
-     * Помещает в новые координаты, восстанавливает сжатие и альфу с кольцевым эффектом
-     */
     public animateTeleportIn(targetX: number, faceScaleX: number): Promise<void> {
-        this.clearCurrentResolve();
-        return new Promise((resolve) => {
-            this.currentResolve = resolve;
-            const timeScale = useGameStore.getState().timeScale || 1;
-
-            this.x = targetX;
-            this.scale.x = faceScaleX;
-            this.alpha = 0;
-
-            if (this.bodyContainer) {
-                this.bodyContainer.scale.set(this.defaultScaleX * 0.4, this.defaultScaleY * 1.8);
-            }
-
-            // Кольцо теневой энергии (Arrival Burst) в точке появления
-            EffectsManager.getInstance().particleBurst(this.x, this.y - 80, 6, 0xbd00ff, 100);
-
-            const tl = gsap.timeline({
-                onComplete: () => {
-                    this.alpha = 1;
-                    if (this.bodyContainer) {
-                        this.bodyContainer.scale.set(this.defaultScaleX, this.defaultScaleY);
-                    }
-                    if (this.currentResolve === resolve) {
-                        this.currentResolve = null;
-                    }
-                    resolve();
-                },
-            });
-            tl.timeScale(timeScale);
-
-            // Восстановление нормального масштаба
-            if (this.bodyContainer) {
-                tl.to(this.bodyContainer.scale, {
-                    x: this.defaultScaleX,
-                    y: this.defaultScaleY,
-                    duration: 0.1,
-                    ease: 'back.out(2)',
-                });
-            }
-
-            tl.to(
-                this,
-                {
-                    alpha: 1,
-                    duration: 0.1,
-                    ease: 'power2.out',
-                },
-                0,
-            );
-        });
+        return Animations.animateTeleportIn(this, targetX, faceScaleX);
     }
 
-    public showStunEffect() { this.statusEffectController.showStunEffect(); }
-    public removeStunEffect() { this.statusEffectController.removeStunEffect(); }
-    public showBurnEffect() { this.statusEffectController.showBurnEffect(); }
-    public applyBurnStatus(durationMs: number = 2000) { this.statusEffectController.applyBurnStatus(durationMs); }
-    public removeBurnEffect() { this.statusEffectController.removeBurnEffect(); }
-    public showFreezeEffect() { this.statusEffectController.showFreezeEffect(); }
-    public removeFreezeEffect() { this.statusEffectController.removeFreezeEffect(); }
-    public showPoisonEffect() { this.statusEffectController.showPoisonEffect(); }
-    public removePoisonEffect() { this.statusEffectController.removePoisonEffect(); }
-    public updateTints() { this.statusEffectController.updateTints(); }
-
-    /**
-     * GSAP-анимация смерти (плавный наклон + растворение + улетание оружия)
-     */
     public animateDeath(isPlayer: boolean): Promise<void> {
-        this.clearCurrentResolve();
-        return new Promise((resolve) => {
-            this.currentResolve = resolve;
-            const timeScale = useGameStore.getState().timeScale || 1;
-
-            // Bug fix: safety timer prevents BattleEngine from hanging if GSAP timeline
-            // is killed externally (e.g. scene reset during death animation)
-            const safetyTimer = setTimeout(() => {
-                if (this.currentResolve === resolve) {
-                    this.currentResolve = null;
-                    resolve();
-                }
-            }, 3000);
-
-            gsap.killTweensOf(this);
-            if (this.bodyContainer) gsap.killTweensOf(this.bodyContainer);
-            if (this.bodySprite) gsap.killTweensOf(this.bodySprite);
-            if (this.weaponSocketContainer) gsap.killTweensOf(this.weaponSocketContainer);
-
-            const tl = gsap.timeline({
-                onComplete: () => {
-                    clearTimeout(safetyTimer);
-                    if (this.currentResolve === resolve) {
-                        this.currentResolve = null;
-                    }
-                    resolve();
-                },
-            });
-            tl.timeScale(timeScale);
-
-            const isRaccoon = this.config?.id === 'raccoon' || this.config?.image.includes('raccoon');
-            const isPanda = this.config?.id === 'panda' || this.config?.image.includes('panda');
-
-            if (isPanda) {
-                this.setFrame(7); // Lay-down / sweep pose
-            } else if (isRaccoon) {
-                this.setFrame(7); // Raccoon fall frame
-            }
-
-            const targetRotation =
-                isPanda || isRaccoon
-                    ? 0 // Already flat or fall pose, no extra rotation needed
-                    : this.rotation + (isPlayer ? -Math.PI / 2.5 : Math.PI / 2.5);
-
-            // Падение тела и растворение (Slower)
-            tl.to(this, {
-                rotation: targetRotation,
-                alpha: 0,
-                duration: 1.6, // Slowed down from 0.8
-                ease: 'power3.out',
-            });
-
-            // Оружие выпадает и вращается отдельно (Slower)
-            if (this.weaponSocketContainer) {
-                tl.to(
-                    this.weaponSocketContainer,
-                    {
-                        y: this.weaponSocketContainer.y + 160,
-                        rotation: this.weaponSocketContainer.rotation + 1.8,
-                        alpha: 0,
-                        duration: 1.2, // Slowed down from 0.6
-                        ease: 'power1.in',
-                    },
-                    0,
-                );
-            }
-        });
+        return Animations.animateDeath(this, isPlayer);
     }
 
-    /**
-     * GSAP-отскок при получении урона со Squash & Stretch для критических
-     */
     public animateHitReaction(isCrit: boolean): Promise<void> {
-        this.clearCurrentResolve();
-        return new Promise((resolve) => {
-            this.currentResolve = resolve;
-            const timeScale = useGameStore.getState().timeScale || 1;
-            const startX = this.x;
-            const knockbackDist = isCrit ? 60 : 30;
-            const dir = this.x < 960 ? -1 : 1;
-
-            gsap.killTweensOf(this);
-
-            const isRaccoon = this.config?.id === 'raccoon' || this.config?.image.includes('raccoon');
-            const isPanda = this.config?.id === 'panda' || this.config?.image.includes('panda');
-
-            if (isPanda) {
-                this.setFrame(isCrit ? 7 : 5); // Bracing (5) or laydown (7)
-            } else if (isRaccoon) {
-                this.setFrame(isCrit ? 7 : 6); // Bracing (6) or laydown (7)
-            }
-
-            const tl = gsap.timeline({
-                onComplete: () => {
-                    this.x = startX;
-                    if (isPanda || isRaccoon) {
-                        this.setFrame(0); // return to Idle
-                    }
-                    if (this.currentResolve === resolve) {
-                        this.currentResolve = null;
-                    }
-                    resolve();
-                },
-            });
-            tl.timeScale(timeScale);
-
-            // Быстрый отскок назад (Slower)
-            tl.to(this, {
-                x: startX + knockbackDist * dir,
-                duration: 0.2, // Slowed down from 0.08
-                ease: 'power1.out',
-            });
-
-            // Возвращение на место (Slower)
-            tl.to(this, {
-                x: startX,
-                duration: 0.4, // Slowed down from 0.16
-                ease: 'power2.inOut',
-            });
-
-            if (isCrit && this.bodyContainer) {
-                const baseScaleY = this.bodyContainer.scale.y;
-                const baseScaleX = this.bodyContainer.scale.x;
-
-                gsap.killTweensOf(this.bodyContainer.scale);
-
-                const scaleTl = gsap.timeline();
-                scaleTl.timeScale(timeScale);
-
-                // Деформация сжатия по вертикали и растяжения по горизонтали (Slower, subtle)
-                scaleTl.to(this.bodyContainer.scale, {
-                    x: baseScaleX * 1.05,
-                    y: baseScaleY * 0.95,
-                    duration: 0.2, // Slowed down from 0.08
-                    ease: 'power1.out',
-                });
-
-                // Возврат к нормальному размеру (Slower)
-                scaleTl.to(this.bodyContainer.scale, {
-                    x: baseScaleX,
-                    y: baseScaleY,
-                    duration: 0.4, // Slowed down from 0.16
-                    ease: 'power2.out',
-                });
-            }
-        });
+        return Animations.animateHitReaction(this, isCrit);
     }
 
     public animateDodge(isPlayer: boolean): Promise<void> {
-        this.clearCurrentResolve();
-        return new Promise((resolve) => {
-            this.currentResolve = resolve;
-            const timeScale = useGameStore.getState().timeScale || 1;
-            const startAngle = this.angle;
-            const targetAngle = startAngle + (isPlayer ? -15 : 15);
-            const startX = this.x;
-            const dodgeDist = 140;
-            const targetX = startX + dodgeDist * (isPlayer ? -1 : 1);
-
-            gsap.killTweensOf(this);
-
-            const isRaccoon = this.config?.id === 'raccoon' || this.config?.image.includes('raccoon');
-            const isPanda = this.config?.id === 'panda' || this.config?.image.includes('panda');
-
-            if (isPanda) {
-                this.setFrame(1); // Defend stance (1)
-            } else if (isRaccoon) {
-                this.setFrame(1); // Defend stance (1)
-            }
-
-            const tl = gsap.timeline({
-                onComplete: () => {
-                    this.angle = startAngle;
-                    this.x = startX;
-                    if (isPanda || isRaccoon) {
-                        this.setFrame(0); // return to Idle
-                    }
-                    if (this.currentResolve === resolve) {
-                        this.currentResolve = null;
-                    }
-                    resolve();
-                },
-            });
-            tl.timeScale(timeScale);
-
-            // Уклон назад
-            tl.to(this, {
-                angle: targetAngle,
-                x: targetX,
-                duration: 0.22,
-                ease: 'power2.out',
-            });
-
-            // Плавное возвращение
-            tl.to(this, {
-                angle: startAngle,
-                x: startX,
-                duration: 0.38,
-                ease: 'power1.inOut',
-            });
-        });
+        return Animations.animateDodge(this, isPlayer);
     }
 }
