@@ -910,6 +910,7 @@ export class BattleEngine {
             isAttackerPlayer: boolean,
             isCrit: boolean,
         ) => {
+            // Task 17: Apply appropriate status effects (stun, burn, poison, freeze) in battle simulation
             if (isCrit && Math.random() < 0.35) {
                 this.applyStatus(victim, 'STUN', 1, 0, !isAttackerPlayer);
             }
