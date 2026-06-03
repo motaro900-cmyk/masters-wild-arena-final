@@ -22,7 +22,7 @@ interface LeaderboardEntry {
 export const RankingWindow: React.FC = () => {
     const { rating, vkUser, avatar: playerAvatar } = useGameStore();
     const [activeTab, setActiveTab] = React.useState<'GLOBAL' | 'CLAN' | 'FRIENDS'>('GLOBAL');
-    const [showFooter, setShowFooter] = React.useState(false);
+
     const [selectedPlayer, setSelectedPlayer] = React.useState<LeaderboardEntry | null>(null);
     const [showRewards, setShowRewards] = React.useState(false);
     const [globalLeaders, setGlobalLeaders] = React.useState<LeaderboardEntry[]>([]);
@@ -76,16 +76,7 @@ export const RankingWindow: React.FC = () => {
         };
     }, [vkUser]);
 
-    React.useEffect(() => {
-        const handleScroll = () => {
-            if (scrollRef.current) {
-                setShowFooter(scrollRef.current.scrollTop > 100);
-            }
-        };
-        const el = scrollRef.current;
-        el?.addEventListener('scroll', handleScroll);
-        return () => el?.removeEventListener('scroll', handleScroll);
-    }, []);
+
 
     // Сезон I: РАССВЕТ ДИКОГО ЛЕСА — 1–15 июня 2026
     const SEASON_END = new Date('2026-06-15T23:59:59');
