@@ -51,6 +51,19 @@ export const useGameStore = create<any>()(
                 }, 0);
                 return Math.max(0, totalEarned - totalSpent);
             },
+            resetStore: () => {
+                set({
+                    ...createPlayerSlice(set, get),
+                    ...createShopSlice(set, get),
+                    ...createInventorySlice(set, get),
+                    ...createHeroSlice(set, get),
+                    ...createQuestSlice(set, get),
+                    ...createClanSlice(set, get),
+                    ...createBattleSlice(set, get),
+                    ...createChatSlice(set, get),
+                    ...createMailSlice(set, get),
+                });
+            },
         }),
         {
             name: 'game-storage',

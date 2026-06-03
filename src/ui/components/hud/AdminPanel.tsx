@@ -526,7 +526,13 @@ const AdminPanelContent: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                                 СКОПИРОВАТЬ DEBUG DUMP (JSON) 📄
                             </button>
                             <button
-                                onClick={() => confirm('ВЫПОЛНИТЬ ПОЛНЫЙ СБРОС?') && localStorage.clear()}
+                                onClick={() => {
+                                    if (confirm('ВЫПОЛНИТЬ ПОЛНЫЙ СБРОС?')) {
+                                        localStorage.clear();
+                                        useGameStore.getState().resetStore();
+                                        window.location.reload();
+                                    }
+                                }}
                                 style={{ ...bigBtnStyle, background: '#431b1b', color: '#ff4d4d', marginTop: '10px' }}
                             >
                                 HARD RESET LOCAL DATA
