@@ -1,12 +1,13 @@
 import * as PIXI from 'pixi.js';
 import { gsap } from 'gsap';
+import { IStatusEffectTarget } from './IStatusEffectTarget';
 
 /**
  * StatusEffectController manages all combat status effects (Stun, Burn, Freeze, Poison)
  * for a HeroUnit. It handles visual containers, graphics, tweens, and update-loop particle generation.
  */
 export class StatusEffectController {
-    private unit: any; // Using type 'any' to avoid circular dependency in imports with HeroUnit
+    private unit: IStatusEffectTarget;
 
     public isStunned: boolean = false;
     public isBurning: boolean = false;

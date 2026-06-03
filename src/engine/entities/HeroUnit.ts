@@ -5,6 +5,7 @@ import { useGameStore } from '../../store/useGameStore';
 import { resolveAssetPath } from '../../utils/assetPath';
 import { IEffectTarget } from '../systems/EffectsManager';
 import { StatusEffectController } from './StatusEffectController';
+import { IStatusEffectTarget } from './IStatusEffectTarget';
 
 // New imports from extracted modular files
 import { SLOT_CONFIG, getWeaponVisualConfig } from './HeroUnitConfigs';
@@ -15,7 +16,7 @@ import * as Animations from './HeroUnitAnimations';
  * HeroUnit — Ядро визуализации героя (Approach E).
  * Специализирован на сборке тела и оружия с использованием "Железной математики".
  */
-export class HeroUnit extends PIXI.Container implements IEffectTarget {
+export class HeroUnit extends PIXI.Container implements IEffectTarget, IStatusEffectTarget {
     public baseSize = 512;
     public bodyContainer!: PIXI.Container;
     public bodySprite!: PIXI.Sprite;
@@ -33,6 +34,15 @@ export class HeroUnit extends PIXI.Container implements IEffectTarget {
     public calculatedBaseScale: number = 1.0;
     public nextAttackPose: number = 3;
     public statusEffectController: StatusEffectController;
+
+    public showStunEffect(): void { this.statusEffectController.showStunEffect(); }
+    public removeStunEffect(): void { this.statusEffectController.removeStunEffect(); }
+    public showFreezeEffect(): void { this.statusEffectController.showFreezeEffect(); }
+    public removeFreezeEffect(): void { this.statusEffectController.removeFreezeEffect(); }
+    public showPoisonEffect(): void { this.statusEffectController.showPoisonEffect(); }
+    public removePoisonEffect(): void { this.statusEffectController.removePoisonEffect(); }
+    public showBurnEffect(): void { this.statusEffectController.showBurnEffect(); }
+    public removeBurnEffect(): void { this.statusEffectController.removeBurnEffect(); }
 
     public get isStunnedStatus(): boolean { return this.statusEffectController.isStunned; }
     public set isStunnedStatus(val: boolean) { this.statusEffectController.isStunned = val; }
@@ -599,7 +609,7 @@ export class HeroUnit extends PIXI.Container implements IEffectTarget {
         this.addChild(g);
     }
 
-    private animTime: number = 0;
+    public animTime: number = 0;
 
     /**
      * Обновление анимации (Idle дыхание с проверкой твинов)
