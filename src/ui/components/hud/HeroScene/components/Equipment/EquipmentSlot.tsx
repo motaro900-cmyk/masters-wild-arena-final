@@ -25,7 +25,7 @@ export const EquipmentSlot = ({ id, label, itemId, activeDraggingId, onClick, se
     const draggingItemData = activeDraggingId ? (ITEMS_DATABASE[String(activeDraggingId)] as any) : null;
     const isCompatible = draggingItemData && draggingItemData.subTab === id;
 
-    const invItem = store.inventory.find((i: any) => String(i.id) === String(itemId));
+    const invItem = (store.inventory || []).find((i: any) => String(i.id) === String(itemId));
     const itemLevel = invItem?.level || 1;
 
     return (

@@ -22,7 +22,24 @@ export class SyncService {
     private syncTimeout: ReturnType<typeof setTimeout> | null = null;
     private writeChain: Promise<any> = Promise.resolve();
 
-    private constructor() {}
+    private constructor() {
+        if (typeof window !== 'undefined') {
+            const flushSync = () => {
+                if (this.syncTimeout) {
+                    clearTimeout(this.syncTimeout);
+                    this.syncTimeout = null;
+                    this.syncPlayerData().catch(() => {});
+                }
+            };
+            window.addEventListener('beforeunload', flushSync);
+            window.addEventListener('pagehide', flushSync);
+            window.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'hidden') {
+                    flushSync();
+                }
+            });
+        }
+    }
 
     public static getInstance(): SyncService {
         if (!SyncService.instance) {

@@ -59,7 +59,8 @@ export const GearView = ({
     const [localSelectedId, setLocalSelectedId] = useState<string | null>(null);
     const [showPowerTooltip, setShowPowerTooltip] = useState(false);
 
-    const { inventory } = useGameStore();
+    const { inventory: rawInventory } = useGameStore();
+    const inventory = rawInventory || [];
 
     const gearPower = Object.values(equippedIds).reduce((acc: number, itemId: any) => {
         if (!itemId) return acc;

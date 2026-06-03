@@ -122,7 +122,7 @@ export const useHeroDnd = (
         }
     };
 
-    const activeItem = activeId ? inventory.find((i: any) => i.id === activeId) : null;
+    const activeItem = activeId ? (inventory || []).find((i: any) => i.id === activeId) : null;
     const activeItemData = activeItem ? (ITEMS_DATABASE[String(activeItem.id)] as any) : null;
 
     return {
