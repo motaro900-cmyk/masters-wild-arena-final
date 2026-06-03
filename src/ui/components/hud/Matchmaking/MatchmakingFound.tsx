@@ -1,55 +1,12 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { getRankInfo } from '../../../../configs/RankSystem';
 import { useGameStore } from '../../../../store/useGameStore';
 import { AssetsMap } from '../../../../configs/AssetsMap';
-import { ITEMS_DATABASE, calculateItemPower } from '../../../../game/configs/ItemsConfig';
-import { calculateBattleRewards } from '../../../../game/configs/GameConstants';
-
 import { LocalStatRow } from './components/LocalStatRow';
 import { CircularGearLayout } from './components/CircularGearLayout';
-
-const LaurelLeft: React.FC = () => (
-    <svg
-        width="32"
-        height="48"
-        viewBox="0 0 32 48"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-        style={{ opacity: 0.85 }}
-    >
-        <path d="M25 40 C18 36, 8 26, 8 16 C8 10, 14 4, 20 2" stroke="#fbbf24" strokeWidth="2" strokeLinecap="round" />
-        <path d="M10 20 Q5 16, 8 12 Q11 14, 10 20" fill="#fbbf24" />
-        <path d="M12 28 Q6 26, 9 21 Q14 22, 12 28" fill="#fbbf24" />
-        <path d="M17 35 Q11 33, 13 28 Q18 29, 17 35" fill="#fbbf24" />
-        <path d="M9 13 Q4 10, 8 7 Q11 8, 9 13" fill="#fbbf24" />
-        <path d="M12 6 Q8 3, 12 1 Q14 3, 12 6" fill="#fbbf24" />
-    </svg>
-);
-
-const LaurelRight: React.FC = () => (
-    <svg
-        width="32"
-        height="48"
-        viewBox="0 0 32 48"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-        style={{ opacity: 0.85 }}
-    >
-        <path
-            d="M7 40 C14 36, 24 26, 24 16 C24 10, 18 4, 12 2"
-            stroke="#fbbf24"
-            strokeWidth="2"
-            strokeLinecap="round"
-        />
-        <path d="M22 20 Q27 16, 24 12 Q21 14, 22 20" fill="#fbbf24" />
-        <path d="M20 28 Q26 26, 23 21 Q18 22, 20 28" fill="#fbbf24" />
-        <path d="M15 35 Q21 33, 19 28 Q14 29, 15 35" fill="#fbbf24" />
-        <path d="M23 13 Q28 10, 24 7 Q21 8, 23 13" fill="#fbbf24" />
-        <path d="M20 6 Q24 3, 20 1 Q18 3, 20 6" fill="#fbbf24" />
-    </svg>
-);
-
+import { LaurelLeft, LaurelRight } from './components/MatchmakingDecorations';
+import { MatchmakingNameplates } from './components/MatchmakingNameplate';
+import { calculateTotalPower, calculateWinRewards } from './utils/matchmakingUtils';
 
 interface MatchmakingFoundProps {
     opponent: {
@@ -102,65 +59,11 @@ export const MatchmakingFound: React.FC<MatchmakingFoundProps> = ({
 }) => {
     const { heroEquipment, selectedHeroId, title, name, wins, totalBattles, isPremium } = useGameStore();
 
-    const winRewards = React.useMemo(() => {
-        const pLevel = level || 1;
-        let goldMin = 70;
-        let goldMax = 120;
-        if (pLevel <= 10) {
-            goldMin = 70;
-            goldMax = 120;
-        } else if (pLevel <= 20) {
-            goldMin = 150;
-            goldMax = 250;
-        } else if (pLevel <= 40) {
-            goldMin = 300;
-            goldMax = 450;
-        } else if (pLevel <= 60) {
-            goldMin = 400;
-            goldMax = 500;
-        } else {
-            goldMin = 450;
-            goldMax = 500;
-        }
-
-        const getXPReward = (lvl: number, won: boolean): number => {
-            if (won) {
-                if (lvl <= 10) return 100 + lvl * 20;
-                if (lvl <= 30) return 300 + (lvl - 10) * 10;
-                return Math.min(500 + (lvl - 30) * 5, 600);
-            } else {
-                if (lvl <= 10) return 20 + lvl * 4;
-                if (lvl <= 30) return 60 + (lvl - 10) * 2;
-                return Math.min(100 + (lvl - 30) * 1, 120);
-            }
-        };
-
-        const xpBase = getXPReward(pLevel, true);
-        const xpAmount = Math.round(xpBase * (isPremium ? 1.25 : 1.0));
-
-        const diff = (opponent.rating || 0) - (rating || 0);
-        let trophies = 20;
-        if (diff >= 100) {
-            trophies = 30;
-        } else if (diff >= 0) {
-            trophies = 20;
-        } else {
-            trophies = 10;
-        }
-
-        return {
-            goldRange: `${goldMin}-${goldMax}`,
-            xp: xpAmount,
-            trophies
-        };
-    }, [level, isPremium, rating, opponent.rating]);
-
-    const pRank = getRankInfo(rating);
-    const eRank = getRankInfo(opponent.rating);
-
+    // --- Мемоизированные вычисления ---
     const playerEq = React.useMemo(() => {
         return heroEquipment[selectedHeroId] || {};
     }, [heroEquipment, selectedHeroId]);
+
     const enemyEq: Record<string, string | null> = React.useMemo(() => {
         if (opponent.equipment) return opponent.equipment;
         return {
@@ -174,25 +77,13 @@ export const MatchmakingFound: React.FC<MatchmakingFoundProps> = ({
         };
     }, [opponent.equipment]);
 
-    const playerPower = React.useMemo(() => {
-        let total = 0;
-        Object.values(playerEq).forEach((itemId: any) => {
-            if (!itemId) return;
-            const item = (ITEMS_DATABASE as any)[itemId];
-            if (item) total += calculateItemPower(item);
-        });
-        return total;
-    }, [playerEq]);
+    const playerPower = React.useMemo(() => calculateTotalPower(playerEq), [playerEq]);
+    const opponentPower = React.useMemo(() => calculateTotalPower(enemyEq), [enemyEq]);
 
-    const opponentPower = React.useMemo(() => {
-        let total = 0;
-        Object.values(enemyEq).forEach((itemId: any) => {
-            if (!itemId) return;
-            const item = (ITEMS_DATABASE as any)[itemId];
-            if (item) total += calculateItemPower(item);
-        });
-        return total;
-    }, [enemyEq]);
+    const winRewards = React.useMemo(
+        () => calculateWinRewards(level, isPremium, rating, opponent.rating),
+        [level, isPremium, rating, opponent.rating],
+    );
 
     const playerWinRateStr = React.useMemo(() => {
         if (!totalBattles || totalBattles <= 0) return '—';
@@ -218,539 +109,22 @@ export const MatchmakingFound: React.FC<MatchmakingFoundProps> = ({
                 overflow: 'hidden',
             }}
         >
-            {/* TOP-LEFT NAMEPLATE (PLAYER) — Mockup style */}
-            <div
-                style={{
-                    position: 'absolute',
-                    top: '127px',
-                    left: 'calc(7% + 225px)',
-                    width: '390px',
-                    height: '136px',
-                    background: 'linear-gradient(135deg, rgba(12, 22, 42, 0.96) 0%, rgba(6, 10, 20, 0.98) 100%)',
-                    border: '2px solid rgba(240, 192, 64, 0.55)',
-                    borderRadius: '10px',
-                    boxShadow: '0 10px 30px rgba(0, 0, 0, 0.85), inset 0 0 15px rgba(240,192,64,0.05)',
-                    zIndex: 100,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'space-between',
-                    overflow: 'visible',
-                }}
-            >
-                {/* Header Tab */}
-                <div
-                    style={{
-                        position: 'absolute',
-                        top: '-12px',
-                        left: '50%',
-                        transform: 'translateX(-50%)',
-                        background: 'linear-gradient(180deg, #1e40af 0%, #1d4ed8 100%)',
-                        border: '1.5px solid rgba(240, 192, 64, 0.5)',
-                        borderRadius: '4px',
-                        padding: '1px 20px',
-                        color: '#fff',
-                        fontFamily: "'Montserrat', sans-serif",
-                        fontSize: '11px',
-                        fontWeight: 'bold',
-                        letterSpacing: '1.5px',
-                        zIndex: 10,
-                    }}
-                >
-                    ВЫ
-                </div>
-
-                {/* Nickname and Info Area */}
-                <div
-                    style={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        flex: 1,
-                        paddingTop: '16px',
-                        gap: '4px',
-                    }}
-                >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <span
-                            style={{
-                                fontFamily: "'Georgia', serif",
-                                fontSize: '21px',
-                                fontWeight: 'bold',
-                                color: '#fff',
-                                textShadow: '0 2px 4px rgba(0,0,0,0.85)',
-                                lineHeight: 1.1,
-                            }}
-                        >
-                            {name || playerName || 'Мастер'}
-                        </span>
-                        {vipLevel > 0 && (
-                            <div
-                                style={{
-                                    backgroundImage: 'url(/assets/images/ui/vip.webp)',
-                                    backgroundSize: '100% 100%',
-                                    backgroundPosition: 'center',
-                                    width: '45px',
-                                    height: '18px',
-                                    color: '#fff',
-                                    fontWeight: 900,
-                                    fontFamily: "'Cinzel', 'Philosopher', serif",
-                                    fontSize: '9px',
-                                    letterSpacing: '0.5px',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    textShadow: '0 1px 3px rgba(0,0,0,0.8)',
-                                    boxShadow: '0 2px 5px rgba(0,0,0,0.4)',
-                                    flexShrink: 0,
-                                }}
-                            >
-                                VIP
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Stats Grid */}
-                    <div
-                        style={{
-                            display: 'grid',
-                            gridTemplateColumns: '1fr 1fr 1fr',
-                            width: '100%',
-                            padding: '0 12px',
-                            marginTop: '4px',
-                            gap: '6px',
-                        }}
-                    >
-                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                            <span
-                                style={{
-                                    fontSize: '8px',
-                                    color: '#a3a3a3',
-                                    fontWeight: 'bold',
-                                    textTransform: 'uppercase',
-                                    letterSpacing: '0.5px',
-                                }}
-                            >
-                                Кубки
-                            </span>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginTop: '2px' }}>
-                                <img
-                                    src={AssetsMap.UI.TROPHY_PREMIUM}
-                                    style={{ width: '18px', height: '18px', objectFit: 'contain' }}
-                                    alt="cups"
-                                />
-                                <span
-                                    style={{
-                                        fontFamily: "'Montserrat', sans-serif",
-                                        fontSize: '13px',
-                                        fontWeight: 'bold',
-                                        color: '#fbbf24',
-                                    }}
-                                >
-                                    {rating}
-                                </span>
-                            </div>
-                        </div>
-
-                        <div
-                            style={{
-                                display: 'flex',
-                                flexDirection: 'column',
-                                alignItems: 'center',
-                                borderLeft: '1px solid rgba(255,255,255,0.08)',
-                                borderRight: '1px solid rgba(255,255,255,0.08)',
-                            }}
-                        >
-                            <span
-                                style={{
-                                    fontSize: '8px',
-                                    color: '#a3a3a3',
-                                    fontWeight: 'bold',
-                                    textTransform: 'uppercase',
-                                    letterSpacing: '0.5px',
-                                }}
-                            >
-                                Ранг
-                            </span>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px' }}>
-                                <img
-                                    src={pRank.icon}
-                                    style={{ width: '22px', height: '22px', objectFit: 'contain' }}
-                                    alt="rank"
-                                />
-                                <span
-                                    style={{
-                                        fontFamily: "'Montserrat', sans-serif",
-                                        fontSize: '12px',
-                                        fontWeight: 'bold',
-                                        color: pRank.color,
-                                        textTransform: 'uppercase',
-                                        letterSpacing: '0.2px',
-                                    }}
-                                >
-                                    {pRank.name}
-                                </span>
-                            </div>
-                        </div>
-
-                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                            <span
-                                style={{
-                                    fontSize: '8px',
-                                    color: '#a3a3a3',
-                                    fontWeight: 'bold',
-                                    textTransform: 'uppercase',
-                                    letterSpacing: '0.5px',
-                                }}
-                            >
-                                Винрейт
-                            </span>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '3px', marginTop: '2px' }}>
-                                <span
-                                    style={{
-                                        fontFamily: "'Montserrat', sans-serif",
-                                        fontSize: '13px',
-                                        fontWeight: 'bold',
-                                        color: '#10b981',
-                                    }}
-                                >
-                                    {playerWinRateStr}
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Bottom Bar */}
-                <div
-                    style={{
-                        background: 'rgba(8, 12, 22, 0.95)',
-                        borderTop: '1.5px solid rgba(240, 192, 64, 0.35)',
-                        borderBottomLeftRadius: '9px',
-                        borderBottomRightRadius: '9px',
-                        padding: '6px 12px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '8px',
-                    }}
-                >
-                    {/* Blue Level Shield */}
-                    <div
-                        style={{
-                            position: 'relative',
-                            width: '16px',
-                            height: '19px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                        }}
-                    >
-                        <svg width="16" height="19" viewBox="0 0 18 22" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path
-                                d="M9 1L1 4V10C1 15.5 4.5 19.5 9 21C13.5 19.5 17 15.5 17 10V4L9 1Z"
-                                fill="#1d4ed8"
-                                stroke="#fbbf24"
-                                strokeWidth="1.2"
-                            />
-                        </svg>
-                        <span
-                            style={{
-                                position: 'absolute',
-                                fontFamily: "'Cinzel', serif",
-                                fontSize: '9px',
-                                fontWeight: 900,
-                                color: '#fff',
-                                top: '50%',
-                                transform: 'translateY(-50%)',
-                                textShadow: '0 1px 2px #000',
-                            }}
-                        >
-                            {level}
-                        </span>
-                    </div>
-
-                    <span
-                        style={{
-                            fontFamily: "'Montserrat', sans-serif",
-                            fontSize: '11px',
-                            fontWeight: '900',
-                            color: '#fbbf24',
-                            letterSpacing: '1px',
-                            textTransform: 'uppercase',
-                        }}
-                    >
-                        Уровень {level} • {title || playerRank.name}
-                    </span>
-                </div>
-            </div>
-
-            {/* TOP-RIGHT NAMEPLATE (OPPONENT) — Mockup style */}
-            <div
-                style={{
-                    position: 'absolute',
-                    top: '127px',
-                    right: 'calc(7% + 225px)',
-                    width: '390px',
-                    height: '136px',
-                    background: 'linear-gradient(135deg, rgba(42, 12, 12, 0.96) 0%, rgba(20, 6, 6, 0.98) 100%)',
-                    border: '2px solid rgba(239, 68, 68, 0.55)',
-                    borderRadius: '10px',
-                    boxShadow: '0 10px 30px rgba(0, 0, 0, 0.85), inset 0 0 15px rgba(239,68,68,0.05)',
-                    zIndex: 100,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'space-between',
-                    overflow: 'visible',
-                }}
-            >
-                {/* Header Tab */}
-                <div
-                    style={{
-                        position: 'absolute',
-                        top: '-12px',
-                        left: '50%',
-                        transform: 'translateX(-50%)',
-                        background: 'linear-gradient(180deg, #991b1b 0%, #b91c1c 100%)',
-                        border: '1.5px solid rgba(220, 38, 38, 0.5)',
-                        borderRadius: '4px',
-                        padding: '1px 20px',
-                        color: '#fff',
-                        fontFamily: "'Montserrat', sans-serif",
-                        fontSize: '11px',
-                        fontWeight: 'bold',
-                        letterSpacing: '1.5px',
-                        zIndex: 10,
-                    }}
-                >
-                    ВРАГ
-                </div>
-
-                {/* Nickname and Info Area */}
-                <div
-                    style={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        flex: 1,
-                        paddingTop: '16px',
-                        gap: '4px',
-                    }}
-                >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <span
-                            style={{
-                                fontFamily: "'Georgia', serif",
-                                fontSize: '21px',
-                                fontWeight: 'bold',
-                                color: '#fff',
-                                textShadow: '0 2px 4px rgba(0,0,0,0.85)',
-                                lineHeight: 1.1,
-                            }}
-                        >
-                            {opponent.name}
-                        </span>
-                        {opponent.vipLevel !== undefined && opponent.vipLevel > 0 && (
-                            <div
-                                style={{
-                                    backgroundImage: 'url(/assets/images/ui/vip.webp)',
-                                    backgroundSize: '100% 100%',
-                                    backgroundPosition: 'center',
-                                    width: '45px',
-                                    height: '18px',
-                                    color: '#fff',
-                                    fontWeight: 900,
-                                    fontFamily: "'Cinzel', 'Philosopher', serif",
-                                    fontSize: '9px',
-                                    letterSpacing: '0.5px',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    textShadow: '0 1px 3px rgba(0,0,0,0.8)',
-                                    boxShadow: '0 2px 5px rgba(0,0,0,0.4)',
-                                    flexShrink: 0,
-                                }}
-                            >
-                                VIP
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Stats Grid */}
-                    <div
-                        style={{
-                            display: 'grid',
-                            gridTemplateColumns: '1fr 1fr 1fr',
-                            width: '100%',
-                            padding: '0 12px',
-                            marginTop: '4px',
-                            gap: '6px',
-                        }}
-                    >
-                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                            <span
-                                style={{
-                                    fontSize: '8px',
-                                    color: '#a3a3a3',
-                                    fontWeight: 'bold',
-                                    textTransform: 'uppercase',
-                                    letterSpacing: '0.5px',
-                                }}
-                            >
-                                Кубки
-                            </span>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginTop: '2px' }}>
-                                <img
-                                    src={AssetsMap.UI.TROPHY_PREMIUM}
-                                    style={{ width: '18px', height: '18px', objectFit: 'contain' }}
-                                    alt="cups"
-                                />
-                                <span
-                                    style={{
-                                        fontFamily: "'Montserrat', sans-serif",
-                                        fontSize: '13px',
-                                        fontWeight: 'bold',
-                                        color: '#fbbf24',
-                                    }}
-                                >
-                                    {opponent.rating}
-                                </span>
-                            </div>
-                        </div>
-
-                        <div
-                            style={{
-                                display: 'flex',
-                                flexDirection: 'column',
-                                alignItems: 'center',
-                                borderLeft: '1px solid rgba(255,255,255,0.08)',
-                                borderRight: '1px solid rgba(255,255,255,0.08)',
-                            }}
-                        >
-                            <span
-                                style={{
-                                    fontSize: '8px',
-                                    color: '#a3a3a3',
-                                    fontWeight: 'bold',
-                                    textTransform: 'uppercase',
-                                    letterSpacing: '0.5px',
-                                }}
-                            >
-                                Ранг
-                            </span>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px' }}>
-                                <img
-                                    src={eRank.icon}
-                                    style={{ width: '22px', height: '22px', objectFit: 'contain' }}
-                                    alt="rank"
-                                />
-                                <span
-                                    style={{
-                                        fontFamily: "'Montserrat', sans-serif",
-                                        fontSize: '12px',
-                                        fontWeight: 'bold',
-                                        color: eRank.color,
-                                        textTransform: 'uppercase',
-                                        letterSpacing: '0.2px',
-                                    }}
-                                >
-                                    {eRank.name}
-                                </span>
-                            </div>
-                        </div>
-
-                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                            <span
-                                style={{
-                                    fontSize: '8px',
-                                    color: '#a3a3a3',
-                                    fontWeight: 'bold',
-                                    textTransform: 'uppercase',
-                                    letterSpacing: '0.5px',
-                                }}
-                            >
-                                Винрейт
-                            </span>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '3px', marginTop: '2px' }}>
-                                <span
-                                    style={{
-                                        fontFamily: "'Montserrat', sans-serif",
-                                        fontSize: '13px',
-                                        fontWeight: 'bold',
-                                        color: '#10b981',
-                                    }}
-                                >
-                                    {opponentWinRateStr}
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Bottom Bar */}
-                <div
-                    style={{
-                        background: 'rgba(20, 6, 6, 0.95)',
-                        borderTop: '1.5px solid rgba(239, 68, 68, 0.35)',
-                        borderBottomLeftRadius: '9px',
-                        borderBottomRightRadius: '9px',
-                        padding: '6px 12px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '8px',
-                    }}
-                >
-                    {/* Red Level Shield */}
-                    <div
-                        style={{
-                            position: 'relative',
-                            width: '16px',
-                            height: '19px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                        }}
-                    >
-                        <svg width="16" height="19" viewBox="0 0 18 22" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path
-                                d="M9 1L1 4V10C1 15.5 4.5 19.5 9 21C13.5 19.5 17 15.5 17 10V4L9 1Z"
-                                fill="#b91c1c"
-                                stroke="#fbbf24"
-                                strokeWidth="1.2"
-                            />
-                        </svg>
-                        <span
-                            style={{
-                                position: 'absolute',
-                                fontFamily: "'Cinzel', serif",
-                                fontSize: '9px',
-                                fontWeight: 900,
-                                color: '#fff',
-                                top: '50%',
-                                transform: 'translateY(-50%)',
-                                textShadow: '0 1px 2px #000',
-                            }}
-                        >
-                            {opponent.level || 2}
-                        </span>
-                    </div>
-
-                    <span
-                        style={{
-                            fontFamily: "'Montserrat', sans-serif",
-                            fontSize: '11px',
-                            fontWeight: '900',
-                            color: '#fbbf24',
-                            letterSpacing: '1px',
-                            textTransform: 'uppercase',
-                        }}
-                    >
-                        Уровень {opponent.level || 2} • {getRankInfo(opponent.rating).name}
-                    </span>
-                </div>
-            </div>
+            {/* Плашки имён (игрок + противник) */}
+            <MatchmakingNameplates
+                playerName={playerName}
+                displayName={name}
+                vipLevel={vipLevel}
+                rating={rating}
+                level={level}
+                title={title}
+                playerRankName={playerRank.name}
+                playerWinRateStr={playerWinRateStr}
+                opponentName={opponent.name}
+                opponentRating={opponent.rating}
+                opponentLevel={opponent.level ?? 2}
+                opponentVipLevel={opponent.vipLevel}
+                opponentWinRateStr={opponentWinRateStr}
+            />
 
             {/* СЕТКА VS: ЛЕВАЯ ПОЛОВИНА (ИГРОК) */}
             <motion.div
@@ -1329,7 +703,7 @@ export const MatchmakingFound: React.FC<MatchmakingFoundProps> = ({
                         </div>
                     </div>
 
-                    {/* Buttons */}
+                    {/* Кнопка НАЧАТЬ БОЙ */}
                     <button
                         onClick={onStartFight}
                         onMouseEnter={(e) => {
@@ -1360,6 +734,7 @@ export const MatchmakingFound: React.FC<MatchmakingFoundProps> = ({
                         НАЧАТЬ БОЙ
                     </button>
 
+                    {/* Кнопка НАЗАД */}
                     <button
                         onClick={onCancel}
                         onMouseEnter={(e) => {
