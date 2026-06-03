@@ -439,7 +439,8 @@ export const Root = () => {
                         if (stateToRestore.status === 'BANNED') {
                             stateToRestore.isBanned = true;
                         }
-                        if (onboardingDone && restoredName && restoredName !== 'Мастер') {
+                        if ((onboardingDone || (restoredName && restoredName !== 'Мастер')) && restoredName && restoredName !== 'Мастер') {
+                            stateToRestore.onboardingCompleted = true;
                             stateToRestore.activeScreen = 'MAIN_MENU';
                         }
                         useGameStore.setState(stateToRestore);
