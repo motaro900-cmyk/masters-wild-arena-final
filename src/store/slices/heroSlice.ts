@@ -1,7 +1,6 @@
 import { HEROES_DB } from '../../configs/HeroesConfig';
 import { ITEMS_DATABASE, IEquipmentStats } from '../../game/configs/ItemsConfig';
 import { HeroLevelService } from '../../features/heroes/leveling/HeroLevelService';
-import { MAX_HERO_LEVEL } from '../../features/heroes/leveling/HeroLevelConfig';
 import { getLevelMultiplier } from '../../features/heroes/leveling/HeroLevelCalculator';
 
 export const createHeroSlice = (set: any, get: any) => ({
@@ -11,12 +10,22 @@ export const createHeroSlice = (set: any, get: any) => ({
     heroGalleryId: 'panda',
     ownedHeroes: ['panda'],
     heroes: {
-        panda: { level: 1, exp: 0, strength: 52, agility: 20, stamina: 32 },
-        wolf_knight: { level: 1, exp: 0, strength: 65, agility: 25, stamina: 45 },
+        panda:            { level: 1, exp: 0, strength: 52, agility: 20, stamina: 32 },
+        wolf_knight:      { level: 1, exp: 0, strength: 65, agility: 25, stamina: 45 },
+        shadow_dancer:    { level: 1, exp: 0, strength: 16, agility: 28, stamina: 14 },
+        crystal_guardian: { level: 1, exp: 0, strength: 14, agility: 10, stamina: 30 },
+        storm_caller:     { level: 1, exp: 0, strength: 12, agility: 18, stamina: 16 },
+        nature_warden:    { level: 1, exp: 0, strength: 10, agility: 16, stamina: 22 },
+        void_walker:      { level: 1, exp: 0, strength: 20, agility: 26, stamina: 18 },
     } as Record<string, any>,
     heroTalents: {
         panda: {},
         wolf_knight: {},
+        shadow_dancer: {},
+        crystal_guardian: {},
+        storm_caller: {},
+        nature_warden: {},
+        void_walker: {},
     } as Record<string, any>,
     ownedSkins: ['default'] as string[],
     equippedSkins: { panda: 'default', wolf_knight: 'default' } as Record<string, string>,
@@ -149,15 +158,33 @@ export const createHeroSlice = (set: any, get: any) => ({
         const levelMultiplier = getLevelMultiplier(heroLevel);
 
         const equipment = state.heroEquipment[heroId] || {};
-        const weapon = equipment.WEAPONS ? ITEMS_DATABASE[equipment.WEAPONS] : null;
-        const helm = equipment.HELMETS ? ITEMS_DATABASE[equipment.HELMETS] : null;
-        const armor = equipment.ARMOR ? ITEMS_DATABASE[equipment.ARMOR] : null;
-        const shield = equipment.SHIELDS ? ITEMS_DATABASE[equipment.SHIELDS] : null;
-        const shoulders = equipment.SHOULDERS ? ITEMS_DATABASE[equipment.SHOULDERS] : null;
-        const boots = equipment.BOOTS ? ITEMS_DATABASE[equipment.BOOTS] : null;
-        const pants = equipment.PANTS ? ITEMS_DATABASE[equipment.PANTS] : null;
 
-        const allItems = [weapon, helm, armor, shield, shoulders, boots, pants].filter(Boolean) as IEquipmentStats[];
+        const getEquippedItemInfo = (equippedId: string | null) => {
+            if (!equippedId) return null;
+            const invItem = state.inventory.find((i: any) => i.instanceId === equippedId || i.id === equippedId);
+            if (!invItem) return null;
+            const itemTemplate = ITEMS_DATABASE[invItem.id];
+            if (!itemTemplate) return null;
+            return { template: itemTemplate, level: invItem.level || 1 };
+        };
+
+        const weaponInfo = getEquippedItemInfo(equipment.WEAPONS);
+        const helmInfo = getEquippedItemInfo(equipment.HELMETS);
+        const armorInfo = getEquippedItemInfo(equipment.ARMOR);
+        const shieldInfo = getEquippedItemInfo(equipment.SHIELDS);
+        const shouldersInfo = getEquippedItemInfo(equipment.SHOULDERS);
+        const bootsInfo = getEquippedItemInfo(equipment.BOOTS);
+        const pantsInfo = getEquippedItemInfo(equipment.PANTS);
+
+        const allItemsInfo = [
+            weaponInfo,
+            helmInfo,
+            armorInfo,
+            shieldInfo,
+            shouldersInfo,
+            bootsInfo,
+            pantsInfo,
+        ].filter(Boolean) as { template: IEquipmentStats; level: number }[];
 
         const base = {
             hp: Math.round(heroData.stats.stamina * 10 * levelMultiplier),
@@ -188,6 +215,7 @@ export const createHeroSlice = (set: any, get: any) => ({
             if (tId === 'def_base') total.hp = Math.round(total.hp * (1 + level * 0.05));
             if (tId === 'def_res') total.resilience += level * 5;
             if (tId === 'def_eva') total.evasion += level * 2;
+            if (tId === 'def_ult') total.defense = Math.round(total.defense * (1 + level * 0.2)); // «Весь урон снижен на 20%» — работает через defense
 
             // Mastery talents
             if (tId === 'mas_base') total.speed += level * 0.1;
@@ -196,9 +224,9 @@ export const createHeroSlice = (set: any, get: any) => ({
             if (tId === 'atk_pen') total.penetration += level * 10;
         });
 
-        allItems.forEach((item) => {
-            const invItem = state.inventory.find((i: any) => String(i.id) === item.id);
-            const lvl = invItem?.level || 1;
+        allItemsInfo.forEach((itemInfo) => {
+            const item = itemInfo.template;
+            const lvl = itemInfo.level;
             // Multipliers table for item levels 1 to 10 as per game design balance
             const multTable: Record<number, number> = {
                 1: 1.0, 2: 1.15, 3: 1.35, 4: 1.50, 5: 1.65,
@@ -244,14 +272,17 @@ export const createHeroSlice = (set: any, get: any) => ({
             total.speed = +(total.speed * 1.15).toFixed(2); // +15% Speed
         }
 
-        // Cap crit/evasion at sensible max
+        // Cap crit/evasion/critDamage at sensible max
         total.critChance = Math.min(75, total.critChance);
         total.evasion = Math.min(60, total.evasion);
+        if (total.critDamage) {
+            total.critDamage = Math.min(3.0, total.critDamage);
+        }
 
         return {
             base,
             total,
-            weaponTexture: (weapon as IEquipmentStats)?.textureKey || null,
+            weaponTexture: weaponInfo?.template?.textureKey || null,
         };
     },
 });

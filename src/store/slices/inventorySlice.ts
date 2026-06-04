@@ -65,8 +65,6 @@ export const createInventorySlice = (set: any, get: any) => ({
                 set({ inventory: newInventory });
                 return;
             }
-        } else {
-            if (state.inventory.some((i: any) => String(i.id) === itemId)) return;
         }
 
         const newItem = {
@@ -76,6 +74,7 @@ export const createInventorySlice = (set: any, get: any) => ({
             rarity: itemConfig.rarity || itemObj.rarity || 'COMMON',
             level: itemObj.level || 1,
             amount: itemObj.amount || 1,
+            instanceId: itemObj.instanceId || `${itemId}_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
         };
         set({ inventory: [...state.inventory, newItem] });
     },
@@ -196,29 +195,37 @@ export const createInventorySlice = (set: any, get: any) => ({
 
     sellItem: (id: string) => {
         const state = get();
-        const itemInInv = state.inventory.find((i: any) => i.id === id);
-        if (!itemInInv) return;
+        const itemIndex = state.inventory.findIndex((i: any) => i.instanceId === id || i.id === id);
+        if (itemIndex === -1) return;
 
+        const itemInInv = state.inventory[itemIndex];
+        const actualInstanceId = itemInInv.instanceId || itemInInv.id;
         const isEquippedByAnyHero = Object.values(state.heroEquipment).some(
-            (heroGear: any) => heroGear && Object.values(heroGear).includes(id)
+            (heroGear: any) => heroGear && Object.values(heroGear).includes(actualInstanceId)
         );
         if (isEquippedByAnyHero) {
             console.warn('sellItem: предмет надет на одного из героев, продажа заблокирована');
             return;
         }
 
-        const data = ITEMS_DATABASE[id] as any;
-        const sellPrice = Math.floor((data?.priceGold || 100) * 0.5);
+        const data = ITEMS_DATABASE[itemInInv.id] as any;
+        const sellPrice = Math.floor((data?.priceGold || 100) * 0.5) * (itemInInv.amount || 1);
 
         state.addGold(sellPrice);
+        const newInventory = [...state.inventory];
+        newInventory.splice(itemIndex, 1);
         set({
-            inventory: state.inventory.filter((i: any) => i.id !== id),
+            inventory: newInventory,
         });
     },
 
     equipItem: (id: string) => {
         const state = get();
-        const data = ITEMS_DATABASE[id] as any;
+        const invItem = state.inventory.find((i: any) => i.instanceId === id || i.id === id);
+        if (!invItem) return;
+        const templateId = invItem.id;
+        const actualInstanceId = invItem.instanceId || invItem.id;
+        const data = ITEMS_DATABASE[templateId] as any;
         if (!data) return;
 
         const heroId = state.selectedHeroId || 'panda';
@@ -226,57 +233,65 @@ export const createInventorySlice = (set: any, get: any) => ({
 
         const newHeroEquipment = { ...state.heroEquipment };
         Object.entries(newHeroEquipment).forEach(([hId, gear]: [string, any]) => {
-            if (Object.values(gear).includes(id)) {
+            if (Object.values(gear).includes(actualInstanceId)) {
                 const updatedGear = { ...gear };
                 Object.keys(updatedGear).forEach((slot) => {
-                    if (updatedGear[slot] === id) delete updatedGear[slot];
+                    if (updatedGear[slot] === actualInstanceId) delete updatedGear[slot];
                 });
                 newHeroEquipment[hId] = updatedGear;
             }
         });
 
         const currentGear = { ...(newHeroEquipment[heroId] || {}) };
-        currentGear[subTab] = id;
+        currentGear[subTab] = actualInstanceId;
         newHeroEquipment[heroId] = currentGear;
 
         set({ heroEquipment: newHeroEquipment });
 
-        if (subTab === 'WEAPONS') set({ equippedWeaponId: id });
-        if (subTab === 'HELMETS') set({ equippedHelmId: id });
-        if (subTab === 'ARMOR') set({ equippedArmorId: id });
-        if (subTab === 'SHIELDS') set({ equippedShieldId: id });
-        if (subTab === 'SHOULDERS') set({ equippedShouldersId: id });
-        if (subTab === 'BOOTS') set({ equippedBootsId: id });
-        if (subTab === 'PANTS') set({ equippedPantsId: id });
+        if (heroId === (state.selectedHeroId || 'panda')) {
+            if (subTab === 'WEAPONS') set({ equippedWeaponId: actualInstanceId });
+            if (subTab === 'HELMETS') set({ equippedHelmId: actualInstanceId });
+            if (subTab === 'ARMOR') set({ equippedArmorId: actualInstanceId });
+            if (subTab === 'SHIELDS') set({ equippedShieldId: actualInstanceId });
+            if (subTab === 'SHOULDERS') set({ equippedShouldersId: actualInstanceId });
+            if (subTab === 'BOOTS') set({ equippedBootsId: actualInstanceId });
+            if (subTab === 'PANTS') set({ equippedPantsId: actualInstanceId });
+        }
 
-        const itemName = data.name || id;
+        const itemName = data.name || templateId;
         syncService.logPlayerAction(`Надел снаряжение: ${itemName}`);
         syncService.debouncedSync();
     },
 
     unequipItem: (id: string) => {
         const state = get();
+        const invItem = state.inventory.find((i: any) => i.instanceId === id || i.id === id);
+        const templateId = invItem ? invItem.id : id;
+        const actualInstanceId = invItem ? (invItem.instanceId || invItem.id) : id;
+        const data = ITEMS_DATABASE[templateId] as any;
+
         const heroId = state.selectedHeroId || 'panda';
         const newHeroEquipment = { ...state.heroEquipment };
         const currentGear = { ...(newHeroEquipment[heroId] || {}) };
 
         Object.keys(currentGear).forEach((slot) => {
-            if (currentGear[slot] === id) delete currentGear[slot];
+            if (currentGear[slot] === actualInstanceId) delete currentGear[slot];
         });
 
         newHeroEquipment[heroId] = currentGear;
         set({ heroEquipment: newHeroEquipment });
 
-        const data = ITEMS_DATABASE[id] as any;
-        if (data?.subTab === 'WEAPONS') set({ equippedWeaponId: null });
-        if (data?.subTab === 'HELMETS') set({ equippedHelmId: null });
-        if (data?.subTab === 'ARMOR') set({ equippedArmorId: null });
-        if (data?.subTab === 'SHIELDS') set({ equippedShieldId: null });
-        if (data?.subTab === 'SHOULDERS') set({ equippedShouldersId: null });
-        if (data?.subTab === 'BOOTS') set({ equippedBootsId: null });
-        if (data?.subTab === 'PANTS') set({ equippedPantsId: null });
+        if (heroId === (state.selectedHeroId || 'panda')) {
+            if (data?.subTab === 'WEAPONS') set({ equippedWeaponId: null });
+            if (data?.subTab === 'HELMETS') set({ equippedHelmId: null });
+            if (data?.subTab === 'ARMOR') set({ equippedArmorId: null });
+            if (data?.subTab === 'SHIELDS') set({ equippedShieldId: null });
+            if (data?.subTab === 'SHOULDERS') set({ equippedShouldersId: null });
+            if (data?.subTab === 'BOOTS') set({ equippedBootsId: null });
+            if (data?.subTab === 'PANTS') set({ equippedPantsId: null });
+        }
 
-        const itemName = data?.name || id;
+        const itemName = data?.name || templateId;
         syncService.logPlayerAction(`Снял снаряжение: ${itemName}`);
         syncService.debouncedSync();
     },
@@ -323,6 +338,8 @@ export const createInventorySlice = (set: any, get: any) => ({
 
     upgradeItem: (itemId: string, useProtectionStone?: boolean) => {
         const state = get() as any;
+        // Guard: проверяем cooldown на уровне store, а не только в UI
+        if (!state.canUpgrade(itemId)) return null;
         const invItemIndex = state.inventory.findIndex((i: any) => i.instanceId === itemId || String(i.id) === itemId);
         if (invItemIndex === -1) return null;
 
@@ -506,12 +523,13 @@ export const createInventorySlice = (set: any, get: any) => ({
 
     dismantleItem: (itemId: string) => {
         const state = get();
-        const invItemIndex = state.inventory.findIndex((i: any) => String(i.id) === itemId);
+        const invItemIndex = state.inventory.findIndex((i: any) => i.instanceId === itemId || String(i.id) === itemId);
         if (invItemIndex === -1) return false;
 
         const invItem = state.inventory[invItemIndex];
+        const actualInstanceId = invItem.instanceId || invItem.id;
         const isEquippedByAnyHero = Object.values(state.heroEquipment).some(
-            (heroGear: any) => heroGear && Object.values(heroGear).includes(itemId)
+            (heroGear: any) => heroGear && Object.values(heroGear).includes(actualInstanceId)
         );
 
         if (isEquippedByAnyHero) {
@@ -519,7 +537,7 @@ export const createInventorySlice = (set: any, get: any) => ({
             return false;
         }
 
-        const itemData = ITEMS_DATABASE[itemId];
+        const itemData = ITEMS_DATABASE[invItem.id];
         if (!itemData) return false;
 
         const rarity = itemData.rarity;
@@ -555,7 +573,8 @@ export const createInventorySlice = (set: any, get: any) => ({
         steelGained *= levelMultiplier;
         shardGained *= levelMultiplier;
 
-        const newInventory = state.inventory.filter((i: any) => String(i.id) !== itemId);
+        const newInventory = [...state.inventory];
+        newInventory.splice(invItemIndex, 1);
 
         set({
             gold: state.gold + goldGained,

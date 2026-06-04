@@ -8,7 +8,6 @@ import { StatusEffectController } from './StatusEffectController';
 import { IStatusEffectTarget } from './IStatusEffectTarget';
 
 // New imports from extracted modular files
-import { SLOT_CONFIG, getWeaponVisualConfig } from './HeroUnitConfigs';
 import * as EquipmentManager from './HeroEquipmentManager';
 import * as Animations from './HeroUnitAnimations';
 
@@ -43,6 +42,43 @@ export class HeroUnit extends PIXI.Container implements IEffectTarget, IStatusEf
     public removePoisonEffect(): void { this.statusEffectController.removePoisonEffect(); }
     public showBurnEffect(): void { this.statusEffectController.showBurnEffect(); }
     public removeBurnEffect(): void { this.statusEffectController.removeBurnEffect(); }
+
+    // ── Кастомные визуальные эффекты для новых статусов ──────────────────────
+    private _customEffects: Map<string, PIXI.Container> = new Map();
+
+    private _getEffectColor(effectId: string): number {
+        const colors: Record<string, number> = {
+            shadow_mark:    0x7b2d8b,
+            crystal_shield: 0x00d4ff,
+            storm_charge:   0xf5e642,
+            nature_regen:   0x3ecf4f,
+            void_slow:      0x4a1a8c,
+        };
+        return colors[effectId] ?? 0xffffff;
+    }
+
+    public showCustomEffect(effectId: string): void {
+        if (this._customEffects.has(effectId) || this.destroyed) return;
+        const color = this._getEffectColor(effectId);
+        const gfx = new PIXI.Graphics();
+        // Рисуем круг-ауру над персонажем
+        gfx.lineStyle(3, color, 0.85);
+        gfx.drawCircle(0, -110, 55);
+        gfx.zIndex = 200;
+        this.addChild(gfx);
+        this._customEffects.set(effectId, gfx);
+    }
+
+    public removeCustomEffect(effectId: string): void {
+        const effect = this._customEffects.get(effectId);
+        if (effect) {
+            if (!effect.destroyed) {
+                this.removeChild(effect);
+                effect.destroy();
+            }
+            this._customEffects.delete(effectId);
+        }
+    }
 
     public get isStunnedStatus(): boolean { return this.statusEffectController.isStunned; }
     public set isStunnedStatus(val: boolean) { this.statusEffectController.isStunned = val; }

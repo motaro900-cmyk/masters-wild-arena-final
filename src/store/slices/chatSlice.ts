@@ -73,6 +73,7 @@ export const createChatSlice = (set: any, get: any) => ({
                 : author;
 
         const finalAvatar =
+            state.avatar ||
             state.vkUser?.photo_200 ||
             state.vkUser?.photo ||
             '/assets/images/avatars/panda.webp';

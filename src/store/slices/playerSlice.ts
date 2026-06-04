@@ -70,6 +70,7 @@ export const createPlayerSlice = (set: any, get: any) => ({
     claimedRewards: [] as string[],
     claimedSocialRewards: [] as string[],
     usedPromoCodes: [] as string[],
+    claimedGifts: [] as string[],
     tutorialStep: 0,
     canClaimDailyGift: false,
     lastWheelSpinTime: 0,
@@ -140,10 +141,11 @@ export const createPlayerSlice = (set: any, get: any) => ({
     spendGold: (amount: number) => set((state: any) => ({ gold: Math.max(0, state.gold - amount) })),
     addCrystals: (amount: number) => set((state: any) => ({ crystals: state.crystals + amount })),
     spendDiamonds: (amount: number) => set((state: any) => ({ crystals: Math.max(0, state.crystals - amount) })),
-    addEnergy: (amount: number) => set((state: any) => ({ energy: state.energy + amount })),
+    addEnergy: (amount: number) => set((state: any) => ({ energy: Math.min(state.energy + amount, state.maxEnergy) })),
     consumeEnergy: (amount: number) => {
         const s = get();
         if (s.hasInfiniteEnergy) return true;
+        if (s.energy < amount) return false;
         set((state: any) => ({
             energy: Math.max(0, state.energy - amount),
             dailyBattles: state.dailyBattles + 1,
@@ -251,7 +253,7 @@ export const createPlayerSlice = (set: any, get: any) => ({
 
         const success = await showRewardedVideo();
         if (success) {
-            if (type === 'GOLD') get().addGold(5000);
+            if (type === 'GOLD') get().addGold(700);
             if (type === 'ENERGY') get().addEnergy(25);
             if (type === 'CRYSTAL') get().addCrystals(25);
 
@@ -319,6 +321,7 @@ export const createPlayerSlice = (set: any, get: any) => ({
 
         state.addCrystals(50);
         set({ claimedSocialRewards: [...rewards, 'favorites'] });
+        syncService.debouncedSync();
     },
 
     claimGroupReward: async () => {
@@ -334,6 +337,7 @@ export const createPlayerSlice = (set: any, get: any) => ({
 
         state.addCrystals(50);
         set({ claimedSocialRewards: [...rewards, 'group'] });
+        syncService.debouncedSync();
     },
 
     canBattle: () => {
@@ -408,7 +412,7 @@ export const createPlayerSlice = (set: any, get: any) => ({
             START: { gold: 1000, crystals: 10 },
             WILD: { energy: 10 },
             DIAMONDS: { crystals: 25 },
-            MOTAR: { gold: 5000, crystals: 100, energy: 50 },
+            // NOTE: dev/test promo codes must NOT be added here — use Firebase Remote Config
         };
 
         const reward = promoCodes[normalizedCode];
@@ -416,7 +420,7 @@ export const createPlayerSlice = (set: any, get: any) => ({
         if (reward) {
             const mailRewards = [];
             if (reward.gold) mailRewards.push({ type: 'GOLD', amount: reward.gold });
-            if (reward.crystals) mailRewards.push({ type: 'CRYSTAL', amount: reward.crystals });
+            if (reward.crystals) mailRewards.push({ type: 'CRYSTALS', amount: reward.crystals });
             if (reward.energy) mailRewards.push({ type: 'ENERGY', amount: reward.energy });
 
             const newMail = {
@@ -470,6 +474,7 @@ export const createPlayerSlice = (set: any, get: any) => ({
             referralProcessed: true,
             referredBy: code,
         });
+        syncService.debouncedSync();
         console.log(`🎁 Referral bonus credited! Inviter: ${code}`);
     },
 

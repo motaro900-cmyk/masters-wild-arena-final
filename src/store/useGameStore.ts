@@ -15,7 +15,24 @@ import { createMailSlice } from './slices/mailSlice';
 
 export { WEEKLY_QUESTS_POOL } from './slices/questSlice';
 
-export const useGameStore = create<any>()(
+// TODO: полная типизация store — заменить all 'any' на конкретные интерфейсы slice по slice
+// Частичный тип для ключевых полей store; остальные поля пока untyped через intersection
+type GameStoreState = {
+    level: number;
+    gold: number;
+    crystals: number;
+    energy: number;
+    maxEnergy: number;
+    rating: number;
+    name: string;
+    activeScreen: string;
+    profileStatus: string;
+    isBanned: boolean;
+    isMuted: boolean;
+    [key: string]: any; // временно — постепенно заменять на строгие типы
+};
+
+export const useGameStore = create<GameStoreState>()(
     persist(
         (set, get) => ({
             ...createPlayerSlice(set, get),
@@ -27,6 +44,25 @@ export const useGameStore = create<any>()(
             ...createBattleSlice(set, get),
             ...createChatSlice(set, get),
             ...createMailSlice(set, get),
+
+            activeConfirm: null,
+            showConfirm: (message: string, onConfirm: () => void, onCancel?: () => void) => {
+                set({
+                    activeConfirm: {
+                        message,
+                        onConfirm: () => {
+                            onConfirm();
+                            set({ activeConfirm: null });
+                        },
+                        onCancel: () => {
+                            if (onCancel) onCancel();
+                            set({ activeConfirm: null });
+                        }
+                    }
+                });
+            },
+            closeConfirm: () => set({ activeConfirm: null }),
+
             get equippedItems() {
                 const currentHeroId = get().selectedHeroId || 'panda';
                 return get().heroEquipment?.[currentHeroId] || {};
@@ -68,7 +104,7 @@ export const useGameStore = create<any>()(
         {
             name: 'game-storage',
             storage: createJSONStorage(() => getStorage()),
-            version: 30, // v30: Hero levels and exp
+            version: 31, // v31: 5 new characters — shadow_dancer, crystal_guardian, storm_caller, nature_warden, void_walker
 
             partialize: (state: any) => ({
                 level: state.level,
@@ -102,6 +138,7 @@ export const useGameStore = create<any>()(
                 ownedSkins: state.ownedSkins,
                 equippedSkins: state.equippedSkins,
                 usedPromoCodes: state.usedPromoCodes,
+                claimedGifts: state.claimedGifts,
                 musicVolume: state.musicVolume,
                 soundVolume: state.soundVolume,
                 graphicsQuality: state.graphicsQuality,
@@ -269,6 +306,23 @@ export const useGameStore = create<any>()(
                         } else {
                             persistedState.heroes.wolf_knight = { level: 1, exp: 0, strength: 65, agility: 25, stamina: 45 };
                         }
+                    }
+                }
+
+                // v31: 5 new characters migration
+                if (version < 31) {
+                    if (!persistedState.heroes) persistedState.heroes = {};
+                    if (!persistedState.heroTalents) persistedState.heroTalents = {};
+                    const newHeroes: Record<string, any> = {
+                        shadow_dancer:    { level: 1, exp: 0, strength: 16, agility: 28, stamina: 14 },
+                        crystal_guardian: { level: 1, exp: 0, strength: 14, agility: 10, stamina: 30 },
+                        storm_caller:     { level: 1, exp: 0, strength: 12, agility: 18, stamina: 16 },
+                        nature_warden:    { level: 1, exp: 0, strength: 10, agility: 16, stamina: 22 },
+                        void_walker:      { level: 1, exp: 0, strength: 20, agility: 26, stamina: 18 },
+                    };
+                    for (const [id, data] of Object.entries(newHeroes)) {
+                        if (!persistedState.heroes[id]) persistedState.heroes[id] = data;
+                        if (!persistedState.heroTalents[id]) persistedState.heroTalents[id] = {};
                     }
                 }
 

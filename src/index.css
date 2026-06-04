@@ -82,6 +82,12 @@ canvas {
     height: 100% !important;
     object-fit: contain;
     display: block;
+    /* Сохранять чёткость пикселей при CSS-масштабировании */
+    image-rendering: -webkit-optimize-contrast; /* Safari */
+    image-rendering: crisp-edges;              /* Firefox */
+    /* Выносим canvas в отдельный GPU compositing layer —
+       браузер не перекомпозирует его вместе с DOM при анимациях */
+    will-change: transform;
 }
 
 .hud-interactive {
@@ -594,9 +600,25 @@ canvas {
     background-position: 98% 98%;
 }
 
-/* Premium hardware-accelerated contrast and saturation profile for game assets and HUD */
+/* Кинематографический визуальный профиль:
+   - contrast(1.1) — чёрный = настоящий чёрный, детали читаются
+   - saturate(1.08) — небольшой пуш, не доминируют тёплые тона
+   - brightness(0.97) — чуть приглушено, экран не пересвечен */
 .premium-saturated-panel {
-    filter: contrast(1.05) saturate(1.15) brightness(0.96);
+    filter: contrast(1.1) saturate(1.08) brightness(0.97);
+}
+
+/* GPU compositing layer для game-scale-wrapper */
+.game-scale-wrapper {
+    will-change: transform;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+}
+
+/* Фоновое изображение тоже рендерится с высоким качеством */
+.game-container {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
 }
 
 /* Keyframes moved to bestiary.css */

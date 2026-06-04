@@ -62,19 +62,6 @@ const IconEquipment = ({ active }: { active: boolean }) => (
     </svg>
 );
 
-const IconTalents = ({ active }: { active: boolean }) => (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-        <path
-            d="M12 2L14.5 9h7L16 13.5l2.5 7L12 16l-6.5 4.5 2.5-7L2.5 9h7L12 2Z"
-            stroke={active ? '#f0c040' : 'rgba(255,255,255,0.6)'}
-            strokeWidth="1.8"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            fill={active ? 'rgba(240,192,64,0.12)' : 'none'}
-        />
-    </svg>
-);
-
 const TAB_CONFIG: { id: SceneTab; label: string; Icon: React.FC<{ active: boolean }> }[] = [
     { id: 'LIST', label: 'ГЕРОИ', Icon: IconHeroes },
     { id: 'HERO', label: 'СНАРЯЖЕНИЕ', Icon: IconEquipment },

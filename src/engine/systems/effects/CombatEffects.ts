@@ -2,7 +2,6 @@ import * as PIXI from 'pixi.js';
 import { gsap } from 'gsap';
 import { PixiApp } from '../../core/PixiApp';
 import { SoundManager } from '../SoundManager';
-import { useGameStore } from '../../../store/useGameStore';
 import { EffectsManager } from '../EffectsManager';
 import { IEffectTarget } from '../EffectsManager';
 

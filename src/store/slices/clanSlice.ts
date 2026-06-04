@@ -1,5 +1,5 @@
 import { db, USERS_COLLECTION } from '../../utils/firebase';
-import { doc, updateDoc, arrayUnion } from 'firebase/firestore';
+import { doc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
 import { syncService, SyncService } from '../../services/SyncService';
 
 export const createClanSlice = (set: any, get: any) => ({
@@ -13,10 +13,34 @@ export const createClanSlice = (set: any, get: any) => ({
     // --- ЭКШЕНЫ КЛАНОВ И ДРУЗЕЙ ---
     setFriendRequests: (requests: any[]) => set({ friendRequests: requests }),
 
-    removeFriend: (id: string) =>
+    removeFriend: async (id: string) => {
+        const state = get();
+        const currentUserId = SyncService.getPrefixedUserId(state.vkUser, state.playerId);
+        let targetId = id;
+        if (!targetId.startsWith('VK-') && !targetId.startsWith('GUEST-') && targetId !== 'DEVELOPER') {
+            targetId = SyncService.getPrefixedUserId(null, targetId);
+        }
+
+        try {
+            // 1. Удаляем из списка друзей текущего игрока в Firestore
+            const currentUserDoc = doc(db, USERS_COLLECTION, currentUserId);
+            await updateDoc(currentUserDoc, {
+                friends: arrayRemove(targetId),
+            });
+
+            // 2. Удаляем из списка друзей удаляемого игрока в Firestore
+            const targetDocRef = doc(db, USERS_COLLECTION, targetId);
+            await updateDoc(targetDocRef, {
+                friends: arrayRemove(currentUserId),
+            });
+        } catch (error) {
+            console.error('[clanSlice] Failed to remove friend in Firestore:', error);
+        }
+
         set((state: any) => ({
-            friends: state.friends.filter((f: any) => f.id !== id),
-        })),
+            friends: state.friends.filter((f: any) => f.id !== id && f.id !== targetId),
+        }));
+    },
 
     acceptFriendRequest: async (id: string) => {
         const state = get();

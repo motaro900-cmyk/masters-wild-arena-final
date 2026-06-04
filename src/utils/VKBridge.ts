@@ -22,17 +22,19 @@ export const isVkMiniApp = (): boolean => {
 export const initVK = async (): Promise<boolean> => {
     if (!bridge) return false;
 
-    // [Lead Architect]: Страховка от зависания VK Bridge
+    // На мобильных устройствах с 3G инициализация VK Bridge может занять 5-10 сек.
+    // Увеличиваем timeout до 12s чтобы дать Bridge время ответить.
     const timeoutPromise = new Promise<boolean>((resolve) => {
         setTimeout(() => {
-            console.warn('⚠️ VK Bridge Init Timeout (5s). Starting anyway...');
+            console.warn('⚠️ VK Bridge Init Timeout (12s). Starting anyway...');
             resolve(false);
-        }, 5000);
+        }, 12000);
     });
 
     const initPromise = (async () => {
         try {
             await bridge.send('VKWebAppInit');
+            (window as any).vkBridgeInitialized = true;
             // Запрашиваем полный экран сразу после инициализации
             try {
                 await bridge.send('VKWebAppResizeTo' as any, {
@@ -49,7 +51,11 @@ export const initVK = async (): Promise<boolean> => {
         }
     })();
 
-    return Promise.race([initPromise, timeoutPromise]);
+    const result = await Promise.race([initPromise, timeoutPromise]);
+    if (result) {
+        (window as any).vkBridgeInitialized = true;
+    }
+    return result;
 };
 
 export const getVkUserInfo = async (): Promise<VkUser | null> => {
@@ -222,12 +228,23 @@ export const joinGroup = async (groupId: number = 238197449): Promise<boolean> =
 export const isGroupMember = async (groupId: number = 238197449): Promise<boolean> => {
     if (!bridge || window.location.hostname === 'localhost') return false;
     try {
+        let token = '';
+        try {
+            const authResult = await bridge.send('VKWebAppGetAuthToken', {
+                app_id: Number(import.meta.env.VITE_VK_APP_ID || '52446645'),
+                scope: 'groups',
+            });
+            token = authResult.access_token || '';
+        } catch (tokenError) {
+            console.warn('VKWebAppGetAuthToken failed, attempting call anyway:', tokenError);
+        }
+
         const result = await bridge.send('VKWebAppCallAPIMethod', {
             method: 'groups.isMember',
             params: {
                 group_id: groupId,
                 v: '5.131',
-                access_token: '',
+                access_token: token,
             },
         });
         return result.response === 1;

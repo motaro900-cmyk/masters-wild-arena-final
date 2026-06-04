@@ -83,7 +83,6 @@ export const AncientsSanctuaryScreen: React.FC = () => {
     const blockStartFloor = Math.max(1, pveStage - ((pveStage - 1) % 5));
     const portalFloors = Array.from({ length: 5 }, (_, i) => blockStartFloor + i);
 
-    const currentMob = getMobDataForFloor(pveStage);
     const hasEnoughEnergy = energy >= 10;
 
     const handleBuyEnergy = () => {

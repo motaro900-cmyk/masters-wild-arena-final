@@ -117,7 +117,10 @@ export const HeroScene: React.FC = () => {
 
     // -- Data --
     const selectedHero = HEROES_DB.find((h) => h.id === selectedHeroId) || HEROES_DB[0];
-    const stats = getCalculatedStats(selectedHero.id);
+    const stats = selectedHero ? getCalculatedStats(selectedHero.id) : null;
+
+    // Guard: если hero не найден (сломанный localStorage) — показываем fallback
+    if (!selectedHero) return null;
 
     const isMobile = useGameStore((state) => state.isMobile);
 

@@ -86,6 +86,9 @@ export const DailyGiftWindow: React.FC<DailyGiftWindowProps> = ({ onClose }) => 
     const [isFreeSpinAvailable, setIsFreeSpinAvailable] = useState<boolean>(false);
     const [wheelTimeLeft, setWheelTimeLeft] = useState<string>('');
 
+    // Server time offset
+    const [timeOffset, setTimeOffset] = useState<number>(0);
+
     // Firestore server dates
     const [lastGiftClaimedTime, setLastGiftClaimedTime] = useState<Timestamp | null>(null);
     const [lastWheelSpinTimeServer, setLastWheelSpinTimeServer] = useState<Timestamp | null>(null);
@@ -94,6 +97,19 @@ export const DailyGiftWindow: React.FC<DailyGiftWindowProps> = ({ onClose }) => 
 
     useEffect(() => {
         const loadDoc = async () => {
+            try {
+                const start = Date.now();
+                const response = await fetch(window.location.href, { method: 'HEAD' });
+                const serverDateStr = response.headers.get('date');
+                if (serverDateStr) {
+                    const serverTime = new Date(serverDateStr).getTime();
+                    const latency = (Date.now() - start) / 2;
+                    setTimeOffset(serverTime + latency - Date.now());
+                }
+            } catch (timeError) {
+                console.warn('Failed to fetch server time offset, using local clock:', timeError);
+            }
+
             try {
                 const state = useGameStore.getState();
                 const userId = SyncService.getPrefixedUserId(state.vkUser, state.playerId);
@@ -119,7 +135,7 @@ export const DailyGiftWindow: React.FC<DailyGiftWindowProps> = ({ onClose }) => 
         if (isLoading) return;
 
         const updateTimers = () => {
-            const nowSeconds = Math.floor(Date.now() / 1000);
+            const nowSeconds = Math.floor((Date.now() + timeOffset) / 1000);
 
             // 1. Daily Gift Check
             if (!lastGiftClaimedTime) {

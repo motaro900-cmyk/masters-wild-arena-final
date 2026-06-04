@@ -58,8 +58,10 @@ const HpBar: React.FC<{
     max: number;
     reverse?: boolean;
     isEnemy?: boolean;
-}> = ({ current, max, reverse = false, isEnemy = false }) => {
+    shield?: number;
+}> = ({ current, max, reverse = false, isEnemy = false, shield = 0 }) => {
     const pct = Math.max(0, Math.min(100, (Math.max(0, current) / Math.max(1, max)) * 100));
+    const shieldPct = Math.max(0, Math.min(100 - pct, (shield / Math.max(1, max)) * 100));
 
     let barColor: string;
     let borderColor: string;
@@ -136,6 +138,32 @@ const HpBar: React.FC<{
                         }}
                     />
                 </motion.div>
+                {shield > 0 && (
+                    <motion.div
+                        animate={{ width: `${shieldPct}%` }}
+                        transition={{ duration: 0.4, ease: 'easeOut' }}
+                        style={{
+                            height: '100%',
+                            background: 'linear-gradient(90deg, #0284c7 0%, #0ea5e9 50%, #0284c7 100%)',
+                            position: 'relative',
+                            overflow: 'hidden',
+                            minWidth: 0,
+                        }}
+                    >
+                        {/* Top highlight sheen */}
+                        <div
+                            style={{
+                                position: 'absolute',
+                                top: 0,
+                                left: 0,
+                                right: 0,
+                                height: '45%',
+                                background: 'linear-gradient(180deg, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0) 100%)',
+                                pointerEvents: 'none',
+                            }}
+                        />
+                    </motion.div>
+                )}
             </div>
 
             {/* Dividers (decorative tick marks) */}
@@ -172,7 +200,7 @@ const HpBar: React.FC<{
                     pointerEvents: 'none',
                 }}
             >
-                ❤️ {Math.max(0, current)} / {max}
+                ❤️ {Math.max(0, current)} {shield > 0 ? `[+🛡️ ${shield}]` : ''} / {max}
             </div>
         </div>
     );
@@ -605,7 +633,7 @@ export const BattleHUD: React.FC<BattleHUDProps> = ({
                             height: '35px',
                         }}
                     >
-                        <HpBar current={battleState.playerHP} max={battleState.playerMaxHP} />
+                        <HpBar current={battleState.playerHP} max={battleState.playerMaxHP} shield={battleState.playerShield} />
                     </div>
                 </motion.div>
 

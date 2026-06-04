@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useGameStore } from '../../store/useGameStore';
 import { AssetsMap } from '../../configs/AssetsMap';
+import { motion, AnimatePresence } from 'framer-motion';
 
 // HUD Components
 import { BattlePassBar } from './hud/BattlePassBar';
@@ -31,7 +32,6 @@ import { UnderDevelopmentModal } from './hud/SharedUI';
 import { BestiaryWindow } from './hud/BestiaryWindow';
 import { MatchmakingOverlay } from './hud/MatchmakingOverlay';
 import { safeGetItem, safeSetItem } from '../../utils/SafeStorage';
-import { TutorialOverlay } from './hud/TutorialOverlay';
 import { LevelUpOverlay } from './hud/LevelUpOverlay';
 
 export const GameHUD: React.FC = () => {
@@ -632,10 +632,14 @@ export const GameHUD: React.FC = () => {
                                 <div style={{ padding: '30px', display: 'flex', justifyContent: 'center' }}>
                                     <InventoryPanel
                                         onItemClick={(itemId) => {
-                                            const item = ITEMS_DATABASE[itemId];
+                                            const store = useGameStore.getState() as any;
+                                            const storeItem = store.inventory.find(
+                                                (i: any) => i.instanceId === itemId || i.id === itemId
+                                            );
+                                            const templateId = storeItem ? storeItem.id : itemId;
+                                            const item = ITEMS_DATABASE[templateId];
                                             if (!item) return;
                                             if (item.mainTab === 'ARSENAL') {
-                                                const store = useGameStore.getState();
                                                 const currentHero = store.selectedHeroId || 'panda';
                                                 const equippedHero = store.getHeroByItemId(itemId);
                                                 if (equippedHero === currentHero) {
@@ -659,9 +663,12 @@ export const GameHUD: React.FC = () => {
                                                 if (itemId === 'exp_potion_medium') effectDesc = '+10 000 опыта';
                                                 if (itemId === 'exp_potion_large') effectDesc = '+50 000 опыта';
 
-                                                if (window.confirm(`Выпить "${item.name}"?\nЭффект: ${effectDesc}`)) {
-                                                    useGameStore.getState().useConsumable(itemId);
-                                                }
+                                                useGameStore.getState().showConfirm(
+                                                    `Выпить "${item.name}"?\nЭффект: ${effectDesc}`,
+                                                    () => {
+                                                        useGameStore.getState().useConsumable(itemId);
+                                                    }
+                                                );
                                             }
                                         }}
                                     />
@@ -719,9 +726,100 @@ export const GameHUD: React.FC = () => {
 
 
 
-            {/* --- TUTORIAL OVERLAY --- */}
-            <TutorialOverlay />
             <LevelUpOverlay />
+            <ConfirmDialog />
         </div>
+    );
+};
+
+const ConfirmDialog: React.FC = () => {
+    const { activeConfirm } = useGameStore();
+
+    if (!activeConfirm) return null;
+
+    return (
+        <AnimatePresence>
+            <div
+                style={{
+                    position: 'fixed',
+                    inset: 0,
+                    backgroundColor: 'rgba(0, 0, 0, 0.75)',
+                    backdropFilter: 'blur(8px)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 9999,
+                }}
+            >
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.9 }}
+                    style={{
+                        background: 'linear-gradient(135deg, rgba(28, 18, 12, 0.95) 0%, rgba(12, 6, 4, 0.99) 100%)',
+                        border: '1px solid rgba(240, 192, 64, 0.3)',
+                        boxShadow: '0 10px 40px rgba(0, 0, 0, 0.8), 0 0 25px rgba(240, 192, 64, 0.1)',
+                        borderRadius: '16px',
+                        padding: '28px',
+                        width: '380px',
+                        textAlign: 'center',
+                        fontFamily: "'Philosopher', 'Nunito', sans-serif",
+                    }}
+                >
+                    <div style={{ fontSize: '32px', marginBottom: '12px' }}>📜</div>
+                    <div
+                        style={{
+                            color: '#eedfa0',
+                            fontSize: '15.5px',
+                            fontWeight: 700,
+                            lineHeight: '1.5',
+                            marginBottom: '24px',
+                            whiteSpace: 'pre-line',
+                        }}
+                    >
+                        {activeConfirm.message}
+                    </div>
+                    <div style={{ display: 'flex', gap: '14px' }}>
+                        <button
+                            onClick={activeConfirm.onCancel}
+                            style={{
+                                flex: 1,
+                                padding: '10px 0',
+                                background: 'rgba(255, 255, 255, 0.05)',
+                                border: '1px solid rgba(255, 255, 255, 0.1)',
+                                borderRadius: '8px',
+                                color: 'rgba(255, 255, 255, 0.6)',
+                                fontFamily: "'Cinzel', serif",
+                                fontSize: '13px',
+                                fontWeight: 900,
+                                cursor: 'pointer',
+                                transition: 'all 0.2s',
+                            }}
+                        >
+                            ОТМЕНА
+                        </button>
+                        <button
+                            onClick={activeConfirm.onConfirm}
+                            style={{
+                                flex: 1,
+                                padding: '10px 0',
+                                background: 'linear-gradient(180deg, #f0c040 0%, #c8960a 100%)',
+                                border: 'none',
+                                borderRadius: '8px',
+                                color: '#1a0f00',
+                                fontFamily: "'Cinzel', serif",
+                                fontSize: '13px',
+                                fontWeight: 900,
+                                cursor: 'pointer',
+                                boxShadow: '0 4px 12px rgba(240, 192, 64, 0.2)',
+                                transition: 'all 0.2s',
+                            }}
+                        >
+                            ПОДТВЕРДИТЬ
+                        </button>
+                    </div>
+                </motion.div>
+            </div>
+        </AnimatePresence>
     );
 };

@@ -2,6 +2,7 @@ import type { BattleEngine } from '../BattleEngine';
 import { useGameStore } from '../../../store/useGameStore';
 import { audioService } from '../../../services/AudioService';
 import { EffectsManager } from '../../systems/EffectsManager';
+import { getAbilityConfig, getAbilityConfigByRole } from '../../../configs/AbilityConfig';
 
 export async function castActiveAbility(engine: BattleEngine) {
     const anyEngine = engine as any;
@@ -12,32 +13,19 @@ export async function castActiveAbility(engine: BattleEngine) {
     engine.updateState({ playerMana: 0 });
 
     const store = useGameStore.getState();
-    const heroName = anyEngine.player?.config?.name || 'Герой';
+    const heroId = anyEngine.player?.config?.id;
     const role = anyEngine.player?.config?.role || 'WARRIOR';
+    const heroName = anyEngine.player?.config?.name || 'Герой';
+
+    // Получаем конфиг из реестра, fallback по роли
+    const abilityCfg = getAbilityConfig(heroId) ?? getAbilityConfigByRole(role);
+    const { name: abilityName, damageMultiplier, healPercent, shieldPercent, onCastStatus } = abilityCfg.activeAbility;
+
+    const healAmount = healPercent ? Math.ceil(anyEngine.playerStats!.hp * healPercent) : 0;
+    const shieldAmount = shieldPercent ? Math.ceil(anyEngine.playerStats!.hp * shieldPercent) : 0;
 
     // Play casting effects
     audioService.playSFX('/assets/audio/sfx/strike_staff.mp3');
-
-    let abilityName = 'Суперудар';
-    let damageMultiplier = 2.0;
-    let healAmount = 0;
-    let shieldAmount = 0;
-
-    if (role === 'WARRIOR') {
-        abilityName = 'Удар Дзена';
-        damageMultiplier = 2.5;
-    } else if (role === 'ASSASSIN') {
-        abilityName = 'Танец Теней';
-        damageMultiplier = 3.5;
-    } else if (role === 'TANK') {
-        abilityName = 'Молот Земли';
-        damageMultiplier = 1.8;
-        shieldAmount = Math.ceil(anyEngine.playerStats!.hp * 0.25);
-    } else {
-        abilityName = 'Вспышка Звезд';
-        damageMultiplier = 2.2;
-        healAmount = Math.ceil(anyEngine.playerStats!.hp * 0.2);
-    }
 
     const logMsg = `✨ [АКТИВ СПОСОБНОСТЬ] ${heroName} использует "${abilityName}"!`;
     engine.updateState({ log: logMsg });
@@ -74,16 +62,16 @@ export async function castActiveAbility(engine: BattleEngine) {
         EffectsManager.getInstance().criticalHit(anyEngine.enemy);
         anyEngine.enemy.playHitEffect();
 
-        if (role === 'WARRIOR' && Math.random() < 0.5) {
-            engine.applyStatus(anyEngine.enemy, 'STUN', 1, 0, false);
-        } else if (role === 'TANK' && Math.random() < 0.5) {
-            engine.applyStatus(anyEngine.enemy, 'STUN', 1, 0, false);
-        } else if (role === 'MAGE') {
-            const burnDmg = Math.ceil(anyEngine.playerStats!.attack * 0.15);
-            engine.applyStatus(anyEngine.enemy, 'BURN', 3, burnDmg, false);
-        } else if (role === 'ASSASSIN') {
-            const poisonDmg = Math.ceil(anyEngine.playerStats!.attack * 0.1);
-            engine.applyStatus(anyEngine.enemy, 'POISON', 4, poisonDmg, false);
+        // Применяем статус из конфига (если есть)
+        if (onCastStatus) {
+            const dmgPerTurn = onCastStatus.damagePerTurn
+                ? (onCastStatus.damagePerTurn > 1
+                    ? onCastStatus.damagePerTurn
+                    : Math.ceil(anyEngine.playerStats!.attack * onCastStatus.damagePerTurn))
+                : 0;
+            const targetUnit = onCastStatus.target === 'enemy' ? anyEngine.enemy : anyEngine.player;
+            const isTargetPlayer = onCastStatus.target === 'player';
+            engine.applyStatus(targetUnit, onCastStatus.type, onCastStatus.duration, dmgPerTurn, isTargetPlayer);
         }
     }
 
@@ -106,8 +94,10 @@ export async function castActiveAbility(engine: BattleEngine) {
     }
 
     if (shieldAmount > 0) {
-        const nextP_HP = Math.min(anyEngine.playerStats!.hp + shieldAmount, engine.state.playerHP + shieldAmount);
-        engine.updateState({ playerHP: nextP_HP });
+        const currentShield = engine.state.playerShield || 0;
+        const maxShieldLimit = Math.ceil(anyEngine.playerStats!.hp * 0.5);
+        const newShield = Math.min(maxShieldLimit, currentShield + shieldAmount);
+        engine.updateState({ playerShield: newShield });
         const shieldLog = `🛡️ ${abilityName} накладывает щит на +${shieldAmount} прочности!`;
         engine.updateState({ log: shieldLog });
         store.addCombatLog(shieldLog);

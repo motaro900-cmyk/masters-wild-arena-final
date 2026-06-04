@@ -2,6 +2,7 @@ import { QUESTS_POOL } from '../../configs/QuestsConfig';
 import { audioService } from '../../services/AudioService';
 import { AssetsMap } from '../../configs/AssetsMap';
 import { BATTLE_PASS_REWARDS } from '../../ui/components/hud/BattlePass/BattlePassShared';
+import { syncService } from '../../services/SyncService';
 
 export const WEEKLY_QUESTS_POOL = [
     {
@@ -98,6 +99,7 @@ export const createQuestSlice = (set: any, get: any) => ({
             state.addBpExp(qData.rewardExp);
 
             set({ dailyQuests: newQuests });
+            syncService.debouncedSync();
         }
     },
 
@@ -140,6 +142,7 @@ export const createQuestSlice = (set: any, get: any) => ({
                 crystals: state.crystals - cost,
                 bpLevel: state.bpLevel + 1,
             });
+            syncService.debouncedSync();
             audioService.playSFX(AssetsMap.AUDIO.SFX_BUY);
             return true;
         } else {
@@ -161,6 +164,7 @@ export const createQuestSlice = (set: any, get: any) => ({
                 crystals: state.crystals - cost,
                 bpLevel: 15,
             });
+            syncService.debouncedSync();
             audioService.playSFX(AssetsMap.AUDIO.SFX_BUY);
             return true;
         } else {
@@ -178,6 +182,7 @@ export const createQuestSlice = (set: any, get: any) => ({
                     crystals: state.crystals - cost,
                     isPremium: true,
                 });
+                syncService.debouncedSync();
                 audioService.playSFX(AssetsMap.AUDIO.SFX_BUY);
                 return true;
             } else {
@@ -186,6 +191,7 @@ export const createQuestSlice = (set: any, get: any) => ({
             }
         } else {
             set({ isPremium: false });
+            syncService.debouncedSync();
             return true;
         }
     },
@@ -208,20 +214,32 @@ export const createQuestSlice = (set: any, get: any) => ({
             const amt = parseInt(rewardId.split('_')[1]);
             if (!isNaN(amt)) gemsToAdd = amt;
         } else if (rewardId === 'weapon_moon_sword') {
-            const weaponObj = { id: 'weapon_moon_sword', type: 'WEAPONS', rarity: 'EPIC', level: 1 };
-            if (!newInventory.some((i) => i.id === 'weapon_moon_sword')) {
-                newInventory.push(weaponObj);
-            }
+            const weaponObj = {
+                id: 'weapon_moon_sword',
+                type: 'WEAPONS',
+                rarity: 'EPIC',
+                level: 1,
+                instanceId: `weapon_moon_sword_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+            };
+            newInventory.push(weaponObj);
         } else if (rewardId === 'weapon_fire_staff') {
-            const weaponObj = { id: 'weapon_fire_staff', type: 'WEAPONS', rarity: 'EPIC', level: 1 };
-            if (!newInventory.some((i) => i.id === 'weapon_fire_staff')) {
-                newInventory.push(weaponObj);
-            }
+            const weaponObj = {
+                id: 'weapon_fire_staff',
+                type: 'WEAPONS',
+                rarity: 'EPIC',
+                level: 1,
+                instanceId: `weapon_fire_staff_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+            };
+            newInventory.push(weaponObj);
         } else if (rewardId === 'weapon_dragon_blade') {
-            const weaponObj = { id: 'weapon_dragon_blade', type: 'WEAPONS', rarity: 'EPIC', level: 1 };
-            if (!newInventory.some((i) => i.id === 'weapon_dragon_blade')) {
-                newInventory.push(weaponObj);
-            }
+            const weaponObj = {
+                id: 'weapon_dragon_blade',
+                type: 'WEAPONS',
+                rarity: 'EPIC',
+                level: 1,
+                instanceId: `weapon_dragon_blade_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+            };
+            newInventory.push(weaponObj);
         } else if (rewardId === 'chest_small') {
             goldToAdd = 1000;
             gemsToAdd = 15;
@@ -283,7 +301,7 @@ export const createQuestSlice = (set: any, get: any) => ({
             equippedSkins: newEquippedSkins,
             shards: shardsObj,
         });
-
+        syncService.debouncedSync();
         audioService.playSFX(AssetsMap.AUDIO.SFX_BUY || AssetsMap.AUDIO.SFX_CLICK);
     },
 
@@ -312,6 +330,7 @@ export const createQuestSlice = (set: any, get: any) => ({
             state.addBpExp(qData.rewardExp);
 
             set({ weeklyQuests: newQuests });
+            syncService.debouncedSync();
             audioService.playSFX(AssetsMap.AUDIO.SFX_BUY || AssetsMap.AUDIO.SFX_CLICK);
         }
     },

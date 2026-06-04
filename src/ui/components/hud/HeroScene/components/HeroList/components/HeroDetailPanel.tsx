@@ -1,4 +1,3 @@
-import React from 'react';
 import { motion } from 'framer-motion';
 import { rarityColors } from '../../../constants/roleIcons';
 import { ROLE_ICONS } from '../../../constants/roleIcons';
@@ -88,11 +87,21 @@ export function HeroDetailPanel({
     setPreviewSkinId,
 }: HeroDetailPanelProps) {
     const skins = getSkinsForHero(hero.id);
-    const defaultSkin = skins.find((s) => s.source === 'default') || skins[0];
+    // Guard: если нет скинов в SkinsConfig — создаём fallback вместо краша
+    const defaultSkin = skins.find((s) => s.source === 'default') || skins[0] || {
+        id: `${hero.id}_default`,
+        name: hero.title || hero.name,
+        description: '',
+        image: hero.image,
+        heroId: hero.id,
+        source: 'default' as const,
+        sourceLabel: 'По умолчанию',
+        rarity: hero.rarity,
+    };
     const activeSkinId = equippedSkins?.[hero.id] || defaultSkin.id;
     const previewId = previewSkinId;
     const setPreviewId = setPreviewSkinId;
-    const displaySkin = skins.find((s) => s.id === (previewId || activeSkinId)) || skins[0];
+    const displaySkin = skins.find((s) => s.id === (previewId || activeSkinId)) || skins[0] || defaultSkin;
 
     const activeRarity = displaySkin ? displaySkin.rarity : hero.rarity;
     const color = rarityColors[activeRarity] || '#fff';

@@ -2,7 +2,8 @@ import { HeroUnit } from '../../entities/HeroUnit';
 import type { BattleEngine, ICombatStats } from '../BattleEngine';
 import { useGameStore } from '../../../store/useGameStore';
 import { HEROES_DB } from '../../../configs/HeroesConfig';
-import { ITEMS_DATABASE } from '../../../game/configs/ItemsConfig';
+import { ATB_THRESHOLD as ATB_THRESHOLD_CONST } from '../../../game/configs/GameConstants';
+import { getAbilityConfig, getAbilityConfigByRole } from '../../../configs/AbilityConfig';
 
 function getWeaponArchetype(itemId: string | null): 'SWORD' | 'BOW' | 'STAFF' | 'DAGGER' | 'OTHER' {
     if (!itemId) return 'OTHER';
@@ -35,6 +36,7 @@ export function skipToEndOfBattle(engine: BattleEngine) {
 
     let pHP = engine.state.playerHP;
     let eHP = engine.state.enemyHP;
+    let pShield = engine.state.playerShield || 0;
 
     let safetyCounter = 0;
     const maxTicks = 10000;
@@ -58,27 +60,18 @@ export function skipToEndOfBattle(engine: BattleEngine) {
             engine.applyStatus(victim, 'STUN', 1, 0, !isAttackerPlayer);
         }
 
-        const attackerId = attacker.config?.id;
-        const attackerRole = attacker.config?.role;
-
-        if (attackerId === 'panda' || attackerRole === 'WARRIOR' || attackerId === 'ancient_golem') {
-            if (Math.random() < 0.3) {
-                const burnDmg = Math.ceil(attStats.attack * 0.12);
-                engine.applyStatus(victim, 'BURN', 3, burnDmg, !isAttackerPlayer);
-            }
-        } else if (attackerId === 'raccoon' || attackerRole === 'ASSASSIN' || attackerId === 'ancient_spider') {
-            if (Math.random() < 0.35) {
-                const poisonDmg = Math.ceil(attStats.attack * 0.09);
-                engine.applyStatus(victim, 'POISON', 4, poisonDmg, !isAttackerPlayer);
-            }
-        } else if (attackerId === 'ancient_wolf') {
-            if (Math.random() < 0.25) {
-                engine.applyStatus(victim, 'FREEZE', 2, 0, !isAttackerPlayer);
+        // Используем ABILITY_REGISTRY вместо хардкода ID/role
+        const abilityCfg = getAbilityConfig(attacker.config?.id) ?? getAbilityConfigByRole(attacker.config?.role);
+        if (abilityCfg?.attackPassive) {
+            const { chance, status, duration, damagePercent } = abilityCfg.attackPassive;
+            if (Math.random() < chance) {
+                const dmg = damagePercent ? Math.ceil(attStats.attack * damagePercent) : 0;
+                engine.applyStatus(victim, status, duration, dmg, !isAttackerPlayer);
             }
         }
     };
 
-    const ATB_THRESHOLD = 100;
+    const ATB_THRESHOLD = ATB_THRESHOLD_CONST;
     let playerTicks = getEffectiveSpeed(anyEngine.player!, pStats);
     let enemyTicks = getEffectiveSpeed(anyEngine.enemy!, eStats);
 
@@ -100,7 +93,17 @@ export function skipToEndOfBattle(engine: BattleEngine) {
             for (const status of playerEffects) {
                 if (status.type === 'BURN' || status.type === 'POISON') {
                     const tickDamage = Math.ceil(status.damagePerTurn * status.stacks);
-                    pHP = Math.max(0, pHP - tickDamage);
+                    let dmg = tickDamage;
+                    if (pShield > 0) {
+                        if (pShield >= dmg) {
+                            pShield -= dmg;
+                            dmg = 0;
+                        } else {
+                            dmg -= pShield;
+                            pShield = 0;
+                        }
+                    }
+                    pHP = Math.max(0, pHP - dmg);
                     engine.totalDamageTaken += tickDamage;
                     engine.onCombatEvent({
                         type: status.type,
@@ -145,7 +148,9 @@ export function skipToEndOfBattle(engine: BattleEngine) {
                     if (role === 'SUPPORT') {
                         pHP = Math.min(pStats.hp, pHP + Math.ceil(pStats.hp * 0.2));
                     } else if (role === 'TANK') {
-                        pHP = Math.min(pStats.hp, pHP + Math.ceil(pStats.hp * 0.25));
+                        const shieldAmount = Math.ceil(pStats.hp * 0.25);
+                        const maxShieldLimit = Math.ceil(pStats.hp * 0.5);
+                        pShield = Math.min(maxShieldLimit, pShield + shieldAmount);
                     }
                 } else {
                     const dodgeCheck = Math.random() < eStats.dodge;
@@ -160,7 +165,8 @@ export function skipToEndOfBattle(engine: BattleEngine) {
                             targetDefense *= 0.5;
                         }
 
-                        const mitigated = Math.max(0, baseDmg - targetDefense * 0.5);
+                        const defReduction = targetDefense / (targetDefense + 200);
+                        const mitigated = Math.max(0, baseDmg * (1 - defReduction));
                         const blockCheck = Math.random() < (eStats.defense > 0 ? 0.15 : 0.05);
 
                         let finalDmg = Math.ceil(mitigated);
@@ -209,10 +215,6 @@ export function skipToEndOfBattle(engine: BattleEngine) {
                         label: '💫 ОГЛУШЕНИЕ!',
                     });
                 } else {
-                    let currentMana = engine.state.playerMana;
-                    currentMana = Math.min(100, currentMana + 15);
-                    engine.state.playerMana = currentMana;
-
                     let playerDodgeChance = pStats.dodge;
                     if (playerWeaponArchetype === 'BOW') {
                         playerDodgeChance += 0.15;
@@ -223,7 +225,8 @@ export function skipToEndOfBattle(engine: BattleEngine) {
                         const isCrit = Math.random() < eStats.critChance;
                         if (isCrit) baseDmg *= eStats.critDamage || 1.5;
 
-                        let mitigated = Math.max(0, baseDmg - pStats.defense * 0.5);
+                        const pDefReduction = pStats.defense / (pStats.defense + 200);
+                        let mitigated = Math.max(0, baseDmg * (1 - pDefReduction));
                         if (isGodMode) mitigated = 0;
 
                         const blockCheck = Math.random() < (pStats.defense > 0 ? 0.15 : 0.05);
@@ -233,7 +236,17 @@ export function skipToEndOfBattle(engine: BattleEngine) {
                             finalDmg = Math.max(1, Math.ceil(mitigated * 0.3));
                         }
 
-                        pHP = Math.max(0, pHP - finalDmg);
+                        let dmg = finalDmg;
+                        if (pShield > 0) {
+                            if (pShield >= dmg) {
+                                pShield -= dmg;
+                                dmg = 0;
+                            } else {
+                                dmg -= pShield;
+                                pShield = 0;
+                            }
+                        }
+                        pHP = Math.max(0, pHP - dmg);
                         engine.totalDamageTaken += finalDmg;
                         engine.totalTurnsPlayed += 1;
 
@@ -252,6 +265,7 @@ export function skipToEndOfBattle(engine: BattleEngine) {
     engine.updateState({
         playerHP: pHP,
         enemyHP: eHP,
+        playerShield: isWin ? pShield : 0,
         log: isWin ? 'ПОБЕДА!' : 'ПОРАЖЕНИЕ...',
     });
 

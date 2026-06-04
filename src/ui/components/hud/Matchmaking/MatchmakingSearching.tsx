@@ -1,6 +1,5 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { AssetsMap } from '../../../../configs/AssetsMap';
 import { useGameStore } from '../../../../store/useGameStore';
 import { getAvatarFrameStyle, getAvatarFramePath, getAvatarImageStyle } from '../../../../configs/ProfileCustomization';
 

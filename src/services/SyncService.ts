@@ -142,6 +142,7 @@ export class SyncService {
                 ownedSkins: state.ownedSkins,
                 equippedSkins: state.equippedSkins,
                 usedPromoCodes: state.usedPromoCodes,
+                claimedGifts: state.claimedGifts || [],
                 pveStage: state.pveStage,
                 maxPveStage: state.maxPveStage,
                 winStreak: state.winStreak,

@@ -97,11 +97,18 @@ export class PixiApp {
                     width: this.config.width,
                     height: this.config.height,
                     backgroundColor: 0x000000,
-                    backgroundAlpha: 0, // Transparent — let CSS background show through
+                    backgroundAlpha: 0,       // Transparent — let CSS background show through
                     antialias: this.config.antialias,
-                    resolution: Math.min(window.devicePixelRatio || 1, 2),
+                    // Повышаем cap с 2 до 3 — экраны с DPR 2.5-3 (MacBook Pro, высокие мониторы)
+                    // получают рендер в нативном разрешении
+                    resolution: Math.min(window.devicePixelRatio || 1, 3),
                     autoDensity: true,
-                    preference: 'webgl',
+                    // Предпочитаем WebGPU — более чёткий рендер без WebGL сглаживания.
+                    // Браузер автоматически fallback-ится на WebGL если WebGPU недоступен.
+                    preference: 'webgpu',
+                    // Отключаем субпиксельное смещение спрайтов — устраняет "пиксельный шум"
+                    // на краях спрайтов при нецелых координатах
+                    roundPixels: true,
                 });
 
                 (window as any).__PIXI_APP__ = this.pixiApp;
@@ -150,8 +157,10 @@ export class PixiApp {
         canvas.style.position = 'absolute';
         canvas.style.top = '0';
         canvas.style.left = '0';
-        canvas.style.zIndex = '1'; // Ensure it's above parent background
-        canvas.style.filter = 'contrast(1.1) saturate(1.2) brightness(1.05)';
+        canvas.style.zIndex = '1';
+        // Фильтр убран с canvas — весь визуальный профиль
+        // задаётся через .premium-saturated-panel на контейнере.
+        // Так не дублируем насыщенность и избегаем offscreen blur.
     }
 
     public returnToHomeContainer(): void {
@@ -194,11 +203,14 @@ export class PixiApp {
     private ySort(container: PIXI.Container): void {
         if (container.children.length < 2) return; // Пропускаем, если сортировать нечего
 
-        container.children.sort((a, b) => {
-            const aY = (a.position?.y ?? 0) + ((a as any).height ?? 0);
-            const bY = (b.position?.y ?? 0) + ((b as any).height ?? 0);
-            return aY - bY;
-        });
+        if (!container.sortableChildren) {
+            container.sortableChildren = true;
+        }
+
+        for (const child of container.children) {
+            const y = (child.position?.y ?? 0) + ((child as any).height ?? 0);
+            child.zIndex = Math.round(y);
+        }
     }
 
     public addUpdateLoop(callback: (dt: number) => void): void {

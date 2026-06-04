@@ -10,7 +10,6 @@ import {
     isAvatarUnlocked,
     isFrameUnlocked, 
     isTitleUnlocked, 
-    getAvatarFrameStyle,
     getAvatarFramePath,
     getAvatarImageStyle
 } from '../../../configs/ProfileCustomization';
@@ -65,8 +64,6 @@ export const ProfileCustomizeWindow: React.FC<ProfileCustomizeWindowProps> = ({ 
         setTitle(titleName);
     };
 
-    const activeFrameStyle = getAvatarFrameStyle(playerFrame);
-    
     // Resolve VK avatar photo if available
     const vkPhoto = vkUser?.photo_200 || vkUser?.photo || null;
     const isUsingVkAvatar = playerAvatar && playerAvatar.startsWith('http');
@@ -94,9 +91,36 @@ export const ProfileCustomizeWindow: React.FC<ProfileCustomizeWindowProps> = ({ 
                 color: colors.text,
                 fontFamily: "'Philosopher', 'Cinzel', sans-serif",
                 boxSizing: 'border-box',
-                overflow: 'hidden'
+                overflow: 'hidden',
+                position: 'relative'
             }}
         >
+            {/* Кнопка Закрыть */}
+            <button 
+                onClick={() => {
+                    audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
+                    onClose();
+                }}
+                style={{
+                    position: 'absolute',
+                    top: '12px',
+                    right: '20px',
+                    background: 'transparent',
+                    border: 'none',
+                    color: colors.accent,
+                    fontSize: '22px',
+                    cursor: 'pointer',
+                    zIndex: 100,
+                    fontWeight: 'bold',
+                    transition: 'transform 0.2s',
+                    outline: 'none'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.15)'}
+                onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+            >
+                ✕
+            </button>
+
             {/* ЛЕВАЯ КОЛОНКА: ПРЕВЬЮ ПЕРСОНАЖА */}
             <ProfilePreviewCard
                 level={level}

@@ -41,6 +41,7 @@ export const BattleScene: React.FC = () => {
         playerMaxMana: 100,
         playerStatuses: [],
         enemyStatuses: [],
+        playerShield: 0,
     });
     const [playerPulse, setPlayerPulse] = useState(false);
     const [enemyPulse, setEnemyPulse] = useState(false);

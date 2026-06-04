@@ -172,6 +172,24 @@ export const SafeGameLayout = ({ containerRef }: { containerRef: React.RefObject
                 onDismiss={() => {}}
             />
 
+            {/* ── ФОНОВОЕ ИЗОБРАЖЕНИЕ (вне scale-wrapper) ──────────────────────
+                Рендерится в нативном разрешении экрана — без двойного CSS scale.
+                Это даёт максимальную чёткость панды и фона. */}
+            <div
+                style={{
+                    position: 'fixed',
+                    inset: 0,
+                    backgroundImage: `url(${
+                        isMobile ? AssetsMap.BACKGROUNDS.MAIN_MENU_MOBILE : AssetsMap.BACKGROUNDS.MAIN_MENU
+                    })`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    backgroundColor: '#0c0c0c',
+                    zIndex: 0,
+                    pointerEvents: 'none',
+                }}
+            />
+
             {/* Unified 1920x1080 Scaled Container */}
             <div
                 className="game-scale-wrapper"
@@ -197,13 +215,7 @@ export const SafeGameLayout = ({ containerRef }: { containerRef: React.RefObject
                         position: 'absolute',
                         top: 0,
                         left: 0,
-                        backgroundImage: `url(${
-                            isMobile ? AssetsMap.BACKGROUNDS.MAIN_MENU_MOBILE : AssetsMap.BACKGROUNDS.MAIN_MENU
-                        })`,
-                        backgroundSize: 'cover',
-                        backgroundPosition: 'center',
-                        backgroundColor: '#0c0c0c',
-                        boxShadow: '0 0 100px rgba(0,0,0,0.5)',
+                        backgroundColor: 'transparent', // фон теперь на внешнем слое
                         overflow: 'hidden',
                         zIndex: 1,
                         pointerEvents: 'auto',
@@ -367,26 +379,57 @@ export const Root = () => {
                 }
             }, 20000);
 
+            let timeOffset = 0;
             try {
                 console.log('🏁 Root: Initializing App...');
+                setLoadingText('Калибровка времени...');
+                try {
+                    const start = Date.now();
+                    const response = await fetch(window.location.origin + window.location.pathname, { method: 'HEAD', cache: 'no-cache' });
+                    const serverDateStr = response.headers.get('date');
+                    if (serverDateStr) {
+                        const serverTime = new Date(serverDateStr).getTime();
+                        const latency = (Date.now() - start) / 2;
+                        timeOffset = serverTime + latency - Date.now();
+                        console.log('🕒 Secure server time offset calibrated (ms):', timeOffset);
+                    }
+                } catch (timeError) {
+                    console.warn('Failed to fetch server time offset, using local device clock:', timeError);
+                }
+
                 setLoadingText('Подключение к VK Bridge...');
 
-                // 1. VK Bridge
+                // 1. VK Bridge — загружаем пользователя независимо от результата initVK
                 try {
                     const vkAvailable = await initVK();
                     console.log('📡 VK Status:', vkAvailable ? 'Connected' : 'Standalone');
-                    if (vkAvailable) {
-                        const user = await getVkUserInfo();
-                        if (user) {
+
+                    // Даже если initVK вернул false (таймаут на мобильной сети),
+                    // VK Bridge уже может быть доступен. Пытаемся получить данные.
+                    const user = await getVkUserInfo();
+                    if (user) {
+                        const store = useGameStore.getState();
+                        store.setVkUser(user);
+                        if (user.photo200 || user.photo) {
+                            store.updateProfile({ avatar: user.photo200 || user.photo });
+                        }
+                        console.log('✅ VK User loaded:', user.firstName);
+                    } else if (isVkMiniApp()) {
+                        // Retry через 2с — для медленных мобильных сетей
+                        console.warn('🔄 VK User Info retry in 2s...');
+                        await new Promise(r => setTimeout(r, 2000));
+                        const retryUser = await getVkUserInfo();
+                        if (retryUser) {
                             const store = useGameStore.getState();
-                            store.setVkUser(user);
-                            if (user.photo200 || user.photo) {
-                                store.updateProfile({ avatar: user.photo200 || user.photo });
+                            store.setVkUser(retryUser);
+                            if (retryUser.photo200 || retryUser.photo) {
+                                store.updateProfile({ avatar: retryUser.photo200 || retryUser.photo });
                             }
+                            console.log('✅ VK User loaded (retry):', retryUser.firstName);
                         }
                     }
 
-                    // Parse referral params (Step 19)
+                    // Parse referral params
                     const searchParams = new URLSearchParams(window.location.search);
                     const startParam = searchParams.get('vk_start_params') || searchParams.get('start_parameter');
                     if (startParam) {
@@ -414,8 +457,25 @@ export const Root = () => {
                 const isVk = isVkMiniApp();
                 if (!isLocalhost) {
                     if (isVk && !state.vkUser) {
-                        console.error('❌ VK User Info not loaded inside VK platform. Aborting initialization to prevent guest accounts.');
-                        setInitError('Не удалось загрузить ваш профиль ВКонтакте. Пожалуйста, перезапустите игру или обновите страницу.');
+                        // Последняя попытка перед абортом — даём VK ещё 3 секунды
+                        console.warn('🔄 Final VK user retry before abort...');
+                        setLoadingText('Загрузка профиля (повторная попытка)...');
+                        await new Promise(r => setTimeout(r, 3000));
+                        const finalUser = await getVkUserInfo();
+                        if (finalUser) {
+                            const store = useGameStore.getState();
+                            store.setVkUser(finalUser);
+                            if (finalUser.photo200 || finalUser.photo) {
+                                store.updateProfile({ avatar: finalUser.photo200 || finalUser.photo });
+                            }
+                            state = useGameStore.getState();
+                            console.log('✅ VK User loaded (final retry):', finalUser.firstName);
+                        }
+                    }
+
+                    if (isVk && !state.vkUser) {
+                        console.error('❌ VK User Info not loaded after all retries. Showing error.');
+                        setInitError('Не удалось загрузить ваш профиль ВКонтакте. Пожалуйста, перезапустите игру или проверьте соединение.');
                         clearTimeout(timeoutId);
                         return;
                     }
@@ -517,7 +577,7 @@ export const Root = () => {
 
                 // Слушатель смены экранов
                 let lastScreen = useGameStore.getState().activeScreen;
-                useGameStore.subscribe((state: any) => {
+                const unsubScreenChange = useGameStore.subscribe((state: any) => {
                     if (state.activeScreen && state.activeScreen !== lastScreen) {
                         const screenNames: Record<string, string> = {
                             INTRO: 'Вступление / Выбор имени',
@@ -536,6 +596,11 @@ export const Root = () => {
                         syncService.debouncedSync();
                     }
                 });
+                // cleanup: отписаться при размонтировании
+                const prevCleanup = unsubChat;
+                unsubChat = () => { unsubScreenChange(); };
+                void prevCleanup; // сохраняем оригинальный unsubChat в unsubScreenChange closure
+                unsubChat = () => { unsubScreenChange(); if (prevCleanup) prevCleanup(); };
 
                 unsubChat = syncService.subscribeToChat((messages) => {
                     useGameStore.getState().setMessages(messages);
@@ -667,7 +732,7 @@ export const Root = () => {
                 const MSK_OFFSET = 3 * 60 * 60 * 1000;
                 const DAY_MS = 24 * 60 * 60 * 1000;
                 const isNewDayMSK = (last: number) => {
-                    const nowMSK = Date.now() + MSK_OFFSET;
+                    const nowMSK = Date.now() + timeOffset + MSK_OFFSET;
                     const lastMSK = last + MSK_OFFSET;
                     return Math.floor(nowMSK / DAY_MS) > Math.floor(lastMSK / DAY_MS);
                 };
@@ -692,7 +757,7 @@ export const Root = () => {
                     finalState.refreshWeeklyQuests();
                 } else {
                     const lastReset = finalState.lastWeeklyQuestReset || 0;
-                    const now = Date.now();
+                    const now = Date.now() + timeOffset;
                     const msInWeek = 7 * 24 * 60 * 60 * 1000;
                     if (now - lastReset >= msInWeek) {
                         finalState.refreshWeeklyQuests();
@@ -713,10 +778,22 @@ export const Root = () => {
                 const requestId = urlParams.get('request_id');
                 if (requestId) {
                     console.log('🎁 Game launched via Request Link:', requestId);
-                    setTimeout(() => {
-                        useGameStore.getState().addGold(5000);
-                        alert('Вы получили подарок от друга: 5,000 золота! 💰');
-                    }, 3000);
+                    const currentStore = useGameStore.getState();
+                    const claimedGifts = currentStore.claimedGifts || [];
+                    if (claimedGifts.includes(requestId)) {
+                        console.log('⚠️ Request Link already claimed:', requestId);
+                    } else {
+                        setTimeout(() => {
+                            const store = useGameStore.getState();
+                            const updatedGifts = [...(store.claimedGifts || []), requestId];
+                            useGameStore.setState({
+                                claimedGifts: updatedGifts
+                            });
+                            store.addGold(5000);
+                            syncService.debouncedSync();
+                            alert('Вы получили подарок от друга: 5,000 золота! 💰');
+                        }, 3000);
+                    }
                 }
 
                 // [Optimization] Background refresh check every minute
@@ -731,7 +808,7 @@ export const Root = () => {
                     }
                     const lastReset = currentState.lastWeeklyQuestReset || 0;
 
-                    const now = Date.now();
+                    const now = Date.now() + timeOffset;
                     const msInWeek = 7 * 24 * 60 * 60 * 1000;
                     if (now - lastReset >= msInWeek) {
                         console.log('🔄 Auto-refreshing weekly quests...');

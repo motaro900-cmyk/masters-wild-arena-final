@@ -4,7 +4,6 @@ import { EffectsManager } from './engine/systems/EffectsManager';
 import { SceneManager } from './engine/core/SceneManager';
 import { MainScreen } from './ui/screens/MainScreen';
 import { useGameStore } from './store/useGameStore';
-import { syncService } from './services/SyncService';
 
 export class GameApp {
     private pixiApp: PixiApp;
@@ -61,8 +60,7 @@ export class GameApp {
             const sceneManager = SceneManager.getInstance();
             sceneManager.switchScene(new MainScreen());
 
-            // Запускаем синхронизацию данных с Firebase
-            syncService.startAutoSync();
+            // NOTE: startAutoSync вызывается только в main.tsx, убрано дублирование отсюда
 
             // Запускаем синхронизацию снимка игрока и оффлайн результатов
             (async () => {

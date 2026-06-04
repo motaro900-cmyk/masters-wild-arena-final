@@ -155,7 +155,7 @@ export const TALENTS_CONFIG = [
                         name: 'Источник Жизни',
                         iconClass: 'sprite-talent talent-12',
                         max: 1,
-                        desc: 'Способности стоят на 25% меньше энергии.',
+                        desc: 'Критический урон увеличен на +10% за каждый уровень таланта.',
                     },
                 ],
             },

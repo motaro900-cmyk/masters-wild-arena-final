@@ -134,7 +134,7 @@ export const VIPWindow: React.FC<VIPWindowProps> = () => {
 
     useEffect(() => {
         if (daysLeft > 0 && vipLevel === 0) {
-            scheduleTimeout(() => useGameStore.setState({ vipLevel: 1, maxEnergy: 60 }), 0);
+            scheduleTimeout(() => useGameStore.setState({ vipLevel: 1, maxEnergy: 65 }), 0);
         } else if (daysLeft === 0 && vipLevel > 0) {
             scheduleTimeout(() => useGameStore.setState({ vipLevel: 0, maxEnergy: 50 }), 0);
         }

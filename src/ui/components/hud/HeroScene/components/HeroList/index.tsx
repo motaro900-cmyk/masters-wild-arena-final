@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { HEROES_DB } from '../../../../../../configs/HeroesConfig';
 import { useGameStore } from '../../../../../../store/useGameStore';
@@ -170,7 +170,15 @@ export const HeroList = ({ ownedHeroes, selectedHeroId, onBuyClick, onHeroClick 
                             {filteredHeroes.map((hero, idx) => {
                                 const isOwned = ownedHeroes.includes(hero.id);
                                 const heroSkins = getSkinsForHero(hero.id);
-                                const defaultSkin = heroSkins.find((s) => s.source === 'default') || heroSkins[0];
+                                // Guard: если нет скинов в SkinsConfig — создаём fallback
+                                const defaultSkin = heroSkins.find((s) => s.source === 'default') || heroSkins[0] || {
+                                    id: `${hero.id}_default`,
+                                    name: hero.name,
+                                    image: hero.image,
+                                    heroId: hero.id,
+                                    source: 'default',
+                                    rarity: hero.rarity,
+                                };
                                 const activeSkinId = equippedSkins?.[hero.id] || defaultSkin.id;
                                 const displaySkinId =
                                     focusedId === hero.id && previewSkinId ? previewSkinId : activeSkinId;

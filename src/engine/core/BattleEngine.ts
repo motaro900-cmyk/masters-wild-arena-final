@@ -5,8 +5,9 @@ import { AssetsMap } from '../../configs/AssetsMap';
 import { audioService } from '../../services/AudioService';
 import { PixiApp } from './PixiApp';
 import { useGameStore } from '../../store/useGameStore';
-import { HEROES_DB } from '../../configs/HeroesConfig';
 import { ITEMS_DATABASE } from '../../game/configs/ItemsConfig';
+import { ATB_THRESHOLD as ATB_THRESHOLD_CONST } from '../../game/configs/GameConstants';
+import { getAbilityConfig, getAbilityConfigByRole, type StatusType, type PassiveContext } from '../../configs/AbilityConfig';
 
 // Import extracted subsystems
 import * as BattleStatusSystem from './battle/BattleStatusSystem';
@@ -40,6 +41,7 @@ export interface BattleState {
     playerMaxMana: number;
     playerStatuses: Array<{ type: string; stacks: number; duration: number }>;
     enemyStatuses: Array<{ type: string; stacks: number; duration: number }>;
+    playerShield: number;
 }
 
 export interface ICombatStats {
@@ -90,6 +92,7 @@ export class BattleEngine {
     public isCombatRunning: boolean = false;
     public isInitialized: boolean = false;
     public battleTime: number = 0;
+    private initTimeoutId: ReturnType<typeof setTimeout> | null = null;
     public totalDamageDealt: number = 0;
     public totalDamageTaken: number = 0;
     public totalTurnsPlayed: number = 0;
@@ -117,6 +120,7 @@ export class BattleEngine {
         playerMaxMana: 100,
         playerStatuses: [],
         enemyStatuses: [],
+        playerShield: 0,
     };
 
     private updateCallback: ((dt: number) => void) | null = null;
@@ -145,7 +149,7 @@ export class BattleEngine {
                 defense: Number(playerStats?.defense) || 5,
                 speed: Number(playerStats?.speed) || 1.5,
                 critChance: Math.max(0.25, pCrit > 1 ? pCrit / 100 : pCrit),
-                dodge: Math.max(0.18, pDodge > 1 ? pDodge / 100 : pDodge),
+                dodge: Math.max(0.05, pDodge > 1 ? pDodge / 100 : pDodge),
                 critDamage: Number(playerStats?.critDamage) || 1.5,
             };
             this.enemyStats = {
@@ -154,7 +158,7 @@ export class BattleEngine {
                 defense: Number(enemyStats?.defense) || 3,
                 speed: Number(enemyStats?.speed) || 1.2,
                 critChance: Math.max(0.22, eCrit > 1 ? eCrit / 100 : eCrit),
-                dodge: Math.max(0.15, eDodge > 1 ? eDodge / 100 : eDodge),
+                dodge: Math.max(0.05, eDodge > 1 ? eDodge / 100 : eDodge),
                 critDamage: Number(enemyStats?.critDamage) || 1.5,
             };
 
@@ -174,7 +178,7 @@ export class BattleEngine {
             background.width = W;
             background.height = H;
             pixiApp.backgroundLayer.addChild(background);
-            console.log('2. background ready');
+            if (import.meta.env.DEV) console.log('2. background ready');
 
             const { heroEquipment } = useGameStore.getState();
 
@@ -224,6 +228,7 @@ export class BattleEngine {
                 enemyMaxHP: this.enemyStats.hp,
                 playerMana: 0,
                 playerMaxMana: 100,
+                playerShield: 0,
                 log: 'БИТВА НАЧИНАЕТСЯ!',
             });
             useGameStore.getState().addCombatLog('--- НАЧАЛО БОЯ ---');
@@ -238,12 +243,13 @@ export class BattleEngine {
             };
             pixiApp.addUpdateLoop(this.updateCallback);
 
-            setTimeout(() => {
+            this.initTimeoutId = setTimeout(() => {
                 this.isCombatRunning = true;
                 this.runCombatLoop();
             }, 400);
         } catch (error) {
             console.error('BattleEngine initialization failed:', error);
+            this.isInitialized = false; // сброс флага чтобы разрешить повторную инициализацию
             this.updateState({ log: 'ОШИБКА ЗАГРУЗКИ БОЯ' });
         }
     }
@@ -251,28 +257,28 @@ export class BattleEngine {
     private async runCombatLoop() {
         if (!this.isCombatRunning) return;
 
-        const ATB_THRESHOLD = 100;
+        const ATB_THRESHOLD = ATB_THRESHOLD_CONST;
         const getEffectiveSpeed = (unit: HeroUnit, stats: ICombatStats) => {
-            return unit.isFrozenStatus ? Math.ceil(stats.speed * 0.5) : stats.speed;
+            const raw = unit.isFrozenStatus ? Math.ceil(stats.speed * 0.5) : stats.speed;
+            return Math.max(raw, 1); // guard: speed=0 вызвал бы бесконечный цикл ATB
         };
 
-        let playerTicks = getEffectiveSpeed(this.player!, this.playerStats!);
-        let enemyTicks = getEffectiveSpeed(this.enemy!, this.enemyStats!);
+        let playerTicks = 0;
+        let enemyTicks = 0;
 
-        const firstIsPlayer = playerTicks >= enemyTicks;
-        if (firstIsPlayer) {
-            playerTicks = ATB_THRESHOLD;
-        } else {
-            enemyTicks = ATB_THRESHOLD;
-        }
-
-        const openingMsg = firstIsPlayer
+        const openingMsg = getEffectiveSpeed(this.player!, this.playerStats!) >= getEffectiveSpeed(this.enemy!, this.enemyStats!)
             ? `Вы наносите удар первыми! (Скорость: ${this.playerStats!.speed} → ${this.enemyStats!.speed})`
             : `Враг атакует первым! (Скорость: ${this.enemyStats!.speed} → ${this.playerStats!.speed})`;
         this.updateState({ log: openingMsg });
         useGameStore.getState().addCombatLog('--- НАЧАЛО БОЯ ---');
 
         while (this.isCombatRunning && this.state.playerHP > 0 && this.state.enemyHP > 0) {
+            // Накапливаем тики до тех пор, пока хотя бы один не превысит порог в 100
+            while (playerTicks < ATB_THRESHOLD && enemyTicks < ATB_THRESHOLD) {
+                playerTicks += getEffectiveSpeed(this.player!, this.playerStats!);
+                enemyTicks += getEffectiveSpeed(this.enemy!, this.enemyStats!);
+            }
+
             const { timeScale } = useGameStore.getState();
             const isPlayerTurn = playerTicks >= enemyTicks;
 
@@ -292,10 +298,7 @@ export class BattleEngine {
                 }
 
                 this.decrementStatusDurations(this.player!);
-
-                playerTicks = 0;
-                playerTicks += getEffectiveSpeed(this.player!, this.playerStats!);
-                enemyTicks += getEffectiveSpeed(this.enemy!, this.enemyStats!);
+                playerTicks -= ATB_THRESHOLD;
             } else {
                 const { isEnemyFrozen } = useGameStore.getState();
                 if (!isEnemyFrozen) {
@@ -303,7 +306,7 @@ export class BattleEngine {
                     if (!this.isCombatRunning || this.state.playerHP <= 0 || this.state.enemyHP <= 0) break;
 
                     if (this.enemy!.isStunnedStatus) {
-                        const skipMsg = 'Враг оглушен и пропускаете ход!';
+                        const skipMsg = 'Враг оглушен и пропускает ход!';
                         this.updateState({ log: skipMsg });
                         useGameStore.getState().addCombatLog(`💫 ${skipMsg}`);
                         await new Promise((r) => setTimeout(r, 1500 / timeScale));
@@ -313,9 +316,7 @@ export class BattleEngine {
 
                     this.decrementStatusDurations(this.enemy!);
                 }
-                enemyTicks = 0;
-                playerTicks += getEffectiveSpeed(this.player!, this.playerStats!);
-                enemyTicks += getEffectiveSpeed(this.enemy!, this.enemyStats!);
+                enemyTicks -= ATB_THRESHOLD;
             }
 
             if (!this.isCombatRunning || this.state.playerHP <= 0 || this.state.enemyHP <= 0) break;
@@ -362,10 +363,6 @@ export class BattleEngine {
         if (isPlayer) {
             const currentMana = this.state.playerMana;
             const newMana = Math.min(100, currentMana + 25);
-            this.updateState({ playerMana: newMana });
-        } else {
-            const currentMana = this.state.playerMana;
-            const newMana = Math.min(100, currentMana + 15);
             this.updateState({ playerMana: newMana });
         }
 
@@ -499,22 +496,27 @@ export class BattleEngine {
             if (isPlayer && isOneShot) damage = 999999;
             const finalDamage = Math.ceil(Math.max(1, damage - targetStats.defense * 0.5));
 
-            victim.isStunnedStatus = true;
-            victim.showStunEffect();
-            victim.setFrame(0);
+            const hasStunImmunity = victim.statusEffects.some((s: any) => s.type === 'STUN_IMMUNITY');
 
-            if (isPlayer) {
-                this.totalDamageDealt += finalDamage;
+            if (!hasStunImmunity) {
+                victim.isStunnedStatus = true;
+                victim.showStunEffect();
+                victim.setFrame(0);
+                this.onCombatEvent({
+                    type: 'INSTINCT',
+                    damage: 0,
+                    target: isPlayer ? 'enemy' : 'player',
+                    label: '💫 ОГЛУШЕНИЕ!',
+                });
             } else {
-                this.totalDamageTaken += finalDamage;
+                this.onCombatEvent({
+                    type: 'INSTINCT',
+                    damage: 0,
+                    target: isPlayer ? 'enemy' : 'player',
+                    label: '🛡️ ИММУНИТЕТ К СТАНУ',
+                });
+                addCombatLog(`🛡️ ${victim.config.name} защищен от оглушения иммунитетом!`);
             }
-            this.onCombatEvent({ type: 'CRIT', damage: finalDamage, target: isPlayer ? 'enemy' : 'player' });
-            this.onCombatEvent({
-                type: 'INSTINCT',
-                damage: 0,
-                target: isPlayer ? 'enemy' : 'player',
-                label: '💫 ОГЛУШЕНИЕ!',
-            });
 
             victim.playHitEffect();
             victim.animateHitReaction(true);
@@ -524,12 +526,10 @@ export class BattleEngine {
             addCombatLog(comboMsg);
 
             if (isPlayer) {
-                const nextHP = Math.max(0, this.state.enemyHP - finalDamage);
-                this.updateState({ enemyHP: nextHP });
+                const nextHP = this.applyDamage('enemy', finalDamage);
                 if (nextHP <= 0) victim.animateDeath(false);
             } else {
-                const nextHP = Math.max(0, this.state.playerHP - finalDamage);
-                this.updateState({ playerHP: nextHP });
+                const nextHP = this.applyDamage('player', finalDamage);
                 if (nextHP <= 0) victim.animateDeath(true);
             }
 
@@ -597,7 +597,8 @@ export class BattleEngine {
             extraDodge = 0.15;
         }
 
-        let hasDodged = Math.random() < (targetStats.dodge || 0.05) + extraDodge;
+        let totalDodgeChance = Math.min(0.60, (targetStats.dodge || 0.05) + extraDodge);
+        let hasDodged = Math.random() < totalDodgeChance;
         if (instinctEvent?.type === 'FOCUS') hasDodged = false;
         if (victim.isStunnedStatus) hasDodged = false;
 
@@ -628,7 +629,8 @@ export class BattleEngine {
         }
 
         let damage = stats.attack * (0.9 + Math.random() * 0.2);
-        if (isCrit) damage *= stats.critDamage || 1.5;
+        const cappedCritDamage = Math.min(stats.critDamage || 1.5, 3.0);
+        if (isCrit) damage *= cappedCritDamage;
         if (instinctEvent?.type === 'RAGE') damage *= 1.5;
         if (isPlayer && isOneShot) damage = 999999;
 
@@ -638,23 +640,24 @@ export class BattleEngine {
             addCombatLog(`✨ [Магия] Атака посохом игнорирует 50% защиты цели!`);
         }
 
-        let mitigated = Math.max(0, damage - targetDefense * 0.5);
+        let defenseReduction = targetDefense / (targetDefense + 200);
+        let mitigated = damage * (1 - defenseReduction);
         if (!isPlayer && isGodMode) mitigated = 0;
         if (instinctEvent?.type === 'SHIELD') mitigated *= 0.5;
 
-        const finalDamage = Math.ceil(mitigated);
+        let finalDamage = Math.ceil(mitigated);
+        // Пассивный хук: может увеличить урон персонажа (SHADOW_MARK и др.)
+        finalDamage = this.triggerPassiveOnDealDamage(attacker, victim, finalDamage, isCrit, isPlayer);
 
         if (instinctEvent?.type === 'COUNTER') {
             const counterDamage = Math.max(1, Math.ceil(targetStats.attack * 0.5));
             if (isPlayer) {
-                const nextP_HP = Math.max(0, this.state.playerHP - counterDamage);
-                this.updateState({ playerHP: nextP_HP });
+                const nextP_HP = this.applyDamage('player', counterDamage);
                 this.totalDamageTaken += counterDamage;
                 this.onCombatEvent({ type: 'HIT', damage: counterDamage, target: 'player' });
                 if (nextP_HP <= 0) attacker.animateDeath(true);
             } else {
-                const nextE_HP = Math.max(0, this.state.enemyHP - counterDamage);
-                this.updateState({ enemyHP: nextE_HP });
+                const nextE_HP = this.applyDamage('enemy', counterDamage);
                 this.onCombatEvent({ type: 'HIT', damage: counterDamage, target: 'enemy' });
                 this.totalDamageDealt += counterDamage;
                 if (nextE_HP <= 0) attacker.animateDeath(false);
@@ -679,13 +682,11 @@ export class BattleEngine {
             victim.playHitEffect();
 
             if (isPlayer) {
-                const nextHP = Math.max(0, this.state.enemyHP - blockedDamage);
-                this.updateState({ enemyHP: nextHP });
+                const nextHP = this.applyDamage('enemy', blockedDamage);
                 useGameStore.getState().updateQuestProgress('DAMAGE', blockedDamage);
                 if (nextHP <= 0) victim.animateDeath(false);
             } else {
-                const nextHP = Math.max(0, this.state.playerHP - blockedDamage);
-                this.updateState({ playerHP: nextHP });
+                const nextHP = this.applyDamage('player', blockedDamage);
                 this.totalDamageTaken += blockedDamage;
                 if (nextHP <= 0) victim.animateDeath(true);
             }
@@ -711,19 +712,13 @@ export class BattleEngine {
         const attackerId = attacker.config?.id;
         const attackerRole = attacker.config?.role;
 
-        if (attackerId === 'panda' || attackerRole === 'WARRIOR' || attackerId === 'ancient_golem') {
-            if (Math.random() < 0.3) {
-                const burnDmg = Math.ceil(stats.attack * 0.12);
-                this.applyStatus(victim, 'BURN', 3, burnDmg, !isPlayer);
-            }
-        } else if (attackerId === 'raccoon' || attackerRole === 'ASSASSIN' || attackerId === 'ancient_spider') {
-            if (Math.random() < 0.35) {
-                const poisonDmg = Math.ceil(stats.attack * 0.09);
-                this.applyStatus(victim, 'POISON', 4, poisonDmg, !isPlayer);
-            }
-        } else if (attackerId === 'ancient_wolf') {
-            if (Math.random() < 0.25) {
-                this.applyStatus(victim, 'FREEZE', 2, 0, !isPlayer);
+        // Используем ABILITY_REGISTRY вместо хардкода ID/role
+        const abilityCfg = getAbilityConfig(attackerId) ?? getAbilityConfigByRole(attackerRole);
+        if (abilityCfg?.attackPassive) {
+            const { chance, status, duration, damagePercent, value } = abilityCfg.attackPassive;
+            if (Math.random() < chance) {
+                const dmgPerTurn = damagePercent ? Math.ceil(stats.attack * damagePercent) : (value ?? 0);
+                this.applyStatus(victim, status, duration, dmgPerTurn, !isPlayer);
             }
         }
 
@@ -764,13 +759,11 @@ export class BattleEngine {
         addCombatLog(logMsg);
 
         if (isPlayer) {
-            const nextHP = Math.max(0, this.state.enemyHP - finalDamage);
-            this.updateState({ enemyHP: nextHP });
+            const nextHP = this.applyDamage('enemy', finalDamage);
             useGameStore.getState().updateQuestProgress('DAMAGE', finalDamage);
             if (nextHP <= 0) victim.animateDeath(false);
         } else {
-            const nextHP = Math.max(0, this.state.playerHP - finalDamage);
-            this.updateState({ playerHP: nextHP });
+            const nextHP = this.applyDamage('player', finalDamage);
             if (nextHP <= 0) victim.animateDeath(true);
         }
 
@@ -781,6 +774,32 @@ export class BattleEngine {
             await attacker.animateTeleportIn(startX, originalFaceScaleX);
         } else {
             await attacker.animateLungeReturn(startX, startY);
+        }
+    }
+
+    public applyDamage(target: 'player' | 'enemy', damage: number): number {
+        // Пассивный хук: CRYSTAL_SHIELD может отразить часть урона
+        const modifiedDamage = this.triggerPassiveOnTakeDamage(target, damage);
+        if (target === 'player') {
+            let remainingDamage = modifiedDamage;
+            let shield = this.state.playerShield || 0;
+            if (shield > 0) {
+                if (shield >= remainingDamage) {
+                    shield -= remainingDamage;
+                    remainingDamage = 0;
+                } else {
+                    remainingDamage -= shield;
+                    shield = 0;
+                }
+                this.updateState({ playerShield: shield });
+            }
+            const nextHP = Math.max(0, this.state.playerHP - remainingDamage);
+            this.updateState({ playerHP: nextHP });
+            return nextHP;
+        } else {
+            const nextHP = Math.max(0, this.state.enemyHP - modifiedDamage);
+            this.updateState({ enemyHP: nextHP });
+            return nextHP;
         }
     }
 
@@ -805,12 +824,36 @@ export class BattleEngine {
 
     public applyStatus(
         unit: HeroUnit,
-        type: 'STUN' | 'BURN' | 'FREEZE' | 'POISON',
+        type: StatusType,
         duration: number,
         damagePerTurn: number,
         isPlayer: boolean,
     ) {
         BattleStatusSystem.applyStatus(this, unit, type, duration, damagePerTurn, isPlayer);
+    }
+
+    // Пассивные хуки — вызываются из executeAttack и applyDamage
+    public triggerPassiveOnDealDamage(attacker: HeroUnit, victim: HeroUnit, damage: number, isCrit: boolean, isPlayer: boolean): number {
+        const cfg = getAbilityConfig(attacker.config?.id);
+        if (!cfg?.passive?.onDealDamage) return damage;
+        const ctx: PassiveContext = { attacker, victim, isPlayer, damage, isCrit, engine: this };
+        const result = cfg.passive.onDealDamage(ctx);
+        if (result.extraLog) { this.updateState({ log: result.extraLog }); useGameStore.getState().addCombatLog(result.extraLog); }
+        if (result.damageModifier != null) return Math.ceil(damage * result.damageModifier);
+        return damage;
+    }
+
+    public triggerPassiveOnTakeDamage(target: 'player' | 'enemy', damage: number, isCrit = false): number {
+        const unit = target === 'player' ? this.player : this.enemy;
+        const opponent = target === 'player' ? this.enemy : this.player;
+        const cfg = getAbilityConfig(unit?.config?.id);
+        if (!cfg?.passive?.onTakeDamage) return damage;
+        const ctx: PassiveContext = { attacker: opponent, victim: unit, isPlayer: target === 'player', damage, isCrit, engine: this };
+        const result = cfg.passive.onTakeDamage(ctx);
+        if (result.extraLog) { this.updateState({ log: result.extraLog }); useGameStore.getState().addCombatLog(result.extraLog); }
+        if (result.cancelDamage) return 0;
+        if (result.damageModifier != null) return Math.ceil(damage * result.damageModifier);
+        return damage;
     }
 
     public async resolvePeriodicDamage(unit: HeroUnit, isPlayer: boolean) {
@@ -831,6 +874,7 @@ export class BattleEngine {
     }
 
     public destroy() {
+        if (this.initTimeoutId) { clearTimeout(this.initTimeoutId); this.initTimeoutId = null; }
         if (this.storeUnsubscribe) this.storeUnsubscribe();
         const pixiApp = PixiApp.getInstance();
         if (this.updateCallback) pixiApp.removeUpdateLoop(this.updateCallback);
