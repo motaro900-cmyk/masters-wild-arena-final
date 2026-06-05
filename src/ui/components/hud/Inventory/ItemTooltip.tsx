@@ -54,12 +54,11 @@ export const ItemTooltip: React.FC<ItemTooltipProps> = ({ item }) => {
 
     const rarity = RARITY_COLORS[data.rarity || 'COMMON'] || RARITY_COLORS.COMMON;
     const tooltipWidth = 280;
-    
+
     // Bounds calculations
-    const left = item.x + tooltipWidth + 20 > window.innerWidth 
-        ? Math.max(10, item.x - tooltipWidth - 20) 
-        : item.x + 20;
-        
+    const left =
+        item.x + tooltipWidth + 20 > window.innerWidth ? Math.max(10, item.x - tooltipWidth - 20) : item.x + 20;
+
     const top = Math.max(10, Math.min(window.innerHeight - 360, item.y - 120));
 
     return createPortal(
@@ -200,6 +199,6 @@ export const ItemTooltip: React.FC<ItemTooltipProps> = ({ item }) => {
                 )}
             </div>
         </motion.div>,
-        document.body
+        document.body,
     );
 };

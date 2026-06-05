@@ -30,10 +30,16 @@ export class AssetLoader {
             // 1. Заменяем .png/.jpg на .webp
             let newPath = path.replace(/\.(png|jpg|jpeg)$/i, '.webp');
 
-            // 2. Если это фон и мы на мобилке — добавляем суффикс _mobile
+            // 2. Если мы на мобилке — подставляем легкие мобильные версии _mobile.webp для фонов, предметов и персонажей
             if (
                 isMobile &&
-                (newPath.includes('backgrounds') || newPath.includes('Shop.webp') || newPath.includes('Shoping.webp'))
+                (newPath.includes('backgrounds') ||
+                    newPath.includes('Shop.webp') ||
+                    newPath.includes('Shoping.webp') ||
+                    newPath.includes('images/items/') ||
+                    newPath.includes('characters/') ||
+                    newPath.includes('avatars/') ||
+                    newPath.includes('frames/'))
             ) {
                 newPath = newPath.replace('.webp', '_mobile.webp');
             }

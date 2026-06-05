@@ -11,11 +11,7 @@ interface RotationWarningOverlayProps {
  * Оверлей «Поверните устройство» — показывается на мобильных
  * в портретном режиме. Можно закрыть кнопкой «Играть в портретном».
  */
-export const RotationWarningOverlay: React.FC<RotationWarningOverlayProps> = ({
-    isPortrait,
-    isMobile,
-    onDismiss,
-}) => {
+export const RotationWarningOverlay: React.FC<RotationWarningOverlayProps> = ({ isPortrait, isMobile, onDismiss }) => {
     return (
         <AnimatePresence>
             {isPortrait && isMobile && (
@@ -72,8 +68,8 @@ export const RotationWarningOverlay: React.FC<RotationWarningOverlayProps> = ({
                             margin: '0 0 32px 0',
                         }}
                     >
-                        Игра создана для горизонтального режима. Пожалуйста, переверните телефон для
-                        лучшего игрового опыта.
+                        Игра создана для горизонтального режима. Пожалуйста, переверните телефон для лучшего игрового
+                        опыта.
                     </p>
                     <button
                         onClick={onDismiss}

@@ -188,7 +188,10 @@ export const HeroCard = ({
                         lineHeight: 1.2,
                     }}
                 >
-                    {hero.name} {isOwned && <span style={{ color: '#f0c040', fontSize: '13px', marginLeft: '6px' }}>Lv.{heroLevel}</span>}
+                    {hero.name}{' '}
+                    {isOwned && (
+                        <span style={{ color: '#f0c040', fontSize: '13px', marginLeft: '6px' }}>Lv.{heroLevel}</span>
+                    )}
                 </h3>
                 <div
                     style={{

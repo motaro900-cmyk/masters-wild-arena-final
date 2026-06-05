@@ -25,6 +25,7 @@ export const createBattleSlice = (set: any, get: any) => ({
     activePveEnemy: null as any,
     activeRankedOpponent: null as any,
     winStreak: 0,
+    lossStreak: 0,
 
     // --- Экшены ---
 
@@ -36,9 +37,7 @@ export const createBattleSlice = (set: any, get: any) => ({
             if (screen === 'BATTLE') {
                 audioService.stopAmbient();
             } else if (screen === 'MAIN_MENU' || screen === 'SANCTUARY') {
-                const track =
-                    AssetsMap?.AUDIO?.MUSIC_LIST?.[6] ||
-                    '/assets/audio/music/Where_the_Canopy_Weeps.mp3';
+                const track = AssetsMap?.AUDIO?.MUSIC_LIST?.[6] || '/assets/audio/music/Where_the_Canopy_Weeps.mp3';
                 audioService.playAmbient(track);
             }
         } catch (err) {
@@ -94,12 +93,8 @@ export const createBattleSlice = (set: any, get: any) => ({
             id: mobId,
             name: `${mobData.name} (Этаж ${stage})`,
             level: stage,
-            hp: Math.floor(
-                mobData.baseStats.hp * difficultyMult * (isBoss ? 1.5 : 1.0),
-            ),
-            attack: Math.floor(
-                mobData.baseStats.attack * difficultyMult * (isBoss ? 1.2 : 1.0),
-            ),
+            hp: Math.floor(mobData.baseStats.hp * difficultyMult * (isBoss ? 1.5 : 1.0)),
+            attack: Math.floor(mobData.baseStats.attack * difficultyMult * (isBoss ? 1.2 : 1.0)),
             defense: Math.floor(mobData.baseStats.defense * difficultyMult),
             image: mobData.image,
             isBoss,
@@ -139,15 +134,10 @@ export const createBattleSlice = (set: any, get: any) => ({
 
             const roll = Math.random();
             if (roll < (isBoss ? 0.9 : 0.6))
-                coalGained = isBoss
-                    ? Math.floor(Math.random() * 4) + 2
-                    : Math.floor(Math.random() * 3) + 1;
+                coalGained = isBoss ? Math.floor(Math.random() * 4) + 2 : Math.floor(Math.random() * 3) + 1;
             if (Math.random() < (isBoss ? 0.8 : 0.4))
-                steelGained = isBoss
-                    ? Math.floor(Math.random() * 3) + 2
-                    : Math.floor(Math.random() * 2) + 1;
-            if (Math.random() < (isBoss ? 0.5 : 0.2))
-                shardGained = isBoss ? Math.floor(Math.random() * 2) + 1 : 1;
+                steelGained = isBoss ? Math.floor(Math.random() * 3) + 2 : Math.floor(Math.random() * 2) + 1;
+            if (Math.random() < (isBoss ? 0.5 : 0.2)) shardGained = isBoss ? Math.floor(Math.random() * 2) + 1 : 1;
 
             const rareRoll = Math.random();
             const rareChance = isBoss ? 0.6 : 0.25;
@@ -171,14 +161,12 @@ export const createBattleSlice = (set: any, get: any) => ({
             if (steelGained > 0) dropLogs.push(`🔩 Сталь x${steelGained}`);
             if (shardGained > 0) dropLogs.push(`🔮 Рун. осколок x${shardGained}`);
             if (compassGained > 0) dropLogs.push(`🧭 Древний компас x${compassGained}`);
-            if (crystalGained > 0)
-                dropLogs.push(`💎 Астральный кристалл x${crystalGained}`);
+            if (crystalGained > 0) dropLogs.push(`💎 Астральный кристалл x${crystalGained}`);
             if (sphereGained > 0) dropLogs.push(`🌌 Сфера бездны x${sphereGained}`);
             if (sproutGained > 0) dropLogs.push(`🌱 Золотой росток x${sproutGained}`);
             if (scaleGained > 0) dropLogs.push(`🐲 Чешуя дракона x${scaleGained}`);
             if (heartGained > 0) dropLogs.push(`🔥 Сердце лавы x${heartGained}`);
-            if (dropLogs.length > 0)
-                logMsg += ` и ресурсы: ${dropLogs.join(', ')}`;
+            if (dropLogs.length > 0) logMsg += ` и ресурсы: ${dropLogs.join(', ')}`;
 
             get().addCombatLog(logMsg);
 
@@ -209,6 +197,7 @@ export const createBattleSlice = (set: any, get: any) => ({
                 pveStage: nextStage,
                 maxPveStage: Math.max(maxPveStage, nextStage),
                 winStreak: newStreak,
+                lossStreak: 0,
                 wins: (state.wins || 0) + 1,
                 totalBattles: (state.totalBattles || 0) + 1,
                 pveLoot: loot,
@@ -224,6 +213,7 @@ export const createBattleSlice = (set: any, get: any) => ({
 
             set((state: any) => ({
                 winStreak: 0,
+                lossStreak: (state.lossStreak || 0) + 1,
                 totalBattles: (state.totalBattles || 0) + 1,
                 pveLoot: null,
             }));

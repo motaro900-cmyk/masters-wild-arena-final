@@ -47,7 +47,14 @@ export const TalentsView = ({ hero, isCompact = false }: any) => {
                         boxShadow: 'inset 0 0 10px rgba(0,0,0,0.5)',
                     }}
                 >
-                    <span style={{ fontSize: '11px', color: '#a88020', fontWeight: 'bold', fontFamily: "'Cinzel', serif" }}>
+                    <span
+                        style={{
+                            fontSize: '11px',
+                            color: '#a88020',
+                            fontWeight: 'bold',
+                            fontFamily: "'Cinzel', serif",
+                        }}
+                    >
                         ДОСТУПНЫЕ ОЧКИ:
                     </span>
                     <span
@@ -145,7 +152,10 @@ export const TalentsView = ({ hero, isCompact = false }: any) => {
                                     stroke={branchPoints >= branch.tiers[1].requiredInBranch ? branch.color : '#222'}
                                     strokeWidth="3"
                                     style={{
-                                        filter: branchPoints >= branch.tiers[1].requiredInBranch ? `drop-shadow(0 0 4px ${branch.color})` : 'none',
+                                        filter:
+                                            branchPoints >= branch.tiers[1].requiredInBranch
+                                                ? `drop-shadow(0 0 4px ${branch.color})`
+                                                : 'none',
                                     }}
                                 />
                                 <line
@@ -156,7 +166,10 @@ export const TalentsView = ({ hero, isCompact = false }: any) => {
                                     stroke={branchPoints >= branch.tiers[1].requiredInBranch ? branch.color : '#222'}
                                     strokeWidth="3"
                                     style={{
-                                        filter: branchPoints >= branch.tiers[1].requiredInBranch ? `drop-shadow(0 0 4px ${branch.color})` : 'none',
+                                        filter:
+                                            branchPoints >= branch.tiers[1].requiredInBranch
+                                                ? `drop-shadow(0 0 4px ${branch.color})`
+                                                : 'none',
                                     }}
                                 />
                                 <line
@@ -167,7 +180,10 @@ export const TalentsView = ({ hero, isCompact = false }: any) => {
                                     stroke={branchPoints >= branch.tiers[2].requiredInBranch ? branch.color : '#222'}
                                     strokeWidth="3"
                                     style={{
-                                        filter: branchPoints >= branch.tiers[2].requiredInBranch ? `drop-shadow(0 0 4px ${branch.color})` : 'none',
+                                        filter:
+                                            branchPoints >= branch.tiers[2].requiredInBranch
+                                                ? `drop-shadow(0 0 4px ${branch.color})`
+                                                : 'none',
                                     }}
                                 />
                                 <line
@@ -178,7 +194,10 @@ export const TalentsView = ({ hero, isCompact = false }: any) => {
                                     stroke={branchPoints >= branch.tiers[2].requiredInBranch ? branch.color : '#222'}
                                     strokeWidth="3"
                                     style={{
-                                        filter: branchPoints >= branch.tiers[2].requiredInBranch ? `drop-shadow(0 0 4px ${branch.color})` : 'none',
+                                        filter:
+                                            branchPoints >= branch.tiers[2].requiredInBranch
+                                                ? `drop-shadow(0 0 4px ${branch.color})`
+                                                : 'none',
                                     }}
                                 />
                             </svg>

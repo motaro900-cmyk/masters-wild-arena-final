@@ -97,7 +97,7 @@ export class PixiApp {
                     width: this.config.width,
                     height: this.config.height,
                     backgroundColor: 0x000000,
-                    backgroundAlpha: 0,       // Transparent — let CSS background show through
+                    backgroundAlpha: 0, // Transparent — let CSS background show through
                     antialias: this.config.antialias,
                     // Повышаем cap с 2 до 3 — экраны с DPR 2.5-3 (MacBook Pro, высокие мониторы)
                     // получают рендер в нативном разрешении
@@ -274,16 +274,9 @@ export class PixiApp {
 
     public clearBattleLayers(): void {
         [this.gameLayer, this.effectsLayer, this.uiLayer, this.debugLayer].forEach((l) => {
-            const isEffects = l === this.effectsLayer;
             l.removeChildren().forEach((child) => {
                 if (!child.destroyed) {
-                    const isBattleSpecific = isEffects ||
-                        child.name === 'mobs' ||
-                        child.name === 'projectile' ||
-                        child.name === 'battle_fx' ||
-                        (child as any).isBattleSpecific === true ||
-                        (child.constructor.name === 'HeroUnit' && (child as any).isMob === true);
-                    child.destroy({ children: true, texture: isBattleSpecific });
+                    child.destroy({ children: true, texture: false });
                 }
             });
         });
@@ -300,17 +293,9 @@ export class PixiApp {
     /** Полная очистка всех слоёв включая фон (используется только при переинициализации) */
     public clearAllLayers(): void {
         [this.backgroundLayer, this.gameLayer, this.effectsLayer, this.uiLayer, this.debugLayer].forEach((l) => {
-            const isEffects = l === this.effectsLayer;
             l.removeChildren().forEach((child) => {
                 if (!child.destroyed) {
-                    const isBattleSpecific = isEffects ||
-                        l === this.backgroundLayer ||
-                        child.name === 'mobs' ||
-                        child.name === 'projectile' ||
-                        child.name === 'battle_fx' ||
-                        (child as any).isBattleSpecific === true ||
-                        (child.constructor.name === 'HeroUnit' && (child as any).isMob === true);
-                    child.destroy({ children: true, texture: isBattleSpecific });
+                    child.destroy({ children: true, texture: false });
                 }
             });
         });

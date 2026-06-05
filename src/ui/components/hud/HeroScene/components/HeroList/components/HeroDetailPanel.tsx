@@ -88,16 +88,17 @@ export function HeroDetailPanel({
 }: HeroDetailPanelProps) {
     const skins = getSkinsForHero(hero.id);
     // Guard: если нет скинов в SkinsConfig — создаём fallback вместо краша
-    const defaultSkin = skins.find((s) => s.source === 'default') || skins[0] || {
-        id: `${hero.id}_default`,
-        name: hero.title || hero.name,
-        description: '',
-        image: hero.image,
-        heroId: hero.id,
-        source: 'default' as const,
-        sourceLabel: 'По умолчанию',
-        rarity: hero.rarity,
-    };
+    const defaultSkin = skins.find((s) => s.source === 'default') ||
+        skins[0] || {
+            id: `${hero.id}_default`,
+            name: hero.title || hero.name,
+            description: '',
+            image: hero.image,
+            heroId: hero.id,
+            source: 'default' as const,
+            sourceLabel: 'По умолчанию',
+            rarity: hero.rarity,
+        };
     const activeSkinId = equippedSkins?.[hero.id] || defaultSkin.id;
     const previewId = previewSkinId;
     const setPreviewId = setPreviewSkinId;

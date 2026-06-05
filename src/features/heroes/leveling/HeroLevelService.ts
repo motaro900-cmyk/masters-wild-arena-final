@@ -11,7 +11,7 @@ export class HeroLevelService {
         heroId: string,
         currentProgress: HeroProgress,
         xpAmount: number,
-        baseStats: { stamina: number; strength: number }
+        baseStats: { stamina: number; strength: number },
     ): { updatedProgress: HeroProgress; delta: LevelUpStatsDelta | null } {
         let level = currentProgress.level;
         let exp = currentProgress.exp + xpAmount;

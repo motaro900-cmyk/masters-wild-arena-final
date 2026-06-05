@@ -48,13 +48,9 @@ export const createChatSlice = (set: any, get: any) => ({
     setMessages: (newMessages: any[]) => {
         set((state: any) => {
             const allMessages = [...state.messages, ...newMessages];
-            const uniqueMessages = Array.from(
-                new Map(allMessages.map((m) => [m.id, m])).values(),
-            );
+            const uniqueMessages = Array.from(new Map(allMessages.map((m) => [m.id, m])).values());
             return {
-                messages: uniqueMessages
-                    .sort((a: any, b: any) => a.timestamp - b.timestamp)
-                    .slice(-100),
+                messages: uniqueMessages.sort((a: any, b: any) => a.timestamp - b.timestamp).slice(-100),
             };
         });
     },
@@ -65,28 +61,20 @@ export const createChatSlice = (set: any, get: any) => ({
         const rankInfo = getRankInfo(currentRating);
 
         const finalAuthor =
-            author === 'Игрок' ||
-            author === 'Мастер' ||
-            author === 'Motar' ||
-            !author
-                ? state.name
-                : author;
+            author === 'Игрок' || author === 'Мастер' || author === 'Motar' || !author ? state.name : author;
 
         const finalAvatar =
-            state.avatar ||
-            state.vkUser?.photo_200 ||
-            state.vkUser?.photo ||
-            '/assets/images/avatars/panda.webp';
+            state.avatar || state.vkUser?.photo_200 || state.vkUser?.photo || '/assets/images/avatars/panda.webp';
 
         const leaderboard = get().leaderboard || [];
         const top1 = leaderboard[0];
-        const isTop1 = top1 !== undefined && (
-            top1.id === state.playerId ||
-            top1.playerId === state.playerId ||
-            (state.vkUser && String(top1.vkId) === String(state.vkUser.id)) ||
-            top1.id === `GUEST-${state.playerId}` ||
-            (state.vkUser && top1.id === `VK-${state.vkUser.id}`)
-        );
+        const isTop1 =
+            top1 !== undefined &&
+            (top1.id === state.playerId ||
+                top1.playerId === state.playerId ||
+                (state.vkUser && String(top1.vkId) === String(state.vkUser.id)) ||
+                top1.id === `GUEST-${state.playerId}` ||
+                (state.vkUser && top1.id === `VK-${state.vkUser.id}`));
 
         const newMessage = {
             author: finalAuthor,
@@ -102,10 +90,7 @@ export const createChatSlice = (set: any, get: any) => ({
 
         if (type === 'system' && author === 'СИСТЕМА') {
             set({
-                messages: [
-                    ...state.messages,
-                    { ...newMessage, id: Math.random().toString(36).substr(2, 9) },
-                ],
+                messages: [...state.messages, { ...newMessage, id: Math.random().toString(36).substr(2, 9) }],
             });
         } else {
             await syncService.sendChatMessage(newMessage);
@@ -141,10 +126,7 @@ export const createChatSlice = (set: any, get: any) => ({
 
     addCombatLog: (msg: string) =>
         set((state: any) => ({
-            combatLogs: [
-                ...state.combatLogs.slice(-49),
-                `${new Date().toLocaleTimeString()} - ${msg}`,
-            ],
+            combatLogs: [...state.combatLogs.slice(-49), `${new Date().toLocaleTimeString()} - ${msg}`],
         })),
 
     clearCombatLogs: () => set({ combatLogs: [] }),
@@ -155,12 +137,9 @@ export const createChatSlice = (set: any, get: any) => ({
             category,
             text,
             userId: state.playerId,
-            userName: state.vkUser
-                ? `${state.vkUser.first_name} ${state.vkUser.last_name}`
-                : 'Мастер',
+            userName: state.vkUser ? `${state.vkUser.first_name} ${state.vkUser.last_name}` : 'Мастер',
             level: state.level,
-            platform:
-                typeof navigator !== 'undefined' ? navigator.platform : 'unknown',
+            platform: typeof navigator !== 'undefined' ? navigator.platform : 'unknown',
             version: 'v1.1.0',
             timestamp: Date.now(),
         };

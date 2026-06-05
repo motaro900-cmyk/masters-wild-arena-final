@@ -34,25 +34,41 @@ export class HeroUnit extends PIXI.Container implements IEffectTarget, IStatusEf
     public nextAttackPose: number = 3;
     public statusEffectController: StatusEffectController;
 
-    public showStunEffect(): void { this.statusEffectController.showStunEffect(); }
-    public removeStunEffect(): void { this.statusEffectController.removeStunEffect(); }
-    public showFreezeEffect(): void { this.statusEffectController.showFreezeEffect(); }
-    public removeFreezeEffect(): void { this.statusEffectController.removeFreezeEffect(); }
-    public showPoisonEffect(): void { this.statusEffectController.showPoisonEffect(); }
-    public removePoisonEffect(): void { this.statusEffectController.removePoisonEffect(); }
-    public showBurnEffect(): void { this.statusEffectController.showBurnEffect(); }
-    public removeBurnEffect(): void { this.statusEffectController.removeBurnEffect(); }
+    public showStunEffect(): void {
+        this.statusEffectController.showStunEffect();
+    }
+    public removeStunEffect(): void {
+        this.statusEffectController.removeStunEffect();
+    }
+    public showFreezeEffect(): void {
+        this.statusEffectController.showFreezeEffect();
+    }
+    public removeFreezeEffect(): void {
+        this.statusEffectController.removeFreezeEffect();
+    }
+    public showPoisonEffect(): void {
+        this.statusEffectController.showPoisonEffect();
+    }
+    public removePoisonEffect(): void {
+        this.statusEffectController.removePoisonEffect();
+    }
+    public showBurnEffect(): void {
+        this.statusEffectController.showBurnEffect();
+    }
+    public removeBurnEffect(): void {
+        this.statusEffectController.removeBurnEffect();
+    }
 
     // ── Кастомные визуальные эффекты для новых статусов ──────────────────────
     private _customEffects: Map<string, PIXI.Container> = new Map();
 
     private _getEffectColor(effectId: string): number {
         const colors: Record<string, number> = {
-            shadow_mark:    0x7b2d8b,
+            shadow_mark: 0x7b2d8b,
             crystal_shield: 0x00d4ff,
-            storm_charge:   0xf5e642,
-            nature_regen:   0x3ecf4f,
-            void_slow:      0x4a1a8c,
+            storm_charge: 0xf5e642,
+            nature_regen: 0x3ecf4f,
+            void_slow: 0x4a1a8c,
         };
         return colors[effectId] ?? 0xffffff;
     }
@@ -80,32 +96,68 @@ export class HeroUnit extends PIXI.Container implements IEffectTarget, IStatusEf
         }
     }
 
-    public get isStunnedStatus(): boolean { return this.statusEffectController.isStunned; }
-    public set isStunnedStatus(val: boolean) { this.statusEffectController.isStunned = val; }
+    public get isStunnedStatus(): boolean {
+        return this.statusEffectController.isStunned;
+    }
+    public set isStunnedStatus(val: boolean) {
+        this.statusEffectController.isStunned = val;
+    }
 
-    public get isBurningStatus(): boolean { return this.statusEffectController.isBurning; }
-    public set isBurningStatus(val: boolean) { this.statusEffectController.isBurning = val; }
+    public get isBurningStatus(): boolean {
+        return this.statusEffectController.isBurning;
+    }
+    public set isBurningStatus(val: boolean) {
+        this.statusEffectController.isBurning = val;
+    }
 
-    public get isFrozenStatus(): boolean { return this.statusEffectController.isFrozen; }
-    public set isFrozenStatus(val: boolean) { this.statusEffectController.isFrozen = val; }
+    public get isFrozenStatus(): boolean {
+        return this.statusEffectController.isFrozen;
+    }
+    public set isFrozenStatus(val: boolean) {
+        this.statusEffectController.isFrozen = val;
+    }
 
-    public get isPoisonedStatus(): boolean { return this.statusEffectController.isPoisoned; }
-    public set isPoisonedStatus(val: boolean) { this.statusEffectController.isPoisoned = val; }
+    public get isPoisonedStatus(): boolean {
+        return this.statusEffectController.isPoisoned;
+    }
+    public set isPoisonedStatus(val: boolean) {
+        this.statusEffectController.isPoisoned = val;
+    }
 
-    public get stunEffectContainer(): PIXI.Container | null { return this.statusEffectController.stunEffectContainer; }
-    public set stunEffectContainer(val: PIXI.Container | null) { this.statusEffectController.stunEffectContainer = val; }
+    public get stunEffectContainer(): PIXI.Container | null {
+        return this.statusEffectController.stunEffectContainer;
+    }
+    public set stunEffectContainer(val: PIXI.Container | null) {
+        this.statusEffectController.stunEffectContainer = val;
+    }
 
-    public get stunTween(): gsap.core.Tween | null { return (this.statusEffectController as any).stunTween; }
-    public set stunTween(val: gsap.core.Tween | null) { (this.statusEffectController as any).stunTween = val; }
+    public get stunTween(): gsap.core.Tween | null {
+        return (this.statusEffectController as any).stunTween;
+    }
+    public set stunTween(val: gsap.core.Tween | null) {
+        (this.statusEffectController as any).stunTween = val;
+    }
 
-    public get burnEffectContainer(): PIXI.Container | null { return this.statusEffectController.burnEffectContainer; }
-    public set burnEffectContainer(val: PIXI.Container | null) { this.statusEffectController.burnEffectContainer = val; }
+    public get burnEffectContainer(): PIXI.Container | null {
+        return this.statusEffectController.burnEffectContainer;
+    }
+    public set burnEffectContainer(val: PIXI.Container | null) {
+        this.statusEffectController.burnEffectContainer = val;
+    }
 
-    public get freezeEffectContainer(): PIXI.Container | null { return this.statusEffectController.freezeEffectContainer; }
-    public set freezeEffectContainer(val: PIXI.Container | null) { this.statusEffectController.freezeEffectContainer = val; }
+    public get freezeEffectContainer(): PIXI.Container | null {
+        return this.statusEffectController.freezeEffectContainer;
+    }
+    public set freezeEffectContainer(val: PIXI.Container | null) {
+        this.statusEffectController.freezeEffectContainer = val;
+    }
 
-    public get poisonEffectContainer(): PIXI.Container | null { return this.statusEffectController.poisonEffectContainer; }
-    public set poisonEffectContainer(val: PIXI.Container | null) { this.statusEffectController.poisonEffectContainer = val; }
+    public get poisonEffectContainer(): PIXI.Container | null {
+        return this.statusEffectController.poisonEffectContainer;
+    }
+    public set poisonEffectContainer(val: PIXI.Container | null) {
+        this.statusEffectController.poisonEffectContainer = val;
+    }
 
     public currentWeaponId: string | null = null;
     private weaponTrailPositions: PIXI.Point[] = [];
@@ -124,8 +176,12 @@ export class HeroUnit extends PIXI.Container implements IEffectTarget, IStatusEf
     public defaultScaleY: number = 1.0;
     public parentDefaultScaleX: number = 1.0;
     public parentDefaultScaleY: number = 1.0;
-    public get _burnCleanupTimer(): any { return (this.statusEffectController as any).burnCleanupTimer; }
-    public set _burnCleanupTimer(val: any) { (this.statusEffectController as any).burnCleanupTimer = val; }
+    public get _burnCleanupTimer(): any {
+        return (this.statusEffectController as any).burnCleanupTimer;
+    }
+    public set _burnCleanupTimer(val: any) {
+        (this.statusEffectController as any).burnCleanupTimer = val;
+    }
 
     public resetToIdle() {
         if (this.destroyed || !this.scale) return;
@@ -198,7 +254,7 @@ export class HeroUnit extends PIXI.Container implements IEffectTarget, IStatusEf
                 const jsonPath = resolveAssetPath(
                     equippedSkin === 'panda_frost'
                         ? '/assets/characters/panda/panda_frost_poses.png.json'
-                        : '/assets/characters/panda/panda_poses.png.json'
+                        : '/assets/characters/panda/panda_poses.png.json',
                 );
                 const sheet = await PIXI.Assets.load(jsonPath);
                 this.posesTextures = [];
@@ -218,7 +274,9 @@ export class HeroUnit extends PIXI.Container implements IEffectTarget, IStatusEf
             }
         } else if (this.config.id === 'raccoon' || this.config.image.includes('raccoon')) {
             try {
-                const sheet = await PIXI.Assets.load(resolveAssetPath('/assets/characters/raccoon/raccoon_poses.png.json'));
+                const sheet = await PIXI.Assets.load(
+                    resolveAssetPath('/assets/characters/raccoon/raccoon_poses.png.json'),
+                );
                 this.posesTextures = [];
                 const frameKeys = Object.keys(sheet.data.frames);
                 for (const key of frameKeys) {
@@ -246,7 +304,9 @@ export class HeroUnit extends PIXI.Container implements IEffectTarget, IStatusEf
                     err,
                 );
                 try {
-                    const posesBaseTex = await PIXI.Assets.load(resolveAssetPath('/assets/characters/panda/panda_poses.png.webp'));
+                    const posesBaseTex = await PIXI.Assets.load(
+                        resolveAssetPath('/assets/characters/panda/panda_poses.png.webp'),
+                    );
                     this.posesTextures = [];
                     const frameW = posesBaseTex.width / 4;
                     const frameH = posesBaseTex.height / 2;
@@ -298,25 +358,10 @@ export class HeroUnit extends PIXI.Container implements IEffectTarget, IStatusEf
     }
 
     private createShadow() {
-        // ── Контактная тень: двухслойная ──────────────────────────────────
-        // Слой 1: мягкий широкий ореол (имитирует рассеянное освещение снизу)
-        const shadowOuter = new PIXI.Graphics();
-        shadowOuter.ellipse(0, 0, 120, 28).fill({ color: 0x000000, alpha: 0.18 });
-        shadowOuter.zIndex = 0;
-        this.addChild(shadowOuter);
-
-        // Слой 2: плотное тёмное ядро у самых ног (окклюзия контакта с полом)
-        const shadowCore = new PIXI.Graphics();
-        shadowCore.ellipse(0, 2, 52, 11).fill({ color: 0x000000, alpha: 0.52 });
-        shadowCore.zIndex = 1;
-        this.addChild(shadowCore);
-
-        // ── Rim Light: тонкое свечение по нижнему контуру героя ──────────
-        // Отделяет персонажа от фона без bloom. Тёплый оттенок (~#ffe8a0).
-        const rimLight = new PIXI.Graphics();
-        rimLight.ellipse(0, -6, 70, 18).fill({ color: 0xffe8a0, alpha: 0.07 });
-        rimLight.zIndex = 2;
-        this.addChild(rimLight);
+        const shadow = new PIXI.Graphics();
+        shadow.ellipse(0, 0, 60, 20).fill({ color: 0x000000, alpha: 0.3 });
+        shadow.zIndex = 1;
+        this.addChild(shadow);
     }
 
     // --- Equipment Delegation ---

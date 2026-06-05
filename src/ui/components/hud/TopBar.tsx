@@ -28,16 +28,20 @@ export const TopBar: React.FC<TopBarProps> = ({ onOpenWindow, mode }) => {
                 className="relative w-[450px] h-[150px] cursor-pointer group hover:scale-105 transition-transform"
                 onClick={() => onOpenWindow('PROFILE')}
             >
-                <img src={AssetsMap.UI.PANEL_PROFILE} className="w-full h-full object-contain" alt="" />
+                <img
+                    src={AssetsMap.UI.PANEL_PROFILE}
+                    className="w-full h-full object-contain"
+                    style={{
+                        filter: 'url(#css-sharpen) contrast(1.2) saturate(1.1) brightness(0.95) hue-rotate(5deg)',
+                    }}
+                    alt=""
+                />
 
                 {/* АВАТАР - сдвигаем внутрь рамки */}
                 <div className="absolute top-[28px] left-[42px] z-10">
                     <AvatarFrame
                         avatarFilename={avatar.replace('.png', '')}
-                        frameFilename={(frame || 'harvest_wheat_frame.webp').replace(
-                            /\.(png|webp)$/,
-                            '',
-                        )}
+                        frameFilename={(frame || 'harvest_wheat_frame.webp').replace(/\.(png|webp)$/, '')}
                         size={92}
                     />
                 </div>
@@ -85,6 +89,9 @@ export const TopBar: React.FC<TopBarProps> = ({ onOpenWindow, mode }) => {
                     <div
                         key={i}
                         className="relative w-[180px] h-[55px] flex items-center group transition-all hover:brightness-125"
+                        style={{
+                            filter: 'url(#css-sharpen) contrast(1.3) saturate(1.2) brightness(1.0) hue-rotate(5deg)',
+                        }}
                     >
                         <img src={item.img} className="absolute inset-0 w-full h-full object-contain" alt="" />
 

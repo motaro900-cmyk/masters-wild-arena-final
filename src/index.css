@@ -82,27 +82,10 @@ canvas {
     height: 100% !important;
     object-fit: contain;
     display: block;
-    /* Сохранять чёткость пикселей при CSS-масштабировании */
-    image-rendering: -webkit-optimize-contrast; /* Safari */
-    image-rendering: crisp-edges;              /* Firefox */
-    /* Выносим canvas в отдельный GPU compositing layer */
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
     will-change: transform;
-    /* Post-Processing: +7% контраст, +9% насыщенность на игровом мире */
-    filter: contrast(1.07) saturate(1.09);
-}
-
-/* ── HUD POST-PROCESSING ────────────────────────────────────────────────────
-   React HUD-слой (кнопки, панели, иконки) рендерится без WebGL — поэтому
-   получает СОБСТВЕННЫЙ фильтр. Сильнее чем у canvas потому что спрайты UI
-   изначально менее насыщены чем рисованный фоновый арт.
-   Диапазон подобран так чтобы золото стало ~90%, чёрный ~5%, без кислоты. */
-.game-hud-root {
-    filter: saturate(1.18) contrast(1.12);
-}
-
-/* Модальные окна — не усиливаем дополнительно (они уже в hud-root) */
-.game-hud-root > .z-\[100\] {
-    filter: none;
+    /* Без фильтров — чистый рендер */
 }
 
 .hud-interactive {

@@ -250,11 +250,13 @@ export const BattleScene: React.FC = () => {
 
                         const newTrophies = Math.max(0, store.trophies + trophies);
                         const newStreak = isVictory ? store.winStreak + 1 : 0;
+                        const newLossStreak = isVictory ? 0 : (store.lossStreak || 0) + 1;
                         const patch: any = {
                             trophies: newTrophies,
                             rating: newTrophies,
                             totalBattles: store.totalBattles + 1,
                             winStreak: newStreak,
+                            lossStreak: newLossStreak,
                         };
                         if (isVictory) {
                             patch.wins = store.wins + 1;

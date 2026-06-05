@@ -21,11 +21,11 @@ export class LeftMenu extends PIXI.Container {
     private async init() {
         // Гарантированная загрузка необходимых ассетов для меню
         const assetsToLoad = [
-            resolveAssetPath('/assets/images/ui/btn_panel_mis12c.png'),
-            resolveAssetPath('/assets/images/ui/bar_gold.png'),
-            resolveAssetPath('/assets/images/ui/bar_gem.png'),
-            resolveAssetPath('/assets/images/ui/bar_energy.png'),
-            resolveAssetPath('/assets/images/ui/mail_icon.png'),
+            resolveAssetPath('/assets/images/ui/btn_panel_mis12c.webp'),
+            resolveAssetPath('/assets/images/ui/bar_gold.webp'),
+            resolveAssetPath('/assets/images/ui/bar_gem.webp'),
+            resolveAssetPath('/assets/images/ui/bar_energy.webp'),
+            resolveAssetPath('/assets/images/ui/mail_icon.webp'),
         ];
 
         await PIXI.Assets.load(assetsToLoad);
@@ -40,10 +40,10 @@ export class LeftMenu extends PIXI.Container {
         this.menuContainer.removeChildren();
 
         const menuItems = [
-            { id: 'STORE', label: 'МАГАЗИН', icon: 'bar_gold.png' },
-            { id: 'INVENTORY', label: 'ИНВЕНТАРЬ', icon: 'bar_gem.png' },
-            { id: 'BEASTS', label: 'ЗВЕРИ', icon: 'bar_energy.png' },
-            { id: 'CLANS', label: 'КЛАНЫ', icon: 'mail_icon.png' },
+            { id: 'STORE', label: 'МАГАЗИН', icon: 'bar_gold.webp' },
+            { id: 'INVENTORY', label: 'ИНВЕНТАРЬ', icon: 'bar_gem.webp' },
+            { id: 'BEASTS', label: 'ЗВЕРИ', icon: 'bar_energy.webp' },
+            { id: 'CLANS', label: 'КЛАНЫ', icon: 'mail_icon.webp' },
         ];
 
         menuItems.forEach((item, index) => {
@@ -52,7 +52,7 @@ export class LeftMenu extends PIXI.Container {
             btnContainer.y = index * 85; // Строгий фиксированный отступ
 
             // 1. ПОДЛОЖКА
-            const texture = PIXI.Assets.get(resolveAssetPath('/assets/images/ui/btn_panel_mis12c.png'));
+            const texture = PIXI.Assets.get(resolveAssetPath('/assets/images/ui/btn_panel_mis12c.webp'));
             const bg = new PIXI.Sprite(texture);
             bg.width = UI_SIZES.SIDEBAR_WIDTH - 20;
             bg.height = UI_SIZES.BUTTON_HEIGHT;

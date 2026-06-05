@@ -29,6 +29,8 @@ type GameStoreState = {
     profileStatus: string;
     isBanned: boolean;
     isMuted: boolean;
+    showSummonOverlay?: boolean;
+    setShowSummonOverlay?: (show: boolean) => void;
     [key: string]: any; // временно — постепенно заменять на строгие типы
 };
 
@@ -45,6 +47,9 @@ export const useGameStore = create<GameStoreState>()(
             ...createChatSlice(set, get),
             ...createMailSlice(set, get),
 
+            showSummonOverlay: false,
+            setShowSummonOverlay: (show: boolean) => set({ showSummonOverlay: show }),
+
             activeConfirm: null,
             showConfirm: (message: string, onConfirm: () => void, onCancel?: () => void) => {
                 set({
@@ -57,8 +62,8 @@ export const useGameStore = create<GameStoreState>()(
                         onCancel: () => {
                             if (onCancel) onCancel();
                             set({ activeConfirm: null });
-                        }
-                    }
+                        },
+                    },
                 });
             },
             closeConfirm: () => set({ activeConfirm: null }),
@@ -104,7 +109,7 @@ export const useGameStore = create<GameStoreState>()(
         {
             name: 'game-storage',
             storage: createJSONStorage(() => getStorage()),
-            version: 31, // v31: 5 new characters — shadow_dancer, crystal_guardian, storm_caller, nature_warden, void_walker
+            version: 32, // v32: Add lossStreak
 
             partialize: (state: any) => ({
                 level: state.level,
@@ -149,6 +154,7 @@ export const useGameStore = create<GameStoreState>()(
                 isPowerSaving: state.isPowerSaving,
                 isMuted: state.isMuted,
                 winStreak: state.winStreak,
+                lossStreak: state.lossStreak,
                 playerId: state.playerId,
                 onboardingCompleted: state.onboardingCompleted,
                 activeBuffs: state.activeBuffs,
@@ -304,7 +310,13 @@ export const useGameStore = create<GameStoreState>()(
                             persistedState.heroes.wolf_knight.level = persistedState.heroes.wolf_knight.level || 1;
                             persistedState.heroes.wolf_knight.exp = persistedState.heroes.wolf_knight.exp || 0;
                         } else {
-                            persistedState.heroes.wolf_knight = { level: 1, exp: 0, strength: 65, agility: 25, stamina: 45 };
+                            persistedState.heroes.wolf_knight = {
+                                level: 1,
+                                exp: 0,
+                                strength: 65,
+                                agility: 25,
+                                stamina: 45,
+                            };
                         }
                     }
                 }
@@ -314,11 +326,11 @@ export const useGameStore = create<GameStoreState>()(
                     if (!persistedState.heroes) persistedState.heroes = {};
                     if (!persistedState.heroTalents) persistedState.heroTalents = {};
                     const newHeroes: Record<string, any> = {
-                        shadow_dancer:    { level: 1, exp: 0, strength: 16, agility: 28, stamina: 14 },
+                        shadow_dancer: { level: 1, exp: 0, strength: 16, agility: 28, stamina: 14 },
                         crystal_guardian: { level: 1, exp: 0, strength: 14, agility: 10, stamina: 30 },
-                        storm_caller:     { level: 1, exp: 0, strength: 12, agility: 18, stamina: 16 },
-                        nature_warden:    { level: 1, exp: 0, strength: 10, agility: 16, stamina: 22 },
-                        void_walker:      { level: 1, exp: 0, strength: 20, agility: 26, stamina: 18 },
+                        storm_caller: { level: 1, exp: 0, strength: 12, agility: 18, stamina: 16 },
+                        nature_warden: { level: 1, exp: 0, strength: 10, agility: 16, stamina: 22 },
+                        void_walker: { level: 1, exp: 0, strength: 20, agility: 26, stamina: 18 },
                     };
                     for (const [id, data] of Object.entries(newHeroes)) {
                         if (!persistedState.heroes[id]) persistedState.heroes[id] = data;
@@ -326,9 +338,13 @@ export const useGameStore = create<GameStoreState>()(
                     }
                 }
 
+                if (version < 32) {
+                    console.log('🔄 Migrating store to v32: Adding lossStreak...');
+                    persistedState.lossStreak = 0;
+                }
+
                 return persistedState;
             },
         },
     ),
 );
-

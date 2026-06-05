@@ -112,7 +112,7 @@ export const AVATARS: AvatarOption[] = [
         path: '/assets/images/avatars/crocodile.webp',
         description: 'Хищник древних болот.',
         requiredLevel: 35,
-    }
+    },
 ];
 
 export const AVATAR_FRAMES: AvatarFrameOption[] = [
@@ -195,7 +195,7 @@ export const AVATAR_FRAMES: AvatarFrameOption[] = [
         description: 'Сверкающие молнии грозового перевала.',
         glowClass: 'vip-avatar-glow-premium',
         requiresTitle: 'Разработчик',
-    }
+    },
 ];
 
 export const TITLES: TitleOption[] = [
@@ -211,11 +211,11 @@ export const TITLES: TitleOption[] = [
     { id: 'guardian', name: 'Хранитель Равновесия', description: 'Защитник порядка Диких Земель.', requiredLevel: 72 },
     { id: 'arena_king', name: 'Король Арены', description: 'Величайший боец среди равных.', requiredLevel: 50 },
     { id: 'vip', name: 'VIP Персона', description: 'Особо важный гость Диких Земель.', requiredVip: 1 },
-    { id: 'developer', name: 'Разработчик', description: 'Создатель этой вселенной.', requiredVip: 5 }
+    { id: 'developer', name: 'Разработчик', description: 'Создатель этой вселенной.', requiredVip: 5 },
 ];
 
 export function getAvatarFramePath(frameId: string): string {
-    const frame = AVATAR_FRAMES.find(f => f.id === frameId);
+    const frame = AVATAR_FRAMES.find((f) => f.id === frameId);
     if (frame) return frame.path;
     // Fallback parsing
     if (frameId && (frameId.endsWith('.webp') || frameId.startsWith('/'))) {
@@ -225,12 +225,12 @@ export function getAvatarFramePath(frameId: string): string {
 }
 
 export function getAvatarFrameStyle(frameId: string): { glowClass: string } {
-    const frame = AVATAR_FRAMES.find(f => f.id === frameId);
+    const frame = AVATAR_FRAMES.find((f) => f.id === frameId);
     if (!frame) {
         return { glowClass: '' };
     }
     return {
-        glowClass: frame.glowClass || ''
+        glowClass: frame.glowClass || '',
     };
 }
 
@@ -251,14 +251,24 @@ export function isAvatarUnlocked(avatar: AvatarOption, playerLevel: number, play
     return true;
 }
 
-export function isFrameUnlocked(frame: AvatarFrameOption, playerLevel: number, playerVip: number, playerTitle: string): boolean {
+export function isFrameUnlocked(
+    frame: AvatarFrameOption,
+    playerLevel: number,
+    playerVip: number,
+    playerTitle: string,
+): boolean {
     if (frame.requiredLevel && playerLevel < frame.requiredLevel) return false;
     if (frame.requiredVip && playerVip < frame.requiredVip) return false;
     if (frame.requiresTitle && playerTitle !== frame.requiresTitle) return false;
     return true;
 }
 
-export function isTitleUnlocked(title: TitleOption, playerLevel: number, playerVip: number, playerTrophies: number): boolean {
+export function isTitleUnlocked(
+    title: TitleOption,
+    playerLevel: number,
+    playerVip: number,
+    playerTrophies: number,
+): boolean {
     if (title.requiredLevel && playerLevel < title.requiredLevel) return false;
     if (title.requiredVip && playerVip < title.requiredVip) return false;
     if (title.requiredTrophies && playerTrophies < title.requiredTrophies) return false;

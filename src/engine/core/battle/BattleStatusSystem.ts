@@ -88,23 +88,48 @@ export function applyStatus(
             });
         } else if (type === 'POISON') {
             unit.showPoisonEffect();
-        // ── Новые статусы для 5 персонажей ──────────────────────────────────
+            // ── Новые статусы для 5 персонажей ──────────────────────────────────
         } else if (type === 'SHADOW_MARK') {
             unit.showCustomEffect?.('shadow_mark');
-            engine.onCombatEvent({ type: 'INSTINCT', damage: 0, target: isPlayer ? 'player' : 'enemy', label: '🌑 МЕТКА ТЕНЕЙ!' });
+            engine.onCombatEvent({
+                type: 'INSTINCT',
+                damage: 0,
+                target: isPlayer ? 'player' : 'enemy',
+                label: '🌑 МЕТКА ТЕНЕЙ!',
+            });
         } else if (type === 'CRYSTAL_SHIELD') {
             unit.showCustomEffect?.('crystal_shield');
-            engine.onCombatEvent({ type: 'BLOCK', damage: 0, target: isPlayer ? 'player' : 'enemy', label: '💎 КРИСТАЛЬНЫЙ ЩИТ!' });
+            engine.onCombatEvent({
+                type: 'BLOCK',
+                damage: 0,
+                target: isPlayer ? 'player' : 'enemy',
+                label: '💎 КРИСТАЛЬНЫЙ ЩИТ!',
+            });
         } else if (type === 'STORM_CHARGE') {
             unit.showCustomEffect?.('storm_charge');
-            engine.onCombatEvent({ type: 'INSTINCT', damage: 0, target: isPlayer ? 'player' : 'enemy', label: `⚡ НАКОПЛЕНИЕ ГРОЗЫ (${duration} ходов)!` });
+            engine.onCombatEvent({
+                type: 'INSTINCT',
+                damage: 0,
+                target: isPlayer ? 'player' : 'enemy',
+                label: `⚡ НАКОПЛЕНИЕ ГРОЗЫ (${duration} ходов)!`,
+            });
         } else if (type === 'NATURE_REGEN') {
             unit.showCustomEffect?.('nature_regen');
-            engine.onCombatEvent({ type: 'INSTINCT', damage: 0, target: isPlayer ? 'player' : 'enemy', label: '🌿 ПРИРОДНАЯ РЕГЕНЕРАЦИЯ!' });
+            engine.onCombatEvent({
+                type: 'INSTINCT',
+                damage: 0,
+                target: isPlayer ? 'player' : 'enemy',
+                label: '🌿 ПРИРОДНАЯ РЕГЕНЕРАЦИЯ!',
+            });
         } else if (type === 'VOID_SLOW') {
             unit.isFrozenStatus = true; // переиспользуем ATB-флаг
             unit.showCustomEffect?.('void_slow');
-            engine.onCombatEvent({ type: 'STUN', damage: 0, target: isPlayer ? 'player' : 'enemy', label: '🌀 ЗАМЕДЛЕНИЕ ПУСТОТЫ (-50% скорость)!' });
+            engine.onCombatEvent({
+                type: 'STUN',
+                damage: 0,
+                target: isPlayer ? 'player' : 'enemy',
+                label: '🌀 ЗАМЕДЛЕНИЕ ПУСТОТЫ (-50% скорость)!',
+            });
         }
     }
 
@@ -155,7 +180,12 @@ export async function resolvePeriodicDamage(engine: BattleEngine, unit: HeroUnit
             const healAmount = Math.ceil(maxHP * 0.05);
             const nextHP = Math.min(maxHP, engine.state.playerHP + healAmount);
             engine.updateState({ playerHP: nextHP });
-            engine.onCombatEvent({ type: 'BLOCK', damage: healAmount, target: 'player', label: `🌿 +${healAmount} HP` });
+            engine.onCombatEvent({
+                type: 'BLOCK',
+                damage: healAmount,
+                target: 'player',
+                label: `🌿 +${healAmount} HP`,
+            });
             useGameStore.getState().addCombatLog(`[РЕГЕНЕРАЦИЯ] +${healAmount} HP`);
             await new Promise((r) => setTimeout(r, 400 / timeScale));
         }
@@ -185,7 +215,7 @@ export function decrementStatusDurations(engine: BattleEngine, unit: HeroUnit) {
                 unit.removeFreezeEffect();
             } else if (status.type === 'POISON') {
                 unit.removePoisonEffect();
-            // ── Новые статусы ─────────────────────────────────────────────────
+                // ── Новые статусы ─────────────────────────────────────────────────
             } else if (status.type === 'STORM_CHARGE') {
                 // Взрыв при истечении заряда
                 unit.removeCustomEffect?.('storm_charge');
@@ -194,7 +224,12 @@ export function decrementStatusDurations(engine: BattleEngine, unit: HeroUnit) {
                 const atkStats = isEnemy ? anyEng.enemyStats! : anyEng.playerStats!;
                 const explosionDmg = Math.ceil(atkStats.attack * 1.8);
                 engine.applyDamage(isEnemy ? 'enemy' : 'player', explosionDmg);
-                engine.onCombatEvent({ type: 'CRIT', damage: explosionDmg, target: isEnemy ? 'enemy' : 'player', label: '⚡ ВЗРЫВ ГРОЗЫ!' });
+                engine.onCombatEvent({
+                    type: 'CRIT',
+                    damage: explosionDmg,
+                    target: isEnemy ? 'enemy' : 'player',
+                    label: '⚡ ВЗРЫВ ГРОЗЫ!',
+                });
                 useGameStore.getState().addCombatLog(`[ГРОЗА] Разряд наносит ${explosionDmg} урона!`);
             } else if (status.type === 'SHADOW_MARK') {
                 unit.removeCustomEffect?.('shadow_mark');

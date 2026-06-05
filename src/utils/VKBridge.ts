@@ -13,8 +13,15 @@ export const isVkMiniApp = (): boolean => {
     if (typeof window === 'undefined') return false;
     const search = window.location.search;
     const params = new URLSearchParams(search);
-    const hasVkQuery = params.has('vk_app_id') || params.has('vk_platform') || Array.from(params.keys()).some(k => k.startsWith('vk_'));
-    const hasVkReferrer = document.referrer && (document.referrer.includes('vk.com') || document.referrer.includes('vk-apps.com') || document.referrer.includes('vk.ru'));
+    const hasVkQuery =
+        params.has('vk_app_id') ||
+        params.has('vk_platform') ||
+        Array.from(params.keys()).some((k) => k.startsWith('vk_'));
+    const hasVkReferrer =
+        document.referrer &&
+        (document.referrer.includes('vk.com') ||
+            document.referrer.includes('vk-apps.com') ||
+            document.referrer.includes('vk.ru'));
     const hasVkName = window.name && window.name.includes('fXD');
     return hasVkQuery || hasVkReferrer || hasVkName || (window as any).isVkMiniApp === true;
 };

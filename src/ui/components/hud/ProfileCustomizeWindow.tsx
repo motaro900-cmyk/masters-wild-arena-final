@@ -3,15 +3,15 @@ import { useGameStore } from '../../../store/useGameStore';
 import { audioService } from '../../../services/AudioService';
 import { AssetsMap } from '../../../configs/AssetsMap';
 import { Lock, Check } from 'lucide-react';
-import { 
+import {
     AVATARS,
-    AVATAR_FRAMES, 
-    TITLES, 
+    AVATAR_FRAMES,
+    TITLES,
     isAvatarUnlocked,
-    isFrameUnlocked, 
-    isTitleUnlocked, 
+    isFrameUnlocked,
+    isTitleUnlocked,
     getAvatarFramePath,
-    getAvatarImageStyle
+    getAvatarImageStyle,
 } from '../../../configs/ProfileCustomization';
 import { ProfilePreviewCard } from './ProfilePreviewCard';
 
@@ -20,18 +20,18 @@ interface ProfileCustomizeWindowProps {
 }
 
 export const ProfileCustomizeWindow: React.FC<ProfileCustomizeWindowProps> = ({ onClose }) => {
-    const { 
-        level, 
-        vipLevel, 
-        trophies, 
-        title: playerTitle, 
-        frame: playerFrame, 
-        name, 
-        avatar: playerAvatar, 
+    const {
+        level,
+        vipLevel,
+        trophies,
+        title: playerTitle,
+        frame: playerFrame,
+        name,
+        avatar: playerAvatar,
         vkUser,
         setFrame,
         setTitle,
-        setAvatar
+        setAvatar,
     } = useGameStore();
 
     // Tab state: 'AVATARS' | 'FRAMES' | 'TITLES'
@@ -69,11 +69,11 @@ export const ProfileCustomizeWindow: React.FC<ProfileCustomizeWindowProps> = ({ 
     const isUsingVkAvatar = playerAvatar && playerAvatar.startsWith('http');
 
     const colors = {
-        text: '#f2e8c9', 
-        textDim: '#eedfa0', 
-        accent: '#f5d37a', 
-        accentLight: '#ffeaad', 
-        cardBg: 'rgba(25, 12, 5, 0.55)', 
+        text: '#f2e8c9',
+        textDim: '#eedfa0',
+        accent: '#f5d37a',
+        accentLight: '#ffeaad',
+        cardBg: 'rgba(25, 12, 5, 0.55)',
         cardBorder: 'rgba(240, 192, 64, 0.22)',
         unlockedText: '#4ade80',
         lockedText: '#f87171',
@@ -82,8 +82,8 @@ export const ProfileCustomizeWindow: React.FC<ProfileCustomizeWindowProps> = ({ 
     };
 
     return (
-        <div 
-            style={{ 
+        <div
+            style={{
                 height: '630px',
                 display: 'flex',
                 gap: '28px',
@@ -92,11 +92,11 @@ export const ProfileCustomizeWindow: React.FC<ProfileCustomizeWindowProps> = ({ 
                 fontFamily: "'Philosopher', 'Cinzel', sans-serif",
                 boxSizing: 'border-box',
                 overflow: 'hidden',
-                position: 'relative'
+                position: 'relative',
             }}
         >
             {/* Кнопка Закрыть */}
-            <button 
+            <button
                 onClick={() => {
                     audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
                     onClose();
@@ -113,10 +113,10 @@ export const ProfileCustomizeWindow: React.FC<ProfileCustomizeWindowProps> = ({ 
                     zIndex: 100,
                     fontWeight: 'bold',
                     transition: 'transform 0.2s',
-                    outline: 'none'
+                    outline: 'none',
                 }}
-                onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.15)'}
-                onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.15)')}
+                onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1)')}
             >
                 ✕
             </button>
@@ -136,17 +136,18 @@ export const ProfileCustomizeWindow: React.FC<ProfileCustomizeWindowProps> = ({ 
             {/* ПРАВАЯ КОЛОНКА: ВКЛАДКИ И ВЫБОР */}
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
                 {/* ТАБ-НАВИГАЦИЯ */}
-                <div 
-                    style={{ 
-                        display: 'flex', 
-                        gap: '8px', 
+                <div
+                    style={{
+                        display: 'flex',
+                        gap: '8px',
                         marginBottom: '16px',
                         borderBottom: '1px solid rgba(240, 192, 64, 0.2)',
-                        paddingBottom: '8px'
+                        paddingBottom: '8px',
                     }}
                 >
                     {(['AVATARS', 'FRAMES', 'TITLES'] as const).map((tab) => {
-                        const tabLabel = tab === 'AVATARS' ? 'Аватары' : tab === 'FRAMES' ? 'Рамки аватара' : 'Титулы и ранги';
+                        const tabLabel =
+                            tab === 'AVATARS' ? 'Аватары' : tab === 'FRAMES' ? 'Рамки аватара' : 'Титулы и ранги';
                         const isActive = activeTab === tab;
 
                         return (
@@ -168,7 +169,7 @@ export const ProfileCustomizeWindow: React.FC<ProfileCustomizeWindowProps> = ({ 
                                     borderRadius: '8px',
                                     cursor: 'pointer',
                                     transition: 'all 0.2s',
-                                    outline: 'none'
+                                    outline: 'none',
                                 }}
                             >
                                 {tabLabel}
@@ -178,15 +179,15 @@ export const ProfileCustomizeWindow: React.FC<ProfileCustomizeWindowProps> = ({ 
                 </div>
 
                 {/* СПИСОК ЭЛЕМЕНТОВ (SCROLLABLE - 3 COLUMNS) */}
-                <div 
+                <div
                     className="leaderboard-scroll"
-                    style={{ 
-                        flex: 1, 
-                        overflowY: 'auto', 
+                    style={{
+                        flex: 1,
+                        overflowY: 'auto',
                         paddingRight: '8px',
                         display: 'flex',
                         flexDirection: 'column',
-                        gap: '12px'
+                        gap: '12px',
                     }}
                 >
                     {activeTab === 'AVATARS' && (
@@ -203,15 +204,35 @@ export const ProfileCustomizeWindow: React.FC<ProfileCustomizeWindowProps> = ({ 
                                         padding: '16px',
                                         borderRadius: '14px',
                                         background: isUsingVkAvatar ? 'rgba(240, 192, 64, 0.14)' : colors.cardBg,
-                                        border: isUsingVkAvatar ? '1.5px solid rgba(240, 192, 64, 0.75)' : `1px solid ${colors.cardBorder}`,
+                                        border: isUsingVkAvatar
+                                            ? '1.5px solid rgba(240, 192, 64, 0.75)'
+                                            : `1px solid ${colors.cardBorder}`,
                                         cursor: 'pointer',
                                         boxShadow: isUsingVkAvatar ? '0 0 20px rgba(240, 192, 64, 0.2)' : 'none',
                                         transition: 'all 0.2s',
-                                        boxSizing: 'border-box'
+                                        boxSizing: 'border-box',
                                     }}
                                 >
-                                    <div style={{ position: 'relative', width: '64px', height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px' }}>
-                                        <div style={{ width: '42px', height: '42px', borderRadius: '50%', overflow: 'hidden', backgroundColor: '#000' }}>
+                                    <div
+                                        style={{
+                                            position: 'relative',
+                                            width: '64px',
+                                            height: '64px',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            marginBottom: '12px',
+                                        }}
+                                    >
+                                        <div
+                                            style={{
+                                                width: '42px',
+                                                height: '42px',
+                                                borderRadius: '50%',
+                                                overflow: 'hidden',
+                                                backgroundColor: '#000',
+                                            }}
+                                        >
                                             <img
                                                 src={vkPhoto}
                                                 style={getAvatarImageStyle(vkPhoto)}
@@ -225,20 +246,47 @@ export const ProfileCustomizeWindow: React.FC<ProfileCustomizeWindowProps> = ({ 
                                                 inset: 0,
                                                 width: '100%',
                                                 height: '100%',
-                                                pointerEvents: 'none'
+                                                pointerEvents: 'none',
                                             }}
                                             alt="mini frame"
                                         />
                                     </div>
-                                    <div style={{ fontSize: '16px', fontWeight: 900, color: isUsingVkAvatar ? '#fff' : colors.accent, display: 'flex', alignItems: 'center', gap: '6px', justifyContent: 'center' }}>
+                                    <div
+                                        style={{
+                                            fontSize: '16px',
+                                            fontWeight: 900,
+                                            color: isUsingVkAvatar ? '#fff' : colors.accent,
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '6px',
+                                            justifyContent: 'center',
+                                        }}
+                                    >
                                         Аватар ВК
                                         {isUsingVkAvatar && (
-                                            <span style={{ fontSize: '9px', background: colors.accent, color: '#1a1005', padding: '1px 5px', borderRadius: '4px', fontWeight: 900, textTransform: 'uppercase' }}>
+                                            <span
+                                                style={{
+                                                    fontSize: '9px',
+                                                    background: colors.accent,
+                                                    color: '#1a1005',
+                                                    padding: '1px 5px',
+                                                    borderRadius: '4px',
+                                                    fontWeight: 900,
+                                                    textTransform: 'uppercase',
+                                                }}
+                                            >
                                                 Экип
                                             </span>
                                         )}
                                     </div>
-                                    <div style={{ fontSize: '12px', color: colors.textDim, marginTop: '6px', lineHeight: '1.4' }}>
+                                    <div
+                                        style={{
+                                            fontSize: '12px',
+                                            color: colors.textDim,
+                                            marginTop: '6px',
+                                            lineHeight: '1.4',
+                                        }}
+                                    >
                                         Ваш аватар социальной сети ВКонтакте.
                                     </div>
                                 </div>
@@ -261,22 +309,38 @@ export const ProfileCustomizeWindow: React.FC<ProfileCustomizeWindowProps> = ({ 
                                             padding: '16px',
                                             borderRadius: '14px',
                                             background: active ? 'rgba(240, 192, 64, 0.14)' : colors.cardBg,
-                                            border: active ? '1.5px solid rgba(240, 192, 64, 0.75)' : `1px solid ${colors.cardBorder}`,
+                                            border: active
+                                                ? '1.5px solid rgba(240, 192, 64, 0.75)'
+                                                : `1px solid ${colors.cardBorder}`,
                                             cursor: unlocked ? 'pointer' : 'not-allowed',
                                             opacity: unlocked ? 1 : 0.7,
                                             boxShadow: active ? '0 0 20px rgba(240, 192, 64, 0.2)' : 'none',
                                             transition: 'all 0.2s',
-                                            boxSizing: 'border-box'
+                                            boxSizing: 'border-box',
                                         }}
                                     >
                                         {/* Avatar Mini Preview */}
-                                        <div style={{ position: 'relative', width: '64px', height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px' }}>
-                                            <div style={{ width: '42px', height: '42px', borderRadius: '50%', overflow: 'hidden', backgroundColor: '#000' }}>
-                                                <img
-                                                    src={a.path}
-                                                    style={getAvatarImageStyle(a.path)}
-                                                    alt={a.name}
-                                                />
+                                        <div
+                                            style={{
+                                                position: 'relative',
+                                                width: '64px',
+                                                height: '64px',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                marginBottom: '12px',
+                                            }}
+                                        >
+                                            <div
+                                                style={{
+                                                    width: '42px',
+                                                    height: '42px',
+                                                    borderRadius: '50%',
+                                                    overflow: 'hidden',
+                                                    backgroundColor: '#000',
+                                                }}
+                                            >
+                                                <img src={a.path} style={getAvatarImageStyle(a.path)} alt={a.name} />
                                             </div>
                                             <img
                                                 src={getAvatarFramePath(playerFrame)}
@@ -285,40 +349,67 @@ export const ProfileCustomizeWindow: React.FC<ProfileCustomizeWindowProps> = ({ 
                                                     inset: 0,
                                                     width: '100%',
                                                     height: '100%',
-                                                    pointerEvents: 'none'
+                                                    pointerEvents: 'none',
                                                 }}
                                                 alt="mini frame"
                                             />
                                         </div>
 
                                         {/* Avatar Text Info */}
-                                        <div style={{ fontSize: '16px', fontWeight: 900, color: active ? '#fff' : colors.accent, display: 'flex', alignItems: 'center', gap: '6px', justifyContent: 'center' }}>
+                                        <div
+                                            style={{
+                                                fontSize: '16px',
+                                                fontWeight: 900,
+                                                color: active ? '#fff' : colors.accent,
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: '6px',
+                                                justifyContent: 'center',
+                                            }}
+                                        >
                                             {a.name}
                                             {active && (
-                                                <span style={{ fontSize: '9px', background: colors.accent, color: '#1a1005', padding: '1px 5px', borderRadius: '4px', fontWeight: 900, textTransform: 'uppercase' }}>
+                                                <span
+                                                    style={{
+                                                        fontSize: '9px',
+                                                        background: colors.accent,
+                                                        color: '#1a1005',
+                                                        padding: '1px 5px',
+                                                        borderRadius: '4px',
+                                                        fontWeight: 900,
+                                                        textTransform: 'uppercase',
+                                                    }}
+                                                >
                                                     Экип
                                                 </span>
                                             )}
                                         </div>
-                                        <div style={{ fontSize: '12px', color: colors.textDim, marginTop: '6px', lineHeight: '1.4' }}>
+                                        <div
+                                            style={{
+                                                fontSize: '12px',
+                                                color: colors.textDim,
+                                                marginTop: '6px',
+                                                lineHeight: '1.4',
+                                            }}
+                                        >
                                             {a.description}
                                         </div>
                                         {!unlocked && (
-                                            <div 
-                                                style={{ 
-                                                    fontSize: '11px', 
-                                                    color: colors.lockedText, 
-                                                    marginTop: '10px', 
-                                                    fontWeight: 800, 
-                                                    display: 'flex', 
-                                                    alignItems: 'center', 
+                                            <div
+                                                style={{
+                                                    fontSize: '11px',
+                                                    color: colors.lockedText,
+                                                    marginTop: '10px',
+                                                    fontWeight: 800,
+                                                    display: 'flex',
+                                                    alignItems: 'center',
                                                     justifyContent: 'center',
                                                     gap: '6px',
                                                     background: colors.lockedBg,
                                                     border: `1px solid ${colors.lockedBorder}`,
                                                     padding: '4px 10px',
                                                     borderRadius: '6px',
-                                                    width: 'fit-content'
+                                                    width: 'fit-content',
                                                 }}
                                             >
                                                 <Lock size={12} />
@@ -352,22 +443,44 @@ export const ProfileCustomizeWindow: React.FC<ProfileCustomizeWindowProps> = ({ 
                                             padding: '16px',
                                             borderRadius: '14px',
                                             background: active ? 'rgba(240, 192, 64, 0.14)' : colors.cardBg,
-                                            border: active ? '1.5px solid rgba(240, 192, 64, 0.75)' : `1px solid ${colors.cardBorder}`,
+                                            border: active
+                                                ? '1.5px solid rgba(240, 192, 64, 0.75)'
+                                                : `1px solid ${colors.cardBorder}`,
                                             cursor: unlocked ? 'pointer' : 'not-allowed',
                                             opacity: unlocked ? 1 : 0.7,
                                             boxShadow: active ? '0 0 20px rgba(240, 192, 64, 0.2)' : 'none',
                                             transition: 'all 0.2s',
-                                            boxSizing: 'border-box'
+                                            boxSizing: 'border-box',
                                         }}
                                     >
                                         {/* Frame Mini Preview */}
-                                        <div style={{ position: 'relative', width: '64px', height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px' }}>
-                                            <div style={{ width: '42px', height: '42px', borderRadius: '50%', overflow: 'hidden', backgroundColor: '#000' }}>
+                                        <div
+                                            style={{
+                                                position: 'relative',
+                                                width: '64px',
+                                                height: '64px',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                marginBottom: '12px',
+                                            }}
+                                        >
+                                            <div
+                                                style={{
+                                                    width: '42px',
+                                                    height: '42px',
+                                                    borderRadius: '50%',
+                                                    overflow: 'hidden',
+                                                    backgroundColor: '#000',
+                                                }}
+                                            >
                                                 <img
                                                     src={
-                                                        playerAvatar && !playerAvatar.startsWith('sprite:') 
-                                                            ? playerAvatar 
-                                                            : vkUser?.photo_200 || vkUser?.photo || '/assets/images/avatars/panda.webp'
+                                                        playerAvatar && !playerAvatar.startsWith('sprite:')
+                                                            ? playerAvatar
+                                                            : vkUser?.photo_200 ||
+                                                              vkUser?.photo ||
+                                                              '/assets/images/avatars/panda.webp'
                                                     }
                                                     style={getAvatarImageStyle(playerAvatar || '')}
                                                     alt="mini avatar"
@@ -380,40 +493,67 @@ export const ProfileCustomizeWindow: React.FC<ProfileCustomizeWindowProps> = ({ 
                                                     inset: 0,
                                                     width: '100%',
                                                     height: '100%',
-                                                    pointerEvents: 'none'
+                                                    pointerEvents: 'none',
                                                 }}
                                                 alt="mini frame"
                                             />
                                         </div>
 
                                         {/* Frame Text Info */}
-                                        <div style={{ fontSize: '16px', fontWeight: 900, color: active ? '#fff' : colors.accent, display: 'flex', alignItems: 'center', gap: '6px', justifyContent: 'center' }}>
+                                        <div
+                                            style={{
+                                                fontSize: '16px',
+                                                fontWeight: 900,
+                                                color: active ? '#fff' : colors.accent,
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: '6px',
+                                                justifyContent: 'center',
+                                            }}
+                                        >
                                             {f.name}
                                             {active && (
-                                                <span style={{ fontSize: '9px', background: colors.accent, color: '#1a1005', padding: '1px 5px', borderRadius: '4px', fontWeight: 900, textTransform: 'uppercase' }}>
+                                                <span
+                                                    style={{
+                                                        fontSize: '9px',
+                                                        background: colors.accent,
+                                                        color: '#1a1005',
+                                                        padding: '1px 5px',
+                                                        borderRadius: '4px',
+                                                        fontWeight: 900,
+                                                        textTransform: 'uppercase',
+                                                    }}
+                                                >
                                                     Экип
                                                 </span>
                                             )}
                                         </div>
-                                        <div style={{ fontSize: '12px', color: colors.textDim, marginTop: '6px', lineHeight: '1.4' }}>
+                                        <div
+                                            style={{
+                                                fontSize: '12px',
+                                                color: colors.textDim,
+                                                marginTop: '6px',
+                                                lineHeight: '1.4',
+                                            }}
+                                        >
                                             {f.description}
                                         </div>
                                         {!unlocked && (
-                                            <div 
-                                                style={{ 
-                                                    fontSize: '11px', 
-                                                    color: colors.lockedText, 
-                                                    marginTop: '10px', 
-                                                    fontWeight: 800, 
-                                                    display: 'flex', 
-                                                    alignItems: 'center', 
+                                            <div
+                                                style={{
+                                                    fontSize: '11px',
+                                                    color: colors.lockedText,
+                                                    marginTop: '10px',
+                                                    fontWeight: 800,
+                                                    display: 'flex',
+                                                    alignItems: 'center',
                                                     justifyContent: 'center',
                                                     gap: '6px',
                                                     background: colors.lockedBg,
                                                     border: `1px solid ${colors.lockedBorder}`,
                                                     padding: '4px 10px',
                                                     borderRadius: '6px',
-                                                    width: 'fit-content'
+                                                    width: 'fit-content',
                                                 }}
                                             >
                                                 <Lock size={12} />
@@ -447,16 +587,27 @@ export const ProfileCustomizeWindow: React.FC<ProfileCustomizeWindowProps> = ({ 
                                             padding: '16px 24px',
                                             borderRadius: '14px',
                                             background: active ? 'rgba(240, 192, 64, 0.14)' : colors.cardBg,
-                                            border: active ? '1.5px solid rgba(240, 192, 64, 0.75)' : `1px solid ${colors.cardBorder}`,
+                                            border: active
+                                                ? '1.5px solid rgba(240, 192, 64, 0.75)'
+                                                : `1px solid ${colors.cardBorder}`,
                                             cursor: unlocked ? 'pointer' : 'not-allowed',
                                             opacity: unlocked ? 1 : 0.7,
                                             boxShadow: active ? '0 0 20px rgba(240, 192, 64, 0.2)' : 'none',
                                             transition: 'all 0.2s',
-                                            boxSizing: 'border-box'
+                                            boxSizing: 'border-box',
                                         }}
                                     >
                                         <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                                            <div style={{ fontSize: '17px', fontWeight: 900, color: active ? '#fff' : colors.accent, display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                            <div
+                                                style={{
+                                                    fontSize: '17px',
+                                                    fontWeight: 900,
+                                                    color: active ? '#fff' : colors.accent,
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: '10px',
+                                                }}
+                                            >
                                                 {t.name}
                                                 {active && <Check size={18} style={{ color: colors.accent }} />}
                                                 {!unlocked && <Lock size={16} style={{ color: colors.lockedText }} />}
@@ -468,20 +619,28 @@ export const ProfileCustomizeWindow: React.FC<ProfileCustomizeWindowProps> = ({ 
 
                                         <div style={{ textAlign: 'right', flexShrink: 0 }}>
                                             {unlocked ? (
-                                                <span style={{ fontSize: '13px', color: colors.unlockedText, fontWeight: 900 }}>Доступен</span>
+                                                <span
+                                                    style={{
+                                                        fontSize: '13px',
+                                                        color: colors.unlockedText,
+                                                        fontWeight: 900,
+                                                    }}
+                                                >
+                                                    Доступен
+                                                </span>
                                             ) : (
-                                                <div 
-                                                    style={{ 
-                                                        fontSize: '11px', 
-                                                        color: colors.lockedText, 
-                                                        fontWeight: 800, 
-                                                        display: 'flex', 
-                                                        alignItems: 'center', 
+                                                <div
+                                                    style={{
+                                                        fontSize: '11px',
+                                                        color: colors.lockedText,
+                                                        fontWeight: 800,
+                                                        display: 'flex',
+                                                        alignItems: 'center',
                                                         gap: '4px',
                                                         background: colors.lockedBg,
                                                         border: `1px solid ${colors.lockedBorder}`,
                                                         padding: '4px 10px',
-                                                        borderRadius: '6px'
+                                                        borderRadius: '6px',
                                                     }}
                                                 >
                                                     <Lock size={12} />

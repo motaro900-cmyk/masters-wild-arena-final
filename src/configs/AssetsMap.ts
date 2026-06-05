@@ -9,7 +9,7 @@ const rawAssetsMap = {
         SIDEBAR_LEFT: '/assets/images/ui/sidebar_left1_full_v2.webp',
         PANEL_PARCHMENT: '/assets/images/ui/btn_panel_mis12c.webp',
         PANEL_TASK: '/assets/images/ui/panel_task.webp',
-        PANEL_PROFILE: '/assets/images/ui/panel_profile.png',
+        PANEL_PROFILE: '/assets/images/ui/profile_panel_full.webp',
         PROFILE_PANEL_BASE: '/assets/images/ui/profilepanel.webp', // was .png
         AVATAR_FRAME_NEW: '/assets/images/ui/avatar_frame.png',
         VIP_PLAQUE: '/assets/images/ui/vip.webp', // was .png
@@ -134,6 +134,8 @@ const rawAssetsMap = {
         RANKED_LOBBY_MOBILE: '/assets/images/backgrounds/bg_ranked_lobby_new_mobile.webp',
         SANCTUARY: '/assets/images/backgrounds/gemini-2026-05-22-001.webp',
         SANCTUARY_MOBILE: '/assets/images/backgrounds/gemini-2026-05-22-001_mobile.webp',
+        GACHA: '/assets/images/backgrounds/gacha_bg.webp',
+        GACHA_MOBILE: '/assets/images/backgrounds/gacha_bg_mobile.webp',
     },
     CHARACTERS: {
         PANDA_AVATAR: '/assets/images/avatars/panda.webp', // was кириллица

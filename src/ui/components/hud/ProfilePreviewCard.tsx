@@ -1,10 +1,6 @@
 import React from 'react';
 import { AssetsMap } from '../../../configs/AssetsMap';
-import { 
-    getAvatarFrameStyle,
-    getAvatarFramePath,
-    getAvatarImageStyle
-} from '../../../configs/ProfileCustomization';
+import { getAvatarFrameStyle, getAvatarFramePath, getAvatarImageStyle } from '../../../configs/ProfileCustomization';
 
 interface ProfilePreviewCardProps {
     level: number;
@@ -25,16 +21,16 @@ export const ProfilePreviewCard: React.FC<ProfilePreviewCardProps> = ({
     frame,
     name,
     playerAvatar,
-    vkUser
+    vkUser,
 }) => {
     const activeFrameStyle = getAvatarFrameStyle(frame);
-    
+
     const colors = {
-        accent: '#f5d37a', 
+        accent: '#f5d37a',
     };
 
     return (
-        <div 
+        <div
             style={{
                 width: '320px',
                 display: 'flex',
@@ -47,27 +43,50 @@ export const ProfilePreviewCard: React.FC<ProfilePreviewCardProps> = ({
                 padding: '28px 24px',
                 boxShadow: '0 12px 40px rgba(0, 0, 0, 0.75), inset 0 0 25px rgba(240, 192, 64, 0.08)',
                 boxSizing: 'border-box',
-                flexShrink: 0
+                flexShrink: 0,
             }}
         >
-            <div 
-                style={{ 
+            <div
+                style={{
                     fontFamily: "'Cinzel', serif",
-                    fontSize: '16px', 
-                    fontWeight: 900, 
-                    color: colors.accent, 
+                    fontSize: '16px',
+                    fontWeight: 900,
+                    color: colors.accent,
                     letterSpacing: '2.5px',
                     textTransform: 'uppercase',
                     textShadow: '0 2px 5px rgba(0,0,0,0.9)',
-                    textAlign: 'center'
+                    textAlign: 'center',
                 }}
             >
                 ВАША ВИЗИТКА
             </div>
 
             {/* АВАТАР И РАМКА */}
-            <div style={{ position: 'relative', width: '170px', height: '170px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <div style={{ width: '114px', height: '114px', borderRadius: '50%', overflow: 'hidden', backgroundColor: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10, position: 'relative', transform: 'translateY(1px)' }}>
+            <div
+                style={{
+                    position: 'relative',
+                    width: '170px',
+                    height: '170px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                }}
+            >
+                <div
+                    style={{
+                        width: '114px',
+                        height: '114px',
+                        borderRadius: '50%',
+                        overflow: 'hidden',
+                        backgroundColor: '#000',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        zIndex: 10,
+                        position: 'relative',
+                        transform: 'translateY(1px)',
+                    }}
+                >
                     <img
                         src={
                             playerAvatar && !playerAvatar.startsWith('sprite:')
@@ -81,7 +100,7 @@ export const ProfilePreviewCard: React.FC<ProfilePreviewCardProps> = ({
 
                 {/* Aura Glow Effect */}
                 {activeFrameStyle.glowClass && (
-                    <div 
+                    <div
                         className={activeFrameStyle.glowClass}
                         style={{
                             width: '116px',
@@ -90,7 +109,7 @@ export const ProfilePreviewCard: React.FC<ProfilePreviewCardProps> = ({
                             position: 'absolute',
                             zIndex: 15,
                             transform: 'translateY(1px)',
-                            pointerEvents: 'none'
+                            pointerEvents: 'none',
                         }}
                     />
                 )}
@@ -104,13 +123,25 @@ export const ProfilePreviewCard: React.FC<ProfilePreviewCardProps> = ({
                         height: '100%',
                         pointerEvents: 'none',
                         zIndex: 20,
-                        transition: 'all 0.3s'
+                        transition: 'all 0.3s',
                     }}
                     alt="preview frame"
                 />
 
                 {/* LVL BADGE */}
-                <div style={{ position: 'absolute', bottom: '8px', left: '118px', width: '42px', height: '42px', zIndex: 30, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div
+                    style={{
+                        position: 'absolute',
+                        bottom: '8px',
+                        left: '118px',
+                        width: '42px',
+                        height: '42px',
+                        zIndex: 30,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                    }}
+                >
                     <img
                         src={AssetsMap.UI.LVL_BADGE}
                         style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain' }}
@@ -135,31 +166,31 @@ export const ProfilePreviewCard: React.FC<ProfilePreviewCardProps> = ({
 
             {/* Имя и Титул */}
             <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'center' }}>
-                <div 
-                    style={{ 
-                        fontSize: '25px', 
-                        fontWeight: 900, 
-                        color: '#fff', 
+                <div
+                    style={{
+                        fontSize: '25px',
+                        fontWeight: 900,
+                        color: '#fff',
                         letterSpacing: '1px',
                         textShadow: '0 2px 6px rgba(0,0,0,0.9)',
                         whiteSpace: 'nowrap',
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
                         textAlign: 'center',
-                        width: '100%'
+                        width: '100%',
                     }}
                 >
                     {name || 'Мастер'}
                 </div>
-                <div 
-                    style={{ 
-                        fontSize: '15px', 
-                        color: colors.accent, 
-                        fontWeight: 700, 
+                <div
+                    style={{
+                        fontSize: '15px',
+                        color: colors.accent,
+                        fontWeight: 700,
                         fontStyle: 'italic',
                         letterSpacing: '1px',
                         textShadow: '0 1px 3px rgba(0,0,0,0.8)',
-                        textAlign: 'center'
+                        textAlign: 'center',
                     }}
                 >
                     {title || 'Странник'}
@@ -167,44 +198,84 @@ export const ProfilePreviewCard: React.FC<ProfilePreviewCardProps> = ({
             </div>
 
             {/* РАЗДЕЛИТЕЛЬНАЯ ЛИНИЯ */}
-            <div style={{ height: '1px', width: '100%', background: 'linear-gradient(90deg, transparent, rgba(240, 192, 64, 0.45), transparent)' }} />
+            <div
+                style={{
+                    height: '1px',
+                    width: '100%',
+                    background: 'linear-gradient(90deg, transparent, rgba(240, 192, 64, 0.45), transparent)',
+                }}
+            />
 
             {/* ХАРАКТЕРИСТИКИ / СТАТИСТИКА ПРОФИЛЯ */}
-            <div style={{ width: '100%', display: 'flex', justifyContent: 'space-around', alignItems: 'center', gap: '10px' }}>
+            <div
+                style={{
+                    width: '100%',
+                    display: 'flex',
+                    justifyContent: 'space-around',
+                    alignItems: 'center',
+                    gap: '10px',
+                }}
+            >
                 {/* КУБКИ СПРАЙТ + ТЕКСТ */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <img 
-                        src={AssetsMap.UI.TROPHY_PREMIUM} 
-                        style={{ width: '42px', height: '42px', objectFit: 'contain', filter: 'drop-shadow(0 2px 5px rgba(0,0,0,0.5))' }} 
-                        alt="trophies count" 
+                    <img
+                        src={AssetsMap.UI.TROPHY_PREMIUM}
+                        style={{
+                            width: '42px',
+                            height: '42px',
+                            objectFit: 'contain',
+                            filter: 'drop-shadow(0 2px 5px rgba(0,0,0,0.5))',
+                        }}
+                        alt="trophies count"
                     />
-                    <span style={{ color: '#fff', fontWeight: 900, fontSize: '24px', textShadow: '0 2px 4px rgba(0,0,0,0.6)' }}>{trophies}</span>
+                    <span
+                        style={{
+                            color: '#fff',
+                            fontWeight: 900,
+                            fontSize: '24px',
+                            textShadow: '0 2px 4px rgba(0,0,0,0.6)',
+                        }}
+                    >
+                        {trophies}
+                    </span>
                 </div>
 
                 {/* VIP ПЛАШКА С НАЛОЖЕНИЕМ ТЕКСТА */}
-                <div style={{ position: 'relative', width: '108px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <img 
-                        src={AssetsMap.UI.VIP_PLAQUE} 
-                        style={{ 
-                            position: 'absolute', 
-                            inset: 0, 
-                            width: '100%', 
-                            height: '100%', 
+                <div
+                    style={{
+                        position: 'relative',
+                        width: '108px',
+                        height: '40px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                    }}
+                >
+                    <img
+                        src={AssetsMap.UI.VIP_PLAQUE}
+                        style={{
+                            position: 'absolute',
+                            inset: 0,
+                            width: '100%',
+                            height: '100%',
                             objectFit: 'contain',
-                            filter: vipLevel > 0 ? 'drop-shadow(0 2px 6px rgba(240, 192, 64, 0.6))' : 'grayscale(1) opacity(0.5)'
-                        }} 
-                        alt="vip badge" 
+                            filter:
+                                vipLevel > 0
+                                    ? 'drop-shadow(0 2px 6px rgba(240, 192, 64, 0.6))'
+                                    : 'grayscale(1) opacity(0.5)',
+                        }}
+                        alt="vip badge"
                     />
-                    <span 
-                        style={{ 
-                            position: 'relative', 
-                            zIndex: 1, 
-                            fontFamily: "'Cinzel', serif", 
-                            fontSize: vipLevel > 0 ? '16px' : '11px', 
-                            fontWeight: 900, 
-                            color: vipLevel > 0 ? '#fff' : '#ccc', 
+                    <span
+                        style={{
+                            position: 'relative',
+                            zIndex: 1,
+                            fontFamily: "'Cinzel', serif",
+                            fontSize: vipLevel > 0 ? '16px' : '11px',
+                            fontWeight: 900,
+                            color: vipLevel > 0 ? '#fff' : '#ccc',
                             textShadow: '0 2px 4px rgba(0,0,0,1)',
-                            marginTop: '-1px'
+                            marginTop: '-1px',
                         }}
                     >
                         {vipLevel > 0 ? 'VIP' : 'БЕЗ VIP'}

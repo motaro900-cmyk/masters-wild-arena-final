@@ -51,7 +51,6 @@ const scaleRect = (element: HTMLElement) => {
     };
 };
 
-
 export const HeroScene: React.FC = () => {
     const {
         getCalculatedStats,
@@ -66,6 +65,7 @@ export const HeroScene: React.FC = () => {
         ownedHeroes,
         goToMainMenu,
         goToShop,
+        isMobile,
     } = useGameStore();
 
     // -- UI State --
@@ -121,8 +121,6 @@ export const HeroScene: React.FC = () => {
 
     // Guard: если hero не найден (сломанный localStorage) — показываем fallback
     if (!selectedHero) return null;
-
-    const isMobile = useGameStore((state) => state.isMobile);
 
     return (
         <DndContext

@@ -37,6 +37,8 @@ export const MatchmakingOverlay: React.FC<MatchmakingOverlayProps> = ({ onFound,
         vkUser,
         isMobile,
         equippedSkins,
+        winStreak,
+        lossStreak,
     } = useGameStore();
 
     const playerName = name && name !== 'Мастер' ? name : vkUser?.first_name || vkUser?.firstName || 'Мастер';
@@ -103,12 +105,21 @@ export const MatchmakingOverlay: React.FC<MatchmakingOverlayProps> = ({ onFound,
         const storeState = useGameStore.getState();
         const myUserId = SyncService.getPrefixedUserId(storeState.vkUser, storeState.playerId);
         const myWinRate = (storeState as any).winRate || 50;
+        const playerStats = getCalculatedStats(selectedHeroId)?.total;
 
         // Минимальная задержка показа (3-5 сек) для реалистичности
         const minDelay = 3000 + Math.random() * 2000;
         const minDelayPromise = new Promise<void>((res) => setTimeout(res, minDelay));
 
-        const searchPromise = matchmakingService.findOpponent(myUserId, rating, level, myWinRate);
+        const searchPromise = matchmakingService.findOpponent(
+            myUserId,
+            rating,
+            level,
+            myWinRate,
+            playerStats,
+            winStreak,
+            lossStreak,
+        );
 
         Promise.all([searchPromise, minDelayPromise]).then(([found]) => {
             if (isCancelled) return;
@@ -121,7 +132,7 @@ export const MatchmakingOverlay: React.FC<MatchmakingOverlayProps> = ({ onFound,
                 level: found.level,
                 equipment: found.equipment,
                 winRate: found.winRate,
-                vipLevel: found.vipLevel !== undefined ? found.vipLevel : (Math.random() < 0.25 ? 1 : 0),
+                vipLevel: found.vipLevel !== undefined ? found.vipLevel : Math.random() < 0.25 ? 1 : 0,
                 stats: {
                     hp: found.stats.hp,
                     attack: found.stats.attack,
@@ -142,7 +153,7 @@ export const MatchmakingOverlay: React.FC<MatchmakingOverlayProps> = ({ onFound,
             isCancelled = true;
             clearInterval(interval);
         };
-    }, [state, rating, selectedHeroId, getCalculatedStats, level]);
+    }, [state, rating, selectedHeroId, getCalculatedStats, level, winStreak, lossStreak]);
 
     const onFoundRef = React.useRef(onFound);
     useEffect(() => {

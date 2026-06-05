@@ -15,17 +15,14 @@ export const createMailSlice = (set: any, get: any) => ({
 
     markMailAsRead: (id: string) =>
         set((state: any) => ({
-            mail: state.mail.map((m: any) =>
-                m.id === id ? { ...m, isRead: true } : m,
-            ),
+            mail: state.mail.map((m: any) => (m.id === id ? { ...m, isRead: true } : m)),
         })),
 
     deleteMail: (id: string) =>
         set((state: any) => {
             const mailItem = state.mail.find((m: any) => m.id === id);
             // System letters (welcome-mail, NEWS tab) cannot be deleted
-            if (mailItem?.id === 'welcome-mail' || mailItem?.tab === 'NEWS')
-                return state;
+            if (mailItem?.id === 'welcome-mail' || mailItem?.tab === 'NEWS') return state;
             return {
                 mail: state.mail.filter((m: any) => m.id !== id),
             };
@@ -33,16 +30,12 @@ export const createMailSlice = (set: any, get: any) => ({
 
     archiveMail: (id: string) =>
         set((state: any) => ({
-            mail: state.mail.map((m: any) =>
-                m.id === id ? { ...m, tab: 'ARCHIVE' } : m,
-            ),
+            mail: state.mail.map((m: any) => (m.id === id ? { ...m, tab: 'ARCHIVE' } : m)),
         })),
 
     toggleMailStar: (id: string) =>
         set((state: any) => ({
-            mail: state.mail.map((m: any) =>
-                m.id === id ? { ...m, isStarred: !m.isStarred } : m,
-            ),
+            mail: state.mail.map((m: any) => (m.id === id ? { ...m, isStarred: !m.isStarred } : m)),
         })),
 
     claimMailReward: (id: string) => {
@@ -57,9 +50,7 @@ export const createMailSlice = (set: any, get: any) => ({
                 }
             });
             set((state: any) => ({
-                mail: state.mail.map((m: any) =>
-                    m.id === id ? { ...m, rewards: null, isRead: true } : m,
-                ),
+                mail: state.mail.map((m: any) => (m.id === id ? { ...m, rewards: null, isRead: true } : m)),
             }));
         }
     },
@@ -88,9 +79,7 @@ export const createMailSlice = (set: any, get: any) => ({
         if (totalEnergy > 0) get().addEnergy(totalEnergy);
 
         set((state: any) => ({
-            mail: state.mail.map((m: any) =>
-                m.tab === 'INBOX' ? { ...m, rewards: null, isRead: true } : m,
-            ),
+            mail: state.mail.map((m: any) => (m.tab === 'INBOX' ? { ...m, rewards: null, isRead: true } : m)),
         }));
     },
 });

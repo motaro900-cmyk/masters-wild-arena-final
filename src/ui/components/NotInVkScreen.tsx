@@ -79,8 +79,8 @@ export const NotInVkScreen: React.FC = () => {
                         marginBottom: '35px',
                     }}
                 >
-                    Для игры в <strong style={{ color: '#ffd700' }}>Masters of the Wild</strong> используйте
-                    официальное мини-приложение ВКонтакте. Гостевой доступ к веб-версии отключен разработчиком.
+                    Для игры в <strong style={{ color: '#ffd700' }}>Masters of the Wild</strong> используйте официальное
+                    мини-приложение ВКонтакте. Гостевой доступ к веб-версии отключен разработчиком.
                 </p>
                 <button
                     onClick={() => window.open('https://vk.com/app52446645', '_blank')}

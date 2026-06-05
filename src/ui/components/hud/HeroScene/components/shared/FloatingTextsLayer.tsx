@@ -44,4 +44,3 @@ export const FloatingTextsLayer: React.FC<FloatingTextsLayerProps> = ({ texts })
         </div>
     );
 };
-

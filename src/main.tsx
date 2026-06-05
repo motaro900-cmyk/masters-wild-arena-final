@@ -166,11 +166,7 @@ export const SafeGameLayout = ({ containerRef }: { containerRef: React.RefObject
             <BannedOverlay />
 
             {/* 🔄 Screen Rotation Warning Overlay */}
-            <RotationWarningOverlay
-                isPortrait={isPortrait}
-                isMobile={isMobile}
-                onDismiss={() => {}}
-            />
+            <RotationWarningOverlay isPortrait={isPortrait} isMobile={isMobile} onDismiss={() => {}} />
 
             {/* ── ФОНОВОЕ ИЗОБРАЖЕНИЕ — строго 16:9 зона игры ──────────────
                 min(100vw, 177.78vh) x min(100vh, 56.25vw) = точная 16:9 область.
@@ -190,32 +186,6 @@ export const SafeGameLayout = ({ containerRef }: { containerRef: React.RefObject
                     backgroundPosition: 'center',
                     backgroundColor: '#0c0c0c',
                     zIndex: 0,
-                    pointerEvents: 'none',
-                }}
-            />
-
-            {/* ── DEPTH OVERLAY — цветовое разделение планов (Приоритет C) ──
-                Радиальный градиент: тёплый центр (герой) → холодные края (фон).
-                Alpha намеренно минимальная — эффект воздушной перспективы,
-                не пережим цветов. Не трогает пайплайн, не добавляет blur. */}
-            <div
-                style={{
-                    position: 'absolute',
-                    top: '50%',
-                    left: '50%',
-                    transform: 'translate(-50%, -50%)',
-                    width: 'min(100vw, 177.78vh)',
-                    height: 'min(100vh, 56.25vw)',
-                    background: `
-                        radial-gradient(
-                            ellipse 55% 70% at 52% 68%,
-                            rgba(255, 224, 160, 0.04) 0%,
-                            rgba(255, 224, 160, 0.00) 45%,
-                            rgba(26,  42,  94, 0.08) 75%,
-                            rgba(26,  42,  94, 0.13) 100%
-                        )
-                    `,
-                    zIndex: 1,
                     pointerEvents: 'none',
                 }}
             />
@@ -417,7 +387,10 @@ export const Root = () => {
                 setLoadingText('Калибровка времени...');
                 try {
                     const start = Date.now();
-                    const response = await fetch(window.location.origin + window.location.pathname, { method: 'HEAD', cache: 'no-cache' });
+                    const response = await fetch(window.location.origin + window.location.pathname, {
+                        method: 'HEAD',
+                        cache: 'no-cache',
+                    });
                     const serverDateStr = response.headers.get('date');
                     if (serverDateStr) {
                         const serverTime = new Date(serverDateStr).getTime();
@@ -459,7 +432,7 @@ export const Root = () => {
                         } else if (isVkMiniApp()) {
                             // Retry через 2с — для медленных мобильных сетей
                             console.warn('🔄 VK User Info retry in 2s...');
-                            await new Promise(r => setTimeout(r, 2000));
+                            await new Promise((r) => setTimeout(r, 2000));
                             const retryUser = await getVkUserInfo();
                             if (retryUser) {
                                 const store = useGameStore.getState();
@@ -505,7 +478,7 @@ export const Root = () => {
                         // Последняя попытка перед абортом — даём VK ещё 3 секунды
                         console.warn('🔄 Final VK user retry before abort...');
                         setLoadingText('Загрузка профиля (повторная попытка)...');
-                        await new Promise(r => setTimeout(r, 3000));
+                        await new Promise((r) => setTimeout(r, 3000));
                         const finalUser = await getVkUserInfo();
                         if (finalUser) {
                             const store = useGameStore.getState();
@@ -520,7 +493,9 @@ export const Root = () => {
 
                     if (isVk && !state.vkUser) {
                         console.error('❌ VK User Info not loaded after all retries. Showing error.');
-                        setInitError('Не удалось загрузить ваш профиль ВКонтакте. Пожалуйста, перезапустите игру или проверьте соединение.');
+                        setInitError(
+                            'Не удалось загрузить ваш профиль ВКонтакте. Пожалуйста, перезапустите игру или проверьте соединение.',
+                        );
                         clearTimeout(timeoutId);
                         return;
                     }
@@ -544,7 +519,11 @@ export const Root = () => {
                         if (stateToRestore.status === 'BANNED') {
                             stateToRestore.isBanned = true;
                         }
-                        if ((onboardingDone || (restoredName && restoredName !== 'Мастер')) && restoredName && restoredName !== 'Мастер') {
+                        if (
+                            (onboardingDone || (restoredName && restoredName !== 'Мастер')) &&
+                            restoredName &&
+                            restoredName !== 'Мастер'
+                        ) {
                             stateToRestore.onboardingCompleted = true;
                             stateToRestore.activeScreen = 'MAIN_MENU';
                         }
@@ -578,7 +557,9 @@ export const Root = () => {
                     }
                 } catch (loadErr: any) {
                     console.error('❌ Failed to load remote profile:', loadErr);
-                    setInitError('Не удалось загрузить данные вашего профиля. Пожалуйста, проверьте интернет-соединение и попробуйте снова.');
+                    setInitError(
+                        'Не удалось загрузить данные вашего профиля. Пожалуйста, проверьте интернет-соединение и попробуйте снова.',
+                    );
                     clearTimeout(timeoutId);
                     return;
                 }
@@ -587,7 +568,7 @@ export const Root = () => {
                 if (isLocalhost) {
                     const localState = useGameStore.getState();
                     if (!localState.name || localState.name === 'Мастер') {
-                        console.log('🛠️ Localhost detected: Auto-logging in as \"Разработчик\"');
+                        console.log('🛠️ Localhost detected: Auto-logging in as "Разработчик"');
                         useGameStore.setState({
                             name: 'Разработчик',
                             onboardingCompleted: true,
@@ -644,9 +625,14 @@ export const Root = () => {
                 });
                 // cleanup: отписаться при размонтировании
                 const prevCleanup = unsubChat;
-                unsubChat = () => { unsubScreenChange(); };
+                unsubChat = () => {
+                    unsubScreenChange();
+                };
                 void prevCleanup; // сохраняем оригинальный unsubChat в unsubScreenChange closure
-                unsubChat = () => { unsubScreenChange(); if (prevCleanup) prevCleanup(); };
+                unsubChat = () => {
+                    unsubScreenChange();
+                    if (prevCleanup) prevCleanup();
+                };
 
                 unsubChat = syncService.subscribeToChat((messages) => {
                     useGameStore.getState().setMessages(messages);
@@ -703,9 +689,18 @@ export const Root = () => {
                             const updatePayload: any = {};
 
                             const trackedFields = [
-                                'gold', 'crystals', 'level', 'rating', 'trophies',
-                                'inventory', 'heroEquipment', 'ownedSkins', 'shards',
-                                'ownedHeroes', 'energy', 'maxEnergy',
+                                'gold',
+                                'crystals',
+                                'level',
+                                'rating',
+                                'trophies',
+                                'inventory',
+                                'heroEquipment',
+                                'ownedSkins',
+                                'shards',
+                                'ownedHeroes',
+                                'energy',
+                                'maxEnergy',
                             ];
 
                             for (const field of trackedFields) {
@@ -727,7 +722,10 @@ export const Root = () => {
                             }
 
                             if (hasChanges) {
-                                console.log('[SyncService] Admin updated player state, applying changes:', updatePayload);
+                                console.log(
+                                    '[SyncService] Admin updated player state, applying changes:',
+                                    updatePayload,
+                                );
                                 useGameStore.setState(updatePayload);
                             }
                         } catch (e) {
@@ -796,7 +794,6 @@ export const Root = () => {
                 }
 
                 if (!finalState.dailyQuests || finalState.dailyQuests.length === 0) {
-
                     finalState.refreshDailyQuests();
                 }
                 if (!finalState.weeklyQuests || finalState.weeklyQuests.length === 0) {
@@ -833,7 +830,7 @@ export const Root = () => {
                             const store = useGameStore.getState();
                             const updatedGifts = [...(store.claimedGifts || []), requestId];
                             useGameStore.setState({
-                                claimedGifts: updatedGifts
+                                claimedGifts: updatedGifts,
                             });
                             store.addGold(5000);
                             syncService.debouncedSync();

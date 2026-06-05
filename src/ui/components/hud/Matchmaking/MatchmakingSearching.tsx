@@ -51,8 +51,7 @@ export const MatchmakingSearching: React.FC<MatchmakingSearchingProps> = ({
                 backdropFilter: 'blur(20px)',
                 border: 'none',
                 borderRadius: '32px',
-                boxShadow:
-                    '0 30px 80px rgba(0, 0, 0, 0.95), inset 0 0 25px rgba(255, 255, 255, 0.04)',
+                boxShadow: '0 30px 80px rgba(0, 0, 0, 0.95), inset 0 0 25px rgba(255, 255, 255, 0.04)',
                 padding: '40px',
             }}
         >

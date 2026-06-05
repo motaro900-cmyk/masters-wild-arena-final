@@ -250,7 +250,13 @@ export function skipToEndOfBattle(engine: BattleEngine) {
                         engine.totalDamageTaken += finalDmg;
                         engine.totalTurnsPlayed += 1;
 
-                        simulateStatusEffects(anyEngine.enemy!, anyEngine.player!, eStats, false, isCrit && !blockCheck);
+                        simulateStatusEffects(
+                            anyEngine.enemy!,
+                            anyEngine.player!,
+                            eStats,
+                            false,
+                            isCrit && !blockCheck,
+                        );
                     }
                 }
                 engine.decrementStatusDurations(anyEngine.enemy!);

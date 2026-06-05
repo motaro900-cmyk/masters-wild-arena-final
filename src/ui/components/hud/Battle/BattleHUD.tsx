@@ -158,7 +158,8 @@ const HpBar: React.FC<{
                                 left: 0,
                                 right: 0,
                                 height: '45%',
-                                background: 'linear-gradient(180deg, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0) 100%)',
+                                background:
+                                    'linear-gradient(180deg, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0) 100%)',
                                 pointerEvents: 'none',
                             }}
                         />
@@ -580,7 +581,20 @@ export const BattleHUD: React.FC<BattleHUDProps> = ({
                                     }}
                                 />
                             )}
-                            <span>{playerName} <span style={{ color: '#a1a1aa', fontSize: '12px', textTransform: 'none', marginLeft: '6px', fontWeight: 'bold' }}>Lv.{heroLevel}</span></span>
+                            <span>
+                                {playerName}{' '}
+                                <span
+                                    style={{
+                                        color: '#a1a1aa',
+                                        fontSize: '12px',
+                                        textTransform: 'none',
+                                        marginLeft: '6px',
+                                        fontWeight: 'bold',
+                                    }}
+                                >
+                                    Lv.{heroLevel}
+                                </span>
+                            </span>
                         </div>
                         <div
                             style={{
@@ -633,7 +647,11 @@ export const BattleHUD: React.FC<BattleHUDProps> = ({
                             height: '35px',
                         }}
                     >
-                        <HpBar current={battleState.playerHP} max={battleState.playerMaxHP} shield={battleState.playerShield} />
+                        <HpBar
+                            current={battleState.playerHP}
+                            max={battleState.playerMaxHP}
+                            shield={battleState.playerShield}
+                        />
                     </div>
                 </motion.div>
 
@@ -920,7 +938,20 @@ export const BattleHUD: React.FC<BattleHUDProps> = ({
                                     }}
                                 />
                             )}
-                            <span><span style={{ color: '#a1a1aa', fontSize: '12px', textTransform: 'none', marginRight: '6px', fontWeight: 'bold' }}>Lv.{enemyLevel}</span>{enemyName}</span>
+                            <span>
+                                <span
+                                    style={{
+                                        color: '#a1a1aa',
+                                        fontSize: '12px',
+                                        textTransform: 'none',
+                                        marginRight: '6px',
+                                        fontWeight: 'bold',
+                                    }}
+                                >
+                                    Lv.{enemyLevel}
+                                </span>
+                                {enemyName}
+                            </span>
                         </div>
                         <div
                             style={{

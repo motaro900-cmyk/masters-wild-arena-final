@@ -33,7 +33,11 @@ async function optimizeImage(filePath) {
     const ext = path.extname(filePath);
     const fileName = path.basename(filePath, ext);
     const dir = path.dirname(filePath);
-    const isBackground = filePath.includes('backgrounds') || filePath.includes('Shop.png') || filePath.includes('Shoping.png') || filePath.includes('Shop.webp') || filePath.includes('Shoping.webp');
+    
+    const normalizedPath = filePath.replace(/\\/g, '/');
+    const isBackground = normalizedPath.includes('backgrounds') || normalizedPath.includes('Shop.png') || normalizedPath.includes('Shoping.png') || normalizedPath.includes('Shop.webp') || normalizedPath.includes('Shoping.webp');
+    const isItem = normalizedPath.includes('images/items/');
+    const isCharacter = normalizedPath.includes('characters/') || normalizedPath.includes('avatars/') || normalizedPath.includes('frames/');
 
     const outputWebp = ext.toLowerCase() === '.webp' ? filePath : path.join(dir, `${fileName}.webp`);
     const outputMobile = path.join(dir, `${fileName}_mobile.webp`);
@@ -52,10 +56,18 @@ async function optimizeImage(filePath) {
         
         console.log(`✅ Converted/Optimized: ${path.relative(ASSETS_ROOT, outputWebp)}`);
 
-        // 2. Если это фон, создаем мобильную версию (720p)
-        if (isBackground) {
-            await sharp(buffer)
-                .resize({ width: MOBILE_WIDTH, withoutEnlargement: true })
+        // 2. Создаем мобильную версию (сжатую и уменьшенную)
+        if (isBackground || isItem || isCharacter) {
+            let mobileImage = sharp(buffer);
+            if (isBackground) {
+                mobileImage = mobileImage.resize({ width: MOBILE_WIDTH, withoutEnlargement: true });
+            } else if (isItem) {
+                mobileImage = mobileImage.resize({ width: 256, height: 256, fit: 'inside', withoutEnlargement: true });
+            } else if (isCharacter) {
+                mobileImage = mobileImage.resize({ width: 512, height: 512, fit: 'inside', withoutEnlargement: true });
+            }
+
+            await mobileImage
                 .webp({ quality: QUALITY_MOBILE })
                 .toFile(outputMobile);
             

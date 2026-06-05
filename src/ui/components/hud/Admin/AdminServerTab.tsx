@@ -1,13 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { syncService } from '../../../../services/SyncService';
-import {
-    RealPlayer,
-    Section,
-    inputStyle,
-    applyBtn,
-    statLabel,
-    editRow,
-} from './AdminShared';
+import { RealPlayer, Section, inputStyle, applyBtn, statLabel, editRow } from './AdminShared';
 import { AdminSpectatorModal } from './AdminSpectatorModal';
 import { ServerPlayersList } from './components/ServerPlayersList';
 import { PlayerInspector } from './components/PlayerInspector';
@@ -191,20 +184,14 @@ export const AdminServerTab: React.FC<AdminServerTabProps> = ({
                                         onChange={(e) => setServerPlayerLevel(e.target.value)}
                                     />
                                 </div>
-                                <button
-                                    onClick={() => handleRemoteUpdate('level', serverPlayerLevel)}
-                                    style={applyBtn}
-                                >
+                                <button onClick={() => handleRemoteUpdate('level', serverPlayerLevel)} style={applyBtn}>
                                     SET
                                 </button>
                             </div>
                         </Section>
 
                         {/* Чит-хелперы разработчика */}
-                        <DevCheatsPanel
-                            selectedPlayer={selectedPlayer}
-                            onRefresh={refreshPlayers}
-                        />
+                        <DevCheatsPanel selectedPlayer={selectedPlayer} onRefresh={refreshPlayers} />
 
                         {/* Модерация и логи жалоб */}
                         <PlayerModerationPanel

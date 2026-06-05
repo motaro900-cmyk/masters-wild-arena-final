@@ -1,4 +1,3 @@
-
 import { AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../../store/useGameStore';
 import { lazyWithRetry } from '../../utils/LazyWithRetry';
@@ -9,21 +8,11 @@ const ShopScene = lazyWithRetry(() => import('./hud/ShopScene').then((m) => ({ d
 const BattlePassScene = lazyWithRetry(() =>
     import('./hud/BattlePassScene').then((m) => ({ default: m.BattlePassScene })),
 );
-const HeroScene = lazyWithRetry(() =>
-    import('./hud/HeroScene/index').then((m) => ({ default: m.HeroScene })),
-);
-const IntroScreen = lazyWithRetry(() =>
-    import('./screens/IntroScreen').then((m) => ({ default: m.IntroScreen })),
-);
-const CityScreen = lazyWithRetry(() =>
-    import('./screens/CityScreen').then((m) => ({ default: m.CityScreen })),
-);
-const ForgeScreen = lazyWithRetry(() =>
-    import('./screens/ForgeScreen').then((m) => ({ default: m.ForgeScreen })),
-);
-const BattleScene = lazyWithRetry(() =>
-    import('./hud/BattleScene').then((m) => ({ default: m.BattleScene })),
-);
+const HeroScene = lazyWithRetry(() => import('./hud/HeroScene/index').then((m) => ({ default: m.HeroScene })));
+const IntroScreen = lazyWithRetry(() => import('./screens/IntroScreen').then((m) => ({ default: m.IntroScreen })));
+const CityScreen = lazyWithRetry(() => import('./screens/CityScreen').then((m) => ({ default: m.CityScreen })));
+const ForgeScreen = lazyWithRetry(() => import('./screens/ForgeScreen').then((m) => ({ default: m.ForgeScreen })));
+const BattleScene = lazyWithRetry(() => import('./hud/BattleScene').then((m) => ({ default: m.BattleScene })));
 
 export const SceneSwitcher = () => {
     const activeScreen = useGameStore((state) => state.activeScreen);

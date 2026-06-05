@@ -146,6 +146,7 @@ export class SyncService {
                 pveStage: state.pveStage,
                 maxPveStage: state.maxPveStage,
                 winStreak: state.winStreak,
+                lossStreak: state.lossStreak,
                 onboardingCompleted: state.onboardingCompleted,
                 friends: state.friends,
                 clanId: state.clanId,
@@ -225,7 +226,7 @@ export class SyncService {
                 vipDaysRemaining,
                 energy: state.energy || 0,
                 maxEnergy: state.maxEnergy || 0,
-                
+
                 // Russian legacy keys compatibility:
                 золото: state.gold || 0,
                 кристаллы: state.crystals || 0,
@@ -500,7 +501,8 @@ export class SyncService {
                     const name = p.имя || p.name || '';
                     const lowerName = name.toLowerCase();
                     const myId = useGameStore.getState().playerId;
-                    const isMe = p.id === myId || (p.vkId && String(p.vkId) === String(useGameStore.getState().vkUser?.id));
+                    const isMe =
+                        p.id === myId || (p.vkId && String(p.vkId) === String(useGameStore.getState().vkUser?.id));
                     if (isMe) return true;
                     if (['разработчик', 'test'].some((w) => lowerName.includes(w))) {
                         return false;
@@ -538,7 +540,9 @@ export class SyncService {
                             const name = p.имя || p.name || '';
                             const lowerName = name.toLowerCase();
                             const myId = useGameStore.getState().playerId;
-                            const isMe = p.id === myId || (p.vkId && String(p.vkId) === String(useGameStore.getState().vkUser?.id));
+                            const isMe =
+                                p.id === myId ||
+                                (p.vkId && String(p.vkId) === String(useGameStore.getState().vkUser?.id));
                             if (isMe) return true;
                             if (['разработчик', 'test'].some((w) => lowerName.includes(w))) {
                                 return false;
@@ -809,14 +813,14 @@ export class SyncService {
             // Ищем точное совпадение имени (поддерживаем новый и старый ключи)
             const qName = query(playersRef, where('name', '==', name));
             const snapName = await getDocs(qName);
-            
+
             let docs = [...snapName.docs];
             if (snapName.empty) {
                 const qLegacy = query(playersRef, where('имя', '==', name));
                 const snapLegacy = await getDocs(qLegacy);
                 docs = [...snapLegacy.docs];
             }
-            
+
             if (docs.length === 0) return true;
 
             // Если есть документ с таким именем, но его ID совпадает с ID текущего или гостевого игрока, то ник принадлежит ему же

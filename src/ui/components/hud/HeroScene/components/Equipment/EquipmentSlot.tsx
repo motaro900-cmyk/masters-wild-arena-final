@@ -72,7 +72,11 @@ export const EquipmentSlot = ({ id, label, itemId, activeDraggingId, onClick, se
                 itemData.spriteClass ? (
                     <div className={itemData.spriteClass} style={{ width: '110px', height: '110px' }} />
                 ) : (
-                    <img src={resolveAssetPath(itemData.image)} style={{ width: '80%', height: '80%', objectFit: 'contain' }} alt="" />
+                    <img
+                        src={resolveAssetPath(itemData.image)}
+                        style={{ width: '80%', height: '80%', objectFit: 'contain' }}
+                        alt=""
+                    />
                 )
             ) : (
                 <div

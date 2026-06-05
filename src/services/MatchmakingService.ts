@@ -32,7 +32,10 @@ export interface MatchOpponent {
     vipLevel?: number;
 }
 
-const generateOpponentEquipment = (oppLevel: number): Record<string, string | null> => {
+const generateOpponentEquipment = (
+    oppLevel: number,
+    targetRarity: string = 'COMMON',
+): Record<string, string | null> => {
     const equip: Record<string, string | null> = {
         WEAPONS: null,
         HELMETS: null,
@@ -43,15 +46,38 @@ const generateOpponentEquipment = (oppLevel: number): Record<string, string | nu
         BOOTS: null,
     };
     const slots = ['WEAPONS', 'HELMETS', 'ARMOR', 'SHIELDS', 'SHOULDERS', 'PANTS', 'BOOTS'];
+    const raritiesOrder = ['MYTHIC', 'LEGENDARY', 'EPIC', 'RARE', 'COMMON'];
+
     slots.forEach((slot) => {
-        const candidates = Object.values(ITEMS_DATABASE).filter(
-            (item: any) => item.subTab === slot && item.requiredLevel <= oppLevel,
-        );
-        if (candidates.length > 0) {
-            candidates.sort((a: any, b: any) => b.requiredLevel - a.requiredLevel);
-            const topSlice = candidates.slice(0, 4);
-            const chosen = topSlice[Math.floor(Math.random() * topSlice.length)];
-            equip[slot] = (chosen as any).id;
+        let chosen: any = null;
+        const startIndex = raritiesOrder.indexOf(targetRarity);
+        const searchList = startIndex !== -1 ? raritiesOrder.slice(startIndex) : raritiesOrder;
+
+        for (const rarity of searchList) {
+            const candidates = Object.values(ITEMS_DATABASE).filter(
+                (item: any) => item.subTab === slot && item.requiredLevel <= oppLevel && item.rarity === rarity,
+            );
+            if (candidates.length > 0) {
+                candidates.sort((a: any, b: any) => b.requiredLevel - a.requiredLevel);
+                const topSlice = candidates.slice(0, 4);
+                chosen = topSlice[Math.floor(Math.random() * topSlice.length)];
+                break;
+            }
+        }
+
+        if (!chosen) {
+            const candidates = Object.values(ITEMS_DATABASE).filter(
+                (item: any) => item.subTab === slot && item.requiredLevel <= oppLevel,
+            );
+            if (candidates.length > 0) {
+                candidates.sort((a: any, b: any) => b.requiredLevel - a.requiredLevel);
+                const topSlice = candidates.slice(0, 4);
+                chosen = topSlice[Math.floor(Math.random() * topSlice.length)];
+            }
+        }
+
+        if (chosen) {
+            equip[slot] = chosen.id;
         }
     });
     return equip;
@@ -95,12 +121,15 @@ class MatchmakingServiceClass {
         myRating: number,
         myLevel: number,
         myWinRate: number,
+        myStats?: any,
+        winStreak = 0,
+        lossStreak = 0,
     ): Promise<MatchOpponent> {
         const realOpponent = await this.searchRealPlayer(myUserId, myRating, myWinRate);
         if (realOpponent) {
             return realOpponent;
         }
-        return this.generateBot(myRating, myLevel);
+        return this.generateBot(myRating, myLevel, myStats, winStreak, lossStreak);
     }
 
     /**
@@ -120,9 +149,15 @@ class MatchmakingServiceClass {
     private async queryFirebase(myUserId: string, myRating: number, myWinRate: number): Promise<MatchOpponent | null> {
         try {
             const playersRef = collection(db, USERS_COLLECTION);
-            // Ищем игроков в диапазоне ±100 кубков
-            const minRating = Math.max(0, myRating - 100);
-            const maxRating = myRating + 100;
+            // Ищем игроков в динамическом диапазоне кубков в зависимости от текущего рейтинга игрока
+            let range = 100;
+            if (myRating < 100) range = 30;
+            else if (myRating < 300) range = 60;
+            else if (myRating < 600) range = 100;
+            else range = 150;
+
+            const minRating = Math.max(0, myRating - range);
+            const maxRating = myRating + range;
 
             const q = query(
                 playersRef,
@@ -206,15 +241,16 @@ class MatchmakingServiceClass {
         const rankInfo = getRankInfo(rating);
 
         // Если в snapshot есть снаряжение — используем его, иначе генерируем
-        const equipment = snapshot.equipment || snapshot.снаряжение || {
-            WEAPONS: snapshot.геройСнаряжение?.weapon || null,
-            HELMETS: snapshot.геройСнаряжение?.helm || null,
-            ARMOR: snapshot.геройСнаряжение?.armor || null,
-            SHIELDS: snapshot.геройСнаряжение?.shield || null,
-            SHOULDERS: null,
-            PANTS: null,
-            BOOTS: null,
-        };
+        const equipment = snapshot.equipment ||
+            snapshot.снаряжение || {
+                WEAPONS: snapshot.геройСнаряжение?.weapon || null,
+                HELMETS: snapshot.геройСнаряжение?.helm || null,
+                ARMOR: snapshot.геройСнаряжение?.armor || null,
+                SHIELDS: snapshot.геройСнаряжение?.shield || null,
+                SHOULDERS: null,
+                PANTS: null,
+                BOOTS: null,
+            };
 
         const level = snapshot.level || snapshot.уровень || snapshot.level || 1;
         const stats = buildStatsFromEquipment(heroId, level, equipment);
@@ -240,22 +276,142 @@ class MatchmakingServiceClass {
             winRate: snapshot.winRate || 50,
             isBot: false,
             realUserId: snapshot.id,
-            vipLevel: snapshot.vipLevel !== undefined ? snapshot.vipLevel : (snapshot.vip !== undefined ? (typeof snapshot.vip === 'boolean' ? (snapshot.vip ? 1 : 0) : snapshot.vip) : (Math.random() < 0.15 ? 1 : 0)),
+            vipLevel:
+                snapshot.vipLevel !== undefined
+                    ? snapshot.vipLevel
+                    : snapshot.vip !== undefined
+                      ? typeof snapshot.vip === 'boolean'
+                          ? snapshot.vip
+                              ? 1
+                              : 0
+                          : snapshot.vip
+                      : Math.random() < 0.15
+                        ? 1
+                        : 0,
         };
     }
 
     /**
      * Генерирует замаскированного бота — внешне неотличим от реального игрока.
      */
-    public generateBot(myRating: number, myLevel: number): MatchOpponent {
-        const ratingVariance = Math.floor(Math.random() * 100) - 50;
+    public generateBot(myRating: number, myLevel: number, myStats?: any, winStreak = 0, lossStreak = 0): MatchOpponent {
+        const ratingVariance = Math.floor(Math.random() * 60) - 30; // Умеренная вариативность рейтинга бота
         const botRating = Math.max(0, myRating + ratingVariance);
         const rankInfo = getRankInfo(botRating);
 
         const randomHero = HEROES_DB[Math.floor(Math.random() * HEROES_DB.length)] || HEROES_DB[0];
-        const botLevel = Math.max(1, myLevel + Math.floor(Math.random() * 3) - 1);
-        const equipment = generateOpponentEquipment(botLevel);
-        const stats = buildStatsFromEquipment(randomHero.id, botLevel, equipment);
+
+        // Масштабируем уровень в зависимости от уровня игрока и серии побед/поражений
+        let botLevel = myLevel;
+        if (winStreak >= 3) botLevel += 1;
+        if (winStreak >= 6) botLevel += 2;
+        if (lossStreak >= 2) botLevel -= 1;
+        if (lossStreak >= 4) botLevel -= 2;
+        botLevel = Math.max(1, botLevel + Math.floor(Math.random() * 3) - 1);
+
+        // Определяем желаемую редкость экипировки бота
+        let targetRarity = 'COMMON';
+        if (botRating < 100) {
+            targetRarity = 'COMMON';
+        } else if (botRating < 250) {
+            targetRarity = 'RARE';
+        } else if (botRating < 450) {
+            targetRarity = 'EPIC';
+        } else if (botRating < 600) {
+            targetRarity = 'LEGENDARY';
+        } else {
+            targetRarity = 'MYTHIC';
+        }
+
+        // Корректируем редкость на основе серии побед/поражений
+        if (winStreak >= 3) {
+            if (targetRarity === 'COMMON') targetRarity = 'RARE';
+            else if (targetRarity === 'RARE') targetRarity = 'EPIC';
+            else if (targetRarity === 'EPIC') targetRarity = 'LEGENDARY';
+            else if (targetRarity === 'LEGENDARY') targetRarity = 'MYTHIC';
+        }
+        if (lossStreak >= 2) {
+            if (targetRarity === 'MYTHIC') targetRarity = 'LEGENDARY';
+            else if (targetRarity === 'LEGENDARY') targetRarity = 'EPIC';
+            else if (targetRarity === 'EPIC') targetRarity = 'RARE';
+            else if (targetRarity === 'RARE') targetRarity = 'COMMON';
+        }
+
+        const equipment = generateOpponentEquipment(botLevel, targetRarity);
+
+        // Рассчитываем множитель характеристик
+        const baseMult = 0.82 + Math.min(0.4, (myRating / 500) * 0.28);
+
+        let winStreakMod = 0;
+        if (winStreak > 0) {
+            if (winStreak === 1) winStreakMod = 0.02;
+            else if (winStreak === 2) winStreakMod = 0.05;
+            else if (winStreak === 3) winStreakMod = 0.1;
+            else if (winStreak === 4) winStreakMod = 0.15;
+            else winStreakMod = 0.2 + (winStreak - 5) * 0.04;
+            winStreakMod = Math.min(0.45, winStreakMod);
+        }
+
+        let lossStreakMod = 0;
+        if (lossStreak > 0) {
+            if (lossStreak === 1) lossStreakMod = -0.02;
+            else if (lossStreak === 2) lossStreakMod = -0.08;
+            else if (lossStreak === 3) lossStreakMod = -0.15;
+            else lossStreakMod = -0.22 - (lossStreak - 4) * 0.04;
+            lossStreakMod = Math.max(-0.35, lossStreakMod);
+        }
+
+        const variance = Math.random() * 0.08 - 0.04;
+        let statsMultiplier = baseMult + winStreakMod + lossStreakMod + variance;
+        statsMultiplier = Math.max(0.65, Math.min(1.75, statsMultiplier));
+
+        // Рассчитываем характеристики бота
+        const finalStats = {
+            hp: 0,
+            attack: 0,
+            defense: 0,
+            speed: 1.0,
+            critChance: 5,
+            evasion: 0,
+        };
+
+        if (myStats) {
+            finalStats.hp = Math.round(myStats.hp * statsMultiplier);
+            finalStats.attack = Math.round(myStats.attack * statsMultiplier);
+            finalStats.defense = Math.round(myStats.defense * statsMultiplier);
+            finalStats.speed = myStats.speed;
+            finalStats.critChance = Math.min(75, (myStats.crit || myStats.critChance || 5) * statsMultiplier);
+            finalStats.evasion = Math.min(60, (myStats.evasion || 0) * statsMultiplier);
+        } else {
+            const rawStats = buildStatsFromEquipment(randomHero.id, botLevel, equipment);
+            finalStats.hp = Math.round(rawStats.hp * statsMultiplier);
+            finalStats.attack = Math.round(rawStats.attack * statsMultiplier);
+            finalStats.defense = Math.round(rawStats.defense * statsMultiplier);
+            finalStats.speed = rawStats.speed;
+            finalStats.critChance = Math.min(75, rawStats.critChance);
+            finalStats.evasion = Math.min(60, rawStats.evasion);
+        }
+
+        // Применяем ролевые коэффициенты для разнообразия геймплея
+        const role = randomHero.role;
+        if (role === 'TANK') {
+            finalStats.hp = Math.round(finalStats.hp * 1.2);
+            finalStats.defense = Math.round(finalStats.defense * 1.25);
+            finalStats.attack = Math.round(finalStats.attack * 0.85);
+        } else if (role === 'ASSASSIN') {
+            finalStats.hp = Math.round(finalStats.hp * 0.85);
+            finalStats.attack = Math.round(finalStats.attack * 1.15);
+            finalStats.speed = +(finalStats.speed * 1.08).toFixed(2);
+            finalStats.critChance = Math.min(75, finalStats.critChance + 5);
+            finalStats.evasion = Math.min(60, finalStats.evasion + 5);
+        } else if (role === 'MAGE') {
+            finalStats.attack = Math.round(finalStats.attack * 1.1);
+            finalStats.defense = Math.round(finalStats.defense * 0.9);
+        } else if (role === 'SUPPORT') {
+            finalStats.hp = Math.round(finalStats.hp * 1.05);
+            finalStats.defense = Math.round(finalStats.defense * 1.1);
+            finalStats.attack = Math.round(finalStats.attack * 0.9);
+        }
 
         return {
             id: randomHero.id,
@@ -267,15 +423,15 @@ class MatchmakingServiceClass {
             rankIcon: rankInfo.icon,
             equipment,
             stats: {
-                hp: stats.hp,
-                attack: stats.attack,
-                defense: stats.defense,
-                speed: stats.speed,
-                crit: stats.critChance,
-                evasion: stats.evasion,
-                critChance: stats.critChance,
+                hp: finalStats.hp,
+                attack: finalStats.attack,
+                defense: finalStats.defense,
+                speed: finalStats.speed,
+                crit: finalStats.critChance,
+                evasion: finalStats.evasion,
+                critChance: finalStats.critChance,
             },
-            winRate: Math.floor(48 + (botRating % 15)),
+            winRate: Math.max(30, Math.min(75, Math.floor(48 + (botRating % 15) + winStreak * 2 - lossStreak * 2))),
             isBot: true,
             vipLevel: Math.random() < 0.2 ? Math.floor(Math.random() * 3) + 1 : 0,
         };

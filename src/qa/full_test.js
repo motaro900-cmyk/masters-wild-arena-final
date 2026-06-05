@@ -1,9 +1,13 @@
 import puppeteer from 'puppeteer-core';
 import { join } from 'path';
+import { mkdirSync } from 'fs';
 
 const CHROME_PATH = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
 const GAME_URL = 'http://localhost:5173';
-const SCREENSHOT_DIR = 'C:\\Users\\Motar\\.gemini\\antigravity\\brain\\9a269537-4657-4af8-ae53-2078ea4987fb\\';
+const SCREENSHOT_DIR = 'C:\\Users\\Motar\\.gemini\\antigravity\\brain\\3ec5a0ff-e008-48fd-bb03-6484fcc002be\\';
+
+// Ensure the screenshot directory exists
+mkdirSync(SCREENSHOT_DIR, { recursive: true });
 
 async function delay(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));

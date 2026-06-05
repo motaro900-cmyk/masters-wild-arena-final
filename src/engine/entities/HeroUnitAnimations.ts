@@ -133,7 +133,12 @@ export function spawnLandingEffect(unit: HeroUnit): void {
 /**
  * GSAP-рывок вперед для атаки
  */
-export function animateLungeForward(unit: HeroUnit, isPlayer: boolean, poseOverride?: number, victimX?: number): Promise<void> {
+export function animateLungeForward(
+    unit: HeroUnit,
+    isPlayer: boolean,
+    poseOverride?: number,
+    victimX?: number,
+): Promise<void> {
     const anyUnit = unit as any;
     anyUnit.clearCurrentResolve();
     unit.isLunging = true;

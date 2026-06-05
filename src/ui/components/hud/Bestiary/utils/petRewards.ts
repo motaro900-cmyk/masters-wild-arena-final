@@ -19,11 +19,7 @@ export const getMskDateKey = (timestamp: number = Date.now()): string => {
     return `${year}-${month}-${day}`;
 };
 
-export const calculatePetDailyReward = (
-    petLevel: number,
-    hunger: number,
-    happiness: number
-): PetDailyRewardResult => {
+export const calculatePetDailyReward = (petLevel: number, hunger: number, happiness: number): PetDailyRewardResult => {
     // 1. Calculate Multiplier based on pet state
     let multiplier = 1.0;
     if (hunger >= 80 && happiness >= 80) {
@@ -42,7 +38,7 @@ export const calculatePetDailyReward = (
 
     // 3. Crystals (Diamonds) are now a rare daily find (20% chance)
     let crystalsReward = 0;
-    if (happiness >= 50 && Math.random() < 0.20) {
+    if (happiness >= 50 && Math.random() < 0.2) {
         const baseCrystals = 2;
         crystalsReward = Math.round((baseCrystals + Math.floor(petLevel / 2)) * multiplier);
         if (crystalsReward < 1) crystalsReward = 1;
@@ -55,6 +51,6 @@ export const calculatePetDailyReward = (
         gold: goldReward,
         crystals: crystalsReward,
         loot: lootResult,
-        multiplier
+        multiplier,
     };
 };

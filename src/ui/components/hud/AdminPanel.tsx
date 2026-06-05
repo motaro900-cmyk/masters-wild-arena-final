@@ -52,7 +52,8 @@ const mapRawPlayerToRealPlayer = (p: any): RealPlayer => {
             ? parsedState.heroEquipment[activeHero]
             : p.снаряжение || p.геройСнаряжение || {});
 
-    const lastSeenDate = (p.wasOnline || p.былВСети || p.lastSeen)?.toDate?.() || (lastSeenMillis ? new Date(lastSeenMillis) : null);
+    const lastSeenDate =
+        (p.wasOnline || p.былВСети || p.lastSeen)?.toDate?.() || (lastSeenMillis ? new Date(lastSeenMillis) : null);
     const lastSeenTimeVal = lastSeenDate
         ? lastSeenDate.toLocaleString('ru-RU', {
               day: '2-digit',
@@ -63,15 +64,23 @@ const mapRawPlayerToRealPlayer = (p: any): RealPlayer => {
           })
         : 'неизвестно';
 
-    const ratingVal = p.rating !== undefined ? p.rating : (parsedState.rating !== undefined ? parsedState.rating : p.рейтинг || 0);
-    const vipLevelVal = p.vipLevel !== undefined ? p.vipLevel : (parsedState.vipLevel !== undefined ? parsedState.vipLevel : 0);
-    
-    const vipEndTime = p.vipEndTime || parsedState.vipEndTime || 0;
-    const isVipActiveVal = p.isVipActive !== undefined ? p.isVipActive : (vipLevelVal > 0 && vipEndTime > Date.now());
-    const vipDaysRemainingVal = p.vipDaysRemaining !== undefined ? p.vipDaysRemaining : (isVipActiveVal ? Math.ceil((vipEndTime - Date.now()) / (24 * 60 * 60 * 1000)) : 0);
+    const ratingVal =
+        p.rating !== undefined ? p.rating : parsedState.rating !== undefined ? parsedState.rating : p.рейтинг || 0;
+    const vipLevelVal =
+        p.vipLevel !== undefined ? p.vipLevel : parsedState.vipLevel !== undefined ? parsedState.vipLevel : 0;
 
-    const energyVal = p.energy !== undefined ? p.energy : (parsedState.energy !== undefined ? parsedState.energy : 0);
-    const maxEnergyVal = p.maxEnergy !== undefined ? p.maxEnergy : (parsedState.maxEnergy !== undefined ? parsedState.maxEnergy : 0);
+    const vipEndTime = p.vipEndTime || parsedState.vipEndTime || 0;
+    const isVipActiveVal = p.isVipActive !== undefined ? p.isVipActive : vipLevelVal > 0 && vipEndTime > Date.now();
+    const vipDaysRemainingVal =
+        p.vipDaysRemaining !== undefined
+            ? p.vipDaysRemaining
+            : isVipActiveVal
+              ? Math.ceil((vipEndTime - Date.now()) / (24 * 60 * 60 * 1000))
+              : 0;
+
+    const energyVal = p.energy !== undefined ? p.energy : parsedState.energy !== undefined ? parsedState.energy : 0;
+    const maxEnergyVal =
+        p.maxEnergy !== undefined ? p.maxEnergy : parsedState.maxEnergy !== undefined ? parsedState.maxEnergy : 0;
     const inventoryVal = p.inventory || parsedState.inventory || p.инвентарь || [];
 
     return {
@@ -81,15 +90,34 @@ const mapRawPlayerToRealPlayer = (p: any): RealPlayer => {
         photo: photoVal,
         status: p.status === 'BANNED' ? 'BANNED' : statusVal,
         screen: activeScreenVal,
-        level: p.level !== undefined ? p.level : (parsedState.level !== undefined ? parsedState.level : p.уровень || p.лев || 1),
-        gold: p.gold !== undefined ? p.gold : (parsedState.gold !== undefined ? parsedState.gold : p.золото !== undefined ? p.золото : 0),
-        crystals: p.crystals !== undefined ? p.crystals : (parsedState.crystals !== undefined ? parsedState.crystals : p.кристаллы !== undefined ? p.кристаллы : 0),
+        level:
+            p.level !== undefined
+                ? p.level
+                : parsedState.level !== undefined
+                  ? parsedState.level
+                  : p.уровень || p.лев || 1,
+        gold:
+            p.gold !== undefined
+                ? p.gold
+                : parsedState.gold !== undefined
+                  ? parsedState.gold
+                  : p.золото !== undefined
+                    ? p.золото
+                    : 0,
+        crystals:
+            p.crystals !== undefined
+                ? p.crystals
+                : parsedState.crystals !== undefined
+                  ? parsedState.crystals
+                  : p.кристаллы !== undefined
+                    ? p.кристаллы
+                    : 0,
         regDate: lastSeenTimeVal,
         reports: p.reports || 0,
         reportLogs: p.reportLogs || [],
         gear: gearVal as any,
-        isTest: p.isTestPlayer !== undefined ? p.isTestPlayer : (p.тестовый || false),
-        isDev: p.isDeveloper !== undefined ? p.isDeveloper : (p.разработчик || false),
+        isTest: p.isTestPlayer !== undefined ? p.isTestPlayer : p.тестовый || false,
+        isDev: p.isDeveloper !== undefined ? p.isDeveloper : p.разработчик || false,
         lastSeenTime: lastSeenTimeVal,
         rating: ratingVal,
         vipLevel: vipLevelVal,

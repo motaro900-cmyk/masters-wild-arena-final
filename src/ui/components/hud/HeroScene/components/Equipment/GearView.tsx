@@ -29,7 +29,7 @@ export const GearView = ({
     const equippedSkins = useGameStore((s: any) => s.equippedSkins) || {};
     const equippedSkinId = equippedSkins[hero.id] || 'default';
     const activeSkin = SKINS_DB.find((s) => s.id === equippedSkinId && s.heroId === hero.id);
-    
+
     const heroesState = useGameStore((s: any) => s.heroes) || {};
     const heroState = heroesState[hero.id] || { level: 1, exp: 0 };
     const heroLevel = heroState.level || 1;
@@ -461,7 +461,8 @@ export const GearView = ({
                             fontFamily: "'Cinzel', 'Philosopher', serif",
                         }}
                     >
-                        {displayHeroName} <span style={{ color: '#fff', fontSize: '20px', marginLeft: '10px' }}>Ур. {heroLevel}</span>
+                        {displayHeroName}{' '}
+                        <span style={{ color: '#fff', fontSize: '20px', marginLeft: '10px' }}>Ур. {heroLevel}</span>
                     </h2>
                     <p
                         style={{
@@ -512,7 +513,8 @@ export const GearView = ({
                                             left: 0,
                                             right: 0,
                                             bottom: 0,
-                                            backgroundImage: 'linear-gradient(45deg, rgba(255,255,255,0.15) 25%, transparent 25%, transparent 50%, rgba(255,255,255,0.15) 50%, rgba(255,255,255,0.15) 75%, transparent 75%, transparent)',
+                                            backgroundImage:
+                                                'linear-gradient(45deg, rgba(255,255,255,0.15) 25%, transparent 25%, transparent 50%, rgba(255,255,255,0.15) 50%, rgba(255,255,255,0.15) 75%, transparent 75%, transparent)',
                                             backgroundSize: '15px 15px',
                                             opacity: 0.3,
                                             animation: 'move-stripes 2s linear infinite',
@@ -526,34 +528,37 @@ export const GearView = ({
                                     `}</style>
                                 </motion.div>
                             </div>
-                            <div 
-                                style={{ 
-                                    display: 'flex', 
-                                    justifyContent: 'space-between', 
+                            <div
+                                style={{
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
                                     alignItems: 'center',
-                                    fontSize: '11px', 
-                                    color: '#d97706', 
-                                    marginTop: '6px', 
+                                    fontSize: '11px',
+                                    color: '#d97706',
+                                    marginTop: '6px',
                                     fontWeight: 800,
                                     letterSpacing: '1px',
                                     fontFamily: "'Philosopher', 'Inter', sans-serif",
-                                    textShadow: '0 1px 3px rgba(0,0,0,0.8)'
+                                    textShadow: '0 1px 3px rgba(0,0,0,0.8)',
                                 }}
                             >
                                 <span style={{ color: 'rgba(255, 255, 255, 0.6)' }}>ОПЫТ ГЕРОЯ</span>
-                                <span>{heroExp} <span style={{ color: 'rgba(255, 255, 255, 0.4)' }}>/</span> {xpNeeded} ({Math.round(xpPercentage)}%)</span>
+                                <span>
+                                    {heroExp} <span style={{ color: 'rgba(255, 255, 255, 0.4)' }}>/</span> {xpNeeded} (
+                                    {Math.round(xpPercentage)}%)
+                                </span>
                             </div>
                         </div>
                     ) : (
-                        <div 
-                            style={{ 
-                                fontSize: '12px', 
-                                color: '#eab308', 
-                                fontWeight: 900, 
+                        <div
+                            style={{
+                                fontSize: '12px',
+                                color: '#eab308',
+                                fontWeight: 900,
                                 letterSpacing: '2px',
                                 marginTop: '12px',
                                 textShadow: '0 0 10px rgba(234, 179, 8, 0.5)',
-                                fontFamily: "'Cinzel', serif"
+                                fontFamily: "'Cinzel', serif",
                             }}
                         >
                             🏆 МАКСИМАЛЬНЫЙ УРОВЕНЬ 🏆
@@ -599,7 +604,13 @@ export const GearView = ({
                                     transition: 'all 0.2s ease',
                                 }}
                             >
-                                {tab === 'STATS' ? 'АТРИБУТЫ' : tab === 'INVENTORY' ? 'ИНВЕНТАРЬ' : tab === 'TALENTS' ? 'ТАЛАНТЫ' : 'ЛЕГЕНДА'}
+                                {tab === 'STATS'
+                                    ? 'АТРИБУТЫ'
+                                    : tab === 'INVENTORY'
+                                      ? 'ИНВЕНТАРЬ'
+                                      : tab === 'TALENTS'
+                                        ? 'ТАЛАНТЫ'
+                                        : 'ЛЕГЕНДА'}
                             </button>
                         );
                     })}

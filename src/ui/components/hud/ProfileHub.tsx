@@ -60,7 +60,10 @@ export const ProfileHub: React.FC = () => {
             >
                 {/* АВАТАР И РАМКА */}
                 <div className="absolute left-[-18px] top-[-20px] w-[160px] h-[160px] flex items-center justify-center">
-                    <div className="w-[108px] h-[108px] rounded-full overflow-hidden z-10 flex items-center justify-center relative translate-y-[1px]" style={{ backgroundColor: '#000' }}>
+                    <div
+                        className="w-[108px] h-[108px] rounded-full overflow-hidden z-10 flex items-center justify-center relative translate-y-[1px]"
+                        style={{ backgroundColor: '#000' }}
+                    >
                         <img
                             src={
                                 avatar && !avatar.startsWith('sprite:')

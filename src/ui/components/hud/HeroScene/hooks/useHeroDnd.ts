@@ -63,7 +63,6 @@ export class ScaledPointerSensor extends PointerSensor {
     }
 }
 
-
 export const useHeroDnd = (
     selectedHeroId: string,
     heroEquipment: any,
@@ -134,5 +133,3 @@ export const useHeroDnd = (
         collisionDetection: closestCenter,
     };
 };
-
-

@@ -76,8 +76,6 @@ export const RankingWindow: React.FC = () => {
         };
     }, [vkUser]);
 
-
-
     // Сезон I: РАССВЕТ ДИКОГО ЛЕСА — 1–15 июня 2026
     const SEASON_END = new Date('2026-06-15T23:59:59');
     const getRemainingTime = () => {
@@ -842,7 +840,16 @@ const LeaderItem: React.FC<{ player: LeaderboardEntry; onClick: () => void }> = 
 
             {/* ИМЯ И УРОВЕНЬ */}
             <div style={{ flex: 1 }}>
-                <div style={{ color: player.isMe ? '#f0c040' : '#fff', fontWeight: 700, fontSize: '18px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div
+                    style={{
+                        color: player.isMe ? '#f0c040' : '#fff',
+                        fontWeight: 700,
+                        fontSize: '18px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                    }}
+                >
                     <span>{player.name}</span>
                     {player.vipLevel !== undefined && player.vipLevel > 0 && (
                         <span

@@ -10,13 +10,13 @@ export const createHeroSlice = (set: any, get: any) => ({
     heroGalleryId: 'panda',
     ownedHeroes: ['panda'],
     heroes: {
-        panda:            { level: 1, exp: 0, strength: 52, agility: 20, stamina: 32 },
-        wolf_knight:      { level: 1, exp: 0, strength: 65, agility: 25, stamina: 45 },
-        shadow_dancer:    { level: 1, exp: 0, strength: 16, agility: 28, stamina: 14 },
+        panda: { level: 1, exp: 0, strength: 52, agility: 20, stamina: 32 },
+        wolf_knight: { level: 1, exp: 0, strength: 65, agility: 25, stamina: 45 },
+        shadow_dancer: { level: 1, exp: 0, strength: 16, agility: 28, stamina: 14 },
         crystal_guardian: { level: 1, exp: 0, strength: 14, agility: 10, stamina: 30 },
-        storm_caller:     { level: 1, exp: 0, strength: 12, agility: 18, stamina: 16 },
-        nature_warden:    { level: 1, exp: 0, strength: 10, agility: 16, stamina: 22 },
-        void_walker:      { level: 1, exp: 0, strength: 20, agility: 26, stamina: 18 },
+        storm_caller: { level: 1, exp: 0, strength: 12, agility: 18, stamina: 16 },
+        nature_warden: { level: 1, exp: 0, strength: 10, agility: 16, stamina: 22 },
+        void_walker: { level: 1, exp: 0, strength: 20, agility: 26, stamina: 18 },
     } as Record<string, any>,
     heroTalents: {
         panda: {},
@@ -41,7 +41,13 @@ export const createHeroSlice = (set: any, get: any) => ({
             // Initialize default stats, level 1, exp 0 when unlocking a hero
             const heroData = HEROES_DB.find((h) => h.id === heroId);
             const initialHeroStats = heroData
-                ? { level: 1, exp: 0, strength: heroData.stats.strength, agility: heroData.stats.agility, stamina: heroData.stats.stamina }
+                ? {
+                      level: 1,
+                      exp: 0,
+                      strength: heroData.stats.strength,
+                      agility: heroData.stats.agility,
+                      stamina: heroData.stats.stamina,
+                  }
                 : { level: 1, exp: 0, strength: 50, agility: 20, stamina: 30 };
             return {
                 ownedHeroes: [...state.ownedHeroes, heroId],
@@ -59,12 +65,7 @@ export const createHeroSlice = (set: any, get: any) => ({
                 ? { strength: heroData.stats.strength, stamina: heroData.stats.stamina }
                 : { strength: 50, stamina: 30 };
 
-            const { updatedProgress, delta } = HeroLevelService.addExp(
-                heroId,
-                hero,
-                amount,
-                baseStats
-            );
+            const { updatedProgress, delta } = HeroLevelService.addExp(heroId, hero, amount, baseStats);
 
             if (delta) {
                 console.log(`[heroSlice] Hero ${heroId} leveled up to ${delta.newLevel}!`);
@@ -176,15 +177,9 @@ export const createHeroSlice = (set: any, get: any) => ({
         const bootsInfo = getEquippedItemInfo(equipment.BOOTS);
         const pantsInfo = getEquippedItemInfo(equipment.PANTS);
 
-        const allItemsInfo = [
-            weaponInfo,
-            helmInfo,
-            armorInfo,
-            shieldInfo,
-            shouldersInfo,
-            bootsInfo,
-            pantsInfo,
-        ].filter(Boolean) as { template: IEquipmentStats; level: number }[];
+        const allItemsInfo = [weaponInfo, helmInfo, armorInfo, shieldInfo, shouldersInfo, bootsInfo, pantsInfo].filter(
+            Boolean,
+        ) as { template: IEquipmentStats; level: number }[];
 
         const base = {
             hp: Math.round(heroData.stats.stamina * 10 * levelMultiplier),
@@ -229,8 +224,16 @@ export const createHeroSlice = (set: any, get: any) => ({
             const lvl = itemInfo.level;
             // Multipliers table for item levels 1 to 10 as per game design balance
             const multTable: Record<number, number> = {
-                1: 1.0, 2: 1.15, 3: 1.35, 4: 1.50, 5: 1.65,
-                6: 1.80, 7: 2.00, 8: 2.20, 9: 2.45, 10: 2.75,
+                1: 1.0,
+                2: 1.15,
+                3: 1.35,
+                4: 1.5,
+                5: 1.65,
+                6: 1.8,
+                7: 2.0,
+                8: 2.2,
+                9: 2.45,
+                10: 2.75,
             };
             const mult = multTable[lvl] ?? 1.0;
 

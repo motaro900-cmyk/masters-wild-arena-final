@@ -3,7 +3,7 @@ import { useGameStore } from '../../../../../store/useGameStore';
 import { ITEMS_DATABASE, calculateItemPower } from '../../../../../game/configs/ItemsConfig';
 import { AssetsMap } from '../../../../../configs/AssetsMap';
 
-export const getRarityColor = (rarity: string) => {
+const getRarityColor = (rarity: string) => {
     switch (rarity?.toUpperCase()) {
         case 'MYTHIC':
             return '#ef4444';
@@ -20,7 +20,7 @@ export const getRarityColor = (rarity: string) => {
     }
 };
 
-export const RARITY_RU: Record<string, string> = {
+const RARITY_RU: Record<string, string> = {
     COMMON: 'ОБЫЧНЫЙ',
     UNCOMMON: 'НЕОБЫЧНЫЙ',
     RARE: 'РЕДКИЙ',

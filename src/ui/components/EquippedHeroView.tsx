@@ -43,7 +43,7 @@ export const EquippedHeroView: React.FC<EquippedHeroViewProps> = ({ heroId, size
                           height: 512,
                           objectFit: 'contain',
                           zIndex: layer.zIndex,
-                          filter: `brightness(1.1) contrast(1.1)`,
+                          filter: `url(#css-sharpen) brightness(1.1) contrast(1.1)`,
                           transformOrigin: isWeapon ? '50% 90%' : '50% 50%',
                       };
 

@@ -117,9 +117,6 @@ export const DailyTaskPanel: React.FC = () => {
         <div
             id="daily-task-panel-root"
             style={{
-                backgroundImage: `url(${AssetsMap.UI.PANEL_QUEST})`,
-                backgroundSize: '100% 100%',
-                backgroundRepeat: 'no-repeat',
                 width: 400,
                 height: isCollapsed ? 65 : 480,
                 padding: '28px 28px 22px 28px',
@@ -131,6 +128,19 @@ export const DailyTaskPanel: React.FC = () => {
                 position: 'relative',
             }}
         >
+            {/* Background image with filter */}
+            <div
+                style={{
+                    position: 'absolute',
+                    inset: 0,
+                    backgroundImage: `url(${AssetsMap.UI.PANEL_QUEST})`,
+                    backgroundSize: '100% 100%',
+                    backgroundRepeat: 'no-repeat',
+                    filter: 'url(#css-sharpen) contrast(1.25) saturate(1.15) brightness(0.9) hue-rotate(5deg)',
+                    zIndex: 0,
+                    pointerEvents: 'none',
+                }}
+            />
             {/* HEADER */}
             <div
                 onClick={() => setIsCollapsed(!isCollapsed)}
@@ -141,6 +151,7 @@ export const DailyTaskPanel: React.FC = () => {
                     cursor: 'pointer',
                     marginBottom: isCollapsed ? 0 : 15,
                     position: 'relative',
+                    zIndex: 1,
                 }}
             >
                 <h3
@@ -183,6 +194,8 @@ export const DailyTaskPanel: React.FC = () => {
                             flex: 1,
                             overflow: 'hidden',
                             marginTop: '0px',
+                            position: 'relative',
+                            zIndex: 1,
                         }}
                     >
                         {dailyQuests
@@ -410,6 +423,8 @@ export const DailyTaskPanel: React.FC = () => {
                             fontSize: '12px',
                             color: '#7a5828',
                             fontWeight: 700,
+                            position: 'relative',
+                            zIndex: 1,
                         }}
                     >
                         Обновится через: {getTimeRemaining()}

@@ -6,7 +6,12 @@ import { getAbilityConfig, getAbilityConfigByRole } from '../../../configs/Abili
 
 export async function castActiveAbility(engine: BattleEngine) {
     const anyEngine = engine as any;
-    if (!anyEngine.isCombatRunning || engine.state.playerMana < 100 || engine.state.playerHP <= 0 || engine.state.enemyHP <= 0)
+    if (
+        !anyEngine.isCombatRunning ||
+        engine.state.playerMana < 100 ||
+        engine.state.playerHP <= 0 ||
+        engine.state.enemyHP <= 0
+    )
         return;
 
     // Consume all mana
@@ -65,9 +70,9 @@ export async function castActiveAbility(engine: BattleEngine) {
         // Применяем статус из конфига (если есть)
         if (onCastStatus) {
             const dmgPerTurn = onCastStatus.damagePerTurn
-                ? (onCastStatus.damagePerTurn > 1
+                ? onCastStatus.damagePerTurn > 1
                     ? onCastStatus.damagePerTurn
-                    : Math.ceil(anyEngine.playerStats!.attack * onCastStatus.damagePerTurn))
+                    : Math.ceil(anyEngine.playerStats!.attack * onCastStatus.damagePerTurn)
                 : 0;
             const targetUnit = onCastStatus.target === 'enemy' ? anyEngine.enemy : anyEngine.player;
             const isTargetPlayer = onCastStatus.target === 'player';

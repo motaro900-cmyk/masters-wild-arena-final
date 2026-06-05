@@ -196,5 +196,4 @@ export const HEROES_DB: IHeroConfig[] = [
     */
 ];
 
-
 export const getHeroConfig = (id: string) => HEROES_DB.find((h) => h.id === id) || HEROES_DB[0];

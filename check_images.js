@@ -13,9 +13,11 @@ async function checkImage(filePath) {
 }
 
 async function run() {
-    await checkImage('public/assets/images/items/weapons/moon_sword.webp');
-    await checkImage('public/assets/images/items/weapons/axe.webp');
-    await checkImage('public/assets/images/items/weapons/void_staff.webp');
+    console.log('=== Frames & Shop Icons ===');
+    await checkImage('public/assets/images/frames/harvest_wheat_frame.webp');
+    await checkImage('public/assets/images/shop/bank_gold_small.webp');
+    await checkImage('public/assets/images/shop/bank_gold_medium.webp');
+    await checkImage('public/assets/images/shop/bank_gold_large.webp');
 }
 
 run();

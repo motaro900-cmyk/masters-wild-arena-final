@@ -115,7 +115,7 @@ export const DailyGiftWindow: React.FC<DailyGiftWindowProps> = ({ onClose }) => 
                 const userId = SyncService.getPrefixedUserId(state.vkUser, state.playerId);
                 const userDocRef = doc(db, USERS_COLLECTION, userId);
                 const userSnap = await getDoc(userDocRef);
-                
+
                 if (userSnap.exists()) {
                     const data = userSnap.data();
                     setLastGiftClaimedTime(data.lastDailyGiftClaimed || null);
@@ -123,7 +123,7 @@ export const DailyGiftWindow: React.FC<DailyGiftWindowProps> = ({ onClose }) => 
                     setDbLoginStreak(data.loginStreak || 0);
                 }
             } catch (e) {
-                console.error("Failed to load daily gift data from Firestore:", e);
+                console.error('Failed to load daily gift data from Firestore:', e);
             } finally {
                 setIsLoading(false);
             }
@@ -196,7 +196,7 @@ export const DailyGiftWindow: React.FC<DailyGiftWindowProps> = ({ onClose }) => 
         const interval = setInterval(updateTimers, 1000);
         updateTimers();
         return () => clearInterval(interval);
-    }, [isLoading, lastGiftClaimedTime, lastWheelSpinTimeServer, dbLoginStreak, setCanClaimDailyGift]);
+    }, [isLoading, lastGiftClaimedTime, lastWheelSpinTimeServer, dbLoginStreak, setCanClaimDailyGift, timeOffset]);
 
     const handleClaim = async () => {
         if (claimedToday) return;
@@ -235,7 +235,7 @@ export const DailyGiftWindow: React.FC<DailyGiftWindowProps> = ({ onClose }) => 
                 loginStreak: streak,
             });
         } catch (e) {
-            console.error("Failed to update daily gift in Firestore:", e);
+            console.error('Failed to update daily gift in Firestore:', e);
         }
 
         setLastGiftClaimedTime(Timestamp.now());
@@ -318,7 +318,7 @@ export const DailyGiftWindow: React.FC<DailyGiftWindowProps> = ({ onClose }) => 
                     lastWheelSpinTimeServer: serverTimestamp(),
                 });
             } catch (e) {
-                console.error("Failed to update wheel spin in Firestore:", e);
+                console.error('Failed to update wheel spin in Firestore:', e);
             }
 
             setLastWheelSpinTimeServer(Timestamp.now());

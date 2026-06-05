@@ -7,7 +7,12 @@ import { PixiApp } from './PixiApp';
 import { useGameStore } from '../../store/useGameStore';
 import { ITEMS_DATABASE } from '../../game/configs/ItemsConfig';
 import { ATB_THRESHOLD as ATB_THRESHOLD_CONST } from '../../game/configs/GameConstants';
-import { getAbilityConfig, getAbilityConfigByRole, type StatusType, type PassiveContext } from '../../configs/AbilityConfig';
+import {
+    getAbilityConfig,
+    getAbilityConfigByRole,
+    type StatusType,
+    type PassiveContext,
+} from '../../configs/AbilityConfig';
 
 // Import extracted subsystems
 import * as BattleStatusSystem from './battle/BattleStatusSystem';
@@ -274,9 +279,10 @@ export class BattleEngine {
         let playerTicks = 0;
         let enemyTicks = 0;
 
-        const openingMsg = getEffectiveSpeed(this.player!, this.playerStats!) >= getEffectiveSpeed(this.enemy!, this.enemyStats!)
-            ? `Вы наносите удар первыми! (Скорость: ${this.playerStats!.speed} → ${this.enemyStats!.speed})`
-            : `Враг атакует первым! (Скорость: ${this.enemyStats!.speed} → ${this.playerStats!.speed})`;
+        const openingMsg =
+            getEffectiveSpeed(this.player!, this.playerStats!) >= getEffectiveSpeed(this.enemy!, this.enemyStats!)
+                ? `Вы наносите удар первыми! (Скорость: ${this.playerStats!.speed} → ${this.enemyStats!.speed})`
+                : `Враг атакует первым! (Скорость: ${this.enemyStats!.speed} → ${this.playerStats!.speed})`;
         this.updateState({ log: openingMsg });
         useGameStore.getState().addCombatLog('--- НАЧАЛО БОЯ ---');
 
@@ -379,9 +385,9 @@ export class BattleEngine {
         const startX = attacker.x;
         const startY = attacker.y;
 
-        const inventoryItem = useGameStore.getState().inventory.find(
-            (i: any) => i.id === attackerWeaponId || i.instanceId === attackerWeaponId,
-        );
+        const inventoryItem = useGameStore
+            .getState()
+            .inventory.find((i: any) => i.id === attackerWeaponId || i.instanceId === attackerWeaponId);
         const weaponBaseId = inventoryItem ? inventoryItem.id : attackerWeaponId;
         const weaponData = weaponBaseId ? ITEMS_DATABASE[weaponBaseId] : null;
         let specialChance = 0.08;
@@ -605,7 +611,7 @@ export class BattleEngine {
             extraDodge = 0.15;
         }
 
-        let totalDodgeChance = Math.min(0.60, (targetStats.dodge || 0.05) + extraDodge);
+        const totalDodgeChance = Math.min(0.6, (targetStats.dodge || 0.05) + extraDodge);
         let hasDodged = Math.random() < totalDodgeChance;
         if (instinctEvent?.type === 'FOCUS') hasDodged = false;
         if (victim.isStunnedStatus) hasDodged = false;
@@ -648,7 +654,7 @@ export class BattleEngine {
             addCombatLog(`✨ [Магия] Атака посохом игнорирует 50% защиты цели!`);
         }
 
-        let defenseReduction = targetDefense / (targetDefense + 200);
+        const defenseReduction = targetDefense / (targetDefense + 200);
         let mitigated = damage * (1 - defenseReduction);
         if (!isPlayer && isGodMode) mitigated = 0;
         if (instinctEvent?.type === 'SHIELD') mitigated *= 0.5;
@@ -830,23 +836,26 @@ export class BattleEngine {
         await BattleAbilitySystem.castActiveAbility(this);
     }
 
-    public applyStatus(
-        unit: HeroUnit,
-        type: StatusType,
-        duration: number,
-        damagePerTurn: number,
-        isPlayer: boolean,
-    ) {
+    public applyStatus(unit: HeroUnit, type: StatusType, duration: number, damagePerTurn: number, isPlayer: boolean) {
         BattleStatusSystem.applyStatus(this, unit, type, duration, damagePerTurn, isPlayer);
     }
 
     // Пассивные хуки — вызываются из executeAttack и applyDamage
-    public triggerPassiveOnDealDamage(attacker: HeroUnit, victim: HeroUnit, damage: number, isCrit: boolean, isPlayer: boolean): number {
+    public triggerPassiveOnDealDamage(
+        attacker: HeroUnit,
+        victim: HeroUnit,
+        damage: number,
+        isCrit: boolean,
+        isPlayer: boolean,
+    ): number {
         const cfg = getAbilityConfig(attacker.config?.id);
         if (!cfg?.passive?.onDealDamage) return damage;
         const ctx: PassiveContext = { attacker, victim, isPlayer, damage, isCrit, engine: this };
         const result = cfg.passive.onDealDamage(ctx);
-        if (result.extraLog) { this.updateState({ log: result.extraLog }); useGameStore.getState().addCombatLog(result.extraLog); }
+        if (result.extraLog) {
+            this.updateState({ log: result.extraLog });
+            useGameStore.getState().addCombatLog(result.extraLog);
+        }
         if (result.damageModifier != null) return Math.ceil(damage * result.damageModifier);
         return damage;
     }
@@ -856,9 +865,19 @@ export class BattleEngine {
         const opponent = target === 'player' ? this.enemy : this.player;
         const cfg = getAbilityConfig(unit?.config?.id);
         if (!cfg?.passive?.onTakeDamage) return damage;
-        const ctx: PassiveContext = { attacker: opponent, victim: unit, isPlayer: target === 'player', damage, isCrit, engine: this };
+        const ctx: PassiveContext = {
+            attacker: opponent,
+            victim: unit,
+            isPlayer: target === 'player',
+            damage,
+            isCrit,
+            engine: this,
+        };
         const result = cfg.passive.onTakeDamage(ctx);
-        if (result.extraLog) { this.updateState({ log: result.extraLog }); useGameStore.getState().addCombatLog(result.extraLog); }
+        if (result.extraLog) {
+            this.updateState({ log: result.extraLog });
+            useGameStore.getState().addCombatLog(result.extraLog);
+        }
         if (result.cancelDamage) return 0;
         if (result.damageModifier != null) return Math.ceil(damage * result.damageModifier);
         return damage;
@@ -882,7 +901,10 @@ export class BattleEngine {
     }
 
     public destroy() {
-        if (this.initTimeoutId) { clearTimeout(this.initTimeoutId); this.initTimeoutId = null; }
+        if (this.initTimeoutId) {
+            clearTimeout(this.initTimeoutId);
+            this.initTimeoutId = null;
+        }
         if (this.storeUnsubscribe) this.storeUnsubscribe();
         const pixiApp = PixiApp.getInstance();
         if (this.updateCallback) pixiApp.removeUpdateLoop(this.updateCallback);

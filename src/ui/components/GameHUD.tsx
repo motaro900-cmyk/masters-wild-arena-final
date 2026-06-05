@@ -36,6 +36,7 @@ import { LevelUpOverlay } from './hud/LevelUpOverlay';
 
 export const GameHUD: React.FC = () => {
     const activeScreen = useGameStore((state) => state.activeScreen);
+    const showSummonOverlay = useGameStore((state) => state.showSummonOverlay);
     const mails = useGameStore((state) => state.mail) || [];
     const unreadMailCount = mails.filter((m: any) => m.tab === 'INBOX' && !m.isRead).length;
     const vipLevel = useGameStore((state) => state.vipLevel);
@@ -218,7 +219,8 @@ export const GameHUD: React.FC = () => {
                 activeScreen !== 'HEROES' &&
                 activeScreen !== 'SHOP' &&
                 activeScreen !== 'FORGE' &&
-                activeScreen !== 'SANCTUARY' && (
+                activeScreen !== 'SANCTUARY' &&
+                !showSummonOverlay && (
                     <div
                         className="tutorial-resource-bar absolute top-[20px] right-[25px] hud-interactive flex flex-col items-end gap-1"
                         style={isMobile ? { transform: `scale(${hudScale})`, transformOrigin: 'top right' } : {}}
@@ -634,7 +636,7 @@ export const GameHUD: React.FC = () => {
                                         onItemClick={(itemId) => {
                                             const store = useGameStore.getState() as any;
                                             const storeItem = store.inventory.find(
-                                                (i: any) => i.instanceId === itemId || i.id === itemId
+                                                (i: any) => i.instanceId === itemId || i.id === itemId,
                                             );
                                             const templateId = storeItem ? storeItem.id : itemId;
                                             const item = ITEMS_DATABASE[templateId];
@@ -647,7 +649,11 @@ export const GameHUD: React.FC = () => {
                                                 } else {
                                                     store.equipItem(itemId);
                                                 }
-                                            } else if (item && item.mainTab === 'ALCHEMY' && item.subTab !== 'RESOURCES') {
+                                            } else if (
+                                                item &&
+                                                item.mainTab === 'ALCHEMY' &&
+                                                item.subTab !== 'RESOURCES'
+                                            ) {
                                                 if (itemId === 'protection_stone') return;
 
                                                 let effectDesc = '';
@@ -663,12 +669,14 @@ export const GameHUD: React.FC = () => {
                                                 if (itemId === 'exp_potion_medium') effectDesc = '+10 000 опыта';
                                                 if (itemId === 'exp_potion_large') effectDesc = '+50 000 опыта';
 
-                                                useGameStore.getState().showConfirm(
-                                                    `Выпить "${item.name}"?\nЭффект: ${effectDesc}`,
-                                                    () => {
-                                                        useGameStore.getState().useConsumable(itemId);
-                                                    }
-                                                );
+                                                useGameStore
+                                                    .getState()
+                                                    .showConfirm(
+                                                        `Выпить "${item.name}"?\nЭффект: ${effectDesc}`,
+                                                        () => {
+                                                            useGameStore.getState().useConsumable(itemId);
+                                                        },
+                                                    );
                                             }
                                         }}
                                     />
@@ -723,8 +731,6 @@ export const GameHUD: React.FC = () => {
                 title={devModal.title}
                 onClose={() => setDevModal({ ...devModal, isOpen: false })}
             />
-
-
 
             <LevelUpOverlay />
             <ConfirmDialog />

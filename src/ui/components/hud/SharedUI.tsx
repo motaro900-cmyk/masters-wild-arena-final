@@ -98,7 +98,7 @@ export const GfxGoldPanel: React.FC<{ children: React.ReactNode; className?: str
             style={{
                 borderImageSource: `url('${resolveAssetPath('/assets/images/ui/social_bar_bg.webp')}')`,
                 borderImageSlice: '40 fill',
-                filter: 'sepia(0.2) saturate(1.2) brightness(0.85) contrast(1.1)', // Эффект старого золота
+                filter: 'url(#css-sharpen) contrast(1.2) saturate(1.1) brightness(0.95) hue-rotate(5deg)', // Сочное золото
                 ...style,
             }}
         >
@@ -122,7 +122,7 @@ export const GfxWoodPanel: React.FC<{ children: React.ReactNode; className?: str
             style={{
                 borderImageSource: `url('${resolveAssetPath('/assets/images/ui/panel_dark.webp')}')`,
                 borderImageSlice: '40 fill',
-                filter: 'brightness(0.7) contrast(1.2)', // Делаем дерево почти черным шоколадом
+                filter: 'url(#css-sharpen) brightness(0.7) contrast(1.2)', // Делаем дерево почти черным шоколадом
                 ...style,
             }}
         >
@@ -143,9 +143,9 @@ export const GfxMenuButton: React.FC<{
     disabled?: boolean;
 }> = ({ children, onClick, className, variant = 'bronze', style, disabled }) => {
     const filterMap = {
-        bronze: 'sepia(0.3) brightness(0.7) contrast(1.2)', // Темная бронза
-        gold: 'sepia(0.1) brightness(1.1)',
-        red: 'hue-rotate(-55deg) saturate(1.8) brightness(0.8) contrast(1.2)', // Глубокий красный кристалл
+        bronze: 'url(#css-sharpen) contrast(1.25) saturate(1.1) brightness(0.9) hue-rotate(5deg)', // Сочная бронза/золото
+        gold: 'url(#css-sharpen) saturate(1.1) brightness(1.15) hue-rotate(5deg)',
+        red: 'url(#css-sharpen) hue-rotate(-55deg) saturate(1.8) brightness(0.8) contrast(1.2)', // Глубокий красный кристалл
     };
 
     const isLow = useGameStore((state) => state.graphicsQuality === 'LOW');

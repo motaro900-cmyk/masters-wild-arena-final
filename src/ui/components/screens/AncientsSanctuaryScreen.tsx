@@ -286,7 +286,6 @@ export const AncientsSanctuaryScreen: React.FC = () => {
                 </div>
             </div>
 
-
             {/* ЦЕНТРАЛЬНЫЙ БЛОК: МАРШРУТ (СЛЕВА) + ХАРАКТЕРИСТИКИ / ПОРТАЛ */}
             <div
                 style={{

@@ -109,10 +109,7 @@ export function spawnFireballProjectile(
                 particle.beginPath();
                 particle.circle(0, 0, radius);
                 particle.fill({ color: 0xff4400 });
-                particle.position.set(
-                    fireball.x + (Math.random() - 0.5) * 8,
-                    fireball.y + (Math.random() - 0.5) * 8,
-                );
+                particle.position.set(fireball.x + (Math.random() - 0.5) * 8, fireball.y + (Math.random() - 0.5) * 8);
                 pixiApp.effectsLayer.addChild(particle);
 
                 gsap.to(particle, {

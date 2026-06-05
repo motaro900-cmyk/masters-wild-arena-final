@@ -204,7 +204,15 @@ export const LevelUpOverlay: React.FC = () => {
                                 }}
                             >
                                 <span>🔓</span>
-                                <span>ОТКРЫТ НОВЫЙ ТИР ТАЛАНТОВ ({latestLevelUp.unlockedTier === 2 ? 'ТИР II' : latestLevelUp.unlockedTier === 3 ? 'ТИР III' : 'УЛЬТИМЕЙТ'})</span>
+                                <span>
+                                    ОТКРЫТ НОВЫЙ ТИР ТАЛАНТОВ (
+                                    {latestLevelUp.unlockedTier === 2
+                                        ? 'ТИР II'
+                                        : latestLevelUp.unlockedTier === 3
+                                          ? 'ТИР III'
+                                          : 'УЛЬТИМЕЙТ'}
+                                    )
+                                </span>
                             </div>
                         )}
                     </div>

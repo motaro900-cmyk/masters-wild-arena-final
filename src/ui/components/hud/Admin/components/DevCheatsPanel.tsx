@@ -26,12 +26,7 @@ export const DevCheatsPanel: React.FC<DevCheatsPanelProps> = ({ selectedPlayer, 
                         audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
                         try {
                             await syncService.updateRemotePlayerData(selectedPlayer.id, {
-                                ownedSkins: [
-                                    'default',
-                                    'panda_frost',
-                                    'raccoon_default',
-                                    'skin_lava_golem',
-                                ],
+                                ownedSkins: ['default', 'panda_frost', 'raccoon_default', 'skin_lava_golem'],
                             });
                             alert('Все облики успешно открыты игроку!');
                             onRefresh();

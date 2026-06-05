@@ -6,7 +6,6 @@ import { safeSetItem } from '../../utils/SafeStorage';
 import { showRewardedVideo, isGroupMember } from '../../utils/VKBridge';
 import { getMskDateKey, calculatePetDailyReward } from '../../ui/components/hud/Bestiary/utils/petRewards';
 
-
 const getPlayerTitle = (level: number): string => {
     if (level >= 72) return 'Хранитель Равновесия';
     if (level >= 64) return 'Старейшина';
@@ -92,23 +91,25 @@ export const createPlayerSlice = (set: any, get: any) => ({
     isMuted: false,
     referralProcessed: false,
     referredBy: null as string | null,
-    playerId: (typeof window !== 'undefined' &&
+    playerId:
+        typeof window !== 'undefined' &&
         (window.location.hostname === 'localhost' ||
             window.location.hostname === '127.0.0.1' ||
             window.location.hostname.startsWith('192.168.') ||
             window.location.hostname.startsWith('10.') ||
             window.location.hostname.endsWith('.local') ||
-            window.location.protocol === 'file:'))
-        ? 'DEVELOPER'
-        : 'MW-' + Math.random().toString(36).substr(2, 9).toUpperCase(),
+            window.location.protocol === 'file:')
+            ? 'DEVELOPER'
+            : 'MW-' + Math.random().toString(36).substr(2, 9).toUpperCase(),
     musicVolume: 70,
     soundVolume: 85,
-    graphicsQuality: (typeof navigator !== 'undefined')
-        ? (() => {
-            const memory = (navigator as any).deviceMemory || 4;
-            return memory >= 6 ? 'HIGH' : memory >= 4 ? 'MEDIUM' : 'LOW';
-          })()
-        : 'ULTRA',
+    graphicsQuality:
+        typeof navigator !== 'undefined'
+            ? (() => {
+                  const memory = (navigator as any).deviceMemory || 4;
+                  return memory >= 6 ? 'HIGH' : memory >= 4 ? 'MEDIUM' : 'LOW';
+              })()
+            : 'ULTRA',
     showFps: false,
     notificationsEnabled: true,
     uiTheme: 'DARK',

@@ -249,19 +249,27 @@ export const createQuestSlice = (set: any, get: any) => ({
         } else if (rewardId === 'chest_legendary') {
             goldToAdd = 10000;
             gemsToAdd = 200;
-        } else if (['potion_strength', 'potion_strength_great', 'potion_healing', 'potion_defense'].includes(rewardId)) {
+        } else if (
+            ['potion_strength', 'potion_strength_great', 'potion_healing', 'potion_defense'].includes(rewardId)
+        ) {
             const getPotionData = (rId: string) => {
-                if (rId === 'potion_strength') return { potionId: 'hp_potion_3', type: 'POTIONS', rarity: 'EPIC', level: 1 };
-                if (rId === 'potion_strength_great') return { potionId: 'hp_potion_3', type: 'POTIONS', rarity: 'EPIC', level: 2 };
-                if (rId === 'potion_healing') return { potionId: 'hp_potion_1', type: 'POTIONS', rarity: 'COMMON', level: 1 };
-                if (rId === 'potion_defense') return { potionId: 'hp_potion_2', type: 'POTIONS', rarity: 'RARE', level: 1 };
+                if (rId === 'potion_strength')
+                    return { potionId: 'hp_potion_3', type: 'POTIONS', rarity: 'EPIC', level: 1 };
+                if (rId === 'potion_strength_great')
+                    return { potionId: 'hp_potion_3', type: 'POTIONS', rarity: 'EPIC', level: 2 };
+                if (rId === 'potion_healing')
+                    return { potionId: 'hp_potion_1', type: 'POTIONS', rarity: 'COMMON', level: 1 };
+                if (rId === 'potion_defense')
+                    return { potionId: 'hp_potion_2', type: 'POTIONS', rarity: 'RARE', level: 1 };
                 return null;
             };
             const pData = getPotionData(rewardId);
             if (pData) {
-                const rewardItem = BATTLE_PASS_REWARDS.flatMap(r => [r.free, r.premium]).find(item => item && item.id === rewardId);
+                const rewardItem = BATTLE_PASS_REWARDS.flatMap((r) => [r.free, r.premium]).find(
+                    (item) => item && item.id === rewardId,
+                );
                 const rewardAmount = rewardItem?.amount || 1;
-                const existingPotion = newInventory.find(i => i.id === pData.potionId);
+                const existingPotion = newInventory.find((i) => i.id === pData.potionId);
                 if (existingPotion) {
                     existingPotion.amount = (existingPotion.amount || 1) + rewardAmount;
                 } else {
@@ -270,7 +278,7 @@ export const createQuestSlice = (set: any, get: any) => ({
                         type: pData.type,
                         rarity: pData.rarity,
                         level: pData.level,
-                        amount: rewardAmount
+                        amount: rewardAmount,
                     });
                 }
             }

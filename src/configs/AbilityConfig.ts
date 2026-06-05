@@ -13,11 +13,11 @@ export type StatusType =
     | 'POISON'
     | 'STUN_IMMUNITY'
     // Новые статусы для 5 персонажей:
-    | 'SHADOW_MARK'    // Следующий удар — гарантированный крит
+    | 'SHADOW_MARK' // Следующий удар — гарантированный крит
     | 'CRYSTAL_SHIELD' // Отражает 20% урона обратно врагу
-    | 'STORM_CHARGE'   // Накапливается и взрывается через N ходов
-    | 'NATURE_REGEN'   // +5% HP каждый ход
-    | 'VOID_SLOW';     // Скорость -50% (переиспользует isFrozenStatus)
+    | 'STORM_CHARGE' // Накапливается и взрывается через N ходов
+    | 'NATURE_REGEN' // +5% HP каждый ход
+    | 'VOID_SLOW'; // Скорость -50% (переиспользует isFrozenStatus)
 
 // ─── ИНТЕРФЕЙСЫ ПАССИВНЫХ ХУКОВ ──────────────────────────────────────────────
 
@@ -31,9 +31,9 @@ export interface PassiveContext {
 }
 
 export interface PassiveResult {
-    damageModifier?: number;   // множитель урона (1.5 = +50%)
-    cancelDamage?: boolean;    // отменить урон полностью
-    extraLog?: string;         // строка в лог боя
+    damageModifier?: number; // множитель урона (1.5 = +50%)
+    cancelDamage?: boolean; // отменить урон полностью
+    extraLog?: string; // строка в лог боя
 }
 
 export interface PassiveHooks {
@@ -45,26 +45,26 @@ export interface PassiveHooks {
 // ─── ИНТЕРФЕЙСЫ КОНФИГА СПОСОБНОСТЕЙ ─────────────────────────────────────────
 
 export interface AttackPassiveConfig {
-    chance: number;            // вероятность (0–1)
+    chance: number; // вероятность (0–1)
     status: StatusType;
-    duration: number;          // ходов
-    damagePercent?: number;    // % от attack как урон за ход (для BURN/POISON)
-    value?: number;            // фиксированное значение
+    duration: number; // ходов
+    damagePercent?: number; // % от attack как урон за ход (для BURN/POISON)
+    value?: number; // фиксированное значение
 }
 
 export interface OnCastStatus {
     target: 'enemy' | 'player';
     type: StatusType;
     duration: number;
-    damagePerTurn?: number;    // абсолютное или относительное значение
+    damagePerTurn?: number; // абсолютное или относительное значение
 }
 
 export interface ActiveAbilityConfig {
     name: string;
     icon?: string;
     damageMultiplier: number;
-    healPercent?: number;      // % от maxHP (heal после атаки)
-    shieldPercent?: number;    // % от maxHP (щит после атаки)
+    healPercent?: number; // % от maxHP (heal после атаки)
+    shieldPercent?: number; // % от maxHP (щит после атаки)
     onCastStatus?: OnCastStatus;
 }
 
@@ -78,7 +78,6 @@ export interface HeroAbilityConfig {
 // ─── РЕЕСТР СПОСОБНОСТЕЙ ─────────────────────────────────────────────────────
 
 export const ABILITY_REGISTRY: Record<string, HeroAbilityConfig> = {
-
     // ── Существующие герои (перенесены из хардкода BattleEngine/BattleSimulation) ──
 
     panda: {
@@ -88,7 +87,7 @@ export const ABILITY_REGISTRY: Record<string, HeroAbilityConfig> = {
             damageMultiplier: 2.5,
             onCastStatus: { target: 'enemy', type: 'STUN', duration: 1 },
         },
-        attackPassive: { chance: 0.30, status: 'BURN', duration: 3, damagePercent: 0.12 },
+        attackPassive: { chance: 0.3, status: 'BURN', duration: 3, damagePercent: 0.12 },
     },
 
     raccoon: {
@@ -96,7 +95,7 @@ export const ABILITY_REGISTRY: Record<string, HeroAbilityConfig> = {
         activeAbility: {
             name: 'Танец Теней',
             damageMultiplier: 3.5,
-            onCastStatus: { target: 'enemy', type: 'POISON', duration: 4, damagePerTurn: 0.10 },
+            onCastStatus: { target: 'enemy', type: 'POISON', duration: 4, damagePerTurn: 0.1 },
         },
         attackPassive: { chance: 0.35, status: 'POISON', duration: 4, damagePercent: 0.09 },
     },
@@ -108,7 +107,7 @@ export const ABILITY_REGISTRY: Record<string, HeroAbilityConfig> = {
             damageMultiplier: 2.5,
             onCastStatus: { target: 'enemy', type: 'STUN', duration: 1 },
         },
-        attackPassive: { chance: 0.25, status: 'BURN', duration: 2, damagePercent: 0.10 },
+        attackPassive: { chance: 0.25, status: 'BURN', duration: 2, damagePercent: 0.1 },
     },
 
     ancient_golem: {
@@ -118,7 +117,7 @@ export const ABILITY_REGISTRY: Record<string, HeroAbilityConfig> = {
             damageMultiplier: 1.8,
             shieldPercent: 0.25,
         },
-        attackPassive: { chance: 0.30, status: 'BURN', duration: 3, damagePercent: 0.12 },
+        attackPassive: { chance: 0.3, status: 'BURN', duration: 3, damagePercent: 0.12 },
     },
 
     ancient_spider: {
@@ -155,7 +154,7 @@ export const ABILITY_REGISTRY: Record<string, HeroAbilityConfig> = {
             damageMultiplier: 2.8,
             onCastStatus: { target: 'enemy', type: 'SHADOW_MARK', duration: 1 },
         },
-        attackPassive: { chance: 0.40, status: 'SHADOW_MARK', duration: 1 },
+        attackPassive: { chance: 0.4, status: 'SHADOW_MARK', duration: 1 },
         passive: {
             onDealDamage: (ctx) => {
                 const hasMark = ctx.victim.statusEffects?.some((s: any) => s.type === 'SHADOW_MARK');
@@ -181,14 +180,14 @@ export const ABILITY_REGISTRY: Record<string, HeroAbilityConfig> = {
         activeAbility: {
             name: 'Кристальный Щит',
             damageMultiplier: 1.6,
-            shieldPercent: 0.40,
+            shieldPercent: 0.4,
             onCastStatus: { target: 'player', type: 'CRYSTAL_SHIELD', duration: 3 },
         },
         passive: {
             onTakeDamage: (ctx) => {
                 const shield = ctx.victim.statusEffects?.find((s: any) => s.type === 'CRYSTAL_SHIELD');
                 if (shield && ctx.damage > 0) {
-                    const reflected = Math.ceil(ctx.damage * 0.20);
+                    const reflected = Math.ceil(ctx.damage * 0.2);
                     ctx.engine.applyDamage('enemy', reflected);
                     return { extraLog: `💎 [КРИСТАЛЛ] Щит отражает ${reflected} урона врагу!` };
                 }
@@ -259,12 +258,12 @@ export function getAbilityConfigByRole(role: string | null | undefined): HeroAbi
         WARRIOR: {
             heroId: '__warrior',
             activeAbility: { name: 'Удар Воина', damageMultiplier: 2.5 },
-            attackPassive: { chance: 0.25, status: 'BURN', duration: 2, damagePercent: 0.10 },
+            attackPassive: { chance: 0.25, status: 'BURN', duration: 2, damagePercent: 0.1 },
         },
         ASSASSIN: {
             heroId: '__assassin',
             activeAbility: { name: 'Смертельный Удар', damageMultiplier: 3.5 },
-            attackPassive: { chance: 0.30, status: 'POISON', duration: 3, damagePercent: 0.08 },
+            attackPassive: { chance: 0.3, status: 'POISON', duration: 3, damagePercent: 0.08 },
         },
         TANK: {
             heroId: '__tank',
@@ -275,8 +274,8 @@ export function getAbilityConfigByRole(role: string | null | undefined): HeroAbi
             activeAbility: {
                 name: 'Вспышка Звёзд',
                 damageMultiplier: 2.2,
-                healPercent: 0.20,
-                onCastStatus: { target: 'enemy', type: 'BURN', duration: 3, damagePerTurn: 0.10 },
+                healPercent: 0.2,
+                onCastStatus: { target: 'enemy', type: 'BURN', duration: 3, damagePerTurn: 0.1 },
             },
         },
         SUPPORT: {
@@ -284,7 +283,7 @@ export function getAbilityConfigByRole(role: string | null | undefined): HeroAbi
             activeAbility: {
                 name: 'Природный Свет',
                 damageMultiplier: 1.8,
-                healPercent: 0.20,
+                healPercent: 0.2,
                 onCastStatus: { target: 'player', type: 'NATURE_REGEN', duration: 3 },
             },
         },

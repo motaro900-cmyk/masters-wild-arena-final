@@ -45,9 +45,6 @@ export const BattlePassBar: React.FC = () => {
                 style={{
                     width: 550,
                     height: 120, // Увеличили с 95
-                    backgroundImage: `url(${AssetsMap.UI.ICON_BEAST_PASS})`,
-                    backgroundSize: '100% 100%',
-                    backgroundRepeat: 'no-repeat',
                     position: 'relative',
                     cursor: 'pointer',
                     transition: 'transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
@@ -56,6 +53,19 @@ export const BattlePassBar: React.FC = () => {
                 onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.03)')}
                 onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1)')}
             >
+                {/* Background image with filter */}
+                <div
+                    style={{
+                        position: 'absolute',
+                        inset: 0,
+                        backgroundImage: `url(${AssetsMap.UI.ICON_BEAST_PASS})`,
+                        backgroundSize: '100% 100%',
+                        backgroundRepeat: 'no-repeat',
+                        filter: 'url(#css-sharpen) contrast(1.2) saturate(1.1) brightness(0.95) hue-rotate(5deg)',
+                        zIndex: 0,
+                    }}
+                />
+
                 {/* УРОВЕНЬ НА ГЕРБЕ */}
                 <div
                     style={{
@@ -67,6 +77,7 @@ export const BattlePassBar: React.FC = () => {
                         alignItems: 'center',
                         justifyContent: 'center',
                         pointerEvents: 'none',
+                        zIndex: 1,
                     }}
                 >
                     <span
@@ -101,6 +112,7 @@ export const BattlePassBar: React.FC = () => {
                         alignItems: 'center',
                         justifyContent: 'center',
                         overflow: 'hidden',
+                        zIndex: 1,
                     }}
                 >
                     {/* Заполняющаяся часть */}
@@ -152,6 +164,7 @@ export const BattlePassBar: React.FC = () => {
                         textTransform: 'uppercase',
                         pointerEvents: 'none',
                         whiteSpace: 'nowrap',
+                        zIndex: 1,
                     }}
                 >
                     БОЕВОЙ ПРОПУСК
@@ -174,6 +187,7 @@ export const BattlePassBar: React.FC = () => {
                         gap: 6,
                         pointerEvents: 'none',
                         whiteSpace: 'nowrap',
+                        zIndex: 1,
                     }}
                 >
                     <span style={{ fontSize: 11 }}>⏳</span>

@@ -5,7 +5,6 @@ import { useBestiary, PetActionButton, PetStatsCard, PetFoodSelector } from './B
 import { audioService } from '../../../services/AudioService';
 import { AssetsMap } from '../../../configs/AssetsMap';
 
-
 export const BestiaryWindow: React.FC = () => {
     const {
         pet,
@@ -31,7 +30,6 @@ export const BestiaryWindow: React.FC = () => {
     } = useBestiary();
 
     const [claimedReward, setClaimedReward] = React.useState<any | null>(null);
-
 
     return (
         <div
@@ -258,7 +256,8 @@ export const BestiaryWindow: React.FC = () => {
                                 right: '15px',
                                 width: '70px',
                                 height: '70px',
-                                background: 'radial-gradient(circle, rgba(240,192,64,0.45) 0%, rgba(240,192,64,0.1) 70%, transparent 100%)',
+                                background:
+                                    'radial-gradient(circle, rgba(240,192,64,0.45) 0%, rgba(240,192,64,0.1) 70%, transparent 100%)',
                                 borderRadius: '50%',
                                 display: 'flex',
                                 alignItems: 'center',
@@ -268,7 +267,9 @@ export const BestiaryWindow: React.FC = () => {
                                 border: '2px solid #f0c040',
                             }}
                         >
-                            <span style={{ fontSize: '38px', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))' }}>🎁</span>
+                            <span style={{ fontSize: '38px', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))' }}>
+                                🎁
+                            </span>
                         </motion.div>
                     )}
                 </div>
@@ -451,20 +452,35 @@ export const BestiaryWindow: React.FC = () => {
                                 ДАР ОТ ПИТОМЦА! 🐉
                             </h3>
                             <p style={{ color: '#d1a873', fontSize: '15px', margin: '0 0 10px 0', lineHeight: 1.5 }}>
-                                Ваш дракон <b>{pet.name}</b> вернулся из ежедневного путешествия по Великому Лесу и принес вам добычу!
+                                Ваш дракон <b>{pet.name}</b> вернулся из ежедневного путешествия по Великому Лесу и
+                                принес вам добычу!
                             </p>
 
                             {/* Rewards List */}
                             <div style={{ display: 'flex', gap: '25px', justifyContent: 'center', margin: '10px 0' }}>
                                 {/* Gold */}
-                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
+                                <div
+                                    style={{
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        alignItems: 'center',
+                                        gap: '6px',
+                                    }}
+                                >
                                     <span style={{ fontSize: '32px' }}>💰</span>
                                     <span style={{ color: '#fff', fontWeight: 800 }}>+{claimedReward.gold}</span>
                                     <span style={{ color: '#9ca3af', fontSize: '12px' }}>Золото</span>
                                 </div>
 
                                 {/* Crystals */}
-                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
+                                <div
+                                    style={{
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        alignItems: 'center',
+                                        gap: '6px',
+                                    }}
+                                >
                                     <span style={{ fontSize: '32px' }}>💎</span>
                                     <span style={{ color: '#fff', fontWeight: 800 }}>+{claimedReward.crystals}</span>
                                     <span style={{ color: '#9ca3af', fontSize: '12px' }}>Кристаллы</span>
@@ -472,9 +488,18 @@ export const BestiaryWindow: React.FC = () => {
 
                                 {/* Bonus Loot */}
                                 {claimedReward.loot && (
-                                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
+                                    <div
+                                        style={{
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            alignItems: 'center',
+                                            gap: '6px',
+                                        }}
+                                    >
                                         <span style={{ fontSize: '32px' }}>🎁</span>
-                                        <span style={{ color: '#fbbf24', fontWeight: 800 }}>+{claimedReward.loot.amount}</span>
+                                        <span style={{ color: '#fbbf24', fontWeight: 800 }}>
+                                            +{claimedReward.loot.amount}
+                                        </span>
                                         <span style={{ color: '#fbbf24', fontSize: '12px', whiteSpace: 'nowrap' }}>
                                             {claimedReward.loot.name}
                                         </span>
@@ -486,7 +511,12 @@ export const BestiaryWindow: React.FC = () => {
                             <div
                                 style={{
                                     fontSize: '13px',
-                                    color: claimedReward.multiplier >= 1.2 ? '#10b981' : claimedReward.multiplier >= 1.0 ? '#fbbf24' : '#ef4444',
+                                    color:
+                                        claimedReward.multiplier >= 1.2
+                                            ? '#10b981'
+                                            : claimedReward.multiplier >= 1.0
+                                              ? '#fbbf24'
+                                              : '#ef4444',
                                     background: 'rgba(255,255,255,0.03)',
                                     padding: '6px 16px',
                                     borderRadius: '12px',
@@ -494,7 +524,8 @@ export const BestiaryWindow: React.FC = () => {
                                     fontWeight: 700,
                                 }}
                             >
-                                Множитель состояния: x{claimedReward.multiplier} {claimedReward.multiplier >= 1.2 ? '(Сытый дракон)' : ''}
+                                Множитель состояния: x{claimedReward.multiplier}{' '}
+                                {claimedReward.multiplier >= 1.2 ? '(Сытый дракон)' : ''}
                             </div>
 
                             <button

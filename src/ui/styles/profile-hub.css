@@ -86,8 +86,15 @@
 
 /* CUSTOM FRAME GLOWS */
 @keyframes bronzeGlow {
-    0%, 100% { box-shadow: 0 0 6px rgba(186, 110, 40, 0.3); border-color: rgba(186, 110, 40, 0.5); }
-    50% { box-shadow: 0 0 16px rgba(186, 110, 40, 0.6); border-color: rgba(186, 110, 40, 0.8); }
+    0%,
+    100% {
+        box-shadow: 0 0 6px rgba(186, 110, 40, 0.3);
+        border-color: rgba(186, 110, 40, 0.5);
+    }
+    50% {
+        box-shadow: 0 0 16px rgba(186, 110, 40, 0.6);
+        border-color: rgba(186, 110, 40, 0.8);
+    }
 }
 .bronze-avatar-glow {
     animation: bronzeGlow 3s infinite ease-in-out;
@@ -102,8 +109,15 @@
 }
 
 @keyframes silverGlow {
-    0%, 100% { box-shadow: 0 0 6px rgba(192, 192, 192, 0.3); border-color: rgba(192, 192, 192, 0.5); }
-    50% { box-shadow: 0 0 18px rgba(192, 192, 192, 0.7); border-color: rgba(192, 192, 192, 0.9); }
+    0%,
+    100% {
+        box-shadow: 0 0 6px rgba(192, 192, 192, 0.3);
+        border-color: rgba(192, 192, 192, 0.5);
+    }
+    50% {
+        box-shadow: 0 0 18px rgba(192, 192, 192, 0.7);
+        border-color: rgba(192, 192, 192, 0.9);
+    }
 }
 .silver-avatar-glow {
     animation: silverGlow 3s infinite ease-in-out;
@@ -118,8 +132,15 @@
 }
 
 @keyframes emeraldGlow {
-    0%, 100% { box-shadow: 0 0 8px rgba(16, 185, 129, 0.3); border-color: rgba(16, 185, 129, 0.5); }
-    50% { box-shadow: 0 0 20px rgba(16, 185, 129, 0.8); border-color: rgba(16, 185, 129, 0.9); }
+    0%,
+    100% {
+        box-shadow: 0 0 8px rgba(16, 185, 129, 0.3);
+        border-color: rgba(16, 185, 129, 0.5);
+    }
+    50% {
+        box-shadow: 0 0 20px rgba(16, 185, 129, 0.8);
+        border-color: rgba(16, 185, 129, 0.9);
+    }
 }
 .emerald-avatar-glow {
     animation: emeraldGlow 2.5s infinite ease-in-out;
@@ -134,8 +155,15 @@
 }
 
 @keyframes sapphireGlow {
-    0%, 100% { box-shadow: 0 0 8px rgba(59, 130, 246, 0.3); border-color: rgba(59, 130, 246, 0.5); }
-    50% { box-shadow: 0 0 22px rgba(59, 130, 246, 0.8); border-color: rgba(59, 130, 246, 0.9); }
+    0%,
+    100% {
+        box-shadow: 0 0 8px rgba(59, 130, 246, 0.3);
+        border-color: rgba(59, 130, 246, 0.5);
+    }
+    50% {
+        box-shadow: 0 0 22px rgba(59, 130, 246, 0.8);
+        border-color: rgba(59, 130, 246, 0.9);
+    }
 }
 .sapphire-avatar-glow {
     animation: sapphireGlow 2.5s infinite ease-in-out;
@@ -150,8 +178,19 @@
 }
 
 @keyframes vipGlowPremium {
-    0%, 100% { box-shadow: 0 0 10px rgba(245, 158, 11, 0.4), inset 0 0 5px rgba(245, 158, 11, 0.2); border-color: rgba(245, 158, 11, 0.6); }
-    50% { box-shadow: 0 0 25px rgba(245, 158, 11, 0.9), inset 0 0 12px rgba(245, 158, 11, 0.5); border-color: rgba(245, 158, 11, 1); }
+    0%,
+    100% {
+        box-shadow:
+            0 0 10px rgba(245, 158, 11, 0.4),
+            inset 0 0 5px rgba(245, 158, 11, 0.2);
+        border-color: rgba(245, 158, 11, 0.6);
+    }
+    50% {
+        box-shadow:
+            0 0 25px rgba(245, 158, 11, 0.9),
+            inset 0 0 12px rgba(245, 158, 11, 0.5);
+        border-color: rgba(245, 158, 11, 1);
+    }
 }
 .vip-avatar-glow-premium {
     animation: vipGlowPremium 2s infinite ease-in-out;
@@ -166,8 +205,19 @@
 }
 
 @keyframes crimsonGlow {
-    0%, 100% { box-shadow: 0 0 12px rgba(239, 68, 68, 0.4), inset 0 0 6px rgba(239, 68, 68, 0.2); border-color: rgba(239, 68, 68, 0.7); }
-    50% { box-shadow: 0 0 28px rgba(239, 68, 68, 1), inset 0 0 15px rgba(239, 68, 68, 0.6); border-color: rgba(239, 68, 68, 1); }
+    0%,
+    100% {
+        box-shadow:
+            0 0 12px rgba(239, 68, 68, 0.4),
+            inset 0 0 6px rgba(239, 68, 68, 0.2);
+        border-color: rgba(239, 68, 68, 0.7);
+    }
+    50% {
+        box-shadow:
+            0 0 28px rgba(239, 68, 68, 1),
+            inset 0 0 15px rgba(239, 68, 68, 0.6);
+        border-color: rgba(239, 68, 68, 1);
+    }
 }
 .crimson-avatar-glow {
     animation: crimsonGlow 1.8s infinite ease-in-out;

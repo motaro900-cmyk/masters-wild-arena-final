@@ -171,14 +171,15 @@ export const HeroList = ({ ownedHeroes, selectedHeroId, onBuyClick, onHeroClick 
                                 const isOwned = ownedHeroes.includes(hero.id);
                                 const heroSkins = getSkinsForHero(hero.id);
                                 // Guard: если нет скинов в SkinsConfig — создаём fallback
-                                const defaultSkin = heroSkins.find((s) => s.source === 'default') || heroSkins[0] || {
-                                    id: `${hero.id}_default`,
-                                    name: hero.name,
-                                    image: hero.image,
-                                    heroId: hero.id,
-                                    source: 'default',
-                                    rarity: hero.rarity,
-                                };
+                                const defaultSkin = heroSkins.find((s) => s.source === 'default') ||
+                                    heroSkins[0] || {
+                                        id: `${hero.id}_default`,
+                                        name: hero.name,
+                                        image: hero.image,
+                                        heroId: hero.id,
+                                        source: 'default',
+                                        rarity: hero.rarity,
+                                    };
                                 const activeSkinId = equippedSkins?.[hero.id] || defaultSkin.id;
                                 const displaySkinId =
                                     focusedId === hero.id && previewSkinId ? previewSkinId : activeSkinId;

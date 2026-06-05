@@ -111,9 +111,7 @@ export const useShopScene = () => {
             }
 
             if (activeMainTab === 'ARSENAL' || activeMainTab === 'ALCHEMY') {
-                return allItems.filter(
-                    (item) => item.mainTab === activeMainTab && item.subTab === activeSubTab,
-                );
+                return allItems.filter((item) => item.mainTab === activeMainTab && item.subTab === activeSubTab);
             }
 
             return [];

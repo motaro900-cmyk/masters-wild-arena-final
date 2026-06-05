@@ -27,6 +27,7 @@ export class StatusEffectController {
     }
 
     public update(_delta: number) {
+        void _delta;
         if (this.unit.destroyed) return;
 
         const animTime = this.unit.animTime || 0;

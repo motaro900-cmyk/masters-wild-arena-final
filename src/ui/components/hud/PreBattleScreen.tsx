@@ -504,9 +504,32 @@ export const PreBattleScreen: React.FC<PreBattleScreenProps> = ({
                         >
                             {playerName}
                         </div>
-                        <div style={{ color: '#fef3c7', fontSize: '13px', fontWeight: 600, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px', marginTop: '4px' }}>
-                            <span style={{ fontSize: '12px', color: '#a1a1aa', fontWeight: 'bold' }}>Аккаунт: Ур. {playerLevel} • {playerRank.name}</span>
-                            <span style={{ fontSize: '15px', color: '#fbbf24', fontWeight: 900, textShadow: '0 0 10px rgba(251,191,36,0.4)', fontFamily: "'Cinzel', serif" }}>Герой: Ур. {heroLevel}</span>
+                        <div
+                            style={{
+                                color: '#fef3c7',
+                                fontSize: '13px',
+                                fontWeight: 600,
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                gap: '3px',
+                                marginTop: '4px',
+                            }}
+                        >
+                            <span style={{ fontSize: '12px', color: '#a1a1aa', fontWeight: 'bold' }}>
+                                Аккаунт: Ур. {playerLevel} • {playerRank.name}
+                            </span>
+                            <span
+                                style={{
+                                    fontSize: '15px',
+                                    color: '#fbbf24',
+                                    fontWeight: 900,
+                                    textShadow: '0 0 10px rgba(251,191,36,0.4)',
+                                    fontFamily: "'Cinzel', serif",
+                                }}
+                            >
+                                Герой: Ур. {heroLevel}
+                            </span>
                         </div>
                     </motion.div>
 
@@ -602,9 +625,32 @@ export const PreBattleScreen: React.FC<PreBattleScreenProps> = ({
                         >
                             {enemyName}
                         </div>
-                        <div style={{ color: '#fef3c7', fontSize: '13px', fontWeight: 600, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px', marginTop: '4px' }}>
-                            <span style={{ fontSize: '12px', color: '#a1a1aa', fontWeight: 'bold' }}>Противник • {battleMode === 'PVE' ? 'Орда' : 'Арена'}</span>
-                            <span style={{ fontSize: '15px', color: '#f87171', fontWeight: 900, textShadow: '0 0 10px rgba(248,113,113,0.4)', fontFamily: "'Cinzel', serif" }}>Герой: Ур. {enemyLevel}</span>
+                        <div
+                            style={{
+                                color: '#fef3c7',
+                                fontSize: '13px',
+                                fontWeight: 600,
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                gap: '3px',
+                                marginTop: '4px',
+                            }}
+                        >
+                            <span style={{ fontSize: '12px', color: '#a1a1aa', fontWeight: 'bold' }}>
+                                Противник • {battleMode === 'PVE' ? 'Орда' : 'Арена'}
+                            </span>
+                            <span
+                                style={{
+                                    fontSize: '15px',
+                                    color: '#f87171',
+                                    fontWeight: 900,
+                                    textShadow: '0 0 10px rgba(248,113,113,0.4)',
+                                    fontFamily: "'Cinzel', serif",
+                                }}
+                            >
+                                Герой: Ур. {enemyLevel}
+                            </span>
                         </div>
                     </motion.div>
                 </div>

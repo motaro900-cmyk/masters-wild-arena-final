@@ -141,7 +141,9 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
                     { type: 'CRYSTALS', amount: 50 },
                 ],
             };
-            syncService.sendMail(currentUserId, welcomeMail).catch((e) => console.error('Failed to send welcome mail:', e));
+            syncService
+                .sendMail(currentUserId, welcomeMail)
+                .catch((e) => console.error('Failed to send welcome mail:', e));
 
             useGameStore.setState({ tutorialStep: 0 });
             audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);

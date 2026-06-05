@@ -21,9 +21,11 @@ export const BuyBtn: React.FC<BuyBtnProps> = ({ item, onTrigger, discount = 0 })
     const isSkinEquipped = item.mainTab === 'SKINS' && skinHeroId && equippedSkins?.[skinHeroId] === String(item.id);
 
     const isArsenalItem = item.mainTab === 'ARSENAL';
-    const isEquipped = isArsenalItem && Object.values(heroEquipment || {}).some((gear: any) => 
-        gear && Object.values(gear).some((eqId) => String(eqId) === String(item.id))
-    );
+    const isEquipped =
+        isArsenalItem &&
+        Object.values(heroEquipment || {}).some(
+            (gear: any) => gear && Object.values(gear).some((eqId) => String(eqId) === String(item.id)),
+        );
     const isOwnedInInventory = isArsenalItem && (inventory || []).some((i: any) => String(i.id) === String(item.id));
     const isOwned = isEquipped || isOwnedInInventory;
 
@@ -63,8 +65,6 @@ export const BuyBtn: React.FC<BuyBtnProps> = ({ item, onTrigger, discount = 0 })
         );
     }
 
-
-
     const originalPrice = item.priceGold ?? item.priceGem ?? item.priceStars;
     const hasDiscount = discount > 0 && originalPrice !== undefined;
     const price =
@@ -74,30 +74,37 @@ export const BuyBtn: React.FC<BuyBtnProps> = ({ item, onTrigger, discount = 0 })
     return (
         <button
             disabled={isLevelLocked || isOwned}
-            onClick={(isLevelLocked || isOwned) ? undefined : onTrigger}
+            onClick={isLevelLocked || isOwned ? undefined : onTrigger}
             style={{
                 width: '100%',
                 height: '50px',
-                background: (isLevelLocked || isOwned)
-                    ? 'linear-gradient(180deg, #4b5563 0%, #1f2937 100%)'
-                    : item.isAd
-                      ? 'linear-gradient(180deg, #10b981 0%, #047857 100%)'
-                      : item.priceStars !== undefined
-                        ? 'linear-gradient(180deg, #2b82c9 0%, #1a5c96 100%)'
-                        : 'linear-gradient(180deg, #f0c040 0%, #a67c00 100%)',
-                border: (isLevelLocked || isOwned)
-                    ? '1px solid #4b5563'
-                    : item.isAd
-                      ? '1px solid #059669'
-                      : item.priceStars !== undefined
-                        ? '1px solid #52a1e5'
-                        : '1px solid #ffdf00',
+                background:
+                    isLevelLocked || isOwned
+                        ? 'linear-gradient(180deg, #4b5563 0%, #1f2937 100%)'
+                        : item.isAd
+                          ? 'linear-gradient(180deg, #10b981 0%, #047857 100%)'
+                          : item.priceStars !== undefined
+                            ? 'linear-gradient(180deg, #2b82c9 0%, #1a5c96 100%)'
+                            : 'linear-gradient(180deg, #f0c040 0%, #a67c00 100%)',
+                border:
+                    isLevelLocked || isOwned
+                        ? '1px solid #4b5563'
+                        : item.isAd
+                          ? '1px solid #059669'
+                          : item.priceStars !== undefined
+                            ? '1px solid #52a1e5'
+                            : '1px solid #ffdf00',
                 borderRadius: '8px',
-                color: (isLevelLocked || isOwned) ? '#9ca3af' : item.priceStars !== undefined || item.isAd ? '#fff' : '#1a0f00',
+                color:
+                    isLevelLocked || isOwned
+                        ? '#9ca3af'
+                        : item.priceStars !== undefined || item.isAd
+                          ? '#fff'
+                          : '#1a0f00',
                 fontWeight: 900,
                 fontFamily: "'Cinzel', 'Philosopher', serif",
                 fontSize: '16px',
-                cursor: (isLevelLocked || isOwned) ? 'not-allowed' : 'pointer',
+                cursor: isLevelLocked || isOwned ? 'not-allowed' : 'pointer',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',

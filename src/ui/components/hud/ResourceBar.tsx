@@ -69,6 +69,7 @@ export const ResourceBar: React.FC<{ onOpenShop?: (tab: string) => void }> = ({ 
                         alignItems: 'center',
                         padding: '0 6px',
                         cursor: 'default',
+                        filter: 'url(#css-sharpen) contrast(1.3) saturate(1.2) brightness(1.0) hue-rotate(5deg)',
                     }}
                 >
                     {/* Tooltip для энергии */}

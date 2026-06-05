@@ -201,7 +201,7 @@ export const createInventorySlice = (set: any, get: any) => ({
         const itemInInv = state.inventory[itemIndex];
         const actualInstanceId = itemInInv.instanceId || itemInInv.id;
         const isEquippedByAnyHero = Object.values(state.heroEquipment).some(
-            (heroGear: any) => heroGear && Object.values(heroGear).includes(actualInstanceId)
+            (heroGear: any) => heroGear && Object.values(heroGear).includes(actualInstanceId),
         );
         if (isEquippedByAnyHero) {
             console.warn('sellItem: предмет надет на одного из героев, продажа заблокирована');
@@ -267,7 +267,7 @@ export const createInventorySlice = (set: any, get: any) => ({
         const state = get();
         const invItem = state.inventory.find((i: any) => i.instanceId === id || i.id === id);
         const templateId = invItem ? invItem.id : id;
-        const actualInstanceId = invItem ? (invItem.instanceId || invItem.id) : id;
+        const actualInstanceId = invItem ? invItem.instanceId || invItem.id : id;
         const data = ITEMS_DATABASE[templateId] as any;
 
         const heroId = state.selectedHeroId || 'panda';
@@ -529,7 +529,7 @@ export const createInventorySlice = (set: any, get: any) => ({
         const invItem = state.inventory[invItemIndex];
         const actualInstanceId = invItem.instanceId || invItem.id;
         const isEquippedByAnyHero = Object.values(state.heroEquipment).some(
-            (heroGear: any) => heroGear && Object.values(heroGear).includes(actualInstanceId)
+            (heroGear: any) => heroGear && Object.values(heroGear).includes(actualInstanceId),
         );
 
         if (isEquippedByAnyHero) {

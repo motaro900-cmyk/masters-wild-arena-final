@@ -7,7 +7,6 @@ interface DragOverlayLayerProps {
 }
 
 export const DragOverlayLayer: React.FC<DragOverlayLayerProps> = ({ activeId, activeItemData }) => {
-
     return (
         <DragOverlay dropAnimation={null}>
             {activeId && activeItemData ? (
@@ -49,5 +48,3 @@ export const DragOverlayLayer: React.FC<DragOverlayLayerProps> = ({ activeId, ac
         </DragOverlay>
     );
 };
-
-

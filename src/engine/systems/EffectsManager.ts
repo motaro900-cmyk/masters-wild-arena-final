@@ -122,9 +122,7 @@ export class EffectsManager {
             const timeline = gsap.timeline({
                 onComplete: () => {
                     if (Array.isArray(target.filters)) {
-                        target.filters = (target.filters as PIXI.Filter[]).filter(
-                            (f) => f !== filter,
-                        );
+                        target.filters = (target.filters as PIXI.Filter[]).filter((f) => f !== filter);
                     }
                     this.activeEffects.delete(effectId);
                 },
@@ -270,7 +268,11 @@ export class EffectsManager {
     /**
      * Отскок (Knockback) цели при получении урона
      */
-    public knockback(target: IEffectTarget, isPlayerTarget: boolean, type: 'HIT' | 'CRIT' | 'HEAVY' | 'ULTIMATE' = 'HIT'): void {
+    public knockback(
+        target: IEffectTarget,
+        isPlayerTarget: boolean,
+        type: 'HIT' | 'CRIT' | 'HEAVY' | 'ULTIMATE' = 'HIT',
+    ): void {
         try {
             if (!target || target.destroyed) return;
 
@@ -396,7 +398,15 @@ export class EffectsManager {
         attackerUnit?: IEffectTarget | null,
         damage?: number,
     ): void {
-        CombatEffects.applyHitResolution(attackerRole, defenderRole, hitType, targetUnit, isPlayerTarget, attackerUnit, damage);
+        CombatEffects.applyHitResolution(
+            attackerRole,
+            defenderRole,
+            hitType,
+            targetUnit,
+            isPlayerTarget,
+            attackerUnit,
+            damage,
+        );
     }
 
     public criticalHit(target: IEffectTarget, intensity: number = 1.5): void {

@@ -60,11 +60,7 @@ export const ServerPlayersList: React.FC<ServerPlayersListProps> = ({
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                     />
-                    <button
-                        onClick={onRefresh}
-                        style={{ ...applyBtn, padding: '0 10px' }}
-                        disabled={isLoadingPlayers}
-                    >
+                    <button onClick={onRefresh} style={{ ...applyBtn, padding: '0 10px' }} disabled={isLoadingPlayers}>
                         {isLoadingPlayers ? '...' : '🔄'}
                     </button>
                 </div>
@@ -198,11 +194,7 @@ export const ServerPlayersList: React.FC<ServerPlayersListProps> = ({
                                 height: '8px',
                                 borderRadius: '50%',
                                 background:
-                                    p.status === 'ONLINE'
-                                        ? '#4dff4d'
-                                        : p.status === 'BATTLE'
-                                          ? '#3b82f6'
-                                          : '#777',
+                                    p.status === 'ONLINE' ? '#4dff4d' : p.status === 'BATTLE' ? '#3b82f6' : '#777',
                             }}
                         />
                         <img
@@ -216,15 +208,12 @@ export const ServerPlayersList: React.FC<ServerPlayersListProps> = ({
                             alt=""
                         />
                         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '3px' }}>
-                            <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#ffffff' }}>
-                                {p.name}
-                            </div>
+                            <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#ffffff' }}>{p.name}</div>
                             <div style={{ fontSize: '11px', color: '#aaaaaa' }}>ID: {p.id}</div>
                             <div
                                 style={{
                                     fontSize: '10px',
-                                    color:
-                                        p.status === 'ONLINE' || p.status === 'BATTLE' ? '#4dff4d' : '#888888',
+                                    color: p.status === 'ONLINE' || p.status === 'BATTLE' ? '#4dff4d' : '#888888',
                                 }}
                             >
                                 {p.status === 'ONLINE'

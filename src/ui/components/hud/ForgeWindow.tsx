@@ -25,10 +25,11 @@ export const ForgeWindow: React.FC = () => {
 
     // Состояние выбора предмета
     const [selectedItemId, setSelectedItemId] = useState<string | null>(
-        equipped.WEAPONS || (() => {
-            const firstWep = inventory.find((i: any) => i.type === 'WEAPONS' || i.subTab === 'WEAPONS');
-            return firstWep ? (firstWep.instanceId || firstWep.id) : null;
-        })()
+        equipped.WEAPONS ||
+            (() => {
+                const firstWep = inventory.find((i: any) => i.type === 'WEAPONS' || i.subTab === 'WEAPONS');
+                return firstWep ? firstWep.instanceId || firstWep.id : null;
+            })(),
     );
 
     // Состояние для эффектов
@@ -176,7 +177,8 @@ export const ForgeWindow: React.FC = () => {
                             if (!data) return null;
                             const itemKey = item.instanceId || item.id;
                             const isSelected = selectedItemId === itemKey;
-                            const isEquipped = Object.values(equipped).includes(itemKey) || Object.values(equipped).includes(item.id);
+                            const isEquipped =
+                                Object.values(equipped).includes(itemKey) || Object.values(equipped).includes(item.id);
 
                             return (
                                 <motion.button
