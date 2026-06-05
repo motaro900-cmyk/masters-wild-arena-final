@@ -1,6 +1,13 @@
 /* 
-  Masters of the Wild — Global Design Tokens v2.0
-  Strict adhere to Dark Fantasy aesthetic.
+  Masters of the Wild — Global Design Tokens v3.0
+  ═══════════════════════════════════════════════
+  Unified Palette: DARK FANTASY GOLD
+  
+  Принцип: все панели UI строятся на одной тройке:
+    • Основа:  #0d0907  (тёплый почти-чёрный)
+    • Рамка:   #c8960a  (глубокое золото)  
+    • Текст:   #f0d898  (тёплый светло-золотой)
+  Акцент: #8b1a1a (тёмно-кровавый красный)
 */
 
 :root {
@@ -8,26 +15,43 @@
     --font-fantasy: 'Cinzel', 'Philosopher', serif;
     --font-ui: 'Nunito', 'Segoe UI', sans-serif;
 
-    /* Colors: Panels (Dark, semi-transparent) */
-    --panel-dark: rgba(15, 10, 5, 0.88);
-    --panel-darker: rgba(8, 5, 2, 0.92);
-    --panel-parchment: rgba(235, 215, 155, 0.93);
+    /* ── DARK FANTASY GOLD — унифицированная палитра ── */
+    /* Фон панелей */
+    --dfg-base:         #0d0907;    /* почти-чёрный с тёплым оттенком */
+    --dfg-surface:      #160f0a;    /* поверхность поверх базы */
+    --dfg-raised:       #1e1510;    /* приподнятые элементы */
 
-    /* Colors: Borders (Gold) */
-    --border-gold-dim: rgba(200, 160, 60, 0.35);
-    --border-gold-mid: rgba(200, 160, 60, 0.55);
+    /* Золото — три уровня яркости */
+    --dfg-gold-peak:    #ffe066;    /* ~95% яркость — заголовки, активные */
+    --dfg-gold-mid:     #c8960a;    /* ~70% — рамки, иконки */
+    --dfg-gold-muted:   #8a6a40;    /* ~45% — вторичный текст, разделители */
+
+    /* Текст */
+    --dfg-text-primary:   #f0d898;  /* основной — тёплый золотистый белый */
+    --dfg-text-secondary: #a08858;  /* вторичный — приглушённый золотой */
+    --dfg-text-disabled:  #5a4530;  /* отключённый */
+
+    /* Акценты */
+    --dfg-crimson:      #8b1a1a;    /* тёмно-кровавый — кнопки боя, ошибки */
+    --dfg-crimson-glow: rgba(139, 26, 26, 0.4);
+
+    /* ── Обратная совместимость (старые токены) ── */
+    --panel-dark:       rgba(15, 10, 5, 0.88);
+    --panel-darker:     rgba(8, 5, 2, 0.92);
+    --panel-parchment:  rgba(235, 215, 155, 0.93);
+
+    --border-gold-dim:    rgba(200, 160, 60, 0.35);
+    --border-gold-mid:    rgba(200, 160, 60, 0.55);
     --border-gold-bright: rgba(200, 160, 60, 0.8);
 
-    /* Colors: Text */
-    --text-gold: #f0c040;
-    --text-parchment: #e8d8a8;
-    --text-muted: #a08860;
+    --text-gold:        #f0c040;
+    --text-parchment:   #e8d8a8;
+    --text-muted:       #a08860;
     --text-on-parchment: #3d2a10;
 
-    /* Colors: Accents */
-    --accent-crimson: #c03030;
-    --accent-blue: #30a0f0;
-    --accent-purple: #9040d0;
+    --accent-crimson:   #c03030;
+    --accent-blue:      #30a0f0;
+    --accent-purple:    #9040d0;
 }
 
 /* --- Global Utilities --- */

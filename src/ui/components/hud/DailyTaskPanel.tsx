@@ -129,6 +129,9 @@ export const DailyTaskPanel: React.FC = () => {
                 transition: 'height 0.3s ease-in-out',
                 overflow: 'hidden',
                 position: 'relative',
+                // Dark Fantasy Gold: пергамент → тёмная кожа.
+                // brightness(0.28) даёт ~#0d0907, sepia+hue-rotate добавляют тёплый коричневый оттенок
+                filter: 'brightness(0.28) sepia(0.5) hue-rotate(8deg) contrast(1.35) saturate(1.2)',
             }}
         >
             {/* HEADER */}
@@ -149,9 +152,10 @@ export const DailyTaskPanel: React.FC = () => {
                         fontFamily: "'Cinzel', serif",
                         fontSize: 18,
                         fontWeight: 900,
-                        color: '#3d2a10',
+                        color: '#f0d898',
                         textAlign: 'center',
                         letterSpacing: '1.5px',
+                        textShadow: '0 1px 0 rgba(255,240,160,0.25), 0 2px 8px rgba(0,0,0,0.95)',
                     }}
                 >
                     ЕЖЕДНЕВНЫЕ ЗАДАНИЯ
@@ -161,7 +165,7 @@ export const DailyTaskPanel: React.FC = () => {
                         position: 'absolute',
                         right: 0,
                         fontSize: 16,
-                        color: '#3d2a10',
+                        color: '#c8960a',
                         transform: isCollapsed ? 'rotate(180deg)' : 'rotate(0deg)',
                         transition: 'transform 0.3s',
                     }}
@@ -216,12 +220,12 @@ export const DailyTaskPanel: React.FC = () => {
                                             >
                                                 <div
                                                     style={{
-                                                        color: '#3d2a10',
+                                                        color: '#e8c87a',
                                                         fontWeight: 900,
                                                         fontSize: '15px',
                                                         textTransform: 'uppercase',
                                                         fontFamily: "'Montserrat', sans-serif",
-                                                        textShadow: '0.5px 0.5px 0px rgba(255,255,255,0.2)',
+                                                        textShadow: '0 2px 4px rgba(0,0,0,0.8)',
                                                     }}
                                                 >
                                                     {qData.title}
@@ -290,13 +294,13 @@ export const DailyTaskPanel: React.FC = () => {
                                             </div>
                                             <div
                                                 style={{
-                                                    color: '#5a4020',
+                                                    color: '#a08858',
                                                     fontSize: '11px',
                                                     fontWeight: 700,
                                                     marginTop: '2px',
                                                     fontFamily: "'Montserrat', sans-serif",
                                                     lineHeight: '1.25',
-                                                    textShadow: '0.3px 0.3px 0px rgba(255,255,255,0.3)',
+                                                    textShadow: '0 1px 3px rgba(0,0,0,0.8)',
                                                 }}
                                             >
                                                 {qData.description}
@@ -317,7 +321,7 @@ export const DailyTaskPanel: React.FC = () => {
                                                     style={{ width: 18, height: 18, objectFit: 'contain' }}
                                                     alt=""
                                                 />
-                                                <span style={{ fontSize: '13px', fontWeight: 900, color: '#3d2a10' }}>
+                                                <span style={{ fontSize: '13px', fontWeight: 900, color: '#ffe066' }}>
                                                     {qData.rewardGold}
                                                 </span>
                                             </div>
@@ -327,7 +331,7 @@ export const DailyTaskPanel: React.FC = () => {
                                                     style={{ width: 16, height: 16, objectFit: 'contain' }}
                                                     alt=""
                                                 />
-                                                <span style={{ fontSize: '13px', fontWeight: 900, color: '#3d2a10' }}>
+                                                <span style={{ fontSize: '13px', fontWeight: 900, color: '#ffe066' }}>
                                                     {qData.rewardGems}
                                                 </span>
                                             </div>
@@ -344,7 +348,7 @@ export const DailyTaskPanel: React.FC = () => {
                                                     }}
                                                     alt=""
                                                 />
-                                                <span style={{ fontSize: '13px', fontWeight: 900, color: '#3d2a10' }}>
+                                                <span style={{ fontSize: '13px', fontWeight: 900, color: '#ffe066' }}>
                                                     {qData.rewardExp}
                                                 </span>
                                             </div>
@@ -383,17 +387,19 @@ export const DailyTaskPanel: React.FC = () => {
                                                     style={{
                                                         width: '80px',
                                                         height: '8px',
-                                                        background: 'rgba(0,0,0,0.1)',
+                                                        background: 'rgba(0,0,0,0.4)',
                                                         borderRadius: '4px',
                                                         overflow: 'hidden',
+                                                        border: '1px solid rgba(200,150,10,0.2)',
                                                     }}
                                                 >
                                                     <div
                                                         style={{
                                                             width: `${(dq.progress / qData.target) * 100}%`,
                                                             height: '100%',
-                                                            background: '#7a5828',
+                                                            background: 'linear-gradient(90deg, #8b5a0a 0%, #c8960a 100%)',
                                                             transition: 'width 0.3s',
+                                                            boxShadow: '0 0 4px rgba(200,150,10,0.4)',
                                                         }}
                                                     />
                                                 </div>
@@ -408,7 +414,7 @@ export const DailyTaskPanel: React.FC = () => {
                             marginTop: '10px',
                             textAlign: 'center',
                             fontSize: '12px',
-                            color: '#7a5828',
+                            color: '#8a6a40',
                             fontWeight: 700,
                         }}
                     >
