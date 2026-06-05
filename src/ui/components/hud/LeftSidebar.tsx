@@ -35,6 +35,9 @@ export const LeftSidebar: React.FC<{ onOpenWindow: (n: string) => void }> = ({ o
                 height: 515,
                 position: 'relative',
                 pointerEvents: 'auto',
+                // Углубляем чёрный в спрайте: contrast(1.28) сжимает тёмные зоны до ~5%
+                // brightness(0.80) не даёт золоту пожелтеть — оно в металлической зоне спрайта и выдерживает его
+                filter: 'contrast(1.28) brightness(0.80)',
             }}
         >
             {MENU_ITEMS.map((item) => (
@@ -84,11 +87,16 @@ const SideMenuItem: React.FC<{
                 fontFamily: "'Cinzel', serif",
                 fontSize: 17,
                 fontWeight: 800,
-                color: isActive ? '#f0c040' : '#c8a870',
+                // Активная: пик яркости ~95% (#ffe066) + внутренний 1px светлый кант
+                // Неактивная: чуть ярче (#d4a96a) чтобы читалась на углублённом фоне
+                color: isActive ? '#ffe066' : '#d4a96a',
                 letterSpacing: '1.5px',
-                textShadow: '0 2px 4px rgba(0,0,0,1)',
+                textShadow: isActive
+                    ? '0 1px 0 rgba(255,240,160,0.4), 0 2px 8px rgba(0,0,0,0.95), 0 0 12px rgba(240,192,64,0.25)'
+                    : '0 1px 0 rgba(255,220,120,0.15), 0 2px 6px rgba(0,0,0,0.9)',
                 userSelect: 'none',
                 textTransform: 'uppercase',
+                transition: 'color 0.15s, text-shadow 0.15s',
             }}
         >
             {item.label}

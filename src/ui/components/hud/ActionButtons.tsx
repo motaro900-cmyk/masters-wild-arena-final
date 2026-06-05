@@ -40,6 +40,9 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({ onStartBattle, onW
                     backgroundSize: '100% 100%',
                     backgroundRepeat: 'no-repeat',
                     position: 'relative',
+                    // Углубляем тёмные участки рамки (бордовые, углы)
+                    // brightness(0.83) сохраняет золото и красный на кнопке
+                    filter: 'contrast(1.22) brightness(0.83)',
                 }}
             >
                 {/* Clickable Rank Area (Top part only) */}
@@ -126,8 +129,8 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({ onStartBattle, onW
                         fontFamily: "'Cinzel', serif",
                         fontSize: 15,
                         fontWeight: 800,
-                        color: '#f0c040',
-                        textShadow: '0 2px 4px rgba(0,0,0,1)',
+                        color: '#ffe066',
+                        textShadow: '0 1px 0 rgba(255,240,160,0.35), 0 2px 6px rgba(0,0,0,0.95)',
                         pointerEvents: 'none',
                         zIndex: 3,
                     }}
@@ -150,8 +153,8 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({ onStartBattle, onW
                         fontFamily: "'Cinzel', serif",
                         fontSize: 15,
                         fontWeight: 800,
-                        color: '#f0c040',
-                        textShadow: '0 2px 4px rgba(0,0,0,1)',
+                        color: '#ffe066',
+                        textShadow: '0 1px 0 rgba(255,240,160,0.35), 0 2px 6px rgba(0,0,0,0.95)',
                         pointerEvents: 'none',
                         zIndex: 3,
                     }}
@@ -264,7 +267,9 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({ onStartBattle, onW
                             justifyContent: 'center',
                             fontFamily: "'Cinzel', serif",
                             color: energyError ? '#ef4444' : '#ffffff',
-                            textShadow: '0 2px 8px rgba(0,0,0,1)',
+                            textShadow: energyError
+                                ? '0 0 12px rgba(239,68,68,0.8)'
+                                : '0 1px 0 rgba(255,255,255,0.25), 0 2px 10px rgba(0,0,0,1)',
                             transition: 'all 0.2s',
                             paddingRight: '105px',
                             position: 'relative',
