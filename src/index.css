@@ -85,13 +85,24 @@ canvas {
     /* Сохранять чёткость пикселей при CSS-масштабировании */
     image-rendering: -webkit-optimize-contrast; /* Safari */
     image-rendering: crisp-edges;              /* Firefox */
-    /* Выносим canvas в отдельный GPU compositing layer —
-       браузер не перекомпозирует его вместе с DOM при анимациях */
+    /* Выносим canvas в отдельный GPU compositing layer */
     will-change: transform;
-    /* Лёгкий Post-Processing pass: +7% контраст, +9% насыщенность.
-       Аналог Sharpen+Color Grading в Unity Post Processing Stack.
-       Возвращает микроконтраст и «дорогой» вид без performance penalty. */
+    /* Post-Processing: +7% контраст, +9% насыщенность на игровом мире */
     filter: contrast(1.07) saturate(1.09);
+}
+
+/* ── HUD POST-PROCESSING ────────────────────────────────────────────────────
+   React HUD-слой (кнопки, панели, иконки) рендерится без WebGL — поэтому
+   получает СОБСТВЕННЫЙ фильтр. Сильнее чем у canvas потому что спрайты UI
+   изначально менее насыщены чем рисованный фоновый арт.
+   Диапазон подобран так чтобы золото стало ~90%, чёрный ~5%, без кислоты. */
+.game-hud-root {
+    filter: saturate(1.18) contrast(1.12);
+}
+
+/* Модальные окна — не усиливаем дополнительно (они уже в hud-root) */
+.game-hud-root > .z-\[100\] {
+    filter: none;
 }
 
 .hud-interactive {
