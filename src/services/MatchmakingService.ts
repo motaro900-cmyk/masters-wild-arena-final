@@ -121,7 +121,7 @@ class MatchmakingServiceClass {
         myRating: number,
         myLevel: number,
         myWinRate: number,
-        myStats?: any,
+        _myStats?: any,
         winStreak = 0,
         lossStreak = 0,
     ): Promise<MatchOpponent> {
@@ -129,7 +129,7 @@ class MatchmakingServiceClass {
         if (realOpponent) {
             return realOpponent;
         }
-        return this.generateBot(myRating, myLevel, myStats, winStreak, lossStreak);
+        return this.generateBot(myRating, myLevel, _myStats, winStreak, lossStreak);
     }
 
     /**
@@ -294,7 +294,13 @@ class MatchmakingServiceClass {
     /**
      * Генерирует замаскированного бота — внешне неотличим от реального игрока.
      */
-    public generateBot(myRating: number, myLevel: number, myStats?: any, winStreak = 0, lossStreak = 0): MatchOpponent {
+    public generateBot(
+        myRating: number,
+        myLevel: number,
+        _myStats?: any,
+        winStreak = 0,
+        lossStreak = 0,
+    ): MatchOpponent {
         const ratingVariance = Math.floor(Math.random() * 60) - 30; // Умеренная вариативность рейтинга бота
         const botRating = Math.max(0, myRating + ratingVariance);
         const rankInfo = getRankInfo(botRating);
@@ -365,32 +371,17 @@ class MatchmakingServiceClass {
         let statsMultiplier = baseMult + winStreakMod + lossStreakMod + variance;
         statsMultiplier = Math.max(0.65, Math.min(1.75, statsMultiplier));
 
-        // Рассчитываем характеристики бота
-        const finalStats = {
-            hp: 0,
-            attack: 0,
-            defense: 0,
-            speed: 1.0,
-            critChance: 5,
-            evasion: 0,
-        };
+        // Рассчитываем характеристики бота на основе сгенерированного снаряжения и уровня
+        const rawStats = buildStatsFromEquipment(randomHero.id, botLevel, equipment);
 
-        if (myStats) {
-            finalStats.hp = Math.round(myStats.hp * statsMultiplier);
-            finalStats.attack = Math.round(myStats.attack * statsMultiplier);
-            finalStats.defense = Math.round(myStats.defense * statsMultiplier);
-            finalStats.speed = myStats.speed;
-            finalStats.critChance = Math.min(75, (myStats.crit || myStats.critChance || 5) * statsMultiplier);
-            finalStats.evasion = Math.min(60, (myStats.evasion || 0) * statsMultiplier);
-        } else {
-            const rawStats = buildStatsFromEquipment(randomHero.id, botLevel, equipment);
-            finalStats.hp = Math.round(rawStats.hp * statsMultiplier);
-            finalStats.attack = Math.round(rawStats.attack * statsMultiplier);
-            finalStats.defense = Math.round(rawStats.defense * statsMultiplier);
-            finalStats.speed = rawStats.speed;
-            finalStats.critChance = Math.min(75, rawStats.critChance);
-            finalStats.evasion = Math.min(60, rawStats.evasion);
-        }
+        const finalStats = {
+            hp: Math.round(rawStats.hp * statsMultiplier),
+            attack: Math.round(rawStats.attack * statsMultiplier),
+            defense: Math.round(rawStats.defense * statsMultiplier),
+            speed: rawStats.speed,
+            critChance: Math.min(75, Math.round(rawStats.critChance * statsMultiplier)),
+            evasion: Math.min(60, Math.round(rawStats.evasion * statsMultiplier)),
+        };
 
         // Применяем ролевые коэффициенты для разнообразия геймплея
         const role = randomHero.role;
