@@ -298,10 +298,25 @@ export class HeroUnit extends PIXI.Container implements IEffectTarget, IStatusEf
     }
 
     private createShadow() {
-        const shadow = new PIXI.Graphics();
-        shadow.ellipse(0, 0, 60, 20).fill({ color: 0x000000, alpha: 0.3 });
-        shadow.zIndex = 1;
-        this.addChild(shadow);
+        // ── Контактная тень: двухслойная ──────────────────────────────────
+        // Слой 1: мягкий широкий ореол (имитирует рассеянное освещение снизу)
+        const shadowOuter = new PIXI.Graphics();
+        shadowOuter.ellipse(0, 0, 120, 28).fill({ color: 0x000000, alpha: 0.18 });
+        shadowOuter.zIndex = 0;
+        this.addChild(shadowOuter);
+
+        // Слой 2: плотное тёмное ядро у самых ног (окклюзия контакта с полом)
+        const shadowCore = new PIXI.Graphics();
+        shadowCore.ellipse(0, 2, 52, 11).fill({ color: 0x000000, alpha: 0.52 });
+        shadowCore.zIndex = 1;
+        this.addChild(shadowCore);
+
+        // ── Rim Light: тонкое свечение по нижнему контуру героя ──────────
+        // Отделяет персонажа от фона без bloom. Тёплый оттенок (~#ffe8a0).
+        const rimLight = new PIXI.Graphics();
+        rimLight.ellipse(0, -6, 70, 18).fill({ color: 0xffe8a0, alpha: 0.07 });
+        rimLight.zIndex = 2;
+        this.addChild(rimLight);
     }
 
     // --- Equipment Delegation ---

@@ -181,7 +181,6 @@ export const SafeGameLayout = ({ containerRef }: { containerRef: React.RefObject
                     top: '50%',
                     left: '50%',
                     transform: 'translate(-50%, -50%)',
-                    // 16:9 = 100vw/56.25 = vh*1.7778
                     width: 'min(100vw, 177.78vh)',
                     height: 'min(100vh, 56.25vw)',
                     backgroundImage: `url(${
@@ -191,6 +190,32 @@ export const SafeGameLayout = ({ containerRef }: { containerRef: React.RefObject
                     backgroundPosition: 'center',
                     backgroundColor: '#0c0c0c',
                     zIndex: 0,
+                    pointerEvents: 'none',
+                }}
+            />
+
+            {/* ── DEPTH OVERLAY — цветовое разделение планов (Приоритет C) ──
+                Радиальный градиент: тёплый центр (герой) → холодные края (фон).
+                Alpha намеренно минимальная — эффект воздушной перспективы,
+                не пережим цветов. Не трогает пайплайн, не добавляет blur. */}
+            <div
+                style={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    width: 'min(100vw, 177.78vh)',
+                    height: 'min(100vh, 56.25vw)',
+                    background: `
+                        radial-gradient(
+                            ellipse 55% 70% at 52% 68%,
+                            rgba(255, 224, 160, 0.04) 0%,
+                            rgba(255, 224, 160, 0.00) 45%,
+                            rgba(26,  42,  94, 0.08) 75%,
+                            rgba(26,  42,  94, 0.13) 100%
+                        )
+                    `,
+                    zIndex: 1,
                     pointerEvents: 'none',
                 }}
             />
