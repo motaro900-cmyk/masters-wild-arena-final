@@ -4,7 +4,6 @@ import { useGameStore } from '../../../store/useGameStore';
 import { AssetsMap } from '../../../configs/AssetsMap';
 import { audioService } from '../../../services/AudioService';
 import '../../styles/profile-hub.css';
-import { UnderDevelopmentModal } from './SharedUI';
 import { getAvatarFrameStyle, getAvatarFramePath, getAvatarImageStyle } from '../../../configs/ProfileCustomization';
 
 export const ProfileHub: React.FC = () => {
@@ -29,7 +28,6 @@ export const ProfileHub: React.FC = () => {
 
     const [showExpTooltip, setShowExpTooltip] = React.useState(false);
     const [isHoveredVIP, setIsHoveredVIP] = React.useState(false);
-    const [devModalOpen, setDevModalOpen] = React.useState(false);
 
     React.useEffect(() => {
         if (exp >= maxExp) {
@@ -45,7 +43,9 @@ export const ProfileHub: React.FC = () => {
                 className="relative pointer-events-auto cursor-pointer"
                 onClick={() => {
                     audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
-                    setDevModalOpen(true);
+                    if ((window as any).setActiveHUDWindow) {
+                        (window as any).setActiveHUDWindow('PROFILE_CUSTOMIZE');
+                    }
                 }}
                 style={{
                     width: '465px',
@@ -336,11 +336,6 @@ export const ProfileHub: React.FC = () => {
                     />
                 </button>
             </motion.div>
-            <UnderDevelopmentModal
-                isOpen={devModalOpen}
-                onClose={() => setDevModalOpen(false)}
-                title="ПРОФИЛЬ ИГРОКА"
-            />
         </>
     );
 };
