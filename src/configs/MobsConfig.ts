@@ -50,7 +50,7 @@ export const MOBS_DB: IMobData[] = [
         name: 'Теневая Пантера',
         rarity: 'EPIC',
         image: '/assets/characters/ancients/ancient_panther.webp',
-        baseStats: { hp: 800, attack: 85, defense: 20, speed: 2.0, crit: 0.3 },
+        baseStats: { hp: 800, attack: 85, defense: 20, speed: 2.0, crit: 0.13 },
         anchors: {
             feet: { x: 0.5, y: 0.95 },
             head: { x: 0.5, y: 0.2 },
@@ -92,7 +92,7 @@ export const MOBS_DB: IMobData[] = [
         name: 'Теневая Пантера Обители',
         rarity: 'EPIC',
         image: '/assets/characters/ancients/ancient_panther.webp',
-        baseStats: { hp: 800, attack: 85, defense: 20, speed: 1.8, crit: 0.25 },
+        baseStats: { hp: 800, attack: 85, defense: 20, speed: 1.8, crit: 0.13 },
         anchors: {
             feet: { x: 0.5, y: 0.95 },
             head: { x: 0.5, y: 0.2 },
@@ -134,7 +134,7 @@ export const MOBS_DB: IMobData[] = [
         name: 'Грозовой Грифон',
         rarity: 'BOSS',
         image: '/assets/characters/ancients/ancient_griffin.webp',
-        baseStats: { hp: 4000, attack: 150, defense: 70, speed: 1.4, crit: 0.2 },
+        baseStats: { hp: 4000, attack: 150, defense: 70, speed: 1.4, crit: 0.15 },
         anchors: {
             feet: { x: 0.5, y: 0.95 },
             head: { x: 0.5, y: 0.15 },

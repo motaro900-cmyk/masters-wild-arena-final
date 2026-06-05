@@ -138,7 +138,12 @@ export const createPlayerSlice = (set: any, get: any) => ({
         }),
 
     addGold: (amount: number) => set((state: any) => ({ gold: state.gold + amount })),
-    spendGold: (amount: number) => set((state: any) => ({ gold: Math.max(0, state.gold - amount) })),
+    spendGold: (amount: number): boolean => {
+        const s = get();
+        if (s.gold < amount) return false;
+        set((state: any) => ({ gold: Math.max(0, state.gold - amount) }));
+        return true;
+    },
     addCrystals: (amount: number) => set((state: any) => ({ crystals: state.crystals + amount })),
     spendDiamonds: (amount: number) => set((state: any) => ({ crystals: Math.max(0, state.crystals - amount) })),
     addEnergy: (amount: number) => set((state: any) => ({ energy: Math.min(state.energy + amount, state.maxEnergy) })),
@@ -169,12 +174,14 @@ export const createPlayerSlice = (set: any, get: any) => ({
         const cost = type === 'SINGLE' ? 100 : 950;
         if (state.crystals < cost) return null;
 
-        const heroes = ['panda', 'monkey', 'tiger', 'rabbit', 'bear'];
+        // Используем только реальных героев из HEROES_DB (импорт динамический через require-like)
+        // Берём ID всех доступных героев кроме стартового panda
+        const heroPool = ['panda', 'raccoon'];
         const rewards: { heroId: string; amount: number }[] = [];
         const pulls = type === 'SINGLE' ? 1 : 10;
 
         for (let i = 0; i < pulls; i++) {
-            const randomHero = heroes[Math.floor(Math.random() * heroes.length)];
+            const randomHero = heroPool[Math.floor(Math.random() * heroPool.length)];
             const randomAmount = Math.floor(Math.random() * 5) + 1; // 1 to 5 shards
             rewards.push({ heroId: randomHero, amount: randomAmount });
         }

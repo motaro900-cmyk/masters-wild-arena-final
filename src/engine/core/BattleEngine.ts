@@ -129,7 +129,15 @@ export class BattleEngine {
     private constructor() {}
 
     async init(_container: HTMLElement, heroId: string, enemyId: string, playerStats: any, enemyStats: any) {
-        if (this.isInitialized) return;
+        // Если уже инициализирован — сбрасываем старое состояние перед повторным входом
+        // (исправляет баг с двойным тапом на кнопку запуска боя на мобильных)
+        if (this.isInitialized) {
+            console.warn('[BattleEngine] Already initialized, resetting before re-init...');
+            this.isInitialized = false;
+            this.totalDamageDealt = 0;
+            this.totalDamageTaken = 0;
+            this.totalTurnsPlayed = 0;
+        }
         this.isInitialized = true;
 
         try {
