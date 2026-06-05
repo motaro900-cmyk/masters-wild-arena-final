@@ -88,6 +88,10 @@ canvas {
     /* Выносим canvas в отдельный GPU compositing layer —
        браузер не перекомпозирует его вместе с DOM при анимациях */
     will-change: transform;
+    /* Лёгкий Post-Processing pass: +7% контраст, +9% насыщенность.
+       Аналог Sharpen+Color Grading в Unity Post Processing Stack.
+       Возвращает микроконтраст и «дорогой» вид без performance penalty. */
+    filter: contrast(1.07) saturate(1.09);
 }
 
 .hud-interactive {

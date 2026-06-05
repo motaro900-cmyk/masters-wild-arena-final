@@ -172,13 +172,18 @@ export const SafeGameLayout = ({ containerRef }: { containerRef: React.RefObject
                 onDismiss={() => {}}
             />
 
-            {/* ── ФОНОВОЕ ИЗОБРАЖЕНИЕ (вне scale-wrapper) ──────────────────────
-                Рендерится в нативном разрешении экрана — без двойного CSS scale.
-                Это даёт максимальную чёткость панды и фона. */}
+            {/* ── ФОНОВОЕ ИЗОБРАЖЕНИЕ — строго 16:9 зона игры ──────────────
+                min(100vw, 177.78vh) x min(100vh, 56.25vw) = точная 16:9 область.
+                Фон не вылезает за пределы игрового холста на широких мониторах. */}
             <div
                 style={{
-                    position: 'fixed',
-                    inset: 0,
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    // 16:9 = 100vw/56.25 = vh*1.7778
+                    width: 'min(100vw, 177.78vh)',
+                    height: 'min(100vh, 56.25vw)',
                     backgroundImage: `url(${
                         isMobile ? AssetsMap.BACKGROUNDS.MAIN_MENU_MOBILE : AssetsMap.BACKGROUNDS.MAIN_MENU
                     })`,
@@ -369,15 +374,17 @@ export const Root = () => {
                 clearInterval(refreshInterval);
                 refreshInterval = null;
             }
-            // [Anti-Grey] Loading Timeout (20s)
+            // Timeout: достаточно большой чтобы покрыть всю цепочку VK retry (12s + 2s + 3s + Firebase)
+            // isRenderReady — отдельный флаг, НЕ isAppInitialized (который ставится до инициализации)
+            let isRenderReady = false;
             const timeoutId = setTimeout(() => {
-                if (!isAppInitialized || (containerRef.current && containerRef.current.children.length === 0)) {
-                    console.error('❌ Loading Timeout: App failed to initialize in 20s');
+                if (!isRenderReady) {
+                    console.error('❌ Loading Timeout: App failed to initialize in 40s');
                     setInitError(
                         'Превышено время ожидания загрузки. Пожалуйста, проверьте интернет-соединение и попробуйте снова.',
                     );
                 }
-            }, 20000);
+            }, 40000);
 
             let timeOffset = 0;
             try {
@@ -399,45 +406,58 @@ export const Root = () => {
 
                 setLoadingText('Подключение к VK Bridge...');
 
-                // 1. VK Bridge — загружаем пользователя независимо от результата initVK
-                try {
-                    const vkAvailable = await initVK();
-                    console.log('📡 VK Status:', vkAvailable ? 'Connected' : 'Standalone');
+                // 1. VK Bridge
+                // На localhost — пропускаем VK полностью (нет смысла ждать 12s при разработке)
+                const isLocalhostEarly =
+                    window.location.hostname === 'localhost' ||
+                    window.location.hostname === '127.0.0.1' ||
+                    window.location.hostname.startsWith('192.168.') ||
+                    window.location.hostname.startsWith('10.') ||
+                    window.location.hostname.endsWith('.local') ||
+                    window.location.protocol === 'file:';
 
-                    // Даже если initVK вернул false (таймаут на мобильной сети),
-                    // VK Bridge уже может быть доступен. Пытаемся получить данные.
-                    const user = await getVkUserInfo();
-                    if (user) {
-                        const store = useGameStore.getState();
-                        store.setVkUser(user);
-                        if (user.photo200 || user.photo) {
-                            store.updateProfile({ avatar: user.photo200 || user.photo });
-                        }
-                        console.log('✅ VK User loaded:', user.firstName);
-                    } else if (isVkMiniApp()) {
-                        // Retry через 2с — для медленных мобильных сетей
-                        console.warn('🔄 VK User Info retry in 2s...');
-                        await new Promise(r => setTimeout(r, 2000));
-                        const retryUser = await getVkUserInfo();
-                        if (retryUser) {
+                if (!isLocalhostEarly) {
+                    try {
+                        const vkAvailable = await initVK();
+                        console.log('📡 VK Status:', vkAvailable ? 'Connected' : 'Standalone');
+
+                        // Даже если initVK вернул false (таймаут на мобильной сети),
+                        // VK Bridge уже может быть доступен. Пытаемся получить данные.
+                        const user = await getVkUserInfo();
+                        if (user) {
                             const store = useGameStore.getState();
-                            store.setVkUser(retryUser);
-                            if (retryUser.photo200 || retryUser.photo) {
-                                store.updateProfile({ avatar: retryUser.photo200 || retryUser.photo });
+                            store.setVkUser(user);
+                            if (user.photo200 || user.photo) {
+                                store.updateProfile({ avatar: user.photo200 || user.photo });
                             }
-                            console.log('✅ VK User loaded (retry):', retryUser.firstName);
+                            console.log('✅ VK User loaded:', user.firstName);
+                        } else if (isVkMiniApp()) {
+                            // Retry через 2с — для медленных мобильных сетей
+                            console.warn('🔄 VK User Info retry in 2s...');
+                            await new Promise(r => setTimeout(r, 2000));
+                            const retryUser = await getVkUserInfo();
+                            if (retryUser) {
+                                const store = useGameStore.getState();
+                                store.setVkUser(retryUser);
+                                if (retryUser.photo200 || retryUser.photo) {
+                                    store.updateProfile({ avatar: retryUser.photo200 || retryUser.photo });
+                                }
+                                console.log('✅ VK User loaded (retry):', retryUser.firstName);
+                            }
                         }
-                    }
 
-                    // Parse referral params
-                    const searchParams = new URLSearchParams(window.location.search);
-                    const startParam = searchParams.get('vk_start_params') || searchParams.get('start_parameter');
-                    if (startParam) {
-                        console.log('📌 Found referral start parameter:', startParam);
-                        useGameStore.getState().processReferralCode(startParam);
+                        // Parse referral params
+                        const searchParams = new URLSearchParams(window.location.search);
+                        const startParam = searchParams.get('vk_start_params') || searchParams.get('start_parameter');
+                        if (startParam) {
+                            console.log('📌 Found referral start parameter:', startParam);
+                            useGameStore.getState().processReferralCode(startParam);
+                        }
+                    } catch (vkErr) {
+                        console.warn('⚠️ VK Bridge failed to init, continuing in standalone mode', vkErr);
                     }
-                } catch (vkErr) {
-                    console.warn('⚠️ VK Bridge failed to init, continuing in standalone mode', vkErr);
+                } else {
+                    console.log('🛠️ Localhost detected — skipping VK Bridge init');
                 }
 
                 // 2. Load Player Data from Firebase
@@ -561,6 +581,7 @@ export const Root = () => {
                 const game = new GameApp();
                 await game.init(containerRef.current!);
 
+                isRenderReady = true;
                 clearTimeout(timeoutId);
                 console.log('✅ Game Ready!');
 
