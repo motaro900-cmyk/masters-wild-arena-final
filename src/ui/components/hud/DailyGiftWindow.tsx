@@ -121,6 +121,14 @@ export const DailyGiftWindow: React.FC<DailyGiftWindowProps> = ({ onClose }) => 
                     setLastGiftClaimedTime(data.lastDailyGiftClaimed || null);
                     setLastWheelSpinTimeServer(data.lastWheelSpinTimeServer || null);
                     setDbLoginStreak(data.loginStreak || 0);
+
+                    // Sync to local store so it persists and is available globally immediately
+                    const giftTime = data.lastDailyGiftClaimed ? data.lastDailyGiftClaimed.toMillis() : 0;
+                    const wheelTime = data.lastWheelSpinTimeServer ? data.lastWheelSpinTimeServer.toMillis() : 0;
+                    useGameStore.setState({
+                        lastDailyGiftClaimedTime: giftTime,
+                        lastWheelSpinTime: wheelTime,
+                    });
                 }
             } catch (e) {
                 console.error('Failed to load daily gift data from Firestore:', e);
@@ -238,7 +246,10 @@ export const DailyGiftWindow: React.FC<DailyGiftWindowProps> = ({ onClose }) => 
             console.error('Failed to update daily gift in Firestore:', e);
         }
 
-        setLastGiftClaimedTime(Timestamp.now());
+        // eslint-disable-next-line react-hooks/purity
+        const nowMs = Date.now();
+        useGameStore.setState({ lastDailyGiftClaimedTime: nowMs });
+        setLastGiftClaimedTime(Timestamp.fromMillis(nowMs));
         setDbLoginStreak(streak);
 
         setRewardClaimed({
@@ -321,7 +332,9 @@ export const DailyGiftWindow: React.FC<DailyGiftWindowProps> = ({ onClose }) => 
                 console.error('Failed to update wheel spin in Firestore:', e);
             }
 
-            setLastWheelSpinTimeServer(Timestamp.now());
+            const nowMs = Date.now();
+            useGameStore.setState({ lastWheelSpinTime: nowMs });
+            setLastWheelSpinTimeServer(Timestamp.fromMillis(nowMs));
 
             audioService.playSFX(AssetsMap.AUDIO.SFX_BUY || AssetsMap.AUDIO.SFX_CLICK);
 

@@ -46,12 +46,16 @@ export const EquipmentSlotItem: React.FC<EquipmentSlotItemProps> = ({
 }) => {
     const [hovered, setHovered] = React.useState(false);
     const itemId = equipment[slotId];
-    const item = itemId ? (ITEMS_DATABASE as any)[itemId] : null;
-    const color = item ? getRarityColor(item.rarity) : 'rgba(255,255,255,0.05)';
 
     // Берём уровень предмета из инвентаря игрока (не из конфига!)
-    const inventory = useGameStore((s: any) => s.inventory);
-    const inventoryItem = itemId ? inventory.find((i: any) => String(i.id) === String(itemId)) : null;
+    const inventory = useGameStore((s: any) => s.inventory) || [];
+    const inventoryItem = itemId
+        ? inventory.find((i: any) => String(i.instanceId) === String(itemId) || String(i.id) === String(itemId))
+        : null;
+    const templateId = inventoryItem ? inventoryItem.id : itemId;
+
+    const item = templateId ? (ITEMS_DATABASE as any)[templateId] : null;
+    const color = item ? getRarityColor(item.rarity) : 'rgba(255,255,255,0.05)';
     const itemLevel = inventoryItem?.level ?? null;
 
     let blueprintSrc = '';

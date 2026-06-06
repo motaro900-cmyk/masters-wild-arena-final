@@ -73,6 +73,7 @@ export const createPlayerSlice = (set: any, get: any) => ({
     tutorialStep: 0,
     canClaimDailyGift: false,
     lastWheelSpinTime: 0,
+    lastDailyGiftClaimedTime: 0,
     onboardingCompleted: true,
     profileStatus: 'loading' as 'loading' | 'loaded' | 'error',
     activeBuffs: {} as Record<string, number>,
@@ -444,8 +445,8 @@ export const createPlayerSlice = (set: any, get: any) => ({
 
             set((s: any) => ({
                 usedPromoCodes: [...s.usedPromoCodes, normalizedCode],
-                mail: [newMail, ...s.mail],
             }));
+            get().addMail(newMail);
 
             return { success: true, message: 'ПИСЬМО С ПОДАРКОМ ОТПРАВЛЕНО ВО ВХОДЯЩИЕ!' };
         }
@@ -469,6 +470,8 @@ export const createPlayerSlice = (set: any, get: any) => ({
         }),
 
     setCanClaimDailyGift: (val: boolean) => set({ canClaimDailyGift: val }),
+    setLastDailyGiftClaimedTime: (time: number) => set({ lastDailyGiftClaimedTime: time }),
+    setLastWheelSpinTime: (time: number) => set({ lastWheelSpinTime: time }),
     setOnboardingCompleted: (val: boolean) => {
         set({ onboardingCompleted: val });
         syncService.debouncedSync();

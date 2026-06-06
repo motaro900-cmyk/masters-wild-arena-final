@@ -59,7 +59,7 @@ export const createQuestSlice = (set: any, get: any) => ({
         });
     },
 
-    updateQuestProgress: (type: string, amount: number) =>
+    updateQuestProgress: (type: string, amount: number) => {
         set((state: any) => {
             const newQuests = (state.dailyQuests || []).map((dq: any) => {
                 const questData = QUESTS_POOL.find((q) => q.id === dq.questId);
@@ -81,7 +81,9 @@ export const createQuestSlice = (set: any, get: any) => ({
             });
 
             return { dailyQuests: newQuests, weeklyQuests: newWeekly };
-        }),
+        });
+        syncService.debouncedSync();
+    },
 
     claimQuestReward: (questId: string) => {
         const state = get() as any;

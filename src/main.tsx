@@ -793,7 +793,11 @@ export const Root = () => {
                     finalState.checkPetDailyReward();
                 }
 
-                if (!finalState.dailyQuests || finalState.dailyQuests.length === 0) {
+                if (
+                    !finalState.dailyQuests ||
+                    finalState.dailyQuests.length === 0 ||
+                    isNewDayMSK(finalState.lastDailyRefresh)
+                ) {
                     finalState.refreshDailyQuests();
                 }
                 if (!finalState.weeklyQuests || finalState.weeklyQuests.length === 0) {

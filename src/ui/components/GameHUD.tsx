@@ -156,10 +156,14 @@ export const GameHUD: React.FC = () => {
 
             // Добавляем во входящие
             setTimeout(() => {
-                const currentMail = useGameStore.getState().mail;
-                useGameStore.setState({
-                    mail: [newMail, ...currentMail],
-                });
+                const store = useGameStore.getState();
+                if (store.addMail) {
+                    store.addMail(newMail);
+                } else {
+                    useGameStore.setState({
+                        mail: [newMail, ...(store.mail || [])],
+                    });
+                }
                 safeSetItem('lastVipMailClaimDate', mskDateStr);
             }, 100);
         }

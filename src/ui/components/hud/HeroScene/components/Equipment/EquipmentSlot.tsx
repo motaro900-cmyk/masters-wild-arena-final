@@ -15,17 +15,30 @@ const RARITY_RU: Record<string, string> = {
     LEGENDARY: 'ЛЕГЕНДАРНЫЙ',
 };
 
+const getTemplateId = (id: string) => {
+    if (!id) return '';
+    if (ITEMS_DATABASE[id]) return id;
+    const match = Object.keys(ITEMS_DATABASE)
+        .filter((key) => id.startsWith(key + '_'))
+        .sort((a, b) => b.length - a.length)[0];
+    return match || id;
+};
+
 export const EquipmentSlot = ({ id, label, itemId, activeDraggingId, onClick, setGlobalHoveredItem }: any) => {
     const { isOver, setNodeRef } = useDroppable({ id });
     const store = useGameStore();
 
-    const itemData = itemId ? (ITEMS_DATABASE[String(itemId)] as any) : null;
+    const resolvedItemId = itemId ? getTemplateId(String(itemId)) : '';
+    const itemData = resolvedItemId ? (ITEMS_DATABASE[resolvedItemId] as any) : null;
     const rarityColor = itemData ? rarityColors[itemData.rarity] || '#f0c040' : '#f0c040';
 
-    const draggingItemData = activeDraggingId ? (ITEMS_DATABASE[String(activeDraggingId)] as any) : null;
+    const resolvedDraggingId = activeDraggingId ? getTemplateId(String(activeDraggingId)) : '';
+    const draggingItemData = resolvedDraggingId ? (ITEMS_DATABASE[resolvedDraggingId] as any) : null;
     const isCompatible = draggingItemData && draggingItemData.subTab === id;
 
-    const invItem = (store.inventory || []).find((i: any) => String(i.id) === String(itemId));
+    const invItem = (store.inventory || []).find(
+        (i: any) => String(i.instanceId) === String(itemId) || String(i.id) === String(itemId),
+    );
     const itemLevel = invItem?.level || 1;
 
     return (

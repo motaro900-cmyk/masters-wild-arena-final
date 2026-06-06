@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { ITEMS_DATABASE } from '../../../../../game/configs/ItemsConfig';
 import { audioService } from '../../../../../services/AudioService';
 import { AssetsMap } from '../../../../../configs/AssetsMap';
+import { useGameStore } from '../../../../../store/useGameStore';
 
 export const useHeroActions = (selectedHeroId: string, heroEquipment: any, equipItem: any, unequipItem: any) => {
     const [heroAction, setHeroAction] = useState<'IDLE' | 'VICTORY' | 'ULTIMATE'>('IDLE');
@@ -24,7 +25,12 @@ export const useHeroActions = (selectedHeroId: string, heroEquipment: any, equip
     };
 
     const handleItemClick = (itemId: string) => {
-        const itemData = ITEMS_DATABASE[String(itemId)] as any;
+        const inventory = useGameStore.getState().inventory || [];
+        const invItem = inventory.find(
+            (i: any) => String(i.instanceId) === String(itemId) || String(i.id) === String(itemId),
+        );
+        const templateId = invItem ? invItem.id : itemId;
+        const itemData = ITEMS_DATABASE[String(templateId)] as any;
         if (!itemData) return;
 
         const currentGear = (heroEquipment || {})[selectedHeroId || 'panda'] || {};
@@ -36,7 +42,13 @@ export const useHeroActions = (selectedHeroId: string, heroEquipment: any, equip
             audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
         } else {
             const existingId = currentGear[itemData.subTab];
-            const existingItem = existingId ? (ITEMS_DATABASE[String(existingId)] as any) : null;
+            const eqInvItem = existingId
+                ? inventory.find(
+                      (i: any) => String(i.instanceId) === String(existingId) || String(i.id) === String(existingId),
+                  )
+                : null;
+            const eqTemplateId = eqInvItem ? eqInvItem.id : existingId;
+            const existingItem = eqTemplateId ? (ITEMS_DATABASE[String(eqTemplateId)] as any) : null;
 
             const attackDelta = (itemData.attackBonus || 0) - (existingItem?.attackBonus || 0);
             const hpDelta = (itemData.hpBonus || 0) - (existingItem?.hpBonus || 0);

@@ -92,12 +92,22 @@ export const useHeroDnd = (
 
         const itemId = active.id;
         const slotType = over.id;
-        const itemData = ITEMS_DATABASE[String(itemId)] as any;
+        const invItem = (inventory || []).find(
+            (i: any) => String(i.instanceId) === String(itemId) || String(i.id) === String(itemId),
+        );
+        const templateId = invItem ? invItem.id : itemId;
+        const itemData = ITEMS_DATABASE[String(templateId)] as any;
 
         if (itemData && (itemData.subTab === slotType || (slotType === 'WEAPONS' && itemData.subTab === 'WEAPONS'))) {
             const currentGear = (heroEquipment || {})[selectedHeroId || 'panda'] || {};
             const existingId = currentGear[slotType];
-            const existingItem = existingId ? (ITEMS_DATABASE[String(existingId)] as any) : null;
+            const eqInvItem = existingId
+                ? (inventory || []).find(
+                      (i: any) => String(i.instanceId) === String(existingId) || String(i.id) === String(existingId),
+                  )
+                : null;
+            const eqTemplateId = eqInvItem ? eqInvItem.id : existingId;
+            const existingItem = eqTemplateId ? (ITEMS_DATABASE[String(eqTemplateId)] as any) : null;
 
             const attackDelta = (itemData.attackBonus || 0) - (existingItem?.attackBonus || 0);
             const hpDelta = (itemData.hpBonus || 0) - (existingItem?.hpBonus || 0);
@@ -121,7 +131,11 @@ export const useHeroDnd = (
         }
     };
 
-    const activeItem = activeId ? (inventory || []).find((i: any) => i.id === activeId) : null;
+    const activeItem = activeId
+        ? (inventory || []).find(
+              (i: any) => String(i.instanceId) === String(activeId) || String(i.id) === String(activeId),
+          )
+        : null;
     const activeItemData = activeItem ? (ITEMS_DATABASE[String(activeItem.id)] as any) : null;
 
     return {

@@ -185,6 +185,8 @@ export const useGameStore = create<GameStoreState>()(
                 shopDiscounts: state.shopDiscounts,
                 shopLastRefreshTime: state.shopLastRefreshTime,
                 lastWheelSpinTime: state.lastWheelSpinTime,
+                lastDailyGiftClaimedTime: state.lastDailyGiftClaimedTime,
+                mail: state.mail,
             }),
             migrate: (persistedState: any, version: number) => {
                 if (version < 22) {

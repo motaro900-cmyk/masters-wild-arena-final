@@ -175,6 +175,7 @@ export class SyncService {
                 shopDiscounts: state.shopDiscounts,
                 shopLastRefreshTime: state.shopLastRefreshTime,
                 lastWheelSpinTime: state.lastWheelSpinTime,
+                lastDailyGiftClaimedTime: state.lastDailyGiftClaimedTime,
                 activeBuffs: state.activeBuffs || {},
                 dailyQuests: state.dailyQuests,
                 weeklyQuests: state.weeklyQuests,
@@ -739,14 +740,41 @@ export class SyncService {
      */
     public async sendMail(userId: string, mailData: any): Promise<void> {
         try {
-            const mailRef = doc(collection(db, USERS_COLLECTION, userId, 'почта'));
+            const mailCollection = collection(db, USERS_COLLECTION, userId, 'почта');
+            const mailRef = mailData.id ? doc(mailCollection, mailData.id) : doc(mailCollection);
             await setDoc(mailRef, {
                 ...mailData,
-                timestamp: serverTimestamp(),
-                isRead: false,
+                id: mailRef.id,
+                timestamp: mailData.timestamp || Date.now(),
             });
         } catch (error) {
             console.error('[SyncService] Failed to send mail:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Обновляет конкретное письмо (прочитано, забрано, архив)
+     */
+    public async updateMail(userId: string, mailId: string, updates: Partial<any>): Promise<void> {
+        try {
+            const mailRef = doc(db, USERS_COLLECTION, userId, 'почта', mailId);
+            await setDoc(mailRef, updates, { merge: true });
+        } catch (error) {
+            console.error('[SyncService] Failed to update mail:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Удаляет конкретное письмо
+     */
+    public async deleteMail(userId: string, mailId: string): Promise<void> {
+        try {
+            const mailRef = doc(db, USERS_COLLECTION, userId, 'почта', mailId);
+            await deleteDoc(mailRef);
+        } catch (error) {
+            console.error('[SyncService] Failed to delete mail:', error);
             throw error;
         }
     }

@@ -308,6 +308,7 @@ export const createInventorySlice = (set: any, get: any) => ({
     equipBest: () => {
         const state = get() as any;
         const inv = state.inventory;
+        const heroId = state.selectedHeroId || 'panda';
 
         const findBest = (subTab: string) => {
             return inv
@@ -328,12 +329,48 @@ export const createInventorySlice = (set: any, get: any) => ({
         const bestArmor = findBest('ARMOR');
         const bestShield = findBest('SHIELDS');
 
-        set({
-            equippedWeaponId: bestWeapon?.id || state.equippedWeaponId,
-            equippedHelmId: bestHelm?.id || state.equippedHelmId,
-            equippedArmorId: bestArmor?.id || state.equippedArmorId,
-            equippedShieldId: bestShield?.id || state.equippedShieldId,
+        const newHeroEquipment = { ...state.heroEquipment };
+        const currentGear = { ...(newHeroEquipment[heroId] || {}) };
+
+        const weaponInstanceId = bestWeapon ? bestWeapon.instanceId || bestWeapon.id : null;
+        const helmInstanceId = bestHelm ? bestHelm.instanceId || bestHelm.id : null;
+        const armorInstanceId = bestArmor ? bestArmor.instanceId || bestArmor.id : null;
+        const shieldInstanceId = bestShield ? bestShield.instanceId || bestShield.id : null;
+
+        if (weaponInstanceId) currentGear['WEAPONS'] = weaponInstanceId;
+        if (helmInstanceId) currentGear['HELMETS'] = helmInstanceId;
+        if (armorInstanceId) currentGear['ARMOR'] = armorInstanceId;
+        if (shieldInstanceId) currentGear['SHIELDS'] = shieldInstanceId;
+
+        newHeroEquipment[heroId] = currentGear;
+
+        // Clean up these instances if they were equipped on other heroes
+        const instancesToEquip = [weaponInstanceId, helmInstanceId, armorInstanceId, shieldInstanceId].filter(Boolean);
+        Object.entries(newHeroEquipment).forEach(([hId, gear]: [string, any]) => {
+            if (hId === heroId) return;
+            const updatedGear = { ...gear };
+            let changed = false;
+            Object.keys(updatedGear).forEach((slot) => {
+                if (instancesToEquip.includes(updatedGear[slot])) {
+                    delete updatedGear[slot];
+                    changed = true;
+                }
+            });
+            if (changed) {
+                newHeroEquipment[hId] = updatedGear;
+            }
         });
+
+        set({
+            heroEquipment: newHeroEquipment,
+            equippedWeaponId: weaponInstanceId || state.equippedWeaponId,
+            equippedHelmId: helmInstanceId || state.equippedHelmId,
+            equippedArmorId: armorInstanceId || state.equippedArmorId,
+            equippedShieldId: shieldInstanceId || state.equippedShieldId,
+        });
+
+        syncService.logPlayerAction('Надел лучшее снаряжение');
+        syncService.debouncedSync();
     },
 
     upgradeItem: (itemId: string, useProtectionStone?: boolean) => {

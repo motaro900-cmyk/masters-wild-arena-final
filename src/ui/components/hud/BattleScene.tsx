@@ -16,18 +16,16 @@ import { BattleHUD } from './Battle/BattleHUD';
 import { BATTLE_CONFIG } from '../../../game/configs/constants';
 
 export const BattleScene: React.FC = () => {
-    const {
-        selectedHeroId,
-        selectedEnemyId,
-        goToMainMenu,
-        getCalculatedStats,
-        timeScale,
-        setTimeScale,
-        activePveEnemy,
-        activeRankedOpponent,
-        battleMode,
-        equippedSkins,
-    } = useGameStore();
+    const selectedHeroId = useGameStore((state) => state.selectedHeroId);
+    const selectedEnemyId = useGameStore((state) => state.selectedEnemyId);
+    const goToMainMenu = useGameStore((state) => state.goToMainMenu);
+    const getCalculatedStats = useGameStore((state) => state.getCalculatedStats);
+    const timeScale = useGameStore((state) => state.timeScale);
+    const setTimeScale = useGameStore((state) => state.setTimeScale);
+    const activePveEnemy = useGameStore((state) => state.activePveEnemy);
+    const activeRankedOpponent = useGameStore((state) => state.activeRankedOpponent);
+    const battleMode = useGameStore((state) => state.battleMode);
+    const equippedSkins = useGameStore((state) => state.equippedSkins);
     const containerRef = useRef<HTMLDivElement>(null);
     const engineRef = useRef<BattleEngine | null>(null);
 
@@ -552,17 +550,8 @@ export const BattleScene: React.FC = () => {
             engine.destroy();
             (window as any).__BATTLE_ENGINE__ = null;
         };
-    }, [
-        selectedHeroId,
-        selectedEnemyId,
-        getCalculatedStats,
-        enemyData,
-        battleStarted,
-        battleMode,
-        activePveEnemy,
-        playerHero,
-        rawEnemy,
-    ]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [battleStarted]);
 
     const isMobile = useGameStore((state) => state.isMobile);
     const isBattleOver = battleState.playerHP <= 0 || battleState.enemyHP <= 0;
@@ -580,8 +569,11 @@ export const BattleScene: React.FC = () => {
         goToMainMenu();
     }, [goToMainMenu]);
 
-    // Вычисляем статы врага для PreBattleScreen
-    const playerStats4Pre = getCalculatedStats(selectedHeroId)?.total;
+    // Вычисляем статы врага для PreBattleScreen (только до начала боя)
+    const playerStats4Pre = React.useMemo(() => {
+        if (battleStarted) return null;
+        return getCalculatedStats(selectedHeroId)?.total;
+    }, [battleStarted, selectedHeroId, getCalculatedStats]);
 
     return (
         <div

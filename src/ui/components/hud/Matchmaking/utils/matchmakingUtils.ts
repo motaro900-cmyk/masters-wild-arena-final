@@ -7,7 +7,14 @@ export function calculateTotalPower(equipment: Record<string, string | null | un
     let total = 0;
     Object.values(equipment).forEach((itemId: any) => {
         if (!itemId) return;
-        const item = (ITEMS_DATABASE as any)[itemId];
+        let templateId = itemId;
+        if (!ITEMS_DATABASE[itemId]) {
+            const match = Object.keys(ITEMS_DATABASE)
+                .filter((key) => itemId.startsWith(key + '_'))
+                .sort((a, b) => b.length - a.length)[0];
+            templateId = match || itemId;
+        }
+        const item = (ITEMS_DATABASE as any)[templateId];
         if (item) total += calculateItemPower(item);
     });
     return total;

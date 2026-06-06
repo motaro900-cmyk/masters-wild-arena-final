@@ -64,10 +64,13 @@ export const GearView = ({
 
     const gearPower = Object.values(equippedIds).reduce((acc: number, itemId: any) => {
         if (!itemId) return acc;
-        const item = ITEMS_DATABASE[String(itemId)] as any;
+        const invItem = inventory.find(
+            (i: any) => String(i.instanceId) === String(itemId) || String(i.id) === String(itemId),
+        );
+        const templateId = invItem ? invItem.id : itemId;
+        const item = ITEMS_DATABASE[String(templateId)] as any;
         if (!item) return acc;
 
-        const invItem = inventory.find((i: any) => String(i.id) === String(itemId));
         const lvl = invItem?.level || 1;
         const mult = lvl === 3 ? 1.35 : lvl === 2 ? 1.15 : 1.0;
 
@@ -80,7 +83,11 @@ export const GearView = ({
     };
 
     const handleUnequip = (itemId: string) => {
-        const item = ITEMS_DATABASE[itemId] as any;
+        const invItem = inventory.find(
+            (i: any) => String(i.instanceId) === String(itemId) || String(i.id) === String(itemId),
+        );
+        const templateId = invItem ? invItem.id : itemId;
+        const item = ITEMS_DATABASE[String(templateId)] as any;
         if (item) {
             if (item.attackBonus) addFloatingText(`-${item.attackBonus} АТАКА`, '#ef4444');
             if (item.hpBonus) addFloatingText(`-${item.hpBonus} ЗДОРОВЬЕ`, '#ef4444');
@@ -91,16 +98,25 @@ export const GearView = ({
     };
 
     if (localSelectedId && !isEquipped(localSelectedId)) {
-        const selItem = ITEMS_DATABASE[localSelectedId] as any;
+        const selInvItem = inventory.find(
+            (i: any) => String(i.instanceId) === String(localSelectedId) || String(i.id) === String(localSelectedId),
+        );
+        const selTemplateId = selInvItem ? selInvItem.id : localSelectedId;
+        const selItem = ITEMS_DATABASE[String(selTemplateId)] as any;
         if (selItem) {
             const equippedId = equippedIds[selItem.subTab];
-            const equippedItem = equippedId ? (ITEMS_DATABASE[equippedId] as any) : null;
+            const eqInvItem = equippedId
+                ? inventory.find(
+                      (i: any) => String(i.instanceId) === String(equippedId) || String(i.id) === String(equippedId),
+                  )
+                : null;
+            const eqTemplateId = eqInvItem ? eqInvItem.id : equippedId;
+            const equippedItem = eqTemplateId ? (ITEMS_DATABASE[String(eqTemplateId)] as any) : null;
+
             if (['WEAPONS', 'HELMETS', 'ARMOR', 'SHIELDS'].includes(selItem.subTab)) {
-                const eqInvItem = inventory.find((i: any) => String(i.id) === String(equippedId));
                 const eqLvl = eqInvItem?.level || 1;
                 const eqMult = eqLvl === 3 ? 1.35 : eqLvl === 2 ? 1.15 : 1.0;
 
-                const selInvItem = inventory.find((i: any) => String(i.id) === String(localSelectedId));
                 const selLvl = selInvItem?.level || 1;
                 const selMult = selLvl === 3 ? 1.35 : selLvl === 2 ? 1.15 : 1.0;
 

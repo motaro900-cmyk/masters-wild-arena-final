@@ -1,3 +1,5 @@
+import { syncService, SyncService } from '../../services/SyncService';
+
 /**
  * mailSlice — почтовый ящик игрока (входящие, архив, новостные письма).
  *
@@ -13,12 +15,35 @@ export const createMailSlice = (set: any, get: any) => ({
         set({ mail: newMail });
     },
 
-    markMailAsRead: (id: string) =>
+    addMail: (newMail: any) => {
+        set((state: any) => {
+            if (state.mail.some((m: any) => m.id === newMail.id)) return state;
+            return { mail: [newMail, ...state.mail] };
+        });
+
+        const store = get();
+        const userId = SyncService.getPrefixedUserId(store.vkUser, store.playerId);
+        if (userId) {
+            syncService.sendMail(userId, newMail).catch((e: any) => {
+                console.error('[MailSlice] sendMail failed:', e);
+            });
+        }
+    },
+
+    markMailAsRead: (id: string) => {
         set((state: any) => ({
             mail: state.mail.map((m: any) => (m.id === id ? { ...m, isRead: true } : m)),
-        })),
+        }));
+        const store = get();
+        const userId = SyncService.getPrefixedUserId(store.vkUser, store.playerId);
+        if (userId) {
+            syncService.updateMail(userId, id, { isRead: true }).catch((e: any) => {
+                console.error('[MailSlice] markMailAsRead update failed:', e);
+            });
+        }
+    },
 
-    deleteMail: (id: string) =>
+    deleteMail: (id: string) => {
         set((state: any) => {
             const mailItem = state.mail.find((m: any) => m.id === id);
             // System letters (welcome-mail, NEWS tab) cannot be deleted
@@ -26,17 +51,46 @@ export const createMailSlice = (set: any, get: any) => ({
             return {
                 mail: state.mail.filter((m: any) => m.id !== id),
             };
-        }),
+        });
+        const store = get();
+        const userId = SyncService.getPrefixedUserId(store.vkUser, store.playerId);
+        if (userId) {
+            syncService.deleteMail(userId, id).catch((e: any) => {
+                console.error('[MailSlice] deleteMail failed:', e);
+            });
+        }
+    },
 
-    archiveMail: (id: string) =>
+    archiveMail: (id: string) => {
         set((state: any) => ({
             mail: state.mail.map((m: any) => (m.id === id ? { ...m, tab: 'ARCHIVE' } : m)),
-        })),
+        }));
+        const store = get();
+        const userId = SyncService.getPrefixedUserId(store.vkUser, store.playerId);
+        if (userId) {
+            syncService.updateMail(userId, id, { tab: 'ARCHIVE' }).catch((e: any) => {
+                console.error('[MailSlice] archiveMail failed:', e);
+            });
+        }
+    },
 
-    toggleMailStar: (id: string) =>
+    toggleMailStar: (id: string) => {
         set((state: any) => ({
             mail: state.mail.map((m: any) => (m.id === id ? { ...m, isStarred: !m.isStarred } : m)),
-        })),
+        }));
+        setTimeout(() => {
+            const store = get();
+            const mailItem = store.mail.find((m: any) => m.id === id);
+            if (mailItem) {
+                const userId = SyncService.getPrefixedUserId(store.vkUser, store.playerId);
+                if (userId) {
+                    syncService.updateMail(userId, id, { isStarred: mailItem.isStarred }).catch((e: any) => {
+                        console.error('[MailSlice] toggleMailStar failed:', e);
+                    });
+                }
+            }
+        }, 0);
+    },
 
     claimMailReward: (id: string) => {
         const mail = get().mail.find((m: any) => m.id === id);
@@ -52,6 +106,13 @@ export const createMailSlice = (set: any, get: any) => ({
             set((state: any) => ({
                 mail: state.mail.map((m: any) => (m.id === id ? { ...m, rewards: null, isRead: true } : m)),
             }));
+            const store = get();
+            const userId = SyncService.getPrefixedUserId(store.vkUser, store.playerId);
+            if (userId) {
+                syncService.updateMail(userId, id, { rewards: null, isRead: true }).catch((e: any) => {
+                    console.error('[MailSlice] claimMailReward failed:', e);
+                });
+            }
         }
     },
 
@@ -81,5 +142,17 @@ export const createMailSlice = (set: any, get: any) => ({
         set((state: any) => ({
             mail: state.mail.map((m: any) => (m.tab === 'INBOX' ? { ...m, rewards: null, isRead: true } : m)),
         }));
+
+        const store = get();
+        const userId = SyncService.getPrefixedUserId(store.vkUser, store.playerId);
+        if (userId) {
+            mails.forEach((m: any) => {
+                if (m.tab === 'INBOX' && m.rewards) {
+                    syncService.updateMail(userId, m.id, { rewards: null, isRead: true }).catch((e: any) => {
+                        console.error('[MailSlice] collectAllMailRewards item failed:', e);
+                    });
+                }
+            });
+        }
     },
 });

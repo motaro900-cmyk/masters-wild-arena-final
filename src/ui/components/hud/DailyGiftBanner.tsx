@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react';
 import { AssetsMap } from '../../../configs/AssetsMap';
 import { useGameStore } from '../../../store/useGameStore';
-import { safeGetItem } from '../../../utils/SafeStorage';
 
 /**
  * DailyGiftBanner (v4.6) — Проверяет доступность подарка.
@@ -9,30 +8,41 @@ import { safeGetItem } from '../../../utils/SafeStorage';
 export const DailyGiftBanner: React.FC<{ onClick: () => void }> = ({ onClick }) => {
     const canClaim = useGameStore((state) => state.canClaimDailyGift);
     const setCanClaim = useGameStore((state) => state.setCanClaimDailyGift);
+    const lastDailyGiftClaimedTime = useGameStore((state) => state.lastDailyGiftClaimedTime);
+    const lastWheelSpinTime = useGameStore((state) => state.lastWheelSpinTime);
 
     useEffect(() => {
         const checkStatus = () => {
-            const lastClaim = safeGetItem('lastGiftClaim');
-            if (!lastClaim) {
-                setCanClaim(true);
-                return;
+            const store = useGameStore.getState();
+            const now = Date.now();
+
+            // 1. Calendar check
+            let calendarAvailable = true;
+            if (store.lastDailyGiftClaimedTime) {
+                const lastClaimDate = new Date(store.lastDailyGiftClaimedTime);
+                const nowDate = new Date(now);
+                const isSameDay =
+                    nowDate.getDate() === lastClaimDate.getDate() &&
+                    nowDate.getMonth() === lastClaimDate.getMonth() &&
+                    nowDate.getFullYear() === lastClaimDate.getFullYear();
+                calendarAvailable = !isSameDay;
             }
 
-            const now = new Date();
-            const lastClaimDate = new Date(parseInt(lastClaim));
+            // 2. Wheel check
+            let wheelAvailable = true;
+            if (store.lastWheelSpinTime) {
+                const diffMs = now - store.lastWheelSpinTime;
+                wheelAvailable = diffMs >= 24 * 3600 * 1000;
+            }
 
-            const isSameDay =
-                now.getDate() === lastClaimDate.getDate() &&
-                now.getMonth() === lastClaimDate.getMonth() &&
-                now.getFullYear() === lastClaimDate.getFullYear();
-
-            setCanClaim(!isSameDay);
+            const eitherAvailable = calendarAvailable || wheelAvailable;
+            setCanClaim(eitherAvailable);
         };
 
         checkStatus();
         const interval = setInterval(checkStatus, 60000);
         return () => clearInterval(interval);
-    }, [setCanClaim]);
+    }, [setCanClaim, lastDailyGiftClaimedTime, lastWheelSpinTime]);
 
     return (
         <div
