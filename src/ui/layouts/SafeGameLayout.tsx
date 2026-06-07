@@ -99,7 +99,12 @@ export const SafeGameLayout = ({ containerRef }: { containerRef: React.RefObject
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                backgroundColor: '#000',
+                backgroundColor: '#0a0806',
+                backgroundImage: `radial-gradient(circle, rgba(12, 9, 7, 0.4) 0%, rgba(5, 4, 3, 0.98) 100%), url(${
+                    isMobile ? AssetsMap.BACKGROUNDS.MAIN_MENU_MOBILE : AssetsMap.BACKGROUNDS.MAIN_MENU
+                })`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
                 overflow: 'hidden',
                 position: 'fixed',
                 top: 0,
