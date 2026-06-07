@@ -30,8 +30,8 @@ export const StatCard = ({ label, value, base, icon, color, max, tooltip, suffix
             style={{
                 position: 'relative',
                 background: hovered
-                    ? `linear-gradient(135deg, rgba(45,45,55,0.75) 0%, rgba(25,25,35,0.95) 100%)`
-                    : `linear-gradient(135deg, rgba(30,30,38,0.55) 0%, rgba(15,15,22,0.85) 100%)`,
+                    ? `linear-gradient(135deg, rgba(45, 45, 55, 0.96) 0%, rgba(25, 25, 35, 0.98) 100%)`
+                    : `linear-gradient(135deg, rgba(30, 30, 38, 0.95) 0%, rgba(15, 15, 22, 0.97) 100%)`,
                 borderRadius: '16px',
                 padding: '16px 18px 16px 22px',
                 border: '1px solid rgba(255,255,255,0.07)',

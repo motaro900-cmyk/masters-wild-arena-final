@@ -706,9 +706,9 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
                             isVictory: data.isVictory,
                         });
                         if (status === 'copied') {
-                            alert('Результат боя скопирован в буфер обмена!');
+                            useGameStore.getState().showAlert('Результат боя скопирован в буфер обмена!');
                         } else if (status === 'shared') {
-                            alert('Запись опубликована на стене!');
+                            useGameStore.getState().showAlert('Запись опубликована на стене!');
                         }
                     }}
                     style={{

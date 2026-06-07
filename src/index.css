@@ -28,6 +28,11 @@ html,
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    overscroll-behavior: none;
+    touch-action: pan-y;
 }
 
 /* ─── MOBILE ADAPTATION ─────────────────────────────────────────────────── */
@@ -633,4 +638,39 @@ canvas {
 .animate-hud-avatar-breathe {
     animation: hud-avatar-breathe 1.5s ease-in-out infinite alternate;
     will-change: transform;
+}
+
+/* Character Preview Dynamic Glow & Shadow Animations */
+@keyframes bg-glow-pulse {
+    0%,
+    100% {
+        opacity: 0.75;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.06);
+    }
+}
+
+@keyframes bg-shadow-pulse {
+    0%,
+    100% {
+        opacity: 0.55;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.75;
+        transform: scale(1.08);
+    }
+}
+
+.animate-bg-glow-pulse {
+    animation: bg-glow-pulse 5s ease-in-out infinite;
+    will-change: transform, opacity;
+}
+
+.animate-bg-shadow-pulse {
+    animation: bg-shadow-pulse 5s ease-in-out infinite;
+    will-change: transform, opacity;
 }

@@ -282,10 +282,10 @@ export const TalentsView = ({ hero, isCompact = false }: any) => {
                 <div style={{ display: 'flex', justifyContent: 'center', marginTop: 'auto' }}>
                     <button
                         onClick={() => {
-                            if (confirm('Сбросить все таланты? Очки будут возвращены.')) {
+                            useGameStore.getState().showConfirm('Сбросить все таланты? Очки будут возвращены.', () => {
                                 resetTalents(hero.id);
                                 audioService.playSFX('SFX_CLICK');
-                            }
+                            });
                         }}
                         style={{
                             width: '100%',
@@ -675,10 +675,10 @@ export const TalentsView = ({ hero, isCompact = false }: any) => {
                     whileHover={{ scale: 1.05, background: 'rgba(255,255,255,0.1)' }}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => {
-                        if (confirm('Сбросить все таланты? Очки будут возвращены.')) {
+                        useGameStore.getState().showConfirm('Сбросить все таланты? Очки будут возвращены.', () => {
                             resetTalents(hero.id);
                             audioService.playSFX('SFX_CLICK');
-                        }
+                        });
                     }}
                     style={{
                         padding: '18px 50px',

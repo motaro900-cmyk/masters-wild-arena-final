@@ -230,6 +230,48 @@ const StatsView = ({ beastId: _beastId }: { beastId: string }) => {
     );
 };
 
+const getHeroGlowColor = (heroId: string, role: string) => {
+    switch (heroId) {
+        case 'lion':
+            return 'rgba(234, 179, 8, 0.25)'; // Royal Gold
+        case 'panda':
+            return 'rgba(34, 197, 94, 0.25)'; // Jade Green
+        case 'tiger':
+            return 'rgba(239, 68, 68, 0.25)'; // Flame Red
+        case 'cat':
+            return 'rgba(168, 85, 247, 0.25)'; // Magic Purple
+        case 'moose':
+            return 'rgba(16, 185, 129, 0.25)'; // Forest Emerald
+        case 'bear':
+            return 'rgba(217, 119, 6, 0.25)'; // Deep Amber
+        case 'monkey':
+            return 'rgba(6, 182, 212, 0.25)'; // Neon Cyan
+        case 'crocodile':
+            return 'rgba(20, 184, 166, 0.22)'; // Deep Teal
+        case 'rhino':
+            return 'rgba(99, 102, 241, 0.22)'; // Indigo Steel
+        case 'ram':
+            return 'rgba(249, 115, 22, 0.25)'; // Warm Orange
+        case 'panther':
+            return 'rgba(124, 58, 237, 0.25)'; // Shadow Violet
+        case 'boar':
+            return 'rgba(220, 38, 38, 0.25)'; // Crimson
+        default:
+            switch (role) {
+                case 'Танк':
+                    return 'rgba(20, 184, 166, 0.25)';
+                case 'Баланс':
+                    return 'rgba(245, 158, 11, 0.25)';
+                case 'Крит':
+                    return 'rgba(168, 85, 247, 0.25)';
+                case 'Урон':
+                    return 'rgba(239, 68, 68, 0.25)';
+                default:
+                    return 'rgba(160, 139, 112, 0.15)';
+            }
+    }
+};
+
 const EquipmentTab: React.FC = () => {
     const selectedHeroId = useGameStore((state) => state.selectedHeroId);
     const inventory = useGameStore((state) => state.inventory);
@@ -259,7 +301,7 @@ const EquipmentTab: React.FC = () => {
             app = new PIXI.Application();
             await app.init({ width: 600, height: 800, backgroundAlpha: 0, antialias: true });
             if (!active) {
-                app.destroy(true, { children: true });
+                app.destroy({ removeView: true, children: true, texture: false });
                 return;
             }
             appRef.current = app;
@@ -303,7 +345,7 @@ const EquipmentTab: React.FC = () => {
         return () => {
             active = false;
             if (appRef.current) {
-                appRef.current.destroy(true, { children: true });
+                appRef.current.destroy({ removeView: true, children: true, texture: false });
                 appRef.current = null;
             }
             containerRef.current = null;
@@ -347,6 +389,12 @@ const EquipmentTab: React.FC = () => {
                     if (equippedSkin === 'panda_frost') {
                         sheetPath = '/assets/characters/panda/panda_frost_poses.png.json';
                     }
+                } else if (selectedHeroId === 'minotaur') {
+                    sheetPath = '/assets/characters/minotaur/minotaur_poses.png.json';
+                } else if (selectedHeroId === 'tiger_warrior') {
+                    sheetPath = '/assets/characters/tiger_warrior/tiger_warrior_poses.png.json';
+                } else if (selectedHeroId === 'lion_knight') {
+                    sheetPath = '/assets/characters/lion_knight/lion_knight_poses.png.json';
                 }
                 sheet = await PIXI.Assets.load(sheetPath);
 
@@ -463,9 +511,20 @@ const EquipmentTab: React.FC = () => {
             </div>
 
             {/* ЦЕНТР: ПЕРСОНАЖ */}
-            <div className="flex-1 flex flex-col items-center justify-end pb-10 relative z-0">
-                <div ref={pixiContainerRef} className="w-[600px] h-[800px] pointer-events-none" />
-                <div className="absolute bottom-4 text-center">
+            <div className="flex-1 flex flex-col items-center justify-end pb-10 relative z-0 overflow-hidden">
+                {/* Динамическая аура/свечение за персонажем */}
+                <div
+                    className="absolute inset-0 pointer-events-none transition-all duration-700 ease-in-out scale-110 animate-bg-glow-pulse"
+                    style={{
+                        background: `radial-gradient(circle at 50% 60%, ${getHeroGlowColor(beast.id, beast.role)} 0%, rgba(18, 14, 11, 0) 70%)`,
+                    }}
+                />
+
+                {/* Подставка/тень под ногами персонажа */}
+                <div className="absolute bottom-[170px] w-[240px] h-[25px] bg-black/60 rounded-full blur-md pointer-events-none z-0 animate-bg-shadow-pulse" />
+
+                <div ref={pixiContainerRef} className="w-[600px] h-[800px] pointer-events-none relative z-10" />
+                <div className="absolute bottom-4 text-center z-20">
                     <h2 className="text-5xl font-black text-yellow-500 italic tracking-tighter uppercase drop-shadow-2xl">
                         {beast.name}
                     </h2>

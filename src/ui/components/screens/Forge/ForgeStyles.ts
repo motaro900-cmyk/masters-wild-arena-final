@@ -125,7 +125,7 @@ export const styles: Record<string, React.CSSProperties> = {
         justifyContent: 'space-between',
         alignItems: 'center',
         marginBottom: '35px',
-        zIndex: 10,
+        zIndex: 10000,
         borderBottom: '1.5px solid rgba(240, 192, 64, 0.25)',
         paddingBottom: '20px',
     },

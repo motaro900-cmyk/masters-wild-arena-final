@@ -202,7 +202,7 @@ export const GameHUD: React.FC = () => {
             {!isFullScreenScene && (
                 <div
                     className="tutorial-profile-hub absolute top-[30px] left-[5px] hud-interactive w-[340px] md:w-[465px]"
-                    style={{ transform: `scale(${hudScale})`, transformOrigin: 'top left' }}
+                    style={{ zIndex: 100, transform: `scale(${hudScale})`, transformOrigin: 'top left' }}
                 >
                     <ProfileHub />
                 </div>
@@ -212,7 +212,10 @@ export const GameHUD: React.FC = () => {
             {!isFullScreenScene && (
                 <div
                     className="absolute top-[20px] left-1/2 -translate-x-1/2 hud-interactive"
-                    style={isMobile ? { transform: `scale(${hudScale})`, transformOrigin: 'top center' } : {}}
+                    style={{
+                        zIndex: 100,
+                        ...(isMobile ? { transform: `scale(${hudScale})`, transformOrigin: 'top center' } : {}),
+                    }}
                 >
                     <BattlePassBar />
                 </div>
@@ -227,7 +230,10 @@ export const GameHUD: React.FC = () => {
                 !showSummonOverlay && (
                     <div
                         className="tutorial-resource-bar absolute top-[20px] right-[25px] hud-interactive flex flex-col items-end gap-1"
-                        style={isMobile ? { transform: `scale(${hudScale})`, transformOrigin: 'top right' } : {}}
+                        style={{
+                            zIndex: 10000,
+                            ...(isMobile ? { transform: `scale(${hudScale})`, transformOrigin: 'top right' } : {}),
+                        }}
                     >
                         <ResourceBar
                             onOpenShop={(tab) => {
@@ -302,7 +308,7 @@ export const GameHUD: React.FC = () => {
 
                     <div
                         className="absolute top-[160px] right-[25px] flex flex-col gap-3 items-end hud-interactive w-[260px] md:w-[400px]"
-                        style={{ transform: `scale(${hudScale})`, transformOrigin: 'top right' }}
+                        style={{ zIndex: 100, transform: `scale(${hudScale})`, transformOrigin: 'top right' }}
                     >
                         <DailyGiftBanner onClick={() => setActiveWindow('GIFT')} />
                         <DailyTaskPanel />
@@ -738,7 +744,82 @@ export const GameHUD: React.FC = () => {
 
             <LevelUpOverlay />
             <ConfirmDialog />
+            <AlertDialog />
         </div>
+    );
+};
+
+const AlertDialog: React.FC = () => {
+    const activeAlert = useGameStore((state) => state.activeAlert);
+
+    if (!activeAlert) return null;
+
+    return (
+        <AnimatePresence>
+            <div
+                style={{
+                    position: 'fixed',
+                    inset: 0,
+                    backgroundColor: 'rgba(0, 0, 0, 0.75)',
+                    backdropFilter: 'blur(8px)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 99999,
+                }}
+            >
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.9 }}
+                    style={{
+                        background: 'linear-gradient(135deg, rgba(28, 18, 12, 0.95) 0%, rgba(12, 6, 4, 0.99) 100%)',
+                        border: '1px solid rgba(240, 192, 64, 0.3)',
+                        boxShadow: '0 10px 40px rgba(0, 0, 0, 0.8), 0 0 25px rgba(240, 192, 64, 0.1)',
+                        borderRadius: '16px',
+                        padding: '28px',
+                        width: '380px',
+                        textAlign: 'center',
+                        fontFamily: "'Philosopher', 'Nunito', sans-serif",
+                    }}
+                >
+                    <div style={{ fontSize: '32px', marginBottom: '12px' }}>📜</div>
+                    <div
+                        style={{
+                            color: '#eedfa0',
+                            fontSize: '15.5px',
+                            fontWeight: 700,
+                            lineHeight: '1.5',
+                            marginBottom: '24px',
+                            whiteSpace: 'pre-line',
+                        }}
+                    >
+                        {activeAlert.message}
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'center' }}>
+                        <button
+                            onClick={activeAlert.onOk}
+                            style={{
+                                width: '140px',
+                                padding: '10px 0',
+                                background: 'linear-gradient(180deg, #f0c040 0%, #c8960a 100%)',
+                                border: 'none',
+                                borderRadius: '8px',
+                                color: '#1a0f00',
+                                fontFamily: "'Cinzel', serif",
+                                fontSize: '13px',
+                                fontWeight: 900,
+                                cursor: 'pointer',
+                                boxShadow: '0 4px 12px rgba(240, 192, 64, 0.2)',
+                                transition: 'all 0.2s',
+                            }}
+                        >
+                            ОК
+                        </button>
+                    </div>
+                </motion.div>
+            </div>
+        </AnimatePresence>
     );
 };
 

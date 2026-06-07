@@ -136,7 +136,7 @@ export const DailyTaskPanel: React.FC = () => {
                     backgroundImage: `url(${AssetsMap.UI.PANEL_QUEST})`,
                     backgroundSize: '100% 100%',
                     backgroundRepeat: 'no-repeat',
-                    filter: 'url(#css-sharpen) contrast(1.25) saturate(1.15) brightness(0.9) hue-rotate(5deg)',
+                    filter: 'contrast(1.25) saturate(1.15) brightness(0.9) hue-rotate(5deg)',
                     zIndex: 0,
                     pointerEvents: 'none',
                 }}

@@ -167,26 +167,33 @@ export function animateLungeForward(
 
         gsap.killTweensOf(unit);
 
-        const isRaccoon = unit.config?.id === 'raccoon' || unit.config?.image.includes('raccoon');
-        const isPanda = unit.config?.id === 'panda' || unit.config?.image.includes('panda');
+        const hasPoses = unit.posesTextures && unit.posesTextures.length > 0;
 
         if (poseOverride !== undefined) {
             unit.nextAttackPose = poseOverride;
             unit.setFrame(2);
-        } else if (isPanda) {
+        } else if (hasPoses) {
             // Randomly select next attack pose index: Swing (3), Thrust (4), Sweep (5), Jump Strike (6)
             unit.nextAttackPose = [3, 4, 5, 6][Math.floor(Math.random() * 4)];
             unit.setFrame(2); // Set run/lunge pose frame initially
-        } else if (isRaccoon) {
-            unit.nextAttackPose = [3, 4, 5, 6][Math.floor(Math.random() * 4)];
-            unit.setFrame(2);
         }
 
-        // Start spawning ghost trails (only for ASSASSIN role)
+        // Start spawning ghost trails (for ASSASSIN and WARRIOR roles)
         const isAssassin = unit.config?.role === 'ASSASSIN';
+        const isWarrior = unit.config?.role === 'WARRIOR';
+        const shouldSpawnTrail = isAssassin || isWarrior;
+        const animSpeed = isAssassin ? 0.75 : 1.0;
+
         if (anyUnit.trailInterval) clearInterval(anyUnit.trailInterval);
-        if (isAssassin) {
-            const fxColor = 0x222222; // Черный/теневой шлейф Убийцы
+        if (shouldSpawnTrail) {
+            let fxColor = 0x222222; // Default shadow
+            if (unit.config?.id === 'tiger_warrior') {
+                fxColor = 0xff4500; // Crimson flame for tiger
+            } else if (unit.config?.id === 'lion_knight') {
+                fxColor = 0xffd700; // Golden light for lion
+            } else if (unit.config?.id === 'panda') {
+                fxColor = 0x3ecf4f; // Emerald/nature green for panda
+            }
             anyUnit.trailInterval = setInterval(() => {
                 EffectsManager.getInstance().spawnGhostTrail(unit, 300, fxColor);
             }, 40);
@@ -211,25 +218,25 @@ export function animateLungeForward(
             tl.to(unit, {
                 x: targetX,
                 y: startY - 360,
-                duration: 0.35,
+                duration: 0.35 * animSpeed,
                 ease: 'power1.out',
             });
             // 2. Slam down
             tl.to(unit, {
                 y: startY,
-                duration: 0.2,
+                duration: 0.2 * animSpeed,
                 ease: 'power2.in',
             });
         } else if (unit.nextAttackPose === 4) {
             // 2. Thrust: ultra fast straight line dash
             tl.to(unit, {
                 x: targetX,
-                duration: 0.18,
+                duration: 0.18 * animSpeed,
                 ease: 'power3.out',
             });
             tl.to(unit, {
                 x: targetX + 15 * (isPlayer ? 1 : -1),
-                duration: 0.12,
+                duration: 0.12 * animSpeed,
                 ease: 'sine.inOut',
             });
         } else {
@@ -237,12 +244,12 @@ export function animateLungeForward(
             tl.to(unit, {
                 x: targetX,
                 y: startY - 40,
-                duration: 0.25,
+                duration: 0.25 * animSpeed,
                 ease: 'sine.out',
             });
             tl.to(unit, {
                 y: startY,
-                duration: 0.15,
+                duration: 0.15 * animSpeed,
                 ease: 'sine.in',
             });
         }
@@ -275,10 +282,22 @@ export function animateLungeReturn(unit: HeroUnit, startX: number, startY: numbe
         const timeScale = useGameStore.getState().timeScale || 1;
 
         const isAssassin = unit.config?.role === 'ASSASSIN';
+        const isWarrior = unit.config?.role === 'WARRIOR';
+        const shouldSpawnTrail = isAssassin || isWarrior;
+        const animSpeed = isAssassin ? 0.75 : 1.0;
+
         if (anyUnit.trailInterval) clearInterval(anyUnit.trailInterval);
-        if (isAssassin) {
+        if (shouldSpawnTrail) {
+            let fxColor = 0x222222; // Default shadow
+            if (unit.config?.id === 'tiger_warrior') {
+                fxColor = 0xff4500; // Crimson flame for tiger
+            } else if (unit.config?.id === 'lion_knight') {
+                fxColor = 0xffd700; // Golden light for lion
+            } else if (unit.config?.id === 'panda') {
+                fxColor = 0x3ecf4f; // Emerald/nature green for panda
+            }
             anyUnit.trailInterval = setInterval(() => {
-                EffectsManager.getInstance().spawnGhostTrail(unit, 300, 0x222222);
+                EffectsManager.getInstance().spawnGhostTrail(unit, 300, fxColor);
             }, 40);
         }
 
@@ -302,7 +321,7 @@ export function animateLungeReturn(unit: HeroUnit, startX: number, startY: numbe
         tl.to(unit, {
             x: startX,
             y: startY,
-            duration: 0.45,
+            duration: 0.45 * animSpeed,
             ease: 'power2.inOut',
         });
     });
@@ -326,7 +345,7 @@ export function animateTeleportOut(unit: HeroUnit): Promise<void> {
         }
 
         // Звук исчезновения
-        audioService.playSFX('/assets/audio/sfx/dodge.mp3');
+        audioService.playSFX('/assets/audio/sfx/miss.mp3');
 
         // Небольшой взрыв частиц в месте исчезновения
         EffectsManager.getInstance().particleBurst(unit.x, unit.y - 80, 8, 0x5a189a, 120);
@@ -457,19 +476,15 @@ export function animateDeath(unit: HeroUnit, isPlayer: boolean): Promise<void> {
         });
         tl.timeScale(timeScale);
 
-        const isRaccoon = unit.config?.id === 'raccoon' || unit.config?.image.includes('raccoon');
-        const isPanda = unit.config?.id === 'panda' || unit.config?.image.includes('panda');
+        const hasPoses = unit.posesTextures && unit.posesTextures.length > 0;
 
-        if (isPanda) {
-            unit.setFrame(7); // Lay-down / sweep pose
-        } else if (isRaccoon) {
-            unit.setFrame(7); // Raccoon fall frame
+        if (hasPoses) {
+            unit.setFrame(unit.deathFrameIdx); // Death / fall frame
         }
 
-        const targetRotation =
-            isPanda || isRaccoon
-                ? 0 // Already flat or fall pose, no extra rotation needed
-                : unit.rotation + (isPlayer ? -Math.PI / 2.5 : Math.PI / 2.5);
+        const isFallbackDeath =
+            !hasPoses || unit.deathFrameIdx === unit.hitFrameIdx || unit.deathFrameIdx === unit.idleFrameIdx;
+        const targetRotation = isFallbackDeath ? unit.rotation + (isPlayer ? -Math.PI / 2.5 : Math.PI / 2.5) : 0; // Already flat or fall pose, no extra rotation needed
 
         // Падение тела и растворение (Slower)
         tl.to(unit, {
@@ -511,20 +526,21 @@ export function animateHitReaction(unit: HeroUnit, isCrit: boolean): Promise<voi
 
         gsap.killTweensOf(unit);
 
-        const isRaccoon = unit.config?.id === 'raccoon' || unit.config?.image.includes('raccoon');
-        const isPanda = unit.config?.id === 'panda' || unit.config?.image.includes('panda');
+        const hasPoses = unit.posesTextures && unit.posesTextures.length > 0;
 
-        if (isPanda) {
-            unit.setFrame(isCrit ? 7 : 5); // Bracing (5) or laydown (7)
-        } else if (isRaccoon) {
-            unit.setFrame(isCrit ? 7 : 6); // Bracing (6) or laydown (7)
+        if (hasPoses) {
+            const bracingPose =
+                isCrit && unit.deathFrameIdx !== unit.hitFrameIdx && unit.deathFrameIdx !== unit.idleFrameIdx
+                    ? unit.deathFrameIdx
+                    : unit.hitFrameIdx;
+            unit.setFrame(bracingPose); // Bracing (hit) or laydown (death frame if custom)
         }
 
         const tl = gsap.timeline({
             onComplete: () => {
                 unit.x = startX;
-                if (isPanda || isRaccoon) {
-                    unit.setFrame(0); // return to Idle
+                if (hasPoses) {
+                    unit.setFrame(unit.idleFrameIdx); // return to Idle
                 }
                 if (anyUnit.currentResolve === resolve) {
                     anyUnit.currentResolve = null;
@@ -590,12 +606,9 @@ export function animateDodge(unit: HeroUnit, isPlayer: boolean): Promise<void> {
 
         gsap.killTweensOf(unit);
 
-        const isRaccoon = unit.config?.id === 'raccoon' || unit.config?.image.includes('raccoon');
-        const isPanda = unit.config?.id === 'panda' || unit.config?.image.includes('panda');
+        const hasPoses = unit.posesTextures && unit.posesTextures.length > 0;
 
-        if (isPanda) {
-            unit.setFrame(1); // Defend stance (1)
-        } else if (isRaccoon) {
+        if (hasPoses) {
             unit.setFrame(1); // Defend stance (1)
         }
 
@@ -603,7 +616,7 @@ export function animateDodge(unit: HeroUnit, isPlayer: boolean): Promise<void> {
             onComplete: () => {
                 unit.angle = startAngle;
                 unit.x = startX;
-                if (isPanda || isRaccoon) {
+                if (hasPoses) {
                     unit.setFrame(0); // return to Idle
                 }
                 if (anyUnit.currentResolve === resolve) {

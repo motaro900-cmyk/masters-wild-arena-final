@@ -4,6 +4,7 @@ import { HEROES_DB } from '../configs/HeroesConfig';
 import { ITEMS_DATABASE } from '../game/configs/ItemsConfig';
 import { getRandomBotName } from '../data/botNames';
 import { getRankInfo } from '../configs/RankSystem';
+import { useGameStore } from '../store/useGameStore';
 
 const SEARCH_TIMEOUT_MS = 10000; // 10 секунд поиск реального игрока
 const ATTACK_COOLDOWN_MS = 60 * 60 * 1000; // 1 час — нельзя атаковать одного игрока
@@ -111,6 +112,16 @@ const buildStatsFromEquipment = (heroId: string, level: number, equipment: Recor
     return total;
 };
 
+export const calculateCombatPower = (
+    stats: { attack?: number; hp?: number; defense?: number } | undefined | null,
+): number => {
+    if (!stats) return 1000;
+    const attack = stats.attack ?? 10;
+    const hp = stats.hp ?? 100;
+    const defense = stats.defense ?? 5;
+    return Math.floor(attack * 10 + hp + defense * 5);
+};
+
 class MatchmakingServiceClass {
     /**
      * Основной метод поиска противника.
@@ -121,15 +132,19 @@ class MatchmakingServiceClass {
         myRating: number,
         myLevel: number,
         myWinRate: number,
-        _myStats?: any,
+        myStats?: any,
         winStreak = 0,
         lossStreak = 0,
     ): Promise<MatchOpponent> {
-        const realOpponent = await this.searchRealPlayer(myUserId, myRating, myWinRate);
+        // Если рейтинг меньше 30 кубков (первые игры новичка), гарантированно даем бота
+        if (myRating < 30) {
+            return this.generateBot(myRating, myLevel, myStats, winStreak, lossStreak);
+        }
+        const realOpponent = await this.searchRealPlayer(myUserId, myRating, myWinRate, myLevel, myStats);
         if (realOpponent) {
             return realOpponent;
         }
-        return this.generateBot(myRating, myLevel, _myStats, winStreak, lossStreak);
+        return this.generateBot(myRating, myLevel, myStats, winStreak, lossStreak);
     }
 
     /**
@@ -140,13 +155,21 @@ class MatchmakingServiceClass {
         myUserId: string,
         myRating: number,
         myWinRate: number,
+        myLevel: number,
+        myStats?: any,
     ): Promise<MatchOpponent | null> {
-        const searchPromise = this.queryFirebase(myUserId, myRating, myWinRate);
+        const searchPromise = this.queryFirebase(myUserId, myRating, myWinRate, myLevel, myStats);
         const timeoutPromise = new Promise<null>((resolve) => setTimeout(() => resolve(null), SEARCH_TIMEOUT_MS));
         return Promise.race([searchPromise, timeoutPromise]);
     }
 
-    private async queryFirebase(myUserId: string, myRating: number, myWinRate: number): Promise<MatchOpponent | null> {
+    private async queryFirebase(
+        myUserId: string,
+        myRating: number,
+        myWinRate: number,
+        myLevel: number,
+        myStats?: any,
+    ): Promise<MatchOpponent | null> {
         try {
             const playersRef = collection(db, USERS_COLLECTION);
             // Ищем игроков в динамическом диапазоне кубков в зависимости от текущего рейтинга игрока
@@ -220,6 +243,32 @@ class MatchmakingServiceClass {
                     // Проверяем winrate ±15%
                     const pWinRate = p.winRate ?? 50;
                     if (Math.abs(pWinRate - myWinRate) > 15) return false;
+
+                    // Защита новичков (newbie protection) при рейтинге < 150
+                    if (myRating < 150) {
+                        // Ограничение по уровню героя: в пределах ±2 уровней
+                        const pLevel = p.level || p.уровень || p.level || 1;
+                        if (Math.abs(pLevel - myLevel) > 2) return false;
+
+                        // Ограничение по Combat Power (CP): боевая сила оппонента не должна превышать силу игрока более чем на 30%
+                        const pHeroId = p.hero || p.герой || p.heroId || 'panda';
+                        const pEquipment = p.equipment ||
+                            p.снаряжение || {
+                                WEAPONS: p.геройСнаряжение?.weapon || null,
+                                HELMETS: p.геройСнаряжение?.helm || null,
+                                ARMOR: p.геройСнаряжение?.armor || null,
+                                SHIELDS: p.геройСнаряжение?.shield || null,
+                                SHOULDERS: null,
+                                PANTS: null,
+                                BOOTS: null,
+                            };
+                        const pStats = buildStatsFromEquipment(pHeroId, pLevel, pEquipment);
+                        const pCP = calculateCombatPower(pStats);
+                        const myCP = calculateCombatPower(myStats);
+
+                        if (pCP > myCP * 1.2) return false;
+                    }
+
                     return true;
                 });
 
@@ -343,6 +392,12 @@ class MatchmakingServiceClass {
             else if (targetRarity === 'RARE') targetRarity = 'COMMON';
         }
 
+        // Для совсем новичков делаем бота легким
+        if (myRating < 30) {
+            targetRarity = 'COMMON';
+            botLevel = Math.min(botLevel, 1);
+        }
+
         const equipment = generateOpponentEquipment(botLevel, targetRarity);
 
         // Рассчитываем множитель характеристик
@@ -370,6 +425,10 @@ class MatchmakingServiceClass {
         const variance = Math.random() * 0.08 - 0.04;
         let statsMultiplier = baseMult + winStreakMod + lossStreakMod + variance;
         statsMultiplier = Math.max(0.65, Math.min(1.75, statsMultiplier));
+
+        if (myRating < 30) {
+            statsMultiplier = 0.7;
+        }
 
         // Рассчитываем характеристики бота на основе сгенерированного снаряжения и уровня
         const rawStats = buildStatsFromEquipment(randomHero.id, botLevel, equipment);
@@ -428,28 +487,35 @@ class MatchmakingServiceClass {
         };
     }
 
-    /**
-     * Проверяет cooldown — можно ли атаковать этого игрока.
-     * Кулдаун хранится в localStorage чтобы не делать лишних запросов в Firebase.
-     */
     public canAttack(myUserId: string, targetUserId: string): boolean {
         try {
-            const key = `atk_cd_${myUserId}_${targetUserId}`;
-            const last = localStorage.getItem(key);
-            if (!last) return true;
-            return Date.now() - Number(last) >= ATTACK_COOLDOWN_MS;
+            const state = useGameStore.getState();
+            const pvpCooldowns = state.pvpCooldowns || {};
+            const last = pvpCooldowns[targetUserId];
+
+            const localKey = `atk_cd_${myUserId}_${targetUserId}`;
+            const localLast = localStorage.getItem(localKey);
+
+            const lastTime = last || (localLast ? Number(localLast) : 0);
+            if (!lastTime) return true;
+            return Date.now() - lastTime >= ATTACK_COOLDOWN_MS;
         } catch {
             return true;
         }
     }
 
     /**
-     * Записывает время атаки в localStorage.
+     * Записывает время атаки в localStorage и Zustand.
      */
     public recordAttack(myUserId: string, targetUserId: string): void {
         try {
-            const key = `atk_cd_${myUserId}_${targetUserId}`;
-            localStorage.setItem(key, String(Date.now()));
+            const localKey = `atk_cd_${myUserId}_${targetUserId}`;
+            localStorage.setItem(localKey, String(Date.now()));
+
+            const state = useGameStore.getState();
+            if (state.recordAttack) {
+                state.recordAttack(targetUserId);
+            }
         } catch {
             // ignore
         }

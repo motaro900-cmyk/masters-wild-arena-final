@@ -3,6 +3,7 @@ import { RealPlayer, Section, inputStyle, btnStyle } from '../AdminShared';
 import { syncService } from '../../../../../services/SyncService';
 import { audioService } from '../../../../../services/AudioService';
 import { AssetsMap } from '../../../../../configs/AssetsMap';
+import { useGameStore } from '../../../../../store/useGameStore';
 
 interface PlayerModerationPanelProps {
     selectedPlayer: RealPlayer;
@@ -83,10 +84,10 @@ export const PlayerModerationPanel: React.FC<PlayerModerationPanelProps> = ({
                                         banReason: modReason,
                                         banUntil: banDuration,
                                     });
-                                    alert(`Игрок ${selectedPlayer.name} ЗАБАНЕН`);
+                                    useGameStore.getState().showAlert(`Игрок ${selectedPlayer.name} ЗАБАНЕН`);
                                     onRefresh();
                                 } catch {
-                                    alert('Ошибка при бане');
+                                    useGameStore.getState().showAlert('Ошибка при бане');
                                 }
                             }}
                             style={{
@@ -117,10 +118,10 @@ export const PlayerModerationPanel: React.FC<PlayerModerationPanelProps> = ({
                                         muteReason: modReason,
                                         muteUntil: muteDuration,
                                     });
-                                    alert(`Игрок ${selectedPlayer.name} получил МУТ`);
+                                    useGameStore.getState().showAlert(`Игрок ${selectedPlayer.name} получил МУТ`);
                                     onRefresh();
                                 } catch {
-                                    alert('Ошибка при муте');
+                                    useGameStore.getState().showAlert('Ошибка при муте');
                                 }
                             }}
                             style={{ ...btnStyle, padding: '0 15px' }}
@@ -135,17 +136,17 @@ export const PlayerModerationPanel: React.FC<PlayerModerationPanelProps> = ({
                     <button
                         onClick={async () => {
                             audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
-                            if (confirm(`Кикнуть игрока ${selectedPlayer.name}?`)) {
+                            useGameStore.getState().showConfirm(`Кикнуть игрока ${selectedPlayer.name}?`, async () => {
                                 try {
                                     await syncService.updateRemotePlayerData(selectedPlayer.id, {
                                         status: 'KICKED',
                                     });
-                                    alert('Игрок кикнут');
+                                    useGameStore.getState().showAlert('Игрок кикнут');
                                     onRefresh();
                                 } catch {
-                                    alert('Ошибка при кике');
+                                    useGameStore.getState().showAlert('Ошибка при кике');
                                 }
-                            }
+                            });
                         }}
                         style={{ ...btnStyle, flex: 1, background: '#301010', color: '#fff' }}
                     >
@@ -154,17 +155,17 @@ export const PlayerModerationPanel: React.FC<PlayerModerationPanelProps> = ({
                     <button
                         onClick={async () => {
                             audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
-                            if (confirm('Сбросить рейтинг игрока?')) {
+                            useGameStore.getState().showConfirm('Сбросить рейтинг игрока?', async () => {
                                 try {
                                     await syncService.updateRemotePlayerData(selectedPlayer.id, {
                                         rating: 0,
                                     });
-                                    alert('Рейтинг сброшен');
+                                    useGameStore.getState().showAlert('Рейтинг сброшен');
                                     onRefresh();
                                 } catch {
-                                    alert('Ошибка сброса');
+                                    useGameStore.getState().showAlert('Ошибка сброса');
                                 }
-                            }
+                            });
                         }}
                         style={{ ...btnStyle, flex: 1 }}
                     >
@@ -177,31 +178,36 @@ export const PlayerModerationPanel: React.FC<PlayerModerationPanelProps> = ({
                     <button
                         onClick={async () => {
                             audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
-                            if (confirm(`ВНИМАНИЕ: Выполнить полный вайп игрока ${selectedPlayer.name}?`)) {
-                                try {
-                                    await syncService.updateRemotePlayerData(selectedPlayer.id, {
-                                        gold: 0,
-                                        crystals: 0,
-                                        level: 1,
-                                        rating: 0,
-                                        inventory: [],
-                                        equipment: {
-                                            WEAPONS: null,
-                                            HELMETS: null,
-                                            ARMOR: null,
-                                            SHIELDS: null,
-                                            SHOULDERS: null,
-                                            PANTS: null,
-                                            BOOTS: null,
-                                        },
-                                        fullStateJSON: '',
-                                    });
-                                    alert('Аккаунт полностью очищен');
-                                    onRefresh();
-                                } catch {
-                                    alert('Ошибка при вайпе');
-                                }
-                            }
+                            useGameStore
+                                .getState()
+                                .showConfirm(
+                                    `ВНИМАНИЕ: Выполнить полный вайп игрока ${selectedPlayer.name}?`,
+                                    async () => {
+                                        try {
+                                            await syncService.updateRemotePlayerData(selectedPlayer.id, {
+                                                gold: 0,
+                                                crystals: 0,
+                                                level: 1,
+                                                rating: 0,
+                                                inventory: [],
+                                                equipment: {
+                                                    WEAPONS: null,
+                                                    HELMETS: null,
+                                                    ARMOR: null,
+                                                    SHIELDS: null,
+                                                    SHOULDERS: null,
+                                                    PANTS: null,
+                                                    BOOTS: null,
+                                                },
+                                                fullStateJSON: '',
+                                            });
+                                            useGameStore.getState().showAlert('Аккаунт полностью очищен');
+                                            onRefresh();
+                                        } catch {
+                                            useGameStore.getState().showAlert('Ошибка при вайпе');
+                                        }
+                                    },
+                                );
                         }}
                         style={{
                             ...btnStyle,

@@ -1,5 +1,5 @@
 import { getRankInfo } from '../../configs/RankSystem';
-import { syncService } from '../../services/SyncService';
+import { syncService, SyncService } from '../../services/SyncService';
 
 /**
  * chatSlice — глобальный игровой чат и обратная связь.
@@ -40,6 +40,9 @@ export const createChatSlice = (set: any, get: any) => ({
 
     combatLogs: [] as string[],
     leaderboard: [] as any[],
+    privateMessages: [] as any[],
+    clanMessages: [] as any[],
+    lastMessageTime: 0,
 
     // --- Actions ---
 
@@ -55,8 +58,90 @@ export const createChatSlice = (set: any, get: any) => ({
         });
     },
 
+    setPrivateMessages: (newMessages: any[]) => {
+        set((state: any) => {
+            const allMessages = [...state.privateMessages, ...newMessages];
+            const uniqueMessages = Array.from(new Map(allMessages.map((m) => [m.id, m])).values());
+            return {
+                privateMessages: uniqueMessages.sort((a: any, b: any) => a.timestamp - b.timestamp).slice(-100),
+            };
+        });
+    },
+
+    setClanMessages: (newMessages: any[]) => {
+        set((state: any) => {
+            const allMessages = [...state.clanMessages, ...newMessages];
+            const uniqueMessages = Array.from(new Map(allMessages.map((m) => [m.id, m])).values());
+            return {
+                clanMessages: uniqueMessages.sort((a: any, b: any) => a.timestamp - b.timestamp).slice(-100),
+            };
+        });
+    },
+
     addMessage: async (text: string, author = 'Motar', type = 'common') => {
         const state = get();
+        const now = Date.now();
+        let finalType = type;
+        const trimmed = text.trim();
+
+        if (trimmed.toLowerCase().startsWith('/w')) {
+            finalType = 'private';
+        }
+
+        // Spam protection (cooldown 1.5 seconds)
+        if (finalType !== 'system' && now - (state.lastMessageTime || 0) < 1500) {
+            const cooldownMsg = {
+                id: `sys_cooldown_${Date.now()}`,
+                author: 'СИСТЕМА',
+                avatar: '/assets/images/ui/system_icon.png',
+                text: 'Пожалуйста, не отправляйте сообщения так часто (кулдаун 1.5 сек).',
+                type: 'personal',
+                timestamp: Date.now(),
+                level: 1,
+                rankIcon: '',
+                vipLevel: 0,
+                isTop1: false,
+            };
+            if (finalType === 'private') {
+                set((s: any) => ({
+                    privateMessages: [...s.privateMessages, cooldownMsg],
+                }));
+            } else {
+                set((s: any) => ({
+                    messages: [...s.messages, cooldownMsg],
+                }));
+            }
+            return;
+        }
+
+        // Character limit check (max 150)
+        if (finalType !== 'system' && text.length > 150) {
+            const limitMsg = {
+                id: `sys_limit_${Date.now()}`,
+                author: 'СИСТЕМА',
+                avatar: '/assets/images/ui/system_icon.png',
+                text: 'Сообщение слишком длинное (максимум 150 символов).',
+                type: 'personal',
+                timestamp: Date.now(),
+                level: 1,
+                rankIcon: '',
+                vipLevel: 0,
+                isTop1: false,
+            };
+            if (finalType === 'private') {
+                set((s: any) => ({
+                    privateMessages: [...s.privateMessages, limitMsg],
+                }));
+            } else {
+                set((s: any) => ({
+                    messages: [...s.messages, limitMsg],
+                }));
+            }
+            return;
+        }
+
+        set({ lastMessageTime: now });
+
         const currentRating = state.rating || 0;
         const rankInfo = getRankInfo(currentRating);
 
@@ -76,11 +161,11 @@ export const createChatSlice = (set: any, get: any) => ({
                 top1.id === `GUEST-${state.playerId}` ||
                 (state.vkUser && top1.id === `VK-${state.vkUser.id}`));
 
-        const newMessage = {
+        const newMessage: any = {
             author: finalAuthor,
             avatar: finalAvatar,
             text,
-            type,
+            type: finalType,
             timestamp: Date.now(),
             level: state.level || 1,
             rankIcon: rankInfo.icon,
@@ -88,10 +173,70 @@ export const createChatSlice = (set: any, get: any) => ({
             isTop1,
         };
 
-        if (type === 'system' && author === 'СИСТЕМА') {
+        if (finalType === 'clan') {
+            newMessage.clanId = state.clanId;
+        }
+
+        if (finalType === 'system' && author === 'СИСТЕМА') {
             set({
-                messages: [...state.messages, { ...newMessage, id: Math.random().toString(36).substr(2, 9) }],
+                messages: [...state.messages, { ...newMessage, id: Math.random().toString(36).substring(2, 11) }],
             });
+        } else if (finalType === 'private') {
+            const userId = SyncService.getPrefixedUserId(state.vkUser, state.playerId);
+            if (userId) {
+                // Support colon format whisper `/w Ivan Ivanov: message`, fallbacks to space-separated format
+                let recipientName = '';
+                const colonMatch = text.match(/^\/w\s+([^:]+?)\s*:\s*(.*)/i);
+                if (colonMatch) {
+                    recipientName = colonMatch[1].trim();
+                } else {
+                    const fallbackMatch = text.match(/^\/w\s+(\S+)\s+(.*)/i);
+                    if (fallbackMatch) {
+                        recipientName = fallbackMatch[1].trim();
+                    }
+                }
+
+                if (recipientName) {
+                    const recipientId = await syncService.getPlayerIdByName(recipientName);
+                    if (recipientId) {
+                        newMessage.recipientId = recipientId;
+                        newMessage.recipientName = recipientName;
+                        await syncService.sendPrivateMessage(userId, recipientId, newMessage);
+                    } else {
+                        const errorMsg = {
+                            id: `sys_error_${Date.now()}`,
+                            author: 'СИСТЕМА',
+                            avatar: '/assets/images/ui/system_icon.png',
+                            text: `Игрок "${recipientName}" не найден в игре.`,
+                            type: 'personal',
+                            timestamp: Date.now(),
+                            level: 1,
+                            rankIcon: '',
+                            vipLevel: 0,
+                            isTop1: false,
+                        };
+                        set((s: any) => ({
+                            privateMessages: [...s.privateMessages, errorMsg],
+                        }));
+                    }
+                } else {
+                    const errorMsg = {
+                        id: `sys_error_${Date.now()}`,
+                        author: 'СИСТЕМА',
+                        avatar: '/assets/images/ui/system_icon.png',
+                        text: 'Неверный формат шепота. Используйте: /w Имя: сообщение или /w Имя сообщение',
+                        type: 'personal',
+                        timestamp: Date.now(),
+                        level: 1,
+                        rankIcon: '',
+                        vipLevel: 0,
+                        isTop1: false,
+                    };
+                    set((s: any) => ({
+                        privateMessages: [...s.privateMessages, errorMsg],
+                    }));
+                }
+            }
         } else {
             await syncService.sendChatMessage(newMessage);
         }

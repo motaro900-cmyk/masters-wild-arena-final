@@ -1,0 +1,183 @@
+{
+  "frames": {
+    "7_death.png": {
+      "frame": {
+        "x": 121,
+        "y": 121,
+        "w": 723,
+        "h": 423
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 2,
+        "w": 723,
+        "h": 423
+      },
+      "sourceSize": {
+        "w": 723,
+        "h": 425
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.95
+      }
+    },
+    "5_hit.png": {
+      "frame": {
+        "x": 1086,
+        "y": 121,
+        "w": 633,
+        "h": 421
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 2,
+        "y": 3,
+        "w": 633,
+        "h": 421
+      },
+      "sourceSize": {
+        "w": 677,
+        "h": 425
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.95
+      }
+    },
+    "1_defend.png": {
+      "frame": {
+        "x": 1086,
+        "y": 784,
+        "w": 576,
+        "h": 416
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 6,
+        "y": 2,
+        "w": 576,
+        "h": 416
+      },
+      "sourceSize": {
+        "w": 587,
+        "h": 419
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.95
+      }
+    },
+    "4_attack2.png": {
+      "frame": {
+        "x": 121,
+        "y": 1442,
+        "w": 449,
+        "h": 445
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 449,
+        "h": 445
+      },
+      "sourceSize": {
+        "w": 451,
+        "h": 445
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.95
+      }
+    },
+    "3_attack1.png": {
+      "frame": {
+        "x": 121,
+        "y": 786,
+        "w": 444,
+        "h": 413
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 444,
+        "h": 413
+      },
+      "sourceSize": {
+        "w": 444,
+        "h": 413
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.95
+      }
+    },
+    "0_idle.png": {
+      "frame": {
+        "x": 812,
+        "y": 1442,
+        "w": 387,
+        "h": 434
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 2,
+        "y": 3,
+        "w": 387,
+        "h": 434
+      },
+      "sourceSize": {
+        "w": 411,
+        "h": 438
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.95
+      }
+    },
+    "2_run.png": {
+      "frame": {
+        "x": 1441,
+        "y": 1442,
+        "w": 486,
+        "h": 399
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 1,
+        "y": 2,
+        "w": 486,
+        "h": 399
+      },
+      "sourceSize": {
+        "w": 487,
+        "h": 401
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.95
+      }
+    }
+  },
+  "meta": {
+    "app": "http://free-tex-packer.com",
+    "version": "0.6.7",
+    "image": "lion_knight_poses.png.png",
+    "format": "RGBA8888",
+    "size": {
+      "w": 2048,
+      "h": 2048
+    },
+    "scale": 1
+  }
+}

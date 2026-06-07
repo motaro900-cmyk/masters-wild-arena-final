@@ -7,6 +7,66 @@ import { getSkinsForHero } from '../../../../../../configs/SkinsConfig';
 import { HeroCard } from './components/HeroCard';
 import { HeroDetailPanel } from './components/HeroDetailPanel';
 
+const stoneBrickPattern =
+    "url(\"data:image/svg+xml;utf8,<svg width='60' height='40' viewBox='0 0 60 40' xmlns='http://www.w3.org/2000/svg'><rect width='60' height='40' fill='none'/><line x1='0' y1='20' x2='60' y2='20' stroke='rgba(0,0,0,0.52)' stroke-width='1.5'/><line x1='0' y1='40' x2='60' y2='40' stroke='rgba(0,0,0,0.52)' stroke-width='1.5'/><line x1='30' y1='0' x2='30' y2='20' stroke='rgba(0,0,0,0.52)' stroke-width='1.5'/><line x1='0' y1='20' x2='0' y2='40' stroke='rgba(0,0,0,0.52)' stroke-width='1.5'/><line x1='60' y1='20' x2='60' y2='40' stroke='rgba(0,0,0,0.52)' stroke-width='1.5'/><line x1='0' y1='1.5' x2='60' y2='1.5' stroke='rgba(255,255,255,0.15)' stroke-width='1'/><line x1='0' y1='21.5' x2='60' y2='21.5' stroke='rgba(255,255,255,0.15)' stroke-width='1'/><line x1='31.5' y1='0.8' x2='31.5' y2='19.5' stroke='rgba(255,255,255,0.15)' stroke-width='1'/><line x1='1.5' y1='20.8' x2='1.5' y2='39.5' stroke='rgba(255,255,255,0.15)' stroke-width='1'/><path d='M44,3 L40,7 L42,12 L38,15' stroke='rgba(0,0,0,0.45)' stroke-width='0.8' fill='none'/><path d='M45,3.5 L41,7.5 L43,12.5 L39,15.5' stroke='rgba(255,255,255,0.08)' stroke-width='0.8' fill='none'/><line x1='6' y1='8' x2='20' y2='8' stroke='rgba(0,0,0,0.42)' stroke-width='0.8'/><line x1='6' y1='9' x2='20' y2='9' stroke='rgba(255,255,255,0.08)' stroke-width='0.8'/><path d='M10,23 L13,28 L11,34' stroke='rgba(0,0,0,0.48)' stroke-width='0.9' fill='none'/><path d='M11,23.5 L14,28.5 L12,34.5' stroke='rgba(255,255,255,0.09)' stroke-width='0.9' fill='none'/><path d='M35,33 L48,30 L54,32' stroke='rgba(0,0,0,0.42)' stroke-width='0.8' fill='none'/><path d='M35,34 L48,31 L54,33' stroke='rgba(255,255,255,0.07)' stroke-width='0.8' fill='none'/><circle cx='12' cy='14' r='0.8' fill='rgba(0,0,0,0.45)'/><circle cx='12.5' cy='14.5' r='0.4' fill='rgba(255,255,255,0.08)'/><circle cx='48' cy='26' r='1.2' fill='rgba(0,0,0,0.5)'/><circle cx='48.5' cy='26.5' r='0.6' fill='rgba(255,255,255,0.1)'/></svg>\")";
+
+const CornerDecoration = () => (
+    <>
+        <div
+            style={{
+                position: 'absolute',
+                top: 12,
+                left: 12,
+                width: 14,
+                height: 14,
+                borderTop: '2.5px solid rgba(240, 192, 64, 0.65)',
+                borderLeft: '2.5px solid rgba(240, 192, 64, 0.65)',
+                pointerEvents: 'none',
+                zIndex: 5,
+            }}
+        />
+        <div
+            style={{
+                position: 'absolute',
+                top: 12,
+                right: 12,
+                width: 14,
+                height: 14,
+                borderTop: '2.5px solid rgba(240, 192, 64, 0.65)',
+                borderRight: '2.5px solid rgba(240, 192, 64, 0.65)',
+                pointerEvents: 'none',
+                zIndex: 5,
+            }}
+        />
+        <div
+            style={{
+                position: 'absolute',
+                bottom: 12,
+                left: 12,
+                width: 14,
+                height: 14,
+                borderBottom: '2.5px solid rgba(240, 192, 64, 0.65)',
+                borderLeft: '2.5px solid rgba(240, 192, 64, 0.65)',
+                pointerEvents: 'none',
+                zIndex: 5,
+            }}
+        />
+        <div
+            style={{
+                position: 'absolute',
+                bottom: 12,
+                right: 12,
+                width: 14,
+                height: 14,
+                borderBottom: '2.5px solid rgba(240, 192, 64, 0.65)',
+                borderRight: '2.5px solid rgba(240, 192, 64, 0.65)',
+                pointerEvents: 'none',
+                zIndex: 5,
+            }}
+        />
+    </>
+);
+
 // ── MAIN EXPORT COMPONENT ────────────────────────────────────────────────────
 export const HeroList = ({ ownedHeroes, selectedHeroId, onBuyClick, onHeroClick }: any) => {
     const { setSelectedHeroId, ownedSkins, equippedSkins, equipSkin, setHeroGalleryId } = useGameStore((s: any) => ({
@@ -59,17 +119,20 @@ export const HeroList = ({ ownedHeroes, selectedHeroId, onBuyClick, onHeroClick 
                     flex: 1,
                     display: 'flex',
                     flexDirection: 'column',
-                    borderRight: '1px solid rgba(255, 255, 255, 0.06)',
-                    background: 'rgba(10, 8, 7, 0.35)',
+                    borderRight: '1.5px solid rgba(240, 192, 64, 0.25)',
+                    background: `${stoneBrickPattern}, linear-gradient(180deg, rgba(28, 22, 18, 0.99) 0%, rgba(16, 12, 10, 1.0) 100%)`,
                     overflow: 'hidden',
+                    boxShadow: 'inset 0 0 30px rgba(0,0,0,0.8), 0 20px 40px rgba(0,0,0,0.6)',
+                    position: 'relative',
                 }}
             >
+                <CornerDecoration />
                 {/* Filters */}
                 <div
                     style={{
                         padding: '16px 14px 12px',
                         flexShrink: 0,
-                        borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
+                        borderBottom: '1px solid rgba(240, 192, 64, 0.15)',
                         display: 'flex',
                         flexDirection: 'column',
                         gap: '10px',
@@ -79,8 +142,8 @@ export const HeroList = ({ ownedHeroes, selectedHeroId, onBuyClick, onHeroClick 
                     <div
                         style={{
                             display: 'flex',
-                            background: 'rgba(6, 5, 4, 0.85)',
-                            border: '1px solid rgba(240, 192, 64, 0.18)',
+                            background: 'rgba(10, 8, 6, 0.85)',
+                            border: '1.5px solid rgba(240, 192, 64, 0.35)',
                             borderRadius: '10px',
                             padding: '4px',
                             gap: '4px',
@@ -97,16 +160,20 @@ export const HeroList = ({ ownedHeroes, selectedHeroId, onBuyClick, onHeroClick 
                                 style={{
                                     flex: 1,
                                     padding: '8px 0',
-                                    background: subTab === t ? '#f0c040' : 'transparent',
+                                    background:
+                                        subTab === t
+                                            ? 'linear-gradient(180deg, #f0c040 0%, #c8960a 100%)'
+                                            : 'transparent',
                                     border: 'none',
                                     borderRadius: '7px',
-                                    color: subTab === t ? '#1a1200' : 'rgba(255, 255, 255, 0.45)',
+                                    color: subTab === t ? '#1a0f00' : 'rgba(255, 254, 250, 0.6)',
                                     fontSize: '9.5px',
                                     fontWeight: 900,
                                     fontFamily: "'Cinzel', serif",
                                     cursor: 'pointer',
                                     letterSpacing: '0.5px',
                                     transition: 'all 0.15s',
+                                    boxShadow: subTab === t ? '0 2px 6px rgba(240, 192, 64, 0.2)' : 'none',
                                 }}
                             >
                                 {t === 'ALL' ? 'ВСЕ ГЕРОИ' : 'МОИ ГЕРОИ'}
@@ -124,10 +191,10 @@ export const HeroList = ({ ownedHeroes, selectedHeroId, onBuyClick, onHeroClick 
                         style={{
                             width: '100%',
                             padding: '8px 28px 8px 12px',
-                            background: 'rgba(6, 5, 4, 0.85)',
-                            border: '1px solid rgba(240, 192, 64, 0.18)',
+                            background: 'rgba(15, 12, 10, 0.95)',
+                            border: '1.5px solid rgba(240, 192, 64, 0.35)',
                             borderRadius: '10px',
-                            color: '#fff',
+                            color: '#fffdf9',
                             fontFamily: "'Cinzel', serif",
                             fontSize: '10.5px',
                             fontWeight: 700,
@@ -222,10 +289,18 @@ export const HeroList = ({ ownedHeroes, selectedHeroId, onBuyClick, onHeroClick 
                                 gap: '12px',
                             }}
                         >
-                            <div style={{ fontSize: '32px', opacity: 0.2 }}>⚔️</div>
                             <div
                                 style={{
-                                    color: 'rgba(255,255,255,0.2)',
+                                    fontSize: '32px',
+                                    opacity: 0.45,
+                                    filter: 'drop-shadow(0 0 8px rgba(240, 192, 64, 0.35))',
+                                }}
+                            >
+                                ⚔️
+                            </div>
+                            <div
+                                style={{
+                                    color: 'rgba(255, 254, 250, 0.6)',
                                     fontFamily: "'Cinzel', serif",
                                     fontSize: '12px',
                                     fontWeight: 700,
@@ -241,17 +316,17 @@ export const HeroList = ({ ownedHeroes, selectedHeroId, onBuyClick, onHeroClick 
                 {/* Collection counter / progress indicator */}
                 <div
                     style={{
-                        padding: '14px',
+                        padding: '14px 18px',
                         flexShrink: 0,
-                        borderTop: '1px solid rgba(255, 255, 255, 0.05)',
-                        background: 'rgba(6, 5, 4, 0.8)',
+                        borderTop: '1px solid rgba(240, 192, 64, 0.25)',
+                        background: 'linear-gradient(180deg, #14100c 0%, #0e0b08 100%)',
                     }}
                 >
                     <div
                         style={{
                             display: 'flex',
                             justifyContent: 'space-between',
-                            color: 'rgba(255, 255, 255, 0.4)',
+                            color: 'rgba(255, 254, 250, 0.6)',
                             fontSize: '9.5px',
                             fontFamily: "'Cinzel', serif",
                             fontWeight: 700,
@@ -270,7 +345,7 @@ export const HeroList = ({ ownedHeroes, selectedHeroId, onBuyClick, onHeroClick 
                             width: '100%',
                             height: '4px',
                             borderRadius: '2px',
-                            background: 'rgba(255, 255, 255, 0.05)',
+                            background: 'rgba(255, 254, 250, 0.08)',
                             overflow: 'hidden',
                         }}
                     >
@@ -310,8 +385,10 @@ export const HeroList = ({ ownedHeroes, selectedHeroId, onBuyClick, onHeroClick 
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
-                                color: 'rgba(255,255,255,0.2)',
+                                color: 'rgba(46, 36, 27, 0.5)',
                                 fontFamily: "'Cinzel', serif",
+                                fontSize: '13px',
+                                letterSpacing: '1px',
                             }}
                         >
                             ВЫБЕРИТЕ ГЕРОЯ ДЛЯ ПРОСМОТРА

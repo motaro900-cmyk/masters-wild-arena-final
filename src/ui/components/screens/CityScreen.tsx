@@ -165,7 +165,7 @@ export const CityScreen: React.FC = () => {
 
             const result = openChest(type);
             if (!result) {
-                alert('Недостаточно кристаллов!');
+                useGameStore.getState().showAlert('Недостаточно кристаллов!');
                 setAutoSpin(false);
                 return;
             }
@@ -312,7 +312,7 @@ export const CityScreen: React.FC = () => {
                     handleSummon(lastSummonTypeRef.current);
                 } else {
                     setAutoSpin(false);
-                    alert('Недостаточно кристаллов!');
+                    useGameStore.getState().showAlert('Недостаточно кристаллов!');
                 }
             }, delay);
         }

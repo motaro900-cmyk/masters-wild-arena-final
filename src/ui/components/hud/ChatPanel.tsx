@@ -11,7 +11,7 @@ import { ChatContextMenu } from './Chat/ChatContextMenu';
 export const ChatPanel: React.FC = () => {
     const [isOpen, setIsOpen] = useState(true);
     const [inputText, setInputText] = useState('');
-    const { messages, addMessage, name } = useGameStore();
+    const { messages, privateMessages, clanMessages, addMessage, name, clanId } = useGameStore();
     const [showEmoji, setShowEmoji] = useState(false);
     const [activeTab, setActiveTab] = useState('general');
     const [activeChatTab, setActiveChatTab] = useState<'all' | 'system' | 'clan' | 'private'>('all');
@@ -37,7 +37,9 @@ export const ChatPanel: React.FC = () => {
         }
     };
 
-    const filteredMessages = messages.filter((msg: any) => {
+    const filteredMessages = (
+        activeChatTab === 'private' ? privateMessages : activeChatTab === 'clan' ? clanMessages : messages
+    ).filter((msg: any) => {
         if (
             (msg.author === 'Мастер' || msg.author === 'Motar') &&
             (msg.text.trim() === '👏' || msg.text.trim() === '👋')
@@ -45,14 +47,18 @@ export const ChatPanel: React.FC = () => {
             return false;
         }
 
-        if (activeChatTab === 'all') return msg.type !== 'private' && msg.type !== 'personal';
+        if (activeChatTab === 'all') return msg.type !== 'private' && msg.type !== 'personal' && msg.type !== 'clan';
         if (activeChatTab === 'system') return msg.type === 'system';
-        if (activeChatTab === 'clan') return msg.type === 'clan';
+        if (activeChatTab === 'clan') return msg.type === 'clan' && msg.clanId === clanId;
         if (activeChatTab === 'private') {
             if (privateRecipient) {
+                const myName = name || 'Мастер';
                 return (
                     (msg.type === 'private' || msg.type === 'personal') &&
-                    (msg.author === privateRecipient || msg.text.includes(`/w ${privateRecipient}`))
+                    ((msg.author === privateRecipient && msg.recipientId === useGameStore.getState().playerId) ||
+                        (msg.author === myName &&
+                            (msg.text.startsWith(`/w ${privateRecipient} `) ||
+                                msg.text.startsWith(`/w ${privateRecipient}:`))))
                 );
             }
             return false;
@@ -161,7 +167,7 @@ export const ChatPanel: React.FC = () => {
                 position: 'relative',
                 pointerEvents: 'auto',
                 transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                transform: isOpen ? 'translateY(0)' : 'translateY(210px)',
+                transform: isOpen ? 'translateY(0)' : 'translateY(340px)',
                 opacity: isOpen ? 1 : 0.8,
             }}
         >
@@ -403,6 +409,8 @@ export const ChatPanel: React.FC = () => {
                     hasNewMessages={hasNewMessages}
                     setHasNewMessages={setHasNewMessages}
                     openContextMenu={openContextMenu}
+                    privateRecipient={privateRecipient}
+                    setPrivateRecipient={setPrivateRecipient}
                 />
 
                 <ChatInputArea

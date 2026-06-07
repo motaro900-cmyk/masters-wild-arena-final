@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { syncService } from '../../../../services/SyncService';
 import { ITEMS_DATABASE } from '../../../../game/configs/ItemsConfig';
+import { useGameStore } from '../../../../store/useGameStore';
 import {
     RealPlayer,
     Section,
@@ -70,7 +71,10 @@ export const AdminMailTab: React.FC<AdminMailTabProps> = ({ mailRecipient, setMa
     };
 
     const handleSendMail = async () => {
-        if (!mailSubject || !mailBody) return alert('Заполните тему и текст!');
+        if (!mailSubject || !mailBody) {
+            useGameStore.getState().showAlert('Заполните тему и текст!');
+            return;
+        }
         setIsSendingMail(true);
         try {
             const mailData = {
@@ -99,13 +103,13 @@ export const AdminMailTab: React.FC<AdminMailTabProps> = ({ mailRecipient, setMa
                 await syncService.sendMail(mailRecipient, mailData);
             }
 
-            alert('Письма успешно отправлены! 🚀');
+            useGameStore.getState().showAlert('Письма успешно отправлены! 🚀');
             setMailSubject('');
             setMailBody('');
             setMailAttachments([]);
         } catch (e) {
             console.error('Mail send error:', e);
-            alert('Ошибка при отправке почты');
+            useGameStore.getState().showAlert('Ошибка при отправке почты');
         } finally {
             setIsSendingMail(false);
         }

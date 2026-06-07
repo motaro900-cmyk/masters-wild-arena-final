@@ -359,10 +359,13 @@ export const Root = () => {
         isAppInitialized = true;
 
         let unsubChat: (() => void) | null = null;
+        let unsubClanChat: (() => void) | null = null;
+        let unsubPrivateChat: (() => void) | null = null;
         let unsubFriends: (() => void) | null = null;
         let unsubMail: (() => void) | null = null;
         let unsubProfile: (() => void) | null = null;
         let unsubLeaderboard: (() => void) | null = null;
+        let isDestroyed = false;
 
         const initApp = async () => {
             if (refreshInterval) {
@@ -430,7 +433,6 @@ export const Root = () => {
                             }
                             console.log('✅ VK User loaded:', user.firstName);
                         } else if (isVkMiniApp()) {
-                            // Retry через 2с — для медленных мобильных сетей
                             console.warn('🔄 VK User Info retry in 2s...');
                             await new Promise((r) => setTimeout(r, 2000));
                             const retryUser = await getVkUserInfo();
@@ -443,14 +445,6 @@ export const Root = () => {
                                 console.log('✅ VK User loaded (retry):', retryUser.firstName);
                             }
                         }
-
-                        // Parse referral params
-                        const searchParams = new URLSearchParams(window.location.search);
-                        const startParam = searchParams.get('vk_start_params') || searchParams.get('start_parameter');
-                        if (startParam) {
-                            console.log('📌 Found referral start parameter:', startParam);
-                            useGameStore.getState().processReferralCode(startParam);
-                        }
                     } catch (vkErr) {
                         console.warn('⚠️ VK Bridge failed to init, continuing in standalone mode', vkErr);
                     }
@@ -458,7 +452,6 @@ export const Root = () => {
                     console.log('🛠️ Localhost detected — skipping VK Bridge init');
                 }
 
-                // 2. Load Player Data from Firebase
                 setLoadingText('Загрузка профиля игрока...');
                 const { syncService, SyncService } = await import('./services/SyncService');
                 let state = useGameStore.getState();
@@ -475,7 +468,6 @@ export const Root = () => {
                 const isVk = isVkMiniApp();
                 if (!isLocalhost) {
                     if (isVk && !state.vkUser) {
-                        // Последняя попытка перед абортом — даём VK ещё 3 секунды
                         console.warn('🔄 Final VK user retry before abort...');
                         setLoadingText('Загрузка профиля (повторная попытка)...');
                         await new Promise((r) => setTimeout(r, 3000));
@@ -512,31 +504,48 @@ export const Root = () => {
                 try {
                     const fbProfile = await syncService.loadPlayerData(userId);
                     if (fbProfile) {
-                        console.log('💾 Found remote profile, restoring state...', fbProfile.name);
-                        const restoredName = fbProfile.name;
-                        const onboardingDone = fbProfile.onboardingCompleted;
-                        const stateToRestore = { ...fbProfile };
-                        if (stateToRestore.status === 'BANNED') {
-                            stateToRestore.isBanned = true;
-                        }
-                        if (
-                            (onboardingDone || (restoredName && restoredName !== 'Мастер')) &&
-                            restoredName &&
-                            restoredName !== 'Мастер'
-                        ) {
-                            stateToRestore.onboardingCompleted = true;
-                            stateToRestore.activeScreen = 'MAIN_MENU';
-                        }
-                        useGameStore.setState(stateToRestore);
-                        state = useGameStore.getState();
+                        const localState = useGameStore.getState();
+                        const localTimestamp = localState.lastSavedTimestamp || 0;
+                        const remoteTimestamp = fbProfile.lastSavedTimestamp || fbProfile.wasOnlineMs || 0;
 
-                        if (!restoredName || restoredName === 'Мастер') {
-                            console.log('⚠️ Default name detected after restore — resetting onboarding.');
-                            useGameStore.setState({
-                                onboardingCompleted: false,
-                                tutorialStep: 0,
-                                activeScreen: 'INTRO',
-                            });
+                        console.log(
+                            `[SyncService] Conflict resolution check: Local timestamp = ${localTimestamp}, Remote timestamp = ${remoteTimestamp}`,
+                        );
+
+                        if (localTimestamp > remoteTimestamp && localState.name && localState.name !== 'Мастер') {
+                            console.log(
+                                '[SyncService] Local offline progress is newer than remote. Keeping local state and syncing to remote.',
+                            );
+                            syncService.syncPlayerData();
+                        } else {
+                            console.log('💾 Found remote profile, restoring state...', fbProfile.name);
+                            const restoredName = fbProfile.name;
+                            const onboardingDone = fbProfile.onboardingCompleted;
+                            const stateToRestore = { ...fbProfile };
+                            stateToRestore.lastSavedTimestamp = remoteTimestamp;
+                            if (stateToRestore.status === 'BANNED') {
+                                stateToRestore.isBanned = true;
+                            }
+                            if (
+                                (onboardingDone || (restoredName && restoredName !== 'Мастер')) &&
+                                restoredName &&
+                                restoredName !== 'Мастер'
+                            ) {
+                                stateToRestore.onboardingCompleted = true;
+                                stateToRestore.activeScreen = 'MAIN_MENU';
+                            }
+                            useGameStore.setState(stateToRestore);
+                            state = useGameStore.getState();
+
+                            if (!restoredName || restoredName === 'Мастер') {
+                                console.log('⚠️ Default name detected after restore — resetting onboarding.');
+                                useGameStore.setState({
+                                    onboardingCompleted: false,
+                                    tutorialStep: 0,
+                                    activeScreen: 'INTRO',
+                                    lastSavedTimestamp: remoteTimestamp,
+                                });
+                            }
                         }
                     } else {
                         console.log('👶 No remote profile found in Firestore. Resetting onboarding for new player.');
@@ -578,10 +587,16 @@ export const Root = () => {
                     }
                 }
 
-                const updatedState = useGameStore.getState();
                 useGameStore.setState({ profileStatus: 'loaded' });
 
-                // 3. Game Engine
+                // Parse referral params after profile has loaded/restored
+                const searchParams = new URLSearchParams(window.location.search);
+                const startParam = searchParams.get('vk_start_params') || searchParams.get('start_parameter');
+                if (startParam) {
+                    console.log('📌 Found referral start parameter:', startParam);
+                    useGameStore.getState().processReferralCode(startParam);
+                }
+
                 setLoadingText('Инициализация графического ядра Pixi...');
                 console.log('🎮 Starting GameEngine...');
                 const game = new GameApp();
@@ -591,7 +606,7 @@ export const Root = () => {
                 clearTimeout(timeoutId);
                 console.log('✅ Game Ready!');
 
-                // 4. Audio & Sync Initialization
+                const updatedState = useGameStore.getState();
                 if (updatedState.isMuted) {
                     audioService.setMusicVolume(0);
                     audioService.setSFXVolume(0);
@@ -602,7 +617,6 @@ export const Root = () => {
 
                 syncService.startAutoSync(60000);
 
-                // Слушатель смены экранов
                 let lastScreen = useGameStore.getState().activeScreen;
                 const unsubScreenChange = useGameStore.subscribe((state: any) => {
                     if (state.activeScreen && state.activeScreen !== lastScreen) {
@@ -623,16 +637,14 @@ export const Root = () => {
                         syncService.debouncedSync();
                     }
                 });
-                // cleanup: отписаться при размонтировании
-                const prevCleanup = unsubChat;
                 unsubChat = () => {
                     unsubScreenChange();
                 };
-                void prevCleanup; // сохраняем оригинальный unsubChat в unsubScreenChange closure
                 unsubChat = () => {
                     unsubScreenChange();
-                    if (prevCleanup) prevCleanup();
                 };
+
+                if (isDestroyed) return;
 
                 unsubChat = syncService.subscribeToChat((messages) => {
                     useGameStore.getState().setMessages(messages);
@@ -647,11 +659,52 @@ export const Root = () => {
                 unsubMail = syncService.subscribeToMail(prefixedId, (mails) => {
                     useGameStore.getState().setMail(mails);
                 });
+                unsubPrivateChat = syncService.subscribeToPrivateMessages(prefixedId, (messages) => {
+                    useGameStore.getState().setPrivateMessages(messages);
+                });
 
-                // Подписка на собственный профиль (admin commands: kick, ban, resources)
                 let lastAppliedAdminVersion: number | null = null;
-                unsubProfile = syncService.subscribeToOwnProfile(userId, (dbData) => {
+                let lastClanId: string | null = null;
+                unsubProfile = syncService.subscribeToOwnProfile(userId, async (dbData) => {
                     if (!dbData) return;
+
+                    // Friends list dynamic sync check
+                    const dbFriendIds = dbData.friends || [];
+                    const localFriends = useGameStore.getState().friends || [];
+                    const localFriendIds = localFriends.map((f: any) => f.id);
+                    const hasDiff =
+                        dbFriendIds.length !== localFriendIds.length ||
+                        dbFriendIds.some((id: string) => !localFriendIds.includes(id));
+                    if (hasDiff) {
+                        console.log('[SyncService] Friends list changed in DB, resolving profiles...');
+                        const resolved = await syncService.resolveFriendProfiles(dbFriendIds);
+                        const merged = resolved.map((rf: any) => {
+                            const oldFriend = localFriends.find((lf: any) => lf.id === rf.id);
+                            return {
+                                ...rf,
+                                giftSent: oldFriend ? !!oldFriend.giftSent : false,
+                                hasGift: oldFriend ? !!oldFriend.hasGift : false,
+                            };
+                        });
+                        useGameStore.setState({ friends: merged });
+                        syncService.debouncedSync();
+                    }
+
+                    const dbClanId = dbData.clanId || null;
+                    if (dbClanId !== lastClanId) {
+                        lastClanId = dbClanId;
+                        if (unsubClanChat) {
+                            unsubClanChat();
+                            unsubClanChat = null;
+                        }
+                        if (dbClanId) {
+                            unsubClanChat = syncService.subscribeToClanChat(dbClanId, (messages) => {
+                                useGameStore.getState().setClanMessages(messages);
+                            });
+                        } else {
+                            useGameStore.getState().setClanMessages([]);
+                        }
+                    }
 
                     if (dbData.status === 'BANNED') {
                         useGameStore.setState({
@@ -666,8 +719,11 @@ export const Root = () => {
 
                     if (dbData.status === 'KICKED') {
                         syncService.updateRemotePlayerData(userId, { status: 'OFFLINE' }).catch(() => {});
-                        alert('Соединение разорвано: Вы были отключены администратором (KICKED).');
-                        window.location.reload();
+                        useGameStore
+                            .getState()
+                            .showAlert('Соединение разорвано: Вы были отключены администратором (KICKED).', () => {
+                                window.location.reload();
+                            });
                         return;
                     }
 
@@ -688,6 +744,27 @@ export const Root = () => {
                             let hasChanges = false;
                             const updatePayload: any = {};
 
+                            const adminChangedFields = dbData.adminChangedFields || [];
+                            const mappedAdminFields = adminChangedFields.map((f: string) => {
+                                const map: Record<string, string> = {
+                                    золото: 'gold',
+                                    gold: 'gold',
+                                    кристаллы: 'crystals',
+                                    crystals: 'crystals',
+                                    уровень: 'level',
+                                    level: 'level',
+                                    рейтинг: 'rating',
+                                    rating: 'rating',
+                                    инвентарь: 'inventory',
+                                    inventory: 'inventory',
+                                    снаряжение: 'heroEquipment',
+                                    heroEquipment: 'heroEquipment',
+                                    фото: 'avatar',
+                                    avatar: 'avatar',
+                                };
+                                return map[f] || f;
+                            });
+
                             const trackedFields = [
                                 'gold',
                                 'crystals',
@@ -705,6 +782,9 @@ export const Root = () => {
 
                             for (const field of trackedFields) {
                                 if (parsed[field] !== undefined) {
+                                    if (adminChangedFields.length > 0 && !mappedAdminFields.includes(field)) {
+                                        continue;
+                                    }
                                     const localVal = currentState[field];
                                     const remoteVal = parsed[field];
                                     if (typeof remoteVal === 'object') {
@@ -734,7 +814,6 @@ export const Root = () => {
                     }
                 });
 
-                // Приветственные сообщения (только первый вход)
                 const welcomeKey = `seen_welcome_msgs_${updatedState.playerId}`;
                 const hasSeenWelcome = localStorage.getItem(welcomeKey);
                 const hasWelcome = hasSeenWelcome ? true : updatedState.messages.some((m: any) => m.id === 'welcome-1');
@@ -747,7 +826,7 @@ export const Root = () => {
                         welcomeMsgs.push({
                             id: 'welcome-1',
                             author: 'СИСТЕМА',
-                            avatar: '/assets/images/ui/system_icon.png',
+                            avatar: '/assets/images/ui/ICON_CROWN.webp',
                             text: 'Приветствуем в Masters of the Wild! Твой путь к величию начинается здесь. 🐉⚔️',
                             type: 'system',
                             timestamp: Date.now() - 2000,
@@ -758,7 +837,7 @@ export const Root = () => {
                         welcomeMsgs.push({
                             id: 'codex-1',
                             author: 'КОДЕКС ЧЕСТИ',
-                            avatar: '/assets/images/ui/system_icon.png',
+                            avatar: '/assets/images/ui/ICON_CROWN.webp',
                             text: 'Истинная сила — в уважении. Будьте вежливы, не используйте оскорбления и мат. Пусть в чате царит дух честной игры! 🛡️🤝',
                             type: 'system',
                             timestamp: Date.now() - 1000,
@@ -813,14 +892,12 @@ export const Root = () => {
 
                 finalState.updateQuestProgress('LOGIN', 1);
 
-                // Очистка тестовых сообщений
                 if (state.messages.some((m: any) => m.author === 'Мастер' && m.text === 'Привет')) {
                     useGameStore.setState({
                         messages: state.messages.filter((m: any) => !(m.author === 'Мастер' && m.text === 'Привет')),
                     });
                 }
 
-                // ─── ОБРАБОТКА ПАРАМЕТРОВ ЗАПУСКА (РЕФЕРАЛЫ, ПОДАРКИ) ───
                 const urlParams = new URLSearchParams(window.location.search);
                 const requestId = urlParams.get('request_id');
                 if (requestId) {
@@ -838,12 +915,11 @@ export const Root = () => {
                             });
                             store.addGold(5000);
                             syncService.debouncedSync();
-                            alert('Вы получили подарок от друга: 5,000 золота! 💰');
+                            useGameStore.getState().showAlert('Вы получили подарок от друга: 5,000 золота! 💰');
                         }, 3000);
                     }
                 }
 
-                // [Optimization] Background refresh check every minute
                 refreshInterval = setInterval(() => {
                     const currentState = useGameStore.getState();
                     if (isNewDayMSK(currentState.lastDailyRefresh)) {
@@ -874,12 +950,18 @@ export const Root = () => {
         initApp();
 
         return () => {
+            isDestroyed = true;
             if (unsubChat) unsubChat();
+            if (unsubClanChat) unsubClanChat();
             if (unsubFriends) unsubFriends();
             if (unsubMail) unsubMail();
             if (unsubProfile) unsubProfile();
             if (unsubLeaderboard) unsubLeaderboard();
+            if (unsubPrivateChat) unsubPrivateChat();
             if (refreshInterval) clearInterval(refreshInterval);
+            import('./services/SyncService').then(({ syncService }) => {
+                syncService.stopAutoSync();
+            });
         };
     }, []);
 

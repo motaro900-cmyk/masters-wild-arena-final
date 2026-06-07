@@ -183,7 +183,9 @@ export const AdminPlayersTab: React.FC = () => {
                 <button
                     onClick={() => {
                         audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
-                        if (confirm('Очистить инвентарь?')) useGameStore.getState().clearInventory();
+                        useGameStore.getState().showConfirm('Очистить инвентарь?', () => {
+                            useGameStore.getState().clearInventory();
+                        });
                     }}
                     style={{ ...bigBtnStyle, marginTop: '5px', background: '#301010', color: '#ff4d4d' }}
                 >
@@ -192,10 +194,9 @@ export const AdminPlayersTab: React.FC = () => {
                 <button
                     onClick={() => {
                         audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
-                        Object.keys(ITEMS_DATABASE).forEach((id) =>
-                            useGameStore.getState().addItemToInventory({ id, level: 1 }),
-                        );
-                        alert('ВЕСЬ АРСЕНАЛ ВЫДАН!');
+                        const items = Object.keys(ITEMS_DATABASE).map((id) => ({ id, level: 1 }));
+                        useGameStore.getState().addItemsToInventory(items);
+                        useGameStore.getState().showAlert('ВЕСЬ АРСЕНАЛ ВЫДАН!');
                     }}
                     style={{ ...bigBtnStyle, marginTop: '5px', background: '#1a1a2e', color: '#8888ff' }}
                 >
@@ -237,8 +238,9 @@ export const AdminPlayersTab: React.FC = () => {
                 <button
                     onClick={() => {
                         audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
-                        if (confirm('ВЫПОЛНИТЬ ПОЛНЫЙ СБРОС ИГРОВОГО ПРОГРЕССА?'))
+                        useGameStore.getState().showConfirm('ВЫПОЛНИТЬ ПОЛНЫЙ СБРОС ИГРОВОГО ПРОГРЕССА?', () => {
                             useGameStore.getState().resetAllProgress();
+                        });
                     }}
                     style={{ ...bigBtnStyle, marginTop: '10px', background: '#431b1b', color: '#ff4d4d' }}
                 >

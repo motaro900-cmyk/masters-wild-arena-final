@@ -32,6 +32,12 @@ export class HeroUnit extends PIXI.Container implements IEffectTarget, IStatusEf
     public posesTextures: PIXI.Texture[] = [];
     public calculatedBaseScale: number = 1.0;
     public nextAttackPose: number = 3;
+    public idleFrameIdx: number = 0;
+    public defendFrameIdx: number = 1;
+    public runFrameIdx: number = 2;
+    public hitFrameIdx: number = 5;
+    public deathFrameIdx: number = 7;
+    public attackFrameIdxs: number[] = [3, 4, 6];
     public statusEffectController: StatusEffectController;
 
     public showStunEffect(): void {
@@ -233,6 +239,49 @@ export class HeroUnit extends PIXI.Container implements IEffectTarget, IStatusEf
         }
     }
 
+    private parseSpritesheetFrames(sheet: any) {
+        this.posesTextures = [];
+        this.attackFrameIdxs = [];
+        this.idleFrameIdx = 0;
+        this.defendFrameIdx = 1;
+        this.runFrameIdx = 2;
+        this.hitFrameIdx = 5;
+        this.deathFrameIdx = 5; // fallback is hit frame if no death frame exists
+
+        const frameKeys = Object.keys(sheet.data.frames);
+        for (const key of frameKeys) {
+            const match = key.match(/^(\d+)/);
+            if (match) {
+                const idx = parseInt(match[1], 10);
+                const texture = sheet.textures[key];
+                this.posesTextures[idx] = texture;
+
+                const lowerKey = key.toLowerCase();
+                if (lowerKey.includes('idle')) {
+                    this.idleFrameIdx = idx;
+                } else if (lowerKey.includes('defend')) {
+                    this.defendFrameIdx = idx;
+                } else if (lowerKey.includes('run')) {
+                    this.runFrameIdx = idx;
+                } else if (lowerKey.includes('hit')) {
+                    this.hitFrameIdx = idx;
+                } else if (lowerKey.includes('death') || lowerKey.includes('dead')) {
+                    this.deathFrameIdx = idx;
+                } else if (lowerKey.includes('attack')) {
+                    this.attackFrameIdxs.push(idx);
+                }
+            }
+        }
+
+        // Sort attack frames numerically
+        this.attackFrameIdxs.sort((a, b) => a - b);
+
+        // Fallback for death if not explicitly found
+        if (this.deathFrameIdx === 5 && !this.posesTextures[5]) {
+            this.deathFrameIdx = this.idleFrameIdx;
+        }
+    }
+
     /**
      * Загрузка тела (Герой или Моб)
      */
@@ -257,15 +306,7 @@ export class HeroUnit extends PIXI.Container implements IEffectTarget, IStatusEf
                         : '/assets/characters/panda/panda_poses.png.json',
                 );
                 const sheet = await PIXI.Assets.load(jsonPath);
-                this.posesTextures = [];
-                const frameKeys = Object.keys(sheet.data.frames);
-                for (const key of frameKeys) {
-                    const match = key.match(/^(\d+)/);
-                    if (match) {
-                        const idx = parseInt(match[1], 10);
-                        this.posesTextures[idx] = sheet.textures[key];
-                    }
-                }
+                this.parseSpritesheetFrames(sheet);
                 tex = this.posesTextures[0]; // default is Idle frame
                 console.log(`[HeroUnit] Spritesheet loaded via JSON successfully for panda.`);
             } catch (err) {
@@ -277,19 +318,47 @@ export class HeroUnit extends PIXI.Container implements IEffectTarget, IStatusEf
                 const sheet = await PIXI.Assets.load(
                     resolveAssetPath('/assets/characters/raccoon/raccoon_poses.png.json'),
                 );
-                this.posesTextures = [];
-                const frameKeys = Object.keys(sheet.data.frames);
-                for (const key of frameKeys) {
-                    const match = key.match(/^(\d+)/);
-                    if (match) {
-                        const idx = parseInt(match[1], 10);
-                        this.posesTextures[idx] = sheet.textures[key];
-                    }
-                }
+                this.parseSpritesheetFrames(sheet);
                 tex = this.posesTextures[0]; // default is Idle frame
                 console.log(`[HeroUnit] Spritesheet loaded via JSON successfully for raccoon.`);
             } catch (err) {
                 console.error(`[HeroUnit] Failed to load or slice raccoon_poses.png.json, falling back:`, err);
+                tex = PIXI.Texture.WHITE;
+            }
+        } else if (this.config.id === 'minotaur') {
+            try {
+                const sheet = await PIXI.Assets.load(
+                    resolveAssetPath('/assets/characters/minotaur/minotaur_poses.png.json'),
+                );
+                this.parseSpritesheetFrames(sheet);
+                tex = this.posesTextures[0]; // default is Idle frame
+                console.log(`[HeroUnit] Spritesheet loaded via JSON successfully for minotaur.`);
+            } catch (err) {
+                console.error(`[HeroUnit] Failed to load or slice minotaur_poses.png.json, falling back:`, err);
+                tex = PIXI.Texture.WHITE;
+            }
+        } else if (this.config.id === 'tiger_warrior') {
+            try {
+                const sheet = await PIXI.Assets.load(
+                    resolveAssetPath('/assets/characters/tiger_warrior/tiger_warrior_poses.png.json'),
+                );
+                this.parseSpritesheetFrames(sheet);
+                tex = this.posesTextures[0]; // default is Idle frame
+                console.log(`[HeroUnit] Spritesheet loaded via JSON successfully for tiger_warrior.`);
+            } catch (err) {
+                console.error(`[HeroUnit] Failed to load or slice tiger_warrior_poses.png.json, falling back:`, err);
+                tex = PIXI.Texture.WHITE;
+            }
+        } else if (this.config.id === 'lion_knight') {
+            try {
+                const sheet = await PIXI.Assets.load(
+                    resolveAssetPath('/assets/characters/lion_knight/lion_knight_poses.png.json'),
+                );
+                this.parseSpritesheetFrames(sheet);
+                tex = this.posesTextures[0]; // default is Idle frame
+                console.log(`[HeroUnit] Spritesheet loaded via JSON successfully for lion_knight.`);
+            } catch (err) {
+                console.error(`[HeroUnit] Failed to load or slice lion_knight_poses.png.json, falling back:`, err);
                 tex = PIXI.Texture.WHITE;
             }
         } else {
@@ -305,7 +374,7 @@ export class HeroUnit extends PIXI.Container implements IEffectTarget, IStatusEf
                 );
                 try {
                     const posesBaseTex = await PIXI.Assets.load(
-                        resolveAssetPath('/assets/characters/panda/panda_poses.png.webp'),
+                        resolveAssetPath('/assets/characters/panda/panda_poses.png.png'),
                     );
                     this.posesTextures = [];
                     const frameW = posesBaseTex.width / 4;
@@ -319,6 +388,12 @@ export class HeroUnit extends PIXI.Container implements IEffectTarget, IStatusEf
                             this.posesTextures.push(frameTex);
                         }
                     }
+                    this.idleFrameIdx = 0;
+                    this.defendFrameIdx = 1;
+                    this.runFrameIdx = 2;
+                    this.hitFrameIdx = 5;
+                    this.deathFrameIdx = 7;
+                    this.attackFrameIdxs = [3, 4, 6];
                     tex = this.posesTextures[0]; // default is Idle frame
                     console.log(`[HeroUnit] Poses spritesheet loaded and sliced successfully for fallback panda.`);
                 } catch (fallbackErr) {
@@ -427,15 +502,17 @@ export class HeroUnit extends PIXI.Container implements IEffectTarget, IStatusEf
     public playAttackAnimation() {
         const timeScale = useGameStore.getState().timeScale || 1;
 
-        const isRaccoon = this.config?.id === 'raccoon' || this.config?.image.includes('raccoon');
-        const isPanda = this.config?.id === 'panda' || this.config?.image.includes('panda');
+        const hasPoses = this.posesTextures && this.posesTextures.length > 0;
 
-        if (isRaccoon) {
-            const attackPoses = [3, 4, 5, 6];
-            const chosenPose = attackPoses[Math.floor(Math.random() * attackPoses.length)];
+        if (hasPoses) {
+            const attackList =
+                this.attackFrameIdxs && this.attackFrameIdxs.length > 0 ? this.attackFrameIdxs : [3, 4, 6];
+            const chosenPose = attackList[Math.floor(Math.random() * attackList.length)];
             this.setFrame(chosenPose);
 
-            if (chosenPose === 6) {
+            const attackIndex = attackList.indexOf(chosenPose);
+
+            if (attackIndex === 2) {
                 gsap.killTweensOf(this.bodyContainer.scale);
                 const baseScale = this.calculatedBaseScale;
                 const squashTl = gsap.timeline();
@@ -453,7 +530,10 @@ export class HeroUnit extends PIXI.Container implements IEffectTarget, IStatusEf
                         duration: 0.2,
                         ease: 'power1.inOut',
                     });
-            } else if (chosenPose === 4) {
+                setTimeout(() => {
+                    this.setFrame(this.idleFrameIdx); // return to Idle
+                }, 700 / timeScale);
+            } else if (attackIndex === 1) {
                 gsap.killTweensOf(this.bodyContainer.scale);
                 const baseScale = this.calculatedBaseScale;
                 const stretchTl = gsap.timeline();
@@ -471,92 +551,10 @@ export class HeroUnit extends PIXI.Container implements IEffectTarget, IStatusEf
                         duration: 0.22,
                         ease: 'sine.inOut',
                     });
-            } else if (chosenPose === 5) {
-                gsap.killTweensOf(this.bodyContainer);
-                const rotationTl = gsap.timeline();
-                rotationTl.timeScale(timeScale);
-                rotationTl
-                    .to(this.bodyContainer, {
-                        angle: 18,
-                        duration: 0.15,
-                        ease: 'power1.out',
-                    })
-                    .to(this.bodyContainer, {
-                        angle: 0,
-                        duration: 0.35,
-                        ease: 'elastic.out(1, 0.4)',
-                    });
-            } else {
-                gsap.killTweensOf(this.bodyContainer);
-                const swingAnimTl = gsap.timeline();
-                swingAnimTl.timeScale(timeScale);
-                swingAnimTl
-                    .to(this.bodyContainer, {
-                        angle: -10,
-                        duration: 0.15,
-                        ease: 'power1.out',
-                    })
-                    .to(this.bodyContainer, {
-                        angle: 0,
-                        duration: 0.25,
-                        ease: 'back.out(2)',
-                    });
-            }
-
-            setTimeout(() => {
-                this.setFrame(0); // return to Idle
-            }, 800 / timeScale);
-            return;
-        }
-
-        if (isPanda) {
-            const pandaAttackPoses = [3, 4, 5, 6];
-            const chosenPose = pandaAttackPoses[Math.floor(Math.random() * pandaAttackPoses.length)];
-            this.setFrame(chosenPose);
-
-            if (chosenPose === 6) {
-                gsap.killTweensOf(this.bodyContainer.scale);
-                const baseScale = this.calculatedBaseScale;
-                const squashTl = gsap.timeline();
-                squashTl.timeScale(timeScale);
-
-                squashTl.to(this.bodyContainer.scale, {
-                    x: baseScale * 1.05,
-                    y: baseScale * 0.95,
-                    duration: 0.15,
-                    ease: 'power1.out',
-                });
-                squashTl.to(this.bodyContainer.scale, {
-                    x: baseScale,
-                    y: baseScale,
-                    duration: 0.2,
-                    ease: 'power1.inOut',
-                });
                 setTimeout(() => {
-                    this.setFrame(0); // return to Idle
-                }, 700 / timeScale);
-            } else if (chosenPose === 4) {
-                gsap.killTweensOf(this.bodyContainer.scale);
-                const baseScale = this.calculatedBaseScale;
-                const stretchTl = gsap.timeline();
-                stretchTl.timeScale(timeScale);
-
-                stretchTl.to(this.bodyContainer.scale, {
-                    x: baseScale * 1.06,
-                    y: baseScale * 0.94,
-                    duration: 0.12,
-                    ease: 'power2.out',
-                });
-                stretchTl.to(this.bodyContainer.scale, {
-                    x: baseScale,
-                    y: baseScale,
-                    duration: 0.22,
-                    ease: 'sine.inOut',
-                });
-                setTimeout(() => {
-                    this.setFrame(0);
+                    this.setFrame(this.idleFrameIdx);
                 }, 600 / timeScale);
-            } else if (chosenPose === 5) {
+            } else if (attackIndex >= 3) {
                 gsap.killTweensOf(this.bodyContainer);
                 const rotationTl = gsap.timeline();
                 rotationTl.timeScale(timeScale);
@@ -572,7 +570,7 @@ export class HeroUnit extends PIXI.Container implements IEffectTarget, IStatusEf
                         ease: 'elastic.out(1, 0.4)',
                     });
                 setTimeout(() => {
-                    this.setFrame(0);
+                    this.setFrame(this.idleFrameIdx);
                 }, 650 / timeScale);
             } else {
                 gsap.killTweensOf(this.bodyContainer);
@@ -590,7 +588,7 @@ export class HeroUnit extends PIXI.Container implements IEffectTarget, IStatusEf
                         ease: 'back.out(2)',
                     });
                 setTimeout(() => {
-                    this.setFrame(0);
+                    this.setFrame(this.idleFrameIdx);
                 }, 550 / timeScale);
             }
         }

@@ -3,6 +3,7 @@ import { RealPlayer, Section, btnStyle } from '../AdminShared';
 import { syncService } from '../../../../../services/SyncService';
 import { audioService } from '../../../../../services/AudioService';
 import { AssetsMap } from '../../../../../configs/AssetsMap';
+import { useGameStore } from '../../../../../store/useGameStore';
 
 interface DevCheatsPanelProps {
     selectedPlayer: RealPlayer;
@@ -28,10 +29,10 @@ export const DevCheatsPanel: React.FC<DevCheatsPanelProps> = ({ selectedPlayer, 
                             await syncService.updateRemotePlayerData(selectedPlayer.id, {
                                 ownedSkins: ['default', 'panda_frost', 'raccoon_default', 'skin_lava_golem'],
                             });
-                            alert('Все облики успешно открыты игроку!');
+                            useGameStore.getState().showAlert('Все облики успешно открыты игроку!');
                             onRefresh();
                         } catch {
-                            alert('Ошибка при выдаче обликов');
+                            useGameStore.getState().showAlert('Ошибка при выдаче обликов');
                         }
                     }}
                     style={{
@@ -62,10 +63,10 @@ export const DevCheatsPanel: React.FC<DevCheatsPanelProps> = ({ selectedPlayer, 
                             await syncService.updateRemotePlayerData(selectedPlayer.id, {
                                 ownedHeroes: ['panda', 'raccoon'],
                             });
-                            alert('Все герои успешно разблокированы игроку!');
+                            useGameStore.getState().showAlert('Все герои успешно разблокированы игроку!');
                             onRefresh();
                         } catch {
-                            alert('Ошибка при разблокировке героев');
+                            useGameStore.getState().showAlert('Ошибка при разблокировке героев');
                         }
                     }}
                     style={{
@@ -108,10 +109,12 @@ export const DevCheatsPanel: React.FC<DevCheatsPanelProps> = ({ selectedPlayer, 
                                 gold: newGold,
                                 crystals: newCrystals,
                             });
-                            alert('Ресурсный пак (+100к золота, +5к кристаллов) успешно начислен!');
+                            useGameStore
+                                .getState()
+                                .showAlert('Ресурсный пак (+100к золота, +5к кристаллов) успешно начислен!');
                             onRefresh();
                         } catch {
-                            alert('Ошибка при начислении ресурсов');
+                            useGameStore.getState().showAlert('Ошибка при начислении ресурсов');
                         }
                     }}
                     style={{
@@ -144,10 +147,10 @@ export const DevCheatsPanel: React.FC<DevCheatsPanelProps> = ({ selectedPlayer, 
                                 energy: 9999,
                                 maxEnergy: 9999,
                             });
-                            alert('Энергия игрока установлена на 9999/9999!');
+                            useGameStore.getState().showAlert('Энергия игрока установлена на 9999/9999!');
                             onRefresh();
                         } catch {
-                            alert('Ошибка при установке энергии');
+                            useGameStore.getState().showAlert('Ошибка при установке энергии');
                         }
                     }}
                     style={{
@@ -179,10 +182,10 @@ export const DevCheatsPanel: React.FC<DevCheatsPanelProps> = ({ selectedPlayer, 
                             await syncService.updateRemotePlayerData(selectedPlayer.id, {
                                 level: 100,
                             });
-                            alert('Уровень игрока повышен до 100 LVL!');
+                            useGameStore.getState().showAlert('Уровень игрока повышен до 100 LVL!');
                             onRefresh();
                         } catch {
-                            alert('Ошибка при повышении уровня');
+                            useGameStore.getState().showAlert('Ошибка при повышении уровня');
                         }
                     }}
                     style={{

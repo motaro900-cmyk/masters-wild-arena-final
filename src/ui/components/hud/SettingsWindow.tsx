@@ -111,6 +111,10 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
             const { db, USERS_COLLECTION } = await import('../../../utils/firebase');
             const { doc, deleteDoc } = await import('firebase/firestore');
 
+            // Disable all synchronization before deleting document and reloading page
+            syncService.disableSync();
+            syncService.stopAutoSync();
+
             // 1. Удаляем документы пользователя из Firebase (чтобы сбросить аватар и имя)
             const userId = SyncService.getPrefixedUserId(store.vkUser, store.playerId);
             if (userId) {
@@ -134,7 +138,7 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
             window.location.reload();
         } catch (error) {
             console.error('Ошибка при полном сбросе прогресса:', error);
-            alert('Произошла ошибка при сбросе. Попробуйте еще раз.');
+            useGameStore.getState().showAlert('Произошла ошибка при сбросе. Попробуйте еще раз.');
         }
     };
 
@@ -206,7 +210,6 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
                                     whileTap={{ scale: 0.9 }}
                                     onClick={() => {
                                         audioService.prevTrack();
-                                        setMusicVolume(musicVolume);
                                     }}
                                     style={{
                                         cursor: 'pointer',
@@ -223,7 +226,6 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
                                 <div
                                     onClick={() => {
                                         audioService.toggleMusic();
-                                        setMusicVolume(musicVolume);
                                     }}
                                     style={{
                                         display: 'flex',
@@ -302,7 +304,6 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
                                     whileTap={{ scale: 0.9 }}
                                     onClick={() => {
                                         audioService.nextTrack();
-                                        setMusicVolume(musicVolume);
                                     }}
                                     style={{
                                         cursor: 'pointer',
@@ -575,7 +576,9 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
                                 const success = await joinGroup();
                                 if (success) {
                                     claimGroupReward();
-                                    alert('Награда за вступление в группу: 50 кристаллов! 💎');
+                                    useGameStore
+                                        .getState()
+                                        .showAlert('Награда за вступление в группу: 50 кристаллов! 💎');
                                 }
                             }}
                             style={{
@@ -696,8 +699,9 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
                                         }
                                         const { syncService } = await import('../../../services/SyncService');
                                         await syncService.wipeGlobalChat();
-                                        alert('Глобальный чат очищен!');
-                                        window.location.reload();
+                                        useGameStore.getState().showAlert('Глобальный чат очищен!', () => {
+                                            window.location.reload();
+                                        });
                                     }}
                                     style={{
                                         gridColumn: 'span 2',

@@ -3,6 +3,7 @@ import { ROLE_ICONS } from '../../constants/roleIcons';
 import { DetailStat } from './DetailStat';
 import { SkillItem } from './SkillItem';
 import { resolveAssetPath } from '../../../../../../utils/assetPath';
+import { useGameStore } from '../../../../../../store/useGameStore';
 
 export const HeroDetailsModal = ({ hero, isOwned, onClose, rarityColors, onBuy, onSelect }: any) => {
     const color = rarityColors[hero.rarity];
@@ -208,7 +209,7 @@ export const HeroDetailsModal = ({ hero, isOwned, onClose, rarityColors, onBuy, 
                                 justifyContent: 'center',
                                 gap: '15px',
                             }}
-                            onClick={() => alert('Режим тренировки скоро будет доступен!')}
+                            onClick={() => useGameStore.getState().showAlert('Режим тренировки скоро будет доступен!')}
                         >
                             <span>🎮</span> ПОПРОБОВАТЬ
                         </motion.button>

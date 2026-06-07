@@ -78,7 +78,8 @@ export const BattleScene: React.FC = () => {
     const playerHero = HEROES_DB.find((h) => h.id === selectedHeroId) || HEROES_DB[0];
     const equippedSkinId = equippedSkins?.[selectedHeroId] || 'default';
     const activeSkin = SKINS_DB.find((s) => s.id === equippedSkinId && s.heroId === selectedHeroId);
-    const displayPlayerName = activeSkin && activeSkin.id !== 'default' ? activeSkin.name : playerHero.name;
+    const isDefaultSkin = !activeSkin || activeSkin.id === 'default' || activeSkin.id.endsWith('_default');
+    const displayPlayerName = !isDefaultSkin ? activeSkin.name : playerHero.name;
     const displayPlayerImage = activeSkin ? activeSkin.image : playerHero.image;
     const rawEnemy =
         battleMode === 'PVE'
@@ -195,7 +196,7 @@ export const BattleScene: React.FC = () => {
 
                     if (isPve) {
                         if (isVictory) {
-                            gold = store.pveStage * 100;
+                            gold = Math.floor(store.pveStage * 100 * (1 + store.pveStage * 0.25));
                             xp = store.pveStage * 50;
                             const isBoss = store.pveStage % 5 === 0;
                             crystals = isBoss ? 20 : 0;
@@ -242,6 +243,10 @@ export const BattleScene: React.FC = () => {
                         store.addGold(gold);
                         const activeHeroId = store.selectedHeroId || 'panda';
                         store.addHeroExp(activeHeroId, xp);
+                        store.addExp(xp); // Опыт аккаунта для прокачки уровня игрока
+                        if (!isWarmup) {
+                            store.addBpExp(isVictory ? 100 : 20); // Battle Pass опыт
+                        }
                         store.addCombatLog(
                             `Бой завершен: ${isVictory ? 'Победа' : 'Поражение'}. Получено +${gold} золота, +${xp} опыта героя.`,
                         );

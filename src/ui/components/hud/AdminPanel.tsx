@@ -339,7 +339,10 @@ const AdminPanelContent: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                 );
             case 'ЧАТ':
                 return (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', height: '700px' }}>
+                    <div
+                        className="h-[500px] lg:h-[700px]"
+                        style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}
+                    >
                         <div
                             style={{
                                 flex: 1,
@@ -513,10 +516,16 @@ const AdminPanelContent: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                                     marginBottom: '15px',
                                 }}
                             >
-                                <button style={btnStyle} onClick={() => alert('PC Preset 1920x1080')}>
+                                <button
+                                    style={btnStyle}
+                                    onClick={() => useGameStore.getState().showAlert('PC Preset 1920x1080')}
+                                >
                                     PC Full HD
                                 </button>
-                                <button style={btnStyle} onClick={() => alert('iPhone X Preset')}>
+                                <button
+                                    style={btnStyle}
+                                    onClick={() => useGameStore.getState().showAlert('iPhone X Preset')}
+                                >
                                     iPhone X (Notch)
                                 </button>
                             </div>
@@ -555,11 +564,11 @@ const AdminPanelContent: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                             </button>
                             <button
                                 onClick={() => {
-                                    if (confirm('ВЫПОЛНИТЬ ПОЛНЫЙ СБРОС?')) {
+                                    useGameStore.getState().showConfirm('ВЫПОЛНИТЬ ПОЛНЫЙ СБРОС?', () => {
                                         localStorage.clear();
                                         useGameStore.getState().resetStore();
                                         window.location.reload();
-                                    }
+                                    });
                                 }}
                                 style={{ ...bigBtnStyle, background: '#431b1b', color: '#ff4d4d', marginTop: '10px' }}
                             >
@@ -570,7 +579,10 @@ const AdminPanelContent: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                 );
             case 'ОТЗЫВЫ':
                 return (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', height: '700px' }}>
+                    <div
+                        className="h-[500px] lg:h-[700px]"
+                        style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}
+                    >
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <div style={statLabel}>ПОСЛЕДНИЕ СООБЩЕНИЯ ОТ ИГРОКОВ</div>
                             <button
@@ -615,7 +627,7 @@ const AdminPanelContent: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                 <h1 style={titleStyle}>
                     GOD HUB <span style={{ color: '#444' }}>v3.0</span>
                 </h1>
-                <div style={{ display: 'flex', gap: '25px' }}>
+                <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap' }}>
                     {(['ИГРОК', 'БОЙ', 'СЕРВЕР', 'ПОЧТА', 'ЧАТ', 'ОТЗЫВЫ', 'СИСТЕМА'] as AdminTab[]).map((tab) => (
                         <button
                             key={tab}
@@ -658,21 +670,24 @@ const overlayStyle: React.CSSProperties = {
     inset: 0,
     zIndex: 10000,
     background: 'rgba(5, 5, 5, 0.98)',
-    backdropFilter: 'blur(35px)',
     color: '#fff',
-    padding: '30px 40px',
+    padding: '20px 20px',
     fontFamily: 'monospace',
     display: 'flex',
     flexDirection: 'column',
     pointerEvents: 'auto',
+    boxSizing: 'border-box',
+    overflowY: 'auto',
 };
 const headerStyle: React.CSSProperties = {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
     borderBottom: '1px solid #222',
-    paddingBottom: '20px',
+    paddingBottom: '15px',
     marginBottom: '20px',
+    flexWrap: 'wrap',
+    gap: '15px',
 };
 const titleStyle: React.CSSProperties = {
     margin: 0,

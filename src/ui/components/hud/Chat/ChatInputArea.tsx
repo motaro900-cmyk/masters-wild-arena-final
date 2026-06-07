@@ -110,6 +110,7 @@ export const ChatInputArea: React.FC<ChatInputAreaProps> = ({
                         onKeyDown={handleKeyDown}
                         onFocus={() => setIsFocused(true)}
                         onBlur={() => setIsFocused(false)}
+                        maxLength={150}
                         placeholder={privateRecipient ? `Написать ${privateRecipient}...` : 'Введите сообщение...'}
                         style={{
                             flex: 1,

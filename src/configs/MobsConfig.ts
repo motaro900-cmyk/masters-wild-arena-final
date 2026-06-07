@@ -63,7 +63,7 @@ export const MOBS_DB: IMobData[] = [
         id: 'ancient_treant',
         name: 'Древний Энт Обители',
         rarity: 'BOSS',
-        image: '/assets/characters/ancients/ancient_treant.webp',
+        image: '/assets/characters/ancients/ancient_treant.png',
         baseStats: { hp: 3500, attack: 130, defense: 80, speed: 0.6, crit: 0.15 },
         anchors: {
             feet: { x: 0.5, y: 0.95 },
@@ -133,7 +133,7 @@ export const MOBS_DB: IMobData[] = [
         id: 'ancient_griffin',
         name: 'Грозовой Грифон',
         rarity: 'BOSS',
-        image: '/assets/characters/ancients/ancient_griffin.webp',
+        image: '/assets/characters/ancients/ancient_griffin.png',
         baseStats: { hp: 4000, attack: 150, defense: 70, speed: 1.4, crit: 0.15 },
         anchors: {
             feet: { x: 0.5, y: 0.95 },

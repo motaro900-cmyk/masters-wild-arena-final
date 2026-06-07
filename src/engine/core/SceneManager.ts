@@ -51,7 +51,7 @@ export class SceneManager {
             if (this.currentScene.parent) {
                 this.currentScene.parent.removeChild(this.currentScene);
             }
-            this.currentScene.destroy({ children: true });
+            this.currentScene.destroy({ children: true, texture: false });
         }
 
         // 3. Добавляем новую сцену в Game Layer

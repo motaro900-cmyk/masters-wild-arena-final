@@ -48,21 +48,35 @@ export const DraggableItem: React.FC<DraggableItemProps> = ({
                 }
             }}
             style={{
-                background: rarity?.bg || 'transparent',
+                background: rarity?.bg
+                    ? `linear-gradient(135deg, ${rarity.bg}aa 0%, rgba(18, 14, 11, 0.95) 100%)`
+                    : 'linear-gradient(135deg, rgba(28, 22, 18, 0.95) 0%, rgba(18, 14, 11, 0.98) 100%)',
                 borderRadius: '8px',
-                border: `2px solid ${isEquippedOnCurrent ? '#f0c040' : rarity?.border || '#a0a0a0'}`,
+                border: `1.5px solid ${isEquippedOnCurrent ? '#f0c040' : 'rgba(240, 192, 64, 0.15)'}`,
                 position: 'relative',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 boxShadow: isEquippedOnCurrent
-                    ? `0 0 15px rgba(240,192,64,0.3), 0 0 10px ${rarity?.glow || 'transparent'}`
-                    : `0 4px 10px rgba(0,0,0,0.3), 0 0 5px ${rarity?.glow || 'transparent'}`,
+                    ? `0 0 15px rgba(240,192,64,0.45), 0 4px 12px rgba(0,0,0,0.5), inset 0 0 8px rgba(0,0,0,0.8)`
+                    : `0 4px 10px rgba(0,0,0,0.45), inset 0 0 8px rgba(0,0,0,0.8)`,
                 cursor: item.isResource ? 'default' : 'pointer',
-                transition: 'border-color 0.2s',
+                transition: 'all 0.2s',
                 opacity: isDragging ? 0.4 : 1,
             }}
         >
+            {/* Rarity inner trim border */}
+            <div
+                style={{
+                    position: 'absolute',
+                    inset: '2px',
+                    border: `1px solid ${rarity?.border || 'rgba(240, 192, 64, 0.2)'}`,
+                    borderRadius: '6px',
+                    pointerEvents: 'none',
+                    zIndex: 0,
+                    opacity: 0.65,
+                }}
+            />
             {!item.isResource && (
                 <motion.div
                     initial={{ opacity: 0 }}
@@ -70,8 +84,7 @@ export const DraggableItem: React.FC<DraggableItemProps> = ({
                     style={{
                         position: 'absolute',
                         inset: 0,
-                        background: 'rgba(0,0,0,0.6)',
-                        backdropFilter: 'blur(2px)',
+                        background: 'rgba(0,0,0,0.7)',
                         borderRadius: '8px',
                         display: 'flex',
                         alignItems: 'center',
@@ -159,6 +172,7 @@ export const DraggableItem: React.FC<DraggableItemProps> = ({
                         color: '#000',
                         fontWeight: 900,
                         border: '2px solid #1a1008',
+                        boxShadow: '0 2px 6px rgba(240, 192, 64, 0.45)',
                         pointerEvents: 'none',
                         zIndex: 10,
                     }}

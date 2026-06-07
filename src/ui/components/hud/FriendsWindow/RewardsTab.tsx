@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { AssetsMap } from '../../../../configs/AssetsMap';
 import { showInviteBox } from '../../../../utils/VKBridge';
+import { useGameStore } from '../../../../store/useGameStore';
 
 interface RewardsTabProps {
     colors: any;
@@ -175,7 +176,9 @@ export const RewardsTab: React.FC<RewardsTabProps> = ({
                                 const ok = await addToFavorites();
                                 if (ok) {
                                     claimFavoriteReward();
-                                    alert('Награда за добавление в избранное: 50 кристаллов! 💎');
+                                    useGameStore
+                                        .getState()
+                                        .showAlert('Награда за добавление в избранное: 50 кристаллов! 💎');
                                 }
                             }}
                             style={{
@@ -211,7 +214,9 @@ export const RewardsTab: React.FC<RewardsTabProps> = ({
                                 const ok = await joinGroup();
                                 if (ok) {
                                     claimGroupReward();
-                                    alert('Награда за вступление в группу: 50 кристаллов! 💎');
+                                    useGameStore
+                                        .getState()
+                                        .showAlert('Награда за вступление в группу: 50 кристаллов! 💎');
                                 }
                             }}
                             style={{

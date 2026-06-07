@@ -13,6 +13,66 @@ import { rarityColors } from '../../constants/roleIcons';
 import { SKINS_DB } from '../../../../../../configs/SkinsConfig';
 import { TalentsView } from '../Talents/TalentsView';
 
+const stoneBrickPattern =
+    "url(\"data:image/svg+xml;utf8,<svg width='60' height='40' viewBox='0 0 60 40' xmlns='http://www.w3.org/2000/svg'><rect width='60' height='40' fill='none'/><line x1='0' y1='20' x2='60' y2='20' stroke='rgba(0,0,0,0.52)' stroke-width='1.5'/><line x1='0' y1='40' x2='60' y2='40' stroke='rgba(0,0,0,0.52)' stroke-width='1.5'/><line x1='30' y1='0' x2='30' y2='20' stroke='rgba(0,0,0,0.52)' stroke-width='1.5'/><line x1='0' y1='20' x2='0' y2='40' stroke='rgba(0,0,0,0.52)' stroke-width='1.5'/><line x1='60' y1='20' x2='60' y2='40' stroke='rgba(0,0,0,0.52)' stroke-width='1.5'/><line x1='0' y1='1.5' x2='60' y2='1.5' stroke='rgba(255,255,255,0.15)' stroke-width='1'/><line x1='0' y1='21.5' x2='60' y2='21.5' stroke='rgba(255,255,255,0.15)' stroke-width='1'/><line x1='31.5' y1='0.8' x2='31.5' y2='19.5' stroke='rgba(255,255,255,0.15)' stroke-width='1'/><line x1='1.5' y1='20.8' x2='1.5' y2='39.5' stroke='rgba(255,255,255,0.15)' stroke-width='1'/><path d='M44,3 L40,7 L42,12 L38,15' stroke='rgba(0,0,0,0.45)' stroke-width='0.8' fill='none'/><path d='M45,3.5 L41,7.5 L43,12.5 L39,15.5' stroke='rgba(255,255,255,0.08)' stroke-width='0.8' fill='none'/><line x1='6' y1='8' x2='20' y2='8' stroke='rgba(0,0,0,0.42)' stroke-width='0.8'/><line x1='6' y1='9' x2='20' y2='9' stroke='rgba(255,255,255,0.08)' stroke-width='0.8'/><path d='M10,23 L13,28 L11,34' stroke='rgba(0,0,0,0.48)' stroke-width='0.9' fill='none'/><path d='M11,23.5 L14,28.5 L12,34.5' stroke='rgba(255,255,255,0.09)' stroke-width='0.9' fill='none'/><path d='M35,33 L48,30 L54,32' stroke='rgba(0,0,0,0.42)' stroke-width='0.8' fill='none'/><path d='M35,34 L48,31 L54,33' stroke='rgba(255,255,255,0.07)' stroke-width='0.8' fill='none'/><circle cx='12' cy='14' r='0.8' fill='rgba(0,0,0,0.45)'/><circle cx='12.5' cy='14.5' r='0.4' fill='rgba(255,255,255,0.08)'/><circle cx='48' cy='26' r='1.2' fill='rgba(0,0,0,0.5)'/><circle cx='48.5' cy='26.5' r='0.6' fill='rgba(255,255,255,0.1)'/></svg>\")";
+
+const CornerDecoration = () => (
+    <>
+        <div
+            style={{
+                position: 'absolute',
+                top: 12,
+                left: 12,
+                width: 14,
+                height: 14,
+                borderTop: '2px solid rgba(240, 192, 64, 0.7)',
+                borderLeft: '2px solid rgba(240, 192, 64, 0.7)',
+                pointerEvents: 'none',
+                zIndex: 5,
+            }}
+        />
+        <div
+            style={{
+                position: 'absolute',
+                top: 12,
+                right: 12,
+                width: 14,
+                height: 14,
+                borderTop: '2px solid rgba(240, 192, 64, 0.7)',
+                borderRight: '2px solid rgba(240, 192, 64, 0.7)',
+                pointerEvents: 'none',
+                zIndex: 5,
+            }}
+        />
+        <div
+            style={{
+                position: 'absolute',
+                bottom: 12,
+                left: 12,
+                width: 14,
+                height: 14,
+                borderBottom: '2px solid rgba(240, 192, 64, 0.7)',
+                borderLeft: '2px solid rgba(240, 192, 64, 0.7)',
+                pointerEvents: 'none',
+                zIndex: 5,
+            }}
+        />
+        <div
+            style={{
+                position: 'absolute',
+                bottom: 12,
+                right: 12,
+                width: 14,
+                height: 14,
+                borderBottom: '2px solid rgba(240, 192, 64, 0.7)',
+                borderRight: '2px solid rgba(240, 192, 64, 0.7)',
+                pointerEvents: 'none',
+                zIndex: 5,
+            }}
+        />
+    </>
+);
+
 export const GearView = ({
     hero,
     stats,
@@ -29,6 +89,7 @@ export const GearView = ({
     const equippedSkins = useGameStore((s: any) => s.equippedSkins) || {};
     const equippedSkinId = equippedSkins[hero.id] || 'default';
     const activeSkin = SKINS_DB.find((s) => s.id === equippedSkinId && s.heroId === hero.id);
+    const isDefaultSkin = !activeSkin || activeSkin.id === 'default' || activeSkin.id.endsWith('_default');
 
     const heroesState = useGameStore((s: any) => s.heroes) || {};
     const heroState = heroesState[hero.id] || { level: 1, exp: 0 };
@@ -37,7 +98,7 @@ export const GearView = ({
     const xpNeeded = getHeroExpNeeded(heroLevel);
     const xpPercentage = heroLevel >= 10 ? 100 : Math.min(100, (heroExp / xpNeeded) * 100);
     const displayHeroName = hero.name;
-    const activeRarity = activeSkin && activeSkin.id !== 'default' ? activeSkin.rarity : hero.rarity;
+    const activeRarity = !isDefaultSkin ? activeSkin.rarity : hero.rarity;
     const activeRarityColor = rarityColors[activeRarity] || '#f0c040';
 
     // stats теперь имеет структуру { base, total, weaponTexture }
@@ -146,20 +207,32 @@ export const GearView = ({
                 style={{
                     width: '420px',
                     height: '100%',
-                    background:
-                        'radial-gradient(circle at 50% 30%, rgba(60, 40, 10, 0.4) 0%, rgba(10, 10, 15, 0.8) 70%)',
-                    backdropFilter: 'blur(20px)',
+                    background: `${stoneBrickPattern}, linear-gradient(135deg, rgba(28, 22, 18, 0.99) 0%, rgba(16, 12, 10, 1.0) 100%)`,
                     borderRadius: '30px',
-                    border: '1px solid rgba(240, 192, 64, 0.2)',
+                    border: '1.5px solid rgba(240, 192, 64, 0.25)',
                     display: 'flex',
                     flexDirection: 'column',
                     padding: '30px',
                     gap: '20px',
                     zIndex: 5,
-                    boxShadow: 'inset 0 0 50px rgba(0,0,0,0.8), 0 20px 50px rgba(0,0,0,0.6)',
+                    position: 'relative',
+                    boxShadow: 'inset 0 0 30px rgba(0,0,0,0.85), 0 20px 40px rgba(0,0,0,0.6)',
                 }}
             >
-                <div style={{ textAlign: 'center' }}>
+                {/* Double frame outline */}
+                <div
+                    style={{
+                        position: 'absolute',
+                        inset: '8px',
+                        border: '1px solid rgba(240, 192, 64, 0.15)',
+                        borderRadius: '24px',
+                        pointerEvents: 'none',
+                        zIndex: 1,
+                    }}
+                />
+                <CornerDecoration />
+
+                <div style={{ textAlign: 'center', zIndex: 2 }}>
                     <h3
                         style={{
                             color: '#f0c040',
@@ -167,6 +240,7 @@ export const GearView = ({
                             fontFamily: "'Cinzel', 'Philosopher', serif",
                             letterSpacing: '3px',
                             margin: 0,
+                            textShadow: '0 0 10px rgba(240, 192, 64, 0.25)',
                         }}
                     >
                         СНАРЯЖЕНИЕ
@@ -427,172 +501,361 @@ export const GearView = ({
                     flexDirection: 'column',
                     alignItems: 'center',
                     position: 'relative',
-                    justifyContent: 'flex-end',
-                    paddingBottom: '120px',
+                    margin: '0 4px',
                 }}
             >
+                {/* Showcase Alcove Frame */}
                 <div
                     style={{
-                        position: 'absolute',
-                        bottom: '80px',
-                        width: '900px',
-                        height: '600px',
-                        backgroundImage: `url("${AssetsMap.UI.HERO_PEDESTAL}")`,
-                        backgroundSize: 'contain',
-                        backgroundPosition: 'center',
-                        backgroundRepeat: 'no-repeat',
-                        zIndex: 1,
-                        opacity: 0.9,
-                    }}
-                />
-                <div
-                    style={{
-                        zIndex: 2,
-                        marginBottom: '-40px',
+                        width: '560px',
+                        height: '100%',
+                        background: `${stoneBrickPattern}, linear-gradient(180deg, rgba(24, 18, 15, 0.98) 0%, rgba(12, 9, 8, 1.0) 100%)`,
+                        borderRadius: '30px',
+                        border: '1.5px solid rgba(240, 192, 64, 0.25)',
                         display: 'flex',
+                        flexDirection: 'column',
                         alignItems: 'center',
-                        justifyContent: 'center',
-                        pointerEvents: 'none',
+                        justifyContent: 'flex-end',
+                        paddingBottom: '25px',
+                        position: 'relative',
+                        boxShadow: 'inset 0 0 40px rgba(0,0,0,0.9), 0 20px 40px rgba(0,0,0,0.65)',
+                        zIndex: 5,
+                        overflow: 'visible', // allows pedestal & weapon overflow
                     }}
                 >
-                    <EquippedHeroView heroId={hero.id} size={640} />
-                </div>
-                <div
-                    style={{
-                        textAlign: 'center',
-                        zIndex: 10,
-                        marginBottom: '40px',
-                        background: 'rgba(0,0,0,0.8)',
-                        padding: '18px 50px',
-                        borderRadius: '15px',
-                        border: '1px solid rgba(240,192,64,0.3)',
-                        backdropFilter: 'blur(10px)',
-                    }}
-                >
-                    <h2
+                    {/* Double frame outline */}
+                    <div
                         style={{
-                            color: '#f0c040',
-                            fontSize: '34px',
-                            margin: 0,
-                            fontFamily: "'Cinzel', 'Philosopher', serif",
+                            position: 'absolute',
+                            inset: '8px',
+                            border: '1px solid rgba(240, 192, 64, 0.15)',
+                            borderRadius: '24px',
+                            pointerEvents: 'none',
+                            zIndex: 1,
                         }}
-                    >
-                        {displayHeroName}{' '}
-                        <span style={{ color: '#fff', fontSize: '20px', marginLeft: '10px' }}>Ур. {heroLevel}</span>
-                    </h2>
-                    <p
-                        style={{
-                            color:
-                                activeSkin && activeSkin.id !== 'default' && activeSkin.color
-                                    ? activeSkin.color
-                                    : activeRarityColor,
-                            margin: '0 0 10px 0',
-                            fontWeight: 900,
-                            letterSpacing: '4px',
-                            fontSize: '12px',
-                        }}
-                    >
-                        {activeSkin && activeSkin.id !== 'default' ? activeSkin.name : hero.title}
-                    </p>
+                    />
+                    <CornerDecoration />
 
-                    {/* XP Progress Bar */}
-                    {heroLevel < 10 ? (
-                        <div style={{ width: '280px', margin: '12px auto 0' }}>
-                            <div
-                                style={{
-                                    height: '10px',
-                                    background: 'rgba(10, 10, 15, 0.6)',
-                                    borderRadius: '5px',
-                                    overflow: 'hidden',
-                                    border: '1px solid rgba(240, 192, 64, 0.35)',
-                                    position: 'relative',
-                                    boxShadow: 'inset 0 2px 5px rgba(0, 0, 0, 0.8), 0 0 10px rgba(240, 192, 64, 0.15)',
-                                }}
-                            >
-                                <motion.div
-                                    initial={{ width: 0 }}
-                                    animate={{ width: `${xpPercentage}%` }}
-                                    transition={{ duration: 0.8, ease: 'easeOut' }}
-                                    style={{
-                                        height: '100%',
-                                        background: 'linear-gradient(90deg, #7c3aed 0%, #d946ef 50%, #eab308 100%)',
-                                        borderRadius: '5px',
-                                        position: 'relative',
-                                        boxShadow: '0 0 12px rgba(217, 70, 239, 0.8), 0 0 20px rgba(234, 179, 8, 0.4)',
-                                    }}
-                                >
-                                    {/* Animated gleam effect */}
-                                    <div
-                                        style={{
-                                            position: 'absolute',
-                                            top: 0,
-                                            left: 0,
-                                            right: 0,
-                                            bottom: 0,
-                                            backgroundImage:
-                                                'linear-gradient(45deg, rgba(255,255,255,0.15) 25%, transparent 25%, transparent 50%, rgba(255,255,255,0.15) 50%, rgba(255,255,255,0.15) 75%, transparent 75%, transparent)',
-                                            backgroundSize: '15px 15px',
-                                            opacity: 0.3,
-                                            animation: 'move-stripes 2s linear infinite',
-                                        }}
-                                    />
-                                    <style>{`
-                                        @keyframes move-stripes {
-                                            0% { background-position: 0 0; }
-                                            100% { background-position: 30px 0; }
-                                        }
-                                    `}</style>
-                                </motion.div>
-                            </div>
-                            <div
-                                style={{
-                                    display: 'flex',
-                                    justifyContent: 'space-between',
-                                    alignItems: 'center',
-                                    fontSize: '11px',
-                                    color: '#d97706',
-                                    marginTop: '6px',
-                                    fontWeight: 800,
-                                    letterSpacing: '1px',
-                                    fontFamily: "'Philosopher', 'Inter', sans-serif",
-                                    textShadow: '0 1px 3px rgba(0,0,0,0.8)',
-                                }}
-                            >
-                                <span style={{ color: 'rgba(255, 255, 255, 0.6)' }}>ОПЫТ ГЕРОЯ</span>
-                                <span>
-                                    {heroExp} <span style={{ color: 'rgba(255, 255, 255, 0.4)' }}>/</span> {xpNeeded} (
-                                    {Math.round(xpPercentage)}%)
-                                </span>
-                            </div>
-                        </div>
-                    ) : (
+                    {/* Dynamic Breathing Backlight Halo */}
+                    <motion.div
+                        animate={{
+                            opacity: [0.75, 1.0, 0.75],
+                            scale: [0.93, 1.05, 0.93],
+                        }}
+                        transition={{
+                            duration: 5,
+                            repeat: Infinity,
+                            ease: 'easeInOut',
+                        }}
+                        style={{
+                            position: 'absolute',
+                            bottom: '290px', // Raised by 70px
+                            left: '50%',
+                            transform: 'translateX(-50%)',
+                            width: '450px',
+                            height: '450px',
+                            background: `radial-gradient(circle, ${activeRarityColor}66 0%, transparent 70%)`, // significantly stronger glow
+                            pointerEvents: 'none',
+                            zIndex: 1,
+                        }}
+                    />
+
+                    {/* Pedestal */}
+                    <div
+                        style={{
+                            position: 'absolute',
+                            bottom: '230px', // Raised by 70px
+                            left: '50%',
+                            transform: 'translateX(-50%)',
+                            width: '760px',
+                            height: '450px',
+                            backgroundImage: `url("${AssetsMap.UI.HERO_PEDESTAL}")`,
+                            backgroundSize: 'contain',
+                            backgroundPosition: 'center',
+                            backgroundRepeat: 'no-repeat',
+                            zIndex: 2,
+                            opacity: 0.95,
+                            pointerEvents: 'none',
+                        }}
+                    />
+
+                    {/* Character Model */}
+                    <div
+                        style={{
+                            position: 'absolute',
+                            bottom: '250px', // Raised by 70px
+                            left: '50%',
+                            transform: 'translateX(-50%) scale(1.05)',
+                            zIndex: 3,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            pointerEvents: 'none',
+                            filter: 'drop-shadow(0 15px 25px rgba(0,0,0,0.85))',
+                        }}
+                    >
+                        <EquippedHeroView heroId={hero.id} size={580} />
+                    </div>
+
+                    {/* Premium Nameplate Plaque */}
+                    <div
+                        style={{
+                            width: '88%',
+                            textAlign: 'center',
+                            zIndex: 10,
+                            background:
+                                'linear-gradient(180deg, rgba(32, 25, 20, 0.98) 0%, rgba(16, 12, 10, 0.99) 100%)',
+                            padding: '16px 20px',
+                            borderRadius: '18px',
+                            border: '1.5px solid rgba(240, 192, 64, 0.35)',
+                            boxShadow: '0 8px 24px rgba(0,0,0,0.85), inset 0 0 15px rgba(0,0,0,0.7)',
+                            marginBottom: '10px',
+                            position: 'relative',
+                        }}
+                    >
+                        {/* Tiny decorative gold ornaments/rivets in corners */}
                         <div
                             style={{
-                                fontSize: '12px',
-                                color: '#eab308',
-                                fontWeight: 900,
-                                letterSpacing: '2px',
-                                marginTop: '12px',
-                                textShadow: '0 0 10px rgba(234, 179, 8, 0.5)',
-                                fontFamily: "'Cinzel', serif",
+                                position: 'absolute',
+                                top: '6px',
+                                left: '6px',
+                                width: '3px',
+                                height: '3px',
+                                borderRadius: '50%',
+                                background: '#f0c040',
+                                opacity: 0.7,
+                            }}
+                        />
+                        <div
+                            style={{
+                                position: 'absolute',
+                                top: '6px',
+                                right: '6px',
+                                width: '3px',
+                                height: '3px',
+                                borderRadius: '50%',
+                                background: '#f0c040',
+                                opacity: 0.7,
+                            }}
+                        />
+                        <div
+                            style={{
+                                position: 'absolute',
+                                bottom: '6px',
+                                left: '6px',
+                                width: '3px',
+                                height: '3px',
+                                borderRadius: '50%',
+                                background: '#f0c040',
+                                opacity: 0.7,
+                            }}
+                        />
+                        <div
+                            style={{
+                                position: 'absolute',
+                                bottom: '6px',
+                                right: '6px',
+                                width: '3px',
+                                height: '3px',
+                                borderRadius: '50%',
+                                background: '#f0c040',
+                                opacity: 0.7,
+                            }}
+                        />
+
+                        {/* Top Accent bar */}
+                        <div
+                            style={{
+                                position: 'absolute',
+                                top: -1,
+                                left: '50%',
+                                transform: 'translateX(-50%)',
+                                width: '60px',
+                                height: '2px',
+                                background:
+                                    'linear-gradient(90deg, transparent, #f0c040 30%, #fff 50%, #f0c040 70%, transparent)',
+                                boxShadow: '0 0 8px #f0c040',
+                            }}
+                        />
+
+                        <h2
+                            style={{
+                                color: '#f0c040',
+                                fontSize: '26px',
+                                margin: 0,
+                                fontFamily: "'Cinzel', 'Philosopher', serif",
+                                textShadow: '0 2px 4px rgba(0,0,0,0.8)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: '2px',
+                                lineHeight: '1.2',
                             }}
                         >
-                            🏆 МАКСИМАЛЬНЫЙ УРОВЕНЬ 🏆
+                            <span
+                                style={{
+                                    background: 'linear-gradient(180deg, #ffffff 0%, #f5be38 50%, #a07010 100%)',
+                                    WebkitBackgroundClip: 'text',
+                                    WebkitTextFillColor: 'transparent',
+                                    filter: 'drop-shadow(0 2px 3px rgba(0,0,0,0.5))',
+                                }}
+                            >
+                                {displayHeroName}
+                            </span>
+                            <span
+                                style={{
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    background: 'linear-gradient(135deg, #2a1808 0%, #150f08 100%)',
+                                    border: '1px solid rgba(240, 192, 64, 0.5)',
+                                    borderRadius: '5px',
+                                    padding: '2px 8px',
+                                    fontSize: '13px',
+                                    color: '#fff',
+                                    marginLeft: '10px',
+                                    verticalAlign: 'middle',
+                                    boxShadow: '0 2px 4px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1)',
+                                    fontFamily: "'Philosopher', sans-serif",
+                                    fontWeight: 'bold',
+                                    letterSpacing: '0.5px',
+                                }}
+                            >
+                                ур. {heroLevel}
+                            </span>
+                        </h2>
+
+                        {/* Title with decorative wings */}
+                        <div
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: '12px',
+                                margin: '6px 0 12px 0',
+                            }}
+                        >
+                            <div
+                                style={{
+                                    width: '30px',
+                                    height: '1px',
+                                    background: 'linear-gradient(90deg, transparent, rgba(240, 192, 64, 0.45))',
+                                }}
+                            />
+                            <span
+                                style={{
+                                    color: !isDefaultSkin && activeSkin.color ? activeSkin.color : activeRarityColor,
+                                    fontWeight: 900,
+                                    letterSpacing: '3px',
+                                    fontSize: '11px',
+                                    textTransform: 'uppercase',
+                                    textShadow: '0 1px 2px rgba(0,0,0,0.8)',
+                                }}
+                            >
+                                {!isDefaultSkin ? activeSkin.name : hero.title}
+                            </span>
+                            <div
+                                style={{
+                                    width: '30px',
+                                    height: '1px',
+                                    background: 'linear-gradient(270deg, transparent, rgba(240, 192, 64, 0.45))',
+                                }}
+                            />
                         </div>
-                    )}
+
+                        {/* XP Progress Bar */}
+                        {heroLevel < 10 ? (
+                            <div style={{ width: '100%', margin: '0 auto' }}>
+                                <div
+                                    style={{
+                                        height: '8px',
+                                        background: 'rgba(10, 8, 6, 0.85)',
+                                        borderRadius: '4px',
+                                        overflow: 'hidden',
+                                        border: '1px solid rgba(240, 192, 64, 0.25)',
+                                        position: 'relative',
+                                        boxShadow: 'inset 0 1px 3px rgba(0, 0, 0, 0.8)',
+                                    }}
+                                >
+                                    <motion.div
+                                        initial={{ width: 0 }}
+                                        animate={{ width: `${xpPercentage}%` }}
+                                        transition={{ duration: 0.8, ease: 'easeOut' }}
+                                        style={{
+                                            height: '100%',
+                                            background: 'linear-gradient(90deg, #7c3aed 0%, #d946ef 50%, #eab308 100%)',
+                                            borderRadius: '4px',
+                                            position: 'relative',
+                                            boxShadow:
+                                                '0 0 10px rgba(217, 70, 239, 0.7), 0 0 15px rgba(234, 179, 8, 0.3)',
+                                        }}
+                                    >
+                                        {/* Animated stripes */}
+                                        <div
+                                            style={{
+                                                position: 'absolute',
+                                                top: 0,
+                                                left: 0,
+                                                right: 0,
+                                                bottom: 0,
+                                                backgroundImage:
+                                                    'linear-gradient(45deg, rgba(255,255,255,0.15) 25%, transparent 25%, transparent 50%, rgba(255,255,255,0.15) 50%, rgba(255,255,255,0.15) 75%, transparent 75%, transparent)',
+                                                backgroundSize: '12px 12px',
+                                                opacity: 0.25,
+                                                animation: 'move-stripes 2s linear infinite',
+                                            }}
+                                        />
+                                    </motion.div>
+                                </div>
+                                <div
+                                    style={{
+                                        display: 'flex',
+                                        justifyContent: 'space-between',
+                                        alignItems: 'center',
+                                        fontSize: '10px',
+                                        color: '#d97706',
+                                        marginTop: '5px',
+                                        fontWeight: 800,
+                                        letterSpacing: '0.5px',
+                                        fontFamily: "'Philosopher', 'Inter', sans-serif",
+                                    }}
+                                >
+                                    <span style={{ color: 'rgba(255, 255, 255, 0.5)' }}>ОПЫТ ГЕРОЯ</span>
+                                    <span>
+                                        {heroExp} <span style={{ color: 'rgba(255, 255, 255, 0.3)' }}>/</span>{' '}
+                                        {xpNeeded} ({Math.round(xpPercentage)}%)
+                                    </span>
+                                </div>
+                            </div>
+                        ) : (
+                            <div
+                                style={{
+                                    fontSize: '11px',
+                                    color: '#eab308',
+                                    fontWeight: 900,
+                                    letterSpacing: '1.5px',
+                                    textShadow: '0 0 8px rgba(234, 179, 8, 0.4)',
+                                    fontFamily: "'Cinzel', serif",
+                                }}
+                            >
+                                🏆 МАКСИМАЛЬНЫЙ УРОВЕНЬ 🏆
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
 
-            <div style={{ width: '480px', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ width: '480px', display: 'flex', flexDirection: 'column', zIndex: 5 }}>
                 <div
                     style={{
                         display: 'flex',
-                        background: 'rgba(0,0,0,0.4)',
+                        background: 'rgba(20, 16, 12, 0.65)',
                         borderRadius: '12px',
                         padding: '4px',
                         marginBottom: '20px',
                         gap: '6px',
-                        border: '1px solid rgba(255, 255, 255, 0.05)',
+                        border: '1px solid rgba(240, 192, 64, 0.22)',
+                        boxShadow: 'inset 0 2px 6px rgba(0,0,0,0.5)',
                     }}
                 >
                     {['STATS', 'INVENTORY', 'TALENTS', 'LORE'].map((tab) => {
@@ -606,17 +869,23 @@ export const GearView = ({
                                 style={{
                                     flex: 1,
                                     padding: '10px 4px',
-                                    background: active ? 'rgba(240, 192, 64, 0.12)' : 'transparent',
-                                    color: active ? '#f0c040' : 'rgba(255, 255, 255, 0.5)',
-                                    border: active ? '1px solid #f0c040' : '1px solid transparent',
+                                    background: active
+                                        ? 'linear-gradient(180deg, #f0c040 0%, #c8960a 100%)'
+                                        : 'rgba(28, 22, 18, 0.5)',
+                                    color: active ? '#1a0f00' : 'rgba(255, 254, 250, 0.6)',
+                                    border: active ? '1.5px solid #fffdf7' : '1px solid rgba(240, 192, 64, 0.15)',
                                     borderRadius: '8px',
                                     cursor: 'pointer',
                                     fontWeight: 900,
-                                    fontSize: '10px',
+                                    fontSize: '10.5px',
                                     fontFamily: "'Cinzel', 'Philosopher', serif",
-                                    letterSpacing: '0.5px',
-                                    textShadow: active ? '0 0 8px rgba(240, 192, 64, 0.3)' : 'none',
-                                    boxShadow: active ? 'inset 0 0 8px rgba(240, 192, 64, 0.05)' : 'none',
+                                    letterSpacing: '0.8px',
+                                    textShadow: active
+                                        ? '0 1px 2px rgba(255,255,255,0.2)'
+                                        : '0 2px 4px rgba(0,0,0,0.8)',
+                                    boxShadow: active
+                                        ? '0 4px 10px rgba(240, 192, 64, 0.25)'
+                                        : 'inset 0 2px 5px rgba(0,0,0,0.4)',
                                     transition: 'all 0.2s ease',
                                 }}
                             >
@@ -635,18 +904,29 @@ export const GearView = ({
                     style={{
                         flex: 1,
                         minHeight: 0,
-                        background: 'rgba(20, 20, 25, 0.6)',
-                        backdropFilter: 'blur(20px)',
+                        background: `${stoneBrickPattern}, linear-gradient(135deg, rgba(28, 22, 18, 0.99) 0%, rgba(16, 12, 10, 1.0) 100%)`,
                         borderRadius: '30px',
-                        border: '1px solid rgba(240,192,64,0.3)',
+                        border: '1.5px solid rgba(240, 192, 64, 0.25)',
                         padding: '25px',
                         overflow: 'hidden',
-                        boxShadow: '0 20px 60px rgba(0,0,0,1)',
+                        boxShadow: 'inset 0 0 30px rgba(0,0,0,0.85), 0 20px 40px rgba(0,0,0,0.6)',
                         display: 'flex',
                         flexDirection: 'column',
                         position: 'relative',
                     }}
                 >
+                    {/* Double frame outline */}
+                    <div
+                        style={{
+                            position: 'absolute',
+                            inset: '8px',
+                            border: '1px solid rgba(240, 192, 64, 0.15)',
+                            borderRadius: '24px',
+                            pointerEvents: 'none',
+                            zIndex: 1,
+                        }}
+                    />
+                    <CornerDecoration />
                     {detailSubTab === 'TALENTS' ? (
                         <TalentsView hero={hero} isCompact={true} />
                     ) : detailSubTab === 'INVENTORY' ? (

@@ -101,7 +101,7 @@ const ChatIcon = () => (
 );
 
 export const VIPWindow: React.FC<VIPWindowProps> = () => {
-    const { vipLevel } = useGameStore();
+    const { vipLevel, isPremium } = useGameStore();
     const [daysLeft, setDaysLeft] = useState<number>(() => {
         const endTime = safeGetItem('vipEndTime');
         if (endTime) {
@@ -133,17 +133,38 @@ export const VIPWindow: React.FC<VIPWindowProps> = () => {
     }, []);
 
     useEffect(() => {
+        const calculateMaxEnergy = (premium: boolean, hasVip: boolean): number => {
+            const base = 50;
+            const premiumBonus = premium ? 15 : 0;
+            const vipBonus = hasVip ? 15 : 0;
+            return base + Math.max(premiumBonus, vipBonus);
+        };
+
         if (daysLeft > 0 && vipLevel === 0) {
-            scheduleTimeout(() => useGameStore.setState({ vipLevel: 1, maxEnergy: 65 }), 0);
+            scheduleTimeout(
+                () =>
+                    useGameStore.setState({
+                        vipLevel: 1,
+                        maxEnergy: calculateMaxEnergy(isPremium, true),
+                    }),
+                0,
+            );
         } else if (daysLeft === 0 && vipLevel > 0) {
-            scheduleTimeout(() => useGameStore.setState({ vipLevel: 0, maxEnergy: 50 }), 0);
+            scheduleTimeout(
+                () =>
+                    useGameStore.setState({
+                        vipLevel: 0,
+                        maxEnergy: calculateMaxEnergy(isPremium, false),
+                    }),
+                0,
+            );
         }
-    }, [daysLeft, vipLevel]);
+    }, [daysLeft, vipLevel, isPremium]);
 
     const benefits = [
         { icon: <GoldIcon />, text: 'БОНУС ЗОЛОТА В БОЯХ: +15%' },
         { icon: <XpIcon />, text: 'БОНУС ОПЫТА ГЕРОЯ: +10%' },
-        { icon: <EnergyIcon />, text: 'МАКС. ЗАПАС ЭНЕРГИИ: +10' },
+        { icon: <EnergyIcon />, text: 'МАКС. ЗАПАС ЭНЕРГИИ: +15' },
         { icon: <MailIcon />, text: 'ЕЖЕДНЕВНЫЙ VIP ПОДАРОК НА ПОЧТУ' },
         { icon: <RerollIcon />, text: '1 БЕСПЛАТНЫЙ СБРОС КВЕСТА В ДЕНЬ' },
         { icon: <ChatIcon />, text: 'УНИКАЛЬНЫЙ VIP ЗНАЧОК В ЧАТЕ' },
@@ -159,7 +180,7 @@ export const VIPWindow: React.FC<VIPWindowProps> = () => {
     const buyVip = React.useCallback((days: number, price: number) => {
         const store = useGameStore.getState();
         if (store.crystals < price) {
-            alert('Недостаточно алмазов!');
+            useGameStore.getState().showAlert('Недостаточно алмазов!');
             return;
         }
 
@@ -171,7 +192,7 @@ export const VIPWindow: React.FC<VIPWindowProps> = () => {
             const newEndTime = useGameStore.getState().vipEndTime || now;
             setDaysLeft(Math.ceil((newEndTime - now) / (1000 * 60 * 60 * 24)));
         } else {
-            alert('Не удалось активировать VIP-статус!');
+            useGameStore.getState().showAlert('Не удалось активировать VIP-статус!');
         }
     }, []);
 

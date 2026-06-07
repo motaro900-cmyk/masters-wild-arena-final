@@ -4,7 +4,7 @@ import fs from 'fs';
 
 const CHROME_PATH = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
 const GAME_URL = 'http://localhost:5173';
-const REPORT_DIR = 'C:\\Users\\Motar\\.gemini\\antigravity\\brain\\0feaab35-bfc8-4a78-994a-d84e254b78e9';
+const REPORT_DIR = 'C:\\Users\\Motar\\.gemini\\antigravity\\brain\\ccb229ee-9ac6-48e8-8e69-1d19f584eae7';
 const REPORT_PATH = join(REPORT_DIR, 'visual_qa_report.json');
 
 async function delay(ms) {
@@ -14,6 +14,11 @@ async function delay(ms) {
 async function runVisualQA() {
     console.log('🔍 Starting Visual Battle Inspector Bot...');
     console.log(`🔗 Navigating to ${GAME_URL}...`);
+
+    const matchups = [
+        { player: 'minotaur', enemy: 'tiger_warrior' },
+        { player: 'lion_knight', enemy: 'minotaur' }
+    ];
 
     let browser;
     try {
@@ -33,144 +38,147 @@ async function runVisualQA() {
             }
         });
 
-        const page = await browser.newPage();
-        
-        page.on('console', msg => {
-            if (msg.text().includes('[HeroUnit]') || msg.text().includes('BattleEngine') || msg.text().includes('QA')) {
-                console.log(`[Browser] ${msg.text()}`);
-            }
-        });
-
-        await page.goto(GAME_URL, { waitUntil: 'networkidle2', timeout: 30000 });
-        await delay(3000);
-
-        // Force initialize store to skip onboarding and enter Battle directly
-        console.log('⚡ Injecting battle state via GameStore...');
-        await page.evaluate(() => {
-            if (window.useGameStore) {
-                window.useGameStore.setState({
-                    onboardingCompleted: true,
-                    name: 'VisualQATester',
-                    activeScreen: 'BATTLE',
-                    battleMode: 'RANKED',
-                    selectedHeroId: 'panda',
-                    selectedEnemyId: 'panda', // Opponent will be a Panda hero
-                    timeScale: 2.0 // Run battle faster to inspect transitions quickly
-                });
-                console.log('QA: Battle state injected successfully.');
-            } else {
-                console.error('QA: useGameStore not found on window.');
-            }
-        });
-
-        await delay(2000); // Wait for Pixi and BattleEngine to initialize
-
-        console.log('🛡️ Monitoring battle visual frames for 8 seconds...');
         const samples = [];
-        const startTime = Date.now();
 
-        // Sample battle rendering details every 250ms
-        for (let i = 0; i < 32; i++) {
-            const frameInfo = await page.evaluate(() => {
-                if (!window.__PIXI_APP__) {
-                    return { error: 'Pixi app __PIXI_APP__ not found' };
+        for (const matchup of matchups) {
+            console.log(`\n⚔️ Testing Matchup: ${matchup.player} vs ${matchup.enemy}`);
+            const page = await browser.newPage();
+            
+            page.on('console', msg => {
+                if (msg.text().includes('[HeroUnit]') || msg.text().includes('BattleEngine') || msg.text().includes('QA')) {
+                    console.log(`[Browser] ${msg.text()}`);
                 }
-
-                // Recursive helper to find HeroUnit nodes
-                function findHeroUnits(node) {
-                    let results = [];
-                    if (!node) return results;
-                    // Check if it looks like a HeroUnit (has custom attributes or bodySprite)
-                    if (node.heroInstanceId || node.bodySprite || (node.config && node.loadHero)) {
-                        results.push(node);
-                    }
-                    if (node.children) {
-                        for (let child of node.children) {
-                            results = results.concat(findHeroUnits(child));
-                        }
-                    }
-                    return results;
-                }
-
-                const units = findHeroUnits(window.__PIXI_APP__.stage);
-                if (units.length === 0) {
-                    return { error: 'No HeroUnit instances found in Pixi stage' };
-                }
-
-                return units.map(unit => {
-                    const globalPos = unit.parent ? unit.parent.toGlobal(unit.position) : unit.position;
-                    const isPlayer = unit.position.x < 960; // Player is on the left side
-                    
-                    // Check texture issues (e.g. if loaded texture is empty/white fallback)
-                    let textureSrc = '';
-                    let isFallbackTexture = false;
-                    let textureWidth = 0;
-                    let textureHeight = 0;
-                    if (unit.bodySprite && unit.bodySprite.texture) {
-                        const tex = unit.bodySprite.texture;
-                        textureWidth = tex.width;
-                        textureHeight = tex.height;
-                        if (tex.source && tex.source.label) {
-                            textureSrc = tex.source.label;
-                        }
-                        if ((tex.width <= 1 && tex.height <= 1) || (tex.source && tex.source.label && tex.source.label.includes('white'))) {
-                            isFallbackTexture = true;
-                        }
-                    }
-
-                    // Check weapons, head, etc. socket containers
-                    const hasWeapon = !!unit.weaponSocketContainer;
-                    const hasHelmet = !!unit.helmetSocketContainer;
-                    
-                    return {
-                        id: unit.config ? unit.config.id : 'unknown',
-                        name: unit.config ? unit.config.name : 'unknown',
-                        isPlayer,
-                        x: unit.position.x,
-                        y: unit.position.y,
-                        globalX: globalPos.x,
-                        globalY: globalPos.y,
-                        scaleX: unit.scale.x,
-                        scaleY: unit.scale.y,
-                        bodyContainerScaleX: unit.bodyContainer ? unit.bodyContainer.scale.x : 1,
-                        bodyContainerScaleY: unit.bodyContainer ? unit.bodyContainer.scale.y : 1,
-                        width: unit.width,
-                        height: unit.height,
-                        textureSrc,
-                        isFallbackTexture,
-                        textureWidth,
-                        textureHeight,
-                        hasWeapon,
-                        hasHelmet,
-                        // Frame index for animated spritesheet characters (like panda)
-                        currentFrame: unit.bodySprite && unit.posesTextures ? unit.posesTextures.indexOf(unit.bodySprite.texture) : -1
-                    };
-                });
             });
 
-            if (frameInfo.error) {
-                console.log(`⚠️ QA Warning: ${frameInfo.error}`);
-            } else {
-                samples.push({
-                    timestamp: Date.now() - startTime,
-                    units: frameInfo
+            await page.goto(GAME_URL, { waitUntil: 'networkidle2', timeout: 30000 });
+            await delay(3000);
+
+            // Force initialize store to skip onboarding and enter Battle directly
+            console.log('⚡ Injecting battle state via GameStore...');
+            await page.evaluate((pId, eId) => {
+                if (window.useGameStore) {
+                    window.useGameStore.setState({
+                        onboardingCompleted: true,
+                        name: 'VisualQATester',
+                        activeScreen: 'BATTLE',
+                        battleMode: 'RANKED',
+                        selectedHeroId: pId,
+                        selectedEnemyId: eId,
+                        timeScale: 2.0 // Run battle faster to inspect transitions quickly
+                    });
+                    console.log(`QA: Battle state injected successfully for ${pId} vs ${eId}.`);
+                } else {
+                    console.error('QA: useGameStore not found on window.');
+                }
+            }, matchup.player, matchup.enemy);
+
+            await delay(2000); // Wait for Pixi and BattleEngine to initialize
+
+            console.log('🛡️ Monitoring battle visual frames for 6 seconds...');
+            const startTime = Date.now();
+
+            // Sample battle rendering details every 250ms
+            for (let i = 0; i < 24; i++) {
+                const frameInfo = await page.evaluate(() => {
+                    if (!window.__PIXI_APP__) {
+                        return { error: 'Pixi app __PIXI_APP__ not found' };
+                    }
+
+                    // Recursive helper to find HeroUnit nodes
+                    function findHeroUnits(node) {
+                        let results = [];
+                        if (!node) return results;
+                        if (node.heroInstanceId || node.bodySprite || (node.config && node.loadHero)) {
+                            results.push(node);
+                        }
+                        if (node.children) {
+                            for (let child of node.children) {
+                                results = results.concat(findHeroUnits(child));
+                            }
+                        }
+                        return results;
+                    }
+
+                    const units = findHeroUnits(window.__PIXI_APP__.stage);
+                    if (units.length === 0) {
+                        return { error: 'No HeroUnit instances found in Pixi stage' };
+                    }
+
+                    return units.map(unit => {
+                        const globalPos = unit.parent ? unit.parent.toGlobal(unit.position) : unit.position;
+                        const isPlayer = unit.position.x < 960; // Player is on the left side
+                        
+                        // Check texture issues (e.g. if loaded texture is empty/white fallback)
+                        let textureSrc = '';
+                        let isFallbackTexture = false;
+                        let textureWidth = 0;
+                        let textureHeight = 0;
+                        if (unit.bodySprite && unit.bodySprite.texture) {
+                            const tex = unit.bodySprite.texture;
+                            textureWidth = tex.width;
+                            textureHeight = tex.height;
+                            if (tex.source && tex.source.label) {
+                                textureSrc = tex.source.label;
+                            }
+                            if ((tex.width <= 1 && tex.height <= 1) || (tex.source && tex.source.label && tex.source.label.includes('white'))) {
+                                isFallbackTexture = true;
+                            }
+                        }
+
+                        // Check weapons, head, etc. socket containers
+                        const hasWeapon = !!unit.weaponSocketContainer;
+                        const hasHelmet = !!unit.helmetSocketContainer;
+                        
+                        return {
+                            id: unit.config ? unit.config.id : 'unknown',
+                            name: unit.config ? unit.config.name : 'unknown',
+                            isPlayer,
+                            x: unit.position.x,
+                            y: unit.position.y,
+                            globalX: globalPos.x,
+                            globalY: globalPos.y,
+                            scaleX: unit.scale.x,
+                            scaleY: unit.scale.y,
+                            bodyContainerScaleX: unit.bodyContainer ? unit.bodyContainer.scale.x : 1,
+                            bodyContainerScaleY: unit.bodyContainer ? unit.bodyContainer.scale.y : 1,
+                            width: unit.width,
+                            height: unit.height,
+                            textureSrc,
+                            isFallbackTexture,
+                            textureWidth,
+                            textureHeight,
+                            hasWeapon,
+                            hasHelmet,
+                            currentFrame: unit.bodySprite && unit.posesTextures ? unit.posesTextures.indexOf(unit.bodySprite.texture) : -1
+                        };
+                    });
                 });
+
+                if (frameInfo.error) {
+                    console.log(`⚠️ QA Warning: ${frameInfo.error}`);
+                } else {
+                    samples.push({
+                        timestamp: Date.now() - startTime,
+                        units: frameInfo
+                    });
+                }
+
+                // Capture screenshots at critical times for each matchup
+                if (i === 4) {
+                    await page.screenshot({ path: join(REPORT_DIR, `qa_${matchup.player}_vs_${matchup.enemy}_start.png`) });
+                    console.log(`📸 Captured: qa_${matchup.player}_vs_${matchup.enemy}_start.png`);
+                } else if (i === 12) {
+                    await page.screenshot({ path: join(REPORT_DIR, `qa_${matchup.player}_vs_${matchup.enemy}_mid.png`) });
+                    console.log(`📸 Captured: qa_${matchup.player}_vs_${matchup.enemy}_mid.png`);
+                }
+
+                await delay(250);
             }
 
-            // Capture screenshots at critical times (e.g. start, mid, end)
-            if (i === 4) {
-                await page.screenshot({ path: join(REPORT_DIR, 'qa_battle_start.png') });
-                console.log('📸 Captured: qa_battle_start.png');
-            } else if (i === 16) {
-                await page.screenshot({ path: join(REPORT_DIR, 'qa_battle_mid.png') });
-                console.log('📸 Captured: qa_battle_mid.png');
-            }
-
-            await delay(250);
+            await page.screenshot({ path: join(REPORT_DIR, `qa_${matchup.player}_vs_${matchup.enemy}_end.png`) });
+            console.log(`📸 Captured: qa_${matchup.player}_vs_${matchup.enemy}_end.png`);
+            await page.close();
         }
-
-        await page.screenshot({ path: join(REPORT_DIR, 'qa_battle_end.png') });
-        console.log('📸 Captured: qa_battle_end.png');
 
         // Analyze captured frames to identify visual and logic issues
         console.log('📊 Analyzing battle telemetry...');
@@ -215,7 +223,6 @@ function analyzeTelemetry(samples) {
         };
     }
 
-    // Map to track animation, coordinate, and state transitions per unit type
     const unitHistory = {};
 
     samples.forEach(sample => {
@@ -251,12 +258,10 @@ function analyzeTelemetry(samples) {
         });
     });
 
-    // Run specific checks
     Object.keys(unitHistory).forEach(role => {
         const h = unitHistory[role];
         const isPlayer = role === 'player';
 
-        // Check 1: Size/Scale check (Too small or too large)
         const avgWidth = h.widths.reduce((sum, val) => sum + Math.abs(val), 0) / h.widths.length;
         const avgHeight = h.heights.reduce((sum, val) => sum + Math.abs(val), 0) / h.heights.length;
         if (avgWidth < 80 || avgHeight < 80) {
@@ -266,11 +271,6 @@ function analyzeTelemetry(samples) {
             });
         }
 
-        // Check 2: Facing direction check
-        // Player should be looking right, enemy should be looking left.
-        // For standard models, a positive scale.x usually points right, negative points left.
-        // Wait, for player: scaleX is set to 0.9. BodyContainer scale factor is positive.
-        // For enemy: scaleX is set to 0.9 or -0.9. If hero (e.g. knight), it should be negative to flip it left.
         const firstScaleX = h.scalesX[0];
         if (isPlayer && firstScaleX < 0) {
             issues.push({
@@ -279,14 +279,12 @@ function analyzeTelemetry(samples) {
             });
         }
         if (!isPlayer && firstScaleX > 0) {
-            // Knights/Orcs as enemies should be flipped left (negative scaleX)
             issues.push({
                 severity: 'ERROR',
                 description: `Enemy unit (${h.name}) is facing right (scaleX: ${firstScaleX}). Enemies should face left.`
             });
         }
 
-        // Check 3: Fallback texture warnings
         if (h.fallbackTextures > 0) {
             issues.push({
                 severity: 'CRITICAL',
@@ -294,8 +292,6 @@ function analyzeTelemetry(samples) {
             });
         }
 
-        // Check 4: Lunge/Move-to-attack checks (Animations matching actions)
-        // Check if unit position x changed during the battle (lunges shift position)
         const minX = Math.min(...h.positions.map(p => p.x));
         const maxX = Math.max(...h.positions.map(p => p.x));
         const movement = maxX - minX;
@@ -306,13 +302,13 @@ function analyzeTelemetry(samples) {
             });
         }
 
-        // Check 5: Pose frame switching for panda
-        if (h.id === 'panda') {
+        const animatedHeroes = ['panda', 'minotaur', 'tiger_warrior', 'lion_knight', 'raccoon'];
+        if (animatedHeroes.includes(h.id)) {
             const uniqueFrames = [...new Set(h.frames)].filter(f => f !== -1);
             if (uniqueFrames.length <= 1) {
                 issues.push({
                     severity: 'ERROR',
-                    description: `Panda warrior (${role}) stays in a single pose frame [${uniqueFrames}] throughout the battle. Pose frame animation switching is broken.`
+                    description: `${h.name} (${role}) stays in a single pose frame [${uniqueFrames}] throughout the battle. Pose frame switching is broken.`
                 });
             }
         }

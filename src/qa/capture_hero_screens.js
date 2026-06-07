@@ -3,7 +3,7 @@ import { join } from 'path';
 
 const CHROME_PATH = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
 const GAME_URL = 'http://localhost:5173';
-const SCREENSHOT_DIR = 'C:\\Users\\Motar\\.gemini\\antigravity\\brain\\045c5236-1f75-4df2-bce9-c36818f92404\\';
+const SCREENSHOT_DIR = 'C:\\Users\\Motar\\.gemini\\antigravity\\brain\\ccb229ee-9ac6-48e8-8e69-1d19f584eae7\\';
 
 async function delay(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));

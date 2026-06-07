@@ -104,7 +104,6 @@ export const BaseWindow: React.FC<BaseWindowProps> = ({
                         flexDirection: 'column',
                         overflow: 'hidden',
                         pointerEvents: 'auto',
-                        backdropFilter: isLight ? 'none' : 'blur(16px)',
                     }}
                 >
                     {/* Угловые акценты (только в темной теме) */}

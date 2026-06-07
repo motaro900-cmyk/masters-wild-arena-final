@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { resolveAssetPath } from '../../../../utils/assetPath';
+import { useGameStore } from '../../../../store/useGameStore';
 
 interface WorldPlayersTabProps {
     isLoadingWorld: boolean;
@@ -102,7 +103,7 @@ export const WorldPlayersTab: React.FC<WorldPlayersTabProps> = ({
                                 whileTap={{ scale: 0.92 }}
                                 onClick={async () => {
                                     const ok = await handleSendFriendRequest(p.id, p.name);
-                                    if (ok) alert('Запрос отправлен!');
+                                    if (ok) useGameStore.getState().showAlert('Запрос отправлен!');
                                 }}
                                 style={{
                                     width: 32,

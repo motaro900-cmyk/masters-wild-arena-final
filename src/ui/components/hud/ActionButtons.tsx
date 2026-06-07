@@ -15,7 +15,7 @@ interface ActionButtonsProps {
  * ActionButtons (v2.7) — Поддержка модалки разработки для ЗБТ.
  */
 export const ActionButtons: React.FC<ActionButtonsProps> = ({ onStartBattle, onWarmup, onOpenRanks }) => {
-    const { rating } = useGameStore();
+    const rating = useGameStore((state) => state.rating);
     const rank = getRankInfo(rating);
     const [energyError, setEnergyError] = useState(false);
 

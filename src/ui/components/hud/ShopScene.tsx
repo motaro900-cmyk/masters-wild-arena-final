@@ -114,6 +114,8 @@ export const ShopScene: React.FC = () => {
             {/* HEADER BAR */}
             <div
                 style={{
+                    position: 'relative',
+                    zIndex: 10000,
                     width: '100%',
                     height: isMobile ? '60px' : '110px',
                     display: 'flex',

@@ -65,52 +65,73 @@ export const EquipmentSlot = ({ id, label, itemId, activeDraggingId, onClick, se
             style={{
                 width: '110px',
                 height: '110px',
-                background: isOver ? 'rgba(240,192,64,0.2)' : 'rgba(0,0,0,0.4)',
+                background: isOver
+                    ? 'rgba(240, 192, 64, 0.18)'
+                    : 'radial-gradient(circle, rgba(32, 26, 21, 0.9) 0%, rgba(18, 14, 11, 0.96) 100%)',
                 borderRadius: '18px',
                 border: isOver
-                    ? '2px solid #fff'
+                    ? '2.5px solid #fffdf7'
                     : isCompatible
-                      ? '2px solid #f0c040'
-                      : '1px solid rgba(240,192,64,0.2)',
+                      ? '2.5px solid #f0c040'
+                      : '1px solid rgba(240, 192, 64, 0.28)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 position: 'relative',
                 transition: 'all 0.3s',
-                boxShadow: itemData ? `0 0 25px ${rarityColor}44` : 'none',
+                boxShadow: itemData
+                    ? `0 8px 20px rgba(0,0,0,0.7), 0 0 15px ${rarityColor}33, inset 0 0 12px rgba(0,0,0,0.8)`
+                    : isCompatible
+                      ? '0 0 20px rgba(240,192,64,0.35), inset 0 0 10px rgba(0,0,0,0.8)'
+                      : '0 4px 10px rgba(0,0,0,0.5), inset 0 0 8px rgba(0,0,0,0.8)',
                 cursor: itemId ? 'pointer' : 'default',
             }}
         >
+            {/* Inner gold frame decoration */}
+            <div
+                style={{
+                    position: 'absolute',
+                    inset: '3px',
+                    border: isCompatible
+                        ? '1.5px solid rgba(240, 192, 64, 0.45)'
+                        : '1px solid rgba(240, 192, 64, 0.12)',
+                    borderRadius: '15px',
+                    pointerEvents: 'none',
+                    zIndex: 1,
+                }}
+            />
+
             {itemData ? (
                 itemData.spriteClass ? (
-                    <div className={itemData.spriteClass} style={{ width: '110px', height: '110px' }} />
+                    <div className={itemData.spriteClass} style={{ width: '110px', height: '110px', zIndex: 2 }} />
                 ) : (
                     <img
                         src={resolveAssetPath(itemData.image)}
-                        style={{ width: '80%', height: '80%', objectFit: 'contain' }}
+                        style={{ width: '80%', height: '80%', objectFit: 'contain', zIndex: 2 }}
                         alt=""
                     />
                 )
             ) : (
                 <div
                     style={{
-                        opacity: 0.4,
+                        opacity: 0.5,
                         display: 'flex',
                         flexDirection: 'column',
                         alignItems: 'center',
                         justifyContent: 'center',
                         width: '100%',
                         height: '100%',
+                        zIndex: 2,
                     }}
                 >
                     {id === 'HELMETS' && (
                         <img
                             src={AssetsMap.UI.BLUEPRINT_HELMET}
                             style={{
-                                width: '85%',
-                                height: '65%',
+                                width: '80%',
+                                height: '60%',
                                 objectFit: 'contain',
-                                filter: 'drop-shadow(0 0 8px rgba(240,192,64,0.5)) grayscale(0.5)',
+                                filter: 'drop-shadow(0 0 6px rgba(240,192,64,0.3)) sepia(0.8) brightness(0.8) saturate(1.2)',
                             }}
                             alt=""
                         />
@@ -119,10 +140,10 @@ export const EquipmentSlot = ({ id, label, itemId, activeDraggingId, onClick, se
                         <img
                             src={AssetsMap.UI.BLUEPRINT_ARMOR}
                             style={{
-                                width: '85%',
-                                height: '65%',
+                                width: '80%',
+                                height: '60%',
                                 objectFit: 'contain',
-                                filter: 'drop-shadow(0 0 8px rgba(240,192,64,0.5)) grayscale(0.5)',
+                                filter: 'drop-shadow(0 0 6px rgba(240,192,64,0.3)) sepia(0.8) brightness(0.8) saturate(1.2)',
                             }}
                             alt=""
                         />
@@ -131,10 +152,10 @@ export const EquipmentSlot = ({ id, label, itemId, activeDraggingId, onClick, se
                         <img
                             src={AssetsMap.UI.BLUEPRINT_WEAPON}
                             style={{
-                                width: '85%',
-                                height: '65%',
+                                width: '80%',
+                                height: '60%',
                                 objectFit: 'contain',
-                                filter: 'drop-shadow(0 0 8px rgba(240,192,64,0.5)) grayscale(0.5)',
+                                filter: 'drop-shadow(0 0 6px rgba(240,192,64,0.3)) sepia(0.8) brightness(0.8) saturate(1.2)',
                             }}
                             alt=""
                         />
@@ -143,10 +164,10 @@ export const EquipmentSlot = ({ id, label, itemId, activeDraggingId, onClick, se
                         <img
                             src={AssetsMap.UI.BLUEPRINT_SHIELD}
                             style={{
-                                width: '85%',
-                                height: '65%',
+                                width: '80%',
+                                height: '60%',
                                 objectFit: 'contain',
-                                filter: 'drop-shadow(0 0 8px rgba(240,192,64,0.5)) grayscale(0.5)',
+                                filter: 'drop-shadow(0 0 6px rgba(240,192,64,0.3)) sepia(0.8) brightness(0.8) saturate(1.2)',
                             }}
                             alt=""
                         />
@@ -155,10 +176,10 @@ export const EquipmentSlot = ({ id, label, itemId, activeDraggingId, onClick, se
                         <img
                             src={AssetsMap.UI.BLUEPRINT_SHOULDERS}
                             style={{
-                                width: '85%',
-                                height: '65%',
+                                width: '80%',
+                                height: '60%',
                                 objectFit: 'contain',
-                                filter: 'drop-shadow(0 0 8px rgba(240,192,64,0.5)) grayscale(0.5)',
+                                filter: 'drop-shadow(0 0 6px rgba(240,192,64,0.3)) sepia(0.8) brightness(0.8) saturate(1.2)',
                             }}
                             alt=""
                         />
@@ -167,10 +188,10 @@ export const EquipmentSlot = ({ id, label, itemId, activeDraggingId, onClick, se
                         <img
                             src={AssetsMap.UI.BLUEPRINT_PANTS}
                             style={{
-                                width: '85%',
-                                height: '65%',
+                                width: '80%',
+                                height: '60%',
                                 objectFit: 'contain',
-                                filter: 'drop-shadow(0 0 8px rgba(240,192,64,0.5)) grayscale(0.5)',
+                                filter: 'drop-shadow(0 0 6px rgba(240,192,64,0.3)) sepia(0.8) brightness(0.8) saturate(1.2)',
                             }}
                             alt=""
                         />
@@ -179,10 +200,10 @@ export const EquipmentSlot = ({ id, label, itemId, activeDraggingId, onClick, se
                         <img
                             src={AssetsMap.UI.BLUEPRINT_BOOTS}
                             style={{
-                                width: '85%',
-                                height: '65%',
+                                width: '80%',
+                                height: '60%',
                                 objectFit: 'contain',
-                                filter: 'drop-shadow(0 0 8px rgba(240,192,64,0.5)) grayscale(0.5)',
+                                filter: 'drop-shadow(0 0 6px rgba(240,192,64,0.3)) sepia(0.8) brightness(0.8) saturate(1.2)',
                             }}
                             alt=""
                         />
@@ -190,8 +211,8 @@ export const EquipmentSlot = ({ id, label, itemId, activeDraggingId, onClick, se
                     {id === 'RING' && (
                         <div
                             style={{
-                                fontSize: '40px',
-                                filter: 'drop-shadow(0 0 8px rgba(240,192,64,0.5)) grayscale(0.8)',
+                                fontSize: '36px',
+                                filter: 'drop-shadow(0 0 6px rgba(240,192,64,0.3)) sepia(0.8) brightness(0.8) saturate(1.2)',
                                 opacity: 0.8,
                             }}
                         >

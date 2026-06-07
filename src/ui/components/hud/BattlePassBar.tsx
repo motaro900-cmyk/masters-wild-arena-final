@@ -61,7 +61,7 @@ export const BattlePassBar: React.FC = () => {
                         backgroundImage: `url(${AssetsMap.UI.ICON_BEAST_PASS})`,
                         backgroundSize: '100% 100%',
                         backgroundRepeat: 'no-repeat',
-                        filter: 'url(#css-sharpen) contrast(1.2) saturate(1.1) brightness(0.95) hue-rotate(5deg)',
+                        filter: 'contrast(1.2) saturate(1.1) brightness(0.95) hue-rotate(5deg)',
                         zIndex: 0,
                     }}
                 />

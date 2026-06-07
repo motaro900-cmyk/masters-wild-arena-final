@@ -63,6 +63,7 @@ export const createInventorySlice = (set: any, get: any) => ({
                     amount: (existingItem.amount || 1) + (itemObj.amount || 1),
                 };
                 set({ inventory: newInventory });
+                syncService.debouncedSync();
                 return;
             }
         }
@@ -77,6 +78,45 @@ export const createInventorySlice = (set: any, get: any) => ({
             instanceId: itemObj.instanceId || `${itemId}_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
         };
         set({ inventory: [...state.inventory, newItem] });
+        syncService.debouncedSync();
+    },
+
+    addItemsToInventory: (items: any[]) => {
+        const state = get() as any;
+        const newInventory = [...state.inventory];
+
+        items.forEach((item) => {
+            const itemObj = typeof item === 'string' ? { id: item } : item;
+            const itemId = String(itemObj.id);
+            if (!ITEMS_DATABASE[itemId]) return;
+
+            const itemConfig = ITEMS_DATABASE[itemId];
+            if (itemConfig.mainTab === 'ALCHEMY') {
+                const existingItemIndex = newInventory.findIndex((i: any) => String(i.id) === itemId);
+                if (existingItemIndex > -1) {
+                    const existingItem = newInventory[existingItemIndex];
+                    newInventory[existingItemIndex] = {
+                        ...existingItem,
+                        amount: (existingItem.amount || 1) + (itemObj.amount || 1),
+                    };
+                    return;
+                }
+            }
+
+            const newItem = {
+                ...itemObj,
+                id: itemId,
+                type: (itemConfig as any).subTab || (itemConfig as any).type || itemObj.type || 'WEAPONS',
+                rarity: itemConfig.rarity || itemObj.rarity || 'COMMON',
+                level: itemObj.level || 1,
+                amount: itemObj.amount || 1,
+                instanceId: itemObj.instanceId || `${itemId}_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+            };
+            newInventory.push(newItem);
+        });
+
+        set({ inventory: newInventory });
+        syncService.debouncedSync();
     },
 
     openSeasonChest: () => {
@@ -161,7 +201,7 @@ export const createInventorySlice = (set: any, get: any) => ({
         return rewardResult;
     },
 
-    clearInventory: () =>
+    clearInventory: () => {
         set({
             inventory: [],
             heroEquipment: {
@@ -191,7 +231,9 @@ export const createInventorySlice = (set: any, get: any) => ({
             equippedShouldersId: null,
             equippedBootsId: null,
             equippedPantsId: null,
-        }),
+        });
+        syncService.debouncedSync();
+    },
 
     sellItem: (id: string) => {
         const state = get();
@@ -261,6 +303,14 @@ export const createInventorySlice = (set: any, get: any) => ({
         const itemName = data.name || templateId;
         syncService.logPlayerAction(`Надел снаряжение: ${itemName}`);
         syncService.debouncedSync();
+
+        // Пересчёт combat power
+        const newStats = get().getCalculatedStats?.(heroId)?.total;
+        if (newStats) {
+            set({
+                combatPower: Math.floor(newStats.attack * 10 + newStats.hp + newStats.defense * 5),
+            });
+        }
     },
 
     unequipItem: (id: string) => {
@@ -294,6 +344,16 @@ export const createInventorySlice = (set: any, get: any) => ({
         const itemName = data?.name || templateId;
         syncService.logPlayerAction(`Снял снаряжение: ${itemName}`);
         syncService.debouncedSync();
+
+        // Пересчёт combat power
+        const newStatsAfterUnequip = get().getCalculatedStats?.(heroId)?.total;
+        if (newStatsAfterUnequip) {
+            set({
+                combatPower: Math.floor(
+                    newStatsAfterUnequip.attack * 10 + newStatsAfterUnequip.hp + newStatsAfterUnequip.defense * 5,
+                ),
+            });
+        }
     },
 
     getHeroByItemId: (itemId: string) => {
@@ -551,6 +611,11 @@ export const createInventorySlice = (set: any, get: any) => ({
         }
 
         set(updatedState);
+
+        // Устанавливаем кулдаун только при успехе — при провале игрок может сразу попробовать снова
+        if (success) {
+            get().setForgeCooldown(itemId);
+        }
 
         get().updateQuestProgress('UPGRADE', 1);
         syncService.debouncedSync();

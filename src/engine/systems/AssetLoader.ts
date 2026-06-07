@@ -27,8 +27,16 @@ export class AssetLoader {
         const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
         const optimizedManifest = manifest.map((path) => {
-            // 1. Заменяем .png/.jpg на .webp
-            let newPath = path.replace(/\.(png|jpg|jpeg)$/i, '.webp');
+            const normalized = path.replace(/\\/g, '/').toLowerCase();
+            const isHeroOrSkin = normalized.includes('characters/') && !normalized.includes('characters/ancients/');
+            const isBoss = normalized.includes('ancient_treant') || normalized.includes('ancient_griffin');
+            const shouldKeepPng = isHeroOrSkin || isBoss;
+
+            // 1. Заменяем .png/.jpg на .webp, кроме героев, скинов и боссов
+            let newPath = path;
+            if (!shouldKeepPng) {
+                newPath = path.replace(/\.(png|jpg|jpeg)$/i, '.webp');
+            }
 
             // 2. Если мы на мобилке — подставляем легкие мобильные версии _mobile.webp для фонов, предметов и персонажей
             if (
@@ -36,12 +44,18 @@ export class AssetLoader {
                 (newPath.includes('backgrounds') ||
                     newPath.includes('Shop.webp') ||
                     newPath.includes('Shoping.webp') ||
+                    newPath.includes('Shop.png') ||
+                    newPath.includes('Shoping.png') ||
                     newPath.includes('images/items/') ||
                     newPath.includes('characters/') ||
                     newPath.includes('avatars/') ||
                     newPath.includes('frames/'))
             ) {
-                newPath = newPath.replace('.webp', '_mobile.webp');
+                if (newPath.endsWith('.webp')) {
+                    newPath = newPath.replace('.webp', '_mobile.webp');
+                } else if (newPath.endsWith('.png') || newPath.endsWith('.jpg') || newPath.endsWith('.jpeg')) {
+                    newPath = newPath.replace(/\.(png|jpg|jpeg)$/i, '_mobile.webp');
+                }
             }
             return newPath;
         });

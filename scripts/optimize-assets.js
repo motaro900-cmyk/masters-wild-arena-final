@@ -6,11 +6,29 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Настройки
-const ASSETS_ROOT = path.join(__dirname, '../public/assets');
+const SRC_ROOT = path.join(__dirname, '../assets-src');
+const DEST_ROOT = path.join(__dirname, '../public/assets');
+
 const QUALITY_PC = 90;
-const QUALITY_MOBILE = 75;
-const MOBILE_WIDTH = 1280; // 720p
+const QUALITY_MOBILE = 85;
+
+const PC_MAX_WIDTH = 2560; // 2K resolution cap for PC backgrounds
+const MOBILE_WIDTH = 1280; // 720p for mobile backgrounds
+
+// Helper to ensure target directory exists
+function ensureDirExists(filePath) {
+    const dirname = path.dirname(filePath);
+    if (!fs.existsSync(dirname)) {
+        fs.mkdirSync(dirname, { recursive: true });
+    }
+}
+
+// Clean and recreate destination root
+if (fs.existsSync(DEST_ROOT)) {
+    console.log(`🧹 Cleaning destination folder: ${DEST_ROOT}`);
+    fs.rmSync(DEST_ROOT, { recursive: true, force: true });
+}
+fs.mkdirSync(DEST_ROOT, { recursive: true });
 
 async function processDirectory(directory) {
     const files = fs.readdirSync(directory);
@@ -21,64 +39,201 @@ async function processDirectory(directory) {
 
         if (stat.isDirectory()) {
             await processDirectory(fullPath);
-        } else if (file.match(/\.(png|jpg|jpeg|webp)$/i) && !file.includes('_mobile.webp')) {
-            await optimizeImage(fullPath);
+        } else {
+            await processFile(fullPath);
         }
     }
 }
 
-const PC_MAX_WIDTH = 2560; // 2K resolution cap for PC to save GPU VRAM
+async function processFile(filePath) {
+    const relativePath = path.relative(SRC_ROOT, filePath);
+    const destPath = path.join(DEST_ROOT, relativePath);
+    const normalizedRelative = relativePath.replace(/\\/g, '/').toLowerCase();
+    const ext = path.extname(filePath).toLowerCase();
 
-async function optimizeImage(filePath) {
-    const ext = path.extname(filePath);
+    // Ignore webp files in source folder if there is a corresponding source image (.png/.jpg/.jpeg)
+    if (ext === '.webp') {
+        const pngPath = filePath.replace(/\.webp$/i, '.png');
+        const jpgPath = filePath.replace(/\.webp$/i, '.jpg');
+        const jpegPath = filePath.replace(/\.webp$/i, '.jpeg');
+        if (fs.existsSync(pngPath) || fs.existsSync(jpgPath) || fs.existsSync(jpegPath)) {
+            return;
+        }
+    }
+
     const fileName = path.basename(filePath, ext);
-    const dir = path.dirname(filePath);
-    
-    const normalizedPath = filePath.replace(/\\/g, '/');
-    const isBackground = normalizedPath.includes('backgrounds') || normalizedPath.includes('Shop.png') || normalizedPath.includes('Shoping.png') || normalizedPath.includes('Shop.webp') || normalizedPath.includes('Shoping.webp');
-    const isItem = normalizedPath.includes('images/items/');
-    const isCharacter = normalizedPath.includes('characters/') || normalizedPath.includes('avatars/') || normalizedPath.includes('frames/');
+    const destDir = path.dirname(destPath);
 
-    const outputWebp = ext.toLowerCase() === '.webp' ? filePath : path.join(dir, `${fileName}.webp`);
-    const outputMobile = path.join(dir, `${fileName}_mobile.webp`);
+    // 1. Direct Copy Rule: audio/, fx/, ui/, resources/, shop/, sheets/, frames/, myicons/
+    const isDirectCopy = 
+        normalizedRelative.startsWith('audio/') ||
+        normalizedRelative.startsWith('fx/') ||
+        normalizedRelative.includes('images/ui/') ||
+        normalizedRelative.includes('images/resources/') ||
+        normalizedRelative.includes('images/shop/') ||
+        normalizedRelative.includes('images/sheets/') ||
+        normalizedRelative.includes('images/frames/') ||
+        normalizedRelative.includes('images/myicons/');
 
-    try {
-        const buffer = fs.readFileSync(filePath);
-        
-        // 1. Создаем основную WebP версию (PC) с лимитом разрешения
-        let pcImage = sharp(buffer);
-        if (isBackground) {
-            pcImage = pcImage.resize({ width: PC_MAX_WIDTH, withoutEnlargement: true });
+    if (isDirectCopy) {
+        ensureDirExists(destPath);
+        fs.copyFileSync(filePath, destPath);
+        console.log(`📋 Copied: ${relativePath}`);
+
+        // If it's a PNG/JPG/JPEG in the direct copy folder, also generate a WebP version
+        // just in case the code references it as .webp
+        if (['.png', '.jpg', '.jpeg'].includes(ext)) {
+            const webpDestPath = destPath.replace(/\.(png|jpg|jpeg)$/i, '.webp');
+            await sharp(filePath)
+                .webp({ quality: QUALITY_PC })
+                .toFile(webpDestPath);
+            console.log(`⚡ Also generated WebP for direct-copy UI asset: ${path.relative(DEST_ROOT, webpDestPath)}`);
         }
-        await pcImage
-            .webp({ quality: QUALITY_PC })
-            .toFile(outputWebp);
-        
-        console.log(`✅ Converted/Optimized: ${path.relative(ASSETS_ROOT, outputWebp)}`);
+        return;
+    }
 
-        // 2. Создаем мобильную версию (сжатую и уменьшенную)
-        if (isBackground || isItem || isCharacter) {
-            let mobileImage = sharp(buffer);
-            if (isBackground) {
-                mobileImage = mobileImage.resize({ width: MOBILE_WIDTH, withoutEnlargement: true });
-            } else if (isItem) {
-                mobileImage = mobileImage.resize({ width: 256, height: 256, fit: 'inside', withoutEnlargement: true });
-            } else if (isCharacter) {
-                mobileImage = mobileImage.resize({ width: 512, height: 512, fit: 'inside', withoutEnlargement: true });
-            }
+    // 2. JSON files (like spritesheets) -> copy directly
+    if (ext === '.json') {
+        ensureDirExists(destPath);
+        fs.copyFileSync(filePath, destPath);
+        console.log(`📋 Copied JSON: ${relativePath}`);
+        return;
+    }
 
-            await mobileImage
-                .webp({ quality: QUALITY_MOBILE })
-                .toFile(outputMobile);
-            
-            console.log(`📱 Created Mobile version: ${path.relative(ASSETS_ROOT, outputMobile)}`);
+    // Only process images from here on
+    if (!['.png', '.jpg', '.jpeg', '.webp'].includes(ext)) {
+        return;
+    }
+
+    const buffer = fs.readFileSync(filePath);
+
+    // 3. Backgrounds Rule
+    const isBackground = normalizedRelative.includes('backgrounds/') || fileName === 'shop' || fileName === 'shoping' || fileName === 'shop phone';
+    if (isBackground) {
+        const outputWebp = path.join(destDir, `${fileName}.webp`);
+        const outputMobile = path.join(destDir, `${fileName}_mobile.webp`);
+        ensureDirExists(outputWebp);
+
+        if (ext === '.webp') {
+            fs.copyFileSync(filePath, outputWebp);
+        } else {
+            // PC version (WebP Lossy Q=90, max width 2560)
+            await sharp(buffer)
+                .resize({ width: PC_MAX_WIDTH, withoutEnlargement: true })
+                .webp({ quality: QUALITY_PC })
+                .toFile(outputWebp);
         }
-    } catch (err) {
-        console.error(`❌ Error processing ${filePath}:`, err.message);
+
+        // Mobile version (WebP Lossy Q=85, max width 1280)
+        await sharp(buffer)
+            .resize({ width: MOBILE_WIDTH, withoutEnlargement: true })
+            .webp({ quality: QUALITY_MOBILE })
+            .toFile(outputMobile);
+
+        console.log(`🖼️ Processed Background: ${relativePath} -> WebP (PC & Mobile)`);
+        return;
+    }
+
+    // 4. Items Rule
+    const isItem = normalizedRelative.includes('images/items/');
+    if (isItem) {
+        const outputWebp = path.join(destDir, `${fileName}.webp`);
+        const outputMobile = path.join(destDir, `${fileName}_mobile.webp`);
+        ensureDirExists(outputWebp);
+
+        if (ext === '.webp') {
+            fs.copyFileSync(filePath, outputWebp);
+        } else {
+            // PC version (WebP Lossy Q=90)
+            await sharp(buffer)
+                .webp({ quality: QUALITY_PC })
+                .toFile(outputWebp);
+        }
+
+        // Mobile version (WebP Lossy Q=85, downscaled 256x256)
+        await sharp(buffer)
+            .resize({ width: 256, height: 256, fit: 'inside', withoutEnlargement: true })
+            .webp({ quality: QUALITY_MOBILE })
+            .toFile(outputMobile);
+
+        console.log(`⚔️ Processed Item: ${relativePath} -> WebP (PC & Mobile)`);
+        return;
+    }
+
+    // 5. Avatars Rule
+    const isAvatar = normalizedRelative.includes('images/avatars/');
+    if (isAvatar) {
+        const outputWebp = path.join(destDir, `${fileName}.webp`);
+        const outputMobile = path.join(destDir, `${fileName}_mobile.webp`);
+        ensureDirExists(outputWebp);
+
+        if (ext === '.webp') {
+            fs.copyFileSync(filePath, outputWebp);
+        } else {
+            // PC version (WebP Lossy Q=90)
+            await sharp(buffer)
+                .webp({ quality: QUALITY_PC })
+                .toFile(outputWebp);
+        }
+
+        // Mobile version (WebP Lossy Q=85, downscaled 256x256)
+        await sharp(buffer)
+            .resize({ width: 256, height: 256, fit: 'inside', withoutEnlargement: true })
+            .webp({ quality: QUALITY_MOBILE })
+            .toFile(outputMobile);
+
+        console.log(`👤 Processed Avatar: ${relativePath} -> WebP (PC & Mobile)`);
+        return;
+    }
+
+    // 6. Heroes, Skins & Bosses (PC: PNG, Mobile: WebP)
+    const isHeroOrSkin = normalizedRelative.includes('characters/') && !normalizedRelative.includes('characters/ancients/');
+    const isBoss = normalizedRelative.includes('ancient_treant') || normalizedRelative.includes('ancient_griffin');
+
+    if (isHeroOrSkin || isBoss) {
+        // Copy original PNG directly for PC
+        ensureDirExists(destPath);
+        fs.copyFileSync(filePath, destPath);
+
+        // Generate _mobile.webp (downscaled 512x512, Q=85)
+        const outputMobile = path.join(destDir, `${fileName}_mobile.webp`);
+        await sharp(buffer)
+            .resize({ width: 512, height: 512, fit: 'inside', withoutEnlargement: true })
+            .webp({ quality: QUALITY_MOBILE })
+            .toFile(outputMobile);
+
+        console.log(`👑 Processed Hero/Boss: ${relativePath} -> PNG (PC) & Mobile WebP`);
+        return;
+    }
+
+    // 7. Common Mobs (PC: WebP Lossy Q=90, Mobile: WebP Q=85)
+    const isCommonMob = normalizedRelative.includes('characters/ancients/');
+    if (isCommonMob) {
+        const outputWebp = path.join(destDir, `${fileName}.webp`);
+        const outputMobile = path.join(destDir, `${fileName}_mobile.webp`);
+        ensureDirExists(outputWebp);
+
+        if (ext === '.webp') {
+            fs.copyFileSync(filePath, outputWebp);
+        } else {
+            // PC version (WebP Lossy Q=90)
+            await sharp(buffer)
+                .webp({ quality: QUALITY_PC })
+                .toFile(outputWebp);
+        }
+
+        // Mobile version (WebP Lossy Q=85, downscaled 512x512)
+        await sharp(buffer)
+            .resize({ width: 512, height: 512, fit: 'inside', withoutEnlargement: true })
+            .webp({ quality: QUALITY_MOBILE })
+            .toFile(outputMobile);
+
+        console.log(`👾 Processed Mob: ${relativePath} -> WebP (PC & Mobile)`);
+        return;
     }
 }
 
-console.log('🚀 Starting assets optimization...');
-processDirectory(ASSETS_ROOT)
-    .then(() => console.log('✨ All assets optimized!'))
-    .catch(err => console.error('💥 Fatal error:', err));
+console.log('🚀 Starting asset optimization & distribution build...');
+processDirectory(SRC_ROOT)
+    .then(() => console.log('✨ All assets distributed & optimized successfully!'))
+    .catch(err => console.error('💥 Fatal error in asset distribution:', err));

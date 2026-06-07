@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useGameStore } from '../../../store/useGameStore';
 import { audioService } from '../../../services/AudioService';
 import { AssetsMap } from '../../../configs/AssetsMap';
+import { resolveAssetPath } from '../../../utils/assetPath';
 import { Lock, Check } from 'lucide-react';
 import {
     AVATARS,
@@ -19,7 +20,7 @@ interface ProfileCustomizeWindowProps {
     onClose: () => void;
 }
 
-export const ProfileCustomizeWindow: React.FC<ProfileCustomizeWindowProps> = ({ onClose }) => {
+export const ProfileCustomizeWindow: React.FC<ProfileCustomizeWindowProps> = () => {
     const {
         level,
         vipLevel,
@@ -95,32 +96,6 @@ export const ProfileCustomizeWindow: React.FC<ProfileCustomizeWindowProps> = ({ 
                 position: 'relative',
             }}
         >
-            {/* Кнопка Закрыть */}
-            <button
-                onClick={() => {
-                    audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
-                    onClose();
-                }}
-                style={{
-                    position: 'absolute',
-                    top: '12px',
-                    right: '20px',
-                    background: 'transparent',
-                    border: 'none',
-                    color: colors.accent,
-                    fontSize: '22px',
-                    cursor: 'pointer',
-                    zIndex: 100,
-                    fontWeight: 'bold',
-                    transition: 'transform 0.2s',
-                    outline: 'none',
-                }}
-                onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.15)')}
-                onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1)')}
-            >
-                ✕
-            </button>
-
             {/* ЛЕВАЯ КОЛОНКА: ПРЕВЬЮ ПЕРСОНАЖА */}
             <ProfilePreviewCard
                 level={level}
@@ -146,8 +121,7 @@ export const ProfileCustomizeWindow: React.FC<ProfileCustomizeWindowProps> = ({ 
                     }}
                 >
                     {(['AVATARS', 'FRAMES', 'TITLES'] as const).map((tab) => {
-                        const tabLabel =
-                            tab === 'AVATARS' ? 'Аватары' : tab === 'FRAMES' ? 'Рамки аватара' : 'Титулы и ранги';
+                        const tabLabel = tab === 'AVATARS' ? 'Аватары' : tab === 'FRAMES' ? 'Рамки аватара' : 'Титулы';
                         const isActive = activeTab === tab;
 
                         return (
@@ -413,10 +387,7 @@ export const ProfileCustomizeWindow: React.FC<ProfileCustomizeWindowProps> = ({ 
                                                 }}
                                             >
                                                 <Lock size={12} />
-                                                <span>
-                                                    {a.requiredLevel && `Ур. ${a.requiredLevel}`}
-                                                    {a.requiredVip && `VIP ${a.requiredVip}`}
-                                                </span>
+                                                <span>Событие / БП</span>
                                             </div>
                                         )}
                                     </div>
@@ -487,7 +458,7 @@ export const ProfileCustomizeWindow: React.FC<ProfileCustomizeWindowProps> = ({ 
                                                 />
                                             </div>
                                             <img
-                                                src={f.path}
+                                                src={resolveAssetPath(f.path)}
                                                 style={{
                                                     position: 'absolute',
                                                     inset: 0,
@@ -557,11 +528,7 @@ export const ProfileCustomizeWindow: React.FC<ProfileCustomizeWindowProps> = ({ 
                                                 }}
                                             >
                                                 <Lock size={12} />
-                                                <span>
-                                                    {f.requiredLevel && `Ур. ${f.requiredLevel}`}
-                                                    {f.requiredVip && `VIP Ур. ${f.requiredVip}`}
-                                                    {f.requiresTitle && `Титул "${f.requiresTitle}"`}
-                                                </span>
+                                                <span>Событие / БП</span>
                                             </div>
                                         )}
                                     </div>
@@ -644,11 +611,7 @@ export const ProfileCustomizeWindow: React.FC<ProfileCustomizeWindowProps> = ({ 
                                                     }}
                                                 >
                                                     <Lock size={12} />
-                                                    <span>
-                                                        {t.requiredLevel && `Ур. ${t.requiredLevel}`}
-                                                        {t.requiredVip && `VIP ${t.requiredVip}`}
-                                                        {t.requiredTrophies && `Кубки: ${t.requiredTrophies}`}
-                                                    </span>
+                                                    <span>Событие / БП</span>
                                                 </div>
                                             )}
                                         </div>

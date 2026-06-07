@@ -27,7 +27,7 @@ export async function equipWeapon(unit: HeroUnit, itemId: string | null) {
         if (unit.weaponSocketContainer.parent) {
             unit.weaponSocketContainer.parent.removeChild(unit.weaponSocketContainer);
         }
-        unit.weaponSocketContainer.destroy({ children: true });
+        unit.weaponSocketContainer.destroy({ children: true, texture: false });
         unit.weaponSocketContainer = null;
     }
 
@@ -98,7 +98,7 @@ export async function equipHelmet(unit: HeroUnit, itemId: string | null) {
         if (unit.helmetSocketContainer.parent) {
             unit.helmetSocketContainer.parent.removeChild(unit.helmetSocketContainer);
         }
-        unit.helmetSocketContainer.destroy({ children: true });
+        unit.helmetSocketContainer.destroy({ children: true, texture: false });
         unit.helmetSocketContainer = null;
     }
 
@@ -159,7 +159,7 @@ export async function equipArmor(unit: HeroUnit, itemId: string | null) {
         if (unit.armorSocketContainer.parent) {
             unit.armorSocketContainer.parent.removeChild(unit.armorSocketContainer);
         }
-        unit.armorSocketContainer.destroy({ children: true });
+        unit.armorSocketContainer.destroy({ children: true, texture: false });
         unit.armorSocketContainer = null;
     }
 
@@ -220,7 +220,7 @@ export async function equipShield(unit: HeroUnit, itemId: string | null) {
         if (unit.shieldSocketContainer.parent) {
             unit.shieldSocketContainer.parent.removeChild(unit.shieldSocketContainer);
         }
-        unit.shieldSocketContainer.destroy({ children: true });
+        unit.shieldSocketContainer.destroy({ children: true, texture: false });
         unit.shieldSocketContainer = null;
     }
 

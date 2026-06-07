@@ -95,10 +95,10 @@ export const createQuestSlice = (set: any, get: any) => ({
                 q.questId === questId ? { ...q, isClaimed: true } : q,
             );
 
-            state.addGold(qData.rewardGold);
-            state.addCrystals(qData.rewardGems);
-            state.addExp(qData.rewardExp);
-            state.addBpExp(qData.rewardExp);
+            get().addGold(qData.rewardGold || 0);
+            get().addCrystals(qData.rewardGems || 0);
+            get().addExp(qData.rewardExp || 0);
+            get().addBpExp(qData.rewardExp || 0);
 
             set({ dailyQuests: newQuests });
             syncService.debouncedSync();

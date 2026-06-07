@@ -197,7 +197,7 @@ export const ProfileHub: React.FC = () => {
                             <span
                                 style={{
                                     fontFamily: "'Cinzel', serif",
-                                    fontSize: '24px',
+                                    fontSize: '22px',
                                     fontWeight: 900,
                                     color: '#fff',
                                     textShadow: '0 2px 4px rgba(0,0,0,1)',
@@ -211,15 +211,15 @@ export const ProfileHub: React.FC = () => {
                         <span
                             style={{
                                 fontFamily: "'Cinzel', serif",
-                                fontSize: '11px',
+                                fontSize: '14px',
                                 fontWeight: 500,
                                 color: '#a0a0a0',
                                 textShadow: '0 1px 2px rgba(0,0,0,1)',
                                 letterSpacing: '1px',
-                                marginTop: '-1px',
+                                marginTop: '1px',
                             }}
                         >
-                            {title}
+                            {title || 'Странник'}
                         </span>
                     </div>
                 </div>

@@ -13,7 +13,7 @@ export function BattleCanvas() {
     const [battleLog, setBattleLog] = useState<string[]>([]);
 
     const battlePhase = useBattleStore((s) => s.battlePhase);
-    const { selectedHeroId } = useGameStore();
+    const selectedHeroId = useGameStore((s) => s.selectedHeroId);
 
     // 1. Инициализация PIXI и Двигателя
     useEffect(() => {

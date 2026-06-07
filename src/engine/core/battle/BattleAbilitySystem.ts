@@ -45,7 +45,11 @@ export async function castActiveAbility(engine: BattleEngine) {
 
     if (anyEngine.player && anyEngine.enemy) {
         anyEngine.player.playAttackAnimation();
-        await anyEngine.player.animateLungeForward(true, undefined, anyEngine.enemy.x);
+        if (role === 'TANK' && typeof anyEngine.player.jumpSlam === 'function') {
+            await anyEngine.player.jumpSlam(anyEngine.enemy.x - 85);
+        } else {
+            await anyEngine.player.animateLungeForward(true, undefined, anyEngine.enemy.x);
+        }
     }
 
     const rawDmg = anyEngine.playerStats!.attack * damageMultiplier * (0.9 + Math.random() * 0.2);

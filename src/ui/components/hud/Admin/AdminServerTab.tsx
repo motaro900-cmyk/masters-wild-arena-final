@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { syncService } from '../../../../services/SyncService';
+import { useGameStore } from '../../../../store/useGameStore';
 import { RealPlayer, Section, inputStyle, applyBtn, statLabel, editRow } from './AdminShared';
 import { AdminSpectatorModal } from './AdminSpectatorModal';
 import { ServerPlayersList } from './components/ServerPlayersList';
@@ -51,16 +52,24 @@ export const AdminServerTab: React.FC<AdminServerTabProps> = ({
         try {
             const updateData = { [field]: Number(value) };
             await syncService.updateRemotePlayerData(selectedPlayer.id, updateData);
-            alert(`Успешно: ${field} установлено на ${value}`);
+            useGameStore.getState().showAlert(`Успешно: ${field} установлено на ${value}`);
             refreshPlayers();
         } catch (e) {
             console.error('Remote update error:', e);
-            alert('Ошибка при обновлении данных');
+            useGameStore.getState().showAlert('Ошибка при обновлении данных');
         }
     };
 
     return (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.6fr', gap: '20px', height: '700px' }}>
+        <div
+            style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+                gap: '20px',
+                height: 'auto',
+                minHeight: '600px',
+            }}
+        >
             {/* Левая колонка — список игроков */}
             <ServerPlayersList
                 realPlayers={realPlayers}
@@ -72,12 +81,12 @@ export const AdminServerTab: React.FC<AdminServerTabProps> = ({
 
             {/* Правая колонка — детали выбранного игрока */}
             <div
+                className="h-auto lg:h-full lg:overflow-y-auto"
                 style={{
                     background: '#0a0a0a',
                     border: '1px solid #222',
                     borderRadius: '10px',
                     padding: '20px',
-                    overflowY: 'auto',
                 }}
             >
                 {selectedPlayer ? (

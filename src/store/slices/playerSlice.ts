@@ -5,17 +5,10 @@ import { audioService } from '../../services/AudioService';
 import { safeSetItem } from '../../utils/SafeStorage';
 import { showRewardedVideo, isGroupMember } from '../../utils/VKBridge';
 import { getMskDateKey, calculatePetDailyReward } from '../../ui/components/hud/Bestiary/utils/petRewards';
+import { HEROES_DB } from '../../configs/HeroesConfig';
 
-const getPlayerTitle = (level: number): string => {
-    if (level >= 72) return 'Хранитель Равновесия';
-    if (level >= 64) return 'Старейшина';
-    if (level >= 56) return 'Провидец';
-    if (level >= 48) return 'Мудрец';
-    if (level >= 40) return 'Наставник';
-    if (level >= 32) return 'Мастер Клинка';
-    if (level >= 24) return 'Адепт';
-    if (level >= 16) return 'Искатель';
-    if (level >= 8) return 'Послушник';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const getPlayerTitle = (_level: number): string => {
     return 'Странник';
 };
 
@@ -54,7 +47,7 @@ export const createPlayerSlice = (set: any, get: any) => ({
     name: 'Мастер',
     lastNameChange: 0,
     avatar: 'sprite:sprite-avatar avatar-pos-1',
-    frame: 'harvest_wheat_frame.webp',
+    frame: 'none',
     title: 'Странник',
     trophies: 0,
     wins: 0,
@@ -101,14 +94,14 @@ export const createPlayerSlice = (set: any, get: any) => ({
             window.location.hostname.endsWith('.local') ||
             window.location.protocol === 'file:')
             ? 'DEVELOPER'
-            : 'MW-' + Math.random().toString(36).substr(2, 9).toUpperCase(),
+            : 'MW-' + Math.random().toString(36).substring(2, 11).toUpperCase(),
     musicVolume: 70,
     soundVolume: 85,
     graphicsQuality:
         typeof navigator !== 'undefined'
             ? (() => {
                   const memory = (navigator as any).deviceMemory || 4;
-                  return memory >= 6 ? 'HIGH' : memory >= 4 ? 'MEDIUM' : 'LOW';
+                  return memory >= 6 ? 'ULTRA' : memory >= 4 ? 'MEDIUM' : 'LOW';
               })()
             : 'ULTRA',
     showFps: false,
@@ -153,9 +146,11 @@ export const createPlayerSlice = (set: any, get: any) => ({
         const s = get();
         if (s.hasInfiniteEnergy) return true;
         if (s.energy < amount) return false;
+        const wasFull = s.energy >= s.maxEnergy;
         set((state: any) => ({
             energy: Math.max(0, state.energy - amount),
             dailyBattles: state.dailyBattles + 1,
+            lastEnergyUpdate: wasFull ? Date.now() : state.lastEnergyUpdate,
         }));
         syncService.debouncedSync();
         return true;
@@ -176,9 +171,8 @@ export const createPlayerSlice = (set: any, get: any) => ({
         const cost = type === 'SINGLE' ? 100 : 950;
         if (state.crystals < cost) return null;
 
-        // Используем только реальных героев из HEROES_DB (импорт динамический через require-like)
-        // Берём ID всех доступных героев кроме стартового panda
-        const heroPool = ['panda', 'raccoon'];
+        // Используем только реальных героев из HEROES_DB
+        const heroPool = HEROES_DB.map((h) => h.id);
         const rewards: { heroId: string; amount: number }[] = [];
         const pulls = type === 'SINGLE' ? 1 : 10;
 
@@ -309,9 +303,18 @@ export const createPlayerSlice = (set: any, get: any) => ({
         if (!rewards.includes('group')) {
             const isMember = await isGroupMember();
             if (isMember) {
-                state.addCrystals(50);
+                get().addCrystals(50);
                 set({ claimedSocialRewards: [...rewards, 'group'] });
-                alert('Награда за вступление в группу: 50 кристаллов! 💎');
+                get().addMail({
+                    id: `social_reward_group_${Date.now()}`,
+                    from: 'ЛЕСНЫЕ ДУХИ',
+                    subject: 'НАГРАДА ЗА ВСТУПЛЕНИЕ В ГРУППУ!',
+                    body: 'Мастер! Лесные духи отметили твою верность и посылают тебе щедрый дар за вступление в нашу общину.',
+                    date: new Date().toLocaleDateString(),
+                    isRead: false,
+                    tab: 'INBOX',
+                    rewards: [{ type: 'CRYSTALS', amount: 50 }],
+                });
             }
         }
     },
@@ -328,7 +331,7 @@ export const createPlayerSlice = (set: any, get: any) => ({
             return;
         }
 
-        state.addCrystals(50);
+        get().addCrystals(50);
         set({ claimedSocialRewards: [...rewards, 'favorites'] });
         syncService.debouncedSync();
     },
@@ -344,7 +347,7 @@ export const createPlayerSlice = (set: any, get: any) => ({
             return;
         }
 
-        state.addCrystals(50);
+        get().addCrystals(50);
         set({ claimedSocialRewards: [...rewards, 'group'] });
         syncService.debouncedSync();
     },
@@ -357,9 +360,11 @@ export const createPlayerSlice = (set: any, get: any) => ({
     recordBattle: () => {
         const s = get();
         if (!s.canBattle?.()) return false;
+        const wasFull = s.energy >= s.maxEnergy;
         set((state: any) => ({
             energy: Math.max(0, state.energy - BATTLE_CONFIG.ENERGY_COST),
             dailyBattles: state.dailyBattles + 1,
+            lastEnergyUpdate: wasFull ? Date.now() : state.lastEnergyUpdate,
         }));
         return true;
     },
@@ -378,7 +383,6 @@ export const createPlayerSlice = (set: any, get: any) => ({
         }
 
         if (s.energy >= maxEnergy) {
-            set({ lastEnergyUpdate: now });
             return;
         }
         const elapsed = now - s.lastEnergyUpdate;
@@ -396,15 +400,22 @@ export const createPlayerSlice = (set: any, get: any) => ({
         const s = get();
         const now = new Date();
         const last = new Date(s.lastBattleReset);
-        const isNewDay =
-            now.getUTCFullYear() !== last.getUTCFullYear() ||
-            now.getUTCMonth() !== last.getUTCMonth() ||
-            now.getUTCDate() !== last.getUTCDate();
+
+        // Используем МСК время (UTC+3) для сброса как в остальных квестовых механиках
+        const toMsk = (d: Date) => {
+            const msk = new Date(d.getTime() + 3 * 60 * 60 * 1000);
+            return { y: msk.getUTCFullYear(), m: msk.getUTCMonth(), d: msk.getUTCDate() };
+        };
+        const nowMsk = toMsk(now);
+        const lastMsk = toMsk(last);
+        const isNewDay = nowMsk.y !== lastMsk.y || nowMsk.m !== lastMsk.m || nowMsk.d !== lastMsk.d;
+
         if (isNewDay) {
             set({
                 dailyBattles: 0,
                 dailyBattleLimit: s.isPremium ? BATTLE_CONFIG.PREMIUM_DAILY_LIMIT : BATTLE_CONFIG.DAILY_LIMIT,
                 lastBattleReset: Date.now(),
+                dailyAdWatchesCount: 0, // Сбрасываем лимит рекламы каждый день
             });
         }
     },
@@ -486,7 +497,7 @@ export const createPlayerSlice = (set: any, get: any) => ({
             referredBy: code,
         });
         syncService.debouncedSync();
-        console.log(`🎁 Referral bonus credited! Inviter: ${code}`);
+        console.debug(`🎁 Referral bonus credited! Inviter: ${code}`);
     },
 
     setNotificationsEnabled: (enabled: boolean) => set({ notificationsEnabled: enabled }),
@@ -494,6 +505,7 @@ export const createPlayerSlice = (set: any, get: any) => ({
     setIsMuted: (enabled: boolean) => {
         const isMuted = enabled;
         set({ isMuted });
+        audioService.setMuted(isMuted);
         if (isMuted) {
             audioService.setMusicVolume(0);
             audioService.setSFXVolume(0);
@@ -517,9 +529,18 @@ export const createPlayerSlice = (set: any, get: any) => ({
         if (!get().isMuted) audioService.setSFXVolume(vol / 100);
     },
     setGraphicsQuality: (val: string) => set({ graphicsQuality: val }),
-    setLevel: (val: number) => set({ level: val, title: getPlayerTitle(val) }),
-    setGold: (val: number) => set({ gold: val }),
-    setCrystals: (val: number) => set({ crystals: val }),
+    setLevel: (val: number) => {
+        set({ level: val, title: getPlayerTitle(val) });
+        syncService.debouncedSync();
+    },
+    setGold: (val: number) => {
+        set({ gold: val });
+        syncService.debouncedSync();
+    },
+    setCrystals: (val: number) => {
+        set({ crystals: val });
+        syncService.debouncedSync();
+    },
     setVkUser: (user: any) => {
         const state = get() as any;
         const uid = user?.id || user?.uid;
@@ -570,10 +591,22 @@ export const createPlayerSlice = (set: any, get: any) => ({
         return { success: true };
     },
 
-    setAvatar: (avatar: string) => set({ avatar }),
-    setFrame: (frame: string) => set({ frame }),
-    setTitle: (title: string) => set({ title }),
-    setRating: (rating: number) => set({ rating: Math.max(0, rating) }),
+    setAvatar: (avatar: string) => {
+        set({ avatar });
+        syncService.debouncedSync();
+    },
+    setFrame: (frame: string) => {
+        set({ frame });
+        syncService.debouncedSync();
+    },
+    setTitle: (title: string) => {
+        set({ title });
+        syncService.debouncedSync();
+    },
+    setRating: (rating: number) => {
+        set({ rating: Math.max(0, rating) });
+        syncService.debouncedSync();
+    },
 
     checkPetDailyReward: () => {
         const state = get() as any;

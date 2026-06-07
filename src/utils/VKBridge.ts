@@ -1,4 +1,5 @@
 import bridge from '@vkontakte/vk-bridge';
+import { useGameStore } from '../store/useGameStore';
 
 type VkUser = {
     id: string;
@@ -28,6 +29,12 @@ export const isVkMiniApp = (): boolean => {
 
 export const initVK = async (): Promise<boolean> => {
     if (!bridge) return false;
+
+    if (!isVkMiniApp()) {
+        console.log('Mock VK Bridge Init: successfully initialized mock mini app.');
+        (window as any).vkBridgeInitialized = true;
+        return true;
+    }
 
     // На мобильных устройствах с 3G инициализация VK Bridge может занять 5-10 сек.
     // Увеличиваем timeout до 12s чтобы дать Bridge время ответить.
@@ -68,6 +75,11 @@ export const initVK = async (): Promise<boolean> => {
 export const getVkUserInfo = async (): Promise<VkUser | null> => {
     if (!bridge) return null;
 
+    if (!isVkMiniApp()) {
+        console.log('Mock VK: getVkUserInfo returning Guest / Null in non-VK environment.');
+        return null;
+    }
+
     try {
         const user = await bridge.send('VKWebAppGetUserInfo');
         return {
@@ -88,7 +100,7 @@ export const getVkUserInfo = async (): Promise<VkUser | null> => {
  * Запрашивает разрешение на отправку уведомлений
  */
 export const requestNotifications = async (): Promise<boolean> => {
-    if (!bridge) return false;
+    if (!bridge || !isVkMiniApp()) return false;
     try {
         const result = await bridge.send('VKWebAppAllowNotifications');
         return result.result === true;
@@ -102,7 +114,7 @@ export const requestNotifications = async (): Promise<boolean> => {
  * Вызывает окно приглашения друзей в игру
  */
 export const showInviteBox = async (): Promise<boolean> => {
-    if (!bridge) {
+    if (!bridge || !isVkMiniApp()) {
         console.warn('VK Bridge not available. Invite box skipped.');
         return false;
     }
@@ -147,12 +159,19 @@ export const showRewardedVideo = async (): Promise<boolean> => {
 export const purchaseStars = async (item: string): Promise<boolean> => {
     if (!bridge || !isVkMiniApp()) {
         console.log(`Mock Payment: initiating purchase for: ${item}`);
-        const confirmBuy = window.confirm(`[Mock Payment] Вы хотите приобрести товар "${item}"?`);
-        if (confirmBuy) {
-            console.log(`Mock Payment: purchase of ${item} completed successfully`);
-            return true;
-        }
-        return false;
+        return new Promise<boolean>((resolve) => {
+            useGameStore.getState().showConfirm(
+                `[Mock Payment] Вы хотите приобрести товар "${item}"?`,
+                () => {
+                    console.log(`Mock Payment: purchase of ${item} completed successfully`);
+                    resolve(true);
+                },
+                () => {
+                    console.log(`Mock Payment: purchase of ${item} cancelled`);
+                    resolve(false);
+                },
+            );
+        });
     }
 
     try {
@@ -173,7 +192,7 @@ export const purchaseStars = async (item: string): Promise<boolean> => {
  * @param message Сообщение для друга
  */
 export const sendGameRequest = async (uid?: string, message: string = 'Прими мой подарок!'): Promise<boolean> => {
-    if (!bridge) return false;
+    if (!bridge || !isVkMiniApp()) return false;
     try {
         const params: any = {
             type: 'request',
@@ -193,7 +212,7 @@ export const sendGameRequest = async (uid?: string, message: string = 'Прим�
  * Вызывает окно добавления игры в "Избранное" ВК
  */
 export const addToFavorites = async (): Promise<boolean> => {
-    if (!bridge || window.location.hostname === 'localhost') {
+    if (!bridge || !isVkMiniApp()) {
         console.log('Mock: Add to Favorites');
         return true;
     }
@@ -213,7 +232,7 @@ export const addToFavorites = async (): Promise<boolean> => {
 export const joinGroup = async (groupId: number = 238197449): Promise<boolean> => {
     const groupUrl = `https://vk.com/beasts_arena`;
 
-    if (!bridge || window.location.hostname === 'localhost') {
+    if (!bridge || !isVkMiniApp()) {
         window.open(groupUrl, '_blank');
         return true;
     }
@@ -233,7 +252,7 @@ export const joinGroup = async (groupId: number = 238197449): Promise<boolean> =
  * Проверяет, состоит ли пользователь в группе
  */
 export const isGroupMember = async (groupId: number = 238197449): Promise<boolean> => {
-    if (!bridge || window.location.hostname === 'localhost') return false;
+    if (!bridge || !isVkMiniApp()) return false;
     try {
         let token = '';
         try {

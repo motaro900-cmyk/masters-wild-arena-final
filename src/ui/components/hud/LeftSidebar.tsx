@@ -42,7 +42,7 @@ export const LeftSidebar: React.FC<{ onOpenWindow: (n: string) => void }> = ({ o
                     backgroundImage: `url(${AssetsMap.UI.SIDEBAR_LEFT})`,
                     backgroundSize: '100% 100%',
                     backgroundRepeat: 'no-repeat',
-                    filter: 'url(#css-sharpen) contrast(1.2) saturate(1.25) brightness(1.05) hue-rotate(5deg)',
+                    filter: 'contrast(1.2) saturate(1.25) brightness(1.05) hue-rotate(5deg)',
                     zIndex: 0,
                     pointerEvents: 'none',
                 }}

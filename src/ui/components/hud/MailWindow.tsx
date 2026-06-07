@@ -66,7 +66,7 @@ export const MailWindow: React.FC<MailWindowProps> = () => {
         if (!feedbackText.trim()) return;
         sendFeedback(feedbackCategory, feedbackText);
         setFeedbackText('');
-        alert('Спасибо! Ваш отзыв отправлен Королевской Почтой.');
+        useGameStore.getState().showAlert('Спасибо! Ваш отзыв отправлен Королевской Почтой.');
         setActiveTab('INBOX');
     };
 
@@ -687,7 +687,9 @@ export const MailWindow: React.FC<MailWindowProps> = () => {
                     style={{ marginTop: '20px', display: 'flex', gap: '10px' }}
                 >
                     <button
-                        onClick={() => alert('Написание личных писем будет доступно в v1.2')}
+                        onClick={() =>
+                            useGameStore.getState().showAlert('Написание личных писем будет доступно в v1.2')
+                        }
                         style={{
                             flex: 1,
                             padding: '14px',

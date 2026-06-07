@@ -1,7 +1,6 @@
-/* eslint-disable react-refresh/only-export-components */
 import React, { useState, useMemo } from 'react';
 import { useGameStore } from '../../../store/useGameStore';
-import { ITEMS_DATABASE, calculateItemPower, ItemRarity } from '../../../game/configs/ItemsConfig';
+import { ITEMS_DATABASE, calculateItemPower } from '../../../game/configs/ItemsConfig';
 import { HEROES_DB } from '../../../configs/HeroesConfig';
 import { ConfirmDialog } from './SharedUI';
 import { AssetsMap } from '../../../configs/AssetsMap';
@@ -10,52 +9,16 @@ import { DraggableItem } from './Inventory/DraggableItem';
 import { ItemTooltip } from './Inventory/ItemTooltip';
 import { ChestOpeningOverlay } from './Inventory/ChestOpeningOverlay';
 
+const stoneBrickPattern =
+    "url(\"data:image/svg+xml;utf8,<svg width='60' height='40' viewBox='0 0 60 40' xmlns='http://www.w3.org/2000/svg'><rect width='60' height='40' fill='none'/><line x1='0' y1='20' x2='60' y2='20' stroke='rgba(0,0,0,0.52)' stroke-width='1.5'/><line x1='0' y1='40' x2='60' y2='40' stroke='rgba(0,0,0,0.52)' stroke-width='1.5'/><line x1='30' y1='0' x2='30' y2='20' stroke='rgba(0,0,0,0.52)' stroke-width='1.5'/><line x1='0' y1='20' x2='0' y2='40' stroke='rgba(0,0,0,0.52)' stroke-width='1.5'/><line x1='60' y1='20' x2='60' y2='40' stroke='rgba(0,0,0,0.52)' stroke-width='1.5'/><line x1='0' y1='1.5' x2='60' y2='1.5' stroke='rgba(255,255,255,0.15)' stroke-width='1'/><line x1='0' y1='21.5' x2='60' y2='21.5' stroke='rgba(255,255,255,0.15)' stroke-width='1'/><line x1='31.5' y1='0.8' x2='31.5' y2='19.5' stroke='rgba(255,255,255,0.15)' stroke-width='1'/><line x1='1.5' y1='20.8' x2='1.5' y2='39.5' stroke='rgba(255,255,255,0.15)' stroke-width='1'/><path d='M44,3 L40,7 L42,12 L38,15' stroke='rgba(0,0,0,0.45)' stroke-width='0.8' fill='none'/><path d='M45,3.5 L41,7.5 L43,12.5 L39,15.5' stroke='rgba(255,255,255,0.08)' stroke-width='0.8' fill='none'/><line x1='6' y1='8' x2='20' y2='8' stroke='rgba(0,0,0,0.42)' stroke-width='0.8'/><line x1='6' y1='9' x2='20' y2='9' stroke='rgba(255,255,255,0.08)' stroke-width='0.8'/><path d='M10,23 L13,28 L11,34' stroke='rgba(0,0,0,0.48)' stroke-width='0.9' fill='none'/><path d='M11,23.5 L14,28.5 L12,34.5' stroke='rgba(255,255,255,0.09)' stroke-width='0.9' fill='none'/><path d='M35,33 L48,30 L54,32' stroke='rgba(0,0,0,0.42)' stroke-width='0.8' fill='none'/><path d='M35,34 L48,31 L54,33' stroke='rgba(255,255,255,0.07)' stroke-width='0.8' fill='none'/><circle cx='12' cy='14' r='0.8' fill='rgba(0,0,0,0.45)'/><circle cx='12.5' cy='14.5' r='0.4' fill='rgba(255,255,255,0.08)'/><circle cx='48' cy='26' r='1.2' fill='rgba(0,0,0,0.5)'/><circle cx='48.5' cy='26.5' r='0.6' fill='rgba(255,255,255,0.1)'/></svg>\")";
+
 interface InventoryPanelProps {
     onItemClick?: (id: string) => void;
     mode?: 'FULL' | 'COMPACT';
     setGlobalHoveredItem?: (id: string | null, x: number, y: number) => void;
 }
 
-export const RARITY_COLORS: any = {
-    [ItemRarity.COMMON]: {
-        border: '#a0a0a0',
-        glow: 'rgba(160,160,160,0.2)',
-        bg: 'rgba(50,50,50,0.8)',
-        color: '#a0a0a0',
-    },
-    [ItemRarity.RARE]: {
-        border: '#3b82f6',
-        glow: 'rgba(59,130,246,0.3)',
-        bg: 'rgba(20,30,50,0.9)',
-        color: '#3b82f6',
-    },
-    [ItemRarity.EPIC]: {
-        border: '#a855f7',
-        glow: 'rgba(168,85,247,0.4)',
-        bg: 'rgba(40,20,60,0.9)',
-        color: '#a855f7',
-    },
-    MYTHIC: {
-        border: '#ef4444',
-        glow: 'rgba(239,68,68,0.4)',
-        bg: 'rgba(60,20,20,0.9)',
-        color: '#ef4444',
-    },
-    [ItemRarity.LEGENDARY]: {
-        border: '#f59e0b',
-        glow: 'rgba(245,158,11,0.5)',
-        bg: 'rgba(60,45,10,0.9)',
-        color: '#f59e0b',
-    },
-};
-
-export const rarityTranslation: Record<string, string> = {
-    COMMON: 'ОБЫЧНЫЙ',
-    RARE: 'РЕДКИЙ',
-    EPIC: 'ЭПИЧЕСКИЙ',
-    MYTHIC: 'МИФИЧЕСКИЙ',
-    LEGENDARY: 'ЛЕГЕНДАРНЫЙ',
-};
+import { RARITY_COLORS } from '../../../configs/RarityConfig';
 
 export const InventoryPanel: React.FC<InventoryPanelProps> = ({ mode = 'FULL', onItemClick, setGlobalHoveredItem }) => {
     const {
@@ -226,36 +189,57 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ mode = 'FULL', o
         >
             {/* ТАБЫ И ИНФО */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                <div style={{ display: 'flex', gap: '6px', width: '100%' }}>
+                <div
+                    style={{
+                        display: 'flex',
+                        gap: '6px',
+                        width: '100%',
+                        background: 'rgba(20, 16, 12, 0.65)',
+                        borderRadius: '10px',
+                        padding: '4px',
+                        border: '1px solid rgba(240, 192, 64, 0.2)',
+                        boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.5)',
+                    }}
+                >
                     {[
                         { id: 'ALL', label: 'ВСЁ' },
                         { id: 'EQUIPMENT', label: 'СНАРЯЖЕНИЕ' },
                         { id: 'POTIONS', label: 'АЛХИМИЯ' },
                         { id: 'RESOURCES', label: 'РЕСУРСЫ' },
-                    ].map((tab) => (
-                        <button
-                            key={tab.id}
-                            onClick={() => {
-                                setActiveTab(tab.id as any);
-                            }}
-                            style={{
-                                flex: 1,
-                                padding: '8px 4px',
-                                borderRadius: '8px',
-                                border: '1px solid rgba(240,192,64,0.2)',
-                                background: activeTab === tab.id ? 'rgba(240,192,64,0.1)' : 'transparent',
-                                color: activeTab === tab.id ? '#f0c040' : 'rgba(255,255,255,0.4)',
-                                fontSize: '11px',
-                                fontWeight: 800,
-                                cursor: 'pointer',
-                                fontFamily: "'Cinzel', serif",
-                                textAlign: 'center',
-                                whiteSpace: 'nowrap',
-                            }}
-                        >
-                            {tab.label}
-                        </button>
-                    ))}
+                    ].map((tab) => {
+                        const active = activeTab === tab.id;
+                        return (
+                            <button
+                                key={tab.id}
+                                onClick={() => {
+                                    setActiveTab(tab.id as any);
+                                }}
+                                style={{
+                                    flex: 1,
+                                    padding: '8px 4px',
+                                    borderRadius: '6px',
+                                    background: active
+                                        ? 'linear-gradient(180deg, #f0c040 0%, #c8960a 100%)'
+                                        : 'transparent',
+                                    border: active ? '1px solid #fffdf7' : '1px solid transparent',
+                                    color: active ? '#1a0f00' : 'rgba(255, 254, 250, 0.6)',
+                                    fontSize: '11px',
+                                    fontWeight: 900,
+                                    cursor: 'pointer',
+                                    fontFamily: "'Cinzel', serif",
+                                    textAlign: 'center',
+                                    whiteSpace: 'nowrap',
+                                    boxShadow: active ? '0 2px 6px rgba(240, 192, 64, 0.2)' : 'none',
+                                    textShadow: active
+                                        ? '0 1px 1px rgba(255,255,255,0.2)'
+                                        : '0 2px 4px rgba(0,0,0,0.8)',
+                                    transition: 'all 0.15s ease',
+                                }}
+                            >
+                                {tab.label}
+                            </button>
+                        );
+                    })}
                 </div>
 
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
@@ -330,15 +314,16 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ mode = 'FULL', o
             <div
                 style={{
                     flex: 1,
-                    background: 'rgba(0,0,0,0.2)',
-                    borderRadius: '12px',
-                    border: '1px solid rgba(240,192,64,0.1)',
-                    padding: '15px',
+                    background: `${stoneBrickPattern}, linear-gradient(180deg, rgba(22, 18, 15, 0.98) 0%, rgba(14, 11, 9, 0.99) 100%)`,
+                    borderRadius: '16px',
+                    border: '1.5px solid rgba(240, 192, 64, 0.3)',
+                    padding: '20px',
                     overflowY: 'auto',
                     display: 'grid',
                     gridTemplateColumns: mode === 'FULL' ? 'repeat(6, 1fr)' : 'repeat(4, 1fr)',
                     gridAutoRows: mode === 'FULL' ? '90px' : '80px',
-                    gap: '10px',
+                    gap: '12px',
+                    boxShadow: 'inset 0 0 24px rgba(0,0,0,0.95), 0 4px 15px rgba(0,0,0,0.5)',
                 }}
                 className="leaderboard-scroll"
             >
@@ -406,11 +391,28 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ mode = 'FULL', o
                     <div
                         key={'empty-' + i}
                         style={{
-                            background: 'rgba(0,0,0,0.1)',
-                            borderRadius: '8px',
-                            border: '1px dashed rgba(240,192,64,0.05)',
+                            background:
+                                'radial-gradient(circle at 50% 50%, rgba(12, 9, 7, 0.95) 0%, rgba(20, 16, 13, 0.98) 100%)',
+                            borderRadius: '12px',
+                            border: '1.5px solid rgba(240, 192, 64, 0.12)',
+                            boxShadow: 'inset 0 4px 10px rgba(0, 0, 0, 0.9), 0 1px 1px rgba(255,255,255,0.05)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            position: 'relative',
                         }}
-                    />
+                    >
+                        {/* A subtle runic cross or dot indicator inside the empty slot */}
+                        <div
+                            style={{
+                                width: '6px',
+                                height: '6px',
+                                borderRadius: '50%',
+                                background: 'rgba(240, 192, 64, 0.08)',
+                                boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.8)',
+                            }}
+                        />
+                    </div>
                 ))}
             </div>
 

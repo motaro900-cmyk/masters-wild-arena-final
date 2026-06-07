@@ -3,7 +3,7 @@
 .profile-atlas-base {
     background-image: url('/assets/images/ui/Profilebar.webp');
     background-repeat: no-repeat;
-    background-size: 1488px 960px; /* Размер оригинального атласа */
+    background-size: 1536px 1024px; /* Размер оригинального атласа */
     display: block;
 }
 

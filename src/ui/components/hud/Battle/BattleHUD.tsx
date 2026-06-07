@@ -69,26 +69,27 @@ const HpBar: React.FC<{
 
     if (isEnemy) {
         // Red theme for Enemy
-        barColor = 'linear-gradient(90deg, #991b1b 0%, #ef4444 50%, #991b1b 100%)';
-        borderColor = 'rgba(239,68,68,0.85)';
-        glowColor = 'rgba(239,68,68,0.28)';
+        barColor = 'linear-gradient(90deg, #b91c1c 0%, #f87171 50%, #b91c1c 100%)';
+        borderColor = 'rgba(248,113,113,0.85)';
+        glowColor = 'rgba(248,113,113,0.4)';
     } else {
         // Green theme for Player
-        barColor = 'linear-gradient(90deg, #16a34a 0%, #22c55e 50%, #16a34a 100%)';
-        borderColor = 'rgba(34,197,94,0.85)';
-        glowColor = 'rgba(34,197,94,0.22)';
+        barColor = 'linear-gradient(90deg, #15803d 0%, #4ade80 50%, #15803d 100%)';
+        borderColor = 'rgba(74,222,128,0.85)';
+        glowColor = 'rgba(74,222,128,0.35)';
     }
 
     return (
         <div
             style={{
                 height: '30px',
-                background: 'rgba(0,0,0,0.82)',
+                background: 'rgba(0,0,0,0.55)',
+                backdropFilter: 'blur(6px)',
                 border: `2px solid ${borderColor}`,
-                borderRadius: '6px',
+                borderRadius: '10px',
                 position: 'relative',
                 overflow: 'hidden',
-                boxShadow: `0 0 14px ${glowColor}, inset 0 0 10px rgba(0,0,0,0.6)`,
+                boxShadow: `0 0 16px ${glowColor}, inset 0 0 12px rgba(0,0,0,0.8)`,
                 transition: 'border-color 0.5s, box-shadow 0.5s',
             }}
         >
@@ -249,22 +250,26 @@ const StatusIcons: React.FC<{
                 }
 
                 return (
-                    <div
+                    <motion.div
                         key={idx}
+                        whileHover={{ scale: 1.08 }}
                         style={{
                             display: 'inline-flex',
                             alignItems: 'center',
                             gap: '4px',
-                            background: 'rgba(15, 8, 4, 0.95)',
+                            background: 'rgba(15, 8, 4, 0.65)',
+                            backdropFilter: 'blur(8px)',
                             border: `1.5px solid ${color}`,
-                            borderRadius: '4px',
-                            padding: '3px 8px',
+                            borderRadius: '20px',
+                            padding: '4px 10px',
                             fontSize: '12px',
                             fontWeight: 'bold',
                             color: '#fff',
                             fontFamily: 'Outfit, Inter, sans-serif',
-                            boxShadow: `0 0 6px ${color}55`,
+                            boxShadow: `0 0 8px ${color}66, inset 0 0 10px rgba(0,0,0,0.5)`,
                             textShadow: '1px 1px 2px #000',
+                            cursor: 'help',
+                            transition: 'box-shadow 0.3s',
                         }}
                         title={`${label}: ${status.duration} ход.`}
                     >
@@ -276,7 +281,7 @@ const StatusIcons: React.FC<{
                             </span>
                         )}
                         <span style={{ opacity: 0.7, fontSize: '10px', marginLeft: '2px' }}>({status.duration}х)</span>
-                    </div>
+                    </motion.div>
                 );
             })}
         </div>
@@ -350,10 +355,10 @@ export const BattleHUD: React.FC<BattleHUDProps> = ({
     const enemyAvatar = useMemo(() => {
         if (battleMode === 'PVE') {
             // PVE mobs image path is usually raw character sprite. Make sure it uses that.
-            return enemyData.image || '/assets/images/avatars/енот.webp';
+            return enemyData.image || '/assets/images/avatars/wolf.webp';
         }
         // PVP enemy hero avatar
-        return enemyData.image || '/assets/images/avatars/енот.webp';
+        return enemyData.image || '/assets/images/avatars/wolf.webp';
     }, [battleMode, enemyData]);
 
     return (
@@ -371,15 +376,43 @@ export const BattleHUD: React.FC<BattleHUDProps> = ({
             >
                 {/* ══════════════ ПАНЕЛЬ ИГРОКА ══════════════ */}
                 <motion.div
-                    animate={{ scale: playerPulse ? 1.015 : 1 }}
-                    transition={{ duration: 0.12 }}
+                    animate={{
+                        scale: playerPulse ? 1.025 : currentAttacker === 'player' ? 1.01 : 1,
+                        boxShadow:
+                            currentAttacker === 'player'
+                                ? [
+                                      '0 0 20px rgba(240, 180, 40, 0.15)',
+                                      '0 0 30px rgba(240, 180, 40, 0.45)',
+                                      '0 0 20px rgba(240, 180, 40, 0.15)',
+                                  ]
+                                : '0 4px 20px rgba(0, 0, 0, 0.4)',
+                    }}
+                    transition={{
+                        scale: { duration: 0.12 },
+                        boxShadow: { repeat: Infinity, duration: 1.8, ease: 'easeInOut' },
+                    }}
                     style={{
                         position: 'relative',
                         width: '465px',
                         height: '112px',
                         flexShrink: 0,
+                        borderRadius: '20px',
                     }}
                 >
+                    {/* Glassmorphic Backing */}
+                    <div
+                        style={{
+                            position: 'absolute',
+                            inset: '4px',
+                            background: 'rgba(15, 8, 4, 0.45)',
+                            backdropFilter: 'blur(10px)',
+                            borderRadius: '16px',
+                            border: '1px solid rgba(255, 255, 255, 0.06)',
+                            boxShadow: 'inset 0 0 20px rgba(255, 255, 255, 0.02)',
+                            zIndex: -1,
+                        }}
+                    />
+
                     {/* Background Plate */}
                     <div
                         style={{
@@ -393,6 +426,7 @@ export const BattleHUD: React.FC<BattleHUDProps> = ({
                                     ? 'drop-shadow(0 0 15px rgba(240,180,40,0.5))'
                                     : 'drop-shadow(0 4px 12px rgba(0,0,0,0.6))',
                             transition: 'filter 0.3s',
+                            opacity: 0.85,
                         }}
                     />
 
@@ -410,7 +444,19 @@ export const BattleHUD: React.FC<BattleHUDProps> = ({
                         }}
                     >
                         {/* Avatar Image */}
-                        <div
+                        <motion.div
+                            animate={
+                                currentAttacker === 'player'
+                                    ? {
+                                          boxShadow: [
+                                              '0 0 15px rgba(251,191,36,0.3)',
+                                              '0 0 25px rgba(251,191,36,0.7)',
+                                              '0 0 15px rgba(251,191,36,0.3)',
+                                          ],
+                                      }
+                                    : {}
+                            }
+                            transition={{ repeat: Infinity, duration: 1.5 }}
                             style={{
                                 width: '108px',
                                 height: '108px',
@@ -422,6 +468,11 @@ export const BattleHUD: React.FC<BattleHUDProps> = ({
                                 justifyContent: 'center',
                                 transform: 'translateY(1px)',
                                 zIndex: 10,
+                                border:
+                                    currentAttacker === 'player'
+                                        ? '2.5px solid #fbbf24'
+                                        : '2.5px solid rgba(255,255,255,0.15)',
+                                transition: 'border 0.3s',
                             }}
                         >
                             <img
@@ -429,7 +480,7 @@ export const BattleHUD: React.FC<BattleHUDProps> = ({
                                 alt="Player Avatar"
                                 style={getAvatarImageStyle(playerAvatar || '')}
                             />
-                        </div>
+                        </motion.div>
 
                         {/* VIP / Custom Аура (Свечение) */}
                         {(() => {
@@ -668,15 +719,27 @@ export const BattleHUD: React.FC<BattleHUDProps> = ({
                         minWidth: 0,
                     }}
                 >
-                    <div
+                    <motion.div
+                        animate={{
+                            y: [0, -4, 0],
+                            boxShadow: [
+                                '0 0 20px rgba(0,0,0,0.7), 0 0 10px rgba(251,191,36,0.1)',
+                                '0 0 25px rgba(0,0,0,0.7), 0 0 20px rgba(251,191,36,0.35)',
+                                '0 0 20px rgba(0,0,0,0.7), 0 0 10px rgba(251,191,36,0.1)',
+                            ],
+                        }}
+                        transition={{
+                            duration: 3,
+                            repeat: Infinity,
+                            ease: 'easeInOut',
+                        }}
                         style={{
-                            background: 'linear-gradient(160deg, rgba(20, 12, 6, 0.95) 0%, rgba(35, 18, 5, 0.92) 100%)',
+                            background: 'linear-gradient(160deg, rgba(20, 12, 6, 0.72) 0%, rgba(35, 18, 5, 0.68) 100%)',
                             backdropFilter: 'blur(16px)',
-                            border: '2px solid rgba(180, 120, 30, 0.55)',
-                            borderRadius: '4px',
+                            border: '1.5px solid rgba(251, 191, 36, 0.45)',
+                            borderRadius: '12px',
                             padding: '10px 28px',
                             position: 'relative',
-                            boxShadow: '0 0 20px rgba(0,0,0,0.7), inset 0 0 12px rgba(200,120,20,0.07)',
                             display: 'flex',
                             flexDirection: 'column',
                             alignItems: 'center',
@@ -712,7 +775,7 @@ export const BattleHUD: React.FC<BattleHUDProps> = ({
                         >
                             ⏱️ {formatTime(timeLeft)}
                         </div>
-                    </div>
+                    </motion.div>
 
                     <AnimatePresence mode="wait">
                         {lastLog && (
@@ -759,16 +822,45 @@ export const BattleHUD: React.FC<BattleHUDProps> = ({
                 </div>
 
                 {/* ══════════════ ПАНЕЛЬ ВРАГА ══════════════ */}
+                {/* ══════════════ ПАНЕЛЬ ВРАГА ══════════════ */}
                 <motion.div
-                    animate={{ scale: enemyPulse ? 1.015 : 1 }}
-                    transition={{ duration: 0.12 }}
+                    animate={{
+                        scale: enemyPulse ? 1.025 : currentAttacker === 'enemy' ? 1.01 : 1,
+                        boxShadow:
+                            currentAttacker === 'enemy'
+                                ? [
+                                      '0 0 20px rgba(239, 68, 68, 0.15)',
+                                      '0 0 30px rgba(239, 68, 68, 0.45)',
+                                      '0 0 20px rgba(239, 68, 68, 0.15)',
+                                  ]
+                                : '0 4px 20px rgba(0, 0, 0, 0.4)',
+                    }}
+                    transition={{
+                        scale: { duration: 0.12 },
+                        boxShadow: { repeat: Infinity, duration: 1.8, ease: 'easeInOut' },
+                    }}
                     style={{
                         position: 'relative',
                         width: '465px',
                         height: '112px',
                         flexShrink: 0,
+                        borderRadius: '20px',
                     }}
                 >
+                    {/* Glassmorphic Backing */}
+                    <div
+                        style={{
+                            position: 'absolute',
+                            inset: '4px',
+                            background: 'rgba(15, 8, 4, 0.45)',
+                            backdropFilter: 'blur(10px)',
+                            borderRadius: '16px',
+                            border: '1px solid rgba(255, 255, 255, 0.06)',
+                            boxShadow: 'inset 0 0 20px rgba(255, 255, 255, 0.02)',
+                            zIndex: -1,
+                        }}
+                    />
+
                     {/* Background Plate (MIRRORED) */}
                     <div
                         style={{
@@ -783,6 +875,7 @@ export const BattleHUD: React.FC<BattleHUDProps> = ({
                                     ? 'drop-shadow(0 0 15px rgba(239,68,68,0.5))'
                                     : 'drop-shadow(0 4px 12px rgba(0,0,0,0.6))',
                             transition: 'filter 0.3s',
+                            opacity: 0.85,
                         }}
                     />
 
@@ -800,7 +893,19 @@ export const BattleHUD: React.FC<BattleHUDProps> = ({
                         }}
                     >
                         {/* Avatar Image */}
-                        <div
+                        <motion.div
+                            animate={
+                                currentAttacker === 'enemy'
+                                    ? {
+                                          boxShadow: [
+                                              '0 0 15px rgba(239,68,68,0.3)',
+                                              '0 0 25px rgba(239,68,68,0.7)',
+                                              '0 0 15px rgba(239,68,68,0.3)',
+                                          ],
+                                      }
+                                    : {}
+                            }
+                            transition={{ repeat: Infinity, duration: 1.5 }}
                             style={{
                                 width: '108px',
                                 height: '108px',
@@ -812,6 +917,11 @@ export const BattleHUD: React.FC<BattleHUDProps> = ({
                                 justifyContent: 'center',
                                 transform: 'translateY(1px)',
                                 zIndex: 10,
+                                border:
+                                    currentAttacker === 'enemy'
+                                        ? '2.5px solid #ef4444'
+                                        : '2.5px solid rgba(255,255,255,0.15)',
+                                transition: 'border 0.3s',
                             }}
                         >
                             <img
@@ -824,7 +934,7 @@ export const BattleHUD: React.FC<BattleHUDProps> = ({
                                     transform: 'scale(1.05)',
                                 }}
                             />
-                        </div>
+                        </motion.div>
 
                         {/* Round Frame */}
                         <img

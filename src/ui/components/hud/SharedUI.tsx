@@ -94,11 +94,15 @@ export const GfxGoldPanel: React.FC<{ children: React.ReactNode; className?: str
     const isLow = useGameStore((state) => state.graphicsQuality === 'LOW');
     return (
         <div
-            className={cn('relative border-[16px] border-transparent', !isLow && 'shadow-2xl', className)}
+            className={cn('relative border-[2px]', !isLow && 'shadow-2xl', className)}
             style={{
-                borderImageSource: `url('${resolveAssetPath('/assets/images/ui/social_bar_bg.webp')}')`,
-                borderImageSlice: '40 fill',
-                filter: 'url(#css-sharpen) contrast(1.2) saturate(1.1) brightness(0.95) hue-rotate(5deg)', // Сочное золото
+                border: '2px solid transparent',
+                backgroundImage:
+                    'linear-gradient(135deg, #1a1209 0%, #0c0a09 100%), linear-gradient(180deg, #d4a843 0%, #8a5a2a 50%, #4a2e10 100%)',
+                backgroundOrigin: 'border-box',
+                backgroundClip: 'padding-box, border-box',
+                borderRadius: '12px',
+                boxShadow: isLow ? 'none' : '0 4px 20px rgba(0,0,0,0.7), inset 0 1px 0 rgba(212,168,67,0.2)',
                 ...style,
             }}
         >
@@ -118,11 +122,15 @@ export const GfxWoodPanel: React.FC<{ children: React.ReactNode; className?: str
     const isLow = useGameStore((state) => state.graphicsQuality === 'LOW');
     return (
         <div
-            className={cn('relative border-[18px] border-transparent', !isLow && 'shadow-inner', className)}
+            className={cn('relative', !isLow && 'shadow-inner', className)}
             style={{
-                borderImageSource: `url('${resolveAssetPath('/assets/images/ui/panel_dark.webp')}')`,
-                borderImageSlice: '40 fill',
-                filter: 'url(#css-sharpen) brightness(0.7) contrast(1.2)', // Делаем дерево почти черным шоколадом
+                border: '2px solid transparent',
+                backgroundImage:
+                    'linear-gradient(135deg, #0a0806 0%, #060504 100%), linear-gradient(180deg, #4a2e10 0%, #2a1808 50%, #1a0f06 100%)',
+                backgroundOrigin: 'border-box',
+                backgroundClip: 'padding-box, border-box',
+                borderRadius: '12px',
+                boxShadow: isLow ? 'none' : 'inset 0 2px 8px rgba(0,0,0,0.8)',
                 ...style,
             }}
         >
@@ -143,9 +151,9 @@ export const GfxMenuButton: React.FC<{
     disabled?: boolean;
 }> = ({ children, onClick, className, variant = 'bronze', style, disabled }) => {
     const filterMap = {
-        bronze: 'url(#css-sharpen) contrast(1.25) saturate(1.1) brightness(0.9) hue-rotate(5deg)', // Сочная бронза/золото
-        gold: 'url(#css-sharpen) saturate(1.1) brightness(1.15) hue-rotate(5deg)',
-        red: 'url(#css-sharpen) hue-rotate(-55deg) saturate(1.8) brightness(0.8) contrast(1.2)', // Глубокий красный кристалл
+        bronze: 'contrast(1.25) saturate(1.1) brightness(0.9) hue-rotate(5deg)', // Сочная бронза/золото
+        gold: 'saturate(1.1) brightness(1.15) hue-rotate(5deg)',
+        red: 'hue-rotate(-55deg) saturate(1.8) brightness(0.8) contrast(1.2)', // Глубокий красный кристалл
     };
 
     const isLow = useGameStore((state) => state.graphicsQuality === 'LOW');
@@ -221,7 +229,15 @@ export const AvatarFrame: React.FC<{
     const avatarSrc = avatarFilename.startsWith('http')
         ? avatarFilename
         : resolveAssetPath(`/assets/images/avatars/${avatarFilename.replace(/\.(png|webp)$/, '')}.webp`);
-    const frameSrc = resolveAssetPath(`/assets/images/frames/${frameFilename.replace(/\.(png|webp)$/, '')}.webp`);
+
+    let frameSrc = '';
+    if (frameFilename === 'none' || !frameFilename) {
+        frameSrc = resolveAssetPath('/assets/images/ui/avatar_frame.png');
+    } else if (frameFilename.startsWith('/') || frameFilename.startsWith('http') || frameFilename.startsWith('data:')) {
+        frameSrc = resolveAssetPath(frameFilename);
+    } else {
+        frameSrc = resolveAssetPath(`/assets/images/frames/${frameFilename.replace(/\.(png|webp)$/, '')}.webp`);
+    }
 
     return (
         <div

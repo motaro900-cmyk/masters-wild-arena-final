@@ -283,12 +283,11 @@ export const createShopSlice = (set: any, get: any) => ({
                 const subTab = itemData.subTab;
 
                 if (subTab === 'GOLD') {
-                    set({ [newBalanceKey]: get()[newBalanceKey] - price });
-                    set({ gold: get().gold + amount });
+                    set({ [newBalanceKey]: balance - price, gold: state.gold + amount });
                 } else if (subTab === 'GEMS') {
                     set({ [newBalanceKey]: balance - price, crystals: state.crystals + amount });
                 } else if (subTab === 'ENERGY') {
-                    set({ [newBalanceKey]: balance - price, energy: state.energy + amount });
+                    set({ [newBalanceKey]: balance - price, energy: Math.min(state.energy + amount, state.maxEnergy) });
                 }
             } else if (isSkin) {
                 const owned = [...(state.ownedSkins || ['default'])];

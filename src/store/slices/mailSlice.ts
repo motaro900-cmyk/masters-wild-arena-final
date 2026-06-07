@@ -118,12 +118,14 @@ export const createMailSlice = (set: any, get: any) => ({
 
     collectAllMailRewards: () => {
         const mails = get().mail;
+        const collectedIds = new Set<string>();
         let totalGold = 0;
         let totalCrystals = 0;
         let totalEnergy = 0;
 
         mails.forEach((m: any) => {
             if (m.tab === 'INBOX' && m.rewards) {
+                collectedIds.add(m.id);
                 m.rewards.forEach((r: any) => {
                     if (r.type === 'GOLD') totalGold += r.amount;
                     if (r.type === 'CRYSTALS') totalCrystals += r.amount;
@@ -140,18 +142,15 @@ export const createMailSlice = (set: any, get: any) => ({
         if (totalEnergy > 0) get().addEnergy(totalEnergy);
 
         set((state: any) => ({
-            mail: state.mail.map((m: any) => (m.tab === 'INBOX' ? { ...m, rewards: null, isRead: true } : m)),
+            mail: state.mail.map((m: any) => (collectedIds.has(m.id) ? { ...m, rewards: null, isRead: true } : m)),
         }));
 
         const store = get();
         const userId = SyncService.getPrefixedUserId(store.vkUser, store.playerId);
-        if (userId) {
-            mails.forEach((m: any) => {
-                if (m.tab === 'INBOX' && m.rewards) {
-                    syncService.updateMail(userId, m.id, { rewards: null, isRead: true }).catch((e: any) => {
-                        console.error('[MailSlice] collectAllMailRewards item failed:', e);
-                    });
-                }
+        if (userId && collectedIds.size > 0) {
+            const idsArray = Array.from(collectedIds);
+            syncService.updateMultipleMails(userId, idsArray, { rewards: null, isRead: true }).catch((e: any) => {
+                console.error('[MailSlice] collectAllMailRewards batch update failed:', e);
             });
         }
     },

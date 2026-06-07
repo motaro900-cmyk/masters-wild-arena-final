@@ -97,11 +97,10 @@ export const SkinsView = ({ hero }: { hero: any }) => {
                         position: 'relative',
                         zIndex: 3,
                         width: '100%',
-                        background: 'rgba(12,10,8,0.9)',
+                        background: 'linear-gradient(180deg, #100d0a 0%, #080605 100%)',
                         border: `1px solid ${rarityColors[displaySkin?.rarity] || 'rgba(255,255,255,0.1)'}44`,
                         borderRadius: '16px',
                         padding: '16px 18px',
-                        backdropFilter: 'blur(12px)',
                     }}
                 >
                     <div

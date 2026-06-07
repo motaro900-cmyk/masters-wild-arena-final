@@ -4,7 +4,6 @@ import { DndContext } from '@dnd-kit/core';
 
 import { useGameStore } from '../../../../store/useGameStore';
 import { HEROES_DB } from '../../../../configs/HeroesConfig';
-import { AssetsMap } from '../../../../configs/AssetsMap';
 
 import { SceneTab } from './types';
 import { rarityColors } from './constants/roleIcons';
@@ -156,26 +155,24 @@ export const HeroScene: React.FC = () => {
                     style={{
                         width: isMobile ? '100%' : '1920px',
                         height: isMobile ? '100%' : '1080px',
-                        backgroundImage: `url("${isMobile ? AssetsMap.BACKGROUNDS.HEROES_HALL_MOBILE : AssetsMap.BACKGROUNDS.HEROES_HALL}")`,
-                        backgroundSize: 'cover',
-                        backgroundPosition: 'center',
+                        background: `radial-gradient(circle at 50% 25%, ${
+                            selectedHero.rarity === 'LEGENDARY'
+                                ? 'rgba(245, 158, 11, 0.42)'
+                                : selectedHero.rarity === 'MYTHIC'
+                                  ? 'rgba(239, 68, 68, 0.35)'
+                                  : selectedHero.rarity === 'EPIC'
+                                    ? 'rgba(168, 85, 247, 0.35)'
+                                    : selectedHero.rarity === 'RARE'
+                                      ? 'rgba(59, 130, 246, 0.35)'
+                                      : 'rgba(240, 192, 64, 0.30)'
+                        } 0%, #201814 35%, #140e0b 70%, #0a0705 100%)`,
                         display: 'flex',
                         flexDirection: 'column',
                         overflow: 'hidden',
                         position: 'relative',
+                        transition: 'background 0.5s ease-in-out',
                     }}
                 >
-                    <div
-                        style={{
-                            position: 'absolute',
-                            inset: 0,
-                            background: 'rgba(10, 8, 5, 0.65)',
-                            backdropFilter: 'blur(4px)',
-                            pointerEvents: 'none',
-                            zIndex: 1,
-                        }}
-                    />
-
                     {/* ══════════════════════════════════════════════════════
                          TOP HEADER BAR — full width, like in the reference
                          Shows: ← ГЕРОИ (left)  +  Energy / Gold / Crystals (right)
@@ -183,17 +180,16 @@ export const HeroScene: React.FC = () => {
                     <div
                         style={{
                             position: 'relative',
-                            zIndex: 10,
+                            zIndex: 10000,
                             flexShrink: 0,
                             height: '66px',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'space-between',
                             padding: '0 28px 0 16px',
-                            background: 'linear-gradient(180deg, rgba(10,7,4,0.97) 0%, rgba(10,7,4,0.85) 100%)',
-                            borderBottom: '1px solid rgba(240,192,64,0.18)',
-                            boxShadow: '0 4px 24px rgba(0,0,0,0.6)',
-                            backdropFilter: 'blur(8px)',
+                            background: 'linear-gradient(180deg, #1c1612 0%, #120e0b 100%)',
+                            borderBottom: '1px solid rgba(240, 192, 64, 0.25)',
+                            boxShadow: '0 4px 24px rgba(0, 0, 0, 0.5)',
                         }}
                     >
                         {/* Left: back arrow + ГЕРОИ */}
@@ -222,17 +218,19 @@ export const HeroScene: React.FC = () => {
                                         strokeWidth="2"
                                         strokeLinecap="round"
                                         strokeLinejoin="round"
+                                        style={{ filter: 'drop-shadow(0 0 4px rgba(240, 192, 64, 0.5))' }}
                                     />
                                 </svg>
                             </motion.button>
                             <span
                                 style={{
-                                    color: '#fff',
+                                    color: '#fdfbf7',
                                     fontSize: '22px',
                                     fontWeight: 900,
                                     fontFamily: "'Cinzel', 'Philosopher', serif",
                                     letterSpacing: '3px',
                                     textTransform: 'uppercase',
+                                    textShadow: '0 0 10px rgba(240, 192, 64, 0.2)',
                                 }}
                             >
                                 ГЕРОИ
@@ -274,9 +272,8 @@ export const HeroScene: React.FC = () => {
                                 height: '100%',
                                 display: 'flex',
                                 flexDirection: 'column',
-                                background: 'rgba(15, 12, 10, 0.6)',
-                                backdropFilter: 'blur(2px)',
-                                borderLeft: '1px solid rgba(255, 255, 255, 0.05)',
+                                background: 'rgba(255, 254, 250, 0.04)',
+                                borderLeft: '1px solid rgba(197, 137, 17, 0.15)',
                                 overflow: 'hidden',
                             }}
                         >

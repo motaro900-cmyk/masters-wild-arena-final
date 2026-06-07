@@ -2,7 +2,11 @@
 import React from 'react';
 
 // --- COMMON STYLES ---
-export const contentGrid: React.CSSProperties = { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '25px' };
+export const contentGrid: React.CSSProperties = {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+    gap: '20px',
+};
 export const sectionStyle: React.CSSProperties = {
     background: 'rgba(255,255,255,0.02)',
     padding: '20px',

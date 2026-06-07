@@ -140,10 +140,16 @@ const rawAssetsMap = {
     CHARACTERS: {
         PANDA_AVATAR: '/assets/images/avatars/panda.webp', // was кириллица
         PANDA_FULL: '/assets/images/avatars/panda.webp', // was кириллица
-        PANDA_ATLAS: '/assets/characters/panda/panda_poses.png.webp',
+        PANDA_ATLAS: '/assets/characters/panda/panda_poses.png.png',
+        MINOTAUR_AVATAR: '/assets/characters/minotaur/minotaur_base.png',
+        MINOTAUR_ATLAS: '/assets/characters/minotaur/minotaur_poses.png.png',
+        TIGER_WARRIOR_AVATAR: '/assets/characters/tiger_warrior/tiger_warrior_base.png',
+        TIGER_WARRIOR_ATLAS: '/assets/characters/tiger_warrior/tiger_warrior_poses.png.png',
+        LION_KNIGHT_AVATAR: '/assets/characters/lion_knight/lion_knight_base.png',
+        LION_KNIGHT_ATLAS: '/assets/characters/lion_knight/lion_knight_poses.png.png',
         SKINS: {
-            DEFAULT: '/assets/characters/panda/panda_poses.png.webp',
-            FROST: '/assets/characters/panda/panda_frost_poses.webp',
+            DEFAULT: '/assets/characters/panda/panda_poses.png.png',
+            FROST: '/assets/characters/panda/panda_frost_poses.png',
         },
     },
     ITEMS: {

@@ -99,9 +99,12 @@ export class PixiApp {
                     backgroundColor: 0x000000,
                     backgroundAlpha: 0, // Transparent — let CSS background show through
                     antialias: this.config.antialias,
-                    // Повышаем cap с 2 до 3 — экраны с DPR 2.5-3 (MacBook Pro, высокие мониторы)
-                    // получают рендер в нативном разрешении
-                    resolution: Math.min(window.devicePixelRatio || 1, 3),
+                    resolution:
+                        this.config.resolution === ResolutionType.HIGH
+                            ? Math.min(window.devicePixelRatio || 1, 3)
+                            : this.config.resolution === ResolutionType.MEDIUM
+                              ? Math.min(window.devicePixelRatio || 1, 2)
+                              : 1,
                     autoDensity: true,
                     // Предпочитаем WebGPU — более чёткий рендер без WebGL сглаживания.
                     // Браузер автоматически fallback-ится на WebGL если WebGPU недоступен.
@@ -241,6 +244,20 @@ export class PixiApp {
         // Мы используем фиксированный 1920x1080 и CSS-масштабирование в SafeGameLayout.
         if (!this.pixiApp) return;
         this.pixiApp.renderer.resize(1920, 1080);
+    }
+
+    public setResolution(type: ResolutionType): void {
+        if (!this.pixiApp) return;
+        this.config.resolution = type;
+        const resolution =
+            type === ResolutionType.HIGH
+                ? Math.min(window.devicePixelRatio || 1, 3)
+                : type === ResolutionType.MEDIUM
+                  ? Math.min(window.devicePixelRatio || 1, 2)
+                  : 1;
+
+        this.pixiApp.renderer.resolution = resolution;
+        this.resize();
     }
 
     public static getView(): HTMLCanvasElement | null {

@@ -392,17 +392,6 @@ export const SafeGameLayout = ({ containerRef }: { containerRef: React.RefObject
                     {showItemBuilder && <ItemBuilder onClose={() => setShowItemBuilder(false)} />}
                 </>
             )}
-            {/* SVG Sharpen Filter Definition */}
-            <svg xmlns="http://www.w3.org/2000/svg" style={{ display: 'none' }}>
-                <defs>
-                    <filter id="css-sharpen">
-                        <feConvolveMatrix order="3" kernelMatrix="0 -0.5 0 -0.5 3 -0.5 0 -0.5 0" preserveAlpha={true} />
-                    </filter>
-                    <filter id="css-sharpen-strong">
-                        <feConvolveMatrix order="3" kernelMatrix="0 -1 0 -1 5 -1 0 -1 0" preserveAlpha={true} />
-                    </filter>
-                </defs>
-            </svg>
         </div>
     );
 };

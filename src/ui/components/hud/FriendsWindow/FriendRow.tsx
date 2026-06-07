@@ -55,7 +55,7 @@ export const FriendRow: React.FC<FriendRowProps> = ({
                             height: '100%',
                             borderRadius: 6,
                             overflow: 'hidden',
-                            backgroundImage: `url(${resolveAssetPath(`/assets/images/avatars/${friend.avatar}`)})`,
+                            backgroundImage: `url(${friend.avatar && (friend.avatar.startsWith('http://') || friend.avatar.startsWith('https://')) ? friend.avatar : resolveAssetPath(`/assets/images/avatars/${friend.avatar || 'avatar_1.png'}`)})`,
                             backgroundSize: 'cover',
                             backgroundPosition: 'center',
                         }}
@@ -165,9 +165,9 @@ export const FriendRow: React.FC<FriendRowProps> = ({
                             onClick={() => {
                                 sendGift(friend.id);
                                 // Если это пользователь ВК, отправляем ему еще и сообщение в ЛС
-                                if (friend.id.startsWith('vk-') || friend.vkId) {
+                                if (friend.id.toLowerCase().startsWith('vk-') || friend.vkId) {
                                     sendGameRequest(
-                                        friend.vkId || friend.id.replace('vk-', ''),
+                                        friend.vkId || friend.id.toLowerCase().replace('vk-', ''),
                                         'Я отправил тебе подарок в Masters of the Wild! Заходи скорее!',
                                     );
                                 }

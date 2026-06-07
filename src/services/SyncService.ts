@@ -12,6 +12,7 @@ import {
     onSnapshot,
     deleteDoc,
     where,
+    writeBatch,
 } from 'firebase/firestore';
 import { useGameStore } from '../store/useGameStore';
 import { getVkUserInfo } from '../utils/VKBridge';
@@ -21,10 +22,45 @@ export class SyncService {
     private syncInterval: any = null;
     private syncTimeout: ReturnType<typeof setTimeout> | null = null;
     private writeChain: Promise<any> = Promise.resolve();
+    private pendingActions: string[] = [];
+    private logFlushTimeout: ReturnType<typeof setTimeout> | null = null;
+    // In-memory cache of lastActions — avoids a getDoc READ on every flush
+    private lastActionsCache: string[] = [];
+    private static eventListenersAdded = false;
+    private activeUnsubscribes: (() => void)[] = [];
+    private syncDisabled: boolean = false;
+
+    private trackUnsubscribe(unsub: () => void): () => void {
+        this.activeUnsubscribes.push(unsub);
+        return () => {
+            unsub();
+            this.activeUnsubscribes = this.activeUnsubscribes.filter((u) => u !== unsub);
+        };
+    }
+
+    private async performSyncWithRetry(retries = 3, delay = 1000): Promise<void> {
+        try {
+            await this.performSync();
+        } catch (error) {
+            if (retries > 0) {
+                console.warn(
+                    `[SyncService] Sync failed, retrying in ${delay}ms... Remaining retries: ${retries}`,
+                    error,
+                );
+                await new Promise((resolve) => setTimeout(resolve, delay));
+                return this.performSyncWithRetry(retries - 1, delay * 2);
+            } else {
+                console.error('[SyncService] Sync failed permanently after all retries:', error);
+                throw error;
+            }
+        }
+    }
 
     private constructor() {
-        if (typeof window !== 'undefined') {
+        if (typeof window !== 'undefined' && !SyncService.eventListenersAdded) {
+            SyncService.eventListenersAdded = true;
             const flushSync = () => {
+                if (this.syncDisabled) return;
                 if (this.syncTimeout) {
                     clearTimeout(this.syncTimeout);
                     this.syncTimeout = null;
@@ -68,11 +104,12 @@ export class SyncService {
      * Синхронизирует текущее состояние игрока с Firebase (в порядке очереди)
      */
     public async syncPlayerData(): Promise<void> {
+        if (this.syncDisabled) return Promise.resolve();
         return new Promise<void>((resolve, reject) => {
             this.writeChain = this.writeChain
                 .then(async () => {
                     try {
-                        await this.performSync();
+                        await this.performSyncWithRetry();
                         resolve();
                     } catch (error) {
                         reject(error);
@@ -85,6 +122,10 @@ export class SyncService {
     }
 
     private async performSync(): Promise<void> {
+        if (this.syncDisabled) {
+            console.log('[SyncService] Sync is disabled, skipping performSync');
+            return;
+        }
         const state = useGameStore.getState();
 
         // Если пользователя нет в сторе, пробуем получить его из VK
@@ -115,6 +156,7 @@ export class SyncService {
 
             const selectedHeroId = state.selectedHeroId || 'panda';
             const fullState = {
+                lastSavedTimestamp: state.lastSavedTimestamp || 0,
                 level: state.level,
                 vipLevel: state.vipLevel,
                 vipExp: state.vipExp,
@@ -182,6 +224,9 @@ export class SyncService {
                 lastDailyRefresh: state.lastDailyRefresh,
                 lastWeeklyRefresh: state.lastWeeklyRefresh,
                 lastWeeklyQuestReset: state.lastWeeklyQuestReset,
+                pvpCooldowns: state.pvpCooldowns || {},
+                referralProcessed: state.referralProcessed || false,
+                referredBy: state.referredBy || null,
             };
 
             const isLocalhost =
@@ -219,6 +264,7 @@ export class SyncService {
                     BOOTS: state.heroEquipment?.[selectedHeroId]?.BOOTS || null,
                 },
                 inventory: state.inventory || [],
+                friends: (state.friends || []).map((f: any) => (typeof f === 'object' ? f.id : f)).filter(Boolean),
                 fullStateJSON: JSON.stringify(fullState),
                 isTestPlayer: isLocalhost || state.name === 'Разработчик' || state.name?.toLowerCase().includes('test'),
                 isDeveloper: isLocalhost || state.name === 'Разработчик',
@@ -227,6 +273,7 @@ export class SyncService {
                 vipDaysRemaining,
                 energy: state.energy || 0,
                 maxEnergy: state.maxEnergy || 0,
+                winRate: state.wins && state.totalBattles ? Math.round((state.wins / state.totalBattles) * 100) : 50,
 
                 // Russian legacy keys compatibility:
                 золото: state.gold || 0,
@@ -237,6 +284,7 @@ export class SyncService {
                 имя: state.name || 'Мастер',
                 фото: state.avatar || (vkUser ? vkUser.photo200 || vkUser.photo || '' : ''),
                 инвентарь: state.inventory || [],
+                друзья: (state.friends || []).map((f: any) => (typeof f === 'object' ? f.id : f)).filter(Boolean),
                 снаряжение: {
                     WEAPONS: state.heroEquipment?.[selectedHeroId]?.WEAPONS || null,
                     HELMETS: state.heroEquipment?.[selectedHeroId]?.HELMETS || null,
@@ -256,6 +304,7 @@ export class SyncService {
     }
 
     public debouncedSync(delay = 2000): void {
+        if (this.syncDisabled) return;
         if (this.syncTimeout) {
             clearTimeout(this.syncTimeout);
         }
@@ -263,6 +312,14 @@ export class SyncService {
             this.syncPlayerData();
             this.syncTimeout = null;
         }, delay);
+    }
+
+    public disableSync(): void {
+        this.syncDisabled = true;
+        if (this.syncTimeout) {
+            clearTimeout(this.syncTimeout);
+            this.syncTimeout = null;
+        }
     }
 
     /**
@@ -284,6 +341,14 @@ export class SyncService {
             clearInterval(this.syncInterval);
             this.syncInterval = null;
         }
+        this.activeUnsubscribes.forEach((unsub) => {
+            try {
+                unsub();
+            } catch (e) {
+                console.error('[SyncService] Error during unsubscribe cleanup:', e);
+            }
+        });
+        this.activeUnsubscribes = [];
     }
 
     /**
@@ -313,18 +378,20 @@ export class SyncService {
             const playersRef = collection(db, USERS_COLLECTION);
             const q = query(playersRef, orderBy('былВСети', 'desc'), limit(100));
 
-            return onSnapshot(
-                q,
-                (snapshot: any) => {
-                    const players = snapshot.docs.map((doc: any) => ({
-                        ...doc.data(),
-                        id: doc.id,
-                    }));
-                    callback(players);
-                },
-                (error: any) => {
-                    console.error('[SyncService] All players subscription error:', error);
-                },
+            return this.trackUnsubscribe(
+                onSnapshot(
+                    q,
+                    (snapshot: any) => {
+                        const players = snapshot.docs.map((doc: any) => ({
+                            ...doc.data(),
+                            id: doc.id,
+                        }));
+                        callback(players);
+                    },
+                    (error: any) => {
+                        console.error('[SyncService] All players subscription error:', error);
+                    },
+                ),
             );
         } catch (error) {
             console.error('[SyncService] Failed to set up all players subscription:', error);
@@ -355,6 +422,9 @@ export class SyncService {
                 const mappedKey = mapping[key] || key;
                 updatedData[mappedKey] = data[key];
             }
+
+            // Записываем список измененных полей для дельта-синхронизации клиентом
+            updatedData.adminChangedFields = Object.keys(data);
 
             if (playerSnap.exists()) {
                 const docData = playerSnap.data();
@@ -528,38 +598,40 @@ export class SyncService {
             const playersRef = collection(db, USERS_COLLECTION);
             const q = query(playersRef, orderBy('рейтинг', 'desc'), limit(limitCount + 15));
 
-            return onSnapshot(
-                q,
-                (snapshot: any) => {
-                    const rawPlayers = snapshot.docs.map((doc: any) => ({
-                        id: doc.id,
-                        ...doc.data(),
-                    }));
+            return this.trackUnsubscribe(
+                onSnapshot(
+                    q,
+                    (snapshot: any) => {
+                        const rawPlayers = snapshot.docs.map((doc: any) => ({
+                            id: doc.id,
+                            ...doc.data(),
+                        }));
 
-                    const filtered = rawPlayers
-                        .filter((p: any) => {
-                            const name = p.имя || p.name || '';
-                            const lowerName = name.toLowerCase();
-                            const myId = useGameStore.getState().playerId;
-                            const isMe =
-                                p.id === myId ||
-                                (p.vkId && String(p.vkId) === String(useGameStore.getState().vkUser?.id));
-                            if (isMe) return true;
-                            if (['разработчик', 'test'].some((w) => lowerName.includes(w))) {
-                                return false;
-                            }
-                            if (p.тестовый || p.разработчик) {
-                                return false;
-                            }
-                            return true;
-                        })
-                        .slice(0, limitCount);
+                        const filtered = rawPlayers
+                            .filter((p: any) => {
+                                const name = p.имя || p.name || '';
+                                const lowerName = name.toLowerCase();
+                                const myId = useGameStore.getState().playerId;
+                                const isMe =
+                                    p.id === myId ||
+                                    (p.vkId && String(p.vkId) === String(useGameStore.getState().vkUser?.id));
+                                if (isMe) return true;
+                                if (['разработчик', 'test'].some((w) => lowerName.includes(w))) {
+                                    return false;
+                                }
+                                if (p.тестовый || p.разработчик) {
+                                    return false;
+                                }
+                                return true;
+                            })
+                            .slice(0, limitCount);
 
-                    callback(filtered);
-                },
-                (error: any) => {
-                    console.error('[SyncService] Global leaders subscription error:', error);
-                },
+                        callback(filtered);
+                    },
+                    (error: any) => {
+                        console.error('[SyncService] Global leaders subscription error:', error);
+                    },
+                ),
             );
         } catch (error) {
             console.error('[SyncService] Failed to set up global leaders subscription:', error);
@@ -591,18 +663,20 @@ export class SyncService {
     public subscribeToFriendRequests(userId: string, callback: (requests: any[]) => void): () => void {
         const requestsRef = collection(db, USERS_COLLECTION, userId, 'запросы');
 
-        return onSnapshot(
-            requestsRef,
-            (snapshot: any) => {
-                const requests = snapshot.docs.map((doc: any) => ({
-                    ...doc.data(),
-                    id: doc.id,
-                }));
-                callback(requests);
-            },
-            (error: any) => {
-                console.error('[SyncService] Requests subscription error:', error);
-            },
+        return this.trackUnsubscribe(
+            onSnapshot(
+                requestsRef,
+                (snapshot: any) => {
+                    const requests = snapshot.docs.map((doc: any) => ({
+                        ...doc.data(),
+                        id: doc.id,
+                    }));
+                    callback(requests);
+                },
+                (error: any) => {
+                    console.error('[SyncService] Requests subscription error:', error);
+                },
+            ),
         );
     }
 
@@ -653,6 +727,19 @@ export class SyncService {
      * ПОЛНОСТЬЮ ОЧИЩАЕТ ГЛОБАЛЬНЫЙ ЧАТ (Админская функция)
      */
     public async wipeGlobalChat(): Promise<void> {
+        const state = useGameStore.getState();
+        const isLocalhost =
+            typeof window !== 'undefined' &&
+            (window.location.hostname === 'localhost' ||
+                window.location.hostname === '127.0.0.1' ||
+                window.location.protocol === 'file:');
+        const isDeveloper = isLocalhost || state.name === 'Разработчик';
+
+        if (!isDeveloper) {
+            console.error('[SyncService] Unauthorized attempt to wipe global chat.');
+            return;
+        }
+
         try {
             const chatRef = collection(db, CHAT_COLLECTION);
             const snapshot = await getDocs(chatRef);
@@ -665,73 +752,28 @@ export class SyncService {
     }
 
     /**
-     * ПОЛНОСТЬЮ ОЧИЩАЕТ КОЛЛЕКЦИИ пользователей, чата и отзывов в Firestore (БЕТА-ВАЙП)
-     */
-    public async wipeAllFirestoreCollections(): Promise<void> {
-        try {
-            console.log('[SyncService] Starting full database wipe (Beta Wipe)...');
-
-            // 1. Wipe chat
-            await this.wipeGlobalChat();
-
-            // 2. Wipe отзывы
-            const feedbackRef = collection(db, FEEDBACK_COLLECTION);
-            const feedbackSnap = await getDocs(feedbackRef);
-            const feedbackPromises = feedbackSnap.docs.map((doc) => deleteDoc(doc.ref));
-            await Promise.all(feedbackPromises);
-            console.log(`[SyncService] Wiped ${feedbackSnap.docs.length} feedback documents.`);
-
-            // 3. Wipe пользователи
-            const playersRef = collection(db, USERS_COLLECTION);
-            const playersSnap = await getDocs(playersRef);
-
-            for (const playerDoc of playersSnap.docs) {
-                const userId = playerDoc.id;
-
-                // Delete "запросы" subcollection
-                const requestsRef = collection(db, USERS_COLLECTION, userId, 'запросы');
-                const requestsSnap = await getDocs(requestsRef);
-                const requestsPromises = requestsSnap.docs.map((d) => deleteDoc(d.ref));
-                await Promise.all(requestsPromises);
-
-                // Delete "почта" subcollection
-                const mailRef = collection(db, USERS_COLLECTION, userId, 'почта');
-                const mailSnap = await getDocs(mailRef);
-                const mailPromises = mailSnap.docs.map((d) => deleteDoc(d.ref));
-                await Promise.all(mailPromises);
-
-                // Delete the parent user doc
-                await deleteDoc(playerDoc.ref);
-            }
-            console.log(`[SyncService] Wiped ${playersSnap.docs.length} player accounts and their subcollections.`);
-            console.log('[SyncService] Full database wipe completed successfully.');
-        } catch (error) {
-            console.error('[SyncService] Failed to wipe database:', error);
-            throw error;
-        }
-    }
-
-    /**
      * Подписывается на обновления чата
      */
     public subscribeToChat(callback: (messages: any[]) => void): () => void {
         const chatRef = collection(db, CHAT_COLLECTION);
         const q = query(chatRef, orderBy('serverTimestamp', 'desc'), limit(50));
 
-        return onSnapshot(
-            q,
-            (snapshot: any) => {
-                const messages = snapshot.docs
-                    .map((doc: any) => ({
-                        ...doc.data(),
-                        id: doc.id,
-                    }))
-                    .reverse();
-                callback(messages);
-            },
-            (error: any) => {
-                console.error('[SyncService] Chat subscription error:', error);
-            },
+        return this.trackUnsubscribe(
+            onSnapshot(
+                q,
+                (snapshot: any) => {
+                    const messages = snapshot.docs
+                        .map((doc: any) => ({
+                            ...doc.data(),
+                            id: doc.id,
+                        }))
+                        .reverse();
+                    callback(messages);
+                },
+                (error: any) => {
+                    console.error('[SyncService] Chat subscription error:', error);
+                },
+            ),
         );
     }
 
@@ -801,18 +843,20 @@ export class SyncService {
         const mailRef = collection(db, USERS_COLLECTION, userId, 'почта');
         const q = query(mailRef, orderBy('timestamp', 'desc'), limit(50));
 
-        return onSnapshot(
-            q,
-            (snapshot: any) => {
-                const mails = snapshot.docs.map((doc: any) => ({
-                    ...doc.data(),
-                    id: doc.id,
-                }));
-                callback(mails);
-            },
-            (error: any) => {
-                console.error('[SyncService] Mail subscription error:', error);
-            },
+        return this.trackUnsubscribe(
+            onSnapshot(
+                q,
+                (snapshot: any) => {
+                    const mails = snapshot.docs.map((doc: any) => ({
+                        ...doc.data(),
+                        id: doc.id,
+                    }));
+                    callback(mails);
+                },
+                (error: any) => {
+                    console.error('[SyncService] Mail subscription error:', error);
+                },
+            ),
         );
     }
 
@@ -822,16 +866,18 @@ export class SyncService {
     public subscribeToOwnProfile(userId: string, callback: (data: any) => void): () => void {
         const playerRef = doc(db, USERS_COLLECTION, userId);
 
-        return onSnapshot(
-            playerRef,
-            (snapshot: any) => {
-                if (snapshot.exists()) {
-                    callback(snapshot.data());
-                }
-            },
-            (error: any) => {
-                console.error('[SyncService] Own profile subscription error:', error);
-            },
+        return this.trackUnsubscribe(
+            onSnapshot(
+                playerRef,
+                (snapshot: any) => {
+                    if (snapshot.exists()) {
+                        callback(snapshot.data());
+                    }
+                },
+                (error: any) => {
+                    console.error('[SyncService] Own profile subscription error:', error);
+                },
+            ),
         );
     }
 
@@ -866,8 +912,156 @@ export class SyncService {
     }
 
     /**
+     * Обновляет несколько писем с использованием Batch (атомарно)
+     */
+    public async updateMultipleMails(userId: string, mailIds: string[], updates: Partial<any>): Promise<void> {
+        try {
+            const batch = writeBatch(db);
+            mailIds.forEach((mailId) => {
+                const mailRef = doc(db, USERS_COLLECTION, userId, 'почта', mailId);
+                batch.set(mailRef, updates, { merge: true });
+            });
+            await batch.commit();
+        } catch (error) {
+            console.error('[SyncService] Failed to update multiple mails:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Находит prefixed ID игрока по его нику
+     */
+    public async getPlayerIdByName(name: string): Promise<string | null> {
+        try {
+            const playersRef = collection(db, USERS_COLLECTION);
+            const qName = query(playersRef, where('name', '==', name));
+            const snap = await getDocs(qName);
+            if (!snap.empty) {
+                return snap.docs[0].id;
+            }
+            const qLegacy = query(playersRef, where('имя', '==', name));
+            const snapLegacy = await getDocs(qLegacy);
+            if (!snapLegacy.empty) {
+                return snapLegacy.docs[0].id;
+            }
+            return null;
+        } catch (error) {
+            console.error('[SyncService] Failed to find player by name:', error);
+            return null;
+        }
+    }
+
+    /**
+     * Отправляет личное сообщение (дублируя в ветку отправителя и получателя)
+     */
+    public async sendPrivateMessage(senderId: string, recipientId: string, message: any): Promise<void> {
+        try {
+            const senderPrivateRef = doc(collection(db, USERS_COLLECTION, senderId, 'личные_сообщения'));
+            const msgId = senderPrivateRef.id;
+            const payload = {
+                ...message,
+                id: msgId,
+                serverTimestamp: serverTimestamp(),
+            };
+            await setDoc(senderPrivateRef, payload);
+
+            if (senderId !== recipientId) {
+                const recipientPrivateRef = doc(db, USERS_COLLECTION, recipientId, 'личные_сообщения', msgId);
+                await setDoc(recipientPrivateRef, payload);
+            }
+        } catch (error) {
+            console.error('[SyncService] Failed to send private message:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Подписывается на личные сообщения игрока
+     */
+    public subscribeToPrivateMessages(userId: string, callback: (messages: any[]) => void): () => void {
+        const privateChatRef = collection(db, USERS_COLLECTION, userId, 'личные_сообщения');
+        const q = query(privateChatRef, orderBy('serverTimestamp', 'desc'), limit(50));
+
+        return this.trackUnsubscribe(
+            onSnapshot(
+                q,
+                (snapshot: any) => {
+                    const messages = snapshot.docs
+                        .map((doc: any) => ({
+                            ...doc.data(),
+                            id: doc.id,
+                        }))
+                        .reverse();
+                    callback(messages);
+                },
+                (error: any) => {
+                    console.error('[SyncService] Private chat subscription error:', error);
+                },
+            ),
+        );
+    }
+
+    /**
+     * Подписывается на клановый чат
+     */
+    public subscribeToClanChat(clanId: string, callback: (messages: any[]) => void): () => void {
+        const chatRef = collection(db, CHAT_COLLECTION);
+        const q = query(chatRef, where('clanId', '==', clanId));
+
+        return this.trackUnsubscribe(
+            onSnapshot(
+                q,
+                (snapshot: any) => {
+                    const messages = snapshot.docs
+                        .map((doc: any) => ({
+                            ...doc.data(),
+                            id: doc.id,
+                        }))
+                        .sort((a: any, b: any) => (a.timestamp || 0) - (b.timestamp || 0));
+                    callback(messages);
+                },
+                (error: any) => {
+                    console.error('[SyncService] Clan chat subscription error:', error);
+                },
+            ),
+        );
+    }
+
+    /**
      * Загружает данные игрока из Firebase (восстановление при перезагрузке)
      */
+    public async resolveFriendProfiles(friendIds: string[]): Promise<any[]> {
+        if (!friendIds || friendIds.length === 0) return [];
+        try {
+            const sanitizedIds = friendIds.map((id: any) => (typeof id === 'object' ? id.id : id)).filter(Boolean);
+            const promises = sanitizedIds.map(async (id) => {
+                const docRef = doc(db, USERS_COLLECTION, id);
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    const wasOnlineVal = data.wasOnline || data.былВСети;
+                    const lastSeenTime = wasOnlineVal?.toMillis ? wasOnlineVal.toMillis() : wasOnlineVal || 0;
+                    const now = Date.now();
+                    const fiveMinutes = 5 * 60 * 1000;
+                    return {
+                        id: docSnap.id,
+                        name: data.name || data.имя || 'Мастер',
+                        avatar: data.avatar || data.фото || 'avatar_1.png',
+                        level: data.level || data.уровень || 1,
+                        online: now - lastSeenTime < fiveMinutes,
+                        lastSeen: lastSeenTime,
+                    };
+                }
+                return null;
+            });
+            const results = await Promise.all(promises);
+            return results.filter((f) => f !== null) as any[];
+        } catch (error) {
+            console.error('[SyncService] Failed to resolve friend profiles:', error);
+            return [];
+        }
+    }
+
     public async loadPlayerData(userId: string): Promise<any | null> {
         try {
             const playerRef = doc(db, USERS_COLLECTION, userId);
@@ -875,11 +1069,41 @@ export class SyncService {
 
             if (playerSnap.exists()) {
                 const data = playerSnap.data();
+                const wasOnlineMs =
+                    data.wasOnline && typeof data.wasOnline.toMillis === 'function'
+                        ? data.wasOnline.toMillis()
+                        : data.wasOnline?.seconds
+                          ? data.wasOnline.seconds * 1000
+                          : data.былВСети && typeof data.былВСети.toMillis === 'function'
+                            ? data.былВСети.toMillis()
+                            : data.былВСети?.seconds
+                              ? data.былВСети.seconds * 1000
+                              : 0;
+
+                const dbFriendIds = (data.friends || [])
+                    .map((f: any) => (typeof f === 'object' ? f.id : f))
+                    .filter(Boolean);
+                let resolvedFriends: any[] = [];
+                if (dbFriendIds.length > 0) {
+                    resolvedFriends = await this.resolveFriendProfiles(dbFriendIds);
+                }
+
                 if (data.полноеСостояниеJSON) {
                     try {
                         const parsed = JSON.parse(data.полноеСостояниеJSON);
+                        const oldFriends = parsed.friends || [];
+                        const mergedFriends = resolvedFriends.map((rf) => {
+                            const oldFriend = oldFriends.find((of: any) => of.id === rf.id);
+                            return {
+                                ...rf,
+                                giftSent: oldFriend ? !!oldFriend.giftSent : false,
+                                hasGift: oldFriend ? !!oldFriend.hasGift : false,
+                            };
+                        });
+                        parsed.friends = mergedFriends;
                         return {
                             ...parsed,
+                            wasOnlineMs,
                             status: data.status || 'ONLINE',
                             banReason: data.banReason || '',
                             banUntil: data.banUntil || '',
@@ -896,9 +1120,19 @@ export class SyncService {
                 if (data.fullStateJSON) {
                     try {
                         const parsed = JSON.parse(data.fullStateJSON);
+                        const oldFriends = parsed.friends || [];
+                        const mergedFriends = resolvedFriends.map((rf) => {
+                            const oldFriend = oldFriends.find((of: any) => of.id === rf.id);
+                            return {
+                                ...rf,
+                                giftSent: oldFriend ? !!oldFriend.giftSent : false,
+                                hasGift: oldFriend ? !!oldFriend.hasGift : false,
+                            };
+                        });
+                        parsed.friends = mergedFriends;
                         return {
                             ...parsed,
-                            // onboardingCompleted берём из сохранённого состояния
+                            wasOnlineMs,
                         };
                     } catch (e) {
                         console.error('[SyncService] Failed to parse legacy fullStateJSON:', e);
@@ -958,56 +1192,55 @@ export class SyncService {
     }
 
     /**
-     * Записывает действие игрока в Firestore для живого наблюдения (Spectator Mode)
+     * Записывает действие игрока в Firestore для живого наблюдения (Spectator Mode) с буферизацией
      */
     public async logPlayerAction(actionText: string): Promise<void> {
-        return new Promise<void>((resolve, reject) => {
+        const timestamp = new Date().toLocaleTimeString([], {
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+        });
+        this.pendingActions.push(`[${timestamp}] ${actionText}`);
+        this.scheduleLogFlush();
+    }
+
+    private scheduleLogFlush(): void {
+        if (this.logFlushTimeout) return;
+        this.logFlushTimeout = setTimeout(async () => {
+            this.logFlushTimeout = null;
+            if (this.pendingActions.length === 0) return;
+
+            const actionsToFlush = [...this.pendingActions];
+            this.pendingActions = [];
+
+            const state = useGameStore.getState();
+            const userId = SyncService.getPrefixedUserId(state.vkUser, state.playerId);
+            if (!userId) return;
+
             this.writeChain = this.writeChain
                 .then(async () => {
                     try {
-                        await this.performLogPlayerAction(actionText);
-                        resolve();
+                        const playerRef = doc(db, USERS_COLLECTION, userId);
+                        // Объединяем кешированные действия с новыми и обрезаем до 15 — без лишнего getDoc
+                        const merged = [...this.lastActionsCache, ...actionsToFlush].slice(-15);
+                        this.lastActionsCache = merged;
+
+                        await setDoc(
+                            playerRef,
+                            {
+                                lastActions: merged,
+                                wasOnline: serverTimestamp(),
+                            },
+                            { merge: true },
+                        );
                     } catch (error) {
-                        reject(error);
+                        console.error('[SyncService] Failed to flush action logs:', error);
                     }
                 })
                 .catch(() => {
                     // Предотвращаем прерывание очереди
                 });
-        });
-    }
-
-    private async performLogPlayerAction(actionText: string): Promise<void> {
-        const state = useGameStore.getState();
-        const userId = SyncService.getPrefixedUserId(state.vkUser, state.playerId);
-        if (!userId) return;
-
-        try {
-            const playerRef = doc(db, USERS_COLLECTION, userId);
-            const playerSnap = await getDoc(playerRef);
-            if (playerSnap.exists()) {
-                const data = playerSnap.data();
-                const actions = data.lastActions || data.последниеДействия || [];
-                const timestamp = new Date().toLocaleTimeString([], {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    second: '2-digit',
-                });
-                const newActions = [...actions, `[${timestamp}] ${actionText}`].slice(-15);
-
-                await setDoc(
-                    playerRef,
-                    {
-                        lastActions: newActions,
-                        wasOnline: serverTimestamp(),
-                    },
-                    { merge: true },
-                );
-            }
-        } catch (error) {
-            console.error('[SyncService] Failed to log player action:', error);
-            throw error;
-        }
+        }, 5000);
     }
 }
 

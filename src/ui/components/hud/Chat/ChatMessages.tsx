@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useGameStore } from '../../../../store/useGameStore';
 
 interface ChatMessagesProps {
     filteredMessages: any[];
@@ -9,6 +10,8 @@ interface ChatMessagesProps {
     hasNewMessages: boolean;
     setHasNewMessages: (val: boolean) => void;
     openContextMenu: (e: React.MouseEvent, author: string) => void;
+    privateRecipient: string | null;
+    setPrivateRecipient: (recipient: string | null) => void;
 }
 
 export const ChatMessages: React.FC<ChatMessagesProps> = ({
@@ -19,6 +22,8 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
     hasNewMessages,
     setHasNewMessages,
     openContextMenu,
+    privateRecipient,
+    setPrivateRecipient,
 }) => {
     const formatTime = (ts: number) => {
         const date = new Date(ts);
@@ -27,6 +32,9 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
 
     const formatMessageText = (text: string) => {
         if (text.startsWith('/w ')) {
+            if (text.includes(':')) {
+                return text.substring(text.indexOf(':') + 1).trim();
+            }
             return text.replace(/^\/w\s+\S+\s+/, '');
         }
         return text;
@@ -88,7 +96,163 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
                 )}
             </AnimatePresence>
 
-            {filteredMessages.length === 0 && activeChatTab === 'private' && (
+            {activeChatTab === 'private' &&
+                !privateRecipient &&
+                (() => {
+                    const { privateMessages, name: myName } = useGameStore.getState();
+                    const getPartnerName = (msg: any, nameOfMe: string) => {
+                        if (msg.author && msg.author !== nameOfMe && msg.author !== 'СИСТЕМА') {
+                            return msg.author;
+                        }
+                        if (msg.recipientName) {
+                            return msg.recipientName;
+                        }
+                        // Fallback parser for '/w Name text'
+                        if (msg.text && msg.text.startsWith('/w ')) {
+                            const colonMatch = msg.text.match(/^\/w\s+([^:]+?)\s*:/i);
+                            if (colonMatch) return colonMatch[1].trim();
+                            const spaceMatch = msg.text.match(/^\/w\s+(\S+)/i);
+                            if (spaceMatch) return spaceMatch[1].trim();
+                        }
+                        return null;
+                    };
+
+                    const partnersMap = new Map<string, { lastText: string; timestamp: number; avatar: string }>();
+                    privateMessages.forEach((msg: any) => {
+                        const partner = getPartnerName(msg, myName || 'Мастер');
+                        if (partner && partner !== (myName || 'Мастер')) {
+                            const existing = partnersMap.get(partner);
+                            if (!existing || existing.timestamp < msg.timestamp) {
+                                partnersMap.set(partner, {
+                                    lastText: msg.text,
+                                    timestamp: msg.timestamp,
+                                    avatar: msg.avatar || '/assets/images/avatars/panda.webp',
+                                });
+                            }
+                        }
+                    });
+
+                    const partners = Array.from(partnersMap.entries())
+                        .map(([name, data]) => ({
+                            name,
+                            ...data,
+                        }))
+                        .sort((a, b) => b.timestamp - a.timestamp);
+
+                    if (partners.length === 0) {
+                        return (
+                            <div
+                                style={{
+                                    flex: 1,
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    opacity: 0.3,
+                                    gap: '15px',
+                                    marginTop: '40px',
+                                }}
+                            >
+                                <span style={{ fontSize: '40px' }}>💬</span>
+                                <span
+                                    style={{
+                                        fontSize: '12px',
+                                        fontWeight: 800,
+                                        fontFamily: "'Cinzel', serif",
+                                        textAlign: 'center',
+                                        letterSpacing: '1px',
+                                    }}
+                                >
+                                    НЕТ АКТИВНЫХ ДИАЛОГОВ
+                                    <br />
+                                    ОТПРАВЬТЕ СООБЩЕНИЕ /w ИМЯ
+                                </span>
+                            </div>
+                        );
+                    }
+
+                    return (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            {partners.map((partner) => (
+                                <motion.div
+                                    key={partner.name}
+                                    whileHover={{ scale: 1.02, x: 5 }}
+                                    whileTap={{ scale: 0.98 }}
+                                    onClick={() => setPrivateRecipient(partner.name)}
+                                    style={{
+                                        background: 'rgba(255,255,255,0.03)',
+                                        border: '1px solid rgba(240, 192, 64, 0.15)',
+                                        borderRadius: '10px',
+                                        padding: '10px 12px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '12px',
+                                        cursor: 'pointer',
+                                        transition: 'border-color 0.2s',
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        e.currentTarget.style.borderColor = 'rgba(240, 192, 64, 0.4)';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        e.currentTarget.style.borderColor = 'rgba(240, 192, 64, 0.15)';
+                                    }}
+                                >
+                                    <div
+                                        style={{
+                                            width: 36,
+                                            height: 36,
+                                            borderRadius: '50%',
+                                            border: '1px solid rgba(240, 192, 64, 0.4)',
+                                            overflow: 'hidden',
+                                            flexShrink: 0,
+                                        }}
+                                    >
+                                        <img
+                                            src={partner.avatar}
+                                            alt="avatar"
+                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                        />
+                                    </div>
+                                    <div style={{ flex: 1, minWidth: 0 }}>
+                                        <div
+                                            style={{
+                                                color: '#f0c040',
+                                                fontWeight: 800,
+                                                fontSize: '13px',
+                                                fontFamily: "'Cinzel', serif",
+                                                marginBottom: '2px',
+                                            }}
+                                        >
+                                            {partner.name}
+                                        </div>
+                                        <div
+                                            style={{
+                                                color: '#a8a8a8',
+                                                fontSize: '11px',
+                                                whiteSpace: 'nowrap',
+                                                overflow: 'hidden',
+                                                textOverflow: 'ellipsis',
+                                            }}
+                                        >
+                                            {formatMessageText(partner.lastText)}
+                                        </div>
+                                    </div>
+                                    <div
+                                        style={{
+                                            fontSize: '9px',
+                                            color: 'rgba(255,255,255,0.3)',
+                                            fontFamily: 'monospace',
+                                        }}
+                                    >
+                                        {formatTime(partner.timestamp)}
+                                    </div>
+                                </motion.div>
+                            ))}
+                        </div>
+                    );
+                })()}
+
+            {filteredMessages.length === 0 && activeChatTab === 'private' && privateRecipient && (
                 <div
                     style={{
                         flex: 1,
@@ -111,9 +275,9 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
                             letterSpacing: '1px',
                         }}
                     >
-                        ВЫБЕРИТЕ ИГРОКА
+                        ИСТОРИЯ ДИАЛОГА ПУСТА
                         <br />
-                        ЧТОБЫ НАЧАТЬ ДИАЛОГ
+                        НАПИШИТЕ СООБЩЕНИЕ НИЖЕ
                     </span>
                 </div>
             )}

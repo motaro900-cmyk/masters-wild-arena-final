@@ -9,7 +9,12 @@ const RESOURCES = [
 ];
 
 export const ResourceBar: React.FC<{ onOpenShop?: (tab: string) => void }> = ({ onOpenShop }) => {
-    const { gold, crystals, energy, maxEnergy, lastEnergyUpdate, regenerateEnergy } = useGameStore();
+    const gold = useGameStore((s) => s.gold);
+    const crystals = useGameStore((s) => s.crystals);
+    const energy = useGameStore((s) => s.energy);
+    const maxEnergy = useGameStore((s) => s.maxEnergy);
+    const lastEnergyUpdate = useGameStore((s) => s.lastEnergyUpdate);
+    const regenerateEnergy = useGameStore((s) => s.regenerateEnergy);
     const [hoveredRes, setHoveredRes] = useState<string | null>(null);
     const [timeLeft, setTimeLeft] = useState<{ next: string; full: string } | null>(null);
 
@@ -69,7 +74,7 @@ export const ResourceBar: React.FC<{ onOpenShop?: (tab: string) => void }> = ({ 
                         alignItems: 'center',
                         padding: '0 6px',
                         cursor: 'default',
-                        filter: 'url(#css-sharpen) contrast(1.3) saturate(1.2) brightness(1.0) hue-rotate(5deg)',
+                        filter: 'contrast(1.3) saturate(1.2) brightness(1.0) hue-rotate(5deg)',
                     }}
                 >
                     {/* Tooltip для энергии */}

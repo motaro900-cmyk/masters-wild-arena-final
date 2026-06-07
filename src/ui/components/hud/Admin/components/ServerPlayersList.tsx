@@ -42,6 +42,7 @@ export const ServerPlayersList: React.FC<ServerPlayersListProps> = ({
 
     return (
         <div
+            className="h-[400px] lg:h-full"
             style={{
                 background: '#0a0a0a',
                 border: '1px solid #222',

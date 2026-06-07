@@ -140,6 +140,51 @@ export const ABILITY_REGISTRY: Record<string, HeroAbilityConfig> = {
         attackPassive: { chance: 0.25, status: 'FREEZE', duration: 2 },
     },
 
+    minotaur: {
+        heroId: 'minotaur',
+        activeAbility: {
+            name: 'Молот Лабиринта',
+            damageMultiplier: 1.8,
+            shieldPercent: 0.25,
+            onCastStatus: { target: 'player', type: 'STUN_IMMUNITY', duration: 2 },
+        },
+        attackPassive: { chance: 0.25, status: 'STUN', duration: 1 },
+    },
+
+    tiger_warrior: {
+        heroId: 'tiger_warrior',
+        activeAbility: {
+            name: 'Лунное Сечение',
+            damageMultiplier: 3.2,
+            onCastStatus: { target: 'enemy', type: 'SHADOW_MARK', duration: 1 },
+        },
+        attackPassive: { chance: 0.35, status: 'SHADOW_MARK', duration: 1 },
+        passive: {
+            onDealDamage: (ctx) => {
+                const hasMark = ctx.victim.statusEffects?.some((s: any) => s.type === 'SHADOW_MARK');
+                if (hasMark) {
+                    const agi = ctx.attacker.config?.stats?.agility || 24;
+                    const modifier = 1.0 + agi * 0.05;
+                    return {
+                        damageModifier: modifier,
+                        extraLog: `🌑 [МЕТКА ТЕНЕЙ] Удар усилен ×${modifier.toFixed(2)}!`,
+                    };
+                }
+                return {};
+            },
+        },
+    },
+
+    lion_knight: {
+        heroId: 'lion_knight',
+        activeAbility: {
+            name: 'Королевский Гнев',
+            damageMultiplier: 2.4,
+            onCastStatus: { target: 'player', type: 'NATURE_REGEN', duration: 3 },
+        },
+        attackPassive: { chance: 0.3, status: 'BURN', duration: 2, damagePercent: 0.1 },
+    },
+
     // ── 5 НОВЫХ ПЕРСОНАЖЕЙ ──────────────────────────────────────────────────
 
     /**

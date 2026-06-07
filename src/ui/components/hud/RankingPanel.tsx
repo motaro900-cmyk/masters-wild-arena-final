@@ -30,7 +30,7 @@ export const RankingPanel: React.FC<RankingPanelProps> = ({ onClose, onStartSear
         >
             {/* ИСПОЛЬЗУЕМ ПРАВИЛЬНЫЙ СПРАЙТ ПЕРГАМЕНТА */}
             <div style={{ position: 'relative', width: '600px', height: '700px' }}>
-                <img src={resolveAssetPath('/assets/images/ui/btn_panel_mis12c.png')} alt="ranking parchment" />
+                <img src={resolveAssetPath('/assets/images/ui/btn_panel_mis12c.webp')} alt="ranking parchment" />
 
                 {/* КОНТЕНТ ПОВЕРХ ПЕРГАМЕНТА */}
                 <div

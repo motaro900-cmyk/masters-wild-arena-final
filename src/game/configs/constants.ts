@@ -1,9 +1,9 @@
 // src/game/configs/constants.ts
 export const ENERGY_CONFIG = {
-    REGEN_MS: 5 * 60 * 1000, // 5 min per 1 energy → full 50 in ~4h 10m
+    REGEN_MS: 2.5 * 60 * 1000, // 2.5 min per 1 energy
     MAX_ENERGY: 50,
     PREMIUM_MAX_ENERGY: 100,
-    PREMIUM_REGEN_MS: 2.5 * 60 * 1000, // 2.5 min per 1 energy for premium (2x speed)
+    PREMIUM_REGEN_MS: 1.25 * 60 * 1000, // 1.25 min per 1 energy for premium (2x speed)
 } as const;
 
 export const BATTLE_CONFIG = {

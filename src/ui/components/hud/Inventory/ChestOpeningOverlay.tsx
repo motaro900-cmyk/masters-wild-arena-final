@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { AssetsMap } from '../../../../configs/AssetsMap';
 import { audioService } from '../../../../services/AudioService';
 import { calculateItemPower } from '../../../../game/configs/ItemsConfig';
-import { RARITY_COLORS, rarityTranslation } from '../InventoryPanel';
+import { RARITY_COLORS, rarityTranslation } from '../../../../configs/RarityConfig';
 
 interface ChestOpeningOverlayProps {
     isOpening: boolean;

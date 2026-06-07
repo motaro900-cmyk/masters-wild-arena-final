@@ -6,6 +6,9 @@ import { getSkinsForHero } from '../../../../../../../configs/SkinsConfig';
 import { resolveAssetPath } from '../../../../../../../utils/assetPath';
 import { RARITY_LABELS, SOURCE_ICONS, deriveStats } from '../utils/heroUtils';
 
+const stoneBrickPattern =
+    "url(\"data:image/svg+xml;utf8,<svg width='60' height='40' viewBox='0 0 60 40' xmlns='http://www.w3.org/2000/svg'><rect width='60' height='40' fill='none'/><line x1='0' y1='20' x2='60' y2='20' stroke='rgba(0,0,0,0.52)' stroke-width='1.5'/><line x1='0' y1='40' x2='60' y2='40' stroke='rgba(0,0,0,0.52)' stroke-width='1.5'/><line x1='30' y1='0' x2='30' y2='20' stroke='rgba(0,0,0,0.52)' stroke-width='1.5'/><line x1='0' y1='20' x2='0' y2='40' stroke='rgba(0,0,0,0.52)' stroke-width='1.5'/><line x1='60' y1='20' x2='60' y2='40' stroke='rgba(0,0,0,0.52)' stroke-width='1.5'/><line x1='0' y1='1.5' x2='60' y2='1.5' stroke='rgba(255,255,255,0.15)' stroke-width='1'/><line x1='0' y1='21.5' x2='60' y2='21.5' stroke='rgba(255,255,255,0.15)' stroke-width='1'/><line x1='31.5' y1='0.8' x2='31.5' y2='19.5' stroke='rgba(255,255,255,0.15)' stroke-width='1'/><line x1='1.5' y1='20.8' x2='1.5' y2='39.5' stroke='rgba(255,255,255,0.15)' stroke-width='1'/><path d='M44,3 L40,7 L42,12 L38,15' stroke='rgba(0,0,0,0.45)' stroke-width='0.8' fill='none'/><path d='M45,3.5 L41,7.5 L43,12.5 L39,15.5' stroke='rgba(255,255,255,0.08)' stroke-width='0.8' fill='none'/><line x1='6' y1='8' x2='20' y2='8' stroke='rgba(0,0,0,0.42)' stroke-width='0.8'/><line x1='6' y1='9' x2='20' y2='9' stroke='rgba(255,255,255,0.08)' stroke-width='0.8'/><path d='M10,23 L13,28 L11,34' stroke='rgba(0,0,0,0.48)' stroke-width='0.9' fill='none'/><path d='M11,23.5 L14,28.5 L12,34.5' stroke='rgba(255,255,255,0.09)' stroke-width='0.9' fill='none'/><path d='M35,33 L48,30 L54,32' stroke='rgba(0,0,0,0.42)' stroke-width='0.8' fill='none'/><path d='M35,34 L48,31 L54,33' stroke='rgba(255,255,255,0.07)' stroke-width='0.8' fill='none'/><circle cx='12' cy='14' r='0.8' fill='rgba(0,0,0,0.45)'/><circle cx='12.5' cy='14.5' r='0.4' fill='rgba(255,255,255,0.08)'/><circle cx='48' cy='26' r='1.2' fill='rgba(0,0,0,0.5)'/><circle cx='48.5' cy='26.5' r='0.6' fill='rgba(255,255,255,0.1)'/></svg>\")";
+
 // ── STAT BOX ROW ─────────────────────────────────────────────────────────────
 function StatBoxRow({
     icon,
@@ -25,10 +28,11 @@ function StatBoxRow({
                 alignItems: 'center',
                 justifyContent: 'space-between',
                 padding: '9px 12px',
-                background: 'rgba(255, 255, 255, 0.02)',
-                border: '1px solid rgba(255, 255, 255, 0.04)',
+                background: 'rgba(18, 14, 11, 0.92)',
+                border: '1.5px solid rgba(240, 192, 64, 0.22)',
                 borderRadius: '10px',
                 gap: '8px',
+                boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.5)',
             }}
         >
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -36,7 +40,7 @@ function StatBoxRow({
                 <span
                     style={{
                         fontSize: '10.5px',
-                        color: 'rgba(255,255,255,0.4)',
+                        color: 'rgba(255, 254, 250, 0.6)',
                         fontFamily: "'Nunito', sans-serif",
                         fontWeight: 700,
                         textTransform: 'uppercase',
@@ -119,27 +123,28 @@ export function HeroDetailPanel({
             style={{
                 width: '100%',
                 height: '100%',
-                background: `radial-gradient(circle at 50% 0%, ${color}0c 0%, transparent 60%), linear-gradient(135deg, rgba(20, 16, 14, 0.95) 0%, rgba(10, 8, 7, 0.99) 100%)`,
-                backdropFilter: 'blur(18px)',
-                borderLeft: '1px solid rgba(240, 192, 64, 0.15)',
+                background: `radial-gradient(circle at 50% 0%, ${color}2d 0%, transparent 65%), ${stoneBrickPattern}, linear-gradient(180deg, rgba(28, 22, 18, 0.99) 0%, rgba(16, 12, 10, 1.0) 100%)`,
+                borderLeft: '1px solid rgba(240, 192, 64, 0.25)',
                 display: 'flex',
                 flexDirection: 'column',
                 overflow: 'hidden',
+                position: 'relative',
             }}
         >
             {/* Header */}
             <div
                 style={{
                     padding: '24px 24px 16px',
-                    borderBottom: '1px solid rgba(255, 255, 255, 0.06)',
-                    background: 'rgba(0, 0, 0, 0.2)',
+                    borderBottom: '1px solid rgba(240, 192, 64, 0.25)',
+                    background: 'linear-gradient(180deg, rgba(26, 20, 16, 0.98) 0%, rgba(18, 14, 11, 1.0) 100%)',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.5)',
                     flexShrink: 0,
                 }}
             >
                 {/* 1. Name */}
                 <div
                     style={{
-                        color: '#fff',
+                        color: '#fdfbf7',
                         fontSize: '28px',
                         fontWeight: 900,
                         fontFamily: "'Cinzel', serif",
@@ -153,7 +158,10 @@ export function HeroDetailPanel({
                 {/* 2. Skin */}
                 <div
                     style={{
-                        color: displaySkin && displaySkin.id !== 'default' ? displaySkin.color || color : '#fff',
+                        color:
+                            displaySkin && displaySkin.id !== 'default'
+                                ? displaySkin.color || color
+                                : 'rgba(255, 254, 250, 0.6)',
                         fontSize: '13px',
                         fontWeight: 800,
                         fontFamily: "'Nunito', sans-serif",
@@ -182,7 +190,7 @@ export function HeroDetailPanel({
                     >
                         {RARITY_LABELS[activeRarity]}
                     </span>
-                    <span style={{ color: 'rgba(255,255,255,0.15)', fontSize: '12px' }}>·</span>
+                    <span style={{ color: 'rgba(255, 254, 250, 0.25)', fontSize: '12px' }}>·</span>
                     <span
                         style={{
                             color: roleInfo.color,
@@ -219,10 +227,11 @@ export function HeroDetailPanel({
                         display: 'flex',
                         alignItems: 'center',
                         gap: '8px',
-                        background: `${roleInfo.bg}44`,
-                        border: `1px solid ${roleInfo.color}33`,
+                        background: 'rgba(18, 14, 11, 0.92)',
+                        border: `1.5px solid ${roleInfo.color}44`,
                         padding: '10px 14px',
                         borderRadius: '12px',
+                        boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.5)',
                     }}
                 >
                     <span style={{ fontSize: '18px' }}>{roleInfo.icon}</span>
@@ -240,7 +249,7 @@ export function HeroDetailPanel({
                         </span>
                         <span
                             style={{
-                                color: 'rgba(255, 255, 255, 0.35)',
+                                color: 'rgba(255, 254, 250, 0.5)',
                                 fontSize: '9px',
                                 fontFamily: "'Nunito', sans-serif",
                                 marginTop: '1px',
@@ -257,7 +266,7 @@ export function HeroDetailPanel({
                         style={{
                             fontSize: '9.5px',
                             fontWeight: 900,
-                            color: 'rgba(255,255,255,0.22)',
+                            color: 'rgba(255, 254, 250, 0.4)',
                             fontFamily: "'Cinzel', serif",
                             letterSpacing: '1.8px',
                             marginBottom: '10px',
@@ -282,7 +291,7 @@ export function HeroDetailPanel({
                         style={{
                             fontSize: '9.5px',
                             fontWeight: 900,
-                            color: 'rgba(255,255,255,0.22)',
+                            color: 'rgba(255, 254, 250, 0.4)',
                             fontFamily: "'Cinzel', serif",
                             letterSpacing: '1.8px',
                             marginBottom: '12px',
@@ -294,7 +303,7 @@ export function HeroDetailPanel({
                         <span>ОБЛИКИ</span>
                         <span
                             style={{
-                                color: 'rgba(255,255,255,0.25)',
+                                color: 'rgba(255, 254, 250, 0.5)',
                                 fontWeight: 700,
                                 fontSize: '9px',
                                 fontFamily: "'Nunito', sans-serif",
@@ -327,8 +336,10 @@ export function HeroDetailPanel({
                                         borderRadius: '12px',
                                         border: isSelectedSkin
                                             ? `2px solid ${sc}`
-                                            : '1.5px solid rgba(255,255,255,0.08)',
-                                        background: isSelectedSkin ? `${sc}12` : 'rgba(6,5,4,0.7)',
+                                            : '1.5px solid rgba(240, 192, 64, 0.2)',
+                                        background: isSelectedSkin
+                                            ? `linear-gradient(135deg, rgba(42, 33, 26, 0.98) 0%, rgba(24, 18, 14, 0.99) 100%)`
+                                            : 'linear-gradient(135deg, rgba(24, 19, 16, 0.98) 0%, rgba(16, 13, 11, 0.99) 100%)',
                                         cursor: 'pointer',
                                         overflow: 'hidden',
                                         position: 'relative',
@@ -346,7 +357,9 @@ export function HeroDetailPanel({
                                             height: '70%',
                                             width: 'auto',
                                             objectFit: 'contain',
-                                            filter: skinOwned ? 'none' : 'grayscale(1) brightness(0.2)',
+                                            filter: skinOwned
+                                                ? 'none'
+                                                : 'grayscale(0.6) sepia(0.4) brightness(0.85) opacity(0.8)',
                                         }}
                                         alt={skin.name}
                                         draggable={false}
@@ -373,22 +386,50 @@ export function HeroDetailPanel({
                                                 flexDirection: 'column',
                                                 alignItems: 'center',
                                                 justifyContent: 'center',
-                                                background: 'rgba(0, 0, 0, 0.4)',
+                                                background:
+                                                    'linear-gradient(180deg, rgba(20, 16, 12, 0.25) 0%, rgba(240, 192, 64, 0.1) 100%)',
                                             }}
                                         >
-                                            <span style={{ fontSize: '18px', marginBottom: '2px' }}>🔒</span>
-                                            <span
+                                            <div
                                                 style={{
-                                                    fontSize: '9px',
-                                                    color: 'rgba(255,255,255,0.4)',
-                                                    fontFamily: "'Nunito', sans-serif",
-                                                    fontWeight: 800,
-                                                    textAlign: 'center',
-                                                    padding: '0 2px',
-                                                    textTransform: 'uppercase',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    width: '18px',
+                                                    height: '18px',
+                                                    borderRadius: '50%',
+                                                    background: 'linear-gradient(135deg, #f5d782 0%, #d59f22 100%)',
+                                                    border: '1px solid #fffdf7',
+                                                    boxShadow: '0 1px 4px rgba(197, 137, 17, 0.3)',
+                                                    marginBottom: '4px',
                                                 }}
                                             >
-                                                {SOURCE_ICONS[skin.source] || '🏆'} БП
+                                                <svg width="8" height="10" viewBox="0 0 10 12" fill="none">
+                                                    <path
+                                                        d="M2.5 4.5V3a2.5 2.5 0 1 1 5 0v1.5M1.5 4.5h7a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1h-7a1 1 0 0 1-1-1v-5a1 1 0 0 1 1-1Z"
+                                                        stroke="#fff"
+                                                        strokeWidth="1.5"
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                    />
+                                                </svg>
+                                            </div>
+                                            <span
+                                                style={{
+                                                    fontSize: '8px',
+                                                    color: '#f0c040',
+                                                    fontFamily: "'Nunito', sans-serif",
+                                                    fontWeight: 900,
+                                                    textAlign: 'center',
+                                                    padding: '1px 4px',
+                                                    textTransform: 'uppercase',
+                                                    background: 'rgba(20, 16, 12, 0.85)',
+                                                    border: '1px solid rgba(240, 192, 64, 0.25)',
+                                                    borderRadius: '4px',
+                                                    letterSpacing: '0.3px',
+                                                }}
+                                            >
+                                                {SOURCE_ICONS[skin.source] || '🏆'} {skin.sourceLabel || 'БП'}
                                             </span>
                                         </div>
                                     )}
@@ -401,15 +442,16 @@ export function HeroDetailPanel({
                     <div
                         style={{
                             marginTop: '10px',
-                            background: 'rgba(255,255,255,0.02)',
+                            background: 'rgba(18, 14, 11, 0.92)',
                             borderRadius: '8px',
                             padding: '8px 10px',
-                            border: '1px solid rgba(255,255,255,0.04)',
+                            border: '1.5px solid rgba(240, 192, 64, 0.25)',
+                            boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.5)',
                         }}
                     >
                         <div
                             style={{
-                                color: displaySkin?.color || '#fff',
+                                color: displaySkin?.color || '#fdfbf7',
                                 fontSize: '11.5px',
                                 fontWeight: 800,
                                 fontFamily: "'Cinzel', serif",
@@ -435,7 +477,7 @@ export function HeroDetailPanel({
                         <p
                             style={{
                                 margin: '4px 0 0',
-                                color: 'rgba(255,255,255,0.4)',
+                                color: 'rgba(255, 254, 250, 0.7)',
                                 fontSize: '9.5px',
                                 fontFamily: "'Nunito', sans-serif",
                                 lineHeight: 1.4,
@@ -455,7 +497,9 @@ export function HeroDetailPanel({
                     marginTop: 'auto',
                     flexShrink: 0,
                     padding: '16px 24px 24px',
-                    borderTop: '1px solid rgba(255,255,255,0.06)',
+                    borderTop: '1px solid rgba(240, 192, 64, 0.25)',
+                    background: 'linear-gradient(360deg, rgba(14, 11, 9, 0.99) 0%, rgba(20, 16, 13, 0.98) 100%)',
+                    boxShadow: '0 -4px 12px rgba(0,0,0,0.5)',
                 }}
             >
                 {isOwned ? (
@@ -564,7 +608,7 @@ export function HeroDetailPanel({
                         <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '2px' }}>
                             <span
                                 style={{
-                                    color: 'rgba(255,255,255,0.35)',
+                                    color: 'rgba(255, 254, 250, 0.5)',
                                     fontSize: '8px',
                                     fontWeight: 800,
                                     fontFamily: "'Nunito', sans-serif",

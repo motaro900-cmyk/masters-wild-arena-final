@@ -8,18 +8,17 @@ interface ProfileBarProps {
 }
 
 export const ProfileBar: React.FC<ProfileBarProps> = ({ onOpenProfile }) => {
-    const store = useGameStore();
-    const avatar = store.avatar || 'панда.png';
-    const frame = store.frame || 'harvest_wheat_frame.webp';
-    const trophies = store.trophies ?? 0;
-    const exp = store.exp ?? 0;
-    const level = store.level ?? 1;
-    const vkUser = store.vkUser;
+    const avatar = useGameStore((s) => s.avatar) || 'панда.png';
+    const frame = useGameStore((s) => s.frame) || 'harvest_wheat_frame.webp';
+    const trophies = useGameStore((s) => s.trophies) ?? 0;
+    const exp = useGameStore((s) => s.exp) ?? 0;
+    const level = useGameStore((s) => s.level) ?? 1;
+    const vkUser = useGameStore((s) => s.vkUser);
+    const name = useGameStore((s) => s.name);
 
     const xpToNextLevel = level * 600;
     const isLevelUpReady = exp >= xpToNextLevel;
-    const xpPercent = Math.min(100, (exp / xpToNextLevel) * 100);
-    const name = store.name;
+    const xpPercent = xpToNextLevel > 0 ? Math.min(100, Math.max(0, (exp / xpToNextLevel) * 100)) : 0;
     const playerName = (name && name !== 'Мастер' ? name : vkUser?.firstName || 'DRAGONSLAYER').toUpperCase();
 
     const getRankData = (tr: number) => {
@@ -54,7 +53,9 @@ export const ProfileBar: React.FC<ProfileBarProps> = ({ onOpenProfile }) => {
         [...[100, 300, 500, 800, 1000, 1200, 1500, 1800, 2000, 2500, 3000, 5000]]
             .reverse()
             .find((t) => t <= trophies) || 0;
-    const trophyProgress = ((trophies - prevRankTrophies) / (nextRankTrophies - prevRankTrophies)) * 100;
+    const divisor = nextRankTrophies - prevRankTrophies;
+    const trophyProgress =
+        divisor > 0 ? Math.min(100, Math.max(0, ((trophies - prevRankTrophies) / divisor) * 100)) : 100;
 
     return (
         <motion.div

@@ -81,10 +81,10 @@ export const ClanWindow: React.FC = () => {
     };
 
     const handleLeave = () => {
-        if (window.confirm('Вы действительно хотите покинуть клан?')) {
+        useGameStore.getState().showConfirm('Вы действительно хотите покинуть клан?', () => {
             leaveClan();
             setView('BROWSE');
-        }
+        });
     };
 
     const handleCreateClan = (name: string, motto: string, emblem: string) => {
@@ -140,7 +140,7 @@ export const ClanWindow: React.FC = () => {
         if (clanCoins < item.price) return setError('Недостаточно клановых монет!');
         addClanCoins(-item.price);
         setError(null);
-        alert(`Куплено: ${item.name}!`);
+        useGameStore.getState().showAlert(`Куплено: ${item.name}!`);
     };
 
     const handleKickMember = (memberName: string) => {

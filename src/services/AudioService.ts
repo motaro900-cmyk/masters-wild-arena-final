@@ -1,36 +1,43 @@
 import { Howl, Howler } from 'howler';
+import { AssetsMap } from '../configs/AssetsMap';
 
 /**
  * AudioService - Централизованное управление музыкой и звуками.
  */
 class AudioService {
+    private static visibilityListenerAdded = false;
+
     private music: Howl | null = null;
     private ambient: Howl | null = null;
     private ambientUrl: string | null = null;
     private sfx: Map<string, Howl> = new Map();
     private musicVolume: number = 0.7;
     private sfxVolume: number = 0.85;
+    private loadErrorTimeoutId: any = null;
 
     constructor() {
-        document.addEventListener('visibilitychange', () => {
-            if (document.hidden) {
-                console.log('🤫 App hidden - Muting audio');
-                Howler.mute(true);
-            } else {
-                console.log('🔊 App visible - Unmuting audio');
-                import('../store/useGameStore')
-                    .then(({ useGameStore }) => {
-                        const isMuted = useGameStore.getState().isMuted;
-                        if (!isMuted) {
+        if (!AudioService.visibilityListenerAdded) {
+            AudioService.visibilityListenerAdded = true;
+            document.addEventListener('visibilitychange', () => {
+                if (document.hidden) {
+                    console.log('🤫 App hidden - Muting audio');
+                    Howler.mute(true);
+                } else {
+                    console.log('🔊 App visible - Unmuting audio');
+                    import('../store/useGameStore')
+                        .then(({ useGameStore }) => {
+                            const isMuted = useGameStore.getState().isMuted;
+                            if (!isMuted) {
+                                Howler.mute(false);
+                            }
+                        })
+                        .catch((err) => {
+                            console.warn('Could not read mute state on visibility change:', err);
                             Howler.mute(false);
-                        }
-                    })
-                    .catch((err) => {
-                        console.warn('Could not read mute state on visibility change:', err);
-                        Howler.mute(false);
-                    });
-            }
-        });
+                        });
+                }
+            });
+        } // end if (!AudioService.visibilityListenerAdded)
         // Run background assets verification check
         this.verifyIntegrity();
     }
@@ -104,6 +111,10 @@ class AudioService {
      * Остановка всей текущей музыки
      */
     public stopAllMusic() {
+        if (this.loadErrorTimeoutId) {
+            clearTimeout(this.loadErrorTimeoutId);
+            this.loadErrorTimeoutId = null;
+        }
         if (this.music) {
             console.log('⏹️ AudioService: Fading out and stopping music');
             const oldMusic = this.music;
@@ -144,7 +155,6 @@ class AudioService {
     public toggleMusic() {
         if (!this.music) {
             // Если музыка еще ни разу не запускалась — стартуем плейлист
-            const { AssetsMap } = window as any;
             if (AssetsMap?.AUDIO?.MUSIC_LIST) {
                 this.playPlaylist(AssetsMap.AUDIO.MUSIC_LIST);
             }
@@ -194,6 +204,11 @@ class AudioService {
             `🎵 AudioService: Attempting to play [${this.currentTrackIndex + 1}/${this.playlist.length}]: ${url}`,
         );
 
+        if (this.loadErrorTimeoutId) {
+            clearTimeout(this.loadErrorTimeoutId);
+            this.loadErrorTimeoutId = null;
+        }
+
         if (this.music) {
             const oldMusic = this.music;
             oldMusic.fade(this.musicVolume, 0, 1000);
@@ -219,7 +234,10 @@ class AudioService {
             },
             onloaderror: (_id, err) => {
                 console.error(`❌ AudioService: Load Error for ${url}:`, err);
-                setTimeout(() => this.nextTrack(), 1000);
+                if (this.loadErrorTimeoutId) {
+                    clearTimeout(this.loadErrorTimeoutId);
+                }
+                this.loadErrorTimeoutId = setTimeout(() => this.nextTrack(), 1000);
             },
             onplayerror: (_id, err) => {
                 console.error(`❌ AudioService: Play Error for ${url}:`, err);
@@ -360,6 +378,13 @@ class AudioService {
     public setSFXVolume(volume: number) {
         this.sfxVolume = volume;
         this.sfx.forEach((sound) => sound.volume(volume));
+    }
+
+    /**
+     * Установка режима тишины (mute) для Howler
+     */
+    public setMuted(muted: boolean) {
+        Howler.mute(muted);
     }
 
     /**

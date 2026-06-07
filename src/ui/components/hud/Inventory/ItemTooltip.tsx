@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { motion } from 'framer-motion';
 import { useGameStore } from '../../../../store/useGameStore';
 import { ITEMS_DATABASE, calculateItemPower } from '../../../../game/configs/ItemsConfig';
-import { RARITY_COLORS, rarityTranslation } from '../InventoryPanel';
+import { RARITY_COLORS, rarityTranslation } from '../../../../configs/RarityConfig';
 
 interface ItemTooltipProps {
     item: { id: string; x: number; y: number };

@@ -1,4 +1,5 @@
 import React from 'react';
+import { resolveAssetPath } from '../utils/assetPath';
 
 export interface AvatarOption {
     id: string;
@@ -117,6 +118,12 @@ export const AVATARS: AvatarOption[] = [
 
 export const AVATAR_FRAMES: AvatarFrameOption[] = [
     {
+        id: 'none',
+        name: 'Стандартная',
+        path: '/assets/images/ui/avatar_frame.png',
+        description: 'Базовая рамка вашего аватара.',
+    },
+    {
         id: 'harvest_wheat_frame.webp',
         name: 'Золотая пшеница',
         path: '/assets/images/frames/harvest_wheat_frame.webp',
@@ -215,13 +222,16 @@ export const TITLES: TitleOption[] = [
 ];
 
 export function getAvatarFramePath(frameId: string): string {
+    if (!frameId || frameId === 'none') {
+        return resolveAssetPath('/assets/images/ui/avatar_frame.png');
+    }
     const frame = AVATAR_FRAMES.find((f) => f.id === frameId);
-    if (frame) return frame.path;
+    if (frame) return resolveAssetPath(frame.path);
     // Fallback parsing
     if (frameId && (frameId.endsWith('.webp') || frameId.startsWith('/'))) {
-        return frameId.startsWith('/') ? frameId : `/assets/images/frames/${frameId}`;
+        return resolveAssetPath(frameId.startsWith('/') ? frameId : `/assets/images/frames/${frameId}`);
     }
-    return '/assets/images/frames/harvest_wheat_frame.webp'; // Default classic gold wheat frame
+    return resolveAssetPath('/assets/images/ui/avatar_frame.png'); // Default basic frame
 }
 
 export function getAvatarFrameStyle(frameId: string): { glowClass: string } {
@@ -233,44 +243,44 @@ export function getAvatarFrameStyle(frameId: string): { glowClass: string } {
         glowClass: frame.glowClass || '',
     };
 }
-
+/* eslint-disable @typescript-eslint/no-unused-vars */
 export function getAvatarImageStyle(avatarPath: string): React.CSSProperties {
-    const isBear = avatarPath && avatarPath.toLowerCase().includes('bear');
+    const isBear =
+        avatarPath && (avatarPath.includes('bear.webp') || avatarPath.includes('bear') || avatarPath === 'bear');
     return {
         width: '100%',
         height: '100%',
         objectFit: 'cover',
-        transform: isBear ? 'scale(0.72) translateY(13px)' : 'scale(1.05)',
+        transform: isBear ? 'scale(1.3)' : 'scale(1.05)',
         transition: 'transform 0.2s',
     };
 }
 
-export function isAvatarUnlocked(avatar: AvatarOption, playerLevel: number, playerVip: number): boolean {
-    if (avatar.requiredLevel && playerLevel < avatar.requiredLevel) return false;
-    if (avatar.requiredVip && playerVip < avatar.requiredVip) return false;
-    return true;
+export function isAvatarUnlocked(avatar: AvatarOption, _playerLevel: number, _playerVip: number): boolean {
+    // Только дефолтный аватар панды разблокирован по умолчанию
+    if (avatar.id === 'panda') return true;
+    return false;
 }
 
 export function isFrameUnlocked(
     frame: AvatarFrameOption,
-    playerLevel: number,
-    playerVip: number,
-    playerTitle: string,
+    _playerLevel: number,
+    _playerVip: number,
+    _playerTitle: string,
 ): boolean {
-    if (frame.requiredLevel && playerLevel < frame.requiredLevel) return false;
-    if (frame.requiredVip && playerVip < frame.requiredVip) return false;
-    if (frame.requiresTitle && playerTitle !== frame.requiresTitle) return false;
-    return true;
+    // Только стандартная рамка разблокирована по умолчанию
+    if (frame.id === 'none') return true;
+    return false;
 }
 
 export function isTitleUnlocked(
     title: TitleOption,
-    playerLevel: number,
-    playerVip: number,
-    playerTrophies: number,
+    _playerLevel: number,
+    _playerVip: number,
+    _playerTrophies: number,
 ): boolean {
-    if (title.requiredLevel && playerLevel < title.requiredLevel) return false;
-    if (title.requiredVip && playerVip < title.requiredVip) return false;
-    if (title.requiredTrophies && playerTrophies < title.requiredTrophies) return false;
-    return true;
+    // Только титул Странника разблокирован по умолчанию
+    if (title.id === 'wanderer') return true;
+    return false;
 }
+/* eslint-enable @typescript-eslint/no-unused-vars */

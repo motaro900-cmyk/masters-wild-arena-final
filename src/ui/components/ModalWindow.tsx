@@ -33,11 +33,14 @@ export const ModalWindow: React.FC<ModalWindowProps> = ({ title, onClose, childr
             <div
                 ref={windowRef}
                 onClick={(e) => e.stopPropagation()} // Блокируем закрытие при клике на само окно
-                className="flex flex-col bg-[#16110d] border-[3px] border-[#8b5cf6] rounded-[24px] shadow-[0_20px_60px_rgba(0,0,0,0.9)] w-[640px] max-w-[95vw] overflow-hidden"
+                className="flex flex-col w-[640px] max-w-[95vw] overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.9)]"
                 style={{
-                    borderColor: '#8b5cf6',
-                    borderImageSource: 'linear-gradient(180deg, #d4b483 0%, #5e4125 100%)',
-                    borderImageSlice: 1,
+                    border: '3px solid transparent',
+                    backgroundImage:
+                        'linear-gradient(#16110d, #16110d), linear-gradient(180deg, #d4b483 0%, #5e4125 100%)',
+                    backgroundOrigin: 'border-box',
+                    backgroundClip: 'padding-box, border-box',
+                    borderRadius: '24px',
                 }}
             >
                 {/* Заголовок */}

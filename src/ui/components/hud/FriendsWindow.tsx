@@ -7,6 +7,7 @@ import { FriendRow } from './FriendsWindow/FriendRow';
 import { FoundPlayerCard } from './FriendsWindow/FoundPlayerCard';
 import { WorldPlayersTab } from './FriendsWindow/WorldPlayersTab';
 import { RewardsTab } from './FriendsWindow/RewardsTab';
+import { useGameStore } from '../../../store/useGameStore';
 
 interface FriendsWindowProps {
     onClose: () => void;
@@ -49,11 +50,11 @@ export const FriendsWindow: React.FC<FriendsWindowProps> = () => {
         if (!foundPlayer) return;
         const ok = await handleSendFriendRequest(foundPlayer.id);
         if (ok) {
-            alert('Запрос в друзья отправлен!');
+            useGameStore.getState().showAlert('Запрос в друзья отправлен!');
             setFoundPlayer(null);
             setSearchQuery('');
         } else {
-            alert('Ошибка при отправке запроса');
+            useGameStore.getState().showAlert('Ошибка при отправке запроса');
         }
     };
 

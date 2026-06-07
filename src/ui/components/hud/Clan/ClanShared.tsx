@@ -72,7 +72,7 @@ export const EMBLEMS = ['lion', 'bear', 'eagle', 'wolf', 'fox', 'tiger', 'dragon
 export const CurrencyIcon: React.FC<{ type: 'GOLD' | 'ALMAZ'; size?: number }> = ({ type, size = 20 }) => (
     <img
         src={resolveAssetPath(
-            type === 'ALMAZ' ? '/assets/images/ui/icons/almaz.png' : '/assets/images/ui/icons/Gold.png',
+            type === 'ALMAZ' ? '/assets/images/ui/icons/almaz.webp' : '/assets/images/ui/icons/Gold.webp',
         )}
         style={{
             width: size,

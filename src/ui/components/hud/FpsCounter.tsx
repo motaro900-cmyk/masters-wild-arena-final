@@ -1,21 +1,34 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { PixiApp } from '../../../engine/core/PixiApp';
 
 export const FpsCounter: React.FC = () => {
-    const [fps, setFps] = useState(0);
+    const containerRef = useRef<HTMLDivElement>(null);
+    const fpsValRef = useRef<HTMLSpanElement>(null);
 
     useEffect(() => {
         let animationId: number;
         const pixiApp = PixiApp.getInstance();
+        let lastUpdate = 0;
 
-        const update = () => {
-            try {
-                const app = pixiApp.getApp();
-                if (app && app.ticker) {
-                    setFps(Math.round(app.ticker.FPS));
+        const update = (timestamp: number) => {
+            // Ограничиваем обновление DOM до 2 раз в секунду (каждые 500мс) для производительности
+            if (timestamp - lastUpdate >= 500) {
+                try {
+                    const app = pixiApp.getApp();
+                    if (app && app.ticker) {
+                        const fps = Math.round(app.ticker.FPS);
+                        if (fpsValRef.current) {
+                            fpsValRef.current.innerText = fps.toString();
+                        }
+                        if (containerRef.current) {
+                            const color = fps < 25 ? '#ff4444' : fps < 50 ? '#ffcc00' : '#44ff44';
+                            containerRef.current.style.color = color;
+                        }
+                    }
+                } catch {
+                    // Engine not ready yet
                 }
-            } catch {
-                // Engine not ready yet
+                lastUpdate = timestamp;
             }
             animationId = requestAnimationFrame(update);
         };
@@ -26,13 +39,14 @@ export const FpsCounter: React.FC = () => {
 
     return (
         <div
+            ref={containerRef}
             style={{
                 position: 'fixed',
                 top: '20px',
                 right: '20px',
                 zIndex: 9999,
                 background: 'rgba(0, 0, 0, 0.7)',
-                color: fps < 25 ? '#ff4444' : fps < 50 ? '#ffcc00' : '#44ff44',
+                color: '#44ff44',
                 padding: '4px 10px',
                 borderRadius: '6px',
                 fontFamily: "'monospace'",
@@ -59,7 +73,9 @@ export const FpsCounter: React.FC = () => {
             >
                 FPS
             </span>
-            <span style={{ minWidth: '25px', textAlign: 'center' }}>{fps}</span>
+            <span ref={fpsValRef} style={{ minWidth: '25px', textAlign: 'center' }}>
+                0
+            </span>
         </div>
     );
 };

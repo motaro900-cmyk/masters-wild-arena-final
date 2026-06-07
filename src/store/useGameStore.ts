@@ -31,10 +31,13 @@ type GameStoreState = {
     isMuted: boolean;
     showSummonOverlay?: boolean;
     setShowSummonOverlay?: (show: boolean) => void;
+    pvpCooldowns?: Record<string, number>;
+    recordAttack?: (targetId: string) => void;
+    lastSavedTimestamp?: number;
     [key: string]: any; // временно — постепенно заменять на строгие типы
 };
 
-export const useGameStore = create<GameStoreState>()(
+const store = create<GameStoreState>()(
     persist(
         (set, get) => ({
             ...createPlayerSlice(set, get),
@@ -49,6 +52,21 @@ export const useGameStore = create<GameStoreState>()(
 
             showSummonOverlay: false,
             setShowSummonOverlay: (show: boolean) => set({ showSummonOverlay: show }),
+
+            pvpCooldowns: {} as Record<string, number>,
+            recordAttack: (targetId: string) => {
+                const now = Date.now();
+                const limitTime = now - 60 * 60 * 1000; // 1 час кулдауна
+                const updated: Record<string, number> = {};
+                const currentCooldowns = get().pvpCooldowns || {};
+                for (const [id, ts] of Object.entries(currentCooldowns)) {
+                    if (typeof ts === 'number' && ts > limitTime) {
+                        updated[id] = ts;
+                    }
+                }
+                updated[targetId] = now;
+                set({ pvpCooldowns: updated });
+            },
 
             activeConfirm: null,
             showConfirm: (message: string, onConfirm: () => void, onCancel?: () => void) => {
@@ -67,6 +85,20 @@ export const useGameStore = create<GameStoreState>()(
                 });
             },
             closeConfirm: () => set({ activeConfirm: null }),
+
+            activeAlert: null,
+            showAlert: (message: string, onOk?: () => void) => {
+                set({
+                    activeAlert: {
+                        message,
+                        onOk: () => {
+                            if (onOk) onOk();
+                            set({ activeAlert: null });
+                        },
+                    },
+                });
+            },
+            closeAlert: () => set({ activeAlert: null }),
 
             get equippedItems() {
                 const currentHeroId = get().selectedHeroId || 'panda';
@@ -187,6 +219,8 @@ export const useGameStore = create<GameStoreState>()(
                 lastWheelSpinTime: state.lastWheelSpinTime,
                 lastDailyGiftClaimedTime: state.lastDailyGiftClaimedTime,
                 mail: state.mail,
+                pvpCooldowns: state.pvpCooldowns,
+                lastSavedTimestamp: state.lastSavedTimestamp,
             }),
             migrate: (persistedState: any, version: number) => {
                 if (version < 22) {
@@ -350,3 +384,15 @@ export const useGameStore = create<GameStoreState>()(
         },
     ),
 );
+
+const originalSetState = store.setState;
+store.setState = (partial: any, replace?: boolean) => {
+    const patch = typeof partial === 'function' ? (partial as any)(store.getState()) : partial;
+    if (patch && !Object.prototype.hasOwnProperty.call(patch, 'lastSavedTimestamp')) {
+        originalSetState({ ...patch, lastSavedTimestamp: Date.now() }, replace);
+    } else {
+        originalSetState(partial, replace);
+    }
+};
+
+export const useGameStore = store;

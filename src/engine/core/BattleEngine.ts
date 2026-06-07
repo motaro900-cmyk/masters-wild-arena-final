@@ -337,7 +337,11 @@ export class BattleEngine {
             await new Promise((r) => setTimeout(r, 2200 / timeScale));
         }
 
-        this.checkCombatEnd();
+        if (this.state.playerHP <= 0 || this.state.enemyHP <= 0) {
+            this.checkCombatEnd();
+        } else {
+            console.log('[BattleEngine] runCombatLoop terminated externally (skip or exit).');
+        }
     }
 
     private checkCombatEnd() {

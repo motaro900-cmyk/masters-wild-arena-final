@@ -64,13 +64,82 @@ export const createBattleSlice = (set: any, get: any) => ({
             level: 1,
             exp: 0,
             rating: 0,
+            gold: 300,
+            crystals: 50,
+            shards: {},
+            energy: 50,
+            maxEnergy: 50,
+            lastEnergyUpdate: Date.now(),
+            vipEndTime: 0,
+            dailyAdWatchesCount: 0,
+            dailyBattles: 0,
+            lastBattleReset: Date.now(),
+            name: 'Мастер',
+            lastNameChange: 0,
+            avatar: 'sprite:sprite-avatar avatar-pos-1',
+            frame: 'harvest_wheat_frame.webp',
+            title: 'Странник',
+            trophies: 0,
+            wins: 0,
+            totalBattles: 0,
+            isPremium: false,
+            claimedRewards: [],
+            claimedSocialRewards: [],
+            usedPromoCodes: [],
+            claimedGifts: [],
+            tutorialStep: 0,
+            canClaimDailyGift: false,
+            lastWheelSpinTime: 0,
+            lastDailyGiftClaimedTime: 0,
+            onboardingCompleted: false,
+            referralProcessed: false,
+            referredBy: null,
+            bpLevel: 1,
+            bpExp: 0,
+            friends: [],
+            friendRequests: [],
+            clanId: null,
+            clanData: null,
+            clanCoins: 0,
+            vipLevel: 0,
+            vipExp: 0,
+            pet: {
+                id: 'baby_dragon',
+                name: 'Дракоша',
+                level: 1,
+                exp: 0,
+                hunger: 100,
+                happiness: 100,
+                lastFed: Date.now(),
+                lastHungerDecay: Date.now(),
+                lastHappinessDecay: Date.now(),
+                petCharges: 5,
+                lastPetTime: Date.now(),
+                lastDailyCollectDate: null,
+                hasDailyPetReward: false,
+            },
+            inventory: [],
+            heroEquipment: {},
+            ownedHeroes: ['panda'],
+            coal: 0,
+            steel_bars: 0,
+            runic_shards: 0,
+            ancient_compass: 0,
+            astral_crystal: 0,
+            void_sphere: 0,
+            golden_sprout: 0,
+            dragon_scale: 0,
+            lava_heart: 0,
+            pveStage: 1,
+            maxPveStage: 1,
+            winStreak: 0,
+            lossStreak: 0,
             dailyQuests: (state.dailyQuests || []).map((q: any) => ({
                 ...q,
                 progress: 0,
                 isClaimed: false,
             })),
             lastDailyRefresh: Date.now(),
-            title: 'Странник',
         });
     },
 
@@ -120,6 +189,7 @@ export const createBattleSlice = (set: any, get: any) => ({
 
             const activeHeroId = get().selectedHeroId || 'panda';
             get().addHeroExp(activeHeroId, xpReward);
+            get().addExp(xpReward); // Опыт аккаунта для прокачки уровня игрока
             get().addBpExp(100);
 
             let coalGained = 0,
@@ -150,7 +220,10 @@ export const createBattleSlice = (set: any, get: any) => ({
                 else heartGained = 1;
             }
 
-            const goldGained = pveStage * 100;
+            const goldGained = Math.min(
+                Math.floor(pveStage * 100 * (1 + pveStage * 0.25)),
+                50000, // максимум 50к золота за 1 PvE бой
+            );
             const crystalsGained = isBoss ? 20 : 0;
 
             let logMsg = `Победа! Получено: 🪙 ${goldGained} золота, 🔷 ${xpReward} опыта`;

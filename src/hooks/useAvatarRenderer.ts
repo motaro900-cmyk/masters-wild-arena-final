@@ -27,11 +27,11 @@ export interface IAvatarLayer {
  */
 
 const HERO_TEXTURE_DIMENSIONS: Record<string, { width: number; height: number }> = {
-    panda: { width: 1024, height: 1024 },
-    cat: { width: 1024, height: 1024 },
-    lion_knight: { width: 2048, height: 2048 },
-    wolf_knight: { width: 512, height: 537 },
-    raccoon: { width: 800, height: 700 },
+    panda: { width: 509, height: 500 },
+    raccoon: { width: 562, height: 491 },
+    minotaur: { width: 487, height: 462 },
+    tiger_warrior: { width: 429, height: 447 },
+    lion_knight: { width: 411, height: 438 },
 };
 
 export const useAvatarRenderer = (heroId: string, size: number = 512) => {
@@ -40,8 +40,8 @@ export const useAvatarRenderer = (heroId: string, size: number = 512) => {
     // const currentEquipment = heroEquipment[heroId] || {};
 
     const BASE_SIZE = 512;
-    // Уменьшаем масштаб до 0.7 (Cinematic Framing)
-    const cameraScale = 0.7;
+    // Увеличиваем масштаб до 0.95 для лучшего заполнения экрана снаряжения
+    const cameraScale = 0.95;
     const scaleFactor = (size / BASE_SIZE) * (heroConfig.baseScale || 1.0) * cameraScale;
 
     // Линия пола (Ground Line) - фиксированная

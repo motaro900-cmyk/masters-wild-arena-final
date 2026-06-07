@@ -1,6 +1,7 @@
 import { db, USERS_COLLECTION } from '../utils/firebase';
 import { collection, doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { matchmakingService } from './MatchmakingService';
+import { useGameStore } from '../store/useGameStore';
 
 export interface BattleResult {
     attackerWon: boolean;
@@ -90,7 +91,6 @@ class BattleResultServiceClass {
 
         // Experience rewards calculation with Premium BP bonus multiplier and level-based scaling
         const baseXP = getXPReward(myLevel, attackerWon);
-        const { useGameStore } = await import('../store/useGameStore');
         const state = useGameStore.getState();
         const hasPremiumBP = state.isPremium;
         const expMultiplier = hasPremiumBP ? 1.25 : 1.0;

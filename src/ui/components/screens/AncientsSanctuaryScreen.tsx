@@ -206,7 +206,7 @@ export const AncientsSanctuaryScreen: React.FC = () => {
                     display: 'grid',
                     gridTemplateColumns: '1fr 2fr 1fr',
                     alignItems: 'center',
-                    zIndex: 10,
+                    zIndex: 10000,
                     width: '100%',
                     position: 'relative',
                 }}
@@ -366,7 +366,7 @@ export const AncientsSanctuaryScreen: React.FC = () => {
                                     alt="Gold"
                                 />
                                 <span style={{ fontSize: '12px', fontWeight: 900, color: '#fbbf24' }}>
-                                    {selectedFloor * 100}
+                                    {Math.floor(selectedFloor * 100 * (1 + selectedFloor * 0.25))}
                                 </span>
                             </div>
                             {/* Опыт */}

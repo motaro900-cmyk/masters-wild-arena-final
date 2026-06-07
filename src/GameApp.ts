@@ -40,6 +40,14 @@ export class GameApp {
             this.storeUnsubscribe = useGameStore.subscribe((state: any, prevState: any) => {
                 if (state.graphicsQuality !== prevState.graphicsQuality) {
                     console.log('📈 Quality changed to:', state.graphicsQuality);
+                    const quality = state.graphicsQuality;
+                    const resType =
+                        quality === 'ULTRA'
+                            ? ResolutionType.HIGH
+                            : quality === 'MEDIUM'
+                              ? ResolutionType.MEDIUM
+                              : ResolutionType.LOW;
+                    this.pixiApp.setResolution(resType);
                 }
                 if (state.isPowerSaving !== prevState.isPowerSaving) {
                     this.applyPerformanceSettings(state.isPowerSaving);
