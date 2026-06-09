@@ -235,7 +235,6 @@ export const createShopSlice = (set: any, get: any) => ({
 
             if (amount > 0) {
                 get().addCrystals(amount);
-                get().addVipExp(amount); // 1 Алмаз = 1 VIP XP
                 syncService.logPlayerAction(`Купил пак кристаллов: +${amount} 💎`);
                 syncService.syncPlayerData();
                 return true;
