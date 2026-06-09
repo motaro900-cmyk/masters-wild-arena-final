@@ -68,6 +68,7 @@ export const createPlayerSlice = (set: any, get: any) => ({
     lastWheelSpinTime: 0,
     lastDailyGiftClaimedTime: 0,
     onboardingCompleted: true,
+    newbieWins: 0,
     profileStatus: 'loading' as 'loading' | 'loaded' | 'error',
     activeBuffs: {} as Record<string, number>,
     vkUser: null as any,

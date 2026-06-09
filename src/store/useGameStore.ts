@@ -141,7 +141,7 @@ const store = create<GameStoreState>()(
         {
             name: 'game-storage',
             storage: createJSONStorage(() => getStorage()),
-            version: 32, // v32: Add lossStreak
+            version: 33, // v33: Add newbieWins
 
             partialize: (state: any) => ({
                 level: state.level,
@@ -189,6 +189,7 @@ const store = create<GameStoreState>()(
                 lossStreak: state.lossStreak,
                 playerId: state.playerId,
                 onboardingCompleted: state.onboardingCompleted,
+                newbieWins: state.newbieWins,
                 activeBuffs: state.activeBuffs,
                 friends: state.friends,
                 clanId: state.clanId,
@@ -377,6 +378,11 @@ const store = create<GameStoreState>()(
                 if (version < 32) {
                     console.log('🔄 Migrating store to v32: Adding lossStreak...');
                     persistedState.lossStreak = 0;
+                }
+
+                if (version < 33) {
+                    console.log('🔄 Migrating store to v33: Adding newbieWins...');
+                    persistedState.newbieWins = 0;
                 }
 
                 return persistedState;

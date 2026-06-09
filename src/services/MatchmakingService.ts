@@ -132,15 +132,6 @@ export const calculateCombatPower = (
 };
 
 class MatchmakingServiceClass {
-    // Tracks consecutive wins for the newbie guarantee window
-    private newbieWinsGranted = (() => {
-        try {
-            return parseInt(localStorage.getItem('newbieWins') ?? '0', 10);
-        } catch {
-            return 0;
-        }
-    })();
-
     /**
      * Tiered matchmaking:
      *   0–700  cups → 90% bots, bots 5-10% weaker, first 5-10 wins guaranteed
@@ -160,7 +151,8 @@ class MatchmakingServiceClass {
         // ── TIER 1: 0–700 cups ──────────────────────────────────────────────
         if (myRating < 700) {
             // First 5 consecutive wins are guaranteed (newbie honeymoon)
-            const isHoneymoon = this.newbieWinsGranted < 5;
+            const newbieWins = useGameStore.getState().newbieWins || 0;
+            const isHoneymoon = newbieWins < 5;
             const botChance = 0.90;
             const forceBot = isHoneymoon || Math.random() < botChance;
             if (forceBot) {
@@ -202,13 +194,10 @@ class MatchmakingServiceClass {
 
     /** Called by the game after each battle result to update the honeymoon counter */
     public recordBattleResult(won: boolean): void {
-        if (won && this.newbieWinsGranted < 10) {
-            this.newbieWinsGranted++;
-            try {
-                localStorage.setItem('newbieWins', String(this.newbieWinsGranted));
-            } catch (e) {
-                console.warn('[MatchmakingService] Failed to save newbieWins to localStorage:', e);
-            }
+        const store = useGameStore.getState();
+        const currentWins = store.newbieWins || 0;
+        if (won && currentWins < 10) {
+            useGameStore.setState({ newbieWins: currentWins + 1 });
         }
     }
 
