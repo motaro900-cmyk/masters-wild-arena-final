@@ -4,6 +4,9 @@ import { rarityColors } from '../../../constants/roleIcons';
 import { ROLE_ICONS } from '../../../constants/roleIcons';
 import { resolveAssetPath } from '../../../../../../../utils/assetPath';
 import { RARITY_LABELS, RARITY_GLOWS } from '../utils/heroUtils';
+import { useGameStore } from '../../../../../../../store/useGameStore';
+import { getRankInfo } from '../../../../../../../configs/RankSystem';
+import { AssetsMap } from '../../../../../../../configs/AssetsMap';
 const stoneBrickPattern =
     "url(\"data:image/svg+xml;utf8,<svg width='60' height='40' viewBox='0 0 60 40' xmlns='http://www.w3.org/2000/svg'><rect width='60' height='40' fill='none'/><line x1='0' y1='20' x2='60' y2='20' stroke='rgba(0,0,0,0.52)' stroke-width='1.5'/><line x1='0' y1='40' x2='60' y2='40' stroke='rgba(0,0,0,0.52)' stroke-width='1.5'/><line x1='30' y1='0' x2='30' y2='20' stroke='rgba(0,0,0,0.52)' stroke-width='1.5'/><line x1='0' y1='20' x2='0' y2='40' stroke='rgba(0,0,0,0.52)' stroke-width='1.5'/><line x1='60' y1='20' x2='60' y2='40' stroke='rgba(0,0,0,0.52)' stroke-width='1.5'/><line x1='0' y1='1.5' x2='60' y2='1.5' stroke='rgba(255,255,255,0.15)' stroke-width='1'/><line x1='0' y1='21.5' x2='60' y2='21.5' stroke='rgba(255,255,255,0.15)' stroke-width='1'/><line x1='31.5' y1='0.8' x2='31.5' y2='19.5' stroke='rgba(255,255,255,0.15)' stroke-width='1'/><line x1='1.5' y1='20.8' x2='1.5' y2='39.5' stroke='rgba(255,255,255,0.15)' stroke-width='1'/><path d='M44,3 L40,7 L42,12 L38,15' stroke='rgba(0,0,0,0.45)' stroke-width='0.8' fill='none'/><path d='M45,3.5 L41,7.5 L43,12.5 L39,15.5' stroke='rgba(255,255,255,0.08)' stroke-width='0.8' fill='none'/><line x1='6' y1='8' x2='20' y2='8' stroke='rgba(0,0,0,0.42)' stroke-width='0.8'/><line x1='6' y1='9' x2='20' y2='9' stroke='rgba(255,255,255,0.08)' stroke-width='0.8'/><path d='M10,23 L13,28 L11,34' stroke='rgba(0,0,0,0.48)' stroke-width='0.9' fill='none'/><path d='M11,23.5 L14,28.5 L12,34.5' stroke='rgba(255,255,255,0.09)' stroke-width='0.9' fill='none'/><path d='M35,33 L48,30 L54,32' stroke='rgba(0,0,0,0.42)' stroke-width='0.8' fill='none'/><path d='M35,34 L48,31 L54,33' stroke='rgba(255,255,255,0.07)' stroke-width='0.8' fill='none'/><circle cx='12' cy='14' r='0.8' fill='rgba(0,0,0,0.45)'/><circle cx='12.5' cy='14.5' r='0.4' fill='rgba(255,255,255,0.08)'/><circle cx='48' cy='26' r='1.2' fill='rgba(0,0,0,0.5)'/><circle cx='48.5' cy='26.5' r='0.6' fill='rgba(255,255,255,0.1)'/></svg>\")";
 
@@ -18,6 +21,16 @@ interface HeroCardProps {
 
 export function HeroCard({ hero, isOwned, isActive, isSelected, activeSkin, onClick }: HeroCardProps) {
     const [isHovered, setIsHovered] = useState(false);
+
+    const { rating, crystals, gold } = useGameStore((state) => ({
+        rating: state.rating,
+        crystals: state.crystals,
+        gold: state.gold,
+    }));
+
+    const hasEnoughTrophies = !hero.requiredTrophies || rating >= hero.requiredTrophies;
+    const hasEnoughGold = !hero.unlockGoldCost || gold >= hero.unlockGoldCost;
+    const hasEnoughDiamonds = !hero.unlockCost || crystals >= hero.unlockCost;
 
     const handleMouseEnter = () => {
         setIsHovered(true);
@@ -143,7 +156,7 @@ export function HeroCard({ hero, isOwned, isActive, isSelected, activeSkin, onCl
                         objectFit: 'contain',
                         zIndex: 2,
                         userSelect: 'none',
-                        filter: isOwned ? 'none' : 'brightness(0.9) grayscale(0.1)',
+                        filter: isOwned ? 'none' : 'brightness(0.2) grayscale(1.0)',
                         transform: isHovered ? 'scale(1.04) translateY(-2px)' : 'scale(1) translateY(0)',
                         transition: 'transform 0.25s cubic-bezier(0.25, 0.8, 0.25, 1), filter 0.25s',
                     }}
@@ -157,40 +170,169 @@ export function HeroCard({ hero, isOwned, isActive, isSelected, activeSkin, onCl
                             style={{
                                 position: 'absolute',
                                 inset: 0,
-                                background:
-                                    'linear-gradient(180deg, rgba(255, 254, 250, 0) 0%, rgba(240, 192, 64, 0.05) 100%)',
+                                background: 'rgba(10, 8, 6, 0.65)',
+                                backdropFilter: 'blur(1px)',
                                 zIndex: 3,
-                                pointerEvents: 'none',
-                            }}
-                        />
-                        <div
-                            style={{
-                                position: 'absolute',
-                                top: '14px',
-                                right: '14px',
-                                zIndex: 4,
                                 display: 'flex',
+                                flexDirection: 'column',
                                 alignItems: 'center',
                                 justifyContent: 'center',
-                                width: '28px',
-                                height: '28px',
-                                borderRadius: '50%',
-                                background: 'rgba(18, 14, 11, 0.95)',
-                                border: '1.5px solid rgba(240, 192, 64, 0.8)',
-                                boxShadow: '0 4px 10px rgba(0, 0, 0, 0.8), 0 0 8px rgba(240, 192, 64, 0.4)',
+                                gap: '10px',
+                                padding: '16px',
+                                pointerEvents: 'none',
                             }}
                         >
-                            <svg width="12" height="14" viewBox="0 0 12 14" fill="none">
-                                <path
-                                    d="M3.5 5.5V3.5C3.5 2.12 4.62 1 6 1C7.38 1 8.5 2.12 8.5 3.5V5.5"
-                                    stroke="#fdfbf7"
-                                    strokeWidth="1.5"
-                                    strokeLinecap="round"
-                                />
-                                <rect x="2" y="5.5" width="8" height="6.5" rx="1.5" fill="#f0c040" />
-                                <circle cx="6" cy="8.2" r="0.8" fill="#1c1612" />
-                                <path d="M6 9V10.5" stroke="#1c1612" strokeWidth="1" strokeLinecap="round" />
-                            </svg>
+                            {/* Centered Large Gold/Bronze Lock */}
+                            <div
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    width: '52px',
+                                    height: '52px',
+                                    borderRadius: '50%',
+                                    background: 'rgba(20, 16, 12, 0.95)',
+                                    border: '2px solid #f0c040',
+                                    boxShadow: '0 8px 20px rgba(0, 0, 0, 0.9), 0 0 15px rgba(240, 192, 64, 0.45)',
+                                }}
+                            >
+                                <svg width="20" height="22" viewBox="0 0 12 14" fill="none">
+                                    <path
+                                        d="M3.5 5.5V3.5C3.5 2.12 4.62 1 6 1C7.38 1 8.5 2.12 8.5 3.5V5.5"
+                                        stroke="#fdfbf7"
+                                        strokeWidth="1.5"
+                                        strokeLinecap="round"
+                                    />
+                                    <rect 
+                                        x="2" 
+                                        y="5.5" 
+                                        width="8" 
+                                        height="6.5" 
+                                        rx="1.5" 
+                                        fill="#f0c040" 
+                                    />
+                                    <circle cx="6" cy="8.2" r="0.8" fill="#1c1612" />
+                                    <path d="M6 9V10.5" stroke="#1c1612" strokeWidth="1" strokeLinecap="round" />
+                                </svg>
+                            </div>
+
+                            {/* Requirements box */}
+                            <div
+                                style={{
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'center',
+                                    gap: '6px',
+                                    background: 'rgba(18, 14, 11, 0.94)',
+                                    border: '1.5px solid rgba(240, 192, 64, 0.45)',
+                                    borderRadius: '12px',
+                                    padding: '8px 14px',
+                                    width: '90%',
+                                    maxWidth: '220px',
+                                    boxShadow: '0 8px 20px rgba(0,0,0,0.8)',
+                                }}
+                            >
+                                <span
+                                    style={{
+                                        fontSize: '9px',
+                                        fontWeight: 900,
+                                        fontFamily: "'Cinzel', serif",
+                                        color: '#f0c040',
+                                        letterSpacing: '1px',
+                                        textAlign: 'center',
+                                    }}
+                                >
+                                    ДЛЯ ОТКРЫТИЯ ТРЕБУЕТСЯ:
+                                </span>
+
+                                {hero.requiredTrophies && (
+                                    <div
+                                        style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            gap: '4px',
+                                            fontSize: '11px',
+                                            fontWeight: 800,
+                                            fontFamily: "'Nunito', sans-serif",
+                                            color: hasEnoughTrophies ? '#fff' : '#ef4444',
+                                        }}
+                                    >
+                                        <span>Ранг {getRankInfo(hero.requiredTrophies).name}</span>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
+                                            <span>({hero.requiredTrophies}</span>
+                                            <img
+                                                src={resolveAssetPath(AssetsMap.UI.TROPHY_PREMIUM)}
+                                                style={{ width: '13px', height: '13px', objectFit: 'contain' }}
+                                                alt=""
+                                            />
+                                            <span>)</span>
+                                        </div>
+                                    </div>
+                                )}
+
+                                <div
+                                    style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        gap: '6px',
+                                        marginTop: '2px',
+                                        paddingTop: '6px',
+                                        borderTop: '1px solid rgba(255, 255, 255, 0.08)',
+                                        width: '100%',
+                                    }}
+                                >
+                                    {hero.unlockGoldCost && (
+                                        <div
+                                            style={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: '3px',
+                                                fontSize: '11px',
+                                                fontWeight: 900,
+                                                color: hasEnoughGold ? '#facc15' : '#ef4444',
+                                            }}
+                                        >
+                                            <img
+                                                src={resolveAssetPath(AssetsMap.UI.ICON_GOLD_FULL)}
+                                                style={{ width: '13px', height: '13px', objectFit: 'contain' }}
+                                                alt=""
+                                            />
+                                            <span>{hero.unlockGoldCost.toLocaleString('ru-RU')}</span>
+                                        </div>
+                                    )}
+                                    {hero.unlockGoldCost > 0 && hero.unlockCost > 0 && (
+                                        <span style={{
+                                            fontSize: '8px',
+                                            fontWeight: 900,
+                                            color: 'rgba(255,255,255,0.3)',
+                                            letterSpacing: '0.5px',
+                                        }}>
+                                            ИЛИ
+                                        </span>
+                                    )}
+                                    {hero.unlockCost > 0 && (
+                                        <div
+                                            style={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: '3px',
+                                                fontSize: '11px',
+                                                fontWeight: 900,
+                                                color: hasEnoughDiamonds ? '#c084fc' : '#fb7185',
+                                            }}
+                                        >
+                                            <img
+                                                src={resolveAssetPath(AssetsMap.UI.ICON_ALMAZ_FULL)}
+                                                style={{ width: '13px', height: '13px', objectFit: 'contain' }}
+                                                alt=""
+                                            />
+                                            <span>{hero.unlockCost}</span>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
                         </div>
                     </>
                 )}

@@ -40,6 +40,7 @@ export const createPlayerSlice = (set: any, get: any) => ({
     maxEnergy: ENERGY_CONFIG.MAX_ENERGY,
     lastEnergyUpdate: Date.now(),
     vipEndTime: 0,
+    hasBoughtStarterPack: false,
     dailyAdWatchesCount: 0,
     dailyBattles: 0,
     dailyBattleLimit: BATTLE_CONFIG.DAILY_LIMIT,
@@ -142,7 +143,7 @@ export const createPlayerSlice = (set: any, get: any) => ({
     },
     addCrystals: (amount: number) => set((state: any) => ({ crystals: state.crystals + amount })),
     spendDiamonds: (amount: number) => set((state: any) => ({ crystals: Math.max(0, state.crystals - amount) })),
-    addEnergy: (amount: number) => set((state: any) => ({ energy: Math.min(state.energy + amount, state.maxEnergy) })),
+    addEnergy: (amount: number) => set((state: any) => ({ energy: state.energy + amount })),
     consumeEnergy: (amount: number) => {
         const s = get();
         if (s.hasInfiniteEnergy) return true;

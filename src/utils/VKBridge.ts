@@ -153,10 +153,10 @@ export const showRewardedVideo = async (): Promise<boolean> => {
 };
 
 /**
- * Вызывает окно оплаты VK Stars
+ * Вызывает окно оплаты голосами ВК
  * @param item Идентификатор товара (например, "gems_pack_1")
  */
-export const purchaseStars = async (item: string): Promise<boolean> => {
+export const purchaseVotes = async (item: string): Promise<boolean> => {
     if (!bridge || !isVkMiniApp()) {
         console.log(`Mock Payment: initiating purchase for: ${item}`);
         return new Promise<boolean>((resolve) => {

@@ -43,6 +43,7 @@ export const ShopItemCard: React.FC<ShopItemCardProps> = ({
 }) => {
     const glow = getRarityColor(item.rarity);
     const isLocked = item.requiredLevel !== undefined && (playerLevel || 1) < item.requiredLevel;
+    const isStarterPack = item.id === 'starter_pack';
 
     return (
         <motion.div
@@ -78,6 +79,9 @@ export const ShopItemCard: React.FC<ShopItemCardProps> = ({
                 cursor: 'pointer',
                 position: 'relative',
                 transition: 'background 0.2s, border-color 0.2s, box-shadow 0.2s',
+                animation: isStarterPack && !isLocked
+                    ? (isSelected ? 'starter-pack-pulse-selected 2s infinite ease-in-out' : 'starter-pack-pulse 2s infinite ease-in-out')
+                    : undefined,
             }}
         >
             {discount > 0 && !isLocked && (
@@ -97,6 +101,31 @@ export const ShopItemCard: React.FC<ShopItemCardProps> = ({
                     }}
                 >
                     -{discount}%
+                </div>
+            )}
+            {item.badge && !isLocked && (
+                <div
+                    style={{
+                        position: 'absolute',
+                        top: '5px',
+                        left: '5px',
+                        background: item.badge === 'СПЕЦПРЕДЛОЖЕНИЕ'
+                            ? 'linear-gradient(90deg, #f43f5e, #ec4899)'
+                            : item.badge === 'ЛУЧШАЯ ЦЕНА'
+                              ? 'linear-gradient(90deg, #eab308, #e879f9)'
+                              : '#10b981',
+                        color: '#fff',
+                        fontSize: '8px',
+                        fontWeight: 900,
+                        padding: '2px 6px',
+                        borderRadius: '4px',
+                        boxShadow: '0 2px 4px rgba(0,0,0,0.5)',
+                        zIndex: 5,
+                        letterSpacing: '0.5px',
+                        fontFamily: "'Cinzel', 'Philosopher', serif",
+                    }}
+                >
+                    {item.badge}
                 </div>
             )}
             {/* Lock Overlay (Centered Badge) */}
@@ -142,6 +171,8 @@ export const ShopItemCard: React.FC<ShopItemCardProps> = ({
                     alignSelf: 'flex-start',
                     letterSpacing: '1px',
                     textTransform: 'uppercase',
+                    marginTop: item.badge && !isLocked ? (isMobile ? '12px' : '16px') : '0px',
+                    zIndex: 2,
                 }}
             >
                 {(rarityTranslation[item.rarity] || item.rarity).replace(' ПРЕДМЕТ', '')}

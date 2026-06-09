@@ -24,7 +24,7 @@ export const getAllShopItems = (): ShopItem[] => {
             (item) =>
                 (item.priceGold !== undefined && item.priceGold > 0) ||
                 (item.priceGem !== undefined && item.priceGem > 0) ||
-                item.priceStars !== undefined ||
+                item.priceVotes !== undefined ||
                 item.isAd === true ||
                 item.id === 'pan' ||
                 item.id === 'stick',

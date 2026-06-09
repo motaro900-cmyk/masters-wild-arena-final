@@ -28,6 +28,8 @@ export interface IHeroConfig {
     role: 'WARRIOR' | 'TANK' | 'ASSASSIN' | 'MAGE' | 'SUPPORT';
     unlockType: 'gold' | 'diamonds' | 'level' | 'achievement' | 'free';
     unlockCost: number;
+    unlockGoldCost?: number;
+    requiredTrophies?: number;
     unlockAchievement?: string;
     stats: {
         strength: number;
@@ -71,8 +73,10 @@ export const HEROES_DB: IHeroConfig[] = [
         color: 0xffaa00,
         rarity: 'COMMON',
         role: 'ASSASSIN',
-        unlockType: 'gold',
-        unlockCost: 200,
+        unlockType: 'diamonds',
+        unlockCost: 800,
+        unlockGoldCost: 20000,
+        requiredTrophies: 400,
         stats: { strength: 10, agility: 25, stamina: 19, intelligence: 12 },
         baseScale: 0.8,
         anchors: {
@@ -92,8 +96,10 @@ export const HEROES_DB: IHeroConfig[] = [
         color: 0x8b5a2b,
         rarity: 'COMMON',
         role: 'TANK',
-        unlockType: 'gold',
-        unlockCost: 250,
+        unlockType: 'diamonds',
+        unlockCost: 1500,
+        unlockGoldCost: 40000,
+        requiredTrophies: 1000,
         stats: { strength: 21, agility: 7, stamina: 28, intelligence: 10 },
         baseScale: 0.95,
         anchors: {
@@ -114,7 +120,9 @@ export const HEROES_DB: IHeroConfig[] = [
         rarity: 'COMMON',
         role: 'ASSASSIN',
         unlockType: 'diamonds',
-        unlockCost: 50,
+        unlockCost: 2000,
+        unlockGoldCost: 60000,
+        requiredTrophies: 2000,
         stats: { strength: 15, agility: 24, stamina: 17, intelligence: 10 },
         baseScale: 0.85,
         anchors: {
@@ -134,8 +142,10 @@ export const HEROES_DB: IHeroConfig[] = [
         color: 0xffd700,
         rarity: 'COMMON',
         role: 'WARRIOR',
-        unlockType: 'level',
-        unlockCost: 10,
+        unlockType: 'diamonds',
+        unlockCost: 3500,
+        unlockGoldCost: 100000,
+        requiredTrophies: 3000,
         stats: { strength: 21, agility: 7, stamina: 28, intelligence: 10 },
         baseScale: 0.9,
         anchors: {

@@ -21,6 +21,7 @@ export const useShopScene = () => {
         level: playerLevel,
         gold,
         crystals,
+        hasBoughtStarterPack,
     } = useGameStore();
 
     const [activeMainTab, setActiveMainTab] = useState<MainTab>((shopInitialTab as MainTab) || 'ARSENAL');
@@ -101,6 +102,7 @@ export const useShopScene = () => {
                 return allItems.filter((item) => {
                     const matchesMain = item.mainTab === activeMainTab;
                     if (!matchesMain) return false;
+                    if (item.id === 'starter_pack' && hasBoughtStarterPack) return false;
                     if (activeSubTab === 'FREE') return item.isAd === true;
                     if (item.isAd) return false;
                     return item.subTab === activeSubTab;
@@ -119,6 +121,9 @@ export const useShopScene = () => {
 
         const items = getRotationItems();
         return [...items].sort((a, b) => {
+            if (a.id === 'starter_pack') return -1;
+            if (b.id === 'starter_pack') return 1;
+
             const hasDiscountA = (shopDiscounts?.[a.id] || 0) > 0;
             const hasDiscountB = (shopDiscounts?.[b.id] || 0) > 0;
             if (hasDiscountA && !hasDiscountB) return -1;
@@ -150,7 +155,7 @@ export const useShopScene = () => {
         setShowConfirm(true);
     };
 
-    const confirmPurchase = async (currency: 'gold' | 'gem' | 'stars' | 'ad') => {
+    const confirmPurchase = async (currency: 'gold' | 'gem' | 'votes' | 'ad') => {
         if (!selectedItem) return;
         const item = selectedItem;
 
@@ -165,7 +170,7 @@ export const useShopScene = () => {
                 else if (item.subTab === 'GEMS') rewardType = 'CRYSTAL';
 
                 success = await watchAdForReward(rewardType);
-            } else if (currency === 'stars') {
+            } else if (currency === 'votes') {
                 success = await buyCrystalsPack(item.id);
             } else {
                 success = useGameStore.getState().buyItem(String(item.id), currency);

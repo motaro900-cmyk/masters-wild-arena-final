@@ -766,6 +766,7 @@ const AlertDialog: React.FC = () => {
                     alignItems: 'center',
                     justifyContent: 'center',
                     zIndex: 99999,
+                    pointerEvents: 'auto',
                 }}
             >
                 <motion.div
@@ -840,6 +841,7 @@ const ConfirmDialog: React.FC = () => {
                     alignItems: 'center',
                     justifyContent: 'center',
                     zIndex: 9999,
+                    pointerEvents: 'auto',
                 }}
             >
                 <motion.div

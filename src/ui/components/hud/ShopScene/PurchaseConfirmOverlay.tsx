@@ -7,7 +7,7 @@ interface PurchaseConfirmOverlayProps {
     item: ShopItem;
     dailyAdWatchesCount: number;
     onCancel: () => void;
-    onConfirm: (currency: 'gold' | 'gem' | 'stars' | 'ad') => void;
+    onConfirm: (currency: 'gold' | 'gem' | 'votes' | 'ad') => void;
 }
 
 export const PurchaseConfirmOverlay: React.FC<PurchaseConfirmOverlayProps> = ({
@@ -105,8 +105,19 @@ export const PurchaseConfirmOverlay: React.FC<PurchaseConfirmOverlayProps> = ({
                         lineHeight: '1.4',
                     }}
                 >
-                    Вы уверены, что хотите приобрести этот предмет? Характеристики будут немедленно добавлены к вашей
-                    силе.
+                    {item.id === 'starter_pack'
+                        ? 'Вы уверены, что хотите приобрести Стартовый Пакет? 200 алмазов и 3 дня VIP будут немедленно активированы.'
+                        : item.subTab === 'ENERGY'
+                          ? 'Вы уверены, что хотите приобрести этот предмет? Энергия будет немедленно добавлена к вашему запасу (может превысить максимум).'
+                          : item.subTab === 'GEMS'
+                            ? 'Вы уверены, что хотите приобрести этот предмет? Алмазы будут немедленно добавлены на ваш счет.'
+                            : item.subTab === 'GOLD'
+                              ? 'Вы уверены, что хотите приобрести этот предмет? Золото будет немедленно добавлено на ваш счет.'
+                              : item.mainTab === 'SKINS'
+                                ? 'Вы уверены, что хотите приобрести этот облик? Он станет доступен в меню кастомизации героя.'
+                                : item.mainTab === 'ALCHEMY'
+                                  ? 'Вы уверены, что хотите приобрести этот предмет? Он будет немедленно добавлен в ваш инвентарь.'
+                                  : 'Вы уверены, что хотите приобрести этот предмет? Характеристики будут немедленно добавлены к вашей силе.'}
                 </p>
 
                 <div style={{ display: 'flex', gap: '20px', width: '100%', marginTop: '10px' }}>
@@ -175,9 +186,9 @@ export const PurchaseConfirmOverlay: React.FC<PurchaseConfirmOverlayProps> = ({
                         </button>
                     )}
 
-                    {item.priceStars !== undefined && (
+                    {item.priceVotes !== undefined && (
                         <button
-                            onClick={() => onConfirm('stars')}
+                            onClick={() => onConfirm('votes')}
                             style={{
                                 flex: 1.5,
                                 height: '50px',

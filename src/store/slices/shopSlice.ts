@@ -1,5 +1,5 @@
 import { ITEMS_DATABASE } from '../../game/configs/ItemsConfig';
-import { showRewardedVideo, purchaseStars } from '../../utils/VKBridge';
+import { showRewardedVideo, purchaseVotes } from '../../utils/VKBridge';
 import { syncService } from '../../services/SyncService';
 
 const getRarityWeight = (rarity: string, playerLevel: number): number => {
@@ -26,7 +26,7 @@ const generateShopRotation = (playerLevel: number = 1) => {
         (item) =>
             (item.priceGold !== undefined && item.priceGold > 0) ||
             (item.priceGem !== undefined && item.priceGem > 0) ||
-            item.priceStars !== undefined ||
+            item.priceVotes !== undefined ||
             item.isAd === true ||
             item.id === 'pan' ||
             item.id === 'stick',
@@ -215,8 +215,6 @@ export const createShopSlice = (set: any, get: any) => ({
     },
 
     buyCrystalsPack: async (packId: string) => {
-        // TODO: требует серверной валидации через VK Pay Receipt
-        // Временная защита: проверка через VK Bridge
         if (
             process.env.NODE_ENV !== 'development' &&
             typeof window !== 'undefined' &&
@@ -226,12 +224,38 @@ export const createShopSlice = (set: any, get: any) => ({
             return false;
         }
 
-        const success = await purchaseStars(packId);
+        const success = await purchaseVotes(packId);
         if (success) {
+            const state = get() as any;
+
+            if (packId === 'starter_pack') {
+                const now = Date.now();
+                const currentEndTime = state.vipEndTime && state.vipEndTime > now ? state.vipEndTime : now;
+                const newEndTime = currentEndTime + 3 * 24 * 60 * 60 * 1000;
+                const premiumBonus = state.isPremium ? 15 : 0;
+                const maxEnergy = 50 + Math.max(premiumBonus, 15);
+
+                set({
+                    crystals: (state.crystals || 0) + 200,
+                    vipLevel: 1,
+                    maxEnergy: maxEnergy,
+                    vipEndTime: newEndTime,
+                    hasBoughtStarterPack: true,
+                });
+
+                if (typeof window !== 'undefined') {
+                    localStorage.setItem('vipEndTime', newEndTime.toString());
+                }
+
+                syncService.logPlayerAction(`Купил Стартовый Пакет: +200 💎, +3 дня VIP 👑`);
+                syncService.syncPlayerData();
+                return true;
+            }
+
             let amount = 0;
-            if (packId === 'gems_100') amount = 100;
-            if (packId === 'gems_500') amount = 500;
-            if (packId === 'gems_1000') amount = 1200; // Бонус!
+            if (packId === 'gem_pack_1') amount = 100;
+            if (packId === 'gem_pack_2') amount = 700;
+            if (packId === 'gem_pack_3') amount = 4000;
 
             if (amount > 0) {
                 get().addCrystals(amount);
@@ -286,7 +310,7 @@ export const createShopSlice = (set: any, get: any) => ({
                 } else if (subTab === 'GEMS') {
                     set({ [newBalanceKey]: balance - price, crystals: state.crystals + amount });
                 } else if (subTab === 'ENERGY') {
-                    set({ [newBalanceKey]: balance - price, energy: Math.min(state.energy + amount, state.maxEnergy) });
+                    set({ [newBalanceKey]: balance - price, energy: state.energy + amount });
                 }
             } else if (isSkin) {
                 const owned = [...(state.ownedSkins || ['default'])];

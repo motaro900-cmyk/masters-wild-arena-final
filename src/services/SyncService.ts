@@ -198,6 +198,7 @@ export class SyncService {
                 lossStreak: state.lossStreak,
                 onboardingCompleted: state.onboardingCompleted,
                 newbieWins: state.newbieWins || 0,
+                hasBoughtStarterPack: state.hasBoughtStarterPack || false,
                 friends: state.friends,
                 clanId: state.clanId,
                 clanCoins: state.clanCoins,

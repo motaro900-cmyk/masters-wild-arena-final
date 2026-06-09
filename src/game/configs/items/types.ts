@@ -22,7 +22,7 @@ export interface IBaseItem {
     desc: string;
     priceGold?: number;
     priceGem?: number;
-    priceStars?: number;
+    priceVotes?: number;
     isAd?: boolean;
     mainTab: 'ARSENAL' | 'ALCHEMY' | 'SKINS' | 'BANK';
     subTab: string;

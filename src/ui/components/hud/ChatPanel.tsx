@@ -166,9 +166,6 @@ export const ChatPanel: React.FC = () => {
                 zIndex: 100,
                 position: 'relative',
                 pointerEvents: 'auto',
-                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                transform: isOpen ? 'translateY(0)' : 'translateY(340px)',
-                opacity: isOpen ? 1 : 0.8,
             }}
         >
             <style>{`
@@ -305,7 +302,8 @@ export const ChatPanel: React.FC = () => {
                             : 'rgba(10, 15, 20, 0.75)',
                     backdropFilter: 'blur(12px)',
                     width: '100%',
-                    height: 300,
+                    height: isOpen ? 300 : 160,
+                    transition: 'height 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                     display: 'flex',
                     flexDirection: 'column',
                     boxShadow: '0 15px 50px rgba(0,0,0,0.6), inset 0 0 20px rgba(0,0,0,0.4)',
