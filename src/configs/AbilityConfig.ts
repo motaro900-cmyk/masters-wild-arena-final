@@ -145,7 +145,7 @@ export const ABILITY_REGISTRY: Record<string, HeroAbilityConfig> = {
         activeAbility: {
             name: 'Молот Лабиринта',
             damageMultiplier: 1.8,
-            shieldPercent: 0.054,
+            shieldPercent: 0.12,
             onCastStatus: { target: 'player', type: 'STUN_IMMUNITY', duration: 2 },
         },
         attackPassive: { chance: 0.25, status: 'STUN', duration: 1 },
@@ -169,7 +169,7 @@ export const ABILITY_REGISTRY: Record<string, HeroAbilityConfig> = {
                         const stats = ctx.isPlayer ? ctx.engine.playerStats : ctx.engine.enemyStats;
                         const avgItemLevel = stats?.avgItemLevel || 1;
                         const itemLevelFactor = 1 - (avgItemLevel - 1) * 0.03;
-                        const modifier = 1.0 + 0.2 * itemLevelFactor;
+                        const modifier = 1.0 + 0.5 * itemLevelFactor;
                         return {
                             damageModifier: modifier,
                             extraLog: `🌑 [МЕТКА ТЕНЕЙ] Удар усилен ×${modifier.toFixed(2)}!`,
@@ -185,7 +185,7 @@ export const ABILITY_REGISTRY: Record<string, HeroAbilityConfig> = {
         heroId: 'lion_knight',
         activeAbility: {
             name: 'Королевский Гнев',
-            damageMultiplier: 2.4,
+            damageMultiplier: 2.6,
             onCastStatus: { target: 'player', type: 'NATURE_REGEN', duration: 3 },
         },
         attackPassive: { chance: 0.3, status: 'BURN', duration: 2, damagePercent: 0.1 },

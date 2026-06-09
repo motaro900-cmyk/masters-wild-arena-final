@@ -52,7 +52,7 @@ export const HEROES_DB: IHeroConfig[] = [
         role: 'WARRIOR',
         unlockType: 'free',
         unlockCost: 0,
-        stats: { strength: 18, agility: 27, stamina: 9, intelligence: 12 },
+        stats: { strength: 19, agility: 26, stamina: 9, intelligence: 12 },
         baseScale: 0.9,
         anchors: {
             feet: { x: 0.5, y: 0.95 },
@@ -73,7 +73,7 @@ export const HEROES_DB: IHeroConfig[] = [
         role: 'ASSASSIN',
         unlockType: 'gold',
         unlockCost: 200,
-        stats: { strength: 15, agility: 25, stamina: 16, intelligence: 12 },
+        stats: { strength: 10, agility: 25, stamina: 19, intelligence: 12 },
         baseScale: 0.8,
         anchors: {
             feet: { x: 0.5, y: 0.95 },
@@ -94,7 +94,7 @@ export const HEROES_DB: IHeroConfig[] = [
         role: 'TANK',
         unlockType: 'gold',
         unlockCost: 250,
-        stats: { strength: 21, agility: 6, stamina: 29, intelligence: 10 },
+        stats: { strength: 21, agility: 7, stamina: 28, intelligence: 10 },
         baseScale: 0.95,
         anchors: {
             feet: { x: 0.5, y: 0.95 },
@@ -115,7 +115,7 @@ export const HEROES_DB: IHeroConfig[] = [
         role: 'ASSASSIN',
         unlockType: 'diamonds',
         unlockCost: 50,
-        stats: { strength: 16, agility: 24, stamina: 16, intelligence: 10 },
+        stats: { strength: 15, agility: 24, stamina: 17, intelligence: 10 },
         baseScale: 0.85,
         anchors: {
             feet: { x: 0.5, y: 0.95 },
@@ -136,7 +136,7 @@ export const HEROES_DB: IHeroConfig[] = [
         role: 'WARRIOR',
         unlockType: 'level',
         unlockCost: 10,
-        stats: { strength: 19, agility: 6, stamina: 31, intelligence: 10 },
+        stats: { strength: 21, agility: 7, stamina: 28, intelligence: 10 },
         baseScale: 0.9,
         anchors: {
             feet: { x: 0.5, y: 0.95 },
