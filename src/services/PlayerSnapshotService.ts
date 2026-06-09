@@ -135,7 +135,10 @@ class PlayerSnapshotServiceClass {
 
             // Применяем к стору
             if (totalCupsChange !== 0 || totalGoldChange !== 0) {
-                const newRating = Math.max(0, (state.rating || 0) + totalCupsChange);
+                const { getRankInfo } = await import('../configs/RankSystem');
+                const currentRank = getRankInfo(state.rating || 0);
+                const minAllowed = Math.max(0, currentRank.minTrophies - 50);
+                const newRating = Math.max(minAllowed, (state.rating || 0) + totalCupsChange);
                 const newGold = (state.gold || 0) + totalGoldChange;
                 useGameStore.setState({ rating: newRating, trophies: newRating, gold: newGold });
 

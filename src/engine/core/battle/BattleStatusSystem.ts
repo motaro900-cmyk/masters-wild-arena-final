@@ -52,11 +52,14 @@ export function applyStatus(
     const existing = unit.statusEffects.find((s) => s.type === type);
     if (existing) {
         if (type === 'POISON') {
-            existing.stacks = Math.min(5, existing.stacks + 1);
+            existing.stacks = Math.min(6, existing.stacks + 1);
             existing.duration = Math.max(existing.duration, duration);
             existing.damagePerTurn = damagePerTurn;
         } else {
             existing.duration = Math.max(existing.duration, duration);
+        }
+        if (type === 'SHADOW_MARK') {
+            existing.delay = 1;
         }
     } else {
         unit.statusEffects.push({
@@ -64,6 +67,7 @@ export function applyStatus(
             duration,
             stacks: 1,
             damagePerTurn,
+            delay: type === 'SHADOW_MARK' ? 1 : 0,
         });
 
         // Trigger visual on creation
@@ -143,11 +147,22 @@ export async function resolvePeriodicDamage(engine: BattleEngine, unit: HeroUnit
 
     const activeEffects = [...unit.statusEffects];
     for (const status of activeEffects) {
+        if (status.type === 'SHADOW_MARK' && status.delay > 0) {
+            status.delay--;
+        }
         if (status.type === 'BURN' || status.type === 'POISON') {
             const { timeScale } = useGameStore.getState();
 
             const tickDamage = status.type === 'BURN' ? status.damagePerTurn : status.damagePerTurn * status.stacks;
-            const finalDamage = Math.max(1, Math.ceil(tickDamage));
+            
+            const targetStats = isPlayer ? engine.playerStats : engine.enemyStats;
+            const targetDefense = targetStats ? targetStats.defense : 0;
+            const defMultiplier = status.type === 'POISON' ? 0.5 : 0.25;
+            const effectiveDef = targetDefense * defMultiplier;
+            const targetAvgItemLevel = targetStats ? (targetStats.avgItemLevel || 1) : 1;
+            const divisor = 200 + (targetAvgItemLevel - 1) * 25;
+            const mitigation = effectiveDef / (effectiveDef + divisor);
+            const finalDamage = Math.max(1, Math.ceil(tickDamage * (1 - mitigation)));
 
             engine.applyDamage(isPlayer ? 'player' : 'enemy', finalDamage);
 
@@ -174,19 +189,40 @@ export async function resolvePeriodicDamage(engine: BattleEngine, unit: HeroUnit
         }
 
         // NATURE_REGEN — восстановление HP каждый ход
-        if (status.type === 'NATURE_REGEN' && isPlayer) {
+        if (status.type === 'NATURE_REGEN') {
             const { timeScale } = useGameStore.getState();
-            const maxHP = anyEngine.playerStats!.hp;
-            const healAmount = Math.ceil(maxHP * 0.05);
-            const nextHP = Math.min(maxHP, engine.state.playerHP + healAmount);
-            engine.updateState({ playerHP: nextHP });
+            const maxHP = isPlayer ? anyEngine.playerStats!.hp : anyEngine.enemyStats!.hp;
+            const heroId = isPlayer ? anyEngine.player?.config?.id : anyEngine.enemy?.config?.id;
+            const targetStats = isPlayer ? engine.playerStats : engine.enemyStats;
+            const targetAvgItemLevel = targetStats ? (targetStats.avgItemLevel || 1) : 1;
+            const itemLevelFactor = 1 - (targetAvgItemLevel - 1) * 0.03;
+            const regenPercent = (heroId === 'lion_knight' ? 0.04 : 0.05) * itemLevelFactor;
+
+            const baseHeal = Math.ceil(maxHP * regenPercent);
+
+            const targetDefense = targetStats ? targetStats.defense : 0;
+            const defMultiplier = 0.5; // partially mitigated by armor (50% effectiveness)
+            const effectiveDef = targetDefense * defMultiplier;
+            const divisor = 200 + (targetAvgItemLevel - 1) * 25;
+            const mitigation = effectiveDef / (effectiveDef + divisor);
+            const healAmount = Math.max(1, Math.ceil(baseHeal * (1 - mitigation)));
+
+            const currentHP = isPlayer ? engine.state.playerHP : engine.state.enemyHP;
+            const nextHP = Math.min(maxHP, currentHP + healAmount);
+
+            if (isPlayer) {
+                engine.updateState({ playerHP: nextHP });
+            } else {
+                engine.updateState({ enemyHP: nextHP });
+            }
+
             engine.onCombatEvent({
                 type: 'BLOCK',
                 damage: healAmount,
-                target: 'player',
+                target: isPlayer ? 'player' : 'enemy',
                 label: `🌿 +${healAmount} HP`,
             });
-            useGameStore.getState().addCombatLog(`[РЕГЕНЕРАЦИЯ] +${healAmount} HP`);
+            useGameStore.getState().addCombatLog(`[РЕГЕНЕРАЦИЯ ${isPlayer ? 'ИГРОКА' : 'ВРАГА'}] +${healAmount} HP`);
             await new Promise((r) => setTimeout(r, 400 / timeScale));
         }
 

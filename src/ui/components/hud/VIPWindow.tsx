@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Lock } from 'lucide-react';
 import { useGameStore } from '../../../store/useGameStore';
-import { safeGetItem } from '../../../utils/SafeStorage';
 import { audioService } from '../../../services/AudioService';
 import { AssetsMap } from '../../../configs/AssetsMap';
 
@@ -101,15 +100,16 @@ const ChatIcon = () => (
 );
 
 export const VIPWindow: React.FC<VIPWindowProps> = () => {
-    const { vipLevel, isPremium } = useGameStore();
-    const [daysLeft, setDaysLeft] = useState<number>(() => {
-        const endTime = safeGetItem('vipEndTime');
-        if (endTime) {
-            const diff = parseInt(endTime) - Date.now();
-            return diff > 0 ? Math.ceil(diff / (1000 * 60 * 60 * 24)) : 0;
-        }
-        return 0;
-    });
+    const { vipLevel, isPremium, vipEndTime } = useGameStore();
+
+    // Вычисляем оставшиеся дни на основе vipEndTime из стора
+    const getDaysLeft = React.useCallback((endTime: number) => {
+        if (!endTime) return 0;
+        const diff = endTime - Date.now();
+        return diff > 0 ? Math.ceil(diff / (1000 * 60 * 60 * 24)) : 0;
+    }, []);
+
+    const daysLeft = getDaysLeft(vipEndTime || 0);
 
     const [hoveredBenefit, setHoveredBenefit] = useState<number | null>(null);
     const [hoveredPkg, setHoveredPkg] = useState<number | null>(null);
@@ -187,11 +187,7 @@ export const VIPWindow: React.FC<VIPWindowProps> = () => {
         audioService.playSFX(AssetsMap.AUDIO.SFX_BUY || AssetsMap.AUDIO.SFX_CLICK);
 
         const success = store.buyVip(days, price);
-        if (success) {
-            const now = Date.now();
-            const newEndTime = useGameStore.getState().vipEndTime || now;
-            setDaysLeft(Math.ceil((newEndTime - now) / (1000 * 60 * 60 * 24)));
-        } else {
+        if (!success) {
             useGameStore.getState().showAlert('Не удалось активировать VIP-статус!');
         }
     }, []);

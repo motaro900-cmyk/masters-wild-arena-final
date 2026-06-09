@@ -103,6 +103,7 @@ export const BattleScene: React.FC = () => {
                     defense: activeRankedOpponent.stats.defense,
                     speed: activeRankedOpponent.stats.speed || 1.0,
                     crit: activeRankedOpponent.stats.crit || activeRankedOpponent.stats.critChance || 0.05,
+                    avgItemLevel: (activeRankedOpponent.stats as any).avgItemLevel || 1,
                 },
                 anchors: rawEnemy.anchors,
                 icon: '👤',
@@ -115,6 +116,7 @@ export const BattleScene: React.FC = () => {
             defense: rawEnemy.stats.agility * 1,
             speed: 1.0,
             crit: 0.05,
+            avgItemLevel: 1,
         };
         return {
             id: rawEnemy.id,
@@ -127,6 +129,7 @@ export const BattleScene: React.FC = () => {
                 defense: calculated.defense,
                 speed: calculated.speed || 1.0,
                 crit: (calculated as any).crit || (calculated as any).critChance || 0.05,
+                avgItemLevel: calculated.avgItemLevel || 1,
             },
             anchors: rawEnemy.anchors,
             icon: '👤',
@@ -164,6 +167,7 @@ export const BattleScene: React.FC = () => {
             critChance: enemyData.baseStats.crit,
             defense: isPve && activePveEnemy ? activePveEnemy.defense : enemyData.baseStats.defense,
             dodge: 0,
+            avgItemLevel: isPve ? 1 : (enemyData.baseStats as any).avgItemLevel || 1,
         };
 
         if (!playerStats) {
@@ -199,7 +203,7 @@ export const BattleScene: React.FC = () => {
                             gold = Math.floor(store.pveStage * 100 * (1 + store.pveStage * 0.25));
                             xp = store.pveStage * 50;
                             const isBoss = store.pveStage % 5 === 0;
-                            crystals = isBoss ? 20 : 0;
+                            crystals = isBoss ? 30 : 0;
                         }
                         store.completePveBattle(isVictory);
                     } else {
@@ -208,6 +212,10 @@ export const BattleScene: React.FC = () => {
                             xp = isVictory ? 200 : 50;
                             trophies = 0;
                         } else {
+                            // Record result in matchmaking service to update honeymoon counter
+                            const { matchmakingService } = await import('../../../services/MatchmakingService');
+                            matchmakingService.recordBattleResult(isVictory);
+
                             const opponent = store.activeRankedOpponent;
                             const myUserId = store.vkUser ? String(store.vkUser.id) : store.playerId;
                             const myName = store.name || 'Мастер';
@@ -226,6 +234,7 @@ export const BattleScene: React.FC = () => {
                                 opponentLevel: opponent?.level || 1,
                                 isOpponentBot: opponent?.isBot ?? true,
                                 attackerWon: isVictory,
+                                winStreak: store.winStreak || 0,
                             });
 
                             const { syncService } = await import('../../../services/SyncService');
@@ -251,7 +260,10 @@ export const BattleScene: React.FC = () => {
                             `Бой завершен: ${isVictory ? 'Победа' : 'Поражение'}. Получено +${gold} золота, +${xp} опыта героя.`,
                         );
 
-                        const newTrophies = Math.max(0, store.trophies + trophies);
+                        const { getRankInfo } = await import('../../../configs/RankSystem');
+                        const currentRank = getRankInfo(store.trophies || 0);
+                        const minAllowed = Math.max(0, currentRank.minTrophies - 50);
+                        const newTrophies = Math.max(minAllowed, store.trophies + trophies);
                         const newStreak = isVictory ? store.winStreak + 1 : 0;
                         const newLossStreak = isVictory ? 0 : (store.lossStreak || 0) + 1;
                         const patch: any = {
@@ -422,8 +434,12 @@ export const BattleScene: React.FC = () => {
                     animateX = isPlayerTarget ? -80 : 80; // Отлетает в сторону уворота
                     break;
                 case 'BLOCK':
-                    text = `🛡️ БЛОК! (-${Math.round(event.damage)})`;
-                    color = '#4FC3F7'; // Синий
+                    text = event.label || `🛡️ БЛОК! (-${Math.round(event.damage)})`;
+                    if (text.includes('💚') || text.includes('🌿')) {
+                        color = '#10B981'; // Зеленый для исцеления
+                    } else {
+                        color = '#4FC3F7'; // Синий
+                    }
                     animateX = isPlayerTarget ? 40 : -40; // Слегка отскакивает в сторону щита
                     break;
                 case 'INSTINCT':

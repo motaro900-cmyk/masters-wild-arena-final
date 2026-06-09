@@ -33,12 +33,13 @@ export function skipToEndOfBattle(engine: BattleEngine) {
 
     const pStats = anyEngine.playerStats!;
     const eStats = anyEngine.enemyStats!;
+    const pDivisor = 200 + ((pStats.avgItemLevel || 1) - 1) * 25;
+    const eDivisor = 200 + ((eStats.avgItemLevel || 1) - 1) * 25;
 
     let pHP = engine.state.playerHP;
     let eHP = engine.state.enemyHP;
     let pShield = engine.state.playerShield || 0;
 
-    let safetyCounter = 0;
     const maxTicks = 10000;
 
     const playerHeroId = anyEngine.player?.config?.id || '';
@@ -65,35 +66,74 @@ export function skipToEndOfBattle(engine: BattleEngine) {
         if (abilityCfg?.attackPassive) {
             const { chance, status, duration, damagePercent } = abilityCfg.attackPassive;
             if (Math.random() < chance) {
-                const dmg = damagePercent ? Math.ceil(attStats.attack * damagePercent) : 0;
+                const avgItemLevel = attStats.avgItemLevel || 1;
+                const itemLevelFactor = 1 - (avgItemLevel - 1) * 0.03;
+                let baseDmg = damagePercent ? (attStats.attack * damagePercent) : 0;
+                if (attacker.config?.id === 'raccoon' && status === 'POISON') {
+                    baseDmg = Math.max(15, baseDmg);
+                }
+                const dmg = Math.ceil(baseDmg * itemLevelFactor);
                 engine.applyStatus(victim, status, duration, dmg, !isAttackerPlayer);
             }
         }
     };
 
     const ATB_THRESHOLD = ATB_THRESHOLD_CONST;
-    let playerTicks = getEffectiveSpeed(anyEngine.player!, pStats);
-    let enemyTicks = getEffectiveSpeed(anyEngine.enemy!, eStats);
+    let playerTicks = 0;
+    let enemyTicks = 0;
+    let totalBattleTicks = 0;
+    let isRageActive = false;
 
-    const firstIsPlayer = playerTicks >= enemyTicks;
-    if (firstIsPlayer) {
-        playerTicks = ATB_THRESHOLD;
-    } else {
-        enemyTicks = ATB_THRESHOLD;
-    }
+    while (pHP > 0 && eHP > 0 && totalBattleTicks < maxTicks) {
+        while (playerTicks < ATB_THRESHOLD && enemyTicks < ATB_THRESHOLD) {
+            playerTicks += getEffectiveSpeed(anyEngine.player!, pStats);
+            enemyTicks += getEffectiveSpeed(anyEngine.enemy!, eStats);
+            totalBattleTicks++;
 
-    while (pHP > 0 && eHP > 0 && safetyCounter < maxTicks) {
-        safetyCounter++;
+            if (totalBattleTicks === 8000 && !isRageActive) {
+                isRageActive = true;
+                pStats.attack = Math.round(pStats.attack * 1.5);
+                pStats.defense = Math.round(pStats.defense * 0.7);
+                eStats.attack = Math.round(eStats.attack * 1.5);
+                eStats.defense = Math.round(eStats.defense * 0.7);
+
+                engine.onCombatEvent({
+                    type: 'INSTINCT',
+                    damage: 0,
+                    target: 'player',
+                    label: '🔥 ЯРОСТЬ!',
+                });
+            }
+
+            if (totalBattleTicks >= 10000) {
+                break;
+            }
+        }
+
+        if (totalBattleTicks >= 10000) {
+            break;
+        }
 
         const isPlayerTurn = playerTicks >= enemyTicks;
 
         if (isPlayerTurn) {
+            engine.triggerPassiveOnTurnStart(anyEngine.player!, true);
+
             // Применяем периодический урон в начале хода
             const playerEffects = [...anyEngine.player!.statusEffects];
             for (const status of playerEffects) {
+                if (status.type === 'SHADOW_MARK' && status.delay > 0) {
+                    status.delay--;
+                }
                 if (status.type === 'BURN' || status.type === 'POISON') {
                     const tickDamage = Math.ceil(status.damagePerTurn * status.stacks);
-                    let dmg = tickDamage;
+                    const defMultiplier = status.type === 'POISON' ? 0.5 : 0.25;
+                    const effectiveDef = pStats.defense * defMultiplier;
+                    const mitigation = effectiveDef / (effectiveDef + pDivisor);
+                    const finalDamage = Math.max(1, Math.ceil(tickDamage * (1 - mitigation)));
+
+                    const modifiedTick = engine.triggerPassiveOnTakeDamage('player', finalDamage);
+                    let dmg = modifiedTick;
                     if (pShield > 0) {
                         if (pShield >= dmg) {
                             pShield -= dmg;
@@ -104,12 +144,22 @@ export function skipToEndOfBattle(engine: BattleEngine) {
                         }
                     }
                     pHP = Math.max(0, pHP - dmg);
-                    engine.totalDamageTaken += tickDamage;
+                    engine.totalDamageTaken += modifiedTick;
                     engine.onCombatEvent({
                         type: status.type,
-                        damage: tickDamage,
+                        damage: modifiedTick,
                         target: 'player',
                     });
+                }
+                if (status.type === 'NATURE_REGEN') {
+                    const avgItemLevel = pStats.avgItemLevel || 1;
+                    const itemLevelFactor = 1 - (avgItemLevel - 1) * 0.03;
+                    const regenPercent = (playerHeroId === 'lion_knight' ? 0.04 : 0.05) * itemLevelFactor;
+                    const baseHeal = Math.ceil(pStats.hp * regenPercent);
+                    const effectiveDef = pStats.defense * 0.5;
+                    const mitigation = effectiveDef / (effectiveDef + pDivisor);
+                    const healAmount = Math.max(1, Math.ceil(baseHeal * (1 - mitigation)));
+                    pHP = Math.min(pStats.hp, pHP + healAmount);
                 }
             }
             if (pHP <= 0) break;
@@ -132,46 +182,82 @@ export function skipToEndOfBattle(engine: BattleEngine) {
                     engine.state.playerMana = 0;
                     const hero = HEROES_DB.find((h) => h.id === playerHeroId) || HEROES_DB[0];
                     const role = hero.role;
-                    let mult = 2.0;
-                    if (role === 'WARRIOR') mult = 2.5;
-                    else if (role === 'ASSASSIN') mult = 3.5;
-                    else if (role === 'TANK') mult = 1.8;
-                    else mult = 2.2;
+                    
+                    const abilityCfg = getAbilityConfig(playerHeroId) ?? getAbilityConfigByRole(role);
+                    const { damageMultiplier, healPercent, shieldPercent, onCastStatus } = abilityCfg.activeAbility;
 
-                    const rawDmg = pStats.attack * mult * (0.9 + Math.random() * 0.2);
+                    const rawDmg = pStats.attack * damageMultiplier * (0.9 + Math.random() * 0.2);
                     const finalActiveDmg = Math.ceil(Math.max(1, rawDmg - eStats.defense * 0.25));
-                    eHP = Math.max(0, eHP - finalActiveDmg);
-                    engine.totalDamageDealt += finalActiveDmg;
-                    engine.totalTurnsPlayed += 1;
-                    store.updateQuestProgress('DAMAGE', finalActiveDmg);
+                    
+                    let finalDmg = engine.triggerPassiveOnDealDamage(anyEngine.player!, anyEngine.enemy!, finalActiveDmg, true, true);
+                    finalDmg = engine.triggerPassiveOnTakeDamage('enemy', finalDmg, true);
 
-                    if (role === 'SUPPORT') {
-                        pHP = Math.min(pStats.hp, pHP + Math.ceil(pStats.hp * 0.2));
-                    } else if (role === 'TANK') {
-                        const shieldAmount = Math.ceil(pStats.hp * 0.25);
+                    eHP = Math.max(0, eHP - finalDmg);
+                    engine.totalDamageDealt += finalDmg;
+                    engine.totalTurnsPlayed += 1;
+                    store.updateQuestProgress('DAMAGE', finalDmg);
+
+                    // Вампиризм (lifesteal)
+                    if (pStats.lifesteal && pStats.lifesteal > 0) {
+                        const heal = Math.ceil(finalDmg * (pStats.lifesteal / 100));
+                        pHP = Math.min(pStats.hp, pHP + heal);
+                    }
+
+                    const avgItemLevel = pStats.avgItemLevel || 1;
+                    const itemLevelFactor = 1 - (avgItemLevel - 1) * 0.03;
+
+                    if (healPercent) {
+                        pHP = Math.min(pStats.hp, pHP + Math.ceil(pStats.hp * healPercent));
+                    }
+                    if (shieldPercent) {
+                        const shieldAmount = Math.ceil(pStats.hp * shieldPercent * itemLevelFactor);
                         const maxShieldLimit = Math.ceil(pStats.hp * 0.5);
                         pShield = Math.min(maxShieldLimit, pShield + shieldAmount);
                     }
+                    if (onCastStatus) {
+                        let baseDmg = onCastStatus.damagePerTurn
+                            ? onCastStatus.damagePerTurn > 1
+                                ? onCastStatus.damagePerTurn
+                                : (pStats.attack * onCastStatus.damagePerTurn)
+                            : 0;
+                        if (playerHeroId === 'raccoon' && onCastStatus.type === 'POISON') {
+                            baseDmg = Math.max(15, baseDmg);
+                        }
+                        const dmgPerTurn = Math.ceil(baseDmg * itemLevelFactor);
+                        const targetUnit = onCastStatus.target === 'enemy' ? anyEngine.enemy! : anyEngine.player!;
+                        const isTargetPlayer = onCastStatus.target === 'player';
+                        engine.applyStatus(targetUnit, onCastStatus.type, onCastStatus.duration, dmgPerTurn, isTargetPlayer);
+                    }
                 } else {
-                    const dodgeCheck = Math.random() < eStats.dodge;
+                    const finalEvasion = Math.max(0, eStats.dodge - ((pStats.accuracy || 100) - 100) / 100);
+                    const dodgeCheck = Math.random() < finalEvasion;
                     if (!dodgeCheck || isOneShot) {
                         let baseDmg = pStats.attack * (0.9 + Math.random() * 0.2);
                         const isCrit = Math.random() < pStats.critChance;
                         if (isCrit) baseDmg *= pStats.critDamage || 1.5;
                         if (isOneShot) baseDmg = 999999;
 
-                        let targetDefense = eStats.defense;
+                        let targetDefense = eStats.defense * Math.max(0, 1 - (pStats.penetration || 0) / 100);
                         if (playerWeaponArchetype === 'STAFF') {
                             targetDefense *= 0.5;
                         }
 
-                        const defReduction = targetDefense / (targetDefense + 200);
+                        const defReduction = targetDefense / (targetDefense + eDivisor);
                         const mitigated = Math.max(0, baseDmg * (1 - defReduction));
                         const blockCheck = Math.random() < (eStats.defense > 0 ? 0.15 : 0.05);
 
                         let finalDmg = Math.ceil(mitigated);
                         if (blockCheck && !isOneShot) {
                             finalDmg = Math.max(1, Math.ceil(mitigated * 0.3));
+                        }
+
+                        finalDmg = engine.triggerPassiveOnDealDamage(anyEngine.player!, anyEngine.enemy!, finalDmg, isCrit, true);
+                        finalDmg = engine.triggerPassiveOnTakeDamage('enemy', finalDmg, isCrit);
+
+                        // Вампиризм (lifesteal)
+                        if (pStats.lifesteal && pStats.lifesteal > 0) {
+                            const heal = Math.ceil(finalDmg * (pStats.lifesteal / 100));
+                            pHP = Math.min(pStats.hp, pHP + heal);
                         }
 
                         eHP = Math.max(0, eHP - finalDmg);
@@ -186,23 +272,43 @@ export function skipToEndOfBattle(engine: BattleEngine) {
             // Уменьшаем длительность статусов в конце хода
             engine.decrementStatusDurations(anyEngine.player!);
 
-            playerTicks = 0;
-            playerTicks += getEffectiveSpeed(anyEngine.player!, pStats);
-            enemyTicks += getEffectiveSpeed(anyEngine.enemy!, eStats);
+            playerTicks -= ATB_THRESHOLD;
         } else {
             // Ход врага
             if (!isEnemyFrozen) {
+                engine.triggerPassiveOnTurnStart(anyEngine.enemy!, false);
+
                 const enemyEffects = [...anyEngine.enemy!.statusEffects];
                 for (const status of enemyEffects) {
+                    if (status.type === 'SHADOW_MARK' && status.delay > 0) {
+                        status.delay--;
+                    }
                     if (status.type === 'BURN' || status.type === 'POISON') {
                         const tickDamage = Math.ceil(status.damagePerTurn * status.stacks);
-                        eHP = Math.max(0, eHP - tickDamage);
-                        engine.totalDamageDealt += tickDamage;
+                        const defMultiplier = status.type === 'POISON' ? 0.5 : 0.25;
+                        const effectiveDef = eStats.defense * defMultiplier;
+                        const mitigation = effectiveDef / (effectiveDef + eDivisor);
+                        const finalDamage = Math.max(1, Math.ceil(tickDamage * (1 - mitigation)));
+
+                        const modifiedTick = engine.triggerPassiveOnTakeDamage('enemy', finalDamage);
+                        eHP = Math.max(0, eHP - modifiedTick);
+                        engine.totalDamageDealt += modifiedTick;
                         engine.onCombatEvent({
                             type: status.type,
-                            damage: tickDamage,
+                            damage: modifiedTick,
                             target: 'enemy',
                         });
+                    }
+                    if (status.type === 'NATURE_REGEN') {
+                        const enemyHeroId = anyEngine.enemy?.config?.id || '';
+                        const avgItemLevel = eStats.avgItemLevel || 1;
+                        const itemLevelFactor = 1 - (avgItemLevel - 1) * 0.03;
+                        const regenPercent = (enemyHeroId === 'lion_knight' ? 0.04 : 0.05) * itemLevelFactor;
+                        const baseHeal = Math.ceil(eStats.hp * regenPercent);
+                        const effectiveDef = eStats.defense * 0.5;
+                        const mitigation = effectiveDef / (effectiveDef + eDivisor);
+                        const healAmount = Math.max(1, Math.ceil(baseHeal * (1 - mitigation)));
+                        eHP = Math.min(eStats.hp, eHP + healAmount);
                     }
                 }
                 if (eHP <= 0) break;
@@ -219,13 +325,15 @@ export function skipToEndOfBattle(engine: BattleEngine) {
                     if (playerWeaponArchetype === 'BOW') {
                         playerDodgeChance += 0.15;
                     }
-                    const dodgeCheck = Math.random() < playerDodgeChance;
+                    const finalEvasion = Math.max(0, playerDodgeChance - ((eStats.accuracy || 100) - 100) / 100);
+                    const dodgeCheck = Math.random() < finalEvasion;
                     if (!dodgeCheck) {
                         let baseDmg = eStats.attack * (0.9 + Math.random() * 0.2);
                         const isCrit = Math.random() < eStats.critChance;
                         if (isCrit) baseDmg *= eStats.critDamage || 1.5;
 
-                        const pDefReduction = pStats.defense / (pStats.defense + 200);
+                        let targetDefense = pStats.defense * Math.max(0, 1 - (eStats.penetration || 0) / 100);
+                        const pDefReduction = targetDefense / (targetDefense + pDivisor);
                         let mitigated = Math.max(0, baseDmg * (1 - pDefReduction));
                         if (isGodMode) mitigated = 0;
 
@@ -234,6 +342,15 @@ export function skipToEndOfBattle(engine: BattleEngine) {
                         let finalDmg = Math.ceil(mitigated);
                         if (blockCheck) {
                             finalDmg = Math.max(1, Math.ceil(mitigated * 0.3));
+                        }
+
+                        finalDmg = engine.triggerPassiveOnDealDamage(anyEngine.enemy!, anyEngine.player!, finalDmg, isCrit, false);
+                        finalDmg = engine.triggerPassiveOnTakeDamage('player', finalDmg, isCrit);
+
+                        // Вампиризм (lifesteal)
+                        if (eStats.lifesteal && eStats.lifesteal > 0) {
+                            const heal = Math.ceil(finalDmg * (eStats.lifesteal / 100));
+                            eHP = Math.min(eStats.hp, eHP + heal);
                         }
 
                         let dmg = finalDmg;
@@ -261,9 +378,15 @@ export function skipToEndOfBattle(engine: BattleEngine) {
                 }
                 engine.decrementStatusDurations(anyEngine.enemy!);
             }
-            enemyTicks = 0;
-            playerTicks += getEffectiveSpeed(anyEngine.player!, pStats);
-            enemyTicks += getEffectiveSpeed(anyEngine.enemy!, eStats);
+            enemyTicks -= ATB_THRESHOLD;
+        }
+    }
+
+    if (totalBattleTicks >= 10000 && pHP > 0 && eHP > 0) {
+        if (pHP >= eHP) {
+            eHP = 0;
+        } else {
+            pHP = 0;
         }
     }
 

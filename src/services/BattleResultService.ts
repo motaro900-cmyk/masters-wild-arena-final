@@ -10,18 +10,55 @@ export interface BattleResult {
 }
 
 /**
- * Формула кубков — зависит от разницы рейтингов.
+ * Формула кубков — зависит от лиги и разницы рейтингов.
  */
-const calcCupsChange = (attackerRating: number, defenderRating: number, attackerWon: boolean): number => {
-    const diff = defenderRating - attackerRating;
-    if (attackerWon) {
-        if (diff >= 100) return 30; // победа над более сильным
-        if (diff >= 0) return 20; // победа над равным
-        return 10; // победа над слабым
-    } else {
-        if (diff <= -100) return -20; // поражение от слабого
-        if (diff <= 0) return -15; // поражение от равного
-        return -10; // поражение от более сильного
+const calcCupsChange = (rating: number, opponentRating: number, won: boolean): number => {
+    const diff = opponentRating - rating;
+    const isWeakOpponent = diff < 0;
+    const isStrongOpponent = diff > 0;
+
+    if (rating < 1000) {
+        if (won) {
+            return isWeakOpponent ? 70 : 100;
+        } else {
+            return 0;
+        }
+    } else if (rating < 3000) {
+        if (won) {
+            return isWeakOpponent ? 40 : 60;
+        } else {
+            return isStrongOpponent ? -3 : -5;
+        }
+    } else if (rating < 4500) {
+        if (won) {
+            return isWeakOpponent ? 20 : 35;
+        } else {
+            return isStrongOpponent ? -7 : -10;
+        }
+    } else if (rating < 6000) {
+        if (won) {
+            return isWeakOpponent ? 12 : 25;
+        } else {
+            return isStrongOpponent ? -9 : -13;
+        }
+    } else if (rating < 7500) {
+        if (won) {
+            return isWeakOpponent ? 10 : 20;
+        } else {
+            return isStrongOpponent ? -11 : -15;
+        }
+    } else if (rating < 9000) {
+        if (won) {
+            return isWeakOpponent ? 10 : 18;
+        } else {
+            return isStrongOpponent ? -13 : -18;
+        }
+    } else { // >= 9000
+        if (won) {
+            return isWeakOpponent ? 10 : 15;
+        } else {
+            return isStrongOpponent ? -18 : -25;
+        }
     }
 };
 
@@ -44,16 +81,8 @@ function getGoldReward(level: number, won: boolean): number {
     return Math.min(Math.round(base), cap);
 }
 
-function getXPReward(level: number, won: boolean): number {
-    if (won) {
-        if (level <= 10) return 100 + level * 20; // 120 to 300 XP
-        if (level <= 30) return 300 + (level - 10) * 10; // 310 to 500 XP
-        return Math.min(500 + (level - 30) * 5, 600); // 505 to 600 XP
-    } else {
-        if (level <= 10) return 20 + level * 4; // 24 to 60 XP
-        if (level <= 30) return 60 + (level - 10) * 2; // 62 to 100 XP
-        return Math.min(100 + (level - 30) * 1, 120); // 101 to 120 XP
-    }
+function getXPReward(won: boolean): number {
+    return won ? 250 : 80;
 }
 
 class BattleResultServiceClass {
@@ -73,6 +102,7 @@ class BattleResultServiceClass {
         opponentLevel?: number;
         isOpponentBot: boolean;
         attackerWon: boolean;
+        winStreak?: number;
     }): Promise<{ myCupsChange: number; myGoldChange: number; myExpChange: number }> {
         const {
             myUserId,
@@ -84,13 +114,38 @@ class BattleResultServiceClass {
             opponentLevel = 1,
             isOpponentBot,
             attackerWon,
+            winStreak = 0,
         } = params;
 
-        const myCupsChange = calcCupsChange(myRating, opponentRating, attackerWon);
+        let myCupsChange = calcCupsChange(myRating, opponentRating, attackerWon);
+
+        // Применяем Catch-up множитель (до 3000 кубков)
+        if (attackerWon && myRating < 3000) {
+            const expectedLevel = myRating < 1000 ? 1 : (myRating < 2000 ? 10 : 20);
+            const levelDiff = myLevel - expectedLevel;
+            if (levelDiff >= 20) {
+                const multiplier = Math.min(5, 1 + levelDiff / 20);
+                myCupsChange = Math.round(myCupsChange * multiplier);
+            }
+        }
+
+        // Применяем стрик-бонус за победы
+        if (attackerWon) {
+            const streak = winStreak + 1; // стрик включая текущую победу
+            let streakBonus = 0;
+            if (streak >= 10) {
+                streakBonus = 35;
+            } else if (streak >= 5) {
+                streakBonus = 20;
+            } else if (streak >= 3) {
+                streakBonus = 10;
+            }
+            myCupsChange += streakBonus;
+        }
         const myGoldChange = getGoldReward(myLevel, attackerWon);
 
         // Experience rewards calculation with Premium BP bonus multiplier and level-based scaling
-        const baseXP = getXPReward(myLevel, attackerWon);
+        const baseXP = getXPReward(attackerWon);
         const state = useGameStore.getState();
         const hasPremiumBP = state.isPremium;
         const expMultiplier = hasPremiumBP ? 1.25 : 1.0;

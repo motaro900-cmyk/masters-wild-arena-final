@@ -40,6 +40,7 @@ export const GameHUD: React.FC = () => {
     const mails = useGameStore((state) => state.mail) || [];
     const unreadMailCount = mails.filter((m: any) => m.tab === 'INBOX' && !m.isRead).length;
     const vipLevel = useGameStore((state) => state.vipLevel);
+    const vipEndTime = useGameStore((state) => state.vipEndTime);
     const isMobile = useGameStore((state) => state.isMobile);
     const [activeWindow, setActiveWindow] = useState<string | null>(null);
     const [showAdmin, setShowAdmin] = useState(false);
@@ -96,9 +97,8 @@ export const GameHUD: React.FC = () => {
 
     // Ежедневный VIP-подарок на почту и синхронизация VIP-статуса
     React.useEffect(() => {
-        const endTimeStr = safeGetItem('vipEndTime');
         const now = Date.now();
-        const isActive = endTimeStr ? parseInt(endTimeStr) > now : false;
+        const isActive = vipEndTime ? vipEndTime > now : false;
 
         // Синхронизируем vipLevel в сторе
         const expectedVipLevel = isActive ? 1 : 0;
@@ -167,7 +167,7 @@ export const GameHUD: React.FC = () => {
                 safeSetItem('lastVipMailClaimDate', mskDateStr);
             }, 100);
         }
-    }, [vipLevel]);
+    }, [vipLevel, vipEndTime]);
 
     // Expose to window for external screen communication (like CityScreen)
     React.useEffect(() => {

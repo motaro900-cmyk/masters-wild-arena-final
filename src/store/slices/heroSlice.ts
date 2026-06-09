@@ -226,7 +226,7 @@ export const createHeroSlice = (set: any, get: any) => {
             const base = {
                 hp: Math.round(heroData.stats.stamina * 10 * levelMultiplier),
                 attack: Math.round(heroData.stats.strength * 2 * levelMultiplier),
-                defense: Math.round(heroData.stats.stamina * 0.5),
+                defense: Math.round(heroData.stats.stamina * 0.5 * levelMultiplier),
                 speed: 1 + heroData.stats.agility * 0.05, // internal ATB speed multiplier
                 critChance: heroData.stats.agility * 0.5, // stored as % (e.g. 6%)
                 evasion: heroData.stats.agility * 0.2, // stored as % (e.g. 2.4%)
@@ -237,7 +237,13 @@ export const createHeroSlice = (set: any, get: any) => {
                 critDamage: 1.5,
             };
 
-            const total = { ...base };
+            const totalItemLevel = allItemsInfo.reduce((sum, item) => sum + item.level, 0);
+            const avgItemLevel = allItemsInfo.length > 0 ? totalItemLevel / allItemsInfo.length : 1;
+
+            const total = {
+                ...base,
+                avgItemLevel,
+            };
 
             const talents = state.heroTalents[heroId] || {};
             Object.entries(talents).forEach(([tId, lvl]: [string, any]) => {

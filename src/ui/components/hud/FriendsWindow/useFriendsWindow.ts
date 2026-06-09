@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useGameStore } from '../../../../store/useGameStore';
 import { syncService, SyncService } from '../../../../services/SyncService';
+import { getVkFriendsWhoPlay, isVkMiniApp } from '../../../../utils/VKBridge';
 
 export const useFriendsWindow = () => {
     const {
@@ -60,6 +61,54 @@ export const useFriendsWindow = () => {
         }
     }, [playerId]);
 
+    const [vkFriendsSynced, setVkFriendsSynced] = useState(false);
+
+    const syncVkFriends = useCallback(async () => {
+        if (!isVkMiniApp() || vkFriendsSynced) return;
+        try {
+            const vkFriendIds = await getVkFriendsWhoPlay();
+            if (vkFriendIds && vkFriendIds.length > 0) {
+                const store = useGameStore.getState();
+                const currentFriends = store.friends || [];
+                const currentFriendIds = currentFriends.map((f: any) => f.id);
+
+                const vkFriendDocIds = vkFriendIds.map((id) => `VK-${id}`);
+
+                // Исключаем самого себя
+                const myPrefixedId = SyncService.getPrefixedUserId(store.vkUser, store.playerId);
+                const missingIds = vkFriendDocIds.filter((id) => id !== myPrefixedId && !currentFriendIds.includes(id));
+
+                if (missingIds.length > 0) {
+                    const resolved = await syncService.resolveFriendProfiles(missingIds);
+                    if (resolved && resolved.length > 0) {
+                        const newFriends = [
+                            ...currentFriends,
+                            ...resolved.map((r) => ({
+                                ...r,
+                                giftSent: false,
+                                hasGift: false,
+                            })),
+                        ];
+                        useGameStore.setState({ friends: newFriends });
+                        await syncService.syncPlayerData();
+                    }
+                }
+            }
+            setVkFriendsSynced(true);
+        } catch (e) {
+            console.error('[useFriendsWindow] Error syncing VK friends:', e);
+        }
+    }, [vkFriendsSynced]);
+
+    useEffect(() => {
+        if (activeTab === 'ALL' || activeTab === 'ONLINE') {
+            const timer = setTimeout(() => {
+                syncVkFriends();
+            }, 0);
+            return () => clearTimeout(timer);
+        }
+    }, [activeTab, syncVkFriends]);
+
     useEffect(() => {
         if (activeTab === 'WORLD') {
             const timer = setTimeout(() => {
@@ -73,6 +122,7 @@ export const useFriendsWindow = () => {
         if (!searchQuery.trim()) return;
         setIsSearching(true);
         setFoundPlayer(null);
+        setActiveTab('ALL');
         try {
             const player = await syncService.searchPlayerById(searchQuery);
             setFoundPlayer(player);

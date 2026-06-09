@@ -281,6 +281,43 @@ export const isGroupMember = async (groupId: number = 238197449): Promise<boolea
 };
 
 /**
+ * Получает список VK ID друзей, которые установили приложение
+ */
+export const getVkFriendsWhoPlay = async (): Promise<number[]> => {
+    if (!bridge || !isVkMiniApp()) {
+        console.log('Mock VK: getVkFriendsWhoPlay returning mock VK friend IDs.');
+        return [212359386, 12345678];
+    }
+    try {
+        let token = '';
+        try {
+            const authResult = await bridge.send('VKWebAppGetAuthToken', {
+                app_id: Number(import.meta.env.VITE_VK_APP_ID || '52446645'),
+                scope: 'friends',
+            });
+            token = authResult.access_token || '';
+        } catch (tokenError) {
+            console.warn('VKWebAppGetAuthToken for friends failed:', tokenError);
+            return [];
+        }
+
+        if (!token) return [];
+
+        const result = await bridge.send('VKWebAppCallAPIMethod', {
+            method: 'friends.getAppUsers',
+            params: {
+                v: '5.131',
+                access_token: token,
+            },
+        });
+        return result.response || [];
+    } catch (error) {
+        console.warn('friends.getAppUsers call failed:', error);
+        return [];
+    }
+};
+
+/**
  * Шаринг результата боя в ВК.
  * На localhost — копирует текст в буфер обмена.
  * В мини-приложении — вызывает VKWebAppShowWallPostBox.

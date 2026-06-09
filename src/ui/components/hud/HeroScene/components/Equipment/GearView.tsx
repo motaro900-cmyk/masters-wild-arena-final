@@ -109,7 +109,6 @@ export const GearView = ({
         speed: 0,
         critChance: 0,
         evasion: 0,
-        resilience: 0,
         lifesteal: 0,
         penetration: 0,
         critDamage: 1.5,

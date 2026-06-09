@@ -271,8 +271,7 @@ export const FriendsWindow: React.FC<FriendsWindowProps> = () => {
                         setCurrentPage={setCurrentPage}
                         handleSendFriendRequest={handleSendFriendRequest}
                     />
-                ) : filteredFriends.length > 0 ||
-                  (searchQuery.length >= 4 && searchQuery.toUpperCase().startsWith('MW-')) ? (
+                ) : filteredFriends.length > 0 || searchQuery.trim().length > 0 || isSearching || foundPlayer ? (
                     <>
                         {/* LOCAL RESULTS */}
                         {filteredFriends.map((f: any) => (

@@ -26,6 +26,7 @@ export interface MatchOpponent {
         crit: number;
         evasion: number;
         critChance: number;
+        avgItemLevel?: number;
     };
     winRate: number;
     isBot: boolean; // true — бот, false — реальный игрок
@@ -84,7 +85,7 @@ const generateOpponentEquipment = (
     return equip;
 };
 
-const buildStatsFromEquipment = (heroId: string, level: number, equipment: Record<string, string | null>) => {
+const buildStatsFromEquipment = (heroId: string, level: number, equipment: Record<string, string | null>, avgItemLevel: number = 1) => {
     const heroData = HEROES_DB.find((h) => h.id === heroId) || HEROES_DB[0];
     const levelMult = 1 + (level - 1) * 0.05;
     const total = {
@@ -94,6 +95,7 @@ const buildStatsFromEquipment = (heroId: string, level: number, equipment: Recor
         speed: 1 + heroData.stats.agility * 0.05,
         critChance: heroData.stats.agility * 0.5,
         evasion: heroData.stats.agility * 0.2,
+        avgItemLevel,
     };
     Object.values(equipment).forEach((itemId) => {
         if (!itemId) return;
@@ -113,19 +115,38 @@ const buildStatsFromEquipment = (heroId: string, level: number, equipment: Recor
 };
 
 export const calculateCombatPower = (
-    stats: { attack?: number; hp?: number; defense?: number } | undefined | null,
+    stats: { attack?: number; hp?: number; defense?: number; critChance?: number; speed?: number; avgItemLevel?: number } | undefined | null,
 ): number => {
     if (!stats) return 1000;
     const attack = stats.attack ?? 10;
     const hp = stats.hp ?? 100;
     const defense = stats.defense ?? 5;
-    return Math.floor(attack * 10 + hp + defense * 5);
+    const critChance = stats.critChance ?? 0;
+    const speed = stats.speed ?? 1;
+    const avgItemLevel = stats.avgItemLevel ?? 1;
+    // EHP-based formula: mirrors actual battle mitigation (diminishing returns)
+    const divisor = 200 + (avgItemLevel - 1) * 25;
+    const defMitigation = defense / (defense + divisor);
+    const effectiveEHP = hp / Math.max(0.01, 1 - defMitigation);
+    return Math.floor(attack * 12 + effectiveEHP * 0.08 + critChance * 800 + speed * 200);
 };
 
 class MatchmakingServiceClass {
+    // Tracks consecutive wins for the newbie guarantee window
+    private newbieWinsGranted = (() => {
+        try {
+            return parseInt(localStorage.getItem('newbieWins') ?? '0', 10);
+        } catch {
+            return 0;
+        }
+    })();
+
     /**
-     * Основной метод поиска противника.
-     * Ищет реального игрока 10 секунд, потом генерирует бота.
+     * Tiered matchmaking:
+     *   0–700  cups → 90% bots, bots 5-10% weaker, first 5-10 wins guaranteed
+     *   700–1200     → 70% bots, bots ≈ player ±10%
+     *   1200–1500    → 50/50, honest matchmaking begins
+     *   1500+        → real players first, bots after 10s timeout
      */
     public async findOpponent(
         myUserId: string,
@@ -136,20 +157,64 @@ class MatchmakingServiceClass {
         winStreak = 0,
         lossStreak = 0,
     ): Promise<MatchOpponent> {
-        // Если рейтинг меньше 30 кубков (первые игры новичка), гарантированно даем бота
-        if (myRating < 30) {
-            return this.generateBot(myRating, myLevel, myStats, winStreak, lossStreak);
+        // ── TIER 1: 0–700 cups ──────────────────────────────────────────────
+        if (myRating < 700) {
+            // First 5 consecutive wins are guaranteed (newbie honeymoon)
+            const isHoneymoon = this.newbieWinsGranted < 5;
+            const botChance = 0.90;
+            const forceBot = isHoneymoon || Math.random() < botChance;
+            if (forceBot) {
+                const bot = this.generateBot(myRating, myLevel, myStats, winStreak, lossStreak);
+                // Scale bot 5-10% weaker for easy wins in this tier
+                const weakMult = 0.90 + Math.random() * 0.05; // 0.90–0.95
+                bot.stats.hp      = Math.round(bot.stats.hp      * weakMult);
+                bot.stats.attack  = Math.round(bot.stats.attack  * weakMult);
+                bot.stats.defense = Math.round(bot.stats.defense * weakMult);
+                return bot;
+            }
+            // 10% chance: try real player with 5s timeout
+            const real = await this.searchRealPlayer(myUserId, myRating, myWinRate, myLevel, myStats, 5000);
+            return real ?? this.generateBot(myRating, myLevel, myStats, winStreak, lossStreak);
         }
-        const realOpponent = await this.searchRealPlayer(myUserId, myRating, myWinRate, myLevel, myStats);
-        if (realOpponent) {
-            return realOpponent;
+
+        // ── TIER 2: 700–1200 cups ───────────────────────────────────────────
+        if (myRating < 1200) {
+            if (Math.random() < 0.70) {
+                return this.generateBot(myRating, myLevel, myStats, winStreak, lossStreak);
+            }
+            const real = await this.searchRealPlayer(myUserId, myRating, myWinRate, myLevel, myStats, 7000);
+            return real ?? this.generateBot(myRating, myLevel, myStats, winStreak, lossStreak);
         }
-        return this.generateBot(myRating, myLevel, myStats, winStreak, lossStreak);
+
+        // ── TIER 3: 1200–1500 cups ──────────────────────────────────────────
+        if (myRating < 1500) {
+            if (Math.random() < 0.50) {
+                return this.generateBot(myRating, myLevel, myStats, winStreak, lossStreak);
+            }
+            const real = await this.searchRealPlayer(myUserId, myRating, myWinRate, myLevel, myStats, 8000);
+            return real ?? this.generateBot(myRating, myLevel, myStats, winStreak, lossStreak);
+        }
+
+        // ── TIER 4: 1500+ cups — real players prioritized ───────────────────
+        const real = await this.searchRealPlayer(myUserId, myRating, myWinRate, myLevel, myStats, 10000);
+        return real ?? this.generateBot(myRating, myLevel, myStats, winStreak, lossStreak);
+    }
+
+    /** Called by the game after each battle result to update the honeymoon counter */
+    public recordBattleResult(won: boolean): void {
+        if (won && this.newbieWinsGranted < 10) {
+            this.newbieWinsGranted++;
+            try {
+                localStorage.setItem('newbieWins', String(this.newbieWinsGranted));
+            } catch (e) {
+                console.warn('[MatchmakingService] Failed to save newbieWins to localStorage:', e);
+            }
+        }
     }
 
     /**
-     * Ищет реального игрока в Firebase с подходящим рейтингом и винрейтом.
-     * Таймаут 10 секунд.
+     * Searches for a real player in Firebase.
+     * @param timeoutMs Dynamic timeout per tier (5 000 – 10 000 ms)
      */
     private async searchRealPlayer(
         myUserId: string,
@@ -157,9 +222,10 @@ class MatchmakingServiceClass {
         myWinRate: number,
         myLevel: number,
         myStats?: any,
+        timeoutMs = SEARCH_TIMEOUT_MS,
     ): Promise<MatchOpponent | null> {
         const searchPromise = this.queryFirebase(myUserId, myRating, myWinRate, myLevel, myStats);
-        const timeoutPromise = new Promise<null>((resolve) => setTimeout(() => resolve(null), SEARCH_TIMEOUT_MS));
+        const timeoutPromise = new Promise<null>((resolve) => setTimeout(() => resolve(null), timeoutMs));
         return Promise.race([searchPromise, timeoutPromise]);
     }
 
@@ -398,6 +464,12 @@ class MatchmakingServiceClass {
             botLevel = Math.min(botLevel, 1);
         }
 
+        let avgItemLevel = 1;
+        if (targetRarity === 'RARE') avgItemLevel = 3;
+        else if (targetRarity === 'EPIC') avgItemLevel = 5;
+        else if (targetRarity === 'LEGENDARY') avgItemLevel = 8;
+        else if (targetRarity === 'MYTHIC') avgItemLevel = 10;
+
         const equipment = generateOpponentEquipment(botLevel, targetRarity);
 
         // Рассчитываем множитель характеристик
@@ -431,7 +503,7 @@ class MatchmakingServiceClass {
         }
 
         // Рассчитываем характеристики бота на основе сгенерированного снаряжения и уровня
-        const rawStats = buildStatsFromEquipment(randomHero.id, botLevel, equipment);
+        const rawStats = buildStatsFromEquipment(randomHero.id, botLevel, equipment, avgItemLevel);
 
         const finalStats = {
             hp: Math.round(rawStats.hp * statsMultiplier),
@@ -480,6 +552,7 @@ class MatchmakingServiceClass {
                 crit: finalStats.critChance,
                 evasion: finalStats.evasion,
                 critChance: finalStats.critChance,
+                avgItemLevel: rawStats.avgItemLevel,
             },
             winRate: Math.max(30, Math.min(75, Math.floor(48 + (botRating % 15) + winStreak * 2 - lossStreak * 2))),
             isBot: true,

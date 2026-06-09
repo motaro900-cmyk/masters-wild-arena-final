@@ -608,7 +608,7 @@
         "subTab": "WEAPONS",
         "requiredLevel": 1,
         "priceGold": 1320,
-        "priceGem": 110,
+        "priceGem": 2500,
         "attackBonus": 55,
         "critChance": 6,
         "attackSpeed": 1.07
@@ -622,7 +622,7 @@
         "subTab": "WEAPONS",
         "requiredLevel": 2,
         "priceGold": 2112,
-        "priceGem": 220,
+        "priceGem": 2610,
         "attackBonus": 69,
         "critChance": 7,
         "attackSpeed": 1.09
@@ -636,7 +636,7 @@
         "subTab": "WEAPONS",
         "requiredLevel": 3,
         "priceGold": 3379,
-        "priceGem": 330,
+        "priceGem": 2720,
         "attackBonus": 86,
         "critChance": 8,
         "attackSpeed": 1.11
@@ -650,7 +650,7 @@
         "subTab": "WEAPONS",
         "requiredLevel": 4,
         "priceGold": 5407,
-        "priceGem": 440,
+        "priceGem": 2830,
         "attackBonus": 107,
         "critChance": 9,
         "attackSpeed": 1.1300000000000001
@@ -664,7 +664,7 @@
         "subTab": "WEAPONS",
         "requiredLevel": 5,
         "priceGold": 8651,
-        "priceGem": 550,
+        "priceGem": 2940,
         "attackBonus": 134,
         "critChance": 10,
         "attackSpeed": 1.1500000000000001
@@ -678,7 +678,7 @@
         "subTab": "WEAPONS",
         "requiredLevel": 6,
         "priceGold": 13841,
-        "priceGem": 660,
+        "priceGem": 3050,
         "attackBonus": 168,
         "critChance": 11,
         "attackSpeed": 1.17
@@ -692,7 +692,7 @@
         "subTab": "WEAPONS",
         "requiredLevel": 7,
         "priceGold": 22146,
-        "priceGem": 770,
+        "priceGem": 3170,
         "attackBonus": 210,
         "critChance": 12,
         "attackSpeed": 1.19
@@ -706,7 +706,7 @@
         "subTab": "WEAPONS",
         "requiredLevel": 8,
         "priceGold": 35433,
-        "priceGem": 880,
+        "priceGem": 3290,
         "attackBonus": 262,
         "critChance": 13,
         "attackSpeed": 1.21
@@ -720,7 +720,7 @@
         "subTab": "WEAPONS",
         "requiredLevel": 9,
         "priceGold": 56694,
-        "priceGem": 990,
+        "priceGem": 3400,
         "attackBonus": 328,
         "critChance": 14,
         "attackSpeed": 1.23
@@ -734,7 +734,7 @@
         "subTab": "WEAPONS",
         "requiredLevel": 10,
         "priceGold": 90710,
-        "priceGem": 1100,
+        "priceGem": 3500,
         "attackBonus": 410,
         "critChance": 15,
         "attackSpeed": 1.25
@@ -1308,7 +1308,7 @@
         "subTab": "HELMETS",
         "requiredLevel": 1,
         "priceGold": 1320,
-        "priceGem": 110,
+        "priceGem": 2500,
         "hpBonus": 660
     },
     "helmets_t2_mythic": {
@@ -1320,7 +1320,7 @@
         "subTab": "HELMETS",
         "requiredLevel": 2,
         "priceGold": 2112,
-        "priceGem": 220,
+        "priceGem": 2610,
         "hpBonus": 805
     },
     "helmets_t3_mythic": {
@@ -1332,7 +1332,7 @@
         "subTab": "HELMETS",
         "requiredLevel": 3,
         "priceGold": 3379,
-        "priceGem": 330,
+        "priceGem": 2720,
         "hpBonus": 982
     },
     "helmets_t4_mythic": {
@@ -1344,7 +1344,7 @@
         "subTab": "HELMETS",
         "requiredLevel": 4,
         "priceGold": 5407,
-        "priceGem": 440,
+        "priceGem": 2830,
         "hpBonus": 1198
     },
     "helmets_t5_mythic": {
@@ -1356,7 +1356,7 @@
         "subTab": "HELMETS",
         "requiredLevel": 5,
         "priceGold": 8651,
-        "priceGem": 550,
+        "priceGem": 2940,
         "hpBonus": 1462
     },
     "helmets_t6_mythic": {
@@ -1368,7 +1368,7 @@
         "subTab": "HELMETS",
         "requiredLevel": 6,
         "priceGold": 13841,
-        "priceGem": 660,
+        "priceGem": 3050,
         "hpBonus": 1784
     },
     "helmets_t7_mythic": {
@@ -1380,7 +1380,7 @@
         "subTab": "HELMETS",
         "requiredLevel": 7,
         "priceGold": 22146,
-        "priceGem": 770,
+        "priceGem": 3170,
         "hpBonus": 2176
     },
     "helmets_t8_mythic": {
@@ -1392,7 +1392,7 @@
         "subTab": "HELMETS",
         "requiredLevel": 8,
         "priceGold": 35433,
-        "priceGem": 880,
+        "priceGem": 3290,
         "hpBonus": 2655
     },
     "helmets_t9_mythic": {
@@ -1404,7 +1404,7 @@
         "subTab": "HELMETS",
         "requiredLevel": 9,
         "priceGold": 56694,
-        "priceGem": 990,
+        "priceGem": 3400,
         "hpBonus": 3239
     },
     "helmets_t10_mythic": {
@@ -1416,7 +1416,7 @@
         "subTab": "HELMETS",
         "requiredLevel": 10,
         "priceGold": 90710,
-        "priceGem": 1100,
+        "priceGem": 3500,
         "hpBonus": 3952
     },
     "armor_t1_common": {
@@ -2008,7 +2008,7 @@
         "subTab": "ARMOR",
         "requiredLevel": 1,
         "priceGold": 1320,
-        "priceGem": 110,
+        "priceGem": 2500,
         "defenseBonus": 44,
         "evasion": 4
     },
@@ -2021,7 +2021,7 @@
         "subTab": "ARMOR",
         "requiredLevel": 2,
         "priceGold": 2112,
-        "priceGem": 220,
+        "priceGem": 2610,
         "defenseBonus": 54,
         "evasion": 5
     },
@@ -2034,7 +2034,7 @@
         "subTab": "ARMOR",
         "requiredLevel": 3,
         "priceGold": 3379,
-        "priceGem": 330,
+        "priceGem": 2720,
         "defenseBonus": 67,
         "evasion": 6
     },
@@ -2047,7 +2047,7 @@
         "subTab": "ARMOR",
         "requiredLevel": 4,
         "priceGold": 5407,
-        "priceGem": 440,
+        "priceGem": 2830,
         "defenseBonus": 82,
         "evasion": 7
     },
@@ -2060,7 +2060,7 @@
         "subTab": "ARMOR",
         "requiredLevel": 5,
         "priceGold": 8651,
-        "priceGem": 550,
+        "priceGem": 2940,
         "defenseBonus": 101,
         "evasion": 8
     },
@@ -2073,7 +2073,7 @@
         "subTab": "ARMOR",
         "requiredLevel": 6,
         "priceGold": 13841,
-        "priceGem": 660,
+        "priceGem": 3050,
         "defenseBonus": 124,
         "evasion": 9
     },
@@ -2086,7 +2086,7 @@
         "subTab": "ARMOR",
         "requiredLevel": 7,
         "priceGold": 22146,
-        "priceGem": 770,
+        "priceGem": 3170,
         "defenseBonus": 152,
         "evasion": 10
     },
@@ -2099,7 +2099,7 @@
         "subTab": "ARMOR",
         "requiredLevel": 8,
         "priceGold": 35433,
-        "priceGem": 880,
+        "priceGem": 3290,
         "defenseBonus": 187,
         "evasion": 11
     },
@@ -2112,7 +2112,7 @@
         "subTab": "ARMOR",
         "requiredLevel": 9,
         "priceGold": 56694,
-        "priceGem": 990,
+        "priceGem": 3400,
         "defenseBonus": 231,
         "evasion": 12
     },
@@ -2125,7 +2125,7 @@
         "subTab": "ARMOR",
         "requiredLevel": 10,
         "priceGold": 90710,
-        "priceGem": 1100,
+        "priceGem": 3500,
         "defenseBonus": 284,
         "evasion": 13
     },
@@ -2718,7 +2718,7 @@
         "subTab": "SHIELDS",
         "requiredLevel": 1,
         "priceGold": 1320,
-        "priceGem": 110,
+        "priceGem": 2500,
         "defenseBonus": 33,
         "evasion": 4
     },
@@ -2731,7 +2731,7 @@
         "subTab": "SHIELDS",
         "requiredLevel": 2,
         "priceGold": 2112,
-        "priceGem": 220,
+        "priceGem": 2610,
         "defenseBonus": 40,
         "evasion": 5
     },
@@ -2744,7 +2744,7 @@
         "subTab": "SHIELDS",
         "requiredLevel": 3,
         "priceGold": 3379,
-        "priceGem": 330,
+        "priceGem": 2720,
         "defenseBonus": 48,
         "evasion": 6
     },
@@ -2757,7 +2757,7 @@
         "subTab": "SHIELDS",
         "requiredLevel": 4,
         "priceGold": 5407,
-        "priceGem": 440,
+        "priceGem": 2830,
         "defenseBonus": 57,
         "evasion": 7
     },
@@ -2770,7 +2770,7 @@
         "subTab": "SHIELDS",
         "requiredLevel": 5,
         "priceGold": 8651,
-        "priceGem": 550,
+        "priceGem": 2940,
         "defenseBonus": 68,
         "evasion": 8
     },
@@ -2783,7 +2783,7 @@
         "subTab": "SHIELDS",
         "requiredLevel": 6,
         "priceGold": 13841,
-        "priceGem": 660,
+        "priceGem": 3050,
         "defenseBonus": 82,
         "evasion": 9
     },
@@ -2796,7 +2796,7 @@
         "subTab": "SHIELDS",
         "requiredLevel": 7,
         "priceGold": 22146,
-        "priceGem": 770,
+        "priceGem": 3170,
         "defenseBonus": 99,
         "evasion": 10
     },
@@ -2809,7 +2809,7 @@
         "subTab": "SHIELDS",
         "requiredLevel": 8,
         "priceGold": 35433,
-        "priceGem": 880,
+        "priceGem": 3290,
         "defenseBonus": 118,
         "evasion": 11
     },
@@ -2822,7 +2822,7 @@
         "subTab": "SHIELDS",
         "requiredLevel": 9,
         "priceGold": 56694,
-        "priceGem": 990,
+        "priceGem": 3400,
         "defenseBonus": 142,
         "evasion": 12
     },
@@ -2835,7 +2835,7 @@
         "subTab": "SHIELDS",
         "requiredLevel": 10,
         "priceGold": 90710,
-        "priceGem": 1100,
+        "priceGem": 3500,
         "defenseBonus": 170,
         "evasion": 13
     },
@@ -3408,7 +3408,7 @@
         "subTab": "PANTS",
         "requiredLevel": 1,
         "priceGold": 1320,
-        "priceGem": 110,
+        "priceGem": 2500,
         "hpBonus": 440
     },
     "pants_t2_mythic": {
@@ -3420,7 +3420,7 @@
         "subTab": "PANTS",
         "requiredLevel": 2,
         "priceGold": 2112,
-        "priceGem": 220,
+        "priceGem": 2610,
         "hpBonus": 532
     },
     "pants_t3_mythic": {
@@ -3432,7 +3432,7 @@
         "subTab": "PANTS",
         "requiredLevel": 3,
         "priceGold": 3379,
-        "priceGem": 330,
+        "priceGem": 2720,
         "hpBonus": 644
     },
     "pants_t4_mythic": {
@@ -3444,7 +3444,7 @@
         "subTab": "PANTS",
         "requiredLevel": 4,
         "priceGold": 5407,
-        "priceGem": 440,
+        "priceGem": 2830,
         "hpBonus": 779
     },
     "pants_t5_mythic": {
@@ -3456,7 +3456,7 @@
         "subTab": "PANTS",
         "requiredLevel": 5,
         "priceGold": 8651,
-        "priceGem": 550,
+        "priceGem": 2940,
         "hpBonus": 943
     },
     "pants_t6_mythic": {
@@ -3468,7 +3468,7 @@
         "subTab": "PANTS",
         "requiredLevel": 6,
         "priceGold": 13841,
-        "priceGem": 660,
+        "priceGem": 3050,
         "hpBonus": 1141
     },
     "pants_t7_mythic": {
@@ -3480,7 +3480,7 @@
         "subTab": "PANTS",
         "requiredLevel": 7,
         "priceGold": 22146,
-        "priceGem": 770,
+        "priceGem": 3170,
         "hpBonus": 1381
     },
     "pants_t8_mythic": {
@@ -3492,7 +3492,7 @@
         "subTab": "PANTS",
         "requiredLevel": 8,
         "priceGold": 35433,
-        "priceGem": 880,
+        "priceGem": 3290,
         "hpBonus": 1671
     },
     "pants_t9_mythic": {
@@ -3504,7 +3504,7 @@
         "subTab": "PANTS",
         "requiredLevel": 9,
         "priceGold": 56694,
-        "priceGem": 990,
+        "priceGem": 3400,
         "hpBonus": 2022
     },
     "pants_t10_mythic": {
@@ -3516,7 +3516,7 @@
         "subTab": "PANTS",
         "requiredLevel": 10,
         "priceGold": 90710,
-        "priceGem": 1100,
+        "priceGem": 3500,
         "hpBonus": 2446
     },
     "boots_t1_common": {
@@ -4088,7 +4088,7 @@
         "subTab": "BOOTS",
         "requiredLevel": 1,
         "priceGold": 1320,
-        "priceGem": 110,
+        "priceGem": 2500,
         "hpBonus": 275
     },
     "boots_t2_mythic": {
@@ -4100,7 +4100,7 @@
         "subTab": "BOOTS",
         "requiredLevel": 2,
         "priceGold": 2112,
-        "priceGem": 220,
+        "priceGem": 2610,
         "hpBonus": 325
     },
     "boots_t3_mythic": {
@@ -4112,7 +4112,7 @@
         "subTab": "BOOTS",
         "requiredLevel": 3,
         "priceGold": 3379,
-        "priceGem": 330,
+        "priceGem": 2720,
         "hpBonus": 383
     },
     "boots_t4_mythic": {
@@ -4124,7 +4124,7 @@
         "subTab": "BOOTS",
         "requiredLevel": 4,
         "priceGold": 5407,
-        "priceGem": 440,
+        "priceGem": 2830,
         "hpBonus": 452
     },
     "boots_t5_mythic": {
@@ -4136,7 +4136,7 @@
         "subTab": "BOOTS",
         "requiredLevel": 5,
         "priceGold": 8651,
-        "priceGem": 550,
+        "priceGem": 2940,
         "hpBonus": 533
     },
     "boots_t6_mythic": {
@@ -4148,7 +4148,7 @@
         "subTab": "BOOTS",
         "requiredLevel": 6,
         "priceGold": 13841,
-        "priceGem": 660,
+        "priceGem": 3050,
         "hpBonus": 629
     },
     "boots_t7_mythic": {
@@ -4160,7 +4160,7 @@
         "subTab": "BOOTS",
         "requiredLevel": 7,
         "priceGold": 22146,
-        "priceGem": 770,
+        "priceGem": 3170,
         "hpBonus": 742
     },
     "boots_t8_mythic": {
@@ -4172,7 +4172,7 @@
         "subTab": "BOOTS",
         "requiredLevel": 8,
         "priceGold": 35433,
-        "priceGem": 880,
+        "priceGem": 3290,
         "hpBonus": 876
     },
     "boots_t9_mythic": {
@@ -4184,7 +4184,7 @@
         "subTab": "BOOTS",
         "requiredLevel": 9,
         "priceGold": 56694,
-        "priceGem": 990,
+        "priceGem": 3400,
         "hpBonus": 1034
     },
     "boots_t10_mythic": {
@@ -4196,7 +4196,7 @@
         "subTab": "BOOTS",
         "requiredLevel": 10,
         "priceGold": 90710,
-        "priceGem": 1100,
+        "priceGem": 3500,
         "hpBonus": 1220
     },
     "shoulders_t1_common": {
@@ -4768,7 +4768,7 @@
         "subTab": "SHOULDERS",
         "requiredLevel": 1,
         "priceGold": 1320,
-        "priceGem": 110,
+        "priceGem": 2500,
         "attackBonus": 28
     },
     "shoulders_t2_mythic": {
@@ -4780,7 +4780,7 @@
         "subTab": "SHOULDERS",
         "requiredLevel": 2,
         "priceGold": 2112,
-        "priceGem": 220,
+        "priceGem": 2610,
         "attackBonus": 32
     },
     "shoulders_t3_mythic": {
@@ -4792,7 +4792,7 @@
         "subTab": "SHOULDERS",
         "requiredLevel": 3,
         "priceGold": 3379,
-        "priceGem": 330,
+        "priceGem": 2720,
         "attackBonus": 36
     },
     "shoulders_t4_mythic": {
@@ -4804,7 +4804,7 @@
         "subTab": "SHOULDERS",
         "requiredLevel": 4,
         "priceGold": 5407,
-        "priceGem": 440,
+        "priceGem": 2830,
         "attackBonus": 42
     },
     "shoulders_t5_mythic": {
@@ -4816,7 +4816,7 @@
         "subTab": "SHOULDERS",
         "requiredLevel": 5,
         "priceGold": 8651,
-        "priceGem": 550,
+        "priceGem": 2940,
         "attackBonus": 48
     },
     "shoulders_t6_mythic": {
@@ -4828,7 +4828,7 @@
         "subTab": "SHOULDERS",
         "requiredLevel": 6,
         "priceGold": 13841,
-        "priceGem": 660,
+        "priceGem": 3050,
         "attackBonus": 55
     },
     "shoulders_t7_mythic": {
@@ -4840,7 +4840,7 @@
         "subTab": "SHOULDERS",
         "requiredLevel": 7,
         "priceGold": 22146,
-        "priceGem": 770,
+        "priceGem": 3170,
         "attackBonus": 64
     },
     "shoulders_t8_mythic": {
@@ -4852,7 +4852,7 @@
         "subTab": "SHOULDERS",
         "requiredLevel": 8,
         "priceGold": 35433,
-        "priceGem": 880,
+        "priceGem": 3290,
         "attackBonus": 73
     },
     "shoulders_t9_mythic": {
@@ -4864,7 +4864,7 @@
         "subTab": "SHOULDERS",
         "requiredLevel": 9,
         "priceGold": 56694,
-        "priceGem": 990,
+        "priceGem": 3400,
         "attackBonus": 84
     },
     "shoulders_t10_mythic": {
@@ -4876,7 +4876,7 @@
         "subTab": "SHOULDERS",
         "requiredLevel": 10,
         "priceGold": 90710,
-        "priceGem": 1100,
+        "priceGem": 3500,
         "attackBonus": 97
     }
 }

@@ -128,6 +128,7 @@ export const AVATAR_FRAMES: AvatarFrameOption[] = [
         name: 'Золотая пшеница',
         path: '/assets/images/frames/harvest_wheat_frame.webp',
         description: 'Классическая золотая рама Диких Земель.',
+        requiredLevel: 80,
     },
     {
         id: 'angel_wings_frame.webp',
@@ -216,6 +217,7 @@ export const TITLES: TitleOption[] = [
     { id: 'seer', name: 'Провидец', description: 'Видящий суть вещей.', requiredLevel: 56 },
     { id: 'elder', name: 'Старейшина', description: 'Почтенный и мудрый предводитель.', requiredLevel: 64 },
     { id: 'guardian', name: 'Хранитель Равновесия', description: 'Защитник порядка Диких Земель.', requiredLevel: 72 },
+    { id: 'master_wild', name: 'Мастер Дикой Природы', description: 'Преодолевший весь Легендарный путь.', requiredLevel: 80 },
     { id: 'arena_king', name: 'Король Арены', description: 'Величайший боец среди равных.', requiredLevel: 50 },
     { id: 'vip', name: 'VIP Персона', description: 'Особо важный гость Диких Земель.', requiredVip: 1 },
     { id: 'developer', name: 'Разработчик', description: 'Создатель этой вселенной.', requiredVip: 5 },
@@ -243,7 +245,7 @@ export function getAvatarFrameStyle(frameId: string): { glowClass: string } {
         glowClass: frame.glowClass || '',
     };
 }
-/* eslint-disable @typescript-eslint/no-unused-vars */
+
 export function getAvatarImageStyle(avatarPath: string): React.CSSProperties {
     const isBear =
         avatarPath && (avatarPath.includes('bear.webp') || avatarPath.includes('bear') || avatarPath === 'bear');
@@ -256,31 +258,35 @@ export function getAvatarImageStyle(avatarPath: string): React.CSSProperties {
     };
 }
 
-export function isAvatarUnlocked(avatar: AvatarOption, _playerLevel: number, _playerVip: number): boolean {
-    // Только дефолтный аватар панды разблокирован по умолчанию
+export function isAvatarUnlocked(avatar: AvatarOption, playerLevel: number, playerVip: number): boolean {
     if (avatar.id === 'panda') return true;
+    if (avatar.requiredLevel && playerLevel >= avatar.requiredLevel) return true;
+    if (avatar.requiredVip && playerVip >= avatar.requiredVip) return true;
     return false;
 }
 
 export function isFrameUnlocked(
     frame: AvatarFrameOption,
-    _playerLevel: number,
-    _playerVip: number,
-    _playerTitle: string,
+    playerLevel: number,
+    playerVip: number,
+    playerTitle: string,
 ): boolean {
-    // Только стандартная рамка разблокирована по умолчанию
     if (frame.id === 'none') return true;
+    if (frame.requiredLevel && playerLevel >= frame.requiredLevel) return true;
+    if (frame.requiredVip && playerVip >= frame.requiredVip) return true;
+    if (frame.requiresTitle && playerTitle === frame.requiresTitle) return true;
     return false;
 }
 
 export function isTitleUnlocked(
     title: TitleOption,
-    _playerLevel: number,
-    _playerVip: number,
-    _playerTrophies: number,
+    playerLevel: number,
+    playerVip: number,
+    playerTrophies: number,
 ): boolean {
-    // Только титул Странника разблокирован по умолчанию
     if (title.id === 'wanderer') return true;
+    if (title.requiredLevel && playerLevel >= title.requiredLevel) return true;
+    if (title.requiredVip && playerVip >= title.requiredVip) return true;
+    if (title.requiredTrophies && playerTrophies >= title.requiredTrophies) return true;
     return false;
 }
-/* eslint-enable @typescript-eslint/no-unused-vars */

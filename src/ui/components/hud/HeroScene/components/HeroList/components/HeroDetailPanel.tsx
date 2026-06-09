@@ -111,7 +111,7 @@ export function HeroDetailPanel({
     const activeRarity = displaySkin ? displaySkin.rarity : hero.rarity;
     const color = rarityColors[activeRarity] || '#fff';
     const roleInfo = ROLE_ICONS[hero.role] || ROLE_ICONS.WARRIOR;
-    const derived = deriveStats(hero.stats);
+    const derived = deriveStats(hero.stats, hero.id);
 
     return (
         <motion.div

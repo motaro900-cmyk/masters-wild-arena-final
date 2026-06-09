@@ -502,8 +502,73 @@ export const Root = () => {
                 const userId = SyncService.getPrefixedUserId(state.vkUser, state.playerId);
                 console.log('🔍 Checking Firebase profile for:', userId);
                 try {
-                    const fbProfile = await syncService.loadPlayerData(userId);
-                    if (fbProfile) {
+                    const result = await syncService.loadPlayerData(userId);
+                    
+                    if (result === null) {
+                        console.error('❌ Failed to load remote profile due to network/server error.');
+                        setInitError(
+                            'Не удалось загрузить данные вашего профиля из-за проблем с сетью. Пожалуйста, проверьте интернет-соединение и попробуйте снова.',
+                        );
+                        useGameStore.setState({ profileStatus: 'error' });
+                        clearTimeout(timeoutId);
+                        return;
+                    }
+
+                    if (result.isNew) {
+                        console.log('👶 No remote profile found in Firestore. Resetting store for new player.');
+                        useGameStore.getState().resetStore();
+                        useGameStore.setState({
+                            name: 'Мастер',
+                            onboardingCompleted: false,
+                            tutorialStep: 0,
+                            activeScreen: 'INTRO',
+                        });
+                        state = useGameStore.getState();
+
+                        // Мгновенная запись нового документа с isNewPlayer: true и merge: false
+                        try {
+                            const { db, USERS_COLLECTION } = await import('./utils/firebase');
+                            const { doc, setDoc, serverTimestamp } = await import('firebase/firestore');
+                            const playerRef = doc(db, USERS_COLLECTION, userId);
+
+                            const initialData = {
+                                id: userId,
+                                isNewPlayer: true,
+                                name: 'Мастер',
+                                level: 1,
+                                gold: 300,
+                                crystals: 50,
+                                rating: 0,
+                                wasOnline: serverTimestamp(),
+                                activeScreen: 'INTRO',
+                                fullStateJSON: JSON.stringify({
+                                    onboardingCompleted: false,
+                                    name: 'Мастер',
+                                    level: 1,
+                                    gold: 300,
+                                    crystals: 50,
+                                    rating: 0,
+                                    activeScreen: 'INTRO',
+                                    lastSavedTimestamp: Date.now(),
+                                }),
+                            };
+
+                            await setDoc(playerRef, initialData, { merge: false });
+                            console.log('✅ Created new player document with isNewPlayer: true');
+                        } catch (err) {
+                            console.error('Failed to create new player doc:', err);
+                        }
+                    } else {
+                        const fbProfile = result.data;
+                        if (!fbProfile) {
+                            console.error('❌ Remote profile is null for an existing player (suspicious isNew blocked).');
+                            setInitError(
+                                'Не удалось загрузить данные вашего профиля. Пожалуйста, проверьте интернет-соединение и попробуйте снова.',
+                            );
+                            useGameStore.setState({ profileStatus: 'error' });
+                            clearTimeout(timeoutId);
+                            return;
+                        }
                         const localState = useGameStore.getState();
                         const localTimestamp = localState.lastSavedTimestamp || 0;
                         const remoteTimestamp = fbProfile.lastSavedTimestamp || fbProfile.wasOnlineMs || 0;
@@ -519,50 +584,27 @@ export const Root = () => {
                             syncService.syncPlayerData();
                         } else {
                             console.log('💾 Found remote profile, restoring state...', fbProfile.name);
-                            const restoredName = fbProfile.name;
-                            const onboardingDone = fbProfile.onboardingCompleted;
                             const stateToRestore = { ...fbProfile };
                             stateToRestore.lastSavedTimestamp = remoteTimestamp;
                             if (stateToRestore.status === 'BANNED') {
                                 stateToRestore.isBanned = true;
                             }
-                            if (
-                                (onboardingDone || (restoredName && restoredName !== 'Мастер')) &&
-                                restoredName &&
-                                restoredName !== 'Мастер'
-                            ) {
+
+                            // Проверяем флаг isNewPlayer
+                            const isNewPlayer = fbProfile.isNewPlayer === true;
+                            if (isNewPlayer) {
+                                console.log('👶 Remote profile has isNewPlayer: true — triggering onboarding.');
+                                stateToRestore.onboardingCompleted = false;
+                                stateToRestore.activeScreen = 'INTRO';
+                            } else {
+                                console.log('👤 Existing player (isNewPlayer is false/absent) — skipping onboarding.');
                                 stateToRestore.onboardingCompleted = true;
                                 stateToRestore.activeScreen = 'MAIN_MENU';
                             }
+
                             useGameStore.setState(stateToRestore);
                             state = useGameStore.getState();
-
-                            if (!restoredName || restoredName === 'Мастер') {
-                                console.log('⚠️ Default name detected after restore — resetting onboarding.');
-                                useGameStore.setState({
-                                    onboardingCompleted: false,
-                                    tutorialStep: 0,
-                                    activeScreen: 'INTRO',
-                                    lastSavedTimestamp: remoteTimestamp,
-                                });
-                            }
                         }
-                    } else {
-                        console.log('👶 No remote profile found in Firestore. Resetting onboarding for new player.');
-                        useGameStore.setState({
-                            name: 'Мастер',
-                            onboardingCompleted: false,
-                            tutorialStep: 0,
-                            activeScreen: 'INTRO',
-                            gold: 300,
-                            crystals: 50,
-                            level: 1,
-                            rating: 0,
-                            vipLevel: 0,
-                            vipEndTime: 0,
-                            inventory: [],
-                            heroEquipment: {},
-                        });
                     }
                 } catch (loadErr: any) {
                     console.error('❌ Failed to load remote profile:', loadErr);

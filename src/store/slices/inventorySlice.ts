@@ -305,12 +305,22 @@ export const createInventorySlice = (set: any, get: any) => ({
         syncService.debouncedSync();
 
         // Пересчёт combat power
-        const newStats = get().getCalculatedStats?.(heroId)?.total;
-        if (newStats) {
-            set({
-                combatPower: Math.floor(newStats.attack * 10 + newStats.hp + newStats.defense * 5),
-            });
-        }
+                const newStats = get().getCalculatedStats?.(heroId)?.total;
+                if (newStats) {
+                    // EHP-based Combat Power: DEF has diminishing returns (mirrors battle mitigation)
+                    const avgItemLevel = newStats.avgItemLevel || 1;
+                    const divisor = 200 + (avgItemLevel - 1) * 25;
+                    const defMitigation = newStats.defense / (newStats.defense + divisor);
+                    const effectiveEHP = newStats.hp / Math.max(0.01, 1 - defMitigation);
+                    set({
+                        combatPower: Math.floor(
+                            newStats.attack * 12 +
+                            effectiveEHP * 0.08 +
+                            (newStats.critChance || 0) * 800 +
+                            (newStats.speed || 1) * 200
+                        ),
+                    });
+                }
     },
 
     unequipItem: (id: string) => {
@@ -348,9 +358,16 @@ export const createInventorySlice = (set: any, get: any) => ({
         // Пересчёт combat power
         const newStatsAfterUnequip = get().getCalculatedStats?.(heroId)?.total;
         if (newStatsAfterUnequip) {
+            const avgItemLevel = newStatsAfterUnequip.avgItemLevel || 1;
+            const divisor = 200 + (avgItemLevel - 1) * 25;
+            const defMitigation = newStatsAfterUnequip.defense / (newStatsAfterUnequip.defense + divisor);
+            const effectiveEHP = newStatsAfterUnequip.hp / Math.max(0.01, 1 - defMitigation);
             set({
                 combatPower: Math.floor(
-                    newStatsAfterUnequip.attack * 10 + newStatsAfterUnequip.hp + newStatsAfterUnequip.defense * 5,
+                    newStatsAfterUnequip.attack * 12 +
+                    effectiveEHP * 0.08 +
+                    (newStatsAfterUnequip.critChance || 0) * 800 +
+                    (newStatsAfterUnequip.speed || 1) * 200
                 ),
             });
         }

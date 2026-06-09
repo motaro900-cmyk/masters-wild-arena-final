@@ -172,7 +172,11 @@ export const MatchmakingOverlay: React.FC<MatchmakingOverlayProps> = ({ onFound,
     if (opponent) {
         const pScore = playerStats.hp + playerStats.attack * 10 + playerStats.defense * 10;
         const eScore = opponent.stats.hp + opponent.stats.attack * 10 + opponent.stats.defense * 10;
-        forecast = Math.max(5, Math.min(95, Math.round((pScore / (pScore + eScore)) * 100)));
+        // Use a cubic ratio to model realistic RPG combat scaling (sigmoidal shape, non-linear win chance)
+        const pScore3 = Math.pow(pScore, 3);
+        const eScore3 = Math.pow(eScore, 3);
+        const ratio = pScore3 / (pScore3 + eScore3 || 1);
+        forecast = Math.max(5, Math.min(99, Math.round(ratio * 100)));
     }
 
     const renderStatRow = (label: string, pVal: number, eVal: number, maxVal: number) => {

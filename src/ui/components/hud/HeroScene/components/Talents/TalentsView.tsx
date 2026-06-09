@@ -205,7 +205,7 @@ export const TalentsView = ({ hero, isCompact = false }: any) => {
                             {/* Nodes positioning */}
                             <div style={{ position: 'relative', width: '100%', height: '100%' }}>
                                 {branch.tiers.map((tier, tIndex) => {
-                                    const requiredLevel = tIndex === 0 ? 1 : tIndex === 1 ? 2 : 5;
+                                    const requiredLevel = tIndex === 0 ? 1 : tIndex === 1 ? 10 : 20;
                                     const isLevelUnlocked = heroLevel >= requiredLevel;
                                     const isUnlocked = branchPoints >= tier.requiredInBranch && isLevelUnlocked;
 
@@ -590,7 +590,7 @@ export const TalentsView = ({ hero, isCompact = false }: any) => {
 
                                 {/* Nodes positioning */}
                                 {branch.tiers.map((tier, tIndex) => {
-                                    const requiredLevel = tIndex === 0 ? 1 : tIndex === 1 ? 2 : 5;
+                                    const requiredLevel = tIndex === 0 ? 1 : tIndex === 1 ? 10 : 20;
                                     const isLevelUnlocked = heroLevel >= requiredLevel;
                                     const isUnlocked = branchPoints >= tier.requiredInBranch && isLevelUnlocked;
 

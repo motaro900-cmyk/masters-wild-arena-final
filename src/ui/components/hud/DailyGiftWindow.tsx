@@ -5,7 +5,7 @@ import { AssetsMap } from '../../../configs/AssetsMap';
 import { audioService } from '../../../services/AudioService';
 import { GiftCongratsModal } from './DailyGift/GiftCongratsModal';
 import { db, USERS_COLLECTION } from '../../../utils/firebase';
-import { SyncService } from '../../../services/SyncService';
+import { syncService, SyncService } from '../../../services/SyncService';
 import { doc, getDoc, updateDoc, serverTimestamp, Timestamp } from 'firebase/firestore';
 
 // Pure helper functions outside component to satisfy react-hooks/purity
@@ -262,6 +262,7 @@ export const DailyGiftWindow: React.FC<DailyGiftWindowProps> = ({ onClose }) => 
         setClaimedToday(true);
         setCanClaimDailyGift(false);
         useGameStore.getState().updateQuestProgress('OPEN_CHEST', 1);
+        await syncService.syncPlayerData();
     };
 
     const getRewardIcon = (type: RewardType) => {
@@ -352,6 +353,7 @@ export const DailyGiftWindow: React.FC<DailyGiftWindowProps> = ({ onClose }) => 
             });
 
             useGameStore.getState().updateQuestProgress('OPEN_CHEST', 1);
+            await syncService.syncPlayerData();
         }, 4100);
     };
 

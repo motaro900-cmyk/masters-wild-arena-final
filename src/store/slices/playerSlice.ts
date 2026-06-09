@@ -658,7 +658,7 @@ export const createPlayerSlice = (set: any, get: any) => ({
             return patch;
         });
 
-        syncService.debouncedSync();
+        syncService.syncPlayerData();
         return rewards;
     },
 });

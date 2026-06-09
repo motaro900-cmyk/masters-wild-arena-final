@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getFirestore } from 'firebase/firestore';
+import { initializeFirestore, persistentLocalCache } from 'firebase/firestore';
 
 // Ваш конфиг из консоли Firebase
 const firebaseConfig = {
@@ -13,7 +13,9 @@ const firebaseConfig = {
 
 // Инициализация
 const app = initializeApp(firebaseConfig);
-export const db = getFirestore(app);
+export const db = initializeFirestore(app, {
+    localCache: persistentLocalCache(),
+});
 
 const isLocalhost =
     typeof window !== 'undefined' &&

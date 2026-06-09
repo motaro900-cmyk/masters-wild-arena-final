@@ -387,11 +387,22 @@ const store = create<GameStoreState>()(
 
 const originalSetState = store.setState;
 store.setState = (partial: any, replace?: boolean) => {
-    const patch = typeof partial === 'function' ? (partial as any)(store.getState()) : partial;
+    const currentState = store.getState();
+    const patch = typeof partial === 'function' ? (partial as any)(currentState) : partial;
+    
+    // Check if crystals decreased (spent)
+    const crystalsSpent = patch && patch.crystals !== undefined && patch.crystals < (currentState.crystals || 0);
+
     if (patch && !Object.prototype.hasOwnProperty.call(patch, 'lastSavedTimestamp')) {
         originalSetState({ ...patch, lastSavedTimestamp: Date.now() }, replace);
     } else {
         originalSetState(partial, replace);
+    }
+
+    if (crystalsSpent) {
+        import('../services/SyncService').then(({ syncService }) => {
+            syncService.syncPlayerData().catch(() => {});
+        });
     }
 };
 

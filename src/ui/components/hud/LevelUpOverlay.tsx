@@ -186,35 +186,48 @@ export const LevelUpOverlay: React.FC = () => {
                         </div>
 
                         {/* Unlocked tier indicator */}
-                        {latestLevelUp.unlockedTier && (
-                            <div
-                                style={{
-                                    marginTop: '10px',
-                                    paddingTop: '12px',
-                                    borderTop: '1px dashed rgba(234,179,8,0.2)',
-                                    color: '#fbbf24',
-                                    fontSize: '14px',
-                                    fontWeight: 900,
-                                    letterSpacing: '1px',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    gap: '8px',
-                                    textShadow: '0 0 8px rgba(251,191,36,0.3)',
-                                }}
-                            >
-                                <span>🔓</span>
-                                <span>
-                                    ОТКРЫТ НОВЫЙ ТИР ТАЛАНТОВ (
-                                    {latestLevelUp.unlockedTier === 2
+                        {(() => {
+                            const lvl = latestLevelUp.newLevel;
+                            let unlockText: string | null = null;
+                            if (lvl === 10) unlockText = "ОТКРЫТ 2-Й СЛОТ ТАЛАНТОВ (ТИР II)";
+                            else if (lvl === 20) unlockText = "ОТКРЫТ ОСОБЫЙ СКИН РАМКИ (ИЗУМРУДНЫЙ ДРАКОН)";
+                            else if (lvl === 40) unlockText = "ОТКРЫТ ЭКСКЛЮЗИВНЫЙ ЭФФЕКТ УДАРА (УЛЬТИМЕЙТ ТАЛАНТ)";
+                            else if (lvl === 60) unlockText = "ОТКРЫТ УНИКАЛЬНЫЙ ЭФФЕКТ ФИНИШЕРА";
+                            else if (lvl === 80) unlockText = "ТИТУЛ 'МАСТЕР ДИКОЙ ПРИРОДЫ' + ЗОЛОТАЯ РАМКА";
+                            else if (latestLevelUp.unlockedTier) {
+                                unlockText = `ОТКРЫТ НОВЫЙ ТИР ТАЛАНТОВ (${
+                                    latestLevelUp.unlockedTier === 2
                                         ? 'ТИР II'
                                         : latestLevelUp.unlockedTier === 3
                                           ? 'ТИР III'
-                                          : 'УЛЬТИМЕЙТ'}
-                                    )
-                                </span>
-                            </div>
-                        )}
+                                          : 'УЛЬТИМЕЙТ'
+                                })`;
+                            }
+
+                            if (!unlockText) return null;
+
+                            return (
+                                <div
+                                    style={{
+                                        marginTop: '10px',
+                                        paddingTop: '12px',
+                                        borderTop: '1px dashed rgba(234,179,8,0.2)',
+                                        color: '#fbbf24',
+                                        fontSize: '14px',
+                                        fontWeight: 900,
+                                        letterSpacing: '1px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        gap: '8px',
+                                        textShadow: '0 0 8px rgba(251,191,36,0.3)',
+                                    }}
+                                >
+                                    <span>🔓</span>
+                                    <span>{unlockText}</span>
+                                </div>
+                            );
+                        })()}
                     </div>
 
                     {/* Confirm Button */}

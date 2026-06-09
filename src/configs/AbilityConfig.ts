@@ -145,7 +145,7 @@ export const ABILITY_REGISTRY: Record<string, HeroAbilityConfig> = {
         activeAbility: {
             name: 'Молот Лабиринта',
             damageMultiplier: 1.8,
-            shieldPercent: 0.25,
+            shieldPercent: 0.054,
             onCastStatus: { target: 'player', type: 'STUN_IMMUNITY', duration: 2 },
         },
         attackPassive: { chance: 0.25, status: 'STUN', duration: 1 },
@@ -155,20 +155,26 @@ export const ABILITY_REGISTRY: Record<string, HeroAbilityConfig> = {
         heroId: 'tiger_warrior',
         activeAbility: {
             name: 'Лунное Сечение',
-            damageMultiplier: 3.2,
+            damageMultiplier: 3.25,
             onCastStatus: { target: 'enemy', type: 'SHADOW_MARK', duration: 1 },
         },
         attackPassive: { chance: 0.35, status: 'SHADOW_MARK', duration: 1 },
         passive: {
             onDealDamage: (ctx) => {
-                const hasMark = ctx.victim.statusEffects?.some((s: any) => s.type === 'SHADOW_MARK');
-                if (hasMark) {
-                    const agi = ctx.attacker.config?.stats?.agility || 24;
-                    const modifier = 1.0 + agi * 0.05;
-                    return {
-                        damageModifier: modifier,
-                        extraLog: `🌑 [МЕТКА ТЕНЕЙ] Удар усилен ×${modifier.toFixed(2)}!`,
-                    };
+                const hasMarkIndex = ctx.victim.statusEffects?.findIndex((s: any) => s.type === 'SHADOW_MARK');
+                if (hasMarkIndex !== undefined && hasMarkIndex !== -1) {
+                    const mark = ctx.victim.statusEffects[hasMarkIndex];
+                    if (!mark.delay || mark.delay <= 0) {
+                        ctx.victim.statusEffects.splice(hasMarkIndex, 1);
+                        const stats = ctx.isPlayer ? ctx.engine.playerStats : ctx.engine.enemyStats;
+                        const avgItemLevel = stats?.avgItemLevel || 1;
+                        const itemLevelFactor = 1 - (avgItemLevel - 1) * 0.03;
+                        const modifier = 1.0 + 0.2 * itemLevelFactor;
+                        return {
+                            damageModifier: modifier,
+                            extraLog: `🌑 [МЕТКА ТЕНЕЙ] Удар усилен ×${modifier.toFixed(2)}!`,
+                        };
+                    }
                 }
                 return {};
             },

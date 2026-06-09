@@ -8,7 +8,8 @@ service cloud.firestore {
     // а все сохранения будут идти через защищенный серверный Admin SDK.
     
     match /пользователи/{userId} {
-      allow read, create, update: if true;
+      allow read: if true;
+      allow write: if userId.matches('VK-.*');
       allow delete: if false;
 
       match /почта/{mailId} {

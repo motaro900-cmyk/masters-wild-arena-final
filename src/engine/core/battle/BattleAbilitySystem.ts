@@ -26,8 +26,11 @@ export async function castActiveAbility(engine: BattleEngine) {
     const abilityCfg = getAbilityConfig(heroId) ?? getAbilityConfigByRole(role);
     const { name: abilityName, damageMultiplier, healPercent, shieldPercent, onCastStatus } = abilityCfg.activeAbility;
 
+    const avgItemLevel = anyEngine.playerStats?.avgItemLevel || 1;
+    const itemLevelFactor = 1 - (avgItemLevel - 1) * 0.03;
+
     const healAmount = healPercent ? Math.ceil(anyEngine.playerStats!.hp * healPercent) : 0;
-    const shieldAmount = shieldPercent ? Math.ceil(anyEngine.playerStats!.hp * shieldPercent) : 0;
+    const shieldAmount = shieldPercent ? Math.ceil(anyEngine.playerStats!.hp * shieldPercent * itemLevelFactor) : 0;
 
     // Play casting effects
     audioService.playSFX('/assets/audio/sfx/strike_staff.mp3');
@@ -73,11 +76,15 @@ export async function castActiveAbility(engine: BattleEngine) {
 
         // Применяем статус из конфига (если есть)
         if (onCastStatus) {
-            const dmgPerTurn = onCastStatus.damagePerTurn
+            let baseDmg = onCastStatus.damagePerTurn
                 ? onCastStatus.damagePerTurn > 1
                     ? onCastStatus.damagePerTurn
-                    : Math.ceil(anyEngine.playerStats!.attack * onCastStatus.damagePerTurn)
+                    : (anyEngine.playerStats!.attack * onCastStatus.damagePerTurn)
                 : 0;
+            if (heroId === 'raccoon' && onCastStatus.type === 'POISON') {
+                baseDmg = Math.max(15, baseDmg);
+            }
+            const dmgPerTurn = Math.ceil(baseDmg * itemLevelFactor);
             const targetUnit = onCastStatus.target === 'enemy' ? anyEngine.enemy : anyEngine.player;
             const isTargetPlayer = onCastStatus.target === 'player';
             engine.applyStatus(targetUnit, onCastStatus.type, onCastStatus.duration, dmgPerTurn, isTargetPlayer);

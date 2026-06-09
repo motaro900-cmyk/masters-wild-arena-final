@@ -1,4 +1,4 @@
-import { MAX_HERO_LEVEL, getHeroExpNeeded } from './HeroLevelConfig';
+import { MAX_HERO_LEVEL, getHeroExpNeeded, LEVEL_MILESTONES } from './HeroLevelConfig';
 import { getLevelMultiplier } from './HeroLevelCalculator';
 import { HeroProgress, LevelUpStatsDelta } from './HeroLevelTypes';
 
@@ -55,15 +55,21 @@ export class HeroLevelService {
             const oldAtk = Math.round(baseStats.strength * 2 * oldMult);
             const newAtk = Math.round(baseStats.strength * 2 * newMult);
 
-            // Determine if a new talent tier is unlocked
+            // Determine if a milestone is crossed (talent tier, elite skin, master title)
             // Tier 1 is always unlocked.
-            // Tier 2: Level 2
-            // Tier 3: Level 5
-            // Ultimate: Level 10
+            // Tier 2: Level 10 — Talent Slot 2
+            // Tier 3: Level 20 — Talent Slot 3 (Ultimate)
+            // Tier 4: Level 40 — Legendary Passive
+            // Tier 5: Level 60 — Elite Skin unlock
+            // Tier 6: Level 80 — "Master of the Wild" title + reward
             let unlockedTier: number | null = null;
-            if (oldLevel < 2 && level >= 2) unlockedTier = 2;
-            else if (oldLevel < 5 && level >= 5) unlockedTier = 3;
-            else if (oldLevel < 10 && level >= 10) unlockedTier = 4;
+            for (let i = LEVEL_MILESTONES.length - 1; i >= 0; i--) {
+                const milestone = LEVEL_MILESTONES[i];
+                if (oldLevel < milestone && level >= milestone) {
+                    unlockedTier = i + 2; // tier index: milestone[0]=10 -> tier 2, etc.
+                    break;
+                }
+            }
 
             delta = {
                 heroId,
