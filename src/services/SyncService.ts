@@ -1223,16 +1223,13 @@ export class SyncService {
                 return { data: processedData, isNew: false };
             }
 
-            // Никогда не возвращать isNew: true если у игрока есть локальные данные
-            // с золотом больше стартовых 300
-            const localGold = useGameStore.getState().gold;
+            // Никогда не возвращать isNew: true если у игрока есть недавние локальные данные
             const localTimestamp = useGameStore.getState().lastSavedTimestamp || 0;
+            const hourAgo = Date.now() - 60 * 60 * 1000;
 
-            if (localGold > 300 && localTimestamp > 0) {
-                // Локальные данные выглядят как реальный прогресс
-                // Скорее всего ошибка загрузки а не новый игрок
-                console.warn('[SyncService] Suspicious isNew — local progress exists, blocking reset');
-                return { data: null, isNew: false }; // блокируем сброс
+            if (localTimestamp > hourAgo) {
+                console.warn('[SyncService] Blocking reset — local save exists from last hour');
+                return { data: null, isNew: false };
             }
 
             return { data: null, isNew: true };
