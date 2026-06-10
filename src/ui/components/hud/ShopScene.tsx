@@ -134,12 +134,12 @@ export const ShopScene: React.FC = () => {
                             background: 'rgba(240, 192, 64, 0.1)',
                             border: '1px solid rgba(240, 192, 64, 0.3)',
                             borderRadius: '50%',
-                            width: isMobile ? '32px' : '44px',
-                            height: isMobile ? '32px' : '44px',
+                            width: isMobile ? '44px' : '54px',
+                            height: isMobile ? '44px' : '54px',
                             color: '#f0c040',
-                            fontSize: isMobile ? '14px' : '18px',
+                            fontSize: isMobile ? '16px' : '22px',
                             cursor: 'pointer',
-                            marginRight: isMobile ? '10px' : '20px',
+                            marginRight: isMobile ? '12px' : '20px',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
@@ -210,7 +210,7 @@ export const ShopScene: React.FC = () => {
                         padding: isMobile ? '8px' : '20px',
                         display: 'flex',
                         flexDirection: 'column',
-                        justifyContent: 'space-between',
+                        justifyContent: 'flex-start',
                         boxShadow: '0 10px 30px rgba(0,0,0,0.8)',
                     }}
                 >
@@ -243,35 +243,6 @@ export const ShopScene: React.FC = () => {
                             image={AssetsMap.UI.TAB_BANK}
                             isMobile={isMobile}
                         />
-                    </div>
-
-                    <div>
-                        <button
-                            onClick={exitShop}
-                            style={{
-                                width: '100%',
-                                height: isMobile ? '32px' : '50px',
-                                background: 'rgba(255,50,50,0.1)',
-                                border: '1px solid rgba(255,50,50,0.3)',
-                                borderRadius: '8px',
-                                color: '#ff6666',
-                                fontFamily: "'Cinzel', 'Philosopher', serif",
-                                fontWeight: 900,
-                                fontSize: isMobile ? '11px' : '15px',
-                                cursor: 'pointer',
-                                transition: 'all 0.3s',
-                            }}
-                            onMouseEnter={(e) => {
-                                e.currentTarget.style.background = 'rgba(255,50,50,0.2)';
-                                e.currentTarget.style.borderColor = 'rgba(255,50,50,0.5)';
-                            }}
-                            onMouseLeave={(e) => {
-                                e.currentTarget.style.background = 'rgba(255,50,50,0.1)';
-                                e.currentTarget.style.borderColor = 'rgba(255,50,50,0.3)';
-                            }}
-                        >
-                            ВЕРНУТЬСЯ
-                        </button>
                     </div>
                 </div>
 

@@ -201,9 +201,9 @@ export const HeroScene: React.FC = () => {
                                 style={{
                                     background: 'rgba(240,192,64,0.1)',
                                     border: '1px solid rgba(240,192,64,0.3)',
-                                    borderRadius: '8px',
-                                    width: '38px',
-                                    height: '38px',
+                                    borderRadius: '50%',
+                                    width: isMobile ? '44px' : '54px',
+                                    height: isMobile ? '44px' : '54px',
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
@@ -211,11 +211,11 @@ export const HeroScene: React.FC = () => {
                                     flexShrink: 0,
                                 }}
                             >
-                                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                <svg width="18" height="18" viewBox="0 0 16 16" fill="none">
                                     <path
                                         d="M10 3L5 8l5 5"
                                         stroke="#f0c040"
-                                        strokeWidth="2"
+                                        strokeWidth="2.5"
                                         strokeLinecap="round"
                                         strokeLinejoin="round"
                                         style={{ filter: 'drop-shadow(0 0 4px rgba(240, 192, 64, 0.5))' }}
