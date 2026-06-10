@@ -6,6 +6,8 @@ import { ENERGY_CONFIG } from '../game/configs/constants';
 import { createPlayerSlice } from './slices/playerSlice';
 import { createShopSlice } from './slices/shopSlice';
 import { createInventorySlice } from './slices/inventorySlice';
+import { createForgeSlice } from './slices/forgeSlice';
+import { createResourcesSlice } from './slices/resourcesSlice';
 import { createHeroSlice } from './slices/heroSlice';
 import { createQuestSlice } from './slices/questSlice';
 import { createClanSlice } from './slices/clanSlice';
@@ -42,7 +44,9 @@ const store = create<GameStoreState>()(
         (set, get) => ({
             ...createPlayerSlice(set, get),
             ...createShopSlice(set, get),
+            ...createResourcesSlice(set, get),
             ...createInventorySlice(set, get),
+            ...createForgeSlice(set, get),
             ...createHeroSlice(set, get),
             ...createQuestSlice(set, get),
             ...createClanSlice(set, get),
@@ -128,7 +132,9 @@ const store = create<GameStoreState>()(
                 set({
                     ...createPlayerSlice(set, get),
                     ...createShopSlice(set, get),
+                    ...createResourcesSlice(set, get),
                     ...createInventorySlice(set, get),
+                    ...createForgeSlice(set, get),
                     ...createHeroSlice(set, get),
                     ...createQuestSlice(set, get),
                     ...createClanSlice(set, get),

@@ -1,0 +1,926 @@
+{
+  "weapons": [
+    {
+      "id": "sling_leather",
+      "name": "Кожаная Праща",
+      "rarity": "COMMON",
+      "requiredLevel": 1,
+      "desc": "Простое метательное оружие из полоски кожи."
+    },
+    {
+      "id": "stick",
+      "name": "Бамбуковая Палка",
+      "rarity": "COMMON",
+      "requiredLevel": 1,
+      "desc": "Простая бамбуковая палка. Не самое грозное оружие, но с чего-то надо начинать."
+    },
+    {
+      "id": "stick_oak",
+      "name": "Дубовый Посох",
+      "rarity": "COMMON",
+      "requiredLevel": 2,
+      "desc": "Простой деревянный посох для начинающих магов."
+    },
+    {
+      "id": "pan_master",
+      "name": "Чугунная Сковорода",
+      "rarity": "COMMON",
+      "requiredLevel": 3,
+      "desc": "Тяжелая, надежная и отлично звонит при ударе."
+    },
+    {
+      "id": "sword_broken",
+      "name": "Обломок Катаны",
+      "rarity": "RARE",
+      "requiredLevel": 10,
+      "desc": "Даже в сломанном виде эта сталь остается невероятно острой."
+    },
+    {
+      "id": "dagger_rusty",
+      "name": "Ржавый Тесак",
+      "rarity": "RARE",
+      "requiredLevel": 10,
+      "desc": "Старое лезвие, побитое временем и ржавчиной."
+    },
+    {
+      "id": "dagger_bone",
+      "name": "Клык Кровавого Жнеца",
+      "rarity": "RARE",
+      "requiredLevel": 15,
+      "desc": "Костяной кинжал с навершием в виде черепа."
+    },
+    {
+      "id": "staff_willow",
+      "name": "Ивовый Жезл Очищения",
+      "rarity": "RARE",
+      "requiredLevel": 15,
+      "desc": "Жезл из ветви священной ивы, наполненный энергией природы."
+    },
+    {
+      "id": "dagger_ritual",
+      "name": "Кинжал Забытых Предков",
+      "rarity": "RARE",
+      "requiredLevel": 15,
+      "desc": "Древнее костяное лезвие с магическими рунами."
+    },
+    {
+      "id": "bow_composite",
+      "name": "Композитный Лук Волка",
+      "rarity": "RARE",
+      "requiredLevel": 20,
+      "desc": "Эргономичный лук, обеспечивающий высокую точность стрельбы."
+    },
+    {
+      "id": "axe_iron",
+      "name": "Секира Лесного Ополченца",
+      "rarity": "RARE",
+      "requiredLevel": 20,
+      "desc": "Простой, но надежный топор для защиты своего дома."
+    },
+    {
+      "id": "katana_shadow",
+      "name": "Катана Тени",
+      "rarity": "EPIC",
+      "requiredLevel": 25,
+      "desc": "Клинок, который практически не виден в темноте."
+    },
+    {
+      "id": "katana_steel",
+      "name": "Стальная Катана",
+      "rarity": "EPIC",
+      "requiredLevel": 27,
+      "desc": "Классическое оружие, доведенное до совершенства."
+    },
+    {
+      "id": "katana_blood",
+      "name": "Катана Кровавой Луны",
+      "rarity": "EPIC",
+      "requiredLevel": 30,
+      "desc": "Её лезвие жаждет битвы так же сильно, как и её владелец."
+    },
+    {
+      "id": "mace_justice",
+      "name": "Булава Правосудия",
+      "rarity": "EPIC",
+      "requiredLevel": 32,
+      "desc": "Каждый удар этой булавы несет в себе тяжесть закона."
+    },
+    {
+      "id": "staff_shadow",
+      "name": "Посох Теневого Мага",
+      "rarity": "EPIC",
+      "requiredLevel": 35,
+      "desc": "Позволяет манипулировать энергией тени."
+    },
+    {
+      "id": "daggers_assassin",
+      "name": "Кинжалы Убийцы",
+      "rarity": "EPIC",
+      "requiredLevel": 35,
+      "desc": "Пара быстрых клинков для тех, кто не привык ждать."
+    },
+    {
+      "id": "axe_executioner",
+      "name": "Секира Палача",
+      "rarity": "EPIC",
+      "requiredLevel": 37,
+      "desc": "Тяжелый топор, предназначенный для одного решающего удара."
+    },
+    {
+      "id": "flail_guardian",
+      "name": "Моргенштерн Стража",
+      "rarity": "EPIC",
+      "requiredLevel": 40,
+      "desc": "Шипастый шар на цепи — кошмар любого щитоносца."
+    },
+    {
+      "id": "sword_silver",
+      "name": "Меч Серебряного Рыцаря",
+      "rarity": "EPIC",
+      "requiredLevel": 42,
+      "desc": "Благородный клинок из лучшей стали империи."
+    },
+    {
+      "id": "axe_veteran",
+      "name": "Боевой Топор Ветерана",
+      "rarity": "EPIC",
+      "requiredLevel": 43,
+      "desc": "Оружие, прошедшее через сотни сражений."
+    },
+    {
+      "id": "weapon_moon_sword",
+      "name": "Эпический Меч Луны",
+      "rarity": "EPIC",
+      "requiredLevel": 45,
+      "desc": "Овеянный легендами клинок, вобравший в себя холодное сияние ночной луны."
+    },
+    {
+      "id": "bow_griffin",
+      "name": "Лук Золотого Грифона",
+      "rarity": "LEGENDARY",
+      "requiredLevel": 50,
+      "desc": "Тетива этого лука поет, когда стрела летит точно в цель."
+    },
+    {
+      "id": "staff_celestial",
+      "name": "Жезл Небесного Ока",
+      "rarity": "LEGENDARY",
+      "requiredLevel": 52,
+      "desc": "Направляет энергию чистого света на противников."
+    },
+    {
+      "id": "hammer_phoenix",
+      "name": "Молот Пылающего Феникса",
+      "rarity": "LEGENDARY",
+      "requiredLevel": 55,
+      "desc": "Удары этого молота вызывают вспышки священного огня."
+    },
+    {
+      "id": "staff_gold",
+      "name": "Посох Золотого Оракула",
+      "rarity": "LEGENDARY",
+      "requiredLevel": 57,
+      "desc": "Древний артефакт, способный предсказывать движения врага."
+    },
+    {
+      "id": "daggers_emerald",
+      "name": "Клинки Изумрудного Убийцы",
+      "rarity": "LEGENDARY",
+      "requiredLevel": 60,
+      "desc": "Изумрудное сияние этих клинков — последнее, что видят враги."
+    },
+    {
+      "id": "claws_ice_fire",
+      "name": "Когти Ледяного Пламени",
+      "rarity": "MYTHIC",
+      "requiredLevel": 65,
+      "desc": "Смертоносное сочетание абсолютного холода и испепеляющего огня."
+    },
+    {
+      "id": "staff_sun_burst",
+      "name": "Жезл Солнечного Всплеска",
+      "rarity": "MYTHIC",
+      "requiredLevel": 67,
+      "desc": "Извергает потоки чистой солнечной энергии."
+    },
+    {
+      "id": "staff_galaxy",
+      "name": "Скипетр Межзвездного Странника",
+      "rarity": "MYTHIC",
+      "requiredLevel": 70,
+      "desc": "Внутри этого скипетра рождаются и гибнут целые миры."
+    },
+    {
+      "id": "sword_moon_glow",
+      "name": "Клинок Лунного Сияния",
+      "rarity": "MYTHIC",
+      "requiredLevel": 72,
+      "desc": "Призрачное сияние этого меча игнорирует любую броню."
+    },
+    {
+      "id": "axe_ice",
+      "name": "Ледяной Жнец Душ",
+      "rarity": "MYTHIC",
+      "requiredLevel": 74,
+      "desc": "Его прикосновение замораживает саму душу противника."
+    },
+    {
+      "id": "staff_skull_green",
+      "name": "Посох Повелителя Некрополя",
+      "rarity": "MYTHIC",
+      "requiredLevel": 76,
+      "desc": "Зеленое пламя этого посоха питается страхом врагов."
+    },
+    {
+      "id": "sword_hell",
+      "name": "Меч Преисподней",
+      "rarity": "MYTHIC",
+      "requiredLevel": 78,
+      "desc": "Клинок, выкованный из застывшей ярости огненного демона."
+    },
+    {
+      "id": "axe_chaos",
+      "name": "Секира Первородного Хаоса",
+      "rarity": "MYTHIC",
+      "requiredLevel": 80,
+      "desc": "Воплощение разрушительной силы первобытного хаоса."
+    }
+  ],
+  "helmets": [
+    {
+      "id": "h1",
+      "name": "Венец Аметистового Властелина",
+      "rarity": "EPIC",
+      "requiredLevel": 28,
+      "desc": "Древний аметистовый артефакт, излучающий ауру власти."
+    },
+    {
+      "id": "h2",
+      "name": "Шлем Проклятого Самурая",
+      "rarity": "RARE",
+      "requiredLevel": 14,
+      "desc": "Освященный металл, благословленный жрецами света."
+    },
+    {
+      "id": "h3",
+      "name": "Золотой Лик Фараона",
+      "rarity": "EPIC",
+      "requiredLevel": 32,
+      "desc": "Тяжелый шлем элитных стражей забытой империи."
+    },
+    {
+      "id": "h4",
+      "name": "Золотой Оракул",
+      "rarity": "MYTHIC",
+      "requiredLevel": 70,
+      "desc": "Дыхание бездны всё еще ощущается внутри этого шлема."
+    },
+    {
+      "id": "h_dark",
+      "name": "Шлем Теневого Дракона",
+      "rarity": "MYTHIC",
+      "requiredLevel": 75,
+      "desc": "Тьма внутри него шепчет забытые заклинания."
+    },
+    {
+      "id": "h_forest",
+      "name": "Капюшон Лесного Странника",
+      "rarity": "RARE",
+      "requiredLevel": 10,
+      "desc": "Сплетен из веток священного древа."
+    },
+    {
+      "id": "h5",
+      "name": "Шлем Небесного Стража",
+      "rarity": "EPIC",
+      "requiredLevel": 35,
+      "desc": "Притягивает молнии, которые питают владельца силой."
+    },
+    {
+      "id": "h6",
+      "name": "Шлем Серебряного Валькирия",
+      "rarity": "RARE",
+      "requiredLevel": 16,
+      "desc": "Древняя маска, хранящая кодекс чести."
+    },
+    {
+      "id": "h7",
+      "name": "Капюшон Ночного Охотника",
+      "rarity": "EPIC",
+      "requiredLevel": 38,
+      "desc": "Замораживает взгляды врагов."
+    },
+    {
+      "id": "h9",
+      "name": "Капюшон Скрытности",
+      "rarity": "RARE",
+      "requiredLevel": 12,
+      "desc": "Позволяет слиться с тенями."
+    },
+    {
+      "id": "h10",
+      "name": "Шлем Несокрушимого Титана",
+      "rarity": "EPIC",
+      "requiredLevel": 40,
+      "desc": "Тяжелая броня из истинного мифрила."
+    },
+    {
+      "id": "h11",
+      "name": "Маска Кровавого Они",
+      "rarity": "RARE",
+      "requiredLevel": 18,
+      "desc": "Линзы позволяют видеть сквозь туман войны."
+    },
+    {
+      "id": "h12",
+      "name": "Лик Повелителя Мертвых",
+      "rarity": "LEGENDARY",
+      "requiredLevel": 52,
+      "desc": "Мощи древнего зверя всё еще живет в этой кости."
+    },
+    {
+      "id": "h14",
+      "name": "Шлем Солнечного Рыцаря",
+      "rarity": "EPIC",
+      "requiredLevel": 45,
+      "desc": "Сияет так ярко, что враги не могут прицелиться."
+    },
+    {
+      "id": "h15",
+      "name": "Лик Огненного Феникса",
+      "rarity": "MYTHIC",
+      "requiredLevel": 80,
+      "desc": "Каждый вдох в этом шлеме наполняет кровь огнем."
+    },
+    {
+      "id": "h16",
+      "name": "Венец Звездного Императора",
+      "rarity": "LEGENDARY",
+      "requiredLevel": 58,
+      "desc": "Управляй силой созвездий."
+    },
+    {
+      "id": "bandana",
+      "name": "Повязка Скитальца",
+      "rarity": "COMMON",
+      "requiredLevel": 1,
+      "desc": "Старая повязка, защищающая от пыли дорог."
+    },
+    {
+      "id": "iron_helm",
+      "name": "Шлем Королевской Гвардии",
+      "rarity": "RARE",
+      "requiredLevel": 20,
+      "desc": "Надежный стальной шлем."
+    },
+    {
+      "id": "starter_helm",
+      "name": "Кожаный Шлем",
+      "rarity": "COMMON",
+      "requiredLevel": 1,
+      "desc": "Простая защита головы из потертой кожи."
+    },
+    {
+      "id": "helm_skull",
+      "name": "Костяной Шлем Погибели",
+      "rarity": "RARE",
+      "requiredLevel": 19,
+      "desc": "Пустые глазницы этого шлема вселяют ужас."
+    },
+    {
+      "id": "helm_ranger",
+      "name": "Кожаный Капюшон Рейнджера",
+      "rarity": "RARE",
+      "requiredLevel": 10,
+      "desc": "Легкий капюшон, помогающий замаскироваться среди лесной листвы."
+    },
+    {
+      "id": "helm_steampunk",
+      "name": "Визор Парового Инженера",
+      "rarity": "EPIC",
+      "requiredLevel": 25,
+      "desc": "Высокотехнологичный прибор для анализа поля боя."
+    }
+  ],
+  "armor": [
+    {
+      "id": "ragged_tunic",
+      "name": "Рваная Туника Скитальца",
+      "rarity": "COMMON",
+      "requiredLevel": 1,
+      "desc": "Старая туника, которая едва держится на плечах."
+    },
+    {
+      "id": "starter_armor",
+      "name": "Ученический Доспех",
+      "rarity": "COMMON",
+      "requiredLevel": 1,
+      "desc": "Легкая броня для начинающих воинов."
+    },
+    {
+      "id": "armor_ranger",
+      "name": "Кожаная Куртка Рейнджера",
+      "rarity": "RARE",
+      "requiredLevel": 10,
+      "desc": "Надежная куртка, сшитая из качественной кожи лесных зверей."
+    },
+    {
+      "id": "armor_forest",
+      "name": "Шкура Северного Медведя",
+      "rarity": "RARE",
+      "requiredLevel": 15,
+      "desc": "Плотная меховая шкура, согревающая в самые лютые морозы."
+    },
+    {
+      "id": "armor_ice",
+      "name": "Жилет Шипастой Кожи",
+      "rarity": "RARE",
+      "requiredLevel": 18,
+      "desc": "Шипы на этом жилете заставляют врагов держаться подальше."
+    },
+    {
+      "id": "armor_iron",
+      "name": "Кольчуга Ветерана",
+      "rarity": "EPIC",
+      "requiredLevel": 28,
+      "desc": "Закаленная в сотнях сражений кольчуга."
+    },
+    {
+      "id": "armor_steam",
+      "name": "Броня Парового Механика",
+      "rarity": "EPIC",
+      "requiredLevel": 40,
+      "desc": "Сложная система трубок и клапанов поддерживает выносливость."
+    },
+    {
+      "id": "armor_fire",
+      "name": "Панцирь Золотого Льва",
+      "rarity": "LEGENDARY",
+      "requiredLevel": 52,
+      "desc": "Пропитан яростью и величием солнечного льва."
+    },
+    {
+      "id": "armor_void",
+      "name": "Одеяние Пылающего Феникса",
+      "rarity": "LEGENDARY",
+      "requiredLevel": 58,
+      "desc": "Дарует бессмертие духа и защиту от любых температур."
+    },
+    {
+      "id": "armor_bone",
+      "name": "Кираса Повелителя Костей",
+      "rarity": "MYTHIC",
+      "requiredLevel": 70,
+      "desc": "Сделана из зачарованных костей древних воинов."
+    },
+    {
+      "id": "tunika_lesnogo_uchenika",
+      "name": "Туника Лесного Ученика",
+      "rarity": "COMMON",
+      "requiredLevel": 3,
+      "desc": "Простая туника, сшитая из грубого льна и украшенная листьями."
+    },
+    {
+      "id": "steganyy_dospeh_opolchenca",
+      "name": "Стёганый Доспех Ополченца",
+      "rarity": "COMMON",
+      "requiredLevel": 5,
+      "desc": "Многослойный стеганый доспех для базовой защиты городского ополчения."
+    },
+    {
+      "id": "kirasa_mednogo_straja",
+      "name": "Кираса Медного Стража",
+      "rarity": "RARE",
+      "requiredLevel": 12,
+      "desc": "Медный доспех, покрытый тонким слоем патины."
+    },
+    {
+      "id": "dospeh_rechnogo_pirata",
+      "name": "Доспех Речного Пирата",
+      "rarity": "RARE",
+      "requiredLevel": 16,
+      "desc": "Кожаная кираса, укрепленная металлическими пластинами и пропахшая тиной."
+    },
+    {
+      "id": "pancir_bolotnogo_trollya",
+      "name": "Панцирь Болотного Тролля",
+      "rarity": "RARE",
+      "requiredLevel": 19,
+      "desc": "Сверхпрочные костяные наросты болотного чудовища."
+    },
+    {
+      "id": "bronya_pepelnogo_maga",
+      "name": "Мантия Звездного Мага",
+      "rarity": "EPIC",
+      "requiredLevel": 26,
+      "desc": "Тканевая мантия, сотканная из астральной материи и сияния далеких галактик."
+    },
+    {
+      "id": "laty_kamennogo_straja",
+      "name": "Латы Каменного Стража",
+      "rarity": "EPIC",
+      "requiredLevel": 32,
+      "desc": "Тяжелый каменный панцирь, высеченный из монолитной скалы."
+    },
+    {
+      "id": "dospeh_grozovogo_titana",
+      "name": "Доспех Грозового Титана",
+      "rarity": "EPIC",
+      "requiredLevel": 38,
+      "desc": "Кираса, выкованная в кузнях бури, заряжена разрушительной энергией молний."
+    },
+    {
+      "id": "bronya_kostyanogo_jneca",
+      "name": "Ледяной Доспех Морозного Стража",
+      "rarity": "EPIC",
+      "requiredLevel": 44,
+      "desc": "Тяжелые латы, выкованные из векового льда северных пустошей, сковывающие врагов морозом."
+    },
+    {
+      "id": "kirasa_vechnogo_plameni",
+      "name": "Кираса Вечного Пламени",
+      "rarity": "MYTHIC",
+      "requiredLevel": 66,
+      "desc": "Легендарные доспехи, объятые неугасающим первородным огнем."
+    }
+  ],
+  "shields": [
+    {
+      "id": "starter_shield",
+      "name": "Деревянный Баклер",
+      "rarity": "COMMON",
+      "requiredLevel": 1,
+      "desc": "Маленький щит из досок."
+    },
+    {
+      "id": "shield_plank",
+      "name": "Дощатый Щит",
+      "rarity": "COMMON",
+      "requiredLevel": 3,
+      "desc": "Прочный щит из дубовых досок."
+    },
+    {
+      "id": "shield_iron",
+      "name": "Железный Щит",
+      "rarity": "RARE",
+      "requiredLevel": 12,
+      "desc": "Надежная железная защита."
+    },
+    {
+      "id": "shield_steel",
+      "name": "Стальной Щит",
+      "rarity": "EPIC",
+      "requiredLevel": 30,
+      "desc": "Выкован из каленой стали."
+    },
+    {
+      "id": "shield_dragon",
+      "name": "Бастион Древнего Дракона",
+      "rarity": "LEGENDARY",
+      "requiredLevel": 55,
+      "desc": "Чешуя древнего ящера, закаленная тысячелетиями в пламени."
+    },
+    {
+      "id": "royal_shield",
+      "name": "Эгида Солнечного Короля",
+      "rarity": "MYTHIC",
+      "requiredLevel": 75,
+      "desc": "Золотой щит, отражающий свет самой истины."
+    },
+    {
+      "id": "shield_lesnogo_strazha",
+      "name": "Щит Лесного Стража",
+      "rarity": "COMMON",
+      "requiredLevel": 5,
+      "desc": "Сплетенный из вековых лоз и укрепленный дубовой корой."
+    },
+    {
+      "id": "bronzovyy_target",
+      "name": "Бронзовый Таргет",
+      "rarity": "RARE",
+      "requiredLevel": 14,
+      "desc": "Легкий бронзовый щит, украшенный гравировкой солнца."
+    },
+    {
+      "id": "shield_ohotnika_na_trolley",
+      "name": "Щит Охотника на Троллей",
+      "rarity": "RARE",
+      "requiredLevel": 16,
+      "desc": "Прочный ростовой щит с окованными краями для защиты от дубин."
+    },
+    {
+      "id": "runicheskiy_shield_gor",
+      "name": "Рунический Щит Гор",
+      "rarity": "RARE",
+      "requiredLevel": 18,
+      "desc": "Высеченные на граните руны поглощают кинетическую энергию ударов."
+    },
+    {
+      "id": "shield_kamennogo_golema",
+      "name": "Щит Каменного Голема",
+      "rarity": "EPIC",
+      "requiredLevel": 28,
+      "desc": "Тяжелая каменная плита, оживленная частицей магии земли."
+    },
+    {
+      "id": "barier_grozovogo_maga",
+      "name": "Барьер Грозового Мага",
+      "rarity": "EPIC",
+      "requiredLevel": 33,
+      "desc": "Окружен искрящимся электрическим полем, ускоряющим реакцию."
+    },
+    {
+      "id": "shield_pepelnogo_rycarya",
+      "name": "Щит Пепельного Рыцаря",
+      "rarity": "EPIC",
+      "requiredLevel": 38,
+      "desc": "Закаленный в пламени угасающего костра, хранит пепел павших товарищей."
+    },
+    {
+      "id": "shield_krovavoy_luny",
+      "name": "Щит Кровавой Луны",
+      "rarity": "EPIC",
+      "requiredLevel": 43,
+      "desc": "Алый свет луны наполняет владельца жаждой возмездия при блокировании."
+    },
+    {
+      "id": "oplot_ledyanogo_korolya",
+      "name": "Оплот Ледяного Короля",
+      "rarity": "LEGENDARY",
+      "requiredLevel": 57,
+      "desc": "Легендарный щит из нетающего вечного льда северных пустошей."
+    }
+  ],
+  "shoulders": [
+    {
+      "id": "sh_frost_shards",
+      "name": "Осколки Вечного Льда",
+      "rarity": "RARE",
+      "requiredLevel": 12,
+      "desc": "Холод этих наплечников замедляет врагов."
+    },
+    {
+      "id": "sh_nature_spirit",
+      "name": "Оплечье Хранителя Рощи",
+      "rarity": "RARE",
+      "requiredLevel": 17,
+      "desc": "Живое дерево продолжает расти прямо на доспехе."
+    },
+    {
+      "id": "sh_acid_spikes",
+      "name": "Шипы Изумрудного Яда",
+      "rarity": "EPIC",
+      "requiredLevel": 28,
+      "desc": "Пропитаны ядом древних змей."
+    },
+    {
+      "id": "sh_bone_lord",
+      "name": "Оплечье Владыки Склепа",
+      "rarity": "EPIC",
+      "requiredLevel": 35,
+      "desc": "Кости содрогаются от темной магии."
+    },
+    {
+      "id": "sh_steam_gear",
+      "name": "Механизм Высшей Паровой Лиги",
+      "rarity": "EPIC",
+      "requiredLevel": 42,
+      "desc": "Поршни и шестерни усиливают каждое движение."
+    },
+    {
+      "id": "sh_void_walker",
+      "name": "Лик Космической Тьмы",
+      "rarity": "LEGENDARY",
+      "requiredLevel": 52,
+      "desc": "В этих наплечниках запечатана сама пустота мироздания."
+    },
+    {
+      "id": "sh_golden_lion",
+      "name": "Наплечники Золотого Императора",
+      "rarity": "LEGENDARY",
+      "requiredLevel": 58,
+      "desc": "Священный металл, достойный лишь правителя джунглей."
+    },
+    {
+      "id": "sh_fire_lion",
+      "name": "Плащ Огненного Короля",
+      "rarity": "MYTHIC",
+      "requiredLevel": 72,
+      "desc": "Из пастей львов вырывается неугасающий огонь древних королей."
+    }
+  ],
+  "pants": [
+    {
+      "id": "pants_mythic",
+      "name": "Штаны Скитальца",
+      "rarity": "COMMON",
+      "requiredLevel": 1,
+      "desc": "Простая кожаная одежда, не стесняющая движений."
+    },
+    {
+      "id": "pants_void",
+      "name": "Рваные Обноски",
+      "rarity": "COMMON",
+      "requiredLevel": 2,
+      "desc": "Старые штаны, которые давно пора пустить на ветошь."
+    },
+    {
+      "id": "pants_storm",
+      "name": "Кожаные Брюки",
+      "rarity": "COMMON",
+      "requiredLevel": 3,
+      "desc": "Обычные брюки из грубой кожи."
+    },
+    {
+      "id": "pants_spiked",
+      "name": "Брюки Охотника",
+      "rarity": "COMMON",
+      "requiredLevel": 5,
+      "desc": "Практичная одежда для вылазок в лес."
+    },
+    {
+      "id": "pants_mercenary",
+      "name": "Поножи Наемника",
+      "rarity": "RARE",
+      "requiredLevel": 12,
+      "desc": "Укрепленная кожа с металлическими заклепками."
+    },
+    {
+      "id": "pants_iron",
+      "name": "Железные Поножи",
+      "rarity": "RARE",
+      "requiredLevel": 18,
+      "desc": "Тяжелые железные пластины для базовой защиты."
+    },
+    {
+      "id": "pants_steel",
+      "name": "Стальные Поножи",
+      "rarity": "EPIC",
+      "requiredLevel": 28,
+      "desc": "Качественная сталь, выкованная опытным мастером."
+    },
+    {
+      "id": "pants_forest",
+      "name": "Латные Поножи Лесника",
+      "rarity": "EPIC",
+      "requiredLevel": 35,
+      "desc": "Металлическая защита, адаптированная для лесных боев."
+    },
+    {
+      "id": "pants_royal",
+      "name": "Эгида Королевской Гвардии",
+      "rarity": "LEGENDARY",
+      "requiredLevel": 50,
+      "desc": "Золотая отделка и лучшая сталь королевства."
+    },
+    {
+      "id": "pants_bone",
+      "name": "Поножи Костяного Лорда",
+      "rarity": "LEGENDARY",
+      "requiredLevel": 57,
+      "desc": "Темная сталь, пропитанная энергией мертвых."
+    },
+    {
+      "id": "pants_shadow",
+      "name": "Поножи Ночного Стража",
+      "rarity": "LEGENDARY",
+      "requiredLevel": 54,
+      "desc": "Острые шипы и вороненая сталь делают владельца невидимым в ночи."
+    },
+    {
+      "id": "pants_ragged",
+      "name": "Поножи Черного Шипа",
+      "rarity": "MYTHIC",
+      "requiredLevel": 65,
+      "desc": "Легендарные шипастые латы, внушающие ужас врагам."
+    },
+    {
+      "id": "pants_dark",
+      "name": "Латы Падшего Рыцаря",
+      "rarity": "MYTHIC",
+      "requiredLevel": 72,
+      "desc": "Древний доспех великого воина, не знавшего поражений."
+    },
+    {
+      "id": "pants_hunter",
+      "name": "Поножи Золотого Грифона",
+      "rarity": "MYTHIC",
+      "requiredLevel": 80,
+      "desc": "Священные золотые латы, сияющие светом небес."
+    },
+    {
+      "id": "pants_titan",
+      "name": "Кольчужные Поножи Гвардейца",
+      "rarity": "EPIC",
+      "requiredLevel": 42,
+      "desc": "Надежная кольчужная броня, усиленная стальными наколенниками."
+    }
+  ],
+  "boots": [
+    {
+      "id": "boots_wanderer",
+      "name": "Сапоги Скитальца",
+      "rarity": "COMMON",
+      "requiredLevel": 2,
+      "desc": "Потертая, но удобная обувь для долгих странствий."
+    },
+    {
+      "id": "boots_iron",
+      "name": "Стальные Сабатоны",
+      "rarity": "RARE",
+      "requiredLevel": 10,
+      "desc": "Тяжелая латная защита для ног."
+    },
+    {
+      "id": "boots_hunter",
+      "name": "Егерские Сапоги",
+      "rarity": "RARE",
+      "requiredLevel": 14,
+      "desc": "Позволяют бесшумно передвигаться по лесу."
+    },
+    {
+      "id": "boots_chain",
+      "name": "Кольчужные Сапоги",
+      "rarity": "RARE",
+      "requiredLevel": 18,
+      "desc": "Идеальный баланс между весом и защитой."
+    },
+    {
+      "id": "boots_rune",
+      "name": "Эфирные Следоходы",
+      "rarity": "EPIC",
+      "requiredLevel": 35,
+      "desc": "Магические руны делают походку легкой, как сам эфир."
+    },
+    {
+      "id": "boots_paladin",
+      "name": "Сапоги Солнечного Императора",
+      "rarity": "LEGENDARY",
+      "requiredLevel": 55,
+      "desc": "Величественная броня, сияющая светом тысячи солнц."
+    },
+    {
+      "id": "boots_bone",
+      "name": "Поступь Повелителя Мертвых",
+      "rarity": "MYTHIC",
+      "requiredLevel": 72,
+      "desc": "Каждый шаг пробуждает тени прошлого."
+    },
+    {
+      "id": "kozhanye_porshni",
+      "name": "Кожаные Поршни",
+      "rarity": "COMMON",
+      "requiredLevel": 1,
+      "desc": "Простая самодельная кожаная обувь."
+    },
+    {
+      "id": "boots_bolotnogo_sledopyta",
+      "name": "Сапоги Болотного Следопыта",
+      "rarity": "COMMON",
+      "requiredLevel": 4,
+      "desc": "Пропитанные особым дегтем сапоги для болотных топей."
+    },
+    {
+      "id": "sabatony_zheleznogo_legiona",
+      "name": "Сабатоны Железного Легиона",
+      "rarity": "RARE",
+      "requiredLevel": 16,
+      "desc": "Тяжелая и надежная обувь легионеров империи."
+    },
+    {
+      "id": "boots_grozovogo_vestnika",
+      "name": "Сапоги Грозового Вестника",
+      "rarity": "EPIC",
+      "requiredLevel": 28,
+      "desc": "Искрятся молниями, увеличивая скорость перемещения."
+    },
+    {
+      "id": "botforty_pustotnogo_ohotnika",
+      "name": "Ботфорты Пустотного Охотника",
+      "rarity": "EPIC",
+      "requiredLevel": 38,
+      "desc": "Сшиты из кожи созданий Бездны, бесшумные и прочные."
+    },
+    {
+      "id": "boots_nekromanta",
+      "name": "Сапоги Некроманта",
+      "rarity": "EPIC",
+      "requiredLevel": 42,
+      "desc": "Овеяны замогильной прохладой, замедляют старение плоти."
+    },
+    {
+      "id": "sabatony_drakoney_cheshui",
+      "name": "Сабатоны Драконьей Чешуи",
+      "rarity": "LEGENDARY",
+      "requiredLevel": 52,
+      "desc": "Кованая обувь, покрытая огнеупорной чешуей красного дракона."
+    },
+    {
+      "id": "postup_zvezdnogo_skitalca",
+      "name": "Поступь Звёздного Скитальца",
+      "rarity": "MYTHIC",
+      "requiredLevel": 68,
+      "desc": "Космическая пыль оседает за каждым шагом владельца этих сапог."
+    }
+  ]
+}

@@ -1,0 +1,76 @@
+{
+  "winrateResults": {
+    "panda": {
+      "1": "38.0",
+      "40": "31.8",
+      "80": "30.2"
+    },
+    "lion_knight": {
+      "1": "86.0",
+      "40": "100.0",
+      "80": "100.0"
+    },
+    "tiger_warrior": {
+      "1": "1.2",
+      "40": "0.0",
+      "80": "0.0"
+    },
+    "minotaur": {
+      "1": "100.0",
+      "40": "100.0",
+      "80": "100.0"
+    }
+  },
+  "currentClimbResults": {
+    "panda": {
+      "avgBattles": "N/A (Stuck)",
+      "avgEnergy": "N/A (Stuck)",
+      "stuckCount": 20,
+      "runs": 20
+    },
+    "lion_knight": {
+      "avgBattles": 702,
+      "avgEnergy": 7018,
+      "stuckCount": 0,
+      "runs": 20
+    },
+    "tiger_warrior": {
+      "avgBattles": "N/A (Stuck)",
+      "avgEnergy": "N/A (Stuck)",
+      "stuckCount": 20,
+      "runs": 20
+    },
+    "minotaur": {
+      "avgBattles": 700,
+      "avgEnergy": 7004,
+      "stuckCount": 0,
+      "runs": 20
+    }
+  },
+  "proposedClimbResults": {
+    "panda": {
+      "avgBattles": "N/A (Stuck)",
+      "avgEnergy": "N/A (Stuck)",
+      "stuckCount": 20,
+      "runs": 20
+    },
+    "lion_knight": {
+      "avgBattles": 338,
+      "avgEnergy": 3383,
+      "stuckCount": 0,
+      "runs": 20
+    },
+    "tiger_warrior": {
+      "avgBattles": "N/A (Stuck)",
+      "avgEnergy": "N/A (Stuck)",
+      "stuckCount": 20,
+      "runs": 20
+    },
+    "minotaur": {
+      "avgBattles": 338,
+      "avgEnergy": 3380,
+      "stuckCount": 0,
+      "runs": 20
+    }
+  }
+}
