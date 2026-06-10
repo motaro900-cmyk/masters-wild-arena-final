@@ -230,7 +230,6 @@ export const createHeroSlice = (set: any, get: any) => {
                 speed: 1 + heroData.stats.agility * 0.05, // internal ATB speed multiplier
                 critChance: heroData.stats.agility * 0.5, // stored as % (e.g. 6%)
                 evasion: heroData.stats.agility * 0.2, // stored as % (e.g. 2.4%)
-                resilience: heroData.stats.stamina * 0.1,
                 lifesteal: 0,
                 penetration: 0,
                 accuracy: 100,
@@ -256,7 +255,6 @@ export const createHeroSlice = (set: any, get: any) => {
 
                 // Defense talents
                 if (tId === 'def_base') total.hp = Math.round(total.hp * (1 + level * 0.05));
-                if (tId === 'def_res') total.resilience += level * 5;
                 if (tId === 'def_eva') total.evasion += level * 2;
                 if (tId === 'def_ult') total.defense = Math.round(total.defense * (1 + level * 0.2)); // «Весь урон снижен на 20%» — работает через defense
 
@@ -300,7 +298,6 @@ export const createHeroSlice = (set: any, get: any) => {
                 if (rawSpeed) total.speed += rawSpeed * mult;
 
                 if (item.evasion) total.evasion += item.evasion * mult;
-                if (item.resilience) total.resilience += item.resilience * mult;
                 if (item.lifesteal) total.lifesteal += item.lifesteal * mult;
                 if (item.penetration) total.penetration += item.penetration * mult;
                 if (item.critDamage) total.critDamage += item.critDamage * mult;

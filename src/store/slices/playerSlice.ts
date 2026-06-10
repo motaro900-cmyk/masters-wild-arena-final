@@ -53,7 +53,30 @@ export const createPlayerSlice = (set: any, get: any) => ({
     trophies: 0,
     wins: 0,
     totalBattles: 0,
-    combatPower: 2450000,
+    combatPower: (() => {
+        const defaultHero = HEROES_DB.find((h) => h.id === 'panda') || HEROES_DB[0];
+        const stats = defaultHero.stats;
+        const stamina = stats.stamina;
+        const strength = stats.strength;
+        const agility = stats.agility;
+
+        const hp = Math.round(stamina * 10);
+        const attack = Math.round(strength * 2);
+        const defense = Math.round(stamina * 0.5);
+        const speed = 1 + agility * 0.05;
+        const critChance = agility * 0.5;
+
+        const divisor = 200; // avgItemLevel = 1
+        const defMitigation = defense / (defense + divisor);
+        const effectiveEHP = hp / Math.max(0.01, 1 - defMitigation);
+
+        return Math.floor(
+            attack * 12 +
+            effectiveEHP * 0.08 +
+            critChance * 800 +
+            speed * 200
+        );
+    })(),
     buffs: [
         { id: 'xp_x2', icon: '✨', label: 'XP x2' },
         { id: 'vip_crown', icon: '👑', label: 'VIP' },

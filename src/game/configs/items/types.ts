@@ -52,7 +52,6 @@ export interface IEquipmentStats extends IBaseItem {
     penetration?: number; // Пробитие брони
     accuracy?: number; // Точность (в %)
     evasion?: number; // Уклонение
-    resilience?: number; // Стойкость
 
     // Технические поля
     textureKey?: string;
