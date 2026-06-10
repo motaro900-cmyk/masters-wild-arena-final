@@ -201,7 +201,7 @@ export const HeroScene: React.FC = () => {
                                 style={{
                                     background: 'rgba(240,192,64,0.1)',
                                     border: '1px solid rgba(240,192,64,0.3)',
-                                    borderRadius: '50%',
+                                    borderRadius: '12px',
                                     width: isMobile ? '44px' : '54px',
                                     height: isMobile ? '44px' : '54px',
                                     display: 'flex',
