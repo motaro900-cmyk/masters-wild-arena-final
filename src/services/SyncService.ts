@@ -261,6 +261,7 @@ export class SyncService {
             const syncData = {
                 id: userId,
                 vkId: vkUser ? Number(vkUser.id) : 0,
+                activeSessionToken: state.sessionToken || '',
                 name: state.name || 'Мастер',
                 vkFirstName: vkUser ? vkUser.first_name || vkUser.firstName || '' : '',
                 vkLastName: vkUser ? vkUser.last_name || vkUser.lastName || '' : '',

@@ -21,12 +21,13 @@ export const SafeGameLayout = ({ containerRef }: { containerRef: React.RefObject
         typeof window !== 'undefined' &&
         (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
 
-    const { setShowFps, showFps, isBanned, banReason, banUntil } = useGameStore((state) => ({
+    const { setShowFps, showFps, isBanned, banReason, banUntil, sessionConflict } = useGameStore((state) => ({
         setShowFps: state.setShowFps,
         showFps: state.showFps,
         isBanned: state.isBanned,
         banReason: state.banReason,
         banUntil: state.banUntil,
+        sessionConflict: state.sessionConflict,
     }));
 
     React.useEffect(() => {
@@ -111,6 +112,118 @@ export const SafeGameLayout = ({ containerRef }: { containerRef: React.RefObject
                 left: 0,
             }}
         >
+             {/* ⚠️ Session Conflict Overlay */}
+            <AnimatePresence>
+                {sessionConflict && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        style={{
+                            position: 'absolute',
+                            inset: 0,
+                            zIndex: 999999,
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            backdropFilter: 'blur(20px)',
+                            backgroundColor: 'rgba(10, 8, 6, 0.96)',
+                            color: '#fff',
+                            fontFamily: "'Outfit', 'Inter', sans-serif",
+                            padding: '24px',
+                            textAlign: 'center',
+                            pointerEvents: 'auto',
+                        }}
+                    >
+                        <div
+                            style={{
+                                fontSize: '80px',
+                                marginBottom: '20px',
+                                filter: 'drop-shadow(0 0 20px rgba(245, 158, 11, 0.4))',
+                                animation: 'pulseConflict 2s infinite',
+                            }}
+                        >
+                            ⚠️
+                        </div>
+                        <h2
+                            style={{
+                                fontSize: '30px',
+                                fontWeight: 900,
+                                background: 'linear-gradient(135deg, #FFE07D 0%, #F59E0B 100%)',
+                                WebkitBackgroundClip: 'text',
+                                WebkitTextFillColor: 'transparent',
+                                margin: '0 0 16px 0',
+                                textTransform: 'uppercase',
+                                letterSpacing: '2.5px',
+                            }}
+                        >
+                            СЕССИЯ ПРЕРВАНА
+                        </h2>
+                        <div
+                            style={{
+                                background: 'rgba(245, 158, 11, 0.04)',
+                                border: '1px solid rgba(245, 158, 11, 0.25)',
+                                borderRadius: '16px',
+                                padding: '24px 30px',
+                                maxWidth: '520px',
+                                marginBottom: '32px',
+                                boxShadow: 'inset 0 0 15px rgba(245,158,11,0.02)',
+                            }}
+                        >
+                            <p
+                                style={{
+                                    fontSize: '16px',
+                                    color: '#FFE07D',
+                                    margin: '0 0 12px 0',
+                                    fontWeight: 700,
+                                    lineHeight: 1.5,
+                                }}
+                            >
+                                Обнаружен одновременный вход с другого устройства или вкладки браузера.
+                            </p>
+                            <p
+                                style={{
+                                    fontSize: '14px',
+                                    color: '#A1A1AA',
+                                    margin: 0,
+                                    lineHeight: 1.5,
+                                }}
+                            >
+                                Чтобы защитить ваш прогресс, сохранение данных на этом устройстве было заблокировано. Пожалуйста, перезапустите игру.
+                            </p>
+                        </div>
+                        <button
+                            onClick={() => window.location.reload()}
+                            style={{
+                                padding: '14px 32px',
+                                borderRadius: '12px',
+                                border: '2px solid rgba(245, 158, 11, 0.35)',
+                                backgroundColor: 'rgba(245, 158, 11, 0.12)',
+                                color: '#FFE07D',
+                                fontWeight: 800,
+                                fontSize: '15px',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s ease',
+                                textTransform: 'uppercase',
+                                letterSpacing: '1px',
+                                boxShadow: '0 4px 15px rgba(0,0,0,0.3)',
+                            }}
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.backgroundColor = 'rgba(245, 158, 11, 0.22)';
+                                e.currentTarget.style.borderColor = 'rgba(245, 158, 11, 0.7)';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.backgroundColor = 'rgba(245, 158, 11, 0.12)';
+                                e.currentTarget.style.borderColor = 'rgba(245, 158, 11, 0.35)';
+                            }}
+                        >
+                            ОБНОВИТЬ ИГРУ
+                        </button>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
             {/* 🚫 Banned Overlay */}
             <AnimatePresence>
                 {isBanned && (

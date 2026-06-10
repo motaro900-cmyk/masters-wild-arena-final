@@ -43,6 +43,15 @@ export const initSubscriptions = async (
     const unsubProfile = syncService.subscribeToOwnProfile(userId, async (dbData) => {
         if (!dbData) return;
 
+        // Session conflict check (multi-device concurrent session kick)
+        const localSessionToken = useGameStore.getState().sessionToken;
+        if (dbData.activeSessionToken && localSessionToken && dbData.activeSessionToken !== localSessionToken) {
+            console.warn('[SyncService] Session conflict detected: activeSessionToken in DB is different!');
+            useGameStore.setState({ sessionConflict: true });
+            syncService.disableSync();
+            return;
+        }
+
         // Friends list dynamic sync check
         const dbFriendIds = dbData.friends || [];
         const localFriends = useGameStore.getState().friends || [];
