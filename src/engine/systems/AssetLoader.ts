@@ -76,7 +76,15 @@ export class AssetLoader {
                 try {
                     await PIXI.Assets.load(assetPath);
                 } catch (err) {
-                    console.warn(`[AssetLoader] Failed to load optimized asset: ${assetPath}. Trying fallback...`, err);
+                    console.warn(`[AssetLoader] Failed to load optimized asset: ${assetPath}. Cleaning cache and trying fallback...`, err);
+                    
+                    try {
+                        // Clear the corrupted/partial load from Pixi's cache before retrying
+                        await PIXI.Assets.unload(assetPath);
+                    } catch (unloadErr) {
+                        // Silent fail for unload, proceed to fallback
+                    }
+
                     const origPath = manifest[index];
                     try {
                         await PIXI.Assets.load(origPath);
