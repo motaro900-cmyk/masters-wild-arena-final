@@ -44,14 +44,7 @@ export interface IEquipmentStats extends IBaseItem {
     defenseBonus?: number;
     hpBonus?: number;
 
-    // Вторичные статы
-    critChance?: number; // Крит. шанс (в %)
-    critDamage?: number; // Крит. урон (множитель)
-    attackSpeed?: number; // Скорость атаки
-    lifesteal?: number; // Вампиризм (в %)
-    penetration?: number; // Пробитие брони
-    accuracy?: number; // Точность (в %)
-    evasion?: number; // Уклонение
+
 
     // Технические поля
     textureKey?: string;

@@ -287,21 +287,15 @@ export const createHeroSlice = (set: any, get: any) => {
                 if (item.attackBonus) total.attack = Math.round(total.attack + item.attackBonus * mult);
                 if (item.defenseBonus) total.defense = Math.round(total.defense + item.defenseBonus * mult);
 
-                // critChance stored as 0-100 scale; items may store as 0-1 or 0-100 — normalize
-                const rawCrit = item.critChance || item.critBonus || 0;
+                // critBonus stored as 0-100 scale; items may store as 0-1 or 0-100 — normalize
+                const rawCrit = item.critBonus || 0;
                 if (rawCrit) {
                     const critPct = rawCrit <= 1 ? rawCrit * 100 : rawCrit;
                     total.critChance += critPct * mult;
                 }
 
-                const rawSpeed = item.attackSpeed || item.speedBonus || 0;
+                const rawSpeed = item.speedBonus || 0;
                 if (rawSpeed) total.speed += rawSpeed * mult;
-
-                if (item.evasion) total.evasion += item.evasion * mult;
-                if (item.lifesteal) total.lifesteal += item.lifesteal * mult;
-                if (item.penetration) total.penetration += item.penetration * mult;
-                if (item.critDamage) total.critDamage += item.critDamage * mult;
-                if (item.accuracy) total.accuracy += item.accuracy * mult;
             });
 
             // Apply active potion buffs

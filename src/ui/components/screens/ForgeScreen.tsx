@@ -354,16 +354,12 @@ export const ForgeScreen: React.FC = () => {
         if (itemData.hpBonus) {
             list.push({ label: 'Здоровье', val: itemData.hpBonus, icon: '❤️' });
         }
-        if (itemData.critChance || (itemData as any).critBonus) {
+        if (itemData.critBonus) {
             list.push({
                 label: 'Шанс крита',
-                val: itemData.critChance || (itemData as any).critBonus || 10,
+                val: itemData.critBonus,
                 icon: '🎯',
             });
-        }
-        const penetrationVal = (itemData as any).penetration;
-        if (penetrationVal !== undefined) {
-            list.push({ label: 'Пробивание', val: penetrationVal || 5, icon: '🏹' });
         }
         return list.slice(0, 4);
     };
