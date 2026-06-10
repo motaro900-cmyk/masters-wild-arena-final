@@ -28,10 +28,22 @@ export const ChatPanel: React.FC = () => {
     const scrollRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
 
+    const [lastSendTime, setLastSendTime] = useState<number>(0);
+    const [cooldownLeft, setCooldownLeft] = useState<number>(0);
+
+    // Cooldown timer effect
+    useEffect(() => {
+        if (cooldownLeft <= 0) return;
+        const timer = setInterval(() => {
+            setCooldownLeft((prev) => Math.max(0, prev - 1));
+        }, 1000);
+        return () => clearInterval(timer);
+    }, [cooldownLeft]);
+
     const handleScroll = () => {
         if (!scrollRef.current) return;
         const { scrollTop, scrollHeight, clientHeight } = scrollRef.current;
-        const isAtBottom = scrollHeight - scrollTop - clientHeight < 30;
+        const isAtBottom = scrollHeight - scrollTop - clientHeight < 40;
         if (isAtBottom) {
             setHasNewMessages(false);
         }
@@ -44,6 +56,13 @@ export const ChatPanel: React.FC = () => {
             (msg.author === 'Мастер' || msg.author === 'Motar') &&
             (msg.text.trim() === '👏' || msg.text.trim() === '👋')
         ) {
+            return false;
+        }
+
+        // Фильтруем приветственные локальные сообщения, если они уже были показаны в этой сессии
+        const sessionKey = 'session_welcome_seen';
+        const sessionSeen = sessionStorage.getItem(sessionKey);
+        if (sessionSeen && (msg.id === 'welcome-1' || msg.id === 'codex-1')) {
             return false;
         }
 
@@ -67,9 +86,17 @@ export const ChatPanel: React.FC = () => {
     });
 
     useEffect(() => {
+        // Устанавливаем флаг сессии после первого отображения сообщений
+        const hasWelcome = filteredMessages.some((msg) => msg.id === 'welcome-1' || msg.id === 'codex-1');
+        if (hasWelcome) {
+            sessionStorage.setItem('session_welcome_seen', 'true');
+        }
+    }, [filteredMessages]);
+
+    useEffect(() => {
         if (scrollRef.current) {
             const { scrollTop, scrollHeight, clientHeight } = scrollRef.current;
-            const wasAtBottom = scrollHeight - scrollTop - clientHeight < 100;
+            const wasAtBottom = scrollHeight - scrollTop - clientHeight < 120;
 
             if (wasAtBottom || messages.length <= 2) {
                 scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
@@ -82,6 +109,15 @@ export const ChatPanel: React.FC = () => {
 
     const handleSendMessage = () => {
         if (!inputText.trim()) return;
+
+        // Anti-spam cooldown check (2 seconds)
+        const now = Date.now();
+        if (now - lastSendTime < 2000) {
+            const remaining = Math.ceil((2000 - (now - lastSendTime)) / 1000);
+            setCooldownLeft(remaining);
+            useGameStore.getState().showAlert(`Подождите еще ${remaining} сек. перед отправкой!`);
+            return;
+        }
 
         const userName = name || 'Мастер';
         let finalType = 'common';
@@ -97,6 +133,8 @@ export const ChatPanel: React.FC = () => {
         }
 
         addMessage(finalText, userName, finalType);
+        setLastSendTime(now);
+        setCooldownLeft(2);
         setInputText('');
         setShowEmoji(false);
     };
