@@ -94,7 +94,7 @@ export const consumables: Record<string, IEquipmentStats> = {
         id: 'starter_pack',
         name: 'Стартовый Пакет',
         priceVotes: 20,
-        image: '/assets/images/shop/starter_pack.png',
+        image: '/assets/images/shop/starter_pack_v2.png',
         rarity: 'EPIC',
         mainTab: 'BANK',
         subTab: 'GEMS',
