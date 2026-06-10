@@ -6,8 +6,6 @@ import { GameApp } from './GameApp';
 import { useGameStore } from './store/useGameStore';
 import { initTelemetry } from './services/TelemetryService';
 import { ErrorBoundary } from './ui/components/ErrorBoundary';
-import { BannedOverlay } from './ui/components/BannedOverlay';
-import { RotationWarningOverlay } from './ui/components/RotationWarningOverlay';
 import { NotInVkScreen } from './ui/components/NotInVkScreen';
 import { LoadingScreen } from './ui/components/LoadingScreen';
 import { InitErrorScreen } from './ui/components/InitErrorScreen';
@@ -198,7 +196,7 @@ export const Root = () => {
                 activeUnsubs.push(subRes.unsubProfile);
 
                 // Setup referrals and claim gifts
-                setupReferralAndGifts(timeOffset);
+                setupReferralAndGifts();
 
                 // Midnight and quest polling timer
                 const MSK_OFFSET = 3 * 60 * 60 * 1000;

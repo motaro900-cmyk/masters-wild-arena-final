@@ -382,7 +382,7 @@ export const GameHUD: React.FC = () => {
                         style={isMobile ? { transform: `scale(${hudScale})`, transformOrigin: 'bottom center' } : {}}
                     >
                         <ActionButtons
-                            onStartBattle={() => setActiveWindow('RANKED_LOBAY' as any || 'RANKED_LOBBY')}
+                            onStartBattle={() => setActiveWindow('RANKED_LOBBY')}
                             onWarmup={() => useGameStore.getState().setScreen('BATTLE')}
                             onOpenRanks={() => setActiveWindow('RANKS_LIST')}
                         />
@@ -556,7 +556,8 @@ export const GameHUD: React.FC = () => {
             />
 
             <LevelUpOverlay />
-            <GlobalDialogs />
+            <AlertDialog />
+            <ConfirmDialog />
         </div>
     );
 };

@@ -14,7 +14,6 @@ export const initSubscriptions = async (
     prefixedId: string
 ): Promise<SubscriptionsResult> => {
     const { syncService } = await import('../services/SyncService');
-    const updatedState = useGameStore.getState();
 
     let unsubClanChat: (() => void) | null = null;
 

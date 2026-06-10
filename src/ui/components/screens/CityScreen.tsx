@@ -595,7 +595,6 @@ export const CityScreen: React.FC = () => {
                         isSpinning={isSpinning}
                         turboMode={turboMode}
                         autoSpin={autoSpin}
-                        crystals={crystals}
                         lastSummonType={lastSummonType}
                         setTurboMode={setTurboMode}
                         setAutoSpin={setAutoSpin}

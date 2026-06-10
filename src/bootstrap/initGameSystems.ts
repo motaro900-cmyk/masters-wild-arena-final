@@ -97,8 +97,7 @@ export const initGameSystems = (timeOffset: number): void => {
     }
 };
 
-export const setupReferralAndGifts = (timeOffset: number): void => {
-    const { syncService } = useGameStore.getState() as any; // Loaded on demand
+export const setupReferralAndGifts = (): void => {
     const urlParams = new URLSearchParams(window.location.search);
     const requestId = urlParams.get('request_id');
     if (requestId) {

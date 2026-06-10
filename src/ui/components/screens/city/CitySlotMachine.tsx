@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { SLOT_SYMBOLS, SlotSymbol, Particle } from './CitySlotLogic';
+import { SlotSymbol, Particle } from './CitySlotLogic';
 import { AssetsMap } from '../../../../configs/AssetsMap';
 
 interface CitySlotMachineProps {
@@ -20,7 +20,6 @@ interface CitySlotMachineProps {
     isSpinning: boolean;
     turboMode: boolean;
     autoSpin: boolean;
-    crystals: number;
     lastSummonType: 'SINGLE' | 'MULTI';
     setTurboMode: (val: boolean | ((p: boolean) => boolean)) => void;
     setAutoSpin: (val: boolean | ((p: boolean) => boolean)) => void;
@@ -43,7 +42,6 @@ export const CitySlotMachine: React.FC<CitySlotMachineProps> = ({
     isSpinning,
     turboMode,
     autoSpin,
-    crystals,
     lastSummonType,
     setTurboMode,
     setAutoSpin,
