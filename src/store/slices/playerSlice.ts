@@ -42,6 +42,7 @@ export const createPlayerSlice = (set: any, get: any) => ({
     vipEndTime: 0,
     hasBoughtStarterPack: false,
     dailyAdWatchesCount: 0,
+    claimedRankRewards: [] as string[],
     dailyBattles: 0,
     dailyBattleLimit: BATTLE_CONFIG.DAILY_LIMIT,
     lastBattleReset: Date.now(),
@@ -251,7 +252,49 @@ export const createPlayerSlice = (set: any, get: any) => ({
                 get().broadcastEvent('RANK_UP', { playerName: get().name, rankName: 'ЛЕГЕНДА' });
             }
 
-            return { rating: newRating, trophies: newRating };
+            // --- НАГРАДЫ ЗА ДОСТИЖЕНИЕ РАНГА (Трофейная Дорога) ---
+            const rankRewards: Record<string, { crystals: number; gold: number; chest?: string; chestName?: string }> = {
+                'ВОИН': { crystals: 150, gold: 2000 },
+                'ВЕТЕРАН': { crystals: 300, gold: 5000, chest: 'chest_epic', chestName: 'Эпический сундук' },
+                'МАСТЕР': { crystals: 600, gold: 10000, chest: 'chest_epic', chestName: 'Эпический сундук' },
+                'ГЕРОЙ': { crystals: 1000, gold: 15000, chest: 'chest_legendary', chestName: 'Легендарный сундук' },
+                'ЭЛИТА': { crystals: 1500, gold: 20000, chest: 'chest_legendary', chestName: 'Легендарный сундук' },
+                'ЧЕМПИОН': { crystals: 2000, gold: 25000, chest: 'chest_legendary', chestName: 'Легендарный сундук' },
+                'МАГИСТР': { crystals: 3000, gold: 40000, chest: 'chest_legendary', chestName: 'Легендарный сундук' },
+                'ВЛАСТЕЛИН': { crystals: 4000, gold: 50000, chest: 'chest_legendary', chestName: 'Легендарный сундук' },
+                'ЛЕГЕНДА': { crystals: 6000, gold: 100000, chest: 'chest_legendary', chestName: 'Легендарный сундук' },
+            };
+
+            const claimed = [...(state.claimedRankRewards || [])];
+            const reward = rankRewards[newRank];
+
+            if (reward && newRank !== oldRank && !claimed.includes(newRank)) {
+                claimed.push(newRank);
+                
+                const mailRewards = [
+                    { type: 'CRYSTALS', amount: reward.crystals },
+                    { type: 'GOLD', amount: reward.gold }
+                ];
+                if (reward.chest) {
+                    mailRewards.push({ type: 'ITEM', itemId: reward.chest, amount: 1 } as any);
+                }
+
+                setTimeout(() => {
+                    get().addMail({
+                        id: `rank_reward_${newRank}_${Date.now()}`,
+                        from: 'ЛЕСНЫЕ ДУХИ',
+                        subject: `НАГРАДА ЗА РАНГ ${newRank}!`,
+                        body: `Поздравляем, мастер! Ты превзошел ожидания духов и достиг славного ранга "${newRank}". \n\nВ награду тебе отправляется этот дар: \n💎 ${reward.crystals} Кристаллов \n💰 ${reward.gold} Золота ${reward.chestName ? `\n🎁 ${reward.chestName}` : ''} \n\nПусть твои будущие победы будут столь же легкими!`,
+                        date: new Date().toLocaleDateString(),
+                        isRead: false,
+                        tab: 'INBOX',
+                        rewards: mailRewards,
+                    });
+                    get().showAlert(`Поздравляем с рангом ${newRank}! Награда выслана на почту! 📧`);
+                }, 1000);
+            }
+
+            return { rating: newRating, trophies: newRating, claimedRankRewards: claimed };
         }),
 
     broadcastEvent: (type: 'RANK_UP' | 'LEVEL_UP' | 'ITEM_DROP', payload: any) => {

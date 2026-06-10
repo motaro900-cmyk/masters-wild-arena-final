@@ -116,6 +116,52 @@ export const RanksListWindow: React.FC = () => {
                                         {rank.minTrophies} — {rank.maxTrophies === 999999 ? '∞' : rank.maxTrophies}{' '}
                                         Кубков
                                     </div>
+
+                                    {/* НАГРАДА */}
+                                    {rank.name !== 'НОВИЧОК' && (
+                                        <div
+                                            style={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: '12px',
+                                                marginTop: '8px',
+                                                fontSize: '13px',
+                                                color: '#d1d5db',
+                                            }}
+                                        >
+                                            <span style={{ color: 'rgba(255,255,255,0.4)', fontWeight: 'bold' }}>НАГРАДА:</span>
+                                            {(() => {
+                                                const rankRewards: Record<string, { crystals: number; gold: number; chest?: string }> = {
+                                                    'ВОИН': { crystals: 150, gold: 2000 },
+                                                    'ВЕТЕРАН': { crystals: 300, gold: 5000, chest: 'Эпический сундук' },
+                                                    'МАСТЕР': { crystals: 600, gold: 10000, chest: 'Эпический сундук' },
+                                                    'ГЕРОЙ': { crystals: 1000, gold: 15000, chest: 'Легендарный сундук' },
+                                                    'ЭЛИТА': { crystals: 1500, gold: 20000, chest: 'Легендарный сундук' },
+                                                    'ЧЕМПИОН': { crystals: 2000, gold: 25000, chest: 'Легендарный сундук' },
+                                                    'МАГИСТР': { crystals: 3000, gold: 40000, chest: 'Легендарный сундук' },
+                                                    'ВЛАСТЕЛИН': { crystals: 4000, gold: 50000, chest: 'Легендарный сундук' },
+                                                    'ЛЕГЕНДА': { crystals: 6000, gold: 100000, chest: 'Легендарный сундук' },
+                                                };
+                                                const reward = rankRewards[rank.name];
+                                                if (!reward) return null;
+                                                return (
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                                        <span style={{ display: 'flex', alignItems: 'center', gap: '3px', fontWeight: 900, color: '#f0c040' }}>
+                                                            💎 {reward.crystals}
+                                                        </span>
+                                                        <span style={{ display: 'flex', alignItems: 'center', gap: '3px', fontWeight: 900, color: '#e5e7eb' }}>
+                                                            💰 {reward.gold.toLocaleString()}
+                                                        </span>
+                                                        {reward.chest && (
+                                                            <span style={{ display: 'flex', alignItems: 'center', gap: '3px', fontWeight: 900, color: '#4ade80' }}>
+                                                                🎁 {reward.chest}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                );
+                                            })()}
+                                        </div>
+                                    )}
                                 </div>
 
                                 {/* СТАТУС */}
