@@ -410,7 +410,7 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ mode = 'FULL', o
                     return (
                         <div
                             key={instanceId + i}
-                            style={{ position: 'relative' }}
+                            style={{ position: 'relative', width: '100%', height: '100%', boxSizing: 'border-box' }}
                             onContextMenu={(e) => !item.isResource && handleContextMenu(e, item, data, !!isEquippedOnCurrent)}
                             onClick={(e) => { if (e.shiftKey && !item.isResource) toggleSelectItem(instanceId, e); }}
                         >

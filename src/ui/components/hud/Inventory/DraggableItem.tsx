@@ -48,6 +48,8 @@ export const DraggableItem: React.FC<DraggableItemProps> = ({
                 }
             }}
             style={{
+                width: '100%',
+                height: '100%',
                 background: rarity?.bg
                     ? `linear-gradient(135deg, ${rarity.bg}aa 0%, rgba(18, 14, 11, 0.95) 100%)`
                     : 'linear-gradient(135deg, rgba(28, 22, 18, 0.95) 0%, rgba(18, 14, 11, 0.98) 100%)',
@@ -63,6 +65,7 @@ export const DraggableItem: React.FC<DraggableItemProps> = ({
                 cursor: item.isResource ? 'default' : 'pointer',
                 transition: 'all 0.2s',
                 opacity: isDragging ? 0.4 : 1,
+                boxSizing: 'border-box',
             }}
         >
             {/* Rarity inner trim border */}
