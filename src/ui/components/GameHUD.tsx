@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useGameStore } from '../../store/useGameStore';
 import { AssetsMap } from '../../configs/AssetsMap';
-import { motion, AnimatePresence } from 'framer-motion';
 
 // HUD Components
 import { BattlePassBar } from './hud/BattlePassBar';
@@ -12,27 +11,16 @@ import { ChatPanel } from './hud/ChatPanel';
 import { ActionButtons } from './hud/ActionButtons';
 import { DailyGiftBanner } from './hud/DailyGiftBanner';
 import { ProfileHub } from './hud/ProfileHub';
-import { ServerTime } from './hud/ServerTime';
 
-// Window Components
-import { BaseWindow } from './hud/BaseWindow';
-import { FriendsWindow } from './hud/FriendsWindow';
-import { MailWindow } from './hud/MailWindow';
-import { SettingsWindow } from './hud/SettingsWindow';
-import { ProfileCustomizeWindow } from './hud/ProfileCustomizeWindow';
-import { DailyGiftWindow } from './hud/DailyGiftWindow';
-import { RankingWindow } from './hud/RankingWindow';
-import { ClanWindow } from './hud/ClanWindow';
-import { RanksListWindow } from './hud/RanksListWindow';
-import { InventoryPanel } from './hud/InventoryPanel';
-import { ITEMS_DATABASE } from '../../game/configs/ItemsConfig';
-import { VIPWindow } from './hud/VIPWindow';
-const AdminPanel = React.lazy(() => import('./hud/AdminPanel').then((m) => ({ default: m.AdminPanel })));
+// Dialogs & Windows
+import { WindowManager } from './hud/WindowManager';
+import { AlertDialog, ConfirmDialog } from './hud/GlobalDialogs';
 import { UnderDevelopmentModal } from './hud/SharedUI';
-import { BestiaryWindow } from './hud/BestiaryWindow';
 import { MatchmakingOverlay } from './hud/MatchmakingOverlay';
-import { safeGetItem, safeSetItem } from '../../utils/SafeStorage';
 import { LevelUpOverlay } from './hud/LevelUpOverlay';
+import { safeGetItem, safeSetItem } from '../../utils/SafeStorage';
+
+const AdminPanel = React.lazy(() => import('./hud/AdminPanel').then((m) => ({ default: m.AdminPanel })));
 
 export const GameHUD: React.FC = () => {
     const activeScreen = useGameStore((state) => state.activeScreen);
@@ -72,7 +60,7 @@ export const GameHUD: React.FC = () => {
         return () => cancelAnimationFrame(fpsRafRef.current);
     }, [showFps]);
 
-    React.useEffect(() => {
+    useEffect(() => {
         const handleResize = () => {
             const width = window.innerWidth;
 
@@ -89,14 +77,14 @@ export const GameHUD: React.FC = () => {
         return () => window.removeEventListener('resize', handleResize);
     }, [isMobile]);
 
-    // Автоматически закрываем любые окна при смене основного экрана (Pattern: Adjusting state during render)
+    // Автоматически закрываем любые окна при смене основного экрана
     if (activeScreen !== prevScreen) {
         setPrevScreen(activeScreen);
         setActiveWindow(null);
     }
 
     // Ежедневный VIP-подарок на почту и синхронизация VIP-статуса
-    React.useEffect(() => {
+    useEffect(() => {
         const now = Date.now();
         const isActive = vipEndTime ? vipEndTime > now : false;
 
@@ -170,7 +158,7 @@ export const GameHUD: React.FC = () => {
     }, [vipLevel, vipEndTime]);
 
     // Expose to window for external screen communication (like CityScreen)
-    React.useEffect(() => {
+    useEffect(() => {
         (window as any).setActiveHUDWindow = (win: string | null) => setActiveWindow(win);
     }, []);
 
@@ -330,7 +318,6 @@ export const GameHUD: React.FC = () => {
                         }}
                         onClick={() => useGameStore.getState().goToCity()}
                     >
-                        {/* Invisible area with hover effect */}
                         <div
                             className="city-portal-hover"
                             style={{
@@ -395,13 +382,13 @@ export const GameHUD: React.FC = () => {
                         style={isMobile ? { transform: `scale(${hudScale})`, transformOrigin: 'bottom center' } : {}}
                     >
                         <ActionButtons
-                            onStartBattle={() => setActiveWindow('RANKED_LOBBY')}
+                            onStartBattle={() => setActiveWindow('RANKED_LOBAY' as any || 'RANKED_LOBBY')}
                             onWarmup={() => useGameStore.getState().setScreen('BATTLE')}
                             onOpenRanks={() => setActiveWindow('RANKS_LIST')}
                         />
                     </div>
 
-                    {/* STANDALONE CITY BUTTON (100px further right) */}
+                    {/* STANDALONE CITY BUTTON */}
                     <div
                         className="absolute bottom-[10px] left-[calc(50%+400px)] hud-interactive"
                         style={isMobile ? { transform: `scale(${hudScale})`, transformOrigin: 'bottom center' } : {}}
@@ -527,185 +514,13 @@ export const GameHUD: React.FC = () => {
                 </>
             )}
 
-            {/* --- МОДАЛЬНЫЕ ОКНА --- */}
-            {activeWindow && (
-                <div
-                    className="absolute inset-0 z-[100] pointer-events-auto bg-black/60 backdrop-blur-sm"
-                    onClick={() => setActiveWindow(null)}
-                >
-                    <div
-                        className="absolute top-[515px] left-[960px] -translate-x-1/2 -translate-y-1/2 hud-interactive"
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        {activeWindow === 'FRIENDS' && (
-                            <BaseWindow
-                                title="ДРУЗЬЯ"
-                                isOpen={true}
-                                onClose={() => setActiveWindow(null)}
-                                width="860px"
-                            >
-                                <FriendsWindow onClose={() => setActiveWindow(null)} />
-                            </BaseWindow>
-                        )}
-                        {activeWindow === 'MAIL' && (
-                            <BaseWindow title="ПОЧТА" isOpen={true} onClose={() => setActiveWindow(null)} width="900px">
-                                <MailWindow onClose={() => setActiveWindow(null)} />
-                            </BaseWindow>
-                        )}
-                        {activeWindow === 'VIP' && (
-                            <BaseWindow
-                                title="VIP СТАТУС"
-                                isOpen={true}
-                                onClose={() => setActiveWindow(null)}
-                                width="800px"
-                            >
-                                <VIPWindow onClose={() => setActiveWindow(null)} />
-                            </BaseWindow>
-                        )}
-                        {activeWindow === 'SETTINGS' && (
-                            <BaseWindow
-                                title="НАСТРОЙКИ"
-                                isOpen={true}
-                                onClose={() => setActiveWindow(null)}
-                                width="650px"
-                                headerExtra={
-                                    <div style={{ marginLeft: '30px' }}>
-                                        <ServerTime />
-                                    </div>
-                                }
-                            >
-                                <SettingsWindow
-                                    onClose={() => setActiveWindow(null)}
-                                    onOpenAdmin={() => {
-                                        setActiveWindow(null);
-                                        setShowAdmin(true);
-                                    }}
-                                />
-                            </BaseWindow>
-                        )}
-                        {activeWindow === 'PROFILE_CUSTOMIZE' && (
-                            <BaseWindow
-                                title="НАСТРОЙКА ПРОФИЛЯ"
-                                isOpen={true}
-                                onClose={() => setActiveWindow(null)}
-                                width="1100px"
-                                height="740px"
-                            >
-                                <ProfileCustomizeWindow onClose={() => setActiveWindow(null)} />
-                            </BaseWindow>
-                        )}
-                        {activeWindow === 'GIFT' && (
-                            <BaseWindow
-                                title="КАЛЕНДАРЬ НАГРАД"
-                                isOpen={true}
-                                onClose={() => setActiveWindow(null)}
-                                width="900px"
-                            >
-                                <DailyGiftWindow onClose={() => setActiveWindow(null)} />
-                            </BaseWindow>
-                        )}
-                        {activeWindow === 'RANKING' && (
-                            <BaseWindow
-                                title="РЕЙТИНГ"
-                                isOpen={true}
-                                onClose={() => setActiveWindow(null)}
-                                width="900px"
-                            >
-                                <RankingWindow />
-                            </BaseWindow>
-                        )}
-                        {activeWindow === 'CLAN' && (
-                            <BaseWindow
-                                title="ИНФОРМАЦИЯ О КЛАНЕ"
-                                isOpen={true}
-                                onClose={() => setActiveWindow(null)}
-                                width="1000px"
-                            >
-                                <ClanWindow />
-                            </BaseWindow>
-                        )}
-                        {activeWindow === 'RANKS_LIST' && (
-                            <BaseWindow
-                                title="ПУТЬ МАСТЕРА"
-                                isOpen={true}
-                                onClose={() => setActiveWindow(null)}
-                                width="850px"
-                            >
-                                <RanksListWindow />
-                            </BaseWindow>
-                        )}
-                        {activeWindow === 'INVENTORY' && (
-                            <BaseWindow
-                                title="ИНВЕНТАРЬ"
-                                isOpen={true}
-                                onClose={() => setActiveWindow(null)}
-                                width="1100px"
-                            >
-                                <div style={{ padding: '30px', display: 'flex', justifyContent: 'center' }}>
-                                    <InventoryPanel
-                                        onItemClick={(itemId) => {
-                                            const store = useGameStore.getState() as any;
-                                            const storeItem = store.inventory.find(
-                                                (i: any) => i.instanceId === itemId || i.id === itemId,
-                                            );
-                                            const templateId = storeItem ? storeItem.id : itemId;
-                                            const item = ITEMS_DATABASE[templateId];
-                                            if (!item) return;
-                                            if (item.mainTab === 'ARSENAL') {
-                                                const currentHero = store.selectedHeroId || 'panda';
-                                                const equippedHero = store.getHeroByItemId(itemId);
-                                                if (equippedHero === currentHero) {
-                                                    store.unequipItem(itemId);
-                                                } else {
-                                                    store.equipItem(itemId);
-                                                }
-                                            } else if (
-                                                item &&
-                                                item.mainTab === 'ALCHEMY' &&
-                                                item.subTab !== 'RESOURCES'
-                                            ) {
-                                                if (itemId === 'protection_stone') return;
+            {/* --- WINDOW MANAGER --- */}
+            <WindowManager
+                activeWindow={activeWindow}
+                setActiveWindow={setActiveWindow}
+                setShowAdmin={setShowAdmin}
+            />
 
-                                                let effectDesc = '';
-                                                if (itemId === 'hp_potion_1')
-                                                    effectDesc = '+10% к макс. здоровью на 1 час';
-                                                if (itemId === 'hp_potion_2')
-                                                    effectDesc = '+20% к макс. здоровью на 1 час';
-                                                if (itemId === 'hp_potion_3')
-                                                    effectDesc = '+35% к макс. здоровью на 1 час';
-                                                if (itemId === 'mana_potion_1')
-                                                    effectDesc = '+15% к скорости атаки на 1 час';
-                                                if (itemId === 'exp_potion_small') effectDesc = '+2 000 опыта';
-                                                if (itemId === 'exp_potion_medium') effectDesc = '+10 000 опыта';
-                                                if (itemId === 'exp_potion_large') effectDesc = '+50 000 опыта';
-
-                                                useGameStore
-                                                    .getState()
-                                                    .showConfirm(
-                                                        `Выпить "${item.name}"?\nЭффект: ${effectDesc}`,
-                                                        () => {
-                                                            useGameStore.getState().useConsumable(itemId);
-                                                        },
-                                                    );
-                                            }
-                                        }}
-                                    />
-                                </div>
-                            </BaseWindow>
-                        )}
-                        {activeWindow === 'BESTIARY' && (
-                            <BaseWindow
-                                title="ЗВЕРИНЕЦ"
-                                isOpen={true}
-                                onClose={() => setActiveWindow(null)}
-                                width="950px"
-                            >
-                                <BestiaryWindow />
-                            </BaseWindow>
-                        )}
-                    </div>
-                </div>
-            )}
             {/* --- ADMIN PANEL (GLOBAL OVERLAY) --- */}
             {showAdmin && (
                 <React.Suspense fallback={null}>
@@ -719,7 +534,6 @@ export const GameHUD: React.FC = () => {
                     onFound={(opp) => {
                         setActiveWindow(null);
 
-                        // Use the selected mob from matchmaking
                         useGameStore.setState({
                             selectedEnemyId: opp.id,
                             battleMode: 'RANKED',
@@ -730,7 +544,6 @@ export const GameHUD: React.FC = () => {
                             syncService.logPlayerAction(`Начал рейтинговый бой против: ${opp.name}`);
                         });
 
-                        // Switch screen to battle!
                         useGameStore.getState().setScreen('BATTLE');
                     }}
                 />
@@ -743,176 +556,7 @@ export const GameHUD: React.FC = () => {
             />
 
             <LevelUpOverlay />
-            <ConfirmDialog />
-            <AlertDialog />
+            <GlobalDialogs />
         </div>
-    );
-};
-
-const AlertDialog: React.FC = () => {
-    const activeAlert = useGameStore((state) => state.activeAlert);
-
-    if (!activeAlert) return null;
-
-    return (
-        <AnimatePresence>
-            <div
-                style={{
-                    position: 'fixed',
-                    inset: 0,
-                    backgroundColor: 'rgba(0, 0, 0, 0.75)',
-                    backdropFilter: 'blur(8px)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    zIndex: 99999,
-                    pointerEvents: 'auto',
-                }}
-            >
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.9 }}
-                    style={{
-                        background: 'linear-gradient(135deg, rgba(28, 18, 12, 0.95) 0%, rgba(12, 6, 4, 0.99) 100%)',
-                        border: '1px solid rgba(240, 192, 64, 0.3)',
-                        boxShadow: '0 10px 40px rgba(0, 0, 0, 0.8), 0 0 25px rgba(240, 192, 64, 0.1)',
-                        borderRadius: '16px',
-                        padding: '28px',
-                        width: '380px',
-                        textAlign: 'center',
-                        fontFamily: "'Philosopher', 'Nunito', sans-serif",
-                    }}
-                >
-                    <div style={{ fontSize: '32px', marginBottom: '12px' }}>📜</div>
-                    <div
-                        style={{
-                            color: '#eedfa0',
-                            fontSize: '15.5px',
-                            fontWeight: 700,
-                            lineHeight: '1.5',
-                            marginBottom: '24px',
-                            whiteSpace: 'pre-line',
-                        }}
-                    >
-                        {activeAlert.message}
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'center' }}>
-                        <button
-                            onClick={activeAlert.onOk}
-                            style={{
-                                width: '140px',
-                                padding: '10px 0',
-                                background: 'linear-gradient(180deg, #f0c040 0%, #c8960a 100%)',
-                                border: 'none',
-                                borderRadius: '8px',
-                                color: '#1a0f00',
-                                fontFamily: "'Cinzel', serif",
-                                fontSize: '13px',
-                                fontWeight: 900,
-                                cursor: 'pointer',
-                                boxShadow: '0 4px 12px rgba(240, 192, 64, 0.2)',
-                                transition: 'all 0.2s',
-                            }}
-                        >
-                            ОК
-                        </button>
-                    </div>
-                </motion.div>
-            </div>
-        </AnimatePresence>
-    );
-};
-
-const ConfirmDialog: React.FC = () => {
-    const { activeConfirm } = useGameStore();
-
-    if (!activeConfirm) return null;
-
-    return (
-        <AnimatePresence>
-            <div
-                style={{
-                    position: 'fixed',
-                    inset: 0,
-                    backgroundColor: 'rgba(0, 0, 0, 0.75)',
-                    backdropFilter: 'blur(8px)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    zIndex: 9999,
-                    pointerEvents: 'auto',
-                }}
-            >
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.9 }}
-                    style={{
-                        background: 'linear-gradient(135deg, rgba(28, 18, 12, 0.95) 0%, rgba(12, 6, 4, 0.99) 100%)',
-                        border: '1px solid rgba(240, 192, 64, 0.3)',
-                        boxShadow: '0 10px 40px rgba(0, 0, 0, 0.8), 0 0 25px rgba(240, 192, 64, 0.1)',
-                        borderRadius: '16px',
-                        padding: '28px',
-                        width: '380px',
-                        textAlign: 'center',
-                        fontFamily: "'Philosopher', 'Nunito', sans-serif",
-                    }}
-                >
-                    <div style={{ fontSize: '32px', marginBottom: '12px' }}>📜</div>
-                    <div
-                        style={{
-                            color: '#eedfa0',
-                            fontSize: '15.5px',
-                            fontWeight: 700,
-                            lineHeight: '1.5',
-                            marginBottom: '24px',
-                            whiteSpace: 'pre-line',
-                        }}
-                    >
-                        {activeConfirm.message}
-                    </div>
-                    <div style={{ display: 'flex', gap: '14px' }}>
-                        <button
-                            onClick={activeConfirm.onCancel}
-                            style={{
-                                flex: 1,
-                                padding: '10px 0',
-                                background: 'rgba(255, 255, 255, 0.05)',
-                                border: '1px solid rgba(255, 255, 255, 0.1)',
-                                borderRadius: '8px',
-                                color: 'rgba(255, 255, 255, 0.6)',
-                                fontFamily: "'Cinzel', serif",
-                                fontSize: '13px',
-                                fontWeight: 900,
-                                cursor: 'pointer',
-                                transition: 'all 0.2s',
-                            }}
-                        >
-                            ОТМЕНА
-                        </button>
-                        <button
-                            onClick={activeConfirm.onConfirm}
-                            style={{
-                                flex: 1,
-                                padding: '10px 0',
-                                background: 'linear-gradient(180deg, #f0c040 0%, #c8960a 100%)',
-                                border: 'none',
-                                borderRadius: '8px',
-                                color: '#1a0f00',
-                                fontFamily: "'Cinzel', serif",
-                                fontSize: '13px',
-                                fontWeight: 900,
-                                cursor: 'pointer',
-                                boxShadow: '0 4px 12px rgba(240, 192, 64, 0.2)',
-                                transition: 'all 0.2s',
-                            }}
-                        >
-                            ПОДТВЕРДИТЬ
-                        </button>
-                    </div>
-                </motion.div>
-            </div>
-        </AnimatePresence>
     );
 };
