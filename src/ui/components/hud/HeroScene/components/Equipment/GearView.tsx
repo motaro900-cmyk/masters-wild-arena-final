@@ -5,73 +5,15 @@ import { useGameStore } from '../../../../../../store/useGameStore';
 import { getHeroExpNeeded } from '../../../../../../utils/HeroLevelCalculator';
 import { audioService } from '../../../../../../services/AudioService';
 import { AssetsMap } from '../../../../../../configs/AssetsMap';
-import { EquipmentSlot } from './EquipmentSlot';
 import { EquippedHeroView } from '../../../../EquippedHeroView';
 import { InventoryPanel } from '../../../InventoryPanel';
-import { StatCard } from './StatCard';
 import { rarityColors } from '../../constants/roleIcons';
 import { SKINS_DB } from '../../../../../../configs/SkinsConfig';
 import { TalentsView } from '../Talents/TalentsView';
 
-const stoneBrickPattern =
-    "url(\"data:image/svg+xml;utf8,<svg width='60' height='40' viewBox='0 0 60 40' xmlns='http://www.w3.org/2000/svg'><rect width='60' height='40' fill='none'/><line x1='0' y1='20' x2='60' y2='20' stroke='rgba(0,0,0,0.52)' stroke-width='1.5'/><line x1='0' y1='40' x2='60' y2='40' stroke='rgba(0,0,0,0.52)' stroke-width='1.5'/><line x1='30' y1='0' x2='30' y2='20' stroke='rgba(0,0,0,0.52)' stroke-width='1.5'/><line x1='0' y1='20' x2='0' y2='40' stroke='rgba(0,0,0,0.52)' stroke-width='1.5'/><line x1='60' y1='20' x2='60' y2='40' stroke='rgba(0,0,0,0.52)' stroke-width='1.5'/><line x1='0' y1='1.5' x2='60' y2='1.5' stroke='rgba(255,255,255,0.15)' stroke-width='1'/><line x1='0' y1='21.5' x2='60' y2='21.5' stroke='rgba(255,255,255,0.15)' stroke-width='1'/><line x1='31.5' y1='0.8' x2='31.5' y2='19.5' stroke='rgba(255,255,255,0.15)' stroke-width='1'/><line x1='1.5' y1='20.8' x2='1.5' y2='39.5' stroke='rgba(255,255,255,0.15)' stroke-width='1'/><path d='M44,3 L40,7 L42,12 L38,15' stroke='rgba(0,0,0,0.45)' stroke-width='0.8' fill='none'/><path d='M45,3.5 L41,7.5 L43,12.5 L39,15.5' stroke='rgba(255,255,255,0.08)' stroke-width='0.8' fill='none'/><line x1='6' y1='8' x2='20' y2='8' stroke='rgba(0,0,0,0.42)' stroke-width='0.8'/><line x1='6' y1='9' x2='20' y2='9' stroke='rgba(255,255,255,0.08)' stroke-width='0.8'/><path d='M10,23 L13,28 L11,34' stroke='rgba(0,0,0,0.48)' stroke-width='0.9' fill='none'/><path d='M11,23.5 L14,28.5 L12,34.5' stroke='rgba(255,255,255,0.09)' stroke-width='0.9' fill='none'/><path d='M35,33 L48,30 L54,32' stroke='rgba(0,0,0,0.42)' stroke-width='0.8' fill='none'/><path d='M35,34 L48,31 L54,33' stroke='rgba(255,255,255,0.07)' stroke-width='0.8' fill='none'/><circle cx='12' cy='14' r='0.8' fill='rgba(0,0,0,0.45)'/><circle cx='12.5' cy='14.5' r='0.4' fill='rgba(255,255,255,0.08)'/><circle cx='48' cy='26' r='1.2' fill='rgba(0,0,0,0.5)'/><circle cx='48.5' cy='26.5' r='0.6' fill='rgba(255,255,255,0.1)'/></svg>\")";
-
-const CornerDecoration = () => (
-    <>
-        <div
-            style={{
-                position: 'absolute',
-                top: 12,
-                left: 12,
-                width: 14,
-                height: 14,
-                borderTop: '2px solid rgba(240, 192, 64, 0.7)',
-                borderLeft: '2px solid rgba(240, 192, 64, 0.7)',
-                pointerEvents: 'none',
-                zIndex: 5,
-            }}
-        />
-        <div
-            style={{
-                position: 'absolute',
-                top: 12,
-                right: 12,
-                width: 14,
-                height: 14,
-                borderTop: '2px solid rgba(240, 192, 64, 0.7)',
-                borderRight: '2px solid rgba(240, 192, 64, 0.7)',
-                pointerEvents: 'none',
-                zIndex: 5,
-            }}
-        />
-        <div
-            style={{
-                position: 'absolute',
-                bottom: 12,
-                left: 12,
-                width: 14,
-                height: 14,
-                borderBottom: '2px solid rgba(240, 192, 64, 0.7)',
-                borderLeft: '2px solid rgba(240, 192, 64, 0.7)',
-                pointerEvents: 'none',
-                zIndex: 5,
-            }}
-        />
-        <div
-            style={{
-                position: 'absolute',
-                bottom: 12,
-                right: 12,
-                width: 14,
-                height: 14,
-                borderBottom: '2px solid rgba(240, 192, 64, 0.7)',
-                borderRight: '2px solid rgba(240, 192, 64, 0.7)',
-                pointerEvents: 'none',
-                zIndex: 5,
-            }}
-        />
-    </>
-);
+import { CornerDecoration, stoneBrickPattern } from './decorations';
+import { GearSlotGrid } from './GearSlotGrid';
+import { HeroStatsPanel } from './HeroStatsPanel';
 
 export const GearView = ({
     hero,
@@ -101,7 +43,6 @@ export const GearView = ({
     const activeRarity = !isDefaultSkin ? activeSkin.rarity : hero.rarity;
     const activeRarityColor = rarityColors[activeRarity] || '#f0c040';
 
-    // stats теперь имеет структуру { base, total, weaponTexture }
     const currentStats = stats?.total || {
         hp: 0,
         attack: 0,
@@ -218,7 +159,6 @@ export const GearView = ({
                     boxShadow: 'inset 0 0 30px rgba(0,0,0,0.85), 0 20px 40px rgba(0,0,0,0.6)',
                 }}
             >
-                {/* Double frame outline */}
                 <div
                     style={{
                         position: 'absolute',
@@ -263,148 +203,12 @@ export const GearView = ({
                         justifyContent: 'center',
                     }}
                 >
-                    <div
-                        style={{
-                            display: 'grid',
-                            gridTemplateColumns: 'repeat(3, 110px)',
-                            gridTemplateRows: 'repeat(4, 110px)',
-                            gap: '15px',
-                            justifyContent: 'center',
-                            position: 'relative',
-                        }}
-                    >
-                        <motion.div
-                            animate={{ rotate: 360 }}
-                            transition={{ duration: 50, repeat: Infinity, ease: 'linear' }}
-                            style={{
-                                position: 'absolute',
-                                top: '50%',
-                                left: '50%',
-                                width: '450px',
-                                height: '450px',
-                                marginLeft: '-225px',
-                                marginTop: '-225px',
-                                border: '1px dashed rgba(240,192,64,0.06)',
-                                borderRadius: '50%',
-                                pointerEvents: 'none',
-                                zIndex: 0,
-                            }}
-                        />
-                        <motion.div
-                            animate={{ rotate: -360 }}
-                            transition={{ duration: 70, repeat: Infinity, ease: 'linear' }}
-                            style={{
-                                position: 'absolute',
-                                top: '50%',
-                                left: '50%',
-                                width: '350px',
-                                height: '350px',
-                                marginLeft: '-175px',
-                                marginTop: '-175px',
-                                border: '1px solid rgba(160,64,255,0.05)',
-                                borderRadius: '50%',
-                                pointerEvents: 'none',
-                                zIndex: 0,
-                            }}
-                        />
-
-                        {/* Ряд 1: Голова */}
-                        <div style={{ zIndex: 1 }} />
-                        <div style={{ zIndex: 1 }}>
-                            <EquipmentSlot
-                                id="HELMETS"
-                                label="ШЛЕМЫ"
-                                itemId={equippedIds.HELMETS}
-                                activeDraggingId={activeDraggingId}
-                                onClick={() => {
-                                    if (equippedIds.HELMETS) handleUnequip(equippedIds.HELMETS);
-                                }}
-                                setGlobalHoveredItem={setGlobalHoveredItem}
-                            />
-                        </div>
-                        <div style={{ zIndex: 1 }} />
-
-                        {/* Ряд 2: Плечи и Доспех */}
-                        <div style={{ zIndex: 1 }}>
-                            <EquipmentSlot
-                                id="SHOULDERS"
-                                label="НАПЛЕЧНИКИ"
-                                itemId={equippedIds.SHOULDERS}
-                                activeDraggingId={activeDraggingId}
-                                onClick={() => {
-                                    if (equippedIds.SHOULDERS) handleUnequip(equippedIds.SHOULDERS);
-                                }}
-                                setGlobalHoveredItem={setGlobalHoveredItem}
-                            />
-                        </div>
-                        <div style={{ zIndex: 1 }}>
-                            <EquipmentSlot
-                                id="ARMOR"
-                                label="ДОСПЕХИ"
-                                itemId={equippedIds.ARMOR}
-                                activeDraggingId={activeDraggingId}
-                                onClick={() => {
-                                    if (equippedIds.ARMOR) handleUnequip(equippedIds.ARMOR);
-                                }}
-                                setGlobalHoveredItem={setGlobalHoveredItem}
-                            />
-                        </div>
-                        <div style={{ zIndex: 1 }} />
-
-                        {/* Ряд 3: Оружие, Поножи, Щит */}
-                        <div style={{ zIndex: 1 }}>
-                            <EquipmentSlot
-                                id="WEAPONS"
-                                label="ОРУЖИЕ"
-                                itemId={equippedIds.WEAPONS}
-                                activeDraggingId={activeDraggingId}
-                                onClick={() => {
-                                    if (equippedIds.WEAPONS) handleUnequip(equippedIds.WEAPONS);
-                                }}
-                                setGlobalHoveredItem={setGlobalHoveredItem}
-                            />
-                        </div>
-                        <div style={{ zIndex: 1 }}>
-                            <EquipmentSlot
-                                id="PANTS"
-                                label="ПОНОЖИ"
-                                itemId={equippedIds.PANTS}
-                                activeDraggingId={activeDraggingId}
-                                onClick={() => {
-                                    if (equippedIds.PANTS) handleUnequip(equippedIds.PANTS);
-                                }}
-                                setGlobalHoveredItem={setGlobalHoveredItem}
-                            />
-                        </div>
-                        <div style={{ zIndex: 1 }}>
-                            <EquipmentSlot
-                                id="SHIELDS"
-                                label="ЩИТЫ"
-                                itemId={equippedIds.SHIELDS}
-                                activeDraggingId={activeDraggingId}
-                                onClick={() => {
-                                    if (equippedIds.SHIELDS) handleUnequip(equippedIds.SHIELDS);
-                                }}
-                                setGlobalHoveredItem={setGlobalHoveredItem}
-                            />
-                        </div>
-
-                        {/* Ряд 4: Сапоги */}
-                        <div style={{ zIndex: 1 }} />
-                        <div style={{ zIndex: 1 }}>
-                            <EquipmentSlot
-                                id="BOOTS"
-                                label="САПОГИ"
-                                itemId={equippedIds.BOOTS}
-                                activeDraggingId={activeDraggingId}
-                                onClick={() => {
-                                    if (equippedIds.BOOTS) handleUnequip(equippedIds.BOOTS);
-                                }}
-                                setGlobalHoveredItem={setGlobalHoveredItem}
-                            />
-                        </div>
-                        <div style={{ zIndex: 1 }} />
-                    </div>
+                    <GearSlotGrid
+                        equippedIds={equippedIds}
+                        activeDraggingId={activeDraggingId}
+                        handleUnequip={handleUnequip}
+                        setGlobalHoveredItem={setGlobalHoveredItem}
+                    />
                 </div>
 
                 <div
@@ -519,10 +323,9 @@ export const GearView = ({
                         position: 'relative',
                         boxShadow: 'inset 0 0 40px rgba(0,0,0,0.9), 0 20px 40px rgba(0,0,0,0.65)',
                         zIndex: 5,
-                        overflow: 'visible', // allows pedestal & weapon overflow
+                        overflow: 'visible',
                     }}
                 >
-                    {/* Double frame outline */}
                     <div
                         style={{
                             position: 'absolute',
@@ -548,12 +351,12 @@ export const GearView = ({
                         }}
                         style={{
                             position: 'absolute',
-                            bottom: '290px', // Raised by 70px
+                            bottom: '290px',
                             left: '50%',
                             transform: 'translateX(-50%)',
                             width: '450px',
                             height: '450px',
-                            background: `radial-gradient(circle, ${activeRarityColor}66 0%, transparent 70%)`, // significantly stronger glow
+                            background: `radial-gradient(circle, ${activeRarityColor}66 0%, transparent 70%)`,
                             pointerEvents: 'none',
                             zIndex: 1,
                         }}
@@ -563,7 +366,7 @@ export const GearView = ({
                     <div
                         style={{
                             position: 'absolute',
-                            bottom: '230px', // Raised by 70px
+                            bottom: '230px',
                             left: '50%',
                             transform: 'translateX(-50%)',
                             width: '760px',
@@ -582,7 +385,7 @@ export const GearView = ({
                     <div
                         style={{
                             position: 'absolute',
-                            bottom: '250px', // Raised by 70px
+                            bottom: '250px',
                             left: '50%',
                             transform: 'translateX(-50%) scale(1.05)',
                             zIndex: 3,
@@ -612,7 +415,6 @@ export const GearView = ({
                             position: 'relative',
                         }}
                     >
-                        {/* Tiny decorative gold ornaments/rivets in corners */}
                         <div
                             style={{
                                 position: 'absolute',
@@ -789,7 +591,6 @@ export const GearView = ({
                                                 '0 0 10px rgba(217, 70, 239, 0.7), 0 0 15px rgba(234, 179, 8, 0.3)',
                                         }}
                                     >
-                                        {/* Animated stripes */}
                                         <div
                                             style={{
                                                 position: 'absolute',
@@ -914,7 +715,6 @@ export const GearView = ({
                         position: 'relative',
                     }}
                 >
-                    {/* Double frame outline */}
                     <div
                         style={{
                             position: 'absolute',
@@ -935,66 +735,10 @@ export const GearView = ({
                             setGlobalHoveredItem={setGlobalHoveredItem}
                         />
                     ) : detailSubTab === 'STATS' ? (
-                        <div
-                            style={{
-                                flex: 1,
-                                display: 'flex',
-                                flexDirection: 'column',
-                                gap: '22px',
-                                overflowY: 'auto',
-                                paddingRight: '5px',
-                                paddingTop: '10px',
-                            }}
-                            className="custom-scrollbar"
-                        >
-                            <StatCard
-                                label="ЗДОРОВЬЕ"
-                                value={Math.round(currentStats.hp)}
-                                base={Math.round(baseStats.hp)}
-                                icon="❤️"
-                                color="#ef4444"
-                                max={10000}
-                                tooltip="Общий запас жизненных сил персонажа."
-                            />
-                            <StatCard
-                                label="СИЛА АТАКИ"
-                                value={Math.round(currentStats.attack)}
-                                base={Math.round(baseStats.attack)}
-                                icon="⚔️"
-                                color="#f97316"
-                                max={2000}
-                                tooltip="Влияет на урон, наносимый противникам в бою."
-                            />
-                            <StatCard
-                                label="ЗАЩИТА"
-                                value={Math.round(currentStats.defense)}
-                                base={Math.round(baseStats.defense)}
-                                icon="🛡️"
-                                color="#3b82f6"
-                                max={1000}
-                                tooltip="Снижает получаемый физический урон от атак врага."
-                            />
-                            <StatCard
-                                label="ЛОВКОСТЬ"
-                                value={Math.round(currentStats.evasion ?? 0)}
-                                base={Math.round(baseStats.evasion ?? 0)}
-                                icon="🌪️"
-                                color="#22c55e"
-                                max={100}
-                                suffix="%"
-                                tooltip="Шанс уклонения от атак противника в бою."
-                            />
-                            <StatCard
-                                label="КРИТ. ШАНС"
-                                value={Math.round(currentStats.critChance)}
-                                base={Math.round(baseStats.critChance)}
-                                icon="💥"
-                                color="#a855f7"
-                                max={100}
-                                suffix="%"
-                                tooltip="Шанс нанести критический удар (x1.5 урон)."
-                            />
-                        </div>
+                        <HeroStatsPanel
+                            currentStats={currentStats}
+                            baseStats={baseStats}
+                        />
                     ) : (
                         <div
                             style={{
