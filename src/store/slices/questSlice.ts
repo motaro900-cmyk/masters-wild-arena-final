@@ -1,4 +1,4 @@
-import { QUESTS_POOL } from '../../configs/QuestsConfig';
+import { QUESTS_POOL, BP_DAILY_QUESTS_POOL } from '../../configs/QuestsConfig';
 import { audioService } from '../../services/AudioService';
 import { AssetsMap } from '../../configs/AssetsMap';
 import { BATTLE_PASS_REWARDS } from '../../ui/components/hud/BattlePass/BattlePassShared';
@@ -40,20 +40,32 @@ export const createQuestSlice = (set: any, get: any) => ({
     bpExp: 0,
     showBpLevelUpOverlay: false,
     dailyQuests: [] as any[],
+    bpDailyQuests: [] as any[],
     lastDailyRefresh: 0,
     weeklyQuests: [] as any[],
     lastWeeklyQuestReset: 0,
 
     // --- ЭКШЕНЫ КВЕСТОВ ---
     refreshDailyQuests: () => {
+        // 1. Ежедневные задания на главном экране (для золота/алмазов/опыта аккаунта)
         const shuffled = [...QUESTS_POOL].sort(() => 0.5 - Math.random());
         const selected = shuffled.slice(0, 4).map((q) => ({
             questId: q.id,
             progress: 0,
             isClaimed: false,
         }));
+
+        // 2. Ежедневные задания БП (для опыта БП)
+        const shuffledBp = [...BP_DAILY_QUESTS_POOL].sort(() => 0.5 - Math.random());
+        const selectedBp = shuffledBp.slice(0, 4).map((q) => ({
+            questId: q.id,
+            progress: 0,
+            isClaimed: false,
+        }));
+
         set({
             dailyQuests: selected,
+            bpDailyQuests: selectedBp,
             lastDailyRefresh: Date.now(),
             dailyAdWatchesCount: 0,
         });
@@ -71,6 +83,16 @@ export const createQuestSlice = (set: any, get: any) => ({
                 return dq;
             });
 
+            const newBpDaily = (state.bpDailyQuests || []).map((dq: any) => {
+                const questData = BP_DAILY_QUESTS_POOL.find((q) => q.id === dq.questId);
+                if (questData && questData.type === type && !dq.isClaimed) {
+                    const newProgress =
+                        type === 'WIN_STREAK' ? amount : Math.min(questData.target, dq.progress + amount);
+                    return { ...dq, progress: newProgress };
+                }
+                return dq;
+            });
+
             const newWeekly = (state.weeklyQuests || []).map((wq: any) => {
                 const questData = WEEKLY_QUESTS_POOL.find((q) => q.id === wq.questId);
                 if (questData && questData.type === type && !wq.isClaimed) {
@@ -80,7 +102,7 @@ export const createQuestSlice = (set: any, get: any) => ({
                 return wq;
             });
 
-            return { dailyQuests: newQuests, weeklyQuests: newWeekly };
+            return { dailyQuests: newQuests, bpDailyQuests: newBpDaily, weeklyQuests: newWeekly };
         });
         syncService.debouncedSync();
     },
@@ -98,10 +120,27 @@ export const createQuestSlice = (set: any, get: any) => ({
             get().addGold(qData.rewardGold || 0);
             get().addCrystals(qData.rewardGems || 0);
             get().addExp(qData.rewardExp || 0);
-            get().addBpExp(qData.rewardExp || 0);
 
             set({ dailyQuests: newQuests });
             syncService.debouncedSync();
+        }
+    },
+
+    claimBpDailyQuestReward: (questId: string) => {
+        const state = get() as any;
+        const dq = state.bpDailyQuests.find((q: any) => q.questId === questId);
+        const qData = BP_DAILY_QUESTS_POOL.find((q) => q.id === questId);
+
+        if (dq && qData && dq.progress >= qData.target && !dq.isClaimed) {
+            const newQuests = state.bpDailyQuests.map((q: any) =>
+                q.questId === questId ? { ...q, isClaimed: true } : q,
+            );
+
+            state.addBpExp(qData.rewardExp || 0);
+
+            set({ bpDailyQuests: newQuests });
+            syncService.debouncedSync();
+            audioService.playSFX(AssetsMap.AUDIO.SFX_BUY || AssetsMap.AUDIO.SFX_CLICK);
         }
     },
 

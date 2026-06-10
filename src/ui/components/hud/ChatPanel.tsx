@@ -133,6 +133,7 @@ export const ChatPanel: React.FC = () => {
         }
 
         addMessage(finalText, userName, finalType);
+        useGameStore.getState().updateQuestProgress('SEND_CHAT', 1);
         setLastSendTime(now);
         setCooldownLeft(2);
         setInputText('');

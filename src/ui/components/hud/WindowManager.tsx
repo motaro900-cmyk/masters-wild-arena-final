@@ -44,13 +44,14 @@ export const WindowManager: React.FC<WindowManagerProps> = ({
                         title="ДРУЗЬЯ"
                         isOpen={true}
                         onClose={() => setActiveWindow(null)}
-                        width="860px"
+                        width="980px"
+                        height="800px"
                     >
                         <FriendsWindow onClose={() => setActiveWindow(null)} />
                     </BaseWindow>
                 )}
                 {activeWindow === 'MAIL' && (
-                    <BaseWindow title="ПОЧТА" isOpen={true} onClose={() => setActiveWindow(null)} width="900px">
+                    <BaseWindow title="ПОЧТА" isOpen={true} onClose={() => setActiveWindow(null)} width="1150px" height="800px">
                         <MailWindow onClose={() => setActiveWindow(null)} />
                     </BaseWindow>
                 )}
@@ -69,7 +70,8 @@ export const WindowManager: React.FC<WindowManagerProps> = ({
                         title="НАСТРОЙКИ"
                         isOpen={true}
                         onClose={() => setActiveWindow(null)}
-                        width="650px"
+                        width="900px"
+                        height="780px"
                         headerExtra={
                             <div style={{ marginLeft: '30px' }}>
                                 <ServerTime />
@@ -141,9 +143,10 @@ export const WindowManager: React.FC<WindowManagerProps> = ({
                         title="ИНВЕНТАРЬ"
                         isOpen={true}
                         onClose={() => setActiveWindow(null)}
-                        width="1100px"
+                        width="1220px"
+                        height="800px"
                     >
-                        <div style={{ padding: '30px', display: 'flex', justifyContent: 'center' }}>
+                        <div style={{ padding: '30px', display: 'flex', justifyContent: 'center', height: '100%', boxSizing: 'border-box' }}>
                             <InventoryPanel
                                 onItemClick={(itemId) => {
                                     const store = useGameStore.getState() as any;

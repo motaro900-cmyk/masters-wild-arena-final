@@ -171,6 +171,7 @@ const store = create<GameStoreState>()(
                 bpLevel: state.bpLevel,
                 bpExp: state.bpExp,
                 dailyQuests: state.dailyQuests,
+                bpDailyQuests: state.bpDailyQuests,
                 weeklyQuests: state.weeklyQuests,
                 lastDailyRefresh: state.lastDailyRefresh,
                 lastWeeklyQuestReset: state.lastWeeklyQuestReset,

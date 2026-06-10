@@ -4,6 +4,7 @@ import { X } from 'lucide-react';
 import { useGameStore } from '../../../store/useGameStore';
 import { audioService } from '../../../services/AudioService';
 import { AssetsMap } from '../../../configs/AssetsMap';
+import { PingIndicator } from './PingIndicator';
 
 interface BaseWindowProps {
     title: string;
@@ -60,8 +61,42 @@ export const BaseWindow: React.FC<BaseWindowProps> = ({
     height = 'auto',
     headerExtra,
 }) => {
-    const uiTheme = useGameStore((state) => state.uiTheme);
+    const { uiTheme, language } = useGameStore((state: any) => ({
+        uiTheme: state.uiTheme,
+        language: state.language || 'RU',
+    }));
     const isLight = uiTheme === 'LIGHT';
+
+    const windowTranslations: Record<string, Record<string, string>> = {
+        RU: {
+            'НАСТРОЙКИ': 'НАСТРОЙКИ',
+            'ДРУЗЬЯ': 'ДРУЗЬЯ',
+            'ПОЧТА': 'ПОЧТА',
+            'VIP СТАТУС': 'VIP СТАТУС',
+            'НАСТРОЙКА ПРОФИЛЯ': 'НАСТРОЙКА ПРОФИЛЯ',
+            'КАЛЕНДАРЬ НАГРАД': 'КАЛЕНДАРЬ НАГРАД',
+            'РЕЙТИНГ': 'РЕЙТИНГ',
+            'ИНФОРМАЦИЯ О КЛАНЕ': 'ИНФОРМАЦИЯ О КЛАНЕ',
+            'ПУТЬ МАСТЕРА': 'ПУТЬ МАСТЕРА',
+            'ИНВЕНТАРЬ': 'ИНВЕНТАРЬ',
+            'ЗВЕРИНЕЦ': 'ЗВЕРИНЕЦ',
+        },
+        EN: {
+            'НАСТРОЙКИ': 'SETTINGS',
+            'ДРУЗЬЯ': 'FRIENDS',
+            'ПОЧТА': 'MAIL',
+            'VIP СТАТУС': 'VIP STATUS',
+            'НАСТРОЙКА ПРОФИЛЯ': 'PROFILE CUSTOMIZE',
+            'КАЛЕНДАРЬ НАГРАД': 'DAILY REWARDS',
+            'РЕЙТИНГ': 'RANKING',
+            'ИНФОРМАЦИЯ О КЛАНЕ': 'CLAN INFO',
+            'ПУТЬ МАСТЕРА': 'PATH OF THE MASTER',
+            'ИНВЕНТАРЬ': 'INVENTORY',
+            'ЗВЕРИНЕЦ': 'BESTIARY',
+        }
+    };
+
+    const displayTitle = windowTranslations[language]?.[title] || title;
 
     // Цветовая схема окна
     const theme = {
@@ -130,7 +165,24 @@ export const BaseWindow: React.FC<BaseWindowProps> = ({
                             zIndex: 15,
                         }}
                     >
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                        {/* Слева: дополнительные виджеты (например, время) */}
+                        <div style={{ display: 'flex', alignItems: 'center', zIndex: 16 }}>
+                            {headerExtra}
+                        </div>
+
+                        {/* По центру: заголовок окна */}
+                        <div
+                            style={{
+                                position: 'absolute',
+                                left: '50%',
+                                top: '50%',
+                                transform: 'translate(-50%, -50%)',
+                                pointerEvents: 'none',
+                                textAlign: 'center',
+                                whiteSpace: 'nowrap',
+                                zIndex: 14,
+                            }}
+                        >
                             <h2
                                 style={{
                                     color: theme.titleColor,
@@ -145,34 +197,44 @@ export const BaseWindow: React.FC<BaseWindowProps> = ({
                                         : '0 2px 10px rgba(0,0,0,0.8), 0 0 15px rgba(251,191,36,0.25)',
                                 }}
                             >
-                                {title}
-                            </h2>
-                            {headerExtra}
+                                {displayTitle}
+                        </h2>
                         </div>
 
-                        <motion.button
-                            whileHover={{ scale: 1.1 }}
-                            whileTap={{ scale: 0.9 }}
-                            onClick={() => {
-                                audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
-                                onClose();
-                            }}
-                            style={{
-                                background: 'none',
-                                border: 'none',
-                                cursor: 'pointer',
-                                color: theme.titleColor,
-                                opacity: 0.8,
-                                transition: 'opacity 0.2s',
-                            }}
-                            onMouseEnter={(e) => (e.currentTarget.style.opacity = '1')}
-                            onMouseLeave={(e) => (e.currentTarget.style.opacity = '0.8')}
-                        >
-                            <X
-                                size={30}
-                                style={{ filter: isLight ? 'none' : 'drop-shadow(0 0 4px rgba(251,191,36,0.3))' }}
-                            />
-                        </motion.button>
+                        {/* Справа: доп. виджет (например, пинг) и кнопка закрытия */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '20px', zIndex: 16 }}>
+                            {title === 'НАСТРОЙКИ' && (
+                                <div style={{ pointerEvents: 'auto' }}>
+                                    <PingIndicator />
+                                </div>
+                            )}
+                            <motion.button
+                                whileHover={{ scale: 1.1 }}
+                                whileTap={{ scale: 0.9 }}
+                                onClick={() => {
+                                    audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
+                                    onClose();
+                                }}
+                                style={{
+                                    background: 'none',
+                                    border: 'none',
+                                    cursor: 'pointer',
+                                    color: theme.titleColor,
+                                    opacity: 0.8,
+                                    transition: 'opacity 0.2s',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                }}
+                                onMouseEnter={(e) => (e.currentTarget.style.opacity = '1')}
+                                onMouseLeave={(e) => (e.currentTarget.style.opacity = '0.8')}
+                            >
+                                <X
+                                    size={30}
+                                    style={{ filter: isLight ? 'none' : 'drop-shadow(0 0 4px rgba(251,191,36,0.3))' }}
+                                />
+                            </motion.button>
+                        </div>
                     </div>
 
                     {/* Декоративная тонкая полоска под хедером */}

@@ -89,9 +89,14 @@ export const createClanSlice = (set: any, get: any) => ({
     },
 
     sendGift: (friendId: string) =>
-        set((state: any) => ({
-            friends: state.friends.map((f: any) => (f.id === friendId ? { ...f, giftSent: true } : f)),
-        })),
+        set((state: any) => {
+            if (get().updateQuestProgress) {
+                get().updateQuestProgress('SEND_GIFT', 1);
+            }
+            return {
+                friends: state.friends.map((f: any) => (f.id === friendId ? { ...f, giftSent: true } : f)),
+            };
+        }),
 
     collectAllGifts: () =>
         set((state: any) => {

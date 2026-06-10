@@ -200,10 +200,10 @@ export const BattleScene: React.FC = () => {
 
                     if (isPve) {
                         if (isVictory) {
-                            gold = Math.floor(store.pveStage * 100 * (1 + store.pveStage * 0.25));
-                            xp = store.pveStage * 50;
+                            gold = Math.min(100 + store.pveStage * 30, 5000);
+                            xp = Math.min(50 + store.pveStage * 5, 500);
                             const isBoss = store.pveStage % 5 === 0;
-                            crystals = isBoss ? 30 : 0;
+                            crystals = isBoss ? 20 : 0;
                         }
                         store.completePveBattle(isVictory);
                     } else {

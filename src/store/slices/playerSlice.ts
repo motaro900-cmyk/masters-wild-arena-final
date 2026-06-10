@@ -1,11 +1,59 @@
 import { ENERGY_CONFIG, BATTLE_CONFIG } from '../../game/configs/constants';
-import { getRankInfo } from '../../configs/RankSystem';
+import { getRankInfo, RANK_SYSTEM } from '../../configs/RankSystem';
 import { syncService } from '../../services/SyncService';
 import { audioService } from '../../services/AudioService';
 import { safeSetItem } from '../../utils/SafeStorage';
 import { showRewardedVideo, isGroupMember } from '../../utils/VKBridge';
 import { getMskDateKey, calculatePetDailyReward } from '../../ui/components/hud/Bestiary/utils/petRewards';
 import { HEROES_DB } from '../../configs/HeroesConfig';
+import { ITEMS_DATABASE } from '../../game/configs/ItemsConfig';
+
+const getRandomItemForRank = (rankName: string): string => {
+    let weights: Record<string, number> = {
+        COMMON: 100,
+        RARE: 0,
+        EPIC: 0,
+        LEGENDARY: 0,
+        MYTHIC: 0
+    };
+
+    if (rankName === 'ВОИН' || rankName === 'ВЕТЕРАН') {
+        weights = { COMMON: 80, RARE: 20, EPIC: 0, LEGENDARY: 0, MYTHIC: 0 };
+    } else if (rankName === 'МАСТЕР' || rankName === 'ГЕРОЙ') {
+        weights = { COMMON: 50, RARE: 40, EPIC: 10, LEGENDARY: 0, MYTHIC: 0 };
+    } else if (rankName === 'ЭЛИТА' || rankName === 'ЧЕМПИОН') {
+        weights = { COMMON: 5, RARE: 20, EPIC: 65, LEGENDARY: 10, MYTHIC: 0 };
+    } else if (rankName === 'МАГИСТР' || rankName === 'ВЛАСТЕЛИН' || rankName === 'ЛЕГЕНДА') {
+        weights = { COMMON: 0, RARE: 10, EPIC: 15, LEGENDARY: 55, MYTHIC: 20 };
+    }
+
+    const totalWeight = Object.values(weights).reduce((a, b) => a + b, 0);
+    let randomNum = Math.floor(Math.random() * totalWeight);
+    let selectedRarity = 'COMMON';
+
+    for (const [rarity, weight] of Object.entries(weights)) {
+        if (randomNum < weight) {
+            selectedRarity = rarity;
+            break;
+        }
+        randomNum -= weight;
+    }
+
+    const candidates = Object.values(ITEMS_DATABASE).filter(
+        (item) => item.mainTab === 'ARSENAL' && item.rarity === selectedRarity
+    );
+
+    if (candidates.length === 0) {
+        const fallbackCandidates = Object.values(ITEMS_DATABASE).filter(
+            (item) => item.mainTab === 'ARSENAL'
+        );
+        if (fallbackCandidates.length === 0) return 'weapon_rusty_sword';
+        return fallbackCandidates[Math.floor(Math.random() * fallbackCandidates.length)].id;
+    }
+
+    const randomIndex = Math.floor(Math.random() * candidates.length);
+    return candidates[randomIndex].id;
+};
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const getPlayerTitle = (_level: number): string => {
@@ -21,9 +69,7 @@ const calculateMaxEnergy = (isPremium: boolean, isVip: boolean): number => {
 };
 
 export const getExpNeeded = (level: number): number => {
-    if (level <= 40) return level * 600;
-    if (level <= 60) return level * 500;
-    return level * 400;
+    return 300 + level * 100;
 };
 
 export const createPlayerSlice = (set: any, get: any) => ({
@@ -42,6 +88,7 @@ export const createPlayerSlice = (set: any, get: any) => ({
     vipEndTime: 0,
     hasBoughtStarterPack: false,
     dailyAdWatchesCount: 0,
+    dailyEnergyPurchasesCount: 0,
     claimedRankRewards: [] as string[],
     dailyBattles: 0,
     dailyBattleLimit: BATTLE_CONFIG.DAILY_LIMIT,
@@ -134,6 +181,10 @@ export const createPlayerSlice = (set: any, get: any) => ({
     notificationsEnabled: true,
     uiTheme: 'DARK',
     heroesInitialTab: 'LIST',
+    language: 'RU',
+    uiAnimations: true,
+    particlesQuality: 'HIGH',
+    glowEnabled: true,
     pet: {
         id: 'baby_dragon',
         name: 'Дракоша',
@@ -178,6 +229,9 @@ export const createPlayerSlice = (set: any, get: any) => ({
             dailyBattles: state.dailyBattles + 1,
             lastEnergyUpdate: wasFull ? Date.now() : state.lastEnergyUpdate,
         }));
+        if (get().updateQuestProgress) {
+            get().updateQuestProgress('SPEND_ENERGY', amount);
+        }
         syncService.debouncedSync();
         return true;
     },
@@ -226,82 +280,103 @@ export const createPlayerSlice = (set: any, get: any) => ({
         set((state: any) => {
             let newExp = state.exp + amount;
             let newLevel = state.level;
-            let maxExp = getExpNeeded(newLevel);
+            let needed = getExpNeeded(newLevel);
 
-            while (newExp >= maxExp) {
-                newExp -= maxExp;
-                newLevel += 1;
-                maxExp = getExpNeeded(newLevel);
+            while (newExp >= needed) {
+                newExp -= needed;
+                newLevel++;
+                needed = getExpNeeded(newLevel);
+                audioService.playSfx(ENERGY_CONFIG.SFX_LEVEL_UP || '');
+                get().broadcastEvent('LEVEL_UP', { playerName: state.name, level: newLevel });
             }
 
             return {
                 exp: newExp,
                 level: newLevel,
+                maxEnergy: calculateMaxEnergy(state.isPremium, state.vipEndTime > Date.now()),
                 title: getPlayerTitle(newLevel),
             };
         }),
 
-    addRating: (amount: number) =>
-        set((state: any) => {
-            const newRating = Math.max(0, state.rating + amount);
-            const oldRank = getRankInfo(state.rating).name;
-            const newRank = getRankInfo(newRating).name;
+    checkRankUpRewards: (newRating: number) => {
+        const state = get() as any;
+        const oldRank = getRankInfo(state.rating).name;
+        const newRank = getRankInfo(newRating).name;
 
-            // Если подняли ранг до Легенды
-            if (newRank === 'ЛЕГЕНДА' && oldRank !== 'ЛЕГЕНДА') {
-                get().broadcastEvent('RANK_UP', { playerName: get().name, rankName: 'ЛЕГЕНДА' });
-            }
+        // Если подняли ранг до Легенды
+        if (newRank === 'ЛЕГЕНДА' && oldRank !== 'ЛЕГЕНДА') {
+            get().broadcastEvent('RANK_UP', { playerName: state.name, rankName: 'ЛЕГЕНДА' });
+        }
 
-            // --- НАГРАДЫ ЗА ДОСТИЖЕНИЕ РАНГА (Трофейная Дорога) ---
-            const rankRewards: Record<string, { crystals: number; gold: number; chest?: string; chestName?: string }> = {
-                'ВОИН': { crystals: 150, gold: 2000 },
-                'ВЕТЕРАН': { crystals: 300, gold: 5000, chest: 'chest_epic', chestName: 'Эпический сундук' },
-                'МАСТЕР': { crystals: 600, gold: 10000, chest: 'chest_epic', chestName: 'Эпический сундук' },
-                'ГЕРОЙ': { crystals: 1000, gold: 15000, chest: 'chest_legendary', chestName: 'Легендарный сундук' },
-                'ЭЛИТА': { crystals: 1500, gold: 20000, chest: 'chest_legendary', chestName: 'Легендарный сундук' },
-                'ЧЕМПИОН': { crystals: 2000, gold: 25000, chest: 'chest_legendary', chestName: 'Легендарный сундук' },
-                'МАГИСТР': { crystals: 3000, gold: 40000, chest: 'chest_legendary', chestName: 'Легендарный сундук' },
-                'ВЛАСТЕЛИН': { crystals: 4000, gold: 50000, chest: 'chest_legendary', chestName: 'Легендарный сундук' },
-                'ЛЕГЕНДА': { crystals: 6000, gold: 100000, chest: 'chest_legendary', chestName: 'Легендарный сундук' },
-            };
+        // --- НАГРАДЫ ЗА ДОСТИЖЕНИЕ РАНГА (Трофейная Дорога) ---
+        const rankRewards: Record<string, { crystals: number; gold: number; hasItem?: boolean; rewardName?: string }> = {
+            'ВОИН': { crystals: 150, gold: 2000, hasItem: true, rewardName: 'Случайный предмет' },
+            'ВЕТЕРАН': { crystals: 300, gold: 5000, hasItem: true, rewardName: 'Случайный предмет' },
+            'МАСТЕР': { crystals: 600, gold: 10000, hasItem: true, rewardName: 'Случайный предмет' },
+            'ГЕРОЙ': { crystals: 1000, gold: 15000, hasItem: true, rewardName: 'Случайный предмет' },
+            'ЭЛИТА': { crystals: 1500, gold: 20000, hasItem: true, rewardName: 'Случайный предмет' },
+            'ЧЕМПИОН': { crystals: 2000, gold: 25000, hasItem: true, rewardName: 'Случайный предмет' },
+            'МАГИСТР': { crystals: 3000, gold: 40000, hasItem: true, rewardName: 'Случайный предмет' },
+            'ВЛАСТЕЛИН': { crystals: 4000, gold: 50000, hasItem: true, rewardName: 'Случайный предмет' },
+            'ЛЕГЕНДА': { crystals: 6000, gold: 100000, hasItem: true, rewardName: 'Случайный предмет' },
+        };
 
-            const claimed = [...(state.claimedRankRewards || [])];
-            const reward = rankRewards[newRank];
+        const claimed = [...(state.claimedRankRewards || [])];
+        let claimedChanged = false;
 
-            if (reward && newRank !== oldRank && !claimed.includes(newRank)) {
-                claimed.push(newRank);
-                
+        Object.entries(rankRewards).forEach(([rankKey, reward]) => {
+            const rankSystemTier = RANK_SYSTEM.find(r => r.name === rankKey);
+            if (rankSystemTier && newRating >= rankSystemTier.minTrophies && !claimed.includes(rankKey)) {
+                claimed.push(rankKey);
+                claimedChanged = true;
+
                 const mailRewards = [
                     { type: 'CRYSTALS', amount: reward.crystals },
                     { type: 'GOLD', amount: reward.gold }
                 ];
-                if (reward.chest) {
-                    mailRewards.push({ type: 'ITEM', itemId: reward.chest, amount: 1 } as any);
+                let resolvedItemName = reward.rewardName;
+                if (reward.hasItem) {
+                    const itemId = getRandomItemForRank(rankKey);
+                    mailRewards.push({ type: 'ITEM', itemId, amount: 1 } as any);
+                    const dbItem = ITEMS_DATABASE[itemId];
+                    if (dbItem) {
+                        resolvedItemName = `${dbItem.name} (${reward.rewardName})`;
+                    }
                 }
 
                 setTimeout(() => {
                     get().addMail({
-                        id: `rank_reward_${newRank}_${Date.now()}`,
+                        id: `rank_reward_${rankKey}_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
                         from: 'ЛЕСНЫЕ ДУХИ',
-                        subject: `НАГРАДА ЗА РАНГ ${newRank}!`,
-                        body: `Поздравляем, мастер! Ты превзошел ожидания духов и достиг славного ранга "${newRank}". \n\nВ награду тебе отправляется этот дар: \n💎 ${reward.crystals} Кристаллов \n💰 ${reward.gold} Золота ${reward.chestName ? `\n🎁 ${reward.chestName}` : ''} \n\nПусть твои будущие победы будут столь же легкими!`,
+                        subject: `НАГРАДА ЗА РАНГ ${rankKey}!`,
+                        body: `Поздравляем, мастер! Ты превзошел ожидания духов и достиг славного ранга "${rankKey}". \n\nВ награду тебе отправляется этот дар: \n💎 ${reward.crystals} Кристаллов \n💰 ${reward.gold} Золота ${resolvedItemName ? `\n🎁 ${resolvedItemName}` : ''} \n\nПусть твои будущие победы будут столь же легкими!`,
                         date: new Date().toLocaleDateString(),
                         isRead: false,
                         tab: 'INBOX',
                         rewards: mailRewards,
                     });
-                    get().showAlert(`Поздравляем с рангом ${newRank}! Награда выслана на почту! 📧`);
+                    get().showAlert(`Достигнут ранг ${rankKey}! Награда выслана на почту! 📧`);
                 }, 1000);
             }
+        });
 
-            return { rating: newRating, trophies: newRating, claimedRankRewards: claimed };
+        if (claimedChanged) {
+            set({ claimedRankRewards: claimed });
+        }
+    },
+
+    addRating: (amount: number) =>
+        set((state: any) => {
+            const newRating = Math.max(0, state.rating + amount);
+            get().checkRankUpRewards(newRating);
+            return { rating: newRating, trophies: newRating };
         }),
 
     broadcastEvent: (type: 'RANK_UP' | 'LEVEL_UP' | 'ITEM_DROP', payload: any) => {
         const { addMessage } = get();
         if (type === 'RANK_UP' && payload.rankName === 'ЛЕГЕНДА') {
             addMessage(
-                `🎺 ВЕЛИКИЙ ТРИУМФ! Воин «${payload.playerName}» вписал своё имя в историю, достигнув ранга ЛЕГЕНДА! Да трепещут враги перед его мощью! 🐉🔥`,
+                `🎺 ВЕЛИКИЙ ТРИУМФ! «${payload.playerName}» вписал своё имя в историю, достигнув ранга ЛЕГЕНДА! Да содрогнется арена перед его величием! 🐉🔥`,
                 'ГЕРОЛЬД',
                 'system',
             );
@@ -434,6 +509,9 @@ export const createPlayerSlice = (set: any, get: any) => ({
             dailyBattles: state.dailyBattles + 1,
             lastEnergyUpdate: wasFull ? Date.now() : state.lastEnergyUpdate,
         }));
+        if (get().updateQuestProgress) {
+            get().updateQuestProgress('SPEND_ENERGY', BATTLE_CONFIG.ENERGY_COST);
+        }
         return true;
     },
 
@@ -484,6 +562,7 @@ export const createPlayerSlice = (set: any, get: any) => ({
                 dailyBattleLimit: s.isPremium ? BATTLE_CONFIG.PREMIUM_DAILY_LIMIT : BATTLE_CONFIG.DAILY_LIMIT,
                 lastBattleReset: Date.now(),
                 dailyAdWatchesCount: 0, // Сбрасываем лимит рекламы каждый день
+                dailyEnergyPurchasesCount: 0, // Сбрасываем лимит покупки энергии каждый день
             });
         }
     },
@@ -597,6 +676,10 @@ export const createPlayerSlice = (set: any, get: any) => ({
         if (!get().isMuted) audioService.setSFXVolume(vol / 100);
     },
     setGraphicsQuality: (val: string) => set({ graphicsQuality: val }),
+    setLanguage: (val: 'RU' | 'EN') => set({ language: val }),
+    setUiAnimations: (val: boolean) => set({ uiAnimations: val }),
+    setParticlesQuality: (val: 'LOW' | 'HIGH') => set({ particlesQuality: val }),
+    setGlowEnabled: (val: boolean) => set({ glowEnabled: val }),
     setLevel: (val: number) => {
         set({ level: val, title: getPlayerTitle(val) });
         syncService.debouncedSync();
@@ -672,7 +755,9 @@ export const createPlayerSlice = (set: any, get: any) => ({
         syncService.debouncedSync();
     },
     setRating: (rating: number) => {
-        set({ rating: Math.max(0, rating) });
+        const newRating = Math.max(0, rating);
+        get().checkRankUpRewards(newRating);
+        set({ rating: newRating });
         syncService.debouncedSync();
     },
 

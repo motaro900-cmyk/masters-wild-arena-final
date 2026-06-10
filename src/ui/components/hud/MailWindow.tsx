@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../../../store/useGameStore';
 import { AssetsMap } from '../../../configs/AssetsMap';
+import { ITEMS_DATABASE } from '../../../game/configs/ItemsConfig';
+import { syncService } from '../../../services/SyncService';
 
 interface MailWindowProps {
     onClose: () => void;
@@ -18,6 +20,8 @@ export const MailWindow: React.FC<MailWindowProps> = () => {
         sendFeedback,
         archiveMail,
         playerId,
+        friends,
+        name: playerName,
     } = useGameStore();
 
     const [view, setView] = useState<'LIST' | 'READ' | 'WRITE'>('LIST');
@@ -30,6 +34,49 @@ export const MailWindow: React.FC<MailWindowProps> = () => {
         msg: '',
         type: 'IDLE',
     });
+
+    const [recipientId, setRecipientId] = useState('');
+    const [manualRecipientId, setManualRecipientId] = useState('');
+    const [writeSubject, setWriteSubject] = useState('');
+    const [writeBody, setWriteBody] = useState('');
+
+    const handleSendPersonalMail = async () => {
+        const target = recipientId === 'custom' || !recipientId ? manualRecipientId.trim() : recipientId;
+        if (!target) {
+            useGameStore.getState().showAlert('Пожалуйста, укажите получателя.');
+            return;
+        }
+        if (!writeSubject.trim() || !writeBody.trim()) {
+            useGameStore.getState().showAlert('Пожалуйста, введите тему и сообщение.');
+            return;
+        }
+
+        try {
+            const mailData = {
+                id: `personal_${Date.now()}`,
+                from: playerName || playerId || 'Друг',
+                subject: writeSubject.trim(),
+                body: writeBody.trim(),
+                date: new Date().toLocaleDateString(),
+                isRead: false,
+                tab: 'INBOX',
+                timestamp: Date.now(),
+            };
+
+            await syncService.sendMail(target, mailData);
+            useGameStore.getState().updateQuestProgress('SEND_GIFT', 1);
+            useGameStore.getState().showAlert('Письмо успешно отправлено!');
+            
+            setRecipientId('');
+            setManualRecipientId('');
+            setWriteSubject('');
+            setWriteBody('');
+            setView('LIST');
+        } catch (e) {
+            console.error('Failed to send personal mail:', e);
+            useGameStore.getState().showAlert('Ошибка при отправке письма.');
+        }
+    };
 
     const { redeemPromoCode } = useGameStore();
 
@@ -82,7 +129,7 @@ export const MailWindow: React.FC<MailWindowProps> = () => {
         <div
             style={{
                 width: '100%',
-                height: '620px',
+                height: '700px',
                 backgroundColor: 'transparent',
                 padding: '10px 30px',
                 display: 'flex',
@@ -115,9 +162,9 @@ export const MailWindow: React.FC<MailWindowProps> = () => {
                                     background: activeTab === tab ? 'rgba(240,192,64,0.1)' : 'transparent',
                                     border: `1px solid ${activeTab === tab ? colors.accent : colors.border}`,
                                     color: activeTab === tab ? '#fff' : 'rgba(232, 216, 168, 0.4)',
-                                    padding: '8px 16px',
-                                    borderRadius: '8px',
-                                    fontSize: '11px',
+                                    padding: '12px 24px',
+                                    borderRadius: '10px',
+                                    fontSize: '13px',
                                     fontWeight: 800,
                                     fontFamily: "'Cinzel', serif",
                                     cursor: 'pointer',
@@ -513,6 +560,154 @@ export const MailWindow: React.FC<MailWindowProps> = () => {
                                 )}
                             </motion.div>
                         )
+                    ) : view === 'WRITE' ? (
+                        <motion.div
+                            key="write"
+                            initial={{ opacity: 0, scale: 0.98 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            style={{
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: '15px',
+                                padding: '20px',
+                                background: 'rgba(0,0,0,0.2)',
+                                borderRadius: '15px',
+                                border: `1px solid ${colors.border}`,
+                            }}
+                        >
+                            <h3
+                                style={{
+                                    fontFamily: "'Cinzel', serif",
+                                    fontSize: '18px',
+                                    color: colors.accent,
+                                    letterSpacing: '1px',
+                                    margin: 0,
+                                }}
+                            >
+                                ОТПРАВИТЬ ПИСЬМО
+                            </h3>
+
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                <label style={{ fontSize: '11px', fontWeight: 800, color: 'rgba(255,255,255,0.4)' }}>
+                                    КОМУ:
+                                </label>
+                                {friends && friends.length > 0 ? (
+                                    <select
+                                        value={recipientId}
+                                        onChange={(e) => {
+                                            setRecipientId(e.target.value);
+                                            if (e.target.value !== 'custom') {
+                                                setManualRecipientId('');
+                                            }
+                                        }}
+                                        style={{
+                                            padding: '12px',
+                                            background: colors.input,
+                                            border: `1px solid ${colors.border}`,
+                                            borderRadius: '8px',
+                                            color: '#fff',
+                                            fontSize: '14px',
+                                            outline: 'none',
+                                            cursor: 'pointer',
+                                        }}
+                                    >
+                                        <option value="" disabled>-- Выберите друга --</option>
+                                        {friends.map((f: any) => (
+                                            <option key={f.id} value={f.id}>
+                                                {f.name || f.username || f.id} ({f.id})
+                                            </option>
+                                        ))}
+                                        <option value="custom">Указать ID вручную...</option>
+                                    </select>
+                                ) : (
+                                    <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)', fontStyle: 'italic' }}>
+                                        Список друзей пуст. Вы можете ввести ID игрока вручную ниже.
+                                    </div>
+                                )}
+
+                                {(friends.length === 0 || recipientId === 'custom') && (
+                                    <input
+                                        type="text"
+                                        value={manualRecipientId}
+                                        onChange={(e) => setManualRecipientId(e.target.value)}
+                                        placeholder="Введите ID игрока (например: VK-12345)"
+                                        style={{
+                                            padding: '12px',
+                                            background: colors.input,
+                                            border: `1px solid ${colors.border}`,
+                                            borderRadius: '8px',
+                                            color: '#fff',
+                                            fontSize: '14px',
+                                            outline: 'none',
+                                            marginTop: '5px',
+                                        }}
+                                    />
+                                )}
+                            </div>
+
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                <label style={{ fontSize: '11px', fontWeight: 800, color: 'rgba(255,255,255,0.4)' }}>
+                                    ТЕМА:
+                                </label>
+                                <input
+                                    type="text"
+                                    value={writeSubject}
+                                    onChange={(e) => setWriteSubject(e.target.value)}
+                                    placeholder="Тема письма..."
+                                    style={{
+                                        padding: '12px',
+                                        background: colors.input,
+                                        border: `1px solid ${colors.border}`,
+                                        borderRadius: '8px',
+                                        color: '#fff',
+                                        fontSize: '14px',
+                                        outline: 'none',
+                                    }}
+                                />
+                            </div>
+
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                <label style={{ fontSize: '11px', fontWeight: 800, color: 'rgba(255,255,255,0.4)' }}>
+                                    СООБЩЕНИЕ:
+                                </label>
+                                <textarea
+                                    value={writeBody}
+                                    onChange={(e) => setWriteBody(e.target.value)}
+                                    placeholder="Напишите послание..."
+                                    style={{
+                                        height: '110px',
+                                        padding: '12px',
+                                        background: colors.input,
+                                        border: `1px solid ${colors.border}`,
+                                        borderRadius: '8px',
+                                        color: '#fff',
+                                        outline: 'none',
+                                        resize: 'none',
+                                        fontSize: '14px',
+                                        lineHeight: 1.5,
+                                    }}
+                                />
+                            </div>
+
+                            <button
+                                onClick={handleSendPersonalMail}
+                                style={{
+                                    padding: '16px',
+                                    background: 'linear-gradient(180deg, #f0c040, #c87820)',
+                                    border: 'none',
+                                    borderRadius: '10px',
+                                    fontWeight: 900,
+                                    color: '#1a1008',
+                                    cursor: 'pointer',
+                                    fontFamily: "'Cinzel', serif",
+                                    fontSize: '14px',
+                                    boxShadow: '0 4px 15px rgba(200, 120, 32, 0.3)',
+                                    marginTop: '5px',
+                                }}
+                            >
+                                ОТПРАВИТЬ ПИСЬМО
+                            </button>
+                        </motion.div>
                     ) : view === 'READ' ? (
                         <motion.div
                             initial={{ opacity: 0, x: 20 }}
@@ -598,13 +793,17 @@ export const MailWindow: React.FC<MailWindowProps> = () => {
                                                             ? AssetsMap.UI.ICON_GOLD_FULL
                                                             : r.type === 'ENERGY'
                                                               ? AssetsMap.UI.ICON_ENERGY_FULL
-                                                              : AssetsMap.UI.ICON_ALMAZ_FULL
+                                                              : r.type === 'ITEM'
+                                                                ? (ITEMS_DATABASE[r.itemId]?.image || AssetsMap.UI.ICON_DAILY_CHEST)
+                                                                : AssetsMap.UI.ICON_ALMAZ_FULL
                                                     }
-                                                    style={{ width: 22, height: 22, objectFit: 'contain' }}
+                                                    style={{ width: 28, height: 28, objectFit: 'contain' }}
                                                     alt="reward"
                                                 />
                                                 <span style={{ fontWeight: 900, color: colors.accent }}>
-                                                    {r.amount.toLocaleString()}
+                                                    {r.type === 'ITEM'
+                                                        ? `${ITEMS_DATABASE[r.itemId]?.name || 'Предмет'}${r.amount > 1 ? ` x${r.amount}` : ''}`
+                                                        : r.amount.toLocaleString()}
                                                 </span>
                                             </div>
                                         ))}
@@ -680,48 +879,108 @@ export const MailWindow: React.FC<MailWindowProps> = () => {
             </div>
 
             {/* ДИНАМИЧЕСКИЙ ФУТЕР */}
-            {view === 'LIST' && activeTab !== 'SUPPORT' && activeTab !== 'PROMO' && (
+            {view === 'LIST' && (
                 <motion.div
                     initial={{ y: 20, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
                     style={{ marginTop: '20px', display: 'flex', gap: '10px' }}
                 >
-                    <button
-                        onClick={() =>
-                            useGameStore.getState().showAlert('Написание личных писем будет доступно в v1.2')
-                        }
-                        style={{
-                            flex: 1,
-                            padding: '14px',
-                            background: 'transparent',
-                            border: `1px solid ${colors.accent}`,
-                            borderRadius: '10px',
-                            color: colors.accent,
-                            fontWeight: 800,
-                            cursor: 'pointer',
-                            fontSize: '12px',
-                            fontFamily: "'Cinzel', serif",
-                        }}
-                    >
-                        НАПИСАТЬ
-                    </button>
-                    <button
-                        onClick={() => collectAllMailRewards()}
-                        style={{
-                            flex: 2,
-                            padding: '14px',
-                            background: 'linear-gradient(180deg, #f0c040, #c87820)',
-                            border: 'none',
-                            borderRadius: '10px',
-                            fontWeight: 900,
-                            color: '#1a1008',
-                            cursor: 'pointer',
-                            fontSize: '14px',
-                            fontFamily: "'Cinzel', serif",
-                        }}
-                    >
-                        ЗАБРАТЬ ВСЁ
-                    </button>
+                    {activeTab === 'INBOX' && (
+                        <>
+                            <button
+                                onClick={() => {
+                                    setRecipientId('');
+                                    setManualRecipientId('');
+                                    setWriteSubject('');
+                                    setWriteBody('');
+                                    setView('WRITE');
+                                }}
+                                style={{
+                                    flex: 1,
+                                    padding: '14px',
+                                    background: 'transparent',
+                                    border: `1px solid ${colors.accent}`,
+                                    borderRadius: '10px',
+                                    color: colors.accent,
+                                    fontWeight: 800,
+                                    cursor: 'pointer',
+                                    fontSize: '12px',
+                                    fontFamily: "'Cinzel', serif",
+                                }}
+                            >
+                                НАПИСАТЬ
+                            </button>
+                            <button
+                                onClick={() => {
+                                    const toDelete = mails.filter((m: any) => m.tab === 'INBOX' && !m.rewards && m.id !== 'welcome-mail');
+                                    toDelete.forEach((m: any) => deleteMail(m.id));
+                                    useGameStore.getState().showAlert(`Удалено писем без наград: ${toDelete.length}`);
+                                }}
+                                style={{
+                                    flex: 1,
+                                    padding: '14px',
+                                    background: 'transparent',
+                                    border: `1px solid ${colors.danger}`,
+                                    borderRadius: '10px',
+                                    color: colors.danger,
+                                    fontWeight: 800,
+                                    cursor: 'pointer',
+                                    fontSize: '12px',
+                                    fontFamily: "'Cinzel', serif",
+                                }}
+                            >
+                                УДАЛИТЬ БЕЗ НАГРАД
+                            </button>
+                            <button
+                                onClick={() => collectAllMailRewards()}
+                                style={{
+                                    flex: 1,
+                                    padding: '14px',
+                                    background: 'linear-gradient(180deg, #f0c040, #c87820)',
+                                    border: 'none',
+                                    borderRadius: '10px',
+                                    fontWeight: 900,
+                                    color: '#1a1008',
+                                    cursor: 'pointer',
+                                    fontSize: '14px',
+                                    fontFamily: "'Cinzel', serif",
+                                }}
+                            >
+                                ЗАБРАТЬ ВСЁ
+                            </button>
+                        </>
+                    )}
+
+                    {activeTab === 'ARCHIVE' && (
+                        <button
+                            onClick={() => {
+                                const toDelete = mails.filter((m: any) => m.tab === 'ARCHIVE');
+                                toDelete.forEach((m: any) => deleteMail(m.id));
+                                useGameStore.getState().showAlert(`Архив очищен. Удалено писем: ${toDelete.length}`);
+                            }}
+                            style={{
+                                flex: 1,
+                                padding: '14px',
+                                background: 'transparent',
+                                border: `1px solid ${colors.danger}`,
+                                borderRadius: '10px',
+                                color: colors.danger,
+                                fontWeight: 800,
+                                cursor: 'pointer',
+                                fontSize: '12px',
+                                fontFamily: "'Cinzel', serif",
+                                transition: '0.2s',
+                            }}
+                            onMouseEnter={(e) => {
+                                (e.target as HTMLButtonElement).style.background = 'rgba(239, 68, 68, 0.1)';
+                            }}
+                            onMouseLeave={(e) => {
+                                (e.target as HTMLButtonElement).style.background = 'transparent';
+                            }}
+                        >
+                            ОЧИСТИТЬ АРХИВ
+                        </button>
+                    )}
                 </motion.div>
             )}
         </div>

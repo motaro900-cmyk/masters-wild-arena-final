@@ -185,7 +185,7 @@ export const createBattleSlice = (set: any, get: any) => ({
             const nextStage = pveStage + 1;
             const isBoss = pveStage % 5 === 0;
             const newStreak = winStreak + 1;
-            const xpReward = pveStage * 50;
+            const xpReward = Math.min(50 + pveStage * 5, 500);
 
             const activeHeroId = get().selectedHeroId || 'panda';
             get().addHeroExp(activeHeroId, xpReward);
@@ -221,8 +221,8 @@ export const createBattleSlice = (set: any, get: any) => ({
             }
 
             const goldGained = Math.min(
-                Math.floor(pveStage * 100 * (1 + pveStage * 0.25)),
-                50000, // максимум 50к золота за 1 PvE бой
+                100 + pveStage * 30,
+                5000, // максимум 5к золота за 1 PvE бой
             );
             const crystalsGained = isBoss ? 20 : 0;
 

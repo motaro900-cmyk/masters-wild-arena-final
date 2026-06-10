@@ -366,7 +366,7 @@ export const AncientsSanctuaryScreen: React.FC = () => {
                                     alt="Gold"
                                 />
                                 <span style={{ fontSize: '12px', fontWeight: 900, color: '#fbbf24' }}>
-                                    {Math.floor(selectedFloor * 100 * (1 + selectedFloor * 0.25))}
+                                    {Math.min(100 + selectedFloor * 30, 5000)}
                                 </span>
                             </div>
                             {/* Опыт */}
@@ -389,7 +389,7 @@ export const AncientsSanctuaryScreen: React.FC = () => {
                                     alt="XP"
                                 />
                                 <span style={{ fontSize: '12px', fontWeight: 900, color: '#38bdf8' }}>
-                                    {selectedFloor * 50}
+                                    {Math.min(50 + selectedFloor * 5, 500)}
                                 </span>
                             </div>
                             {/* Алмазы */}
@@ -412,7 +412,7 @@ export const AncientsSanctuaryScreen: React.FC = () => {
                                     alt="Gems"
                                 />
                                 <span style={{ fontSize: '12px', fontWeight: 900, color: '#0ea5e9' }}>
-                                    {selectedMob.isBoss ? 20 : 2}
+                                    {selectedMob.isBoss ? 20 : 0}
                                 </span>
                             </div>
                         </div>

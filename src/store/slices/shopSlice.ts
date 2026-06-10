@@ -310,7 +310,16 @@ export const createShopSlice = (set: any, get: any) => ({
                 } else if (subTab === 'GEMS') {
                     set({ [newBalanceKey]: balance - price, crystals: state.crystals + amount });
                 } else if (subTab === 'ENERGY') {
-                    set({ [newBalanceKey]: balance - price, energy: state.energy + amount });
+                    const dailyPurchases = state.dailyEnergyPurchasesCount || 0;
+                    if (dailyPurchases >= 3) {
+                        console.warn('[Shop] Daily energy purchase limit reached');
+                        return false;
+                    }
+                    set({
+                        [newBalanceKey]: balance - price,
+                        energy: state.energy + amount,
+                        dailyEnergyPurchasesCount: dailyPurchases + 1,
+                    });
                 }
             } else if (isSkin) {
                 const owned = [...(state.ownedSkins || ['default'])];

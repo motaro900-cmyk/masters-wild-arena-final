@@ -81,8 +81,8 @@ function getGoldReward(level: number, won: boolean): number {
     return Math.min(Math.round(base), cap);
 }
 
-function getXPReward(won: boolean): number {
-    return won ? 250 : 80;
+function getXPReward(won: boolean, level: number): number {
+    return won ? 150 + level * 4 : 50 + level * 1;
 }
 
 class BattleResultServiceClass {
@@ -145,7 +145,7 @@ class BattleResultServiceClass {
         const myGoldChange = getGoldReward(myLevel, attackerWon);
 
         // Experience rewards calculation with Premium BP bonus multiplier and level-based scaling
-        const baseXP = getXPReward(attackerWon);
+        const baseXP = getXPReward(attackerWon, myLevel);
         const state = useGameStore.getState();
         const hasPremiumBP = state.isPremium;
         const expMultiplier = hasPremiumBP ? 1.25 : 1.0;

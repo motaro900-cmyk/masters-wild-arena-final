@@ -23,7 +23,7 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({ onStartBattle, onW
         <div
             style={{
                 width: 720,
-                height: 180,
+                height: 200,
                 position: 'relative',
                 pointerEvents: 'auto',
                 display: 'flex',

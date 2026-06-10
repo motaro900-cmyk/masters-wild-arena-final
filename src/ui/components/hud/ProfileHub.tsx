@@ -7,7 +7,7 @@ import '../../styles/profile-hub.css';
 import { getAvatarFrameStyle, getAvatarFramePath, getAvatarImageStyle } from '../../../configs/ProfileCustomization';
 
 export const ProfileHub: React.FC = () => {
-    const { level, vipLevel, exp, vkUser, title, name, avatar, frame } = useGameStore();
+    const { level, vipLevel, exp, vkUser, title, name, avatar, frame, glowEnabled, uiAnimations } = useGameStore();
     const activeFrameStyle = getAvatarFrameStyle(frame);
 
     const getBadgeColor = (lvl: number) => {
@@ -38,8 +38,9 @@ export const ProfileHub: React.FC = () => {
     return (
         <>
             <motion.div
-                initial={{ x: -200, opacity: 0 }}
-                animate={{ x: 15, opacity: 1 }}
+                initial={uiAnimations ? { x: -220, opacity: 0 } : { x: 0, opacity: 1 }}
+                animate={{ x: 0, opacity: 1 }}
+                transition={uiAnimations ? undefined : { duration: 0 }}
                 className="relative pointer-events-auto cursor-pointer"
                 onClick={() => {
                     audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
@@ -56,6 +57,9 @@ export const ProfileHub: React.FC = () => {
                     backgroundColor: 'transparent',
                     boxShadow: 'none',
                     border: 'none',
+                    willChange: 'transform, opacity',
+                    WebkitBackfaceVisibility: 'hidden',
+                    backfaceVisibility: 'hidden',
                 }}
             >
                 {/* АВАТАР И РАМКА */}
@@ -76,7 +80,7 @@ export const ProfileHub: React.FC = () => {
                     </div>
 
                     {/* VIP / Custom Аура (Свечение) */}
-                    {activeFrameStyle.glowClass ? (
+                    {glowEnabled && (activeFrameStyle.glowClass ? (
                         <div
                             className={activeFrameStyle.glowClass}
                             style={{
@@ -100,7 +104,7 @@ export const ProfileHub: React.FC = () => {
                                 }}
                             />
                         )
-                    )}
+                    ))}
 
                     <img
                         src={getAvatarFramePath(frame)}
@@ -139,7 +143,14 @@ export const ProfileHub: React.FC = () => {
                 {/* VIP ПЛАШКА */}
                 <button
                     className="absolute left-[345px] top-[10px] flex items-center justify-center group z-[101] outline-none bg-transparent border-none p-0 cursor-pointer"
-                    style={{ width: '105px', height: '38px' }}
+                    style={{
+                        width: '105px',
+                        height: '38px',
+                        willChange: 'transform',
+                        transform: 'translate3d(0, 0, 0)',
+                        backfaceVisibility: 'hidden',
+                        WebkitBackfaceVisibility: 'hidden',
+                    }}
                     onClick={(e) => {
                         e.stopPropagation();
                         audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
@@ -156,12 +167,14 @@ export const ProfileHub: React.FC = () => {
                         src={AssetsMap.UI.VIP_PLAQUE}
                         className="absolute inset-0 w-full h-full object-contain transition-all duration-200"
                         style={{
+                            willChange: 'filter',
                             filter:
                                 vipLevel > 0
                                     ? 'drop-shadow(0 0 8px rgba(240, 192, 64, 0.6))'
                                     : isHoveredVIP
                                       ? 'grayscale(0) opacity(1) drop-shadow(0 0 8px rgba(240, 192, 64, 0.5))'
                                       : 'grayscale(1) opacity(0.5) contrast(0.8)',
+                            transform: 'translate3d(0, 0, 0)',
                         }}
                         alt="vip"
                     />

@@ -4,6 +4,8 @@ import { useGameStore } from '../../../store/useGameStore';
 import { AssetsMap } from '../../../configs/AssetsMap';
 import { requestNotifications, addToFavorites, joinGroup } from '../../../utils/VKBridge';
 import { audioService } from '../../../services/AudioService';
+import { AdvancedSettingsBlock } from './AdvancedSettingsBlock';
+import { settingsTranslations } from './SettingsLocalization';
 
 interface SettingsWindowProps {
     onClose: () => void;
@@ -12,30 +14,27 @@ interface SettingsWindowProps {
 
 export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenAdmin }) => {
     const {
-        showFps,
-        setShowFps,
         musicVolume,
         setMusicVolume,
         soundVolume,
         setSoundVolume,
-        graphicsQuality,
-        setGraphicsQuality,
-        notificationsEnabled,
-        setNotificationsEnabled,
-        isPowerSaving,
-        setIsPowerSaving,
         isMuted,
         setIsMuted,
         playerId,
         claimedSocialRewards,
         claimGroupReward,
         claimFavoriteReward,
+        language,
+        setLanguage,
     } = useGameStore();
 
     const [confirmWipeChat, setConfirmWipeChat] = React.useState(false);
     const [confirmWipeProgress, setConfirmWipeProgress] = React.useState(false);
     const [isFullscreen, setIsFullscreen] = React.useState(!!document.fullscreenElement);
     const [copied, setCopied] = React.useState(false);
+    const [trackProgress, setTrackProgress] = React.useState(25); // Simulated progress pct
+
+    const t = settingsTranslations[(language || 'RU') as 'RU' | 'EN'] || settingsTranslations.RU;
 
     React.useEffect(() => {
         const handleFullscreenChange = () => {
@@ -46,6 +45,22 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
             document.removeEventListener('fullscreenchange', handleFullscreenChange);
         };
     }, []);
+
+    // Simulated Track progress updates
+    React.useEffect(() => {
+        const interval = setInterval(() => {
+            if (audioService?.isPlaying() && !isMuted) {
+                setTrackProgress((prev) => (prev >= 100 ? 0 : prev + 1));
+            }
+        }, 1200);
+        return () => clearInterval(interval);
+    }, [isMuted]);
+
+    // Track reset when track name changes
+    const trackName = audioService?.getCurrentTrackName();
+    React.useEffect(() => {
+        setTrackProgress(Math.floor(Math.random() * 30));
+    }, [trackName]);
 
     const userVkId = useGameStore.getState().vkUser?.id || useGameStore.getState().vkUser?.uid;
     const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
@@ -69,39 +84,29 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
                         setTimeout(() => setCopied(false), 2000);
                     })
                     .catch((err) => {
-                        console.warn('Clipboard write failure, using fallback:', err);
-                        fallbackCopyText(playerId);
+                        console.error('Clipboard copy error:', err);
+                        fallbackCopy();
                     });
             } else {
-                fallbackCopyText(playerId);
+                fallbackCopy();
             }
-        } catch (err) {
-            console.error('Clipboard copy failed:', err);
+        } catch (e) {
+            fallbackCopy();
         }
     };
 
-    const fallbackCopyText = (text: string) => {
-        const textArea = document.createElement('textarea');
-        textArea.value = text;
-        textArea.style.top = '0';
-        textArea.style.left = '0';
-        textArea.style.position = 'fixed';
-        textArea.style.opacity = '0';
-        document.body.appendChild(textArea);
-        textArea.focus();
-        textArea.select();
-        try {
-            const successful = document.execCommand('copy');
-            if (successful) {
-                setCopied(true);
-                setTimeout(() => setCopied(false), 2000);
-            } else {
-                console.warn('Fallback copy command failed');
-            }
-        } catch (err) {
-            console.error('Fallback copy command failed:', err);
-        }
-        document.body.removeChild(textArea);
+    const fallbackCopy = () => {
+        const el = document.createElement('textarea');
+        el.value = playerId;
+        el.setAttribute('readonly', '');
+        el.style.position = 'absolute';
+        el.style.left = '-9999px';
+        document.body.appendChild(el);
+        el.select();
+        document.execCommand('copy');
+        document.body.removeChild(el);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
     };
 
     const handleClearCache = async () => {
@@ -154,7 +159,7 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
         <div
             style={{
                 width: '100%',
-                height: '620px',
+                height: '680px',
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '20px',
@@ -164,179 +169,72 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
             }}
             className="leaderboard-scroll"
         >
+            <style>{`
+                @keyframes spinDisk {
+                    from { transform: rotate(0deg); }
+                    to { transform: rotate(360deg); }
+                }
+                @keyframes pulseStatus {
+                    0% { opacity: 0.4; }
+                    50% { opacity: 1; }
+                    100% { opacity: 0.4; }
+                }
+            `}</style>
+
             {/* БЛОК: ЗВУК */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+            <div
+                style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '15px',
+                    background: 'rgba(0,0,0,0.15)',
+                    padding: '16px',
+                    borderRadius: '14px',
+                    border: '1px solid rgba(255,255,255,0.03)',
+                }}
+            >
                 <div
                     style={{
                         display: 'flex',
                         justifyContent: 'space-between',
                         alignItems: 'center',
-                        borderBottom: `1px solid ${colors.border}`,
+                        borderBottom: '1px solid rgba(240,192,64,0.15)',
                         paddingBottom: '10px',
                     }}
                 >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                            <span style={{ fontSize: '18px' }}>🔊</span>
-                            <span
-                                style={{
-                                    fontFamily: "'Cinzel', serif",
-                                    fontSize: '16px',
-                                    fontWeight: 800,
-                                    color: colors.accent,
-                                    letterSpacing: '1px',
-                                }}
-                            >
-                                АУДИО
-                            </span>
-                        </div>
-
-                        {/* MUSIC PLAYER WIDGET */}
-                        {!isMuted && (
-                            <div
-                                style={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '8px',
-                                    background: 'rgba(0,0,0,0.4)',
-                                    padding: '4px 12px',
-                                    borderRadius: '12px',
-                                    border: '1px solid rgba(240,192,64,0.2)',
-                                    marginLeft: '55px',
-                                }}
-                            >
-                                <motion.span
-                                    whileHover={{ scale: 1.2, color: '#fff' }}
-                                    whileTap={{ scale: 0.9 }}
-                                    onClick={() => {
-                                        audioService.prevTrack();
-                                    }}
-                                    style={{
-                                        cursor: 'pointer',
-                                        fontSize: '14px',
-                                        color: colors.accent,
-                                        opacity: 0.8,
-                                        padding: '5px',
-                                        textShadow: `0 0 10px ${colors.accent}`,
-                                    }}
-                                >
-                                    ⏮
-                                </motion.span>
-
-                                <div
-                                    onClick={() => {
-                                        audioService.toggleMusic();
-                                    }}
-                                    style={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: '12px',
-                                        cursor: 'pointer',
-                                        minWidth: '180px',
-                                        justifyContent: 'center',
-                                        padding: '0 10px',
-                                    }}
-                                >
-                                    {/* VISUALIZER BARS */}
-                                    {audioService?.isPlaying() && (
-                                        <div
-                                            style={{
-                                                display: 'flex',
-                                                gap: '2px',
-                                                alignItems: 'flex-end',
-                                                height: '12px',
-                                            }}
-                                        >
-                                            {[1, 2, 3].map((i) => (
-                                                <motion.div
-                                                    key={i}
-                                                    animate={{ height: [4, 12, 6, 10, 4] }}
-                                                    transition={{
-                                                        repeat: Infinity,
-                                                        duration: 0.5 + i * 0.1,
-                                                        ease: 'easeInOut',
-                                                    }}
-                                                    style={{
-                                                        width: '2px',
-                                                        background: colors.accent,
-                                                        borderRadius: '1px',
-                                                    }}
-                                                />
-                                            ))}
-                                        </div>
-                                    )}
-
-                                    <motion.span
-                                        animate={audioService?.isPlaying() ? { scale: [1, 1.1, 1] } : {}}
-                                        transition={{ repeat: Infinity, duration: 2 }}
-                                        style={{
-                                            fontSize: '16px',
-                                            color: colors.accent,
-                                            textShadow: audioService?.isPlaying()
-                                                ? `0 0 15px ${colors.accent}`
-                                                : 'none',
-                                        }}
-                                    >
-                                        {audioService?.isPlaying() ? '⏸' : '▶️'}
-                                    </motion.span>
-
-                                    <div
-                                        style={{
-                                            fontSize: '11px',
-                                            fontWeight: 900,
-                                            color: audioService?.isPlaying() ? '#fff' : 'rgba(255,255,255,0.4)',
-                                            fontFamily: "'Cinzel', serif",
-                                            maxWidth: '120px',
-                                            overflow: 'hidden',
-                                            whiteSpace: 'nowrap',
-                                            textOverflow: 'ellipsis',
-                                            transition: 'all 0.3s',
-                                        }}
-                                    >
-                                        {audioService?.getCurrentTrackName() === 'Тишина'
-                                            ? 'ЗАПУСТИТЬ'
-                                            : audioService?.getCurrentTrackName()}
-                                    </div>
-                                </div>
-
-                                <motion.span
-                                    whileHover={{ scale: 1.2, color: '#fff' }}
-                                    whileTap={{ scale: 0.9 }}
-                                    onClick={() => {
-                                        audioService.nextTrack();
-                                    }}
-                                    style={{
-                                        cursor: 'pointer',
-                                        fontSize: '14px',
-                                        color: colors.accent,
-                                        opacity: 0.8,
-                                        padding: '5px',
-                                        textShadow: `0 0 10px ${colors.accent}`,
-                                    }}
-                                >
-                                    ⏭
-                                </motion.span>
-                            </div>
-                        )}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <span style={{ fontSize: '18px' }}>🔊</span>
+                        <span
+                            style={{
+                                fontFamily: "'Cinzel', serif",
+                                fontSize: '15px',
+                                fontWeight: 800,
+                                color: colors.accent,
+                                letterSpacing: '1px',
+                            }}
+                        >
+                            {t.audioSettings}
+                        </span>
                     </div>
 
+                    {/* ВКЛ / ВЫКЛ тумблер */}
                     <div
-                        onClick={() => {
-                            setIsMuted(!isMuted);
-                        }}
+                        onClick={() => setIsMuted(!isMuted)}
                         style={{
                             display: 'flex',
                             alignItems: 'center',
                             gap: '8px',
                             cursor: 'pointer',
-                            background: isMuted ? 'rgba(239, 68, 68, 0.1)' : 'transparent',
-                            padding: '5px 12px',
+                            background: isMuted ? 'rgba(239, 68, 68, 0.15)' : 'rgba(240,192,64,0.1)',
+                            padding: '6px 14px',
                             borderRadius: '20px',
-                            border: `1px solid ${isMuted ? colors.danger : 'transparent'}`,
+                            border: `1.5px solid ${isMuted ? colors.danger : colors.accent}`,
                             transition: 'all 0.2s',
                         }}
                     >
-                        <span style={{ fontSize: '14px' }}>{isMuted ? '🔇 ВЫКЛ' : '🔊 ВКЛ'}</span>
+                        <span style={{ fontSize: '11px', fontWeight: 900, color: isMuted ? colors.danger : '#fff' }}>
+                            {isMuted ? `🔇 ${t.off}` : `🔊 ${t.on}`}
+                        </span>
                     </div>
                 </div>
 
@@ -344,14 +242,15 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
                     style={{
                         display: 'grid',
                         gridTemplateColumns: '1fr 1fr',
-                        gap: '30px',
+                        gap: '24px',
                         opacity: isMuted ? 0.3 : 1,
                         pointerEvents: isMuted ? 'none' : 'auto',
+                        marginTop: '5px',
                     }}
                 >
                     {[
-                        { label: 'МУЗЫКА', val: musicVolume, set: setMusicVolume, icon: '🎵' },
-                        { label: 'ЭФФЕКТЫ', val: soundVolume, set: setSoundVolume, icon: '⚔️' },
+                        { label: t.musicVolume, val: musicVolume, set: setMusicVolume, icon: '🎵' },
+                        { label: t.sfxVolume, val: soundVolume, set: setSoundVolume, icon: '⚔️' },
                     ].map((s) => (
                         <div key={s.label} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                             <div
@@ -393,7 +292,7 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
                                     onChange={(e) => s.set(parseInt(e.target.value))}
                                     style={{
                                         position: 'absolute',
-                                        top: '-10px',
+                                        top: '-12px',
                                         left: 0,
                                         width: '100%',
                                         height: '30px',
@@ -405,171 +304,291 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
                         </div>
                     ))}
                 </div>
-            </div>
 
-            {/* БЛОК: ГРАФИКА И ДИСПЛЕЙ */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                <div
-                    style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '10px',
-                        borderBottom: `1px solid ${colors.border}`,
-                        paddingBottom: '10px',
-                    }}
-                >
-                    <span style={{ fontSize: '18px' }}>👁️</span>
-                    <span
+                {/* МЕДИАПЛЕЕР - Растянутый, с крупной пластинкой */}
+                {!isMuted && (
+                    <div
                         style={{
-                            fontFamily: "'Cinzel', serif",
-                            fontSize: '16px',
-                            fontWeight: 800,
-                            color: colors.accent,
-                            letterSpacing: '1px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '18px',
+                            background: 'rgba(0,0,0,0.25)',
+                            padding: '14px 20px',
+                            borderRadius: '12px',
+                            border: '1px solid rgba(240,192,64,0.1)',
+                            marginTop: '8px',
                         }}
                     >
-                        ГРАФИКА И ДИСПЛЕЙ
-                    </span>
-                </div>
+                        {/* Крупная виниловая пластинка */}
+                        <div
+                            style={{
+                                width: '56px',
+                                height: '56px',
+                                borderRadius: '50%',
+                                background: 'radial-gradient(circle, #2a2a2a 24%, #151515 55%, #050505 100%)',
+                                border: '2px solid rgba(240,192,64,0.25)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                boxShadow: '0 0 15px rgba(240,192,64,0.12)',
+                                animation: audioService?.isPlaying() ? 'spinDisk 4s linear infinite' : 'none',
+                                flexShrink: 0,
+                                position: 'relative',
+                            }}
+                        >
+                            <span style={{ fontSize: '28px', pointerEvents: 'none' }}>💿</span>
+                            {/* Центр пластинки */}
+                            <div style={{ position: 'absolute', width: '8px', height: '8px', background: '#f0c040', borderRadius: '50%', border: '1.5px solid #000' }} />
+                        </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
-                    {/* Качество */}
-                    <div style={{ gridColumn: 'span 2', display: 'flex', gap: '10px' }}>
-                        {['LOW', 'MEDIUM', 'ULTRA'].map((g) => (
-                            <button
-                                key={g}
-                                onClick={() => setGraphicsQuality(g)}
+                        {/* Название трека и прогресс-бар */}
+                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                    <span style={{ fontSize: '9px', opacity: 0.5, fontWeight: 800, letterSpacing: '0.8px', textTransform: 'uppercase' }}>
+                                        {t.nowPlaying}
+                                    </span>
+                                    <span
+                                        style={{
+                                            fontSize: '13px',
+                                            fontWeight: 900,
+                                            color: audioService?.isPlaying() ? '#fff' : 'rgba(255,255,255,0.4)',
+                                            fontFamily: "'Montserrat', sans-serif",
+                                            letterSpacing: '0.5px',
+                                            textTransform: 'uppercase',
+                                        }}
+                                    >
+                                        {trackName === 'Тишина' ? t.off : trackName}
+                                    </span>
+                                </div>
+
+                                {/* Кнопки управления - Крупные круглые кнопки для мобильных */}
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                    <motion.button
+                                        whileHover={{ scale: 1.1, backgroundColor: 'rgba(240,192,64,0.15)', borderColor: 'rgba(240,192,64,0.4)' }}
+                                        whileTap={{ scale: 0.9 }}
+                                        onClick={() => audioService.prevTrack()}
+                                        style={{
+                                            width: '44px',
+                                            height: '44px',
+                                            borderRadius: '50%',
+                                            background: 'rgba(255,255,255,0.03)',
+                                            border: '1px solid rgba(240,192,64,0.15)',
+                                            cursor: 'pointer',
+                                            fontSize: '18px',
+                                            color: colors.accent,
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            transition: 'all 0.2s ease',
+                                        }}
+                                    >
+                                        ⏮
+                                    </motion.button>
+                                    <motion.button
+                                        whileHover={{ scale: 1.1, backgroundColor: 'rgba(240,192,64,0.15)', borderColor: 'rgba(240,192,64,0.4)' }}
+                                        whileTap={{ scale: 0.9 }}
+                                        onClick={() => audioService.toggleMusic()}
+                                        style={{
+                                            width: '48px',
+                                            height: '48px',
+                                            borderRadius: '50%',
+                                            background: 'rgba(255,255,255,0.03)',
+                                            border: '1.5px solid rgba(240,192,64,0.25)',
+                                            cursor: 'pointer',
+                                            fontSize: '20px',
+                                            color: colors.accent,
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            transition: 'all 0.2s ease',
+                                        }}
+                                    >
+                                        {audioService?.isPlaying() ? '⏸' : '▶️'}
+                                    </motion.button>
+                                    <motion.button
+                                        whileHover={{ scale: 1.1, backgroundColor: 'rgba(240,192,64,0.15)', borderColor: 'rgba(240,192,64,0.4)' }}
+                                        whileTap={{ scale: 0.9 }}
+                                        onClick={() => audioService.nextTrack()}
+                                        style={{
+                                            width: '44px',
+                                            height: '44px',
+                                            borderRadius: '50%',
+                                            background: 'rgba(255,255,255,0.03)',
+                                            border: '1px solid rgba(240,192,64,0.15)',
+                                            cursor: 'pointer',
+                                            fontSize: '18px',
+                                            color: colors.accent,
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            transition: 'all 0.2s ease',
+                                        }}
+                                    >
+                                        ⏭
+                                    </motion.button>
+                                </div>
+                            </div>
+
+                            {/* Заполняющаяся дорожка прогресса */}
+                            <div
                                 style={{
-                                    flex: 1,
-                                    padding: '12px 0',
-                                    borderRadius: '10px',
-                                    cursor: 'pointer',
-                                    transition: 'all 0.2s',
-                                    background:
-                                        graphicsQuality === g ? 'rgba(240,192,64,0.15)' : 'rgba(255,255,255,0.02)',
-                                    border: `1px solid ${graphicsQuality === g ? colors.accent : 'rgba(255,255,255,0.05)'}`,
-                                    color: graphicsQuality === g ? '#fff' : 'rgba(255,255,255,0.4)',
-                                    fontFamily: "'Cinzel', serif",
-                                    fontSize: '11px',
-                                    fontWeight: 900,
+                                    height: '5px',
+                                    background: 'rgba(255,255,255,0.05)',
+                                    borderRadius: '3px',
+                                    width: '100%',
+                                    overflow: 'hidden',
+                                    position: 'relative',
                                 }}
                             >
-                                {g}
-                            </button>
-                        ))}
+                                <div
+                                    style={{
+                                        height: '100%',
+                                        width: `${trackProgress}%`,
+                                        background: `linear-gradient(90deg, #8a5a10, ${colors.accent})`,
+                                        borderRadius: '3px',
+                                        transition: 'width 1.2s linear',
+                                        boxShadow: '0 0 6px #f0c040',
+                                    }}
+                                />
+                            </div>
+                        </div>
                     </div>
+                )}
+            </div>
 
-                    {/* Тумблеры */}
-                    {!/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) && (
-                        <ToggleItem
-                            label="ПОЛНОЭКРАННЫЙ РЕЖИМ"
-                            icon="📺"
-                            active={isFullscreen}
-                            onToggle={handleFullscreenToggle}
-                            colors={colors}
-                        />
-                    )}
-                    <ToggleItem
-                        label="ОТОБРАЖАТЬ FPS"
-                        icon="📈"
-                        active={showFps}
-                        onToggle={() => setShowFps(!showFps)}
-                        colors={colors}
-                    />
-                    <ToggleItem
-                        label="ЭНЕРГОСБЕРЕЖЕНИЕ (30 FPS)"
-                        icon="🔋"
-                        active={isPowerSaving}
-                        onToggle={() => setIsPowerSaving(!isPowerSaving)}
-                        colors={colors}
-                    />
-                    <ToggleItem
-                        label="PUSH-УВЕДОМЛЕНИЯ"
-                        icon="🔔"
-                        active={notificationsEnabled}
-                        onToggle={async () => {
-                            if (!notificationsEnabled) {
-                                const success = await requestNotifications();
-                                if (success) setNotificationsEnabled(true);
-                            } else {
-                                setNotificationsEnabled(false);
-                            }
+            {/* БЛОК: ГРАФИКА И ОПТИМИЗАЦИЯ */}
+            <AdvancedSettingsBlock
+                isFullscreen={isFullscreen}
+                handleFullscreenToggle={handleFullscreenToggle}
+            />
+
+            {/* БЛОК: АККАУНТ И ЯЗЫК */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', alignItems: 'start' }}>
+                {/* АККАУНТ */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <span style={{ fontSize: '18px' }}>👤</span>
+                            <span
+                                style={{
+                                    fontFamily: "'Cinzel', serif",
+                                    fontSize: '15px',
+                                    fontWeight: 800,
+                                    color: colors.accent,
+                                    letterSpacing: '1px',
+                                }}
+                            >
+                                {t.account}
+                            </span>
+                        </div>
+                    </div>
+                    <div
+                        style={{
+                            background: 'rgba(0,0,0,0.2)',
+                            borderRadius: '12px',
+                            padding: '14px 18px',
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            border: '1px solid rgba(255,255,255,0.05)',
+                            height: '58px',
+                            boxSizing: 'border-box',
                         }}
-                        colors={colors}
-                    />
+                    >
+                        <div>
+                            <div style={{ fontSize: '9px', opacity: 0.5, fontWeight: 800, letterSpacing: '0.5px' }}>{t.playerId}</div>
+                            <div
+                                style={{
+                                    fontSize: '14px',
+                                    fontWeight: 900,
+                                    fontFamily: 'monospace',
+                                    color: '#fff',
+                                }}
+                            >
+                                {playerId}
+                            </div>
+                        </div>
+                        <motion.button
+                            whileTap={{ scale: 0.95 }}
+                            onClick={copyPlayerId}
+                            style={{
+                                padding: '6px 14px',
+                                borderRadius: '8px',
+                                background: copied ? 'rgba(46, 204, 113, 0.15)' : 'rgba(240,192,64,0.1)',
+                                border: `1.5px solid ${copied ? '#2ecc71' : colors.accent}`,
+                                color: copied ? '#2ecc71' : colors.accent,
+                                fontSize: '11px',
+                                fontWeight: 900,
+                                cursor: 'pointer',
+                                transition: 'all 0.2s ease',
+                            }}
+                        >
+                            {copied ? t.copied : t.copy}
+                        </motion.button>
+                    </div>
+                </div>
+
+                {/* ЯЗЫК */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <span style={{ fontSize: '18px' }}>🌐</span>
+                        <span
+                            style={{
+                                fontFamily: "'Cinzel', serif",
+                                fontSize: '15px',
+                                fontWeight: 800,
+                                color: colors.accent,
+                                letterSpacing: '1px',
+                            }}
+                        >
+                            {t.language}
+                        </span>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', height: '58px' }}>
+                        <motion.button
+                            whileTap={{ scale: 0.96 }}
+                            onClick={() => setLanguage('RU')}
+                            style={{
+                                height: '100%',
+                                borderRadius: '12px',
+                                background: language === 'RU' ? 'rgba(240,192,64,0.15)' : 'rgba(0,0,0,0.3)',
+                                border: `1.5px solid ${language === 'RU' ? colors.accent : 'rgba(255,255,255,0.05)'}`,
+                                color: language === 'RU' ? '#fff' : 'rgba(255,255,255,0.4)',
+                                fontSize: '11px',
+                                fontWeight: 900,
+                                cursor: 'pointer',
+                                transition: 'all 0.2s ease',
+                                fontFamily: "'Cinzel', serif",
+                            }}
+                        >
+                            РУССКИЙ
+                        </motion.button>
+                        <motion.button
+                            whileTap={{ scale: 0.96 }}
+                            onClick={() => setLanguage('EN')}
+                            style={{
+                                height: '100%',
+                                borderRadius: '12px',
+                                background: language === 'EN' ? 'rgba(240,192,64,0.15)' : 'rgba(0,0,0,0.3)',
+                                border: `1.5px solid ${language === 'EN' ? colors.accent : 'rgba(255,255,255,0.05)'}`,
+                                color: language === 'EN' ? '#fff' : 'rgba(255,255,255,0.4)',
+                                fontSize: '11px',
+                                fontWeight: 900,
+                                cursor: 'pointer',
+                                transition: 'all 0.2s ease',
+                                fontFamily: "'Cinzel', serif",
+                            }}
+                        >
+                            ENGLISH
+                        </motion.button>
+                    </div>
                 </div>
             </div>
 
-            {/* БЛОК: АККАУНТ И ПОДДЕРЖКА */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', marginTop: '10px' }}>
-                <div
-                    style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '10px',
-                        borderBottom: `1px solid ${colors.border}`,
-                        paddingBottom: '10px',
-                    }}
-                >
-                    <span style={{ fontSize: '18px' }}>👤</span>
-                    <span
-                        style={{
-                            fontFamily: "'Cinzel', serif",
-                            fontSize: '16px',
-                            fontWeight: 800,
-                            color: colors.accent,
-                            letterSpacing: '1px',
-                        }}
-                    >
-                        АККАУНТ
-                    </span>
-                </div>
-
-                <div
-                    style={{
-                        background: 'rgba(0,0,0,0.2)',
-                        borderRadius: '15px',
-                        padding: '15px',
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        border: '1px solid rgba(255,255,255,0.05)',
-                    }}
-                >
-                    <div>
-                        <div style={{ fontSize: '10px', opacity: 0.5, fontWeight: 800 }}>ID ИГРОКА</div>
-                        <div
-                            style={{ fontSize: '16px', fontWeight: 900, fontFamily: 'monospace', letterSpacing: '1px' }}
-                        >
-                            {playerId}
-                        </div>
-                        {useGameStore.getState().vkUser && (
-                            <div style={{ fontSize: '10px', color: '#0077FF', fontWeight: 900, marginTop: '5px' }}>
-                                🔗 ПРИВЯЗАНО К ВКОНТАКТЕ
-                            </div>
-                        )}
-                    </div>
-                    <motion.button
-                        whileTap={{ scale: 0.9 }}
-                        onClick={copyPlayerId}
-                        style={{
-                            padding: '8px 15px',
-                            borderRadius: '8px',
-                            background: copied ? 'rgba(46, 204, 113, 0.15)' : 'rgba(240,192,64,0.1)',
-                            border: `2px solid ${copied ? '#2ecc71' : colors.accent}`,
-                            color: copied ? '#2ecc71' : colors.accent,
-                            fontSize: '12px',
-                            fontWeight: 800,
-                            cursor: 'pointer',
-                            boxShadow: 'inset 0 1px 1px rgba(240,192,64,0.2)',
-                            transition: 'all 0.3s ease',
-                        }}
-                    >
-                        {copied ? 'СКОПИРОВАНО!' : 'КОПИРОВАТЬ'}
-                    </motion.button>
-                </div>
-
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+            {/* БЛОК: КНОПКИ ДЕЙСТВИЙ */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '10px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                     {!claimedSocialRewards?.includes('group') && (
                         <button
                             onClick={async () => {
@@ -578,11 +597,11 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
                                     claimGroupReward();
                                     useGameStore
                                         .getState()
-                                        .showAlert('Награда за вступление в группу: 50 кристаллов! 💎');
+                                        .showAlert(language === 'EN' ? 'Group join reward: 50 crystals! 💎' : 'Награда за вступление в группу: 50 кристаллов! 💎');
                                 }
                             }}
                             style={{
-                                padding: '12px',
+                                padding: '14px',
                                 borderRadius: '10px',
                                 background: '#0077FF',
                                 border: '1px solid rgba(255,255,255,0.3)',
@@ -598,7 +617,7 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
                                 textShadow: '0 1px 2px rgba(0,0,0,0.5)',
                             }}
                         >
-                            🌐 МЫ ВКОНТАКТЕ (+50{' '}
+                            {t.vkCommunity} (+50{' '}
                             <img
                                 src={AssetsMap.UI.ICON_ALMAZ_FULL}
                                 style={{ width: '16px', height: '16px', objectFit: 'contain' }}
@@ -616,7 +635,7 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
                                 }
                             }}
                             style={{
-                                padding: '12px',
+                                padding: '14px',
                                 borderRadius: '10px',
                                 background: 'linear-gradient(180deg, #f0c040, #c87820)',
                                 border: '1px solid rgba(255,255,255,0.4)',
@@ -631,7 +650,7 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
                                 boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.5), 0 4px 6px rgba(0,0,0,0.3)',
                             }}
                         >
-                            ⭐ В ИЗБРАННОЕ (+50{' '}
+                            {t.toFavorites} (+50{' '}
                             <img
                                 src={AssetsMap.UI.ICON_ALMAZ_FULL}
                                 style={{ width: '16px', height: '16px', objectFit: 'contain' }}
@@ -640,90 +659,89 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
                         </button>
                     )}
 
-                    <>
-                        <button
-                            onClick={() => {
-                                useGameStore.setState({ activeScreen: 'INTRO', showIntro: true });
-                                onClose();
-                            }}
-                            style={{
-                                padding: '12px',
-                                borderRadius: '10px',
-                                background: 'rgba(240,192,64,0.1)',
-                                border: `1px solid ${colors.accent}`,
-                                color: colors.accent,
-                                fontSize: '12px',
-                                fontWeight: 900,
-                                cursor: 'pointer',
-                                boxShadow: 'inset 0 1px 1px rgba(240,192,64,0.2)',
-                            }}
-                        >
-                            🎬 ПОВТОРИТЬ ИНТРО
-                        </button>
-                        {isAdmin && (
-                            <>
-                                <button
-                                    onClick={() => {
-                                        if (!confirmWipeProgress) {
-                                            setConfirmWipeProgress(true);
-                                            setTimeout(() => setConfirmWipeProgress(false), 3000);
-                                            return;
-                                        }
-                                        handleClearCache();
-                                    }}
-                                    style={{
-                                        gridColumn: 'span 2',
-                                        padding: '12px',
-                                        borderRadius: '10px',
-                                        background: confirmWipeProgress
-                                            ? 'rgba(239,68,68,0.2)'
-                                            : 'rgba(255,255,255,0.05)',
-                                        border: `1px solid ${colors.danger}88`,
-                                        color: colors.danger,
-                                        fontSize: '12px',
-                                        fontWeight: 900,
-                                        cursor: 'pointer',
-                                        boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.05)',
-                                        pointerEvents: 'auto',
-                                        transition: 'all 0.3s',
-                                    }}
-                                >
-                                    {confirmWipeProgress ? '⚠️ ТОЧНО СБРОСИТЬ ВСЁ?' : '🗑️ ПОЛНЫЙ ВАЙП ПРОГРЕССА'}
-                                </button>
-                                <button
-                                    onClick={async () => {
-                                        if (!confirmWipeChat) {
-                                            setConfirmWipeChat(true);
-                                            setTimeout(() => setConfirmWipeChat(false), 3000);
-                                            return;
-                                        }
-                                        const { syncService } = await import('../../../services/SyncService');
-                                        await syncService.wipeGlobalChat();
-                                        useGameStore.getState().showAlert('Глобальный чат очищен!', () => {
-                                            window.location.reload();
-                                        });
-                                    }}
-                                    style={{
-                                        gridColumn: 'span 2',
-                                        padding: '12px',
-                                        borderRadius: '10px',
-                                        background: confirmWipeChat ? 'rgba(240,192,64,0.2)' : 'rgba(255,255,255,0.05)',
-                                        border: `1px solid #f0c04088`,
-                                        color: '#f0c040',
-                                        fontSize: '12px',
-                                        fontWeight: 900,
-                                        cursor: 'pointer',
-                                        boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.05)',
-                                        marginTop: '10px',
-                                        pointerEvents: 'auto',
-                                        transition: 'all 0.3s',
-                                    }}
-                                >
-                                    {confirmWipeChat ? '⚠️ ТОЧНО УДАЛИТЬ ЧАТ?' : '🧹 АДМИН: ОЧИСТИТЬ ВЕСЬ ЧАТ'}
-                                </button>
-                            </>
-                        )}
-                    </>
+                    <button
+                        onClick={() => {
+                            useGameStore.setState({ activeScreen: 'INTRO', showIntro: true });
+                            onClose();
+                        }}
+                        style={{
+                            gridColumn: claimedSocialRewards?.includes('group') && claimedSocialRewards?.includes('favorites') ? 'span 2' : 'auto',
+                            padding: '14px',
+                            borderRadius: '10px',
+                            background: 'rgba(240,192,64,0.1)',
+                            border: `1px solid ${colors.accent}`,
+                            color: colors.accent,
+                            fontSize: '12px',
+                            fontWeight: 900,
+                            cursor: 'pointer',
+                            boxShadow: 'inset 0 1px 1px rgba(240,192,64,0.2)',
+                        }}
+                    >
+                        {t.replayIntro}
+                    </button>
+
+                    {isAdmin && (
+                        <>
+                            <button
+                                onClick={() => {
+                                    if (!confirmWipeProgress) {
+                                        setConfirmWipeProgress(true);
+                                        setTimeout(() => setConfirmWipeProgress(false), 3000);
+                                        return;
+                                    }
+                                    handleClearCache();
+                                }}
+                                style={{
+                                    gridColumn: 'span 2',
+                                    padding: '14px',
+                                    borderRadius: '10px',
+                                    background: confirmWipeProgress
+                                        ? 'rgba(239,68,68,0.2)'
+                                        : 'rgba(255,255,255,0.05)',
+                                    border: `1px solid ${colors.danger}88`,
+                                    color: colors.danger,
+                                    fontSize: '12px',
+                                    fontWeight: 900,
+                                    cursor: 'pointer',
+                                    boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.05)',
+                                    pointerEvents: 'auto',
+                                    transition: 'all 0.3s',
+                                }}
+                            >
+                                {confirmWipeProgress ? t.confirmWipe : t.wipeProgress}
+                            </button>
+                            <button
+                                onClick={async () => {
+                                    if (!confirmWipeChat) {
+                                        setConfirmWipeChat(true);
+                                        setTimeout(() => setConfirmWipeChat(false), 3000);
+                                        return;
+                                    }
+                                    const { syncService } = await import('../../../services/SyncService');
+                                    await syncService.wipeGlobalChat();
+                                    useGameStore.getState().showAlert(language === 'EN' ? 'Global chat cleared!' : 'Глобальный чат очищен!', () => {
+                                        window.location.reload();
+                                    });
+                                }}
+                                style={{
+                                    gridColumn: 'span 2',
+                                    padding: '14px',
+                                    borderRadius: '10px',
+                                    background: confirmWipeChat ? 'rgba(240,192,64,0.2)' : 'rgba(255,255,255,0.05)',
+                                    border: `1px solid #f0c04088`,
+                                    color: '#f0c040',
+                                    fontSize: '12px',
+                                    fontWeight: 900,
+                                    cursor: 'pointer',
+                                    boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.05)',
+                                    pointerEvents: 'auto',
+                                    transition: 'all 0.3s',
+                                }}
+                            >
+                                {confirmWipeChat ? t.confirmClear : t.clearChat}
+                            </button>
+                        </>
+                    )}
                 </div>
             </div>
 
@@ -737,7 +755,7 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
                     if (Number(userVkId) === 212359386 || isLocal) {
                         onOpenAdmin?.();
                     } else {
-                        console.log('Current User ID:', userVkId); // Поможет отладить, если ID не совпадает
+                        console.log('Current User ID:', userVkId);
                     }
                 }}
                 style={{
@@ -767,56 +785,3 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
         </div>
     );
 };
-
-const ToggleItem: React.FC<{ label: string; icon: string; active: boolean; onToggle: () => void; colors: any }> = ({
-    label,
-    icon,
-    active,
-    onToggle,
-    colors,
-}) => (
-    <div
-        onClick={onToggle}
-        style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            padding: '12px 15px',
-            background: 'rgba(255,255,255,0.02)',
-            borderRadius: '12px',
-            border: '1px solid rgba(255,255,255,0.05)',
-            cursor: 'pointer',
-            transition: 'all 0.2s',
-        }}
-    >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <span style={{ fontSize: '14px' }}>{icon}</span>
-            <span style={{ fontSize: '10px', fontWeight: 800, opacity: 0.7, maxWidth: '100px', lineHeight: '1.2' }}>
-                {label}
-            </span>
-        </div>
-        <div
-            style={{
-                width: '40px',
-                height: '20px',
-                borderRadius: '10px',
-                background: active ? colors.accent : 'rgba(0,0,0,0.3)',
-                position: 'relative',
-                transition: '0.3s',
-            }}
-        >
-            <div
-                style={{
-                    width: '14px',
-                    height: '14px',
-                    borderRadius: '50%',
-                    background: active ? '#1a1008' : '#555',
-                    position: 'absolute',
-                    top: '3px',
-                    left: active ? '23px' : '3px',
-                    transition: '0.3s',
-                }}
-            />
-        </div>
-    </div>
-);

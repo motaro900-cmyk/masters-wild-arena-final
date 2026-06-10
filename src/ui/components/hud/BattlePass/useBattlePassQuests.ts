@@ -1,15 +1,15 @@
 import { useGameStore, WEEKLY_QUESTS_POOL } from '../../../../store/useGameStore';
-import { QUESTS_POOL } from '../../../../configs/QuestsConfig';
+import { BP_DAILY_QUESTS_POOL } from '../../../../configs/QuestsConfig';
 
 /**
  * Кастомный хук: маппинг dailyQuests / weeklyQuests из Zustand-стора
  * в UI-формат для компонента QuestSection.
  */
 export function useBattlePassQuests() {
-    const { dailyQuests, weeklyQuests } = useGameStore();
+    const { bpDailyQuests, weeklyQuests } = useGameStore();
 
-    const currentDailyQuests = (dailyQuests || []).map((dq: any) => {
-        const meta = QUESTS_POOL.find((q) => q.id === dq.questId) || {
+    const currentDailyQuests = (bpDailyQuests || []).map((dq: any) => {
+        const meta = BP_DAILY_QUESTS_POOL.find((q) => q.id === dq.questId) || {
             title: 'Неизвестное задание',
             description: '',
             target: 1,

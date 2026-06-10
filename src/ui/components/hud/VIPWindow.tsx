@@ -68,19 +68,17 @@ const MailIcon = () => (
     </svg>
 );
 
-const RerollIcon = () => (
+const InstantPassIcon = () => (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path
-            d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l.73-.73"
-            stroke="url(#rerollGrad)"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
+            d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"
+            fill="url(#passGrad)"
+            filter="drop-shadow(0 0 4px rgba(245, 158, 11, 0.6))"
         />
         <defs>
-            <linearGradient id="rerollGrad" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stopColor="#a5f3fc" />
-                <stop offset="100%" stopColor="#06b6d4" />
+            <linearGradient id="passGrad" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stopColor="#ffe066" />
+                <stop offset="100%" stopColor="#f59e0b" />
             </linearGradient>
         </defs>
     </svg>
@@ -166,7 +164,7 @@ export const VIPWindow: React.FC<VIPWindowProps> = () => {
         { icon: <XpIcon />, text: 'БОНУС ОПЫТА ГЕРОЯ: +10%' },
         { icon: <EnergyIcon />, text: 'МАКС. ЗАПАС ЭНЕРГИИ: +15' },
         { icon: <MailIcon />, text: 'ЕЖЕДНЕВНЫЙ VIP ПОДАРОК НА ПОЧТУ' },
-        { icon: <RerollIcon />, text: '1 БЕСПЛАТНЫЙ СБРОС КВЕСТА В ДЕНЬ' },
+        { icon: <InstantPassIcon />, text: '1 АВТО-ПРОХОЖДЕНИЕ КВЕСТА В ДЕНЬ' },
         { icon: <ChatIcon />, text: 'УНИКАЛЬНЫЙ VIP ЗНАЧОК В ЧАТЕ' },
     ];
 

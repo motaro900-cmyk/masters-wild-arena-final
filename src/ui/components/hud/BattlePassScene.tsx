@@ -25,6 +25,7 @@ export const BattlePassScene: React.FC<{ onClose: () => void }> = ({ onClose }) 
         addItemToInventory,
         setEquippedWeapon,
         claimQuestReward,
+        claimBpDailyQuestReward,
         claimWeeklyQuestReward,
         showBpLevelUpOverlay,
         hideBpLevelUpOverlay,
@@ -486,7 +487,7 @@ export const BattlePassScene: React.FC<{ onClose: () => void }> = ({ onClose }) 
                                 <QuestSection
                                     title="ЕЖЕДНЕВНЫЕ"
                                     quests={currentDailyQuests}
-                                    onClaim={claimQuestReward}
+                                    onClaim={claimBpDailyQuestReward}
                                 />
                                 <QuestSection
                                     title="ЕЖЕНЕДЕЛЬНЫЕ"

@@ -82,6 +82,10 @@
     animation: vipGlow 2.5s infinite ease-in-out;
     border: 2px solid rgba(240, 192, 64, 0.8);
     box-sizing: border-box;
+    will-change: box-shadow;
+    transform: translate3d(0, 0, 0) translateY(1px);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
 }
 
 /* CUSTOM FRAME GLOWS */
@@ -105,7 +109,10 @@
     pointer-events: none;
     width: 110px;
     height: 110px;
-    transform: translateY(1px);
+    will-change: box-shadow;
+    transform: translate3d(0, 0, 0) translateY(1px);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
 }
 
 @keyframes silverGlow {
@@ -128,7 +135,10 @@
     pointer-events: none;
     width: 110px;
     height: 110px;
-    transform: translateY(1px);
+    will-change: box-shadow;
+    transform: translate3d(0, 0, 0) translateY(1px);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
 }
 
 @keyframes emeraldGlow {
@@ -151,7 +161,10 @@
     pointer-events: none;
     width: 110px;
     height: 110px;
-    transform: translateY(1px);
+    will-change: box-shadow;
+    transform: translate3d(0, 0, 0) translateY(1px);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
 }
 
 @keyframes sapphireGlow {
@@ -174,7 +187,10 @@
     pointer-events: none;
     width: 110px;
     height: 110px;
-    transform: translateY(1px);
+    will-change: box-shadow;
+    transform: translate3d(0, 0, 0) translateY(1px);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
 }
 
 @keyframes vipGlowPremium {
@@ -201,7 +217,10 @@
     pointer-events: none;
     width: 110px;
     height: 110px;
-    transform: translateY(1px);
+    will-change: box-shadow;
+    transform: translate3d(0, 0, 0) translateY(1px);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
 }
 
 @keyframes crimsonGlow {
@@ -228,5 +247,8 @@
     pointer-events: none;
     width: 110px;
     height: 110px;
-    transform: translateY(1px);
+    will-change: box-shadow;
+    transform: translate3d(0, 0, 0) translateY(1px);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
 }

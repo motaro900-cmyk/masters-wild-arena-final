@@ -189,7 +189,7 @@ export const GameHUD: React.FC = () => {
             {/* 1. PLAYER PROFILE HUB */}
             {!isFullScreenScene && (
                 <div
-                    className="tutorial-profile-hub absolute top-[30px] left-[5px] hud-interactive w-[340px] md:w-[465px]"
+                    className="tutorial-profile-hub absolute top-[30px] left-[20px] hud-interactive w-[340px] md:w-[465px]"
                     style={{ zIndex: 100, transform: `scale(${hudScale})`, transformOrigin: 'top left' }}
                 >
                     <ProfileHub />

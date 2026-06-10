@@ -388,7 +388,7 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ mode = 'FULL', o
                     padding: mode === 'FULL' ? '20px' : '12px',
                     overflowY: 'auto',
                     display: 'grid',
-                    gridTemplateColumns: mode === 'FULL' ? 'repeat(6,1fr)' : 'repeat(3,1fr)',
+                    gridTemplateColumns: mode === 'FULL' ? 'repeat(7,1fr)' : 'repeat(3,1fr)',
                     gridAutoRows: mode === 'FULL' ? '90px' : '100px',
                     gap: mode === 'FULL' ? '12px' : '10px',
                     boxShadow: 'inset 0 0 24px rgba(0,0,0,0.95), 0 4px 15px rgba(0,0,0,0.5)',
@@ -469,7 +469,7 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ mode = 'FULL', o
                 })}
 
                 {/* Пустые слоты */}
-                {Array.from({ length: Math.max(0, (mode === 'FULL' ? 18 : 9) - filteredItems.length) }).map((_, i) => (
+                {Array.from({ length: Math.max(0, (mode === 'FULL' ? 21 : 9) - filteredItems.length) }).map((_, i) => (
                     <div key={'empty-' + i} style={{
                         background: 'radial-gradient(circle at 50% 50%,rgba(12,9,7,0.95) 0%,rgba(20,16,13,0.98) 100%)',
                         borderRadius: '12px', border: '1.5px solid rgba(240,192,64,0.12)',

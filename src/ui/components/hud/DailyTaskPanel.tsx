@@ -14,7 +14,7 @@ interface IDailyQuest {
 
 export const DailyTaskPanel: React.FC = () => {
     const [isCollapsed, setIsCollapsed] = useState(false);
-    const { dailyQuests, claimQuestReward, refreshDailyQuests, vipLevel } = useGameStore();
+    const { dailyQuests, claimQuestReward, refreshDailyQuests, vipLevel, vipEndTime } = useGameStore();
     const [floatingRewards, setFloatingRewards] = useState<{ id: number; text: string; x: number; y: number }[]>([]);
 
     const handleClaimReward = (dq: IDailyQuest, qData: any, e: React.MouseEvent) => {
@@ -50,30 +50,23 @@ export const DailyTaskPanel: React.FC = () => {
     };
 
     const todayStr = getMoscowDateString();
-    const [lastRerollDate, setLastRerollDate] = useState(() => safeGetItem('lastVipQuestRerollDate') || '');
+    const [lastPassDate, setLastPassDate] = useState(() => safeGetItem('lastVipQuestPassDate') || '');
 
-    const canReroll = vipLevel > 0 && lastRerollDate !== todayStr;
+    const hasVip = vipLevel > 0 || (vipEndTime ? vipEndTime > Date.now() : false);
+    const canInstantPass = hasVip && lastPassDate !== todayStr;
 
-    const handleRerollQuest = (oldQuestId: string) => {
-        if (!canReroll) return;
+    const handleInstantPassQuest = (questId: string) => {
+        if (!hasVip || !canInstantPass) return;
 
-        // Находим все квесты, которые сейчас НЕ отображаются в dailyQuests
-        const activeIds = dailyQuests.map((dq: any) => dq.questId);
-        const availablePool = QUESTS_POOL.filter((q) => !activeIds.includes(q.id));
+        const qData = QUESTS_POOL.find((q) => q.id === questId);
+        if (!qData) return;
 
-        if (availablePool.length === 0) return;
-
-        // Выбираем случайный новый квест
-        // eslint-disable-next-line react-hooks/purity
-        const newQuest = availablePool[Math.floor(Math.random() * availablePool.length)];
-
-        // Заменяем старый квест новым
+        // Заполняем прогресс квеста до максимума
         const updatedQuests = dailyQuests.map((dq: any) => {
-            if (dq.questId === oldQuestId) {
+            if (dq.questId === questId) {
                 return {
-                    questId: newQuest.id,
-                    progress: 0,
-                    isClaimed: false,
+                    ...dq,
+                    progress: qData.target,
                 };
             }
             return dq;
@@ -82,11 +75,11 @@ export const DailyTaskPanel: React.FC = () => {
         // Записываем в Zustand
         useGameStore.setState({ dailyQuests: updatedQuests });
 
-        // Сохраняем дату реролла
-        safeSetItem('lastVipQuestRerollDate', todayStr);
-        setLastRerollDate(todayStr);
+        // Сохраняем дату авто-прохождения
+        safeSetItem('lastVipQuestPassDate', todayStr);
+        setLastPassDate(todayStr);
 
-        audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
+        audioService.playSFX(AssetsMap.AUDIO.SFX_UPGRADE);
     };
 
     React.useEffect(() => {
@@ -251,54 +244,6 @@ export const DailyTaskPanel: React.FC = () => {
                                                     }}
                                                 >
                                                     {dq.progress}/{qData.target} {isComplete && '✓'}
-                                                    {canReroll && !isComplete && !dq.isClaimed && (
-                                                        <motion.button
-                                                            whileHover={{
-                                                                scale: 1.1,
-                                                                background: 'rgba(240, 192, 64, 0.35)',
-                                                            }}
-                                                            whileTap={{ scale: 0.95 }}
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                handleRerollQuest(dq.questId);
-                                                            }}
-                                                            title="Заменить задание (VIP)"
-                                                            style={{
-                                                                background: 'rgba(61, 42, 16, 0.95)',
-                                                                border: '1.2px solid #b38028',
-                                                                color: '#f5c864',
-                                                                borderRadius: '50%',
-                                                                width: '20px',
-                                                                height: '20px',
-                                                                display: 'flex',
-                                                                alignItems: 'center',
-                                                                justifyContent: 'center',
-                                                                fontSize: '10px',
-                                                                cursor: 'pointer',
-                                                                padding: 0,
-                                                                lineHeight: 1,
-                                                                transition: 'all 0.2s',
-                                                                boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
-                                                            }}
-                                                        >
-                                                            <svg
-                                                                width="11"
-                                                                height="11"
-                                                                viewBox="0 0 24 24"
-                                                                fill="none"
-                                                                xmlns="http://www.w3.org/2000/svg"
-                                                                style={{ flexShrink: 0 }}
-                                                            >
-                                                                <path
-                                                                    d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l.73-.73"
-                                                                    stroke="currentColor"
-                                                                    strokeWidth="3"
-                                                                    strokeLinecap="round"
-                                                                    strokeLinejoin="round"
-                                                                />
-                                                            </svg>
-                                                        </motion.button>
-                                                    )}
                                                 </div>
                                             </div>
                                             <div
@@ -392,24 +337,66 @@ export const DailyTaskPanel: React.FC = () => {
                                                     ЗАБРАТЬ
                                                 </button>
                                             ) : (
-                                                <div
-                                                    style={{
-                                                        width: '80px',
-                                                        height: '8px',
-                                                        background: 'rgba(0,0,0,0.1)',
-                                                        borderRadius: '4px',
-                                                        overflow: 'hidden',
-                                                    }}
-                                                >
-                                                    <div
-                                                        style={{
-                                                            width: `${(dq.progress / qData.target) * 100}%`,
-                                                            height: '100%',
-                                                            background: '#7a5828',
-                                                            transition: 'width 0.3s',
-                                                        }}
-                                                    />
-                                                </div>
+                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                     {/* Шкала прогресса */}
+                                                     <div
+                                                         style={{
+                                                             width: '60px',
+                                                             height: '8px',
+                                                             background: 'rgba(0,0,0,0.1)',
+                                                             borderRadius: '4px',
+                                                             overflow: 'hidden',
+                                                         }}
+                                                     >
+                                                         <div
+                                                             style={{
+                                                                 width: `${(dq.progress / qData.target) * 100}%`,
+                                                                 height: '100%',
+                                                                 background: '#7a5828',
+                                                                 transition: 'width 0.3s',
+                                                             }}
+                                                         />
+                                                     </div>
+
+                                                     {/* Кнопка VIP Пройти */}
+                                                     <button
+                                                         onClick={(e) => {
+                                                             e.stopPropagation();
+                                                             if (hasVip && canInstantPass) {
+                                                                 handleInstantPassQuest(dq.questId);
+                                                             } else if (!hasVip) {
+                                                                 useGameStore.getState().showAlert('Необходим VIP статус!');
+                                                             } else {
+                                                                 useGameStore.getState().showAlert('Лимит авто-прохождений на сегодня исчерпан!');
+                                                             }
+                                                         }}
+                                                         style={{
+                                                             padding: '3px 6px',
+                                                             background: (hasVip && canInstantPass)
+                                                                 ? 'linear-gradient(180deg, #8b5cf6 0%, #6d28d9 100%)' // Фиолетовый градиент VIP
+                                                                 : 'linear-gradient(180deg, #4b5563 0%, #1f2937 100%)', // Серый градиент (недоступно)
+                                                             border: `1.2px solid ${(hasVip && canInstantPass) ? '#c084fc' : '#4b5563'}`,
+                                                             borderRadius: '4px',
+                                                             color: (hasVip && canInstantPass) ? '#ffffff' : '#9ca3af',
+                                                             fontWeight: 900,
+                                                             fontSize: '9px',
+                                                             cursor: 'pointer',
+                                                             boxShadow: (hasVip && canInstantPass) ? '0 0 8px rgba(139, 92, 246, 0.45)' : 'none',
+                                                             fontFamily: "'Montserrat', sans-serif",
+                                                             display: 'flex',
+                                                             alignItems: 'center',
+                                                             justifyContent: 'center',
+                                                             gap: '2px',
+                                                             transition: 'all 0.2s',
+                                                             pointerEvents: 'auto',
+                                                             zIndex: 10,
+                                                         }}
+                                                         title="Авто-прохождение задания (1 раз в день для VIP)"
+                                                     >
+                                                         <span style={{ fontSize: '8px' }}>★</span>
+                                                         <span>VIP АВТО</span>
+                                                     </button>
+                                                 </div>
                                             )}
                                         </div>
                                     </div>
