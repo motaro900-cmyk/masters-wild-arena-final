@@ -146,7 +146,6 @@ export const ABILITY_REGISTRY: Record<string, HeroAbilityConfig> = {
             name: 'Молот Лабиринта',
             damageMultiplier: 1.8,
             shieldPercent: 0.12,
-            onCastStatus: { target: 'player', type: 'STUN_IMMUNITY', duration: 2 },
         },
         attackPassive: { chance: 0.25, status: 'STUN', duration: 1 },
     },

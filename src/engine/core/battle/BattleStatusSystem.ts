@@ -199,13 +199,7 @@ export async function resolvePeriodicDamage(engine: BattleEngine, unit: HeroUnit
             const regenPercent = (heroId === 'lion_knight' ? 0.04 : 0.05) * itemLevelFactor;
 
             const baseHeal = Math.ceil(maxHP * regenPercent);
-
-            const targetDefense = targetStats ? targetStats.defense : 0;
-            const defMultiplier = 0.5; // partially mitigated by armor (50% effectiveness)
-            const effectiveDef = targetDefense * defMultiplier;
-            const divisor = 200 + (targetAvgItemLevel - 1) * 25;
-            const mitigation = effectiveDef / (effectiveDef + divisor);
-            const healAmount = Math.max(1, Math.ceil(baseHeal * (1 - mitigation)));
+            const healAmount = Math.max(1, baseHeal);
 
             const currentHP = isPlayer ? engine.state.playerHP : engine.state.enemyHP;
             const nextHP = Math.min(maxHP, currentHP + healAmount);
