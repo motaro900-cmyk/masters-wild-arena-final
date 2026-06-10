@@ -301,14 +301,14 @@ export const createPlayerSlice = (set: any, get: any) => ({
         const { addMessage } = get();
         if (type === 'RANK_UP' && payload.rankName === 'ЛЕГЕНДА') {
             addMessage(
-                `🌟 ВЕЛИКОЕ СОБЫТИЕ: Мастер ${payload.playerName} достиг ранга ЛЕГЕНДА! Весь мир склоняется перед его силой! 🐉`,
+                `🎺 ВЕЛИКИЙ ТРИУМФ! Воин «${payload.playerName}» вписал своё имя в историю, достигнув ранга ЛЕГЕНДА! Да трепещут враги перед его мощью! 🐉🔥`,
                 'ГЕРОЛЬД',
                 'system',
             );
         }
         if (type === 'LEVEL_UP' && payload.level >= 80) {
             addMessage(
-                `⚔️ ТРИУМФ: ${payload.playerName} достиг 80 уровня! Его мощь не знает границ! 🛡️`,
+                `⚔️ ЛЕГЕНДАРНЫЙ РУБЕЖ: Герой «${payload.playerName}» достиг великого 80 уровня! Легенды слагают песни о его силе! 🛡️🌿`,
                 'ГЕРОЛЬД',
                 'system',
             );
