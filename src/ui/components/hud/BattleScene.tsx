@@ -260,8 +260,8 @@ export const BattleScene: React.FC = () => {
                             `Бой завершен: ${isVictory ? 'Победа' : 'Поражение'}. Получено +${gold} золота, +${xp} опыта героя.`,
                         );
 
-                        const { getRankInfo } = await import('../../../configs/RankSystem');
-                        const currentRank = getRankInfo(store.trophies || 0);
+                        const { RANK_SYSTEM } = await import('../../../configs/RankSystem');
+                        const currentRank = RANK_SYSTEM.find((rank) => (store.trophies || 0) >= rank.minTrophies - 50) || RANK_SYSTEM[RANK_SYSTEM.length - 1];
                         const minAllowed = Math.max(0, currentRank.minTrophies - 50);
                         const newTrophies = Math.max(minAllowed, store.trophies + trophies);
                         const newStreak = isVictory ? store.winStreak + 1 : 0;
