@@ -90,6 +90,13 @@ export class AssetLoader {
                         await PIXI.Assets.load(origPath);
                     } catch (fallbackErr) {
                         console.error(`[AssetLoader] Critical: Failed to load fallback asset: ${origPath}`, fallbackErr);
+                        try {
+                            // Assign a safe default white texture to prevent crashes on usage
+                            PIXI.Assets.cache.set(assetPath, PIXI.Texture.WHITE);
+                            PIXI.Assets.cache.set(origPath, PIXI.Texture.WHITE);
+                        } catch (cacheErr) {
+                            // ignore cache errors
+                        }
                     }
                 }
             });
