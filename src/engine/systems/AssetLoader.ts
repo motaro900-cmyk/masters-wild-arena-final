@@ -71,12 +71,24 @@ export class AssetLoader {
                 });
             }
 
-            await PIXI.Assets.load(optimizedManifest);
-            console.log('✅ [AssetLoader] Assets loaded successfully');
+            // Load assets individually to prevent one failure from crashing the entire app
+            const loadPromises = optimizedManifest.map(async (assetPath, index) => {
+                try {
+                    await PIXI.Assets.load(assetPath);
+                } catch (err) {
+                    console.warn(`[AssetLoader] Failed to load optimized asset: ${assetPath}. Trying fallback...`, err);
+                    const origPath = manifest[index];
+                    try {
+                        await PIXI.Assets.load(origPath);
+                    } catch (fallbackErr) {
+                        console.error(`[AssetLoader] Critical: Failed to load fallback asset: ${origPath}`, fallbackErr);
+                    }
+                }
+            });
+            await Promise.all(loadPromises);
+            console.log('✅ [AssetLoader] Assets loading completed (all attempts finished)');
         } catch (error) {
-            console.error('❌ [AssetLoader] Failed to load assets:', error);
-            // Fallback: пробуем загрузить оригиналы если оптимизированные не нашлись
-            await PIXI.Assets.load(manifest);
+            console.error('❌ [AssetLoader] Global load exception:', error);
         }
     }
 
