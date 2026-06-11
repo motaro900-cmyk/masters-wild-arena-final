@@ -30,7 +30,8 @@ export const MatchmakingOverlay: React.FC<MatchmakingOverlayProps> = ({ onFound,
     const rating = useGameStore((state) => state.rating);
     const vipLevel = useGameStore((state) => state.vipLevel);
     const selectedHeroId = useGameStore((state) => state.selectedHeroId);
-    const level = useGameStore((state) => state.level);
+    const heroes = useGameStore((state) => state.heroes) || {};
+    const level = heroes[selectedHeroId]?.level || 1;
     const getCalculatedStats = useGameStore((state) => state.getCalculatedStats);
     const avatar = useGameStore((state) => state.avatar);
     const vkUser = useGameStore((state) => state.vkUser);
@@ -60,6 +61,7 @@ export const MatchmakingOverlay: React.FC<MatchmakingOverlayProps> = ({ onFound,
         equipment: Record<string, string | null>;
         winRate: number;
         vipLevel?: number;
+        heroId?: string;
         stats: {
             hp: number;
             attack: number;
@@ -131,6 +133,7 @@ export const MatchmakingOverlay: React.FC<MatchmakingOverlayProps> = ({ onFound,
                 equipment: found.equipment,
                 winRate: found.winRate,
                 vipLevel: found.vipLevel !== undefined ? found.vipLevel : Math.random() < 0.25 ? 1 : 0,
+                heroId: found.heroId,
                 stats: {
                     hp: found.stats.hp,
                     attack: found.stats.attack,

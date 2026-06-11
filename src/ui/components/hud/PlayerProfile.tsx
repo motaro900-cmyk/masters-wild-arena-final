@@ -3,6 +3,8 @@ import { motion } from 'framer-motion';
 import { useGameStore } from '../../../store/useGameStore';
 import { AvatarFrame } from './SharedUI';
 import { EquippedHeroView } from '../EquippedHeroView';
+import { AssetsMap } from '../../../configs/AssetsMap';
+import { resolveAssetPath } from '../../../utils/assetPath';
 
 interface PlayerProfileProps {
     onOpenProfile?: () => void;
@@ -84,7 +86,11 @@ export const PlayerProfile: React.FC<PlayerProfileProps> = ({ onOpenProfile }) =
                 <div className="flex items-center gap-3">
                     <span className="text-[#f0c040] text-xs font-black uppercase tracking-widest">{title}</span>
                     <div className="flex items-center gap-1 bg-black/50 px-2 py-0.5 rounded border border-white/10">
-                        <span className="text-xs">🏆</span>
+                        <img
+                            src={resolveAssetPath(AssetsMap.UI.TROPHY_PREMIUM)}
+                            className="w-3.5 h-3.5 object-contain"
+                            alt="trophy"
+                        />
                         <span className="text-white font-bold text-xs">{trophies}</span>
                     </div>
                 </div>

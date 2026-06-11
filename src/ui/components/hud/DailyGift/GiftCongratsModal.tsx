@@ -17,6 +17,7 @@ export const GiftCongratsModal: React.FC<GiftCongratsModalProps> = ({ rewardClai
 
     return (
         <div
+            onClick={onClose}
             style={{
                 position: 'absolute',
                 inset: 0,
@@ -27,11 +28,13 @@ export const GiftCongratsModal: React.FC<GiftCongratsModalProps> = ({ rewardClai
                 justifyContent: 'center',
                 zIndex: 100,
                 borderRadius: '16px',
+                cursor: 'pointer',
             }}
         >
             <motion.div
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
+                onClick={(e) => e.stopPropagation()}
                 style={{
                     background: 'linear-gradient(135deg, #2d1e10 0%, #150a02 100%)',
                     border: '3px solid #f0c040',

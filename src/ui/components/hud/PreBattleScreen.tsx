@@ -352,7 +352,7 @@ interface PreBattleScreenProps {
 export const PreBattleScreen: React.FC<PreBattleScreenProps> = ({
     playerName,
     playerImage,
-    playerLevel,
+    playerLevel: _playerLevel,
     heroLevel = 1,
     playerStats,
     enemyName,
@@ -366,6 +366,7 @@ export const PreBattleScreen: React.FC<PreBattleScreenProps> = ({
 }) => {
     const { rating, heroEquipment, selectedHeroId } = useGameStore();
     const playerRank = getRankInfo(rating);
+    const [isStarting, setIsStarting] = React.useState(false);
 
     const playerEq = heroEquipment[selectedHeroId] || {};
     const enemyEq: Record<string, string | null> = React.useMemo(() => {
@@ -517,7 +518,7 @@ export const PreBattleScreen: React.FC<PreBattleScreenProps> = ({
                             }}
                         >
                             <span style={{ fontSize: '12px', color: '#a1a1aa', fontWeight: 'bold' }}>
-                                Аккаунт: Ур. {playerLevel} • {playerRank.name}
+                                Ранг: {playerRank.name}
                             </span>
                             <span
                                 style={{
@@ -528,7 +529,7 @@ export const PreBattleScreen: React.FC<PreBattleScreenProps> = ({
                                     fontFamily: "'Cinzel', serif",
                                 }}
                             >
-                                Герой: Ур. {heroLevel}
+                                Уровень: {heroLevel}
                             </span>
                         </div>
                     </motion.div>
@@ -649,7 +650,7 @@ export const PreBattleScreen: React.FC<PreBattleScreenProps> = ({
                                     fontFamily: "'Cinzel', serif",
                                 }}
                             >
-                                Герой: Ур. {enemyLevel}
+                                Уровень: {enemyLevel}
                             </span>
                         </div>
                     </motion.div>
@@ -721,11 +722,14 @@ export const PreBattleScreen: React.FC<PreBattleScreenProps> = ({
                 >
                     <button
                         onClick={onCancel}
+                        disabled={isStarting}
                         onMouseEnter={(e) => {
+                            if (isStarting) return;
                             e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
                             e.currentTarget.style.transform = 'scale(1.05)';
                         }}
                         onMouseLeave={(e) => {
+                            if (isStarting) return;
                             e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
                             e.currentTarget.style.transform = 'scale(1)';
                         }}
@@ -737,38 +741,49 @@ export const PreBattleScreen: React.FC<PreBattleScreenProps> = ({
                             color: '#fef3c7',
                             fontSize: '15px',
                             fontWeight: 'bold',
-                            cursor: 'pointer',
+                            cursor: isStarting ? 'not-allowed' : 'pointer',
                             transition: 'all 0.2s',
                             fontFamily: "'Cinzel', serif",
+                            opacity: isStarting ? 0.5 : 1,
                         }}
                     >
                         НАЗАД
                     </button>
                     <button
-                        onClick={onStart}
+                        onClick={() => {
+                            if (isStarting) return;
+                            setIsStarting(true);
+                            onStart();
+                        }}
+                        disabled={isStarting}
                         onMouseEnter={(e) => {
+                            if (isStarting) return;
                             e.currentTarget.style.transform = 'scale(1.05)';
                             e.currentTarget.style.boxShadow = '0 0 25px rgba(245, 158, 11, 0.6)';
                         }}
                         onMouseLeave={(e) => {
+                            if (isStarting) return;
                             e.currentTarget.style.transform = 'scale(1)';
                             e.currentTarget.style.boxShadow = '0 10px 20px rgba(245, 158, 11, 0.4)';
                         }}
                         style={{
                             padding: '12px 30px',
-                            background: 'linear-gradient(180deg, #f59e0b 0%, #b45309 100%)',
-                            border: '2px solid #fcd34d',
+                            background: isStarting
+                                ? 'linear-gradient(180deg, #4b5563 0%, #1f2937 100%)'
+                                : 'linear-gradient(180deg, #f59e0b 0%, #b45309 100%)',
+                            border: isStarting ? '2px solid #4b5563' : '2px solid #fcd34d',
                             borderRadius: '12px',
-                            color: '#fff',
+                            color: isStarting ? '#9ca3af' : '#fff',
                             fontSize: '15px',
                             fontWeight: 'bold',
-                            cursor: 'pointer',
+                            cursor: isStarting ? 'not-allowed' : 'pointer',
                             transition: 'all 0.2s',
-                            boxShadow: '0 10px 20px rgba(245, 158, 11, 0.4)',
+                            boxShadow: isStarting ? 'none' : '0 10px 20px rgba(245, 158, 11, 0.4)',
                             fontFamily: "'Cinzel', serif",
+                            opacity: isStarting ? 0.7 : 1,
                         }}
                     >
-                        НАЧАТЬ БОЙ
+                        {isStarting ? 'ЗАГРУЗКА...' : 'НАЧАТЬ БОЙ'}
                     </button>
                 </div>
             </motion.div>

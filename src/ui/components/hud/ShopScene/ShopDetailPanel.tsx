@@ -3,6 +3,7 @@ import { ShopItem } from '../../../../configs/ShopConfig';
 import { getRarityColor, rarityTranslation, getItemStats } from './shopHelpers';
 import { FloatingStatRow } from './FloatingStatRow';
 import { BuyBtn } from './BuyBtn';
+import { SKINS_DB } from '../../../../configs/SkinsConfig';
 
 interface ShopDetailPanelProps {
     selectedItem: ShopItem;
@@ -279,6 +280,44 @@ export const ShopDetailPanel: React.FC<ShopDetailPanelProps> = ({
                             {selectedItem.flavor || selectedItem.desc}
                         </div>
                     )}
+                    {/* Battle Pass notice for skins */}
+                    {selectedItem.mainTab === 'SKINS' && (() => {
+                        const skinMeta = SKINS_DB.find((s) => s.id === selectedItem.id);
+                        if (!skinMeta || skinMeta.source !== 'battle_pass') return null;
+                        return (
+                            <div
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '8px',
+                                    background: 'linear-gradient(90deg, rgba(240,192,64,0.10) 0%, rgba(240,140,30,0.07) 100%)',
+                                    border: '1px solid rgba(240,192,64,0.35)',
+                                    borderRadius: '8px',
+                                    padding: '8px 12px',
+                                    marginTop: '4px',
+                                }}
+                            >
+                                <span style={{ fontSize: '18px', lineHeight: 1 }}>🎖️</span>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '1px' }}>
+                                    <span
+                                        style={{
+                                            fontSize: '10px',
+                                            color: '#f0c040',
+                                            fontWeight: 900,
+                                            letterSpacing: '0.8px',
+                                            textTransform: 'uppercase',
+                                            fontFamily: "'Cinzel', serif",
+                                        }}
+                                    >
+                                        Также в Боевом Пропуске
+                                    </span>
+                                    <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.55)' }}>
+                                        {skinMeta.sourceLabel}
+                                    </span>
+                                </div>
+                            </div>
+                        );
+                    })()}
                 </div>
 
                 {/* Buy Button & Price at the bottom */}

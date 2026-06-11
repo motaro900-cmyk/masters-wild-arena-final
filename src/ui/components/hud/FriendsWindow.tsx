@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { showInviteBox } from '../../../utils/VKBridge';
 import { AssetsMap } from '../../../configs/AssetsMap';
@@ -45,6 +45,18 @@ export const FriendsWindow: React.FC<FriendsWindowProps> = () => {
         handleSearch,
         handleSendFriendRequest,
     } = useFriendsWindow();
+
+    const [isMobile, setIsMobile] = useState(false);
+    useEffect(() => {
+        const checkLayout = () => {
+            setIsMobile(typeof window !== 'undefined' && window.innerWidth < 1024);
+        };
+        checkLayout();
+        window.addEventListener('resize', checkLayout);
+        return () => window.removeEventListener('resize', checkLayout);
+    }, []);
+
+    const TABS = ['ALL', 'ONLINE', 'WORLD', 'REQUESTS', 'REWARDS'] as const;
 
     const handleAddFoundPlayer = async () => {
         if (!foundPlayer) return;
@@ -242,8 +254,25 @@ export const FriendsWindow: React.FC<FriendsWindowProps> = () => {
             )}
 
             {/* СПИСОК ДРУЗЕЙ ИЛИ БОНУСЫ */}
-            <div
+            <motion.div
                 className="custom-scrollbar"
+                drag={isMobile ? "x" : undefined}
+                dragConstraints={{ left: 0, right: 0 }}
+                dragElastic={0.15}
+                onDragEnd={(_, info) => {
+                    if (!isMobile) return;
+                    const swipeThreshold = 50;
+                    const currentIndex = TABS.indexOf(activeTab as any);
+                    if (info.offset.x < -swipeThreshold) {
+                        if (currentIndex < TABS.length - 1) {
+                            setActiveTab(TABS[currentIndex + 1] as any);
+                        }
+                    } else if (info.offset.x > swipeThreshold) {
+                        if (currentIndex > 0) {
+                            setActiveTab(TABS[currentIndex - 1] as any);
+                        }
+                    }
+                }}
                 style={{
                     flex: 1,
                     overflowY: 'auto',
@@ -252,6 +281,7 @@ export const FriendsWindow: React.FC<FriendsWindowProps> = () => {
                     display: 'flex',
                     flexDirection: 'column',
                     gap: 12,
+                    touchAction: isMobile ? 'pan-y' : 'auto',
                 }}
             >
                 {activeTab === 'REWARDS' ? (
@@ -386,7 +416,7 @@ export const FriendsWindow: React.FC<FriendsWindowProps> = () => {
                         </motion.button>
                     </div>
                 )}
-            </div>
+            </motion.div>
         </div>
     );
 };

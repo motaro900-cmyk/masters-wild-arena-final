@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { EMBLEMS, CurrencyIcon } from './ClanShared';
+import { useGameStore } from '../../../../store/useGameStore';
 
 interface ClanCreateTabProps {
     colors: any;
@@ -14,12 +15,26 @@ export const ClanCreateTab: React.FC<ClanCreateTabProps> = ({ colors, error, set
     const [newClanName, setNewClanName] = useState('');
     const [newClanMotto, setNewClanMotto] = useState('');
     const [selectedEmblem, setSelectedEmblem] = useState(EMBLEMS[0]);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    useEffect(() => {
+        if (error) {
+            setIsSubmitting(false);
+        }
+    }, [error]);
 
     const handleSubmit = () => {
+        if (isSubmitting) return;
         if (!newClanName.trim()) {
             setError('Введите название клана!');
             return;
         }
+        const state = useGameStore.getState();
+        if (state.crystals < 200) {
+            setError('Недостаточно алмазов!');
+            return;
+        }
+        setIsSubmitting(true);
         onCreate(newClanName, newClanMotto, selectedEmblem);
     };
 
@@ -190,6 +205,7 @@ export const ClanCreateTab: React.FC<ClanCreateTabProps> = ({ colors, error, set
                 <div style={{ display: 'flex', gap: '20px' }}>
                     <button
                         onClick={onCancel}
+                        disabled={isSubmitting}
                         style={{
                             flex: 1,
                             padding: '15px',
@@ -198,26 +214,31 @@ export const ClanCreateTab: React.FC<ClanCreateTabProps> = ({ colors, error, set
                             color: colors.text,
                             borderRadius: '12px',
                             fontWeight: 800,
-                            cursor: 'pointer',
+                            cursor: isSubmitting ? 'not-allowed' : 'pointer',
+                            opacity: isSubmitting ? 0.5 : 1,
                         }}
                     >
                         ОТМЕНА
                     </button>
                     <button
                         onClick={handleSubmit}
+                        disabled={isSubmitting}
                         style={{
                             flex: 2,
                             padding: '15px',
-                            background: 'linear-gradient(180deg, #f0c040 0%, #a88020 100%)',
+                            background: isSubmitting
+                                ? 'linear-gradient(180deg, #4b5563 0%, #1f2937 100%)'
+                                : 'linear-gradient(180deg, #f0c040 0%, #a88020 100%)',
                             border: 'none',
-                            color: '#000',
+                            color: isSubmitting ? '#9ca3af' : '#000',
                             borderRadius: '12px',
                             fontWeight: 900,
-                            cursor: 'pointer',
-                            boxShadow: '0 5px 15px rgba(240,192,64,0.3)',
+                            cursor: isSubmitting ? 'not-allowed' : 'pointer',
+                            boxShadow: isSubmitting ? 'none' : '0 5px 15px rgba(240,192,64,0.3)',
+                            opacity: isSubmitting ? 0.6 : 1,
                         }}
                     >
-                        ОСНОВАТЬ КЛАН (200 <CurrencyIcon type="ALMAZ" />)
+                        {isSubmitting ? 'ЗАГРУЗКА...' : <>ОСНОВАТЬ КЛАН (200 <CurrencyIcon type="ALMAZ" />)</>}
                     </button>
                 </div>
             </div>

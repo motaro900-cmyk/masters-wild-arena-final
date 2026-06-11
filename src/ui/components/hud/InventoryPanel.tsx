@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { useGameStore } from '../../../store/useGameStore';
 import { ITEMS_DATABASE, calculateItemPower } from '../../../game/configs/ItemsConfig';
 import { HEROES_DB } from '../../../configs/HeroesConfig';
@@ -10,8 +11,6 @@ import { ItemTooltip } from './Inventory/ItemTooltip';
 import { ChestOpeningOverlay } from './Inventory/ChestOpeningOverlay';
 import { RARITY_COLORS } from '../../../configs/RarityConfig';
 
-const stoneBrickPattern =
-    "url(\"data:image/svg+xml;utf8,<svg width='60' height='40' viewBox='0 0 60 40' xmlns='http://www.w3.org/2000/svg'><rect width='60' height='40' fill='none'/><line x1='0' y1='20' x2='60' y2='20' stroke='rgba(0,0,0,0.52)' stroke-width='1.5'/><line x1='0' y1='40' x2='60' y2='40' stroke='rgba(0,0,0,0.52)' stroke-width='1.5'/><line x1='30' y1='0' x2='30' y2='20' stroke='rgba(0,0,0,0.52)' stroke-width='1.5'/><line x1='0' y1='20' x2='0' y2='40' stroke='rgba(0,0,0,0.52)' stroke-width='1.5'/><line x1='60' y1='20' x2='60' y2='40' stroke='rgba(0,0,0,0.52)' stroke-width='1.5'/><line x1='0' y1='1.5' x2='60' y2='1.5' stroke='rgba(255,255,255,0.15)' stroke-width='1'/><line x1='0' y1='21.5' x2='60' y2='21.5' stroke='rgba(255,255,255,0.15)' stroke-width='1'/><line x1='31.5' y1='0.8' x2='31.5' y2='19.5' stroke='rgba(255,255,255,0.15)' stroke-width='1'/><line x1='1.5' y1='20.8' x2='1.5' y2='39.5' stroke='rgba(255,255,255,0.15)' stroke-width='1'/></svg>\")";
 
 interface InventoryPanelProps {
     onItemClick?: (id: string) => void;
@@ -19,16 +18,8 @@ interface InventoryPanelProps {
     setGlobalHoveredItem?: (id: string | null, x: number, y: number) => void;
 }
 
-// ─── Context menu ─────────────────────────────────────────────────────────────
-interface ContextMenu {
-    x: number;
-    y: number;
-    item: any;
-    data: any;
-    isEquipped: boolean;
-}
 
-export const InventoryPanel: React.FC<InventoryPanelProps> = ({ mode = 'FULL', onItemClick, setGlobalHoveredItem }) => {
+export const InventoryPanel: React.FC<InventoryPanelProps> = ({ mode = 'FULL', onItemClick, setGlobalHoveredItem: propSetGlobalHoveredItem }) => {
     const inventory = useGameStore((state) => state.inventory);
     const sellItem = useGameStore((state) => state.sellItem);
     const equippedItems = useGameStore((state) => state.equippedItems);
@@ -46,13 +37,22 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ mode = 'FULL', o
     const lava_heart = useGameStore((state) => state.lava_heart);
 
     const [activeTab, setActiveTab] = useState<'ALL' | 'EQUIPMENT' | 'POTIONS' | 'RESOURCES'>('ALL');
-    const [sortBy, setSortBy] = useState<'POWER' | 'RARITY'>('POWER');
+    const [sortBy, setSortBy] = useState<'TYPE' | 'POWER' | 'RARITY'>('TYPE');
     const [searchQuery, setSearchQuery] = useState('');
     const [hoveredItem, setHoveredItem] = useState<{ id: string; x: number; y: number } | null>(null);
     const [isProcessing, setIsProcessing] = useState(false);
     const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
-    const [contextMenu, setContextMenu] = useState<ContextMenu | null>(null);
-    const containerRef = React.useRef<HTMLDivElement>(null);
+    const [isMobile, setIsMobile] = useState(false);
+    useEffect(() => {
+        const checkLayout = () => {
+            setIsMobile(typeof window !== 'undefined' && window.innerWidth < 1024);
+        };
+        checkLayout();
+        window.addEventListener('resize', checkLayout);
+        return () => window.removeEventListener('resize', checkLayout);
+    }, []);
+
+    const TABS = ['ALL', 'EQUIPMENT', 'POTIONS', 'RESOURCES'] as const;
 
     const [confirmData, setConfirmData] = useState<{
         isOpen: boolean; title: string; message: string;
@@ -113,7 +113,10 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ mode = 'FULL', o
         } else if (activeTab === 'POTIONS') {
             items = inventory.filter((item: any) => (ITEMS_DATABASE[item.id] as any)?.mainTab === 'ALCHEMY' && (ITEMS_DATABASE[item.id] as any)?.subTab !== 'RESOURCES');
         } else {
-            const normalItems = inventory.filter((item: any) => (ITEMS_DATABASE[item.id] as any)?.subTab !== 'RESOURCES');
+            const normalItems = inventory.filter((item: any) => {
+                const dbItem = ITEMS_DATABASE[item.id] as any;
+                return dbItem?.subTab !== 'RESOURCES' && dbItem?.mainTab !== 'ALCHEMY';
+            });
             items = [...normalItems, ...resourceItems];
         }
 
@@ -131,10 +134,32 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ mode = 'FULL', o
         }
 
         const rarityOrder: Record<string, number> = { COMMON: 0, RARE: 1, EPIC: 2, MYTHIC: 3, LEGENDARY: 4 };
+        const subTabOrder: Record<string, number> = {
+            WEAPONS: 0,
+            SHIELDS: 1,
+            HELMETS: 2,
+            ARMOR: 3,
+            SHOULDERS: 4,
+            PANTS: 5,
+            BOOTS: 6,
+        };
+
         return items.sort((a: any, b: any) => {
             const dataA = ITEMS_DATABASE[a.id] as any;
             const dataB = ITEMS_DATABASE[b.id] as any;
             if (!dataA || !dataB) return 0;
+
+            if (sortBy === 'TYPE') {
+                const orderA = subTabOrder[dataA.subTab] ?? 99;
+                const orderB = subTabOrder[dataB.subTab] ?? 99;
+                if (orderA !== orderB) {
+                    return orderA - orderB;
+                }
+                const powerA = a.isResource ? 0 : calculateItemPower(dataA);
+                const powerB = b.isResource ? 0 : calculateItemPower(dataB);
+                return powerB - powerA;
+            }
+
             if (sortBy === 'POWER') {
                 const powerA = a.isResource ? 0 : calculateItemPower(dataA);
                 const powerB = b.isResource ? 0 : calculateItemPower(dataB);
@@ -146,9 +171,9 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ mode = 'FULL', o
 
     // ── Tab counts ────────────────────────────────────────────────────────────
     const tabCounts = useMemo(() => ({
-        ALL: inventory.length,
+        ALL: inventory.filter((item: any) => (ITEMS_DATABASE[item.id] as any)?.mainTab !== 'ALCHEMY').length,
         EQUIPMENT: inventory.filter((item: any) => (ITEMS_DATABASE[item.id] as any)?.mainTab === 'ARSENAL').length,
-        POTIONS: inventory.filter((item: any) => (ITEMS_DATABASE[item.id] as any)?.mainTab === 'ALCHEMY' && (ITEMS_DATABASE[item.id] as any)?.subTab !== 'RESOURCES').length,
+        POTIONS: 0,
         RESOURCES: [coal, steel_bars, runic_shards, ancient_compass, astral_crystal, void_sphere, golden_sprout, dragon_scale, lava_heart].filter((v: any) => (v || 0) > 0).length,
     }), [inventory, coal, steel_bars, runic_shards, ancient_compass, astral_crystal, void_sphere, golden_sprout, dragon_scale, lava_heart]);
 
@@ -208,14 +233,6 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ mode = 'FULL', o
         });
     };
 
-    // ── Context menu ──────────────────────────────────────────────────────────
-    const handleContextMenu = (e: React.MouseEvent, item: any, data: any, isEquipped: boolean) => {
-        e.preventDefault();
-        setContextMenu({ x: e.clientX, y: e.clientY, item, data, isEquipped });
-    };
-
-    const closeContextMenu = () => setContextMenu(null);
-
     // ── Bag fill color ────────────────────────────────────────────────────────
     const bagFill = inventory.length / MAX_SLOTS;
     const bagColor = bagFill > 0.9 ? '#ef4444' : bagFill > 0.75 ? '#f59e0b' : '#4ade80';
@@ -223,9 +240,7 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ mode = 'FULL', o
     // ─── Render ───────────────────────────────────────────────────────────────
     return (
         <div
-            ref={containerRef}
             style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', gap: '12px', position: 'relative' }}
-            onClick={closeContextMenu}
         >
             {/* ══ ВЕРХНЯЯ ПАНЕЛЬ ══════════════════════════════════════════════ */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -240,7 +255,6 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ mode = 'FULL', o
                     {([
                         { id: 'ALL',       label: 'ВСЁ' },
                         { id: 'EQUIPMENT', label: 'СНАРЯЖЕНИЕ' },
-                        { id: 'POTIONS',   label: 'АЛХИМИЯ' },
                         { id: 'RESOURCES', label: 'РЕСУРСЫ' },
                     ] as const).map((tab) => {
                         const active = activeTab === tab.id;
@@ -248,14 +262,14 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ mode = 'FULL', o
                         return (
                             <button
                                 key={tab.id}
-                                onClick={() => setActiveTab(tab.id)}
+                                onClick={() => setActiveTab(tab.id as any)}
                                 style={{
-                                    flex: 1, padding: '8px 4px', borderRadius: '6px',
+                                    flex: 1, padding: '11px 4px', borderRadius: '6px',
                                     background: active ? 'linear-gradient(180deg,#f0c040 0%,#c8960a 100%)' : 'transparent',
                                     border: active ? '1px solid #fffdf7' : '1px solid transparent',
                                     color: active ? '#1a0f00' : 'rgba(255,254,250,0.6)',
-                                    fontSize: '11px', fontWeight: 900, cursor: 'pointer',
-                                    fontFamily: "'Cinzel', serif", textAlign: 'center',
+                                    fontSize: '11.5px', fontWeight: active ? 900 : 700, cursor: 'pointer',
+                                    fontFamily: "'Philosopher', 'Inter', sans-serif", textAlign: 'center',
                                     whiteSpace: 'nowrap', transition: 'all 0.15s ease',
                                     display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px',
                                 }}
@@ -291,7 +305,7 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ mode = 'FULL', o
                             onChange={(e) => setSearchQuery(e.target.value)}
                             placeholder="Поиск по имени или редкости..."
                             style={{
-                                width: '100%', padding: '6px 10px 6px 28px',
+                                width: '100%', padding: '8px 10px 8px 28px',
                                 background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(240,192,64,0.2)',
                                 borderRadius: '8px', color: '#fff', fontSize: '11px',
                                 fontFamily: "'Nunito', sans-serif", outline: 'none',
@@ -309,12 +323,12 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ mode = 'FULL', o
 
                     {/* Полоса заполнения */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', minWidth: '90px' }}>
-                        <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.4)', fontWeight: 700, fontFamily: "'Cinzel', serif", letterSpacing: '0.5px' }}>
+                        <div style={{ fontSize: '11px', color: '#fffdf5', fontWeight: 800, fontFamily: "'Philosopher', 'Inter', sans-serif", letterSpacing: '0.5px' }}>
                             СУМКА {inventory.length}/{MAX_SLOTS}
                         </div>
-                        <div style={{ height: '6px', background: 'rgba(0,0,0,0.4)', borderRadius: '3px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.07)' }}>
+                        <div style={{ height: '8px', background: 'rgba(0,0,0,0.4)', borderRadius: '4px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.07)' }}>
                             <div style={{
-                                height: '100%', borderRadius: '3px',
+                                height: '100%', borderRadius: '4px',
                                 width: `${Math.min(100, bagFill * 100)}%`,
                                 background: `linear-gradient(90deg, ${bagColor}cc, ${bagColor})`,
                                 transition: 'width 0.3s ease, background 0.3s',
@@ -348,7 +362,7 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ mode = 'FULL', o
                             background: junkItems.length > 0 ? 'rgba(239,68,68,0.1)' : 'rgba(255,255,255,0.03)',
                             color: junkItems.length > 0 ? '#ef4444' : 'rgba(255,255,255,0.2)',
                             border: `1px solid ${junkItems.length > 0 ? 'rgba(239,68,68,0.3)' : 'rgba(255,255,255,0.06)'}`,
-                            borderRadius: '8px', padding: '6px 10px', fontSize: '10px',
+                            borderRadius: '8px', padding: '9px 12px', fontSize: '11px',
                             fontWeight: 900, cursor: junkItems.length > 0 ? 'pointer' : 'default',
                             fontFamily: "'Cinzel', serif", letterSpacing: '0.5px',
                             display: 'flex', alignItems: 'center', gap: '4px',
@@ -364,44 +378,69 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ mode = 'FULL', o
 
                     {/* Сортировка */}
                     <button
-                        onClick={() => { setSortBy(sortBy === 'POWER' ? 'RARITY' : 'POWER'); audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK || 'SFX_CLICK'); }}
+                        onClick={() => {
+                            let nextSort: 'TYPE' | 'POWER' | 'RARITY' = 'TYPE';
+                            if (sortBy === 'TYPE') nextSort = 'POWER';
+                            else if (sortBy === 'POWER') nextSort = 'RARITY';
+                            else if (sortBy === 'RARITY') nextSort = 'TYPE';
+                            setSortBy(nextSort);
+                            audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK || 'SFX_CLICK');
+                        }}
                         title="Переключить сортировку"
                         style={{
                             background: 'rgba(240,192,64,0.05)', color: '#f0c040',
                             border: '1px solid rgba(240,192,64,0.25)', borderRadius: '8px',
-                            padding: '6px 10px', fontSize: '10px', fontWeight: 900,
+                            padding: '9px 12px', fontSize: '11px', fontWeight: 900,
                             cursor: 'pointer', fontFamily: "'Cinzel', serif",
                             display: 'flex', alignItems: 'center', gap: '4px',
                             transition: 'all 0.2s ease', whiteSpace: 'nowrap',
                         }}
                     >
                         <span>⇅</span>
-                        <span>{sortBy === 'POWER' ? 'МОЩЬ' : 'РЕДК.'}</span>
+                        <span>{sortBy === 'TYPE' ? 'ТИП' : sortBy === 'POWER' ? 'МОЩЬ' : 'РЕДК.'}</span>
                     </button>
                 </div>
 
                 {/* Подсказка про Shift */}
                 {selectedItems.size === 0 && mode === 'FULL' && (
                     <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.22)', letterSpacing: '0.3px', paddingLeft: '2px' }}>
-                        💡 Shift+клик — выделить предметы для массовой продажи &nbsp;·&nbsp; ПКМ на предмет — контекстное меню
+                        💡 Shift+клик — выделить предметы для массовой продажи &nbsp;·&nbsp; ЛКМ — надеть/снять снаряжение
                     </div>
                 )}
             </div>
 
             {/* ══ СЕТКА ПРЕДМЕТОВ ═════════════════════════════════════════════ */}
-            <div
+            <motion.div
+                drag={isMobile ? "x" : undefined}
+                dragConstraints={{ left: 0, right: 0 }}
+                dragElastic={0.15}
+                onDragEnd={(_, info) => {
+                    if (!isMobile) return;
+                    const swipeThreshold = 50;
+                    const currentIndex = TABS.indexOf(activeTab);
+                    if (info.offset.x < -swipeThreshold) {
+                        if (currentIndex < TABS.length - 1) {
+                            setActiveTab(TABS[currentIndex + 1]);
+                        }
+                    } else if (info.offset.x > swipeThreshold) {
+                        if (currentIndex > 0) {
+                            setActiveTab(TABS[currentIndex - 1]);
+                        }
+                    }
+                }}
                 style={{
                     flex: 1,
-                    background: `${stoneBrickPattern}, linear-gradient(180deg,rgba(22,18,15,0.98) 0%,rgba(14,11,9,0.99) 100%)`,
+                    background: 'radial-gradient(circle at 50% 50%, rgba(20, 16, 12, 0.98) 0%, rgba(10, 8, 6, 0.99) 100%)',
                     borderRadius: '16px', border: '1.5px solid rgba(240,192,64,0.3)',
                     padding: mode === 'FULL' ? '20px' : '12px',
                     overflowY: 'auto',
                     display: 'grid',
-                    gridTemplateColumns: mode === 'FULL' ? 'repeat(7,1fr)' : 'repeat(3,1fr)',
-                    gridAutoRows: mode === 'FULL' ? '90px' : '100px',
-                    gap: mode === 'FULL' ? '12px' : '10px',
+                    gridTemplateColumns: mode === 'FULL' ? 'repeat(5,1fr)' : 'repeat(3,1fr)',
+                    gridAutoRows: mode === 'FULL' ? '125px' : '100px',
+                    gap: mode === 'FULL' ? '14px' : '10px',
                     boxShadow: 'inset 0 0 24px rgba(0,0,0,0.95), 0 4px 15px rgba(0,0,0,0.5)',
                     alignContent: 'start',
+                    touchAction: isMobile ? 'pan-y' : 'auto',
                 }}
                 className="leaderboard-scroll"
             >
@@ -420,8 +459,11 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ mode = 'FULL', o
                         <div
                             key={instanceId + i}
                             style={{ position: 'relative', width: '100%', height: '100%', boxSizing: 'border-box' }}
-                            onContextMenu={(e) => !item.isResource && handleContextMenu(e, item, data, !!isEquippedOnCurrent)}
-                            onClick={(e) => { if (e.shiftKey && !item.isResource) toggleSelectItem(instanceId, e); }}
+                            onClick={(e) => {
+                                if (e.shiftKey && !item.isResource) {
+                                    toggleSelectItem(instanceId, e);
+                                }
+                            }}
                         >
                             <DraggableItem
                                 item={item}
@@ -451,7 +493,7 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ mode = 'FULL', o
                                 }}
                                 setGlobalHoveredItem={(id: string | null, x: number, y: number) => {
                                     setHoveredItem(id ? { id, x, y } : null);
-                                    setGlobalHoveredItem?.(id, x, y);
+                                    propSetGlobalHoveredItem?.(id, x, y);
                                 }}
                             />
                             {/* Рамка выделения (Shift) */}
@@ -478,102 +520,23 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ mode = 'FULL', o
                 })}
 
                 {/* Пустые слоты */}
-                {Array.from({ length: Math.max(0, (mode === 'FULL' ? 21 : 9) - filteredItems.length) }).map((_, i) => (
+                {Array.from({ length: Math.max(0, (mode === 'FULL' ? 20 : 9) - filteredItems.length) }).map((_, i) => (
                     <div key={'empty-' + i} style={{
-                        background: 'radial-gradient(circle at 50% 50%,rgba(12,9,7,0.95) 0%,rgba(20,16,13,0.98) 100%)',
-                        borderRadius: '12px', border: '1.5px solid rgba(240,192,64,0.12)',
-                        boxShadow: 'inset 0 4px 10px rgba(0,0,0,0.9)',
+                        background: 'radial-gradient(circle, rgba(28, 22, 18, 0.4) 0%, rgba(18, 14, 11, 0.6) 100%)',
+                        borderRadius: '8px',
+                        border: '1.5px solid rgba(240, 192, 64, 0.08)',
+                        boxShadow: 'inset 0 0 10px rgba(0,0,0,0.85)',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                     }}>
                         <div style={{
-                            width: '6px', height: '6px', borderRadius: '50%',
-                            background: 'rgba(240,192,64,0.08)',
+                            width: '8px', height: '8px', borderRadius: '50%',
+                            background: 'rgba(240,192,64,0.04)',
                         }} />
                     </div>
                 ))}
-            </div>
+            </motion.div>
 
-            {/* ══ КОНТЕКСТНОЕ МЕНЮ ════════════════════════════════════════════ */}
-            {contextMenu && (
-                <div
-                    onClick={(e) => e.stopPropagation()}
-                    style={{
-                        position: 'fixed',
-                        left: Math.min(contextMenu.x, window.innerWidth - 180),
-                        top: Math.min(contextMenu.y, window.innerHeight - 160),
-                        zIndex: 99999,
-                        background: 'rgba(14,11,8,0.98)',
-                        border: '1px solid rgba(240,192,64,0.3)',
-                        borderRadius: '12px',
-                        padding: '6px',
-                        minWidth: '170px',
-                        boxShadow: '0 8px 32px rgba(0,0,0,0.9)',
-                    }}
-                >
-                    {/* Имя предмета */}
-                    <div style={{
-                        padding: '6px 10px 8px',
-                        fontSize: '11px', fontWeight: 900, color: '#f0c040',
-                        fontFamily: "'Cinzel', serif",
-                        borderBottom: '1px solid rgba(255,255,255,0.07)',
-                        marginBottom: '4px',
-                    }}>
-                        {contextMenu.data?.name || contextMenu.item.id}
-                    </div>
-
-                    {/* Надеть / Снять */}
-                    {!contextMenu.item.isResource && contextMenu.item.id !== 'season_chest' && (
-                        <CtxBtn
-                            icon={contextMenu.isEquipped ? '🔓' : '⚔️'}
-                            label={contextMenu.isEquipped ? 'Снять' : 'Надеть'}
-                            color="#f0c040"
-                            onClick={() => {
-                                onItemClick?.(contextMenu.item.instanceId || contextMenu.item.id);
-                                closeContextMenu();
-                            }}
-                        />
-                    )}
-
-                    {/* Продать */}
-                    {!contextMenu.item.isResource && !contextMenu.isEquipped && (
-                        <CtxBtn
-                            icon="🪙"
-                            label={`Продать за ${getSellPrice(contextMenu.item).toLocaleString('ru-RU')}`}
-                            color="#ef4444"
-                            onClick={() => {
-                                setConfirmData({
-                                    isOpen: true, title: 'ПРОДАТЬ ПРЕДМЕТ',
-                                    message: `Продать «${contextMenu.data?.name || contextMenu.item.id}» за ${getSellPrice(contextMenu.item).toLocaleString('ru-RU')} 🪙?`,
-                                    variant: 'danger',
-                                    onConfirm: () => sellItem(contextMenu.item.instanceId || contextMenu.item.id),
-                                });
-                                closeContextMenu();
-                            }}
-                        />
-                    )}
-
-                    {/* Выделить (для массовой продажи) */}
-                    {!contextMenu.item.isResource && !contextMenu.isEquipped && (
-                        <CtxBtn
-                            icon="✅"
-                            label={selectedItems.has(contextMenu.item.instanceId || contextMenu.item.id) ? 'Снять выделение' : 'Выделить для продажи'}
-                            color="#c084fc"
-                            onClick={() => {
-                                const id = contextMenu.item.instanceId || contextMenu.item.id;
-                                setSelectedItems(prev => {
-                                    const next = new Set(prev);
-                                    if (next.has(id)) next.delete(id); else next.add(id);
-                                    return next;
-                                });
-                                closeContextMenu();
-                            }}
-                        />
-                    )}
-
-                    {/* Закрыть */}
-                    <CtxBtn icon="✕" label="Закрыть" color="rgba(255,255,255,0.35)" onClick={closeContextMenu} />
-                </div>
-            )}
+            {/* Context menu removed */}
 
             <ConfirmDialog
                 isOpen={confirmData.isOpen}
@@ -584,7 +547,7 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ mode = 'FULL', o
                 variant={confirmData.variant}
             />
 
-            {hoveredItem && !setGlobalHoveredItem && <ItemTooltip item={hoveredItem} />}
+            {hoveredItem && !propSetGlobalHoveredItem && <ItemTooltip item={hoveredItem} />}
 
             <ChestOpeningOverlay
                 isOpening={isOpening}
@@ -596,25 +559,5 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ mode = 'FULL', o
         </div>
     );
 };
-
-// ─── Context menu button ───────────────────────────────────────────────────────
-const CtxBtn: React.FC<{ icon: string; label: string; color: string; onClick: () => void }> = ({ icon, label, color, onClick }) => (
-    <button
-        onClick={onClick}
-        style={{
-            display: 'flex', alignItems: 'center', gap: '8px',
-            width: '100%', padding: '8px 10px', borderRadius: '8px',
-            background: 'transparent', border: 'none', cursor: 'pointer',
-            color, fontSize: '11px', fontWeight: 700,
-            fontFamily: "'Nunito', sans-serif",
-            textAlign: 'left' as const, transition: 'background 0.1s',
-        }}
-        onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.05)')}
-        onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
-    >
-        <span style={{ width: '16px', textAlign: 'center' }}>{icon}</span>
-        <span>{label}</span>
-    </button>
-);
 
 export default InventoryPanel;

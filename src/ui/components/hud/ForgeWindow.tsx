@@ -27,6 +27,7 @@ export const ForgeWindow: React.FC = () => {
     const upgradeItem = useGameStore((state) => state.upgradeItem);
     const heroId = selectedHeroId || 'panda';
     const equipped = heroEquipment[heroId] || {};
+    const isMobile = useGameStore((state) => state.isMobile);
 
     // Состояние выбора предмета
     const [selectedItemId, setSelectedItemId] = useState<string | null>(
@@ -97,26 +98,26 @@ export const ForgeWindow: React.FC = () => {
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center',
-                    padding: '12px 0',
+                    padding: isMobile ? '8px 0' : '12px 0',
                     borderBottom: '1px solid rgba(255,255,255,0.05)',
                 }}
             >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <span style={{ fontSize: '18px' }}>{icon}</span>
-                    <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: '14px', fontWeight: 600 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '6px' : '10px' }}>
+                    <span style={{ fontSize: isMobile ? '15px' : '18px' }}>{icon}</span>
+                    <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: isMobile ? '12px' : '14px', fontWeight: 600 }}>
                         {label.toUpperCase()}
                     </span>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <span style={{ fontWeight: 800, fontSize: '16px' }}>{currentVal}</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '8px' : '12px' }}>
+                    <span style={{ fontWeight: 800, fontSize: isMobile ? '14px' : '16px' }}>{currentVal}</span>
                     {currentLevel < maxLevel && (
                         <motion.div
                             initial={{ x: -5, opacity: 0 }}
                             animate={{ x: 0, opacity: 1 }}
-                            style={{ display: 'flex', alignItems: 'center', gap: '12px' }}
+                            style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '8px' : '12px' }}
                         >
                             <span style={{ color: '#f0c040', fontWeight: 900 }}>→</span>
-                            <span style={{ color: color, fontWeight: 900, fontSize: '18px' }}>{nextVal}</span>
+                            <span style={{ color: color, fontWeight: 900, fontSize: isMobile ? '15px' : '18px' }}>{nextVal}</span>
                         </motion.div>
                     )}
                 </div>
@@ -131,19 +132,19 @@ export const ForgeWindow: React.FC = () => {
                 height: '100%',
                 display: 'flex',
                 background: 'radial-gradient(circle at center, rgba(30,20,10,0.4) 0%, transparent 100%)',
-                padding: '20px',
-                gap: '30px',
+                padding: isMobile ? '12px' : '20px',
+                gap: isMobile ? '16px' : '30px',
             }}
         >
             <div
                 style={{
-                    width: '380px',
+                    width: isMobile ? '280px' : '380px',
                     background: 'rgba(10,10,10,0.6)',
                     borderRadius: '24px',
                     border: '1px solid rgba(200,168,112,0.15)',
                     display: 'flex',
                     flexDirection: 'column',
-                    padding: '20px',
+                    padding: isMobile ? '12px' : '20px',
                     backdropFilter: 'blur(10px)',
                 }}
             >
@@ -152,10 +153,10 @@ export const ForgeWindow: React.FC = () => {
                         display: 'flex',
                         justifyContent: 'space-between',
                         alignItems: 'center',
-                        marginBottom: '20px',
+                        marginBottom: isMobile ? '12px' : '20px',
                     }}
                 >
-                    <h3 style={{ fontFamily: "'Cinzel', serif", color: '#f0c040', fontSize: '18px', margin: 0 }}>
+                    <h3 style={{ fontFamily: "'Cinzel', serif", color: '#f0c040', fontSize: isMobile ? '16px' : '18px', margin: 0 }}>
                         АРСЕНАЛ
                     </h3>
                     <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)' }}>{inventory.length} ПРЕДМЕТОВ</div>
@@ -167,7 +168,7 @@ export const ForgeWindow: React.FC = () => {
                         overflowY: 'auto',
                         display: 'grid',
                         gridTemplateColumns: 'repeat(3, 1fr)',
-                        gap: '12px',
+                        gap: isMobile ? '8px' : '12px',
                         paddingRight: '5px',
                     }}
                 >
@@ -243,9 +244,9 @@ export const ForgeWindow: React.FC = () => {
                 </div>
             </div>
 
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: isMobile ? '12px' : '20px' }}>
                 {itemData ? (
-                    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: '25px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: isMobile ? '15px' : '25px' }}>
                         <div
                             style={{
                                 flex: 1,
@@ -309,8 +310,8 @@ export const ForgeWindow: React.FC = () => {
                                 }
                                 transition={{ duration: 0.2, repeat: isUpgrading ? Infinity : 0 }}
                                 style={{
-                                    width: '280px',
-                                    height: '280px',
+                                    width: isMobile ? '200px' : '280px',
+                                    height: isMobile ? '200px' : '280px',
                                     position: 'relative',
                                     display: 'flex',
                                     alignItems: 'center',
@@ -338,11 +339,11 @@ export const ForgeWindow: React.FC = () => {
                                 />
                             </motion.div>
 
-                            <div style={{ position: 'absolute', bottom: '30px', textAlign: 'center', zIndex: 3 }}>
+                            <div style={{ position: 'absolute', bottom: isMobile ? '10px' : '30px', textAlign: 'center', zIndex: 3 }}>
                                 <h2
                                     style={{
                                         fontFamily: "'Cinzel', serif",
-                                        fontSize: '28px',
+                                        fontSize: isMobile ? '22px' : '28px',
                                         color: '#fff',
                                         margin: '0 0 5px 0',
                                         textShadow: '0 2px 10px rgba(0,0,0,1)',
@@ -404,10 +405,10 @@ export const ForgeWindow: React.FC = () => {
                             style={{
                                 background: 'rgba(20,20,20,0.8)',
                                 borderRadius: '24px',
-                                padding: '25px',
+                                padding: isMobile ? '15px' : '25px',
                                 border: '1px solid rgba(255,255,255,0.05)',
                                 display: 'flex',
-                                gap: '30px',
+                                gap: isMobile ? '15px' : '30px',
                             }}
                         >
                             <div style={{ flex: 1 }}>
@@ -440,11 +441,11 @@ export const ForgeWindow: React.FC = () => {
 
                             <div
                                 style={{
-                                    width: '320px',
+                                    width: isMobile ? '240px' : '320px',
                                     display: 'flex',
                                     flexDirection: 'column',
                                     justifyContent: 'center',
-                                    gap: '20px',
+                                    gap: isMobile ? '12px' : '20px',
                                 }}
                             >
                                 {currentLevel < maxLevel ? (
@@ -492,7 +493,7 @@ export const ForgeWindow: React.FC = () => {
                                             onClick={handleUpgrade}
                                             disabled={!canUpgrade || isUpgrading}
                                             style={{
-                                                height: '80px',
+                                                height: isMobile ? '64px' : '80px',
                                                 opacity: canUpgrade && !isUpgrading ? 1 : 0.5,
                                                 background: 'linear-gradient(135deg, #f0c040 0%, #a6844a 100%)',
                                             }}
@@ -524,7 +525,7 @@ export const ForgeWindow: React.FC = () => {
                                 ) : (
                                     <div
                                         style={{
-                                            height: '80px',
+                                            height: isMobile ? '64px' : '80px',
                                             background: 'rgba(16,185,129,0.1)',
                                             borderRadius: '16px',
                                             border: '1px solid #10b981',
@@ -533,7 +534,7 @@ export const ForgeWindow: React.FC = () => {
                                             justifyContent: 'center',
                                             color: '#10b981',
                                             fontWeight: 900,
-                                            fontSize: '18px',
+                                            fontSize: isMobile ? '16px' : '18px',
                                         }}
                                     >
                                         МАКСИМАЛЬНЫЙ УРОВЕНЬ

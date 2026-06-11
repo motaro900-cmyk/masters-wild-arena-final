@@ -10,10 +10,10 @@ interface ItemTooltipProps {
 }
 
 const StatRow = ({ label, value, icon, color }: { label: string; value: string; icon: string; color: string }) => (
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ fontSize: '14px' }}>{icon}</span>
-            <span style={{ color: 'rgba(255,255,255,0.5)', fontWeight: 700 }}>{label}</span>
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '15px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <span style={{ fontSize: '18px' }}>{icon}</span>
+            <span style={{ color: 'rgba(255,255,255,0.6)', fontWeight: 700 }}>{label}</span>
         </div>
         <span style={{ color: color, fontWeight: 900 }}>{value}</span>
     </div>
@@ -21,7 +21,7 @@ const StatRow = ({ label, value, icon, color }: { label: string; value: string; 
 
 export const ItemTooltip: React.FC<ItemTooltipProps> = ({ item }) => {
     const store = useGameStore();
-    const invItem = store.inventory.find((i: any) => String(i.id) === item.id);
+    const invItem = store.inventory.find((i: any) => (i.instanceId || i.id) === item.id);
     const currentLevel = invItem?.level || 1;
 
     const getStatMultiplier = (lvl: number) => {
@@ -33,7 +33,8 @@ export const ItemTooltip: React.FC<ItemTooltipProps> = ({ item }) => {
 
     const mult = getStatMultiplier(currentLevel);
 
-    const data = ITEMS_DATABASE[item.id] as any;
+    const templateId = invItem ? invItem.id : item.id;
+    const data = ITEMS_DATABASE[templateId] as any;
     if (!data) return null;
 
     const isResource = data.subTab === 'RESOURCES';
@@ -53,13 +54,13 @@ export const ItemTooltip: React.FC<ItemTooltipProps> = ({ item }) => {
     }
 
     const rarity = RARITY_COLORS[data.rarity || 'COMMON'] || RARITY_COLORS.COMMON;
-    const tooltipWidth = 280;
+    const tooltipWidth = 420;
 
     // Bounds calculations
     const left =
-        item.x + tooltipWidth + 20 > window.innerWidth ? Math.max(10, item.x - tooltipWidth - 20) : item.x + 20;
+        item.x + tooltipWidth + 25 > window.innerWidth ? Math.max(10, item.x - tooltipWidth - 25) : item.x + 25;
 
-    const top = Math.max(10, Math.min(window.innerHeight - 360, item.y - 120));
+    const top = Math.max(10, Math.min(window.innerHeight - 420, item.y - 120));
 
     return createPortal(
         <motion.div
@@ -71,27 +72,27 @@ export const ItemTooltip: React.FC<ItemTooltipProps> = ({ item }) => {
                 top: `${top}px`,
                 zIndex: 2000000,
                 width: `${tooltipWidth}px`,
-                background: 'rgba(15, 10, 5, 0.95)',
-                backdropFilter: 'blur(10px)',
-                borderRadius: '12px',
-                border: `2px solid ${rarity.border}`,
-                boxShadow: `0 10px 30px rgba(0,0,0,0.8), 0 0 15px ${rarity.glow}`,
-                padding: '20px',
+                background: 'rgba(15, 10, 5, 0.98)',
+                backdropFilter: 'blur(15px)',
+                borderRadius: '16px',
+                border: `2.5px solid ${rarity.border}`,
+                boxShadow: `0 15px 45px rgba(0,0,0,0.85), 0 0 25px ${rarity.glow}aa`,
+                padding: '28px',
                 pointerEvents: 'none',
                 display: 'flex',
                 flexDirection: 'column',
-                gap: '12px',
+                gap: '16px',
             }}
         >
-            <div style={{ borderBottom: `1px solid ${rarity.border}44`, paddingBottom: '10px' }}>
+            <div style={{ borderBottom: `1px solid ${rarity.border}44`, paddingBottom: '12px' }}>
                 <div
                     style={{
                         color: rarity.color,
-                        fontSize: '10px',
+                        fontSize: '12px',
                         fontWeight: 900,
-                        letterSpacing: '2px',
+                        letterSpacing: '3px',
                         fontFamily: "'Cinzel', serif",
-                        marginBottom: '4px',
+                        marginBottom: '6px',
                     }}
                 >
                     {isResource
@@ -101,10 +102,11 @@ export const ItemTooltip: React.FC<ItemTooltipProps> = ({ item }) => {
                 <div
                     style={{
                         color: '#fff',
-                        fontSize: '18px',
+                        fontSize: '24px',
                         fontWeight: 900,
                         fontFamily: "'Cinzel', serif",
                         textTransform: 'uppercase',
+                        letterSpacing: '1px',
                     }}
                 >
                     {data.name}
@@ -159,37 +161,37 @@ export const ItemTooltip: React.FC<ItemTooltipProps> = ({ item }) => {
             {data.desc && (
                 <div
                     style={{
-                        color: 'rgba(255,255,255,0.6)',
-                        fontSize: '11px',
-                        lineHeight: '1.4',
+                        color: 'rgba(255,255,255,0.75)',
+                        fontSize: '14px',
+                        lineHeight: '1.5',
                         fontStyle: 'italic',
                         borderTop: isResource ? 'none' : '1px solid rgba(255,255,255,0.1)',
-                        paddingTop: isResource ? '0px' : '10px',
-                        marginTop: isResource ? '0px' : '5px',
+                        paddingTop: isResource ? '0px' : '12px',
+                        marginTop: isResource ? '0px' : '8px',
                     }}
                 >
                     "{data.desc}"
                 </div>
             )}
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '5px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '8px' }}>
                 {isResource ? (
-                    <div style={{ color: '#4ade80', fontSize: '11px', fontWeight: 900 }}>
+                    <div style={{ color: '#4ade80', fontSize: '13px', fontWeight: 900 }}>
                         КОЛИЧЕСТВО: {resourceAmount}
                     </div>
                 ) : (
                     <>
-                        <div style={{ color: '#f0c040', fontSize: '10px', fontWeight: 900 }}>
+                        <div style={{ color: '#f0c040', fontSize: '13px', fontWeight: 900 }}>
                             МОЩЬ: {Math.round(calculateItemPower(data) * mult)}
                         </div>
                         {data.priceGold && (
                             <div
                                 style={{
-                                    color: 'rgba(255,255,255,0.4)',
-                                    fontSize: '10px',
+                                    color: 'rgba(255,255,255,0.5)',
+                                    fontSize: '13px',
                                     display: 'flex',
                                     alignItems: 'center',
-                                    gap: '4px',
+                                    gap: '6px',
                                 }}
                             >
                                 ЦЕНА: {data.priceGold} 🪙

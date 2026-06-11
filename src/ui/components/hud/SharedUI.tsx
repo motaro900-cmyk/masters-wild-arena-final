@@ -5,6 +5,8 @@ import { cn } from '../../../utils/cn';
 import { useGameStore } from '../../../store/useGameStore';
 import { resolveAssetPath } from '../../../utils/assetPath';
 
+import { resolveAvatarPath } from '../../../configs/ProfileCustomization';
+
 /**
  * ЦВЕТОВАЯ ПАЛИТРА ИЗ ФОТО:
  * Темное дерево: #1a0f0a
@@ -226,9 +228,8 @@ export const AvatarFrame: React.FC<{
     showGlow?: boolean;
 }> = ({ avatarFilename, frameFilename, size = 64, showGlow = false }) => {
     const isLow = useGameStore((state) => state.graphicsQuality === 'LOW');
-    const avatarSrc = avatarFilename.startsWith('http')
-        ? avatarFilename
-        : resolveAssetPath(`/assets/images/avatars/${avatarFilename.replace(/\.(png|webp)$/, '')}.webp`);
+
+    const avatarSrc = resolveAvatarPath(avatarFilename);
 
     let frameSrc = '';
     if (frameFilename === 'none' || !frameFilename) {

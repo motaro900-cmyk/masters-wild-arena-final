@@ -42,7 +42,7 @@ export const JuicyButton: React.FC<JuicyButtonProps> = ({
             onPointerDown={handlePointerDown}
             onPointerUp={handlePointerUp}
             onPointerCancel={handleMouseLeave}
-            className={`relative pointer-events-auto flex flex-col items-center justify-center w-[80px] h-[80px] bg-gradient-to-b from-[#2a221b] to-[#120e0b] border-2 border-[#5e4125] rounded-2xl shadow-[0_10px_20px_rgba(0,0,0,0.6)] group select-none ${className}`}
+            className={`relative pointer-events-auto flex flex-col items-center justify-center w-auto min-w-[80px] px-2 h-[80px] bg-gradient-to-b from-[#2a221b] to-[#120e0b] border-2 border-[#5e4125] rounded-2xl shadow-[0_10px_20px_rgba(0,0,0,0.6)] group select-none ${className}`}
         >
             {notificationCount > 0 && (
                 <div className="absolute -top-2 -right-2 bg-[#dc2626] border-2 border-[#120e0b] text-white text-[11px] font-black w-7 h-7 rounded-full flex items-center justify-center shadow-md z-10">
@@ -52,7 +52,7 @@ export const JuicyButton: React.FC<JuicyButtonProps> = ({
             <div className="text-3xl drop-shadow-md mb-1 transition-transform group-hover:scale-110 duration-300">
                 {icon}
             </div>
-            <span className="text-[#d4b483] font-black text-[9px] tracking-widest uppercase group-hover:text-white transition-colors">
+            <span className="text-[#d4b483] font-black text-[9px] tracking-widest uppercase group-hover:text-white transition-colors whitespace-nowrap overflow-hidden text-ellipsis max-w-[95%] px-1">
                 {label}
             </span>
         </button>

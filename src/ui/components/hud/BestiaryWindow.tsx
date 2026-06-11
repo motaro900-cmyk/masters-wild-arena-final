@@ -4,8 +4,10 @@ import { resolveAssetPath } from '../../../utils/assetPath';
 import { useBestiary, PetActionButton, PetStatsCard, PetFoodSelector } from './Bestiary';
 import { audioService } from '../../../services/AudioService';
 import { AssetsMap } from '../../../configs/AssetsMap';
+import { useGameStore } from '../../../store/useGameStore';
 
 export const BestiaryWindow: React.FC = () => {
+    const isMobile = useGameStore((state) => state.isMobile);
     const {
         pet,
         gold,
@@ -36,9 +38,9 @@ export const BestiaryWindow: React.FC = () => {
     return (
         <div
             style={{
-                padding: '40px',
+                padding: isMobile ? '12px' : '40px',
                 display: 'flex',
-                gap: '50px',
+                gap: isMobile ? '20px' : '50px',
                 color: '#fff',
                 height: '100%',
                 alignItems: 'center',
@@ -59,12 +61,12 @@ export const BestiaryWindow: React.FC = () => {
                 <div
                     style={{
                         position: 'absolute',
-                        top: '-35px',
+                        top: isMobile ? '-20px' : '-35px',
                         background: 'rgba(26, 17, 10, 0.95)',
                         border: '2px solid #c48b3b',
-                        padding: '10px 22px',
+                        padding: isMobile ? '6px 14px' : '10px 22px',
                         borderRadius: '20px',
-                        fontSize: '14px',
+                        fontSize: isMobile ? '12px' : '14px',
                         fontWeight: 800,
                         color: '#fef3c7',
                         boxShadow: '0 10px 30px rgba(0,0,0,0.8), inset 0 0 10px rgba(196,139,59,0.2)',
@@ -100,8 +102,8 @@ export const BestiaryWindow: React.FC = () => {
                     }}
                     onMouseLeave={() => setIsHovered(false)}
                     style={{
-                        width: '360px',
-                        height: '360px',
+                        width: isMobile ? '280px' : '360px',
+                        height: isMobile ? '280px' : '360px',
                         background:
                             'radial-gradient(circle, rgba(240,192,64,0.22) 0%, rgba(0,0,0,0.65) 65%, transparent 72%)',
                         borderRadius: '50%',
@@ -117,8 +119,8 @@ export const BestiaryWindow: React.FC = () => {
                     <div
                         style={{
                             position: 'absolute',
-                            width: '320px',
-                            height: '320px',
+                            width: isMobile ? '240px' : '320px',
+                            height: isMobile ? '240px' : '320px',
                             background:
                                 'repeating-conic-gradient(from 0deg, rgba(240,192,64,0.05) 0deg 15deg, transparent 15deg 30deg)',
                             borderRadius: '50%',
@@ -132,8 +134,8 @@ export const BestiaryWindow: React.FC = () => {
                     <div
                         style={{
                             position: 'absolute',
-                            width: '300px',
-                            height: '300px',
+                            width: isMobile ? '220px' : '300px',
+                            height: isMobile ? '220px' : '300px',
                             border: '2px dashed rgba(240,192,64,0.22)',
                             borderRadius: '50%',
                             animation: 'spin 20s linear infinite',
@@ -144,8 +146,8 @@ export const BestiaryWindow: React.FC = () => {
                     <div
                         style={{
                             position: 'absolute',
-                            width: '260px',
-                            height: '260px',
+                            width: isMobile ? '190px' : '260px',
+                            height: isMobile ? '190px' : '260px',
                             border: '1px solid rgba(240,192,64,0.1)',
                             borderRadius: '50%',
                             animation: 'spin-reverse 15s linear infinite',
@@ -175,8 +177,8 @@ export const BestiaryWindow: React.FC = () => {
                     {/* Round Portal with Dual Gold Border & Dragon inside */}
                     <div
                         style={{
-                            width: '240px',
-                            height: '240px',
+                            width: isMobile ? '185px' : '240px',
+                            height: isMobile ? '185px' : '240px',
                             borderRadius: '50%',
                             border: '6px double #c48b3b',
                             boxShadow: '0 0 30px rgba(240,192,64,0.4), inset 0 0 25px rgba(0,0,0,0.9)',
@@ -256,8 +258,8 @@ export const BestiaryWindow: React.FC = () => {
                                 position: 'absolute',
                                 bottom: '15px',
                                 right: '15px',
-                                width: '70px',
-                                height: '70px',
+                                width: isMobile ? '55px' : '70px',
+                                height: isMobile ? '55px' : '70px',
                                 background:
                                     'radial-gradient(circle, rgba(240,192,64,0.45) 0%, rgba(240,192,64,0.1) 70%, transparent 100%)',
                                 borderRadius: '50%',
@@ -269,7 +271,7 @@ export const BestiaryWindow: React.FC = () => {
                                 border: '2px solid #f0c040',
                             }}
                         >
-                            <span style={{ fontSize: '38px', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))' }}>
+                            <span style={{ fontSize: isMobile ? '28px' : '38px', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))' }}>
                                 🎁
                             </span>
                         </motion.div>
@@ -280,7 +282,7 @@ export const BestiaryWindow: React.FC = () => {
                 <h2
                     style={{
                         fontFamily: "'Cinzel', serif",
-                        fontSize: '36px',
+                        fontSize: isMobile ? '24px' : '36px',
                         color: '#f0c040',
                         marginTop: '25px',
                         marginBottom: '4px',
@@ -313,7 +315,7 @@ export const BestiaryWindow: React.FC = () => {
                     flex: 1.2,
                     display: 'flex',
                     flexDirection: 'column',
-                    gap: '30px',
+                    gap: isMobile ? '15px' : '30px',
                     height: '100%',
                     justifyContent: 'center',
                 }}
@@ -369,7 +371,7 @@ export const BestiaryWindow: React.FC = () => {
                             </div>
 
                             {/* КНОПКИ ДЕЙСТВИЙ */}
-                            <div style={{ display: 'flex', gap: '20px' }}>
+                            <div style={{ display: 'flex', gap: isMobile ? '10px' : '20px' }}>
                                 <PetActionButton
                                     onClick={() => {
                                         setShowFoodSelector(true);
@@ -417,6 +419,7 @@ export const BestiaryWindow: React.FC = () => {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
+                        onClick={() => setClaimedReward(null)}
                         style={{
                             position: 'fixed',
                             top: 0,
@@ -435,6 +438,7 @@ export const BestiaryWindow: React.FC = () => {
                             initial={{ scale: 0.85, y: 50 }}
                             animate={{ scale: 1, y: 0 }}
                             exit={{ scale: 0.85, y: 50 }}
+                            onClick={(e) => e.stopPropagation()}
                             style={{
                                 background: 'linear-gradient(135deg, #1e1b18 0%, #0d0b0a 100%)',
                                 border: '3px solid #c48b3b',

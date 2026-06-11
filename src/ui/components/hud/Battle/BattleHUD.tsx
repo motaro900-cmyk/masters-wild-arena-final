@@ -299,6 +299,30 @@ export const BattleHUD = React.memo<BattleHUDProps>(({
     liveLog,
 }) => {
     const [timeLeft, setTimeLeft] = React.useState(300); // 5 minutes in seconds
+    const [scale, setScale] = React.useState(1);
+
+    React.useEffect(() => {
+        const updateScale = () => {
+            const container = document.getElementById('game-container');
+            if (container) {
+                const rect = container.getBoundingClientRect();
+                setScale(rect.width / 1920 || 1);
+            } else {
+                const widthScale = window.innerWidth / 1920;
+                const heightScale = window.innerHeight / 1080;
+                setScale(Math.min(widthScale, heightScale) || 1);
+            }
+        };
+
+        window.addEventListener('resize', updateScale);
+        updateScale();
+        const timer = setTimeout(updateScale, 500);
+
+        return () => {
+            window.removeEventListener('resize', updateScale);
+            clearTimeout(timer);
+        };
+    }, []);
 
     React.useEffect(() => {
         const interval = setInterval(() => {
@@ -316,7 +340,6 @@ export const BattleHUD = React.memo<BattleHUDProps>(({
     const selectedHeroId = useGameStore((s) => s.selectedHeroId) || 'panda';
     const heroes = useGameStore((s) => s.heroes) || {};
     const heroLevel = heroes[selectedHeroId]?.level || 1;
-    const playerLevel = useGameStore((s) => s.level) || 1;
     const playerRating = useGameStore((s) => s.rating || s.trophies || 0);
     const playerRank = getRankInfo(playerRating);
     const playerName = useGameStore((s) => s.name) || 'Мастер';
@@ -583,7 +606,7 @@ export const BattleHUD = React.memo<BattleHUDProps>(({
                                     marginTop: '-1px',
                                 }}
                             >
-                                {playerLevel}
+                                {heroLevel}
                             </span>
                         </div>
                     </div>
@@ -789,15 +812,15 @@ export const BattleHUD = React.memo<BattleHUDProps>(({
                                     background: 'rgba(10, 6, 3, 0.82)',
                                     backdropFilter: 'blur(10px)',
                                     border: '1px solid rgba(180,120,30,0.3)',
-                                    borderRadius: '4px',
-                                    padding: '5px 16px',
-                                    maxWidth: '260px',
+                                    borderRadius: `${Math.round(4 / scale)}px`,
+                                    padding: `${Math.round(5 / scale)}px ${Math.round(16 / scale)}px`,
+                                    maxWidth: `${Math.min(260 / scale, window.innerWidth - 40)}px`,
                                     textAlign: 'center',
                                 }}
                             >
                                 <span
                                     style={{
-                                        fontSize: '13px',
+                                        fontSize: `${Math.max(12 / scale, 13)}px`,
                                         fontWeight: 700,
                                         fontFamily: "'Outfit', sans-serif",
                                         letterSpacing: '0.3px',

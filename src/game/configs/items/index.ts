@@ -8,6 +8,7 @@ import { shields } from './shields';
 import { pants } from './pants';
 import { boots } from './boots';
 import { consumables } from './consumables';
+import { skins } from './skins';
 
 /**
  * Объединенная база данных всех предметов
@@ -21,13 +22,21 @@ export const rawItemsDatabase: Record<string, IEquipmentStats> = {
     ...pants,
     ...boots,
     ...consumables,
+    ...skins,
 };
 
 /**
- * Финальная база данных с обработанными путями ассетов
+ * Финальная база данных с обработанными путями ассетов.
+ * Скины (mainTab === 'SKINS') пропускают processItemImage —
+ * их пути уже корректно заданы в skins.ts (нет .webp аналога).
  */
 export const ITEMS_DATABASE: Record<string, IEquipmentStats> = Object.fromEntries(
-    Object.entries(rawItemsDatabase).map(([key, item]) => [key, { ...item, image: processItemImage(item.image) }]),
+    Object.entries(rawItemsDatabase).map(([key, item]) => [
+        key,
+        item.mainTab === 'SKINS'
+            ? item
+            : { ...item, image: processItemImage(item.image) },
+    ]),
 );
 
 /**

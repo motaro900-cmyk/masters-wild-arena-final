@@ -9,11 +9,11 @@ import { EquippedHeroView } from '../../../../EquippedHeroView';
 import { InventoryPanel } from '../../../InventoryPanel';
 import { rarityColors } from '../../constants/roleIcons';
 import { SKINS_DB } from '../../../../../../configs/SkinsConfig';
-import { TalentsView } from '../Talents/TalentsView';
 
 import { CornerDecoration, stoneBrickPattern } from './decorations';
-import { GearSlotGrid } from './GearSlotGrid';
+import { EquipmentSlot } from './EquipmentSlot';
 import { HeroStatsPanel } from './HeroStatsPanel';
+import './gear-view-symmetrical.css';
 
 export const GearView = ({
     hero,
@@ -59,6 +59,11 @@ export const GearView = ({
     const diffs: any = { hp: 0, attack: 0, defense: 0 };
     const [localSelectedId, setLocalSelectedId] = useState<string | null>(null);
     const [showPowerTooltip, setShowPowerTooltip] = useState(false);
+    const [showHpTooltip, setShowHpTooltip] = useState(false);
+    const [showAttackTooltip, setShowAttackTooltip] = useState(false);
+    const [showDefenseTooltip, setShowDefenseTooltip] = useState(false);
+    const [showEvasionTooltip, setShowEvasionTooltip] = useState(false);
+    const [showCritTooltip, setShowCritTooltip] = useState(false);
 
     const { inventory: rawInventory } = useGameStore();
     const inventory = rawInventory || [];
@@ -142,161 +147,7 @@ export const GearView = ({
                 alignItems: 'stretch',
             }}
         >
-            {/* ЛЕВАЯ ПАНЕЛЬ: КУКЛА ПЕРСОНАЖА */}
-            <div
-                style={{
-                    width: '420px',
-                    height: '100%',
-                    background: `${stoneBrickPattern}, linear-gradient(135deg, rgba(28, 22, 18, 0.99) 0%, rgba(16, 12, 10, 1.0) 100%)`,
-                    borderRadius: '30px',
-                    border: '1.5px solid rgba(240, 192, 64, 0.25)',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    padding: '30px',
-                    gap: '20px',
-                    zIndex: 5,
-                    position: 'relative',
-                    boxShadow: 'inset 0 0 30px rgba(0,0,0,0.85), 0 20px 40px rgba(0,0,0,0.6)',
-                }}
-            >
-                <div
-                    style={{
-                        position: 'absolute',
-                        inset: '8px',
-                        border: '1px solid rgba(240, 192, 64, 0.15)',
-                        borderRadius: '24px',
-                        pointerEvents: 'none',
-                        zIndex: 1,
-                    }}
-                />
-                <CornerDecoration />
-
-                <div style={{ textAlign: 'center', zIndex: 2 }}>
-                    <h3
-                        style={{
-                            color: '#f0c040',
-                            fontSize: '20px',
-                            fontFamily: "'Cinzel', 'Philosopher', serif",
-                            letterSpacing: '3px',
-                            margin: 0,
-                            textShadow: '0 0 10px rgba(240, 192, 64, 0.25)',
-                        }}
-                    >
-                        СНАРЯЖЕНИЕ
-                    </h3>
-                    <div
-                        style={{
-                            height: '1px',
-                            background: 'linear-gradient(90deg, transparent, #f0c040, transparent)',
-                            marginTop: '10px',
-                            opacity: 0.5,
-                        }}
-                    />
-                </div>
-
-                <div
-                    style={{
-                        flex: 1,
-                        position: 'relative',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                    }}
-                >
-                    <GearSlotGrid
-                        equippedIds={equippedIds}
-                        activeDraggingId={activeDraggingId}
-                        handleUnequip={handleUnequip}
-                        setGlobalHoveredItem={setGlobalHoveredItem}
-                    />
-                </div>
-
-                <div
-                    onMouseEnter={() => setShowPowerTooltip(true)}
-                    onMouseLeave={() => setShowPowerTooltip(false)}
-                    style={{
-                        position: 'relative',
-                        background: 'rgba(0,0,0,0.4)',
-                        padding: '15px',
-                        borderRadius: '20px',
-                        border: '1px solid rgba(240,192,64,0.15)',
-                        textAlign: 'center',
-                        marginTop: 'auto',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        boxShadow: 'inset 0 0 20px rgba(0,0,0,0.8)',
-                        cursor: 'help',
-                    }}
-                >
-                    {showPowerTooltip && (
-                        <div
-                            style={{
-                                position: 'absolute',
-                                bottom: '110%',
-                                left: '50%',
-                                transform: 'translateX(-50%)',
-                                background: 'rgba(0,0,0,0.95)',
-                                border: '1px solid #f0c040',
-                                padding: '12px',
-                                borderRadius: '12px',
-                                width: '220px',
-                                fontSize: '12px',
-                                color: '#fff',
-                                zIndex: 100,
-                                pointerEvents: 'none',
-                                boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
-                            }}
-                        >
-                            <div
-                                style={{ color: '#f0c040', fontWeight: 900, marginBottom: '5px', letterSpacing: '1px' }}
-                            >
-                                БОЕВАЯ МОЩЬ
-                            </div>
-                            Суммарный показатель силы вашего снаряжения. Учитывает бонусы атаки, защиты и здоровья от
-                            всех надетых предметов.
-                        </div>
-                    )}
-                    <div
-                        style={{
-                            color: 'rgba(255,255,255,0.5)',
-                            fontSize: '10px',
-                            fontWeight: 900,
-                            letterSpacing: '3px',
-                            marginBottom: '5px',
-                        }}
-                    >
-                        ОБЩАЯ МОЩЬ
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                        <span
-                            style={{
-                                background: 'linear-gradient(180deg, #ffffff 0%, #f0c040 100%)',
-                                WebkitBackgroundClip: 'text',
-                                WebkitTextFillColor: 'transparent',
-                                fontSize: '36px',
-                                fontFamily: "'Inter', sans-serif",
-                                fontWeight: 900,
-                                letterSpacing: '1px',
-                                filter: 'drop-shadow(0 4px 10px rgba(0,0,0,0.5))',
-                            }}
-                        >
-                            {Math.floor(gearPower)}
-                        </span>
-                        <img
-                            src="/assets/images/ui/mosh.png"
-                            style={{
-                                height: '35px',
-                                width: '35px',
-                                objectFit: 'contain',
-                                filter: 'drop-shadow(0 4px 10px rgba(0,0,0,0.6))',
-                            }}
-                            alt="Мощь"
-                        />
-                    </div>
-                </div>
-            </div>
-
+            {/* Symmetrical Hero Card (combines old left & center panels) */}
             <div
                 style={{
                     flex: 1,
@@ -307,23 +158,10 @@ export const GearView = ({
                     margin: '0 4px',
                 }}
             >
-                {/* Showcase Alcove Frame */}
                 <div
+                    className="symmetrical-hero-card"
                     style={{
-                        width: '560px',
-                        height: '100%',
-                        background: `${stoneBrickPattern}, linear-gradient(180deg, rgba(24, 18, 15, 0.98) 0%, rgba(12, 9, 8, 1.0) 100%)`,
-                        borderRadius: '30px',
-                        border: '1.5px solid rgba(240, 192, 64, 0.25)',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        justifyContent: 'flex-end',
-                        paddingBottom: '25px',
-                        position: 'relative',
-                        boxShadow: 'inset 0 0 40px rgba(0,0,0,0.9), 0 20px 40px rgba(0,0,0,0.65)',
-                        zIndex: 5,
-                        overflow: 'visible',
+                        background: `${stoneBrickPattern}, linear-gradient(180deg, rgba(24, 18, 15, 0.98) 0%, rgba(12, 9, 8, 1.0) 100%)`
                     }}
                 >
                     <div
@@ -338,38 +176,115 @@ export const GearView = ({
                     />
                     <CornerDecoration />
 
+
+                    {/* Circular Gold Aura Ring behind Panda */}
+                    <div className="mockup-bg-circle" />
+                    <div className="mockup-bg-circle-inner" />
+                    <div className="mockup-bg-circle-orbital" />
+
+                    {/* Symmetrical Slots arranged absolutely around the hero */}
+                    <div className="equipment-slot-wrapper slot-helm">
+                        <EquipmentSlot
+                            id="HELMETS"
+                            itemId={equippedIds.HELMETS}
+                            activeDraggingId={activeDraggingId}
+                            onClick={() => {
+                                if (equippedIds.HELMETS) handleUnequip(equippedIds.HELMETS);
+                            }}
+                            setGlobalHoveredItem={setGlobalHoveredItem}
+                        />
+                        <div className="slot-wrapper-label">ШЛЕМ</div>
+                    </div>
+                    <div className="equipment-slot-wrapper slot-shoulders">
+                        <EquipmentSlot
+                            id="SHOULDERS"
+                            itemId={equippedIds.SHOULDERS}
+                            activeDraggingId={activeDraggingId}
+                            onClick={() => {
+                                if (equippedIds.SHOULDERS) handleUnequip(equippedIds.SHOULDERS);
+                            }}
+                            setGlobalHoveredItem={setGlobalHoveredItem}
+                        />
+                        <div className="slot-wrapper-label">ПЛЕЧИ</div>
+                    </div>
+                    <div className="equipment-slot-wrapper slot-armor">
+                        <EquipmentSlot
+                            id="ARMOR"
+                            itemId={equippedIds.ARMOR}
+                            activeDraggingId={activeDraggingId}
+                            onClick={() => {
+                                if (equippedIds.ARMOR) handleUnequip(equippedIds.ARMOR);
+                            }}
+                            setGlobalHoveredItem={setGlobalHoveredItem}
+                        />
+                        <div className="slot-wrapper-label">ДОСПЕХ</div>
+                    </div>
+                    <div className="equipment-slot-wrapper slot-pants">
+                        <EquipmentSlot
+                            id="PANTS"
+                            itemId={equippedIds.PANTS}
+                            activeDraggingId={activeDraggingId}
+                            onClick={() => {
+                                if (equippedIds.PANTS) handleUnequip(equippedIds.PANTS);
+                            }}
+                            setGlobalHoveredItem={setGlobalHoveredItem}
+                        />
+                        <div className="slot-wrapper-label">ПОНОЖИ</div>
+                    </div>
+                    <div className="equipment-slot-wrapper slot-weapons">
+                        <EquipmentSlot
+                            id="WEAPONS"
+                            itemId={equippedIds.WEAPONS}
+                            activeDraggingId={activeDraggingId}
+                            onClick={() => {
+                                if (equippedIds.WEAPONS) handleUnequip(equippedIds.WEAPONS);
+                            }}
+                            setGlobalHoveredItem={setGlobalHoveredItem}
+                        />
+                        <div className="slot-wrapper-label">ОРУЖИЕ</div>
+                    </div>
+                    <div className="equipment-slot-wrapper slot-shields">
+                        <EquipmentSlot
+                            id="SHIELDS"
+                            itemId={equippedIds.SHIELDS}
+                            activeDraggingId={activeDraggingId}
+                            onClick={() => {
+                                if (equippedIds.SHIELDS) handleUnequip(equippedIds.SHIELDS);
+                            }}
+                            setGlobalHoveredItem={setGlobalHoveredItem}
+                        />
+                        <div className="slot-wrapper-label">ЩИТ</div>
+                    </div>
+                    <div className="equipment-slot-wrapper slot-boots">
+                        <EquipmentSlot
+                            id="BOOTS"
+                            itemId={equippedIds.BOOTS}
+                            activeDraggingId={activeDraggingId}
+                            onClick={() => {
+                                if (equippedIds.BOOTS) handleUnequip(equippedIds.BOOTS);
+                            }}
+                            setGlobalHoveredItem={setGlobalHoveredItem}
+                        />
+                        <div className="slot-wrapper-label">САПОГИ</div>
+                    </div>
+
                     {/* Dynamic Breathing Backlight Halo */}
-                    <motion.div
-                        animate={{
-                            opacity: [0.75, 1.0, 0.75],
-                            scale: [0.93, 1.05, 0.93],
-                        }}
-                        transition={{
-                            duration: 5,
-                            repeat: Infinity,
-                            ease: 'easeInOut',
-                        }}
+                    <div
+                        className="breathing-backlight"
                         style={{
-                            position: 'absolute',
-                            bottom: '290px',
-                            left: '50%',
-                            transform: 'translateX(-50%)',
-                            width: '450px',
-                            height: '450px',
                             background: `radial-gradient(circle, ${activeRarityColor}66 0%, transparent 70%)`,
-                            pointerEvents: 'none',
-                            zIndex: 1,
-                        }}
+                            '--glow-color': `${activeRarityColor}33`,
+                        } as any}
                     />
 
                     {/* Pedestal */}
                     <div
                         style={{
                             position: 'absolute',
-                            bottom: '230px',
-                            left: '50%',
+                            top: '255px',
+                            left: 'calc(50% + 45px)',
                             transform: 'translateX(-50%)',
-                            width: '760px',
+                            width: '940px',
                             height: '450px',
                             backgroundImage: `url("${AssetsMap.UI.HERO_PEDESTAL}")`,
                             backgroundSize: 'contain',
@@ -385,9 +300,9 @@ export const GearView = ({
                     <div
                         style={{
                             position: 'absolute',
-                            bottom: '250px',
-                            left: '50%',
-                            transform: 'translateX(-50%) scale(1.05)',
+                            top: '330px',
+                            left: 'calc(50% + 45px)',
+                            transform: 'translate(-50%, -50%) scale(1.05)',
                             zIndex: 3,
                             display: 'flex',
                             alignItems: 'center',
@@ -396,256 +311,324 @@ export const GearView = ({
                             filter: 'drop-shadow(0 15px 25px rgba(0,0,0,0.85))',
                         }}
                     >
-                        <EquippedHeroView heroId={hero.id} size={580} />
+                        <EquippedHeroView heroId={hero.id} size={460} />
                     </div>
 
-                    {/* Premium Nameplate Plaque */}
-                    <div
-                        style={{
-                            width: '88%',
-                            textAlign: 'center',
-                            zIndex: 10,
-                            background:
-                                'linear-gradient(180deg, rgba(32, 25, 20, 0.98) 0%, rgba(16, 12, 10, 0.99) 100%)',
-                            padding: '16px 20px',
-                            borderRadius: '18px',
-                            border: '1.5px solid rgba(240, 192, 64, 0.35)',
-                            boxShadow: '0 8px 24px rgba(0,0,0,0.85), inset 0 0 15px rgba(0,0,0,0.7)',
-                            marginBottom: '10px',
-                            position: 'relative',
-                        }}
-                    >
+                    {/* Bottom Stats Card */}
+                    <div className="mockup-stats-card">
+                        <div className="stats-card-inner-border" />
                         <div
-                            style={{
-                                position: 'absolute',
-                                top: '6px',
-                                left: '6px',
-                                width: '3px',
-                                height: '3px',
-                                borderRadius: '50%',
-                                background: '#f0c040',
-                                opacity: 0.7,
-                            }}
-                        />
-                        <div
-                            style={{
-                                position: 'absolute',
-                                top: '6px',
-                                right: '6px',
-                                width: '3px',
-                                height: '3px',
-                                borderRadius: '50%',
-                                background: '#f0c040',
-                                opacity: 0.7,
-                            }}
-                        />
-                        <div
-                            style={{
-                                position: 'absolute',
-                                bottom: '6px',
-                                left: '6px',
-                                width: '3px',
-                                height: '3px',
-                                borderRadius: '50%',
-                                background: '#f0c040',
-                                opacity: 0.7,
-                            }}
-                        />
-                        <div
-                            style={{
-                                position: 'absolute',
-                                bottom: '6px',
-                                right: '6px',
-                                width: '3px',
-                                height: '3px',
-                                borderRadius: '50%',
-                                background: '#f0c040',
-                                opacity: 0.7,
-                            }}
-                        />
-
-                        {/* Top Accent bar */}
-                        <div
-                            style={{
-                                position: 'absolute',
-                                top: -1,
-                                left: '50%',
-                                transform: 'translateX(-50%)',
-                                width: '60px',
-                                height: '2px',
-                                background:
-                                    'linear-gradient(90deg, transparent, #f0c040 30%, #fff 50%, #f0c040 70%, transparent)',
-                                boxShadow: '0 0 8px #f0c040',
-                            }}
-                        />
-
-                        <h2
-                            style={{
-                                color: '#f0c040',
-                                fontSize: '26px',
-                                margin: 0,
-                                fontFamily: "'Cinzel', 'Philosopher', serif",
-                                textShadow: '0 2px 4px rgba(0,0,0,0.8)',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                gap: '2px',
-                                lineHeight: '1.2',
-                            }}
+                            className="mockup-stat-item"
+                            onMouseEnter={() => setShowPowerTooltip(true)}
+                            onMouseLeave={() => setShowPowerTooltip(false)}
+                            style={{ position: 'relative' }}
                         >
-                            <span
-                                style={{
-                                    background: 'linear-gradient(180deg, #ffffff 0%, #f5be38 50%, #a07010 100%)',
-                                    WebkitBackgroundClip: 'text',
-                                    WebkitTextFillColor: 'transparent',
-                                    filter: 'drop-shadow(0 2px 3px rgba(0,0,0,0.5))',
-                                }}
-                            >
-                                {displayHeroName}
-                            </span>
-                            <span
-                                style={{
-                                    display: 'inline-flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    background: 'linear-gradient(135deg, #2a1808 0%, #150f08 100%)',
-                                    border: '1px solid rgba(240, 192, 64, 0.5)',
-                                    borderRadius: '5px',
-                                    padding: '2px 8px',
-                                    fontSize: '13px',
-                                    color: '#fff',
-                                    marginLeft: '10px',
-                                    verticalAlign: 'middle',
-                                    boxShadow: '0 2px 4px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1)',
-                                    fontFamily: "'Philosopher', sans-serif",
-                                    fontWeight: 'bold',
-                                    letterSpacing: '0.5px',
-                                }}
-                            >
-                                ур. {heroLevel}
-                            </span>
-                        </h2>
-
-                        {/* Title with decorative wings */}
-                        <div
-                            style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                gap: '12px',
-                                margin: '6px 0 12px 0',
-                            }}
-                        >
-                            <div
-                                style={{
-                                    width: '30px',
-                                    height: '1px',
-                                    background: 'linear-gradient(90deg, transparent, rgba(240, 192, 64, 0.45))',
-                                }}
-                            />
-                            <span
-                                style={{
-                                    color: !isDefaultSkin && activeSkin.color ? activeSkin.color : activeRarityColor,
-                                    fontWeight: 900,
-                                    letterSpacing: '3px',
-                                    fontSize: '11px',
-                                    textTransform: 'uppercase',
-                                    textShadow: '0 1px 2px rgba(0,0,0,0.8)',
-                                }}
-                            >
-                                {!isDefaultSkin ? activeSkin.name : hero.title}
-                            </span>
-                            <div
-                                style={{
-                                    width: '30px',
-                                    height: '1px',
-                                    background: 'linear-gradient(270deg, transparent, rgba(240, 192, 64, 0.45))',
-                                }}
-                            />
-                        </div>
-
-                        {/* XP Progress Bar */}
-                        {heroLevel < 10 ? (
-                            <div style={{ width: '100%', margin: '0 auto' }}>
+                            {showPowerTooltip && (
                                 <div
                                     style={{
-                                        height: '8px',
-                                        background: 'rgba(10, 8, 6, 0.85)',
-                                        borderRadius: '4px',
-                                        overflow: 'hidden',
-                                        border: '1px solid rgba(240, 192, 64, 0.25)',
-                                        position: 'relative',
-                                        boxShadow: 'inset 0 1px 3px rgba(0, 0, 0, 0.8)',
-                                    }}
-                                >
-                                    <motion.div
-                                        initial={{ width: 0 }}
-                                        animate={{ width: `${xpPercentage}%` }}
-                                        transition={{ duration: 0.8, ease: 'easeOut' }}
-                                        style={{
-                                            height: '100%',
-                                            background: 'linear-gradient(90deg, #7c3aed 0%, #d946ef 50%, #eab308 100%)',
-                                            borderRadius: '4px',
-                                            position: 'relative',
-                                            boxShadow:
-                                                '0 0 10px rgba(217, 70, 239, 0.7), 0 0 15px rgba(234, 179, 8, 0.3)',
-                                        }}
-                                    >
-                                        <div
-                                            style={{
-                                                position: 'absolute',
-                                                top: 0,
-                                                left: 0,
-                                                right: 0,
-                                                bottom: 0,
-                                                backgroundImage:
-                                                    'linear-gradient(45deg, rgba(255,255,255,0.15) 25%, transparent 25%, transparent 50%, rgba(255,255,255,0.15) 50%, rgba(255,255,255,0.15) 75%, transparent 75%, transparent)',
-                                                backgroundSize: '12px 12px',
-                                                opacity: 0.25,
-                                                animation: 'move-stripes 2s linear infinite',
-                                            }}
-                                        />
-                                    </motion.div>
-                                </div>
-                                <div
-                                    style={{
-                                        display: 'flex',
-                                        justifyContent: 'space-between',
-                                        alignItems: 'center',
-                                        fontSize: '10px',
-                                        color: '#d97706',
-                                        marginTop: '5px',
-                                        fontWeight: 800,
-                                        letterSpacing: '0.5px',
+                                        position: 'absolute',
+                                        bottom: '115%',
+                                        left: '50%',
+                                        transform: 'translateX(-50%)',
+                                        background: 'rgba(0,0,0,0.95)',
+                                        border: '1px solid #f0c040',
+                                        padding: '12px',
+                                        borderRadius: '12px',
+                                        width: '220px',
+                                        fontSize: '12px',
+                                        color: '#fff',
+                                        zIndex: 100,
+                                        pointerEvents: 'none',
+                                        boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
                                         fontFamily: "'Philosopher', 'Inter', sans-serif",
                                     }}
                                 >
-                                    <span style={{ color: 'rgba(255, 255, 255, 0.5)' }}>ОПЫТ ГЕРОЯ</span>
-                                    <span>
-                                        {heroExp} <span style={{ color: 'rgba(255, 255, 255, 0.3)' }}>/</span>{' '}
-                                        {xpNeeded} ({Math.round(xpPercentage)}%)
-                                    </span>
+                                    <div style={{ color: '#f5be38', fontWeight: 900, marginBottom: '5px', letterSpacing: '1px' }}>
+                                        ОБЩАЯ МОЩЬ
+                                    </div>
+                                    <div style={{ color: '#dddddd', fontSize: '11px', lineHeight: '1.4' }}>
+                                        Сила персонажа, рассчитанная на основе надетой экипировки.
+                                    </div>
                                 </div>
+                            )}
+                            <div className="mockup-stat-label" style={{ color: '#f0c040', textShadow: '0 0 5px rgba(240, 192, 64, 0.3)' }}>МОЩЬ</div>
+                            <div className="mockup-stat-value power" style={{
+                                background: 'linear-gradient(180deg, #ffffff 0%, #f0c040 100%)',
+                                WebkitBackgroundClip: 'text',
+                                WebkitTextFillColor: 'transparent',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '6px',
+                                textShadow: '0 2px 4px rgba(0,0,0,0.5)',
+                            }}>
+                                <img
+                                    src="/assets/images/ui/mosh.png"
+                                    style={{
+                                        height: '20px',
+                                        width: '20px',
+                                        objectFit: 'contain',
+                                        filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.6))',
+                                    }}
+                                    alt="Мощь"
+                                />
+                                {gearPower}
                             </div>
-                        ) : (
-                            <div
-                                style={{
-                                    fontSize: '11px',
-                                    color: '#eab308',
-                                    fontWeight: 900,
-                                    letterSpacing: '1.5px',
-                                    textShadow: '0 0 8px rgba(234, 179, 8, 0.4)',
-                                    fontFamily: "'Cinzel', serif",
-                                }}
-                            >
-                                🏆 МАКСИМАЛЬНЫЙ УРОВЕНЬ 🏆
-                            </div>
-                        )}
+                        </div>
+                        <div
+                            className="mockup-stat-item"
+                            onMouseEnter={() => setShowHpTooltip(true)}
+                            onMouseLeave={() => setShowHpTooltip(false)}
+                            style={{ position: 'relative' }}
+                        >
+                            {showHpTooltip && (
+                                <div
+                                    style={{
+                                        position: 'absolute',
+                                        bottom: '115%',
+                                        left: '50%',
+                                        transform: 'translateX(-50%)',
+                                        background: 'rgba(0,0,0,0.95)',
+                                        border: '1px solid #f0c040',
+                                        padding: '12px',
+                                        borderRadius: '12px',
+                                        width: '220px',
+                                        fontSize: '12px',
+                                        color: '#fff',
+                                        zIndex: 100,
+                                        pointerEvents: 'none',
+                                        boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
+                                        fontFamily: "'Philosopher', 'Inter', sans-serif",
+                                    }}
+                                >
+                                    <div style={{ color: '#f43f5e', fontWeight: 900, marginBottom: '5px', letterSpacing: '1px' }}>
+                                        МАКСИМАЛЬНОЕ ЗДОРОВЬЕ
+                                    </div>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '3px' }}>
+                                        <span>Базовое:</span>
+                                        <span>{baseStats.hp}</span>
+                                    </div>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', color: '#10b981' }}>
+                                        <span>Бонус экипировки:</span>
+                                        <span>+{currentStats.hp - baseStats.hp}</span>
+                                    </div>
+                                </div>
+                            )}
+                            <div className="mockup-stat-label">ЗДОРОВЬЕ</div>
+                            <div className="mockup-stat-value hp">❤️ {currentStats.hp}</div>
+                        </div>
+
+                        <div
+                            className="mockup-stat-item"
+                            onMouseEnter={() => setShowAttackTooltip(true)}
+                            onMouseLeave={() => setShowAttackTooltip(false)}
+                            style={{ position: 'relative' }}
+                        >
+                            {showAttackTooltip && (
+                                <div
+                                    style={{
+                                        position: 'absolute',
+                                        bottom: '115%',
+                                        left: '50%',
+                                        transform: 'translateX(-50%)',
+                                        background: 'rgba(0,0,0,0.95)',
+                                        border: '1px solid #f0c040',
+                                        padding: '12px',
+                                        borderRadius: '12px',
+                                        width: '220px',
+                                        fontSize: '12px',
+                                        color: '#fff',
+                                        zIndex: 100,
+                                        pointerEvents: 'none',
+                                        boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
+                                        fontFamily: "'Philosopher', 'Inter', sans-serif",
+                                    }}
+                                >
+                                    <div style={{ color: '#3b82f6', fontWeight: 900, marginBottom: '5px', letterSpacing: '1px' }}>
+                                        СИЛА АТАКИ
+                                    </div>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '3px' }}>
+                                        <span>Базовая:</span>
+                                        <span>{baseStats.attack}</span>
+                                    </div>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', color: '#10b981' }}>
+                                        <span>Бонус экипировки:</span>
+                                        <span>+{currentStats.attack - baseStats.attack}</span>
+                                    </div>
+                                </div>
+                            )}
+                            <div className="mockup-stat-label">АТАКА</div>
+                            <div className="mockup-stat-value attack">⚔️ {currentStats.attack}</div>
+                        </div>
+
+                        <div
+                            className="mockup-stat-item"
+                            onMouseEnter={() => setShowDefenseTooltip(true)}
+                            onMouseLeave={() => setShowDefenseTooltip(false)}
+                            style={{ position: 'relative' }}
+                        >
+                            {showDefenseTooltip && (
+                                <div
+                                    style={{
+                                        position: 'absolute',
+                                        bottom: '115%',
+                                        left: '50%',
+                                        transform: 'translateX(-50%)',
+                                        background: 'rgba(0,0,0,0.95)',
+                                        border: '1px solid #f0c040',
+                                        padding: '12px',
+                                        borderRadius: '12px',
+                                        width: '220px',
+                                        fontSize: '12px',
+                                        color: '#fff',
+                                        zIndex: 100,
+                                        pointerEvents: 'none',
+                                        boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
+                                        fontFamily: "'Philosopher', 'Inter', sans-serif",
+                                    }}
+                                >
+                                    <div style={{ color: '#10b981', fontWeight: 900, marginBottom: '5px', letterSpacing: '1px' }}>
+                                        ПОКАЗАТЕЛЬ ЗАЩИТЫ
+                                    </div>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '3px' }}>
+                                        <span>Базовая:</span>
+                                        <span>{baseStats.defense}</span>
+                                    </div>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', color: '#10b981' }}>
+                                        <span>Бонус экипировки:</span>
+                                        <span>+{currentStats.defense - baseStats.defense}</span>
+                                    </div>
+                                </div>
+                            )}
+                            <div className="mockup-stat-label">ЗАЩИТА</div>
+                            <div className="mockup-stat-value defense">🛡️ {currentStats.defense}</div>
+                        </div>
+
+                        <div
+                            className="mockup-stat-item"
+                            onMouseEnter={() => setShowEvasionTooltip(true)}
+                            onMouseLeave={() => setShowEvasionTooltip(false)}
+                            style={{ position: 'relative' }}
+                        >
+                            {showEvasionTooltip && (
+                                <div
+                                    style={{
+                                        position: 'absolute',
+                                        bottom: '115%',
+                                        left: '50%',
+                                        transform: 'translateX(-50%)',
+                                        background: 'rgba(0,0,0,0.95)',
+                                        border: '1px solid #f0c040',
+                                        padding: '12px',
+                                        borderRadius: '12px',
+                                        width: '220px',
+                                        fontSize: '12px',
+                                        color: '#fff',
+                                        zIndex: 100,
+                                        pointerEvents: 'none',
+                                        boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
+                                        fontFamily: "'Philosopher', 'Inter', sans-serif",
+                                    }}
+                                >
+                                    <div style={{ color: '#22c55e', fontWeight: 900, marginBottom: '5px', letterSpacing: '1px' }}>
+                                        ПОКАЗАТЕЛЬ ЛОВКОСТИ
+                                    </div>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '3px' }}>
+                                        <span>Базовая:</span>
+                                        <span>{Math.round(baseStats.evasion ?? 0)}%</span>
+                                    </div>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', color: '#10b981' }}>
+                                        <span>Бонус экипировки:</span>
+                                        <span>+{Math.round((currentStats.evasion ?? 0) - (baseStats.evasion ?? 0))}%</span>
+                                    </div>
+                                </div>
+                            )}
+                            <div className="mockup-stat-label">КРИТ. ШАНС</div>
+                            <div className="mockup-stat-value evasion" style={{ color: '#22c55e' }}>🌪️ {Math.round(currentStats.evasion ?? 0)}%</div>
+                        </div>
+
+                        <div
+                            className="mockup-stat-item"
+                            onMouseEnter={() => setShowCritTooltip(true)}
+                            onMouseLeave={() => setShowCritTooltip(false)}
+                            style={{ position: 'relative' }}
+                        >
+                            {showCritTooltip && (
+                                <div
+                                    style={{
+                                        position: 'absolute',
+                                        bottom: '115%',
+                                        left: '50%',
+                                        transform: 'translateX(-50%)',
+                                        background: 'rgba(0,0,0,0.95)',
+                                        border: '1px solid #f0c040',
+                                        padding: '12px',
+                                        borderRadius: '12px',
+                                        width: '220px',
+                                        fontSize: '12px',
+                                        color: '#fff',
+                                        zIndex: 100,
+                                        pointerEvents: 'none',
+                                        boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
+                                        fontFamily: "'Philosopher', 'Inter', sans-serif",
+                                    }}
+                                >
+                                    <div style={{ color: '#a855f7', fontWeight: 900, marginBottom: '5px', letterSpacing: '1px' }}>
+                                        КРИТ. ШАНС
+                                    </div>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '3px' }}>
+                                        <span>Базовый:</span>
+                                        <span>{Math.round(baseStats.critChance)}%</span>
+                                    </div>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', color: '#10b981' }}>
+                                        <span>Бонус экипировки:</span>
+                                        <span>+{Math.round(currentStats.critChance - baseStats.critChance)}%</span>
+                                    </div>
+                                </div>
+                            )}
+                            <div className="mockup-stat-label">КРИТ. УРОН</div>
+                            <div className="mockup-stat-value crit" style={{ color: '#a855f7' }}>💥 {Math.round(currentStats.critChance)}%</div>
+                        </div>
                     </div>
+
+                    {/* Bottom XP Progress Bar & unified Nameplate */}
+                    <div className="mockup-xp-panel">
+
+                        <div className="mockup-xp-name-row">
+                            <span className="mockup-xp-hero-name">{displayHeroName}</span>
+                            <span className="mockup-xp-level-badge">ур. {heroLevel}</span>
+                        </div>
+
+                        <div className="mockup-xp-title-row">
+                            <div className="title-divider-line" />
+                            <div className="mockup-xp-hero-title">
+                                {!isDefaultSkin ? activeSkin.name : hero.title}
+                            </div>
+                            <div className="title-divider-line" />
+                        </div>
+
+                        <div className="mockup-xp-bar-container">
+                            <div className="mockup-xp-bar-bg">
+                                <motion.div
+                                    initial={{ width: 0 }}
+                                    animate={{ width: `${xpPercentage}%` }}
+                                    transition={{ duration: 0.8, ease: 'easeOut' }}
+                                    className="mockup-xp-bar-fill"
+                                />
+                            </div>
+                            <div className="mockup-xp-labels-row">
+                                <span className="mockup-xp-label">ОПЫТ ГЕРОЯ</span>
+                                <span className="mockup-xp-value">
+                                    {heroExp} <span style={{ color: 'rgba(255, 255, 255, 0.3)' }}>/</span> {xpNeeded} ({Math.round(xpPercentage)}%)
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+
                 </div>
             </div>
 
-            <div style={{ width: '480px', display: 'flex', flexDirection: 'column', zIndex: 5 }}>
+            <div style={{ width: '560px', display: 'flex', flexDirection: 'column', zIndex: 5 }}>
                 <div
                     style={{
                         display: 'flex',
@@ -658,7 +641,7 @@ export const GearView = ({
                         boxShadow: 'inset 0 2px 6px rgba(0,0,0,0.5)',
                     }}
                 >
-                    {['STATS', 'INVENTORY', 'TALENTS', 'LORE'].map((tab) => {
+                    {['INVENTORY', 'LORE'].map((tab) => {
                         const active = detailSubTab === tab;
                         return (
                             <button
@@ -668,7 +651,7 @@ export const GearView = ({
                                 }}
                                 style={{
                                     flex: 1,
-                                    padding: '10px 4px',
+                                    padding: '13px 8px',
                                     background: active
                                         ? 'linear-gradient(180deg, #f0c040 0%, #c8960a 100%)'
                                         : 'rgba(28, 22, 18, 0.5)',
@@ -677,7 +660,7 @@ export const GearView = ({
                                     borderRadius: '8px',
                                     cursor: 'pointer',
                                     fontWeight: 900,
-                                    fontSize: '10.5px',
+                                    fontSize: '12px',
                                     fontFamily: "'Cinzel', 'Philosopher', serif",
                                     letterSpacing: '0.8px',
                                     textShadow: active
@@ -689,13 +672,11 @@ export const GearView = ({
                                     transition: 'all 0.2s ease',
                                 }}
                             >
-                                {tab === 'STATS'
-                                    ? 'АТРИБУТЫ'
-                                    : tab === 'INVENTORY'
-                                      ? 'ИНВЕНТАРЬ'
-                                      : tab === 'TALENTS'
-                                        ? 'ТАЛАНТЫ'
-                                        : 'ЛЕГЕНДА'}
+                                {tab === 'INVENTORY'
+                                    ? 'ИНВЕНТАРЬ'
+                                    : tab === 'TALENTS'
+                                      ? 'ТАЛАНТЫ'
+                                      : 'ЛЕГЕНДА'}
                             </button>
                         );
                     })}
@@ -726,9 +707,7 @@ export const GearView = ({
                         }}
                     />
                     <CornerDecoration />
-                    {detailSubTab === 'TALENTS' ? (
-                        <TalentsView hero={hero} isCompact={true} />
-                    ) : detailSubTab === 'INVENTORY' ? (
+                    {detailSubTab === 'INVENTORY' ? (
                         <InventoryPanel
                             mode="COMPACT"
                             onItemClick={onInternalItemClick}

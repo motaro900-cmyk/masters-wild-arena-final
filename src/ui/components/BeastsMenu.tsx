@@ -3,7 +3,7 @@ import { Icon } from './HUDIcons';
 import { useGSAP } from '@gsap/react';
 import gsap from 'gsap';
 
-type TabType = 'collection' | 'equipment' | 'talents';
+type TabType = 'collection' | 'equipment';
 type EquipTab = 'stats' | 'history';
 
 export const BeastsMenu: React.FC<{ onClose: () => void }> = ({ onClose }) => {
@@ -44,12 +44,10 @@ export const BeastsMenu: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                         </div>
                     </div>
 
-                    {/* TABS */}
                     <div className="bg-black/40 p-2 rounded-3xl flex gap-2 border border-white/5">
                         {[
                             { id: 'collection', label: 'КОЛЛЕКЦИЯ', icon: 'Package' },
                             { id: 'equipment', label: 'СНАРЯЖЕНИЕ', icon: 'Settings' },
-                            { id: 'talents', label: 'ТАЛАНТЫ', icon: 'Crown' },
                         ].map((tab) => (
                             <button
                                 key={tab.id}
@@ -78,7 +76,6 @@ export const BeastsMenu: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                 <div className="flex-1 overflow-hidden">
                     {activeTab === 'collection' && <CollectionTab />}
                     {activeTab === 'equipment' && <EquipmentTab subTab={equipTab} setSubTab={setEquipTab} />}
-                    {activeTab === 'talents' && <TalentsTab />}
                 </div>
             </div>
         </div>
@@ -227,49 +224,3 @@ const EquipmentTab = ({ subTab, setSubTab }: { subTab: EquipTab; setSubTab: (t: 
     );
 };
 
-const TalentsTab = () => (
-    <div className="h-full flex flex-col p-12">
-        <div className="flex justify-between items-center mb-12 px-8">
-            <div className="flex flex-col">
-                <span className="text-yellow-500/50 font-black text-sm uppercase tracking-[0.4em]">ОЧКИ ДВОРА</span>
-                <div className="flex items-baseline gap-4">
-                    <span className="text-8xl font-black italic italic leading-none">5 ТР</span>
-                    <span className="text-white/20 font-black text-xl uppercase tracking-widest">СВОБОДНО</span>
-                </div>
-            </div>
-            <div className="flex gap-4">
-                <button className="px-10 py-5 bg-white/5 rounded-2xl border border-white/10 font-black tracking-widest text-white/40 hover:text-white transition-all">
-                    СБРОСИТЬ
-                </button>
-                <button className="px-10 py-5 bg-gradient-to-b from-yellow-400 to-orange-600 rounded-2xl font-black tracking-widest shadow-xl hover:scale-105 transition-all">
-                    ПРИМЕНИТЬ
-                </button>
-            </div>
-        </div>
-        <div className="grid grid-cols-4 gap-8 flex-1">
-            {[
-                { n: 'КРЕПКИЙ ЧЕРЕП', l: 'LVL 2 / 5', i: 'Shield', a: true },
-                { n: 'УДАР В ПРЫЖКЕ', l: 'LVL 0 / 5', i: 'Zap', a: false },
-                { n: 'ЯРОСТЬ УЛИЦ', l: 'LVL 1 / 3', i: 'Zap', a: true },
-                { n: 'ИНТУИЦИЯ ЗВЕРЯ', l: 'LVL 0 / 1', i: 'Heart', a: false },
-            ].map((t, idx) => (
-                <div
-                    key={idx}
-                    className={`p-8 bg-slate-900/40 rounded-[40px] border-2 flex flex-col items-center justify-center gap-6 transition-all cursor-pointer ${t.a ? 'border-yellow-500 bg-yellow-500/10 shadow-[0_0_40px_rgba(234,179,8,0.2)]' : 'border-white/5 opacity-40 hover:opacity-100 hover:bg-white/5'}`}
-                >
-                    <div
-                        className={`p-6 rounded-[28px] ${t.a ? 'bg-yellow-500 text-black shadow-[0_0_30px_#eab308]' : 'bg-black/60 text-white/30'}`}
-                    >
-                        <Icon name={t.i as any} size={48} />
-                    </div>
-                    <div className="text-center">
-                        <h5 className="text-xl font-black uppercase tracking-widest mb-1 italic leading-tight">
-                            {t.n}
-                        </h5>
-                        <span className="text-[10px] font-black tracking-widest text-white/30 uppercase">{t.l}</span>
-                    </div>
-                </div>
-            ))}
-        </div>
-    </div>
-);

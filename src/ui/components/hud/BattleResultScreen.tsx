@@ -4,6 +4,7 @@ import { useGameStore } from '../../../store/useGameStore';
 import { AssetsMap } from '../../../configs/AssetsMap';
 import { shareBattleResult } from '../../../utils/VKBridge';
 import { audioService } from '../../../services/AudioService';
+import { getHeroExpNeeded } from '../../../features/heroes/leveling/HeroLevelConfig';
 
 const RESOURCE_METADATA: Record<string, { name: string; image: string; rarity: string }> = {
     coal: { name: 'Уголь', image: '/assets/images/resources/coal.webp', rarity: 'COMMON' },
@@ -97,14 +98,17 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
     const statsRef = useRef<HTMLDivElement>(null);
     const buttonsRef = useRef<HTMLDivElement>(null);
 
-    const goToForge = useGameStore((state) => state.goToForge);
     const goToHeroes = useGameStore((state) => state.goToHeroes);
     const trophies = useGameStore((state) => state.trophies);
     const crystals = useGameStore((state) => state.crystals);
     const battleMode = useGameStore((state) => state.battleMode);
     const pveLoot = useGameStore((state) => state.pveLoot);
 
-    const { level, exp, gold } = useGameStore();
+    const { selectedHeroId, heroes, gold } = useGameStore();
+    const activeHero = heroes[selectedHeroId] || { level: 1, exp: 0 };
+    const level = activeHero.level || 1;
+    const exp = activeHero.exp || 0;
+    const maxExp = getHeroExpNeeded(level);
 
     const isVictory = data.isVictory;
 
@@ -121,9 +125,9 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
         if (enemyStats.attack > playerStats.defense * 2) {
             return {
                 icon: '🛡️',
-                text: 'Враг пробивает броню. Улучши нагрудник.',
-                buttonText: 'В КУЗНИЦУ',
-                action: goToForge,
+                text: 'Враг пробивает броню. Надень лучшее снаряжение.',
+                buttonText: 'В АРСЕНАЛ',
+                action: () => goToHeroes('HERO'),
             };
         }
 
@@ -466,7 +470,7 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
                                     fontFamily: "'Cinzel', serif",
                                 }}
                             >
-                                +{data.xpEarned} XP (Текущий: {exp}/{level * 600} XP)
+                                +{data.xpEarned} XP (Текущий: {exp}/{maxExp} XP)
                             </span>
                         </div>
                         <div
@@ -485,7 +489,7 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
                                     left: 0,
                                     top: 0,
                                     height: '100%',
-                                    width: `${Math.min(100, (exp / (level * 600)) * 100)}%`,
+                                    width: `${Math.min(100, (exp / maxExp) * 100)}%`,
                                     background: isVictory
                                         ? 'linear-gradient(90deg, #3b82f6, #60a5fa)'
                                         : 'linear-gradient(90deg, #8b1c1c, #b91c1c)',

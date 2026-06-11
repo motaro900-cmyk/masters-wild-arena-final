@@ -5,8 +5,10 @@ import { resolveAssetPath } from '../../../utils/assetPath';
 import { getRankInfo } from '../../../configs/RankSystem';
 import { audioService } from '../../../services/AudioService';
 import { AssetsMap } from '../../../configs/AssetsMap';
+import { resolveAvatarPath } from '../../../configs/ProfileCustomization';
 
 interface LeaderboardEntry {
+    id: string;
     rank: number;
     name: string;
     level: number;
@@ -20,15 +22,26 @@ interface LeaderboardEntry {
 // Список лидеров формируется динамически в компоненте
 
 export const RankingWindow: React.FC = () => {
-    const { rating, vkUser, avatar: playerAvatar } = useGameStore();
+    const { rating, vkUser, avatar: playerAvatar, name: playerName } = useGameStore();
     const [activeTab, setActiveTab] = React.useState<'GLOBAL' | 'CLAN' | 'FRIENDS'>('GLOBAL');
 
-    const [selectedPlayer, setSelectedPlayer] = React.useState<LeaderboardEntry | null>(null);
     const [showRewards, setShowRewards] = React.useState(false);
     const [globalLeaders, setGlobalLeaders] = React.useState<LeaderboardEntry[]>([]);
     const [isLoading, setIsLoading] = React.useState(false);
 
     const scrollRef = React.useRef<HTMLDivElement>(null);
+
+    const [isMobile, setIsMobile] = React.useState(false);
+    React.useEffect(() => {
+        const checkLayout = () => {
+            setIsMobile(typeof window !== 'undefined' && window.innerWidth < 1024);
+        };
+        checkLayout();
+        window.addEventListener('resize', checkLayout);
+        return () => window.removeEventListener('resize', checkLayout);
+    }, []);
+
+    const TABS = ['GLOBAL', 'CLAN', 'FRIENDS'] as const;
 
     const myLeaderboardEntry = globalLeaders.find((l) => l.isMe);
     const myRank = myLeaderboardEntry ? `#${myLeaderboardEntry.rank}` : '50+';
@@ -46,11 +59,12 @@ export const RankingWindow: React.FC = () => {
                         const firstName = nameVal.split(' ')[0];
 
                         return {
+                            id: p.id,
                             rank: index + 1,
                             name: firstName,
                             level: p.уровень ?? p.level ?? p.лев ?? 1,
                             trophies: p.рейтинг ?? p.rating ?? 0,
-                            avatar: p.фото ?? p.photo ?? p.avatar ?? '🐺',
+                            avatar: resolveAvatarPath(p.фото ?? p.photo ?? p.avatar),
                             change: 'stable',
                             isMe: p.id === useGameStore.getState().playerId || String(p.vkId) === String(vkUser?.id),
                             vipLevel: p.vipLevel || 0,
@@ -207,9 +221,26 @@ export const RankingWindow: React.FC = () => {
             </div>
 
             {/* ТАБЛИЦА ЛИДЕРОВ */}
-            <div
+            <motion.div
                 ref={scrollRef}
                 className="leaderboard-scroll"
+                drag={isMobile ? "x" : undefined}
+                dragConstraints={{ left: 0, right: 0 }}
+                dragElastic={0.15}
+                onDragEnd={(_, info) => {
+                    if (!isMobile) return;
+                    const swipeThreshold = 50;
+                    const currentIndex = TABS.indexOf(activeTab);
+                    if (info.offset.x < -swipeThreshold) {
+                        if (currentIndex < TABS.length - 1) {
+                            setActiveTab(TABS[currentIndex + 1]);
+                        }
+                    } else if (info.offset.x > swipeThreshold) {
+                        if (currentIndex > 0) {
+                            setActiveTab(TABS[currentIndex - 1]);
+                        }
+                    }
+                }}
                 style={{
                     flex: 1,
                     overflowY: 'auto',
@@ -217,6 +248,7 @@ export const RankingWindow: React.FC = () => {
                     flexDirection: 'column',
                     gap: '8px',
                     paddingRight: '10px',
+                    touchAction: isMobile ? 'pan-y' : 'auto',
                 }}
             >
                 {isLoading ? (
@@ -265,9 +297,25 @@ export const RankingWindow: React.FC = () => {
                     </div>
                 ) : (
                     globalLeaders.map((player) => (
-                        <LeaderItem key={player.rank} player={player} onClick={() => setSelectedPlayer(player)} />
+                        <LeaderItem key={player.rank} player={player} onClick={() => {
+                            const setInspect = useGameStore.getState().setInspectPlayerId;
+                            if (setInspect) setInspect(player.id);
+                        }} />
                     ))
                 )}
+            </motion.div>
+
+            {/* Apple Disclaimer */}
+            <div style={{
+                textAlign: 'center',
+                fontSize: '9px',
+                color: 'rgba(255,255,255,0.3)',
+                fontFamily: "'Inter', sans-serif",
+                margin: '6px 0 2px 0',
+                lineHeight: 1.3,
+                flexShrink: 0,
+            }}>
+                Apple Inc. не является спонсором и не имеет отношения к внутриигровым конкурсам и активностям. Apple is not a sponsor nor is involved in the activity in any manner.
             </div>
 
             {/* ВАША ПОЗИЦИЯ (ALWAYS VISIBLE FOOTER) */}
@@ -319,14 +367,14 @@ export const RankingWindow: React.FC = () => {
                         }}
                     >
                         <img
-                            src={vkUser?.photo_200 || playerAvatar || '🐺'}
+                            src={resolveAvatarPath(vkUser?.photo_200 || vkUser?.photo || playerAvatar)}
                             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                             alt="avatar"
                         />
                     </div>
                     <div>
                         <div style={{ color: '#fff', fontSize: '16px', fontWeight: 800 }}>
-                            {vkUser?.first_name || 'Мастер'}{' '}
+                            {playerName || vkUser?.first_name || 'Мастер'}{' '}
                             <span style={{ fontSize: '10px', opacity: 0.5 }}>(ВЫ)</span>
                         </div>
                         <div
@@ -362,132 +410,13 @@ export const RankingWindow: React.FC = () => {
                 </div>
             </div>
 
-            {/* PLAYER INSPECT MODAL */}
-            <AnimatePresence>
-                {selectedPlayer && (
-                    <div
-                        style={{
-                            position: 'absolute',
-                            top: 0,
-                            left: 0,
-                            right: 0,
-                            bottom: 0,
-                            background: 'rgba(0,0,0,0.8)',
-                            zIndex: 100,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            backdropFilter: 'blur(10px)',
-                        }}
-                    >
-                        <motion.div
-                            initial={{ scale: 0.9, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            style={{
-                                width: '400px',
-                                background: '#1a1510',
-                                border: '2px solid #f0c040',
-                                borderRadius: '24px',
-                                padding: '30px',
-                                textAlign: 'center',
-                            }}
-                        >
-                            <div
-                                style={{
-                                    width: '100px',
-                                    height: '100px',
-                                    margin: '0 auto 15px',
-                                    borderRadius: '20px',
-                                    border: '3px solid #f0c040',
-                                    overflow: 'hidden',
-                                }}
-                            >
-                                <img
-                                    src={selectedPlayer.avatar}
-                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                    alt="avatar"
-                                />
-                            </div>
-                            <h3 style={{ color: '#fff', fontSize: '24px', margin: 0, fontFamily: "'Cinzel', serif" }}>
-                                {selectedPlayer.name}
-                            </h3>
-                            <div style={{ color: '#f0c040', fontWeight: 800, marginBottom: '20px' }}>
-                                Уровень {selectedPlayer.level}
-                            </div>
 
-                            <div
-                                style={{
-                                    background: 'rgba(255,255,255,0.03)',
-                                    borderRadius: '15px',
-                                    padding: '15px',
-                                    marginBottom: '20px',
-                                }}
-                            >
-                                <div style={{ color: '#c8a870', fontSize: '12px', marginBottom: '10px' }}>
-                                    БОЕВАЯ КОМАНДА
-                                </div>
-                                <div style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
-                                    {['🦁', '🦅', '🐻', '🐺', '🦊'].map((hero, i) => (
-                                        <div
-                                            key={i}
-                                            style={{
-                                                width: '45px',
-                                                height: '45px',
-                                                background: 'rgba(0,0,0,0.3)',
-                                                borderRadius: '10px',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                fontSize: '20px',
-                                                border: '1px solid rgba(240,192,64,0.2)',
-                                            }}
-                                        >
-                                            {hero}
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-
-                            <div style={{ display: 'flex', gap: '10px' }}>
-                                <button
-                                    style={{
-                                        flex: 1,
-                                        padding: '12px',
-                                        background: '#f0c040',
-                                        border: 'none',
-                                        borderRadius: '10px',
-                                        color: '#000',
-                                        fontWeight: 900,
-                                        cursor: 'pointer',
-                                    }}
-                                >
-                                    ВЫЗВАТЬ
-                                </button>
-                                <button
-                                    onClick={() => setSelectedPlayer(null)}
-                                    style={{
-                                        flex: 1,
-                                        padding: '12px',
-                                        background: 'rgba(255,255,255,0.1)',
-                                        border: 'none',
-                                        borderRadius: '10px',
-                                        color: '#fff',
-                                        fontWeight: 800,
-                                        cursor: 'pointer',
-                                    }}
-                                >
-                                    ЗАКРЫТЬ
-                                </button>
-                            </div>
-                        </motion.div>
-                    </div>
-                )}
-            </AnimatePresence>
 
             {/* REWARDS MODAL */}
             <AnimatePresence>
                 {showRewards && (
                     <div
+                        onClick={() => setShowRewards(false)}
                         style={{
                             position: 'absolute',
                             top: 0,
@@ -500,12 +429,14 @@ export const RankingWindow: React.FC = () => {
                             alignItems: 'center',
                             justifyContent: 'center',
                             backdropFilter: 'blur(10px)',
+                            cursor: 'pointer',
                         }}
                     >
                         <motion.div
                             initial={{ y: 50, opacity: 0, scale: 0.95 }}
                             animate={{ y: 0, opacity: 1, scale: 1 }}
                             exit={{ y: 50, opacity: 0, scale: 0.95 }}
+                            onClick={(e) => e.stopPropagation()}
                             style={{
                                 width: '520px',
                                 background: 'radial-gradient(circle at center, #231c15 0%, #120e0a 100%)',
@@ -770,7 +701,7 @@ const LeaderItem: React.FC<{ player: LeaderboardEntry; onClick: () => void }> = 
                 }}
             >
                 {isTop3 && (
-                    <div style={{ position: 'absolute', top: -12 }}>
+                    <div style={{ position: 'absolute', top: -12, left: '50%', transform: 'translateX(-50%)', display: 'flex', justifyContent: 'center' }}>
                         {player.rank === 1 ? (
                             <img
                                 src={AssetsMap.UI.ICON_CROWN}

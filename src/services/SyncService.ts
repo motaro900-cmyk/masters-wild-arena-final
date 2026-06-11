@@ -44,6 +44,7 @@ export class SyncService {
     private static eventListenersAdded = false;
     private activeUnsubscribes: (() => void)[] = [];
     private syncDisabled: boolean = false;
+    private warnedNonVK: boolean = false;
 
     // ─── Helpers ───────────────────────────────────────────────────────────────
 
@@ -118,7 +119,10 @@ export class SyncService {
     public async syncPlayerData(): Promise<void> {
         const userId = this.getCurrentUserId();
         if (!userId.startsWith('VK-')) {
-            console.warn('[SyncService] Blocked write for non-VK user:', userId);
+            if (!this.warnedNonVK) {
+                console.warn('[SyncService] Blocked write for non-VK user:', userId);
+                this.warnedNonVK = true;
+            }
             return Promise.resolve();
         }
         if (this.syncDisabled) return Promise.resolve();
@@ -139,7 +143,10 @@ export class SyncService {
     private async performSync(): Promise<void> {
         const userId = this.getCurrentUserId();
         if (!userId.startsWith('VK-')) {
-            console.warn('[SyncService] Blocked write for non-VK user:', userId);
+            if (!this.warnedNonVK) {
+                console.warn('[SyncService] Blocked write for non-VK user:', userId);
+                this.warnedNonVK = true;
+            }
             return;
         }
         if (this.syncDisabled) return;
@@ -159,6 +166,7 @@ export class SyncService {
         try {
             const playerRef = doc(db, USERS_COLLECTION, userId);
             const selectedHeroId = state.selectedHeroId || 'panda';
+            const activeHeroLevel = state.heroes?.[selectedHeroId]?.level || 1;
 
             const fullState = {
                 lastSavedTimestamp: state.lastSavedTimestamp || 0,
@@ -266,7 +274,7 @@ export class SyncService {
                 vkFirstName: vkUser ? vkUser.first_name || vkUser.firstName || '' : '',
                 vkLastName: vkUser ? vkUser.last_name || vkUser.lastName || '' : '',
                 vkLink: vkUser ? `https://vk.com/id${vkUser.id}` : '',
-                level: state.level || 1,
+                level: activeHeroLevel,
                 gold: state.gold || 0,
                 crystals: state.crystals || 0,
                 rating: state.rating || 0,
@@ -292,7 +300,7 @@ export class SyncService {
                 // Russian legacy keys
                 золото: state.gold || 0,
                 кристаллы: state.crystals || 0,
-                уровень: state.level || 1,
+                уровень: activeHeroLevel,
                 рейтинг: state.rating || 0,
                 былВСети: serverTimestamp(),
                 имя: state.name || 'Мастер',

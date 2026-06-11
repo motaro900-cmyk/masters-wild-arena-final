@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { resolveAssetPath } from '../../../../utils/assetPath';
+import { resolveAvatarPath } from '../../../../configs/ProfileCustomization';
 
 interface FoundPlayerCardProps {
     foundPlayer: any;
@@ -42,7 +42,7 @@ export const FoundPlayerCard: React.FC<FoundPlayerCardProps> = ({ foundPlayer, c
                             height: '100%',
                             borderRadius: 6,
                             overflow: 'hidden',
-                            backgroundImage: `url(${(foundPlayer.фото || foundPlayer.avatar || '').startsWith('http') ? foundPlayer.фото || foundPlayer.avatar : resolveAssetPath(`/assets/images/avatars/${(foundPlayer.фото || foundPlayer.avatar || 'панда.webp').replace(/\.(png|webp)$/, '')}.webp`)})`,
+                            backgroundImage: `url(${resolveAvatarPath(foundPlayer.фото || foundPlayer.avatar)})`,
                             backgroundSize: 'cover',
                             backgroundPosition: 'center',
                         }}

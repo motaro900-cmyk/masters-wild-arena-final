@@ -744,7 +744,24 @@ export const createPlayerSlice = (set: any, get: any) => ({
             return { success: false, message: 'Имя должно быть от 2 до 15 символов' };
         }
 
-        const forbidden = ['хуй', 'пизд', 'еблан', 'сука', 'бля', 'админ', 'gm', 'admin', 'moder'];
+        const forbidden = [
+            'хуй',
+            'пизд',
+            'еблан',
+            'сука',
+            'бля',
+            'блять',
+            'админ',
+            'gm',
+            'admin',
+            'moder',
+            'очко',
+            'гнида',
+            'мразь',
+            'шлюха',
+            'vk',
+            'вконтакте',
+        ];
         const lowerName = cleanName.toLowerCase();
         if (forbidden.some((word) => lowerName.includes(word))) {
             return { success: false, message: 'Имя содержит недопустимые слова' };

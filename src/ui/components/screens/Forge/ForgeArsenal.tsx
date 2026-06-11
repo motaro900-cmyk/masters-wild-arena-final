@@ -85,8 +85,8 @@ export const ForgeArsenal: React.FC<ForgeArsenalProps> = ({
                         <img
                             src={categoryIcons[cat.id]}
                             style={{
-                                width: '24px',
-                                height: '24px',
+                                width: '30px',
+                                height: '30px',
                                 objectFit: 'contain',
                                 filter: activeCategory === cat.id ? 'none' : 'grayscale(1) brightness(0.7)',
                             }}

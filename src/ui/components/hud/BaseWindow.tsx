@@ -225,6 +225,11 @@ export const BaseWindow: React.FC<BaseWindowProps> = ({
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
+                                    width: '30px',
+                                    height: '30px',
+                                    boxSizing: 'content-box',
+                                    padding: '12px',
+                                    margin: '-12px',
                                 }}
                                 onMouseEnter={(e) => (e.currentTarget.style.opacity = '1')}
                                 onMouseLeave={(e) => (e.currentTarget.style.opacity = '0.8')}

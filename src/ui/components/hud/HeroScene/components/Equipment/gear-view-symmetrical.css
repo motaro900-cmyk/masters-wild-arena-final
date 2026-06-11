@@ -1,0 +1,502 @@
+/* Premium CSS for the Symmetrical Hero Equipment Layout (Concept 9/2 Hybrid) */
+
+@keyframes breathing-glow {
+    0% {
+        opacity: 0.55;
+        transform: translate(-50%, -50%) scale(0.96);
+        filter: blur(15px) drop-shadow(0 0 12px var(--glow-color, rgba(240, 192, 64, 0.2)));
+    }
+    50% {
+        opacity: 0.85;
+        transform: translate(-50%, calc(-50% - 6px)) scale(1.04);
+        filter: blur(20px) drop-shadow(0 0 28px var(--glow-color, rgba(240, 192, 64, 0.45)));
+    }
+    100% {
+        opacity: 0.55;
+        transform: translate(-50%, -50%) scale(0.96);
+        filter: blur(15px) drop-shadow(0 0 12px var(--glow-color, rgba(240, 192, 64, 0.2)));
+    }
+}
+
+@keyframes slot-compatible-glow {
+    0% {
+        border-color: rgba(240, 192, 64, 0.4);
+        box-shadow: 0 0 10px rgba(240, 192, 64, 0.25), inset 0 0 8px rgba(240, 192, 64, 0.2);
+    }
+    50% {
+        border-color: rgba(255, 255, 255, 0.95);
+        box-shadow: 0 0 25px rgba(240, 192, 64, 0.75), inset 0 0 15px rgba(240, 192, 64, 0.4);
+        transform: scale(1.03);
+    }
+    100% {
+        border-color: rgba(240, 192, 64, 0.4);
+        box-shadow: 0 0 10px rgba(240, 192, 64, 0.25), inset 0 0 8px rgba(240, 192, 64, 0.2);
+    }
+}
+
+@keyframes blueprint-pulse {
+    0% {
+        filter: drop-shadow(0 0 4px rgba(240,192,64,0.25)) sepia(0.8) brightness(0.7) saturate(1.0);
+    }
+    50% {
+        filter: drop-shadow(0 0 12px rgba(240,192,64,0.6)) sepia(0.6) brightness(1.0) saturate(1.4);
+    }
+    100% {
+        filter: drop-shadow(0 0 4px rgba(240,192,64,0.25)) sepia(0.8) brightness(0.7) saturate(1.0);
+    }
+}
+
+.breathing-backlight {
+    position: absolute;
+    top: 330px;
+    left: calc(50% + 25px);
+    width: 500px;
+    height: 500px;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 1;
+    animation: breathing-glow 5s ease-in-out infinite;
+}
+
+.symmetrical-hero-card {
+    width: 940px;
+    height: 100%;
+    background-size: cover;
+    border-radius: 30px;
+    border: 1.5px solid rgba(240, 192, 64, 0.25);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    padding-bottom: 20px;
+    position: relative;
+    box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.95), 0 20px 45px rgba(0, 0, 0, 0.75);
+    z-index: 5;
+    overflow: visible;
+}
+
+/* Symmetrical circular background ring behind character */
+.mockup-bg-circle {
+    position: absolute;
+    top: 330px;
+    left: calc(50% + 25px);
+    transform: translate(-50%, -50%);
+    width: 500px;
+    height: 500px;
+    border: 1px solid rgba(240, 192, 64, 0.25);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 2;
+    box-shadow: inset 0 0 60px rgba(240, 192, 64, 0.03), 0 0 40px rgba(240, 192, 64, 0.01);
+}
+
+.mockup-bg-circle-inner {
+    position: absolute;
+    top: 330px;
+    left: calc(50% + 25px);
+    transform: translate(-50%, -50%);
+    width: 380px;
+    height: 380px;
+    border: 1.2px dashed rgba(240, 192, 64, 0.16);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 2;
+}
+
+.mockup-bg-circle-orbital {
+    position: absolute;
+    top: 330px;
+    left: calc(50% + 25px);
+    transform: translate(-50%, -50%);
+    width: 650px;
+    height: 650px;
+    border: 1px dotted rgba(240, 192, 64, 0.18);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 2;
+}
+
+/* Slot absolute wrappers layout (updated to compact 110px size) */
+.equipment-slot-wrapper {
+    position: absolute;
+    width: 110px;
+    height: 110px;
+    z-index: 10;
+}
+
+.slot-helm {
+    left: 195px;
+    top: 40px;
+}
+
+.slot-shoulders {
+    left: 125px;
+    top: 180px;
+}
+
+.slot-armor {
+    left: 125px;
+    top: 330px;
+}
+
+.slot-pants {
+    left: 195px;
+    top: 470px;
+}
+
+.slot-weapons {
+    right: 145px;
+    top: 40px;
+}
+
+.slot-shields {
+    right: 75px;
+    top: 255px;
+}
+
+.slot-boots {
+    right: 145px;
+    top: 470px;
+}
+
+/* Slot Circle Medallions */
+.equipment-slot-circle {
+    transition: all 0.35s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+}
+
+.equipment-slot-circle.empty-slot img {
+    animation: blueprint-pulse 4s ease-in-out infinite;
+}
+
+/* Drag states visual highlights */
+.equipment-slot-circle.drag-compatible {
+    animation: slot-compatible-glow 1.2s ease-in-out infinite !important;
+    border-color: #f0c040 !important;
+}
+
+.equipment-slot-circle.drag-incompatible {
+    opacity: 0.25 !important;
+    filter: grayscale(0.7) blur(0.5px) !important;
+    transform: scale(0.92) !important;
+    pointer-events: none !important;
+    box-shadow: none !important;
+}
+
+.equipment-slot-circle.drag-over {
+    border-color: #ffffff !important;
+    box-shadow: 0 0 30px rgba(255, 255, 255, 0.8), inset 0 0 15px rgba(240, 192, 64, 0.5) !important;
+    transform: scale(1.08) !important;
+}
+
+.equipment-slot-circle.has-item:hover {
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.85), 0 0 25px rgba(240, 192, 64, 0.25) !important;
+}
+
+/* Text label styled underneath the circular slots */
+.slot-wrapper-label {
+    position: absolute;
+    bottom: -22px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #f0c040;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    font-family: 'Philosopher', 'Inter', sans-serif;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.95);
+    white-space: nowrap;
+    pointer-events: none;
+    text-transform: uppercase;
+}
+
+/* Top Nameplate Plaque */
+.mockup-nameplate {
+    position: absolute;
+    top: 35px;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+    z-index: 10;
+    pointer-events: none;
+    width: 100%;
+}
+
+.mockup-hero-name {
+    margin: 0;
+    font-size: 26px;
+    font-weight: 800;
+    color: #fffdf5;
+    font-family: 'Philosopher', 'Cinzel', serif;
+    letter-spacing: 1.5px;
+    text-shadow: 0 2px 5px rgba(0, 0, 0, 0.9), 0 0 10px rgba(240, 192, 64, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.mockup-level-badge {
+    background: rgba(240, 192, 64, 0.16);
+    border: 1px solid #f0c040;
+    border-radius: 6px;
+    padding: 1px 6px;
+    font-size: 11.5px;
+    font-weight: 900;
+    color: #f0c040;
+    font-family: 'Philosopher', 'Inter', sans-serif;
+    letter-spacing: 0.5px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+    display: inline-block;
+}
+
+.mockup-hero-title {
+    margin-top: 4px;
+    font-size: 11px;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.45);
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    font-family: 'Cinzel', 'Inter', sans-serif;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
+}
+
+/* Premium Bottom XP Progress Bar & unified Nameplate Panel */
+.mockup-xp-panel {
+    position: absolute;
+    bottom: 35px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 88%;
+    background: linear-gradient(180deg, rgba(28, 20, 16, 0.96) 0%, rgba(14, 10, 8, 0.99) 100%);
+    border: 1.5px solid rgba(240, 192, 64, 0.45);
+    border-radius: 16px;
+    padding: 14px 22px;
+    box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.95), 0 12px 30px rgba(0, 0, 0, 0.75);
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    overflow: visible;
+}
+
+
+
+.mockup-xp-name-row {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+}
+
+.mockup-xp-hero-name {
+    font-size: 24px;
+    font-weight: 800;
+    background: linear-gradient(180deg, #ffffff 0%, #f0c040 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-family: 'Philosopher', 'Cinzel', serif;
+    letter-spacing: 1.5px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.95);
+}
+
+.mockup-xp-level-badge {
+    background: rgba(240, 192, 64, 0.12);
+    border: 1px solid rgba(240, 192, 64, 0.65);
+    border-radius: 6px;
+    padding: 1px 8px;
+    font-size: 12px;
+    font-weight: 900;
+    color: #f0c040;
+    font-family: 'Philosopher', 'Inter', sans-serif;
+    letter-spacing: 0.5px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.5);
+}
+
+.mockup-xp-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    width: 100%;
+    margin-top: -4px;
+}
+
+.title-divider-line {
+    flex: 1;
+    max-width: 60px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(240, 192, 64, 0.45) 50%, transparent 100%);
+}
+
+.mockup-xp-hero-title {
+    font-size: 11px;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.6);
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    font-family: 'Cinzel', 'Inter', sans-serif;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85);
+}
+
+.mockup-xp-bar-container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 2px;
+}
+
+.mockup-xp-bar-bg {
+    width: 100%;
+    height: 8px;
+    background: rgba(0, 0, 0, 0.8);
+    border: 1px solid rgba(240, 192, 64, 0.28);
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: inset 0 1.5px 4px rgba(0, 0, 0, 0.95);
+}
+
+.mockup-xp-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #b87b00 0%, #f0c040 50%, #d89000 100%);
+    border-radius: 4px;
+    box-shadow: 0 0 10px rgba(240, 192, 64, 0.65);
+}
+
+.mockup-xp-labels-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.mockup-xp-label {
+    font-size: 10px;
+    font-weight: 900;
+    color: rgba(255, 255, 255, 0.45);
+    letter-spacing: 1.5px;
+    font-family: 'Cinzel', 'Montserrat', 'Inter', sans-serif;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+.mockup-xp-value {
+    font-size: 11px;
+    font-weight: 700;
+    color: #f0c040;
+    font-family: 'Philosopher', sans-serif;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.95);
+}
+
+/* Premium Bottom Unified Stats Panel */
+.mockup-stats-card {
+    position: absolute;
+    bottom: 180px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 88%;
+    background: linear-gradient(180deg, rgba(30, 24, 20, 0.98) 0%, rgba(18, 14, 11, 1.0) 50%, rgba(10, 8, 7, 1.0) 100%);
+    border: 1.5px solid rgba(240, 192, 64, 0.45);
+    border-radius: 16px;
+    padding: 12px 20px;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    box-shadow: 
+        inset 0 0 25px rgba(0, 0, 0, 0.95),
+        0 12px 30px rgba(0, 0, 0, 0.7),
+        0 0 20px rgba(240, 192, 64, 0.05);
+    z-index: 10;
+    overflow: visible;
+}
+
+.stats-card-inner-border {
+    position: absolute;
+    inset: 3px;
+    border: 1px solid rgba(240, 192, 64, 0.15);
+    border-radius: 13px;
+    pointer-events: none;
+    z-index: 1;
+}
+
+
+
+.mockup-stat-item {
+    position: relative;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: default;
+    padding: 6px 0;
+    border-radius: 8px;
+    transition: all 0.25s ease;
+}
+
+.mockup-stat-item:hover {
+    transform: translateY(-2px);
+    background: rgba(240, 192, 64, 0.04);
+    box-shadow: inset 0 0 8px rgba(240, 192, 64, 0.05);
+}
+
+.mockup-stat-item:not(:last-child)::after {
+    content: '◆';
+    position: absolute;
+    right: -2px;
+    top: 50%;
+    transform: translateY(-50%) scale(0.65);
+    color: rgba(240, 192, 64, 0.25);
+    font-size: 10px;
+    pointer-events: none;
+    z-index: 2;
+}
+
+.mockup-stat-label {
+    font-size: 10px;
+    font-weight: 900;
+    color: rgba(255, 255, 255, 0.58);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+    font-family: 'Cinzel', 'Montserrat', 'Inter', sans-serif;
+    text-shadow: 0 1.5px 3px rgba(0, 0, 0, 0.95);
+    z-index: 2;
+}
+
+.mockup-stat-value {
+    font-size: 16px;
+    font-weight: 900;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'Philosopher', sans-serif;
+    text-shadow: 0 1.5px 3px rgba(0, 0, 0, 0.95);
+}
+
+.mockup-stat-value.power {
+    color: #f0c040;
+}
+
+.mockup-stat-value.hp {
+    color: #ff527b;
+}
+
+.mockup-stat-value.attack {
+    color: #4ea8ff;
+}
+
+.mockup-stat-value.defense {
+    color: #20e09e;
+}
+
+.mockup-stat-value.evasion {
+    color: #3bf07b;
+}
+
+.mockup-stat-value.crit {
+    color: #b86eff;
+}
+
+

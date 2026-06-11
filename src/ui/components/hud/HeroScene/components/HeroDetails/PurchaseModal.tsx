@@ -81,12 +81,21 @@ export const PurchaseModal = ({ hero, onClose, rarityColors }: any) => {
                         border: `1px solid ${hasEnoughTrophies ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.35)'}`,
                         borderRadius: '10px', padding: '8px 16px', width: '100%',
                     }}>
-                        <span style={{ fontSize: '16px' }}>🏆</span>
+                        <img
+                            src={resolveAssetPath(AssetsMap.UI.TROPHY_PREMIUM)}
+                            style={{ width: '18px', height: '18px', objectFit: 'contain' }}
+                            alt="trophy"
+                        />
                         <span style={{ color: hasEnoughTrophies ? 'rgba(255,255,255,0.6)' : '#f87171', fontSize: '11px', fontWeight: 700, flex: 1 }}>
                             Требуется ранг <strong style={{ color: hasEnoughTrophies ? '#4ade80' : '#f87171' }}>{getRankInfo(hero.requiredTrophies).name}</strong>
                         </span>
-                        <span style={{ fontSize: '11px', fontWeight: 900, color: hasEnoughTrophies ? '#4ade80' : '#f87171' }}>
-                            {rating} / {hero.requiredTrophies} 🏆
+                        <span style={{ fontSize: '11px', fontWeight: 900, color: hasEnoughTrophies ? '#4ade80' : '#f87171', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                            {rating} / {hero.requiredTrophies}
+                            <img
+                                src={resolveAssetPath(AssetsMap.UI.TROPHY_PREMIUM)}
+                                style={{ width: '14px', height: '14px', objectFit: 'contain' }}
+                                alt="trophy"
+                            />
                         </span>
                     </div>
                 )}

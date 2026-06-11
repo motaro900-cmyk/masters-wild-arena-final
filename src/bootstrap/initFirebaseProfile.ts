@@ -107,41 +107,6 @@ export const initFirebaseProfile = async (
                 isDeveloper: finalAdminStatus,
                 isSystemUpdate: true,
             });
-            state = useGameStore.getState();
-
-            // Мгновенная запись нового документа с isNewPlayer: true и merge: false
-            try {
-                const { db, USERS_COLLECTION } = await import('../utils/firebase');
-                const { doc, setDoc, serverTimestamp } = await import('firebase/firestore');
-                const playerRef = doc(db, USERS_COLLECTION, userId);
-
-                const initialData = {
-                    id: userId,
-                    isNewPlayer: true,
-                    name: 'Мастер',
-                    level: 1,
-                    gold: 300,
-                    crystals: 50,
-                    rating: 0,
-                    wasOnline: serverTimestamp(),
-                    activeScreen: 'INTRO',
-                    fullStateJSON: JSON.stringify({
-                        onboardingCompleted: false,
-                        name: 'Мастер',
-                        level: 1,
-                        gold: 300,
-                        crystals: 50,
-                        rating: 0,
-                        activeScreen: 'INTRO',
-                        lastSavedTimestamp: Date.now(),
-                    }),
-                };
-
-                await setDoc(playerRef, initialData, { merge: false });
-                console.log('✅ Created new player document with isNewPlayer: true');
-            } catch (err) {
-                console.error('Failed to create new player doc:', err);
-            }
             return { userId, isNew: true, data: null };
         } else {
             const fbProfile = result.data;

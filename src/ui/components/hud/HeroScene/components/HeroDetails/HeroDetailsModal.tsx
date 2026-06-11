@@ -3,7 +3,6 @@ import { ROLE_ICONS } from '../../constants/roleIcons';
 import { DetailStat } from './DetailStat';
 import { SkillItem } from './SkillItem';
 import { resolveAssetPath } from '../../../../../../utils/assetPath';
-import { useGameStore } from '../../../../../../store/useGameStore';
 
 export const HeroDetailsModal = ({ hero, isOwned, onClose, rarityColors, onBuy, onSelect }: any) => {
     const color = rarityColors[hero.rarity];
@@ -182,38 +181,49 @@ export const HeroDetailsModal = ({ hero, isOwned, onClose, rarityColors, onBuy, 
                             СПОСОБНОСТИ
                         </div>
                         <div style={{ display: 'flex', gap: '20px' }}>
-                            <SkillItem icon="🔥" name="Мощный удар" desc="Наносит 200% урона по цели." />
-                            <SkillItem icon="🛡️" name="Железная воля" desc="Повышает защиту на 50% на 2 хода." />
-                            <SkillItem icon="🌀" name="Вихрь" desc="Атака по всем противникам." />
+                            {(() => {
+                                const HERO_SKILLS: Record<string, { icon: string; name: string; desc: string }[]> = {
+                                    panda: [
+                                        { icon: '🎋', name: 'Двойной удар', desc: 'Наносит 180% урона и глушит врага на 1 ход.' },
+                                        { icon: '🏮', name: 'Духовный щит', desc: 'Повышает защиту на 40% и восстанавливает здоровье.' },
+                                        { icon: '🌀', name: 'Ураган лап', desc: 'Рассекающий удар, наносящий 120% урона всем врагам.' }
+                                    ],
+                                    wolf: [
+                                        { icon: '🐺', name: 'Вой стаи', desc: 'Повышает атаку всех союзников на 30% на 2 хода.' },
+                                        { icon: '🩸', name: 'Растерзание', desc: 'Наносит 150% урона и накладывает кровотечение.' },
+                                        { icon: '⚡', name: 'Быстрый выпад', desc: 'Быстрая атака с шансом критического урона +50%.' }
+                                    ],
+                                    bear: [
+                                        { icon: '🐻', name: 'Дикий натиск', desc: 'Пробивает броню цели на 50% и наносит урон.' },
+                                        { icon: '⛰️', name: 'Каменная кожа', desc: 'Поглощает 30% входящего урона в течение 3 ходов.' },
+                                        { icon: '🪵', name: 'Сотрясение', desc: 'Атакует землю, снижая ловкость врагов на 40%.' }
+                                    ],
+                                    fox: [
+                                        { icon: '🦊', name: 'Иллюзия', desc: 'Позволяет уклониться от следующей атаки врага.' },
+                                        { icon: '🔥', name: 'Огненный лис', desc: 'Поджигает цель, нанося периодический магический урон.' },
+                                        { icon: '✨', name: 'Чары', desc: 'Ослабляет цель, снижая её атаку на 50% на 2 хода.' }
+                                    ],
+                                    lion: [
+                                        { icon: '🦁', name: 'Царский рык', desc: 'Снижает защиту всех врагов на 30% на 2 хода.' },
+                                        { icon: '👑', name: 'Величие', desc: 'Удваивает силу следующего критического удара.' },
+                                        { icon: '⚔️', name: 'Золотой коготь', desc: 'Мощный удар, полностью игнорирующий броню.' }
+                                    ]
+                                };
+                                const skills = HERO_SKILLS[hero.id] || [
+                                    { icon: '🔥', name: 'Мощный удар', desc: 'Наносит 200% урона по цели.' },
+                                    { icon: '🛡️', name: 'Железная воля', desc: 'Повышает защиту на 50% на 2 хода.' },
+                                    { icon: '🌀', name: 'Вихрь', desc: 'Атака по всем противникам.' }
+                                ];
+                                return skills.map((s, idx) => (
+                                    <SkillItem key={idx} icon={s.icon} name={s.name} desc={s.desc} />
+                                ));
+                            })()}
                         </div>
                     </div>
 
                     <div style={{ flex: 1 }} />
 
                     <div style={{ display: 'flex', gap: '20px' }}>
-                        <motion.button
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.92 }}
-                            style={{
-                                flex: 1,
-                                height: '70px',
-                                background: 'rgba(255,255,255,0.05)',
-                                border: '1px solid rgba(255,255,255,0.2)',
-                                borderRadius: '15px',
-                                color: '#fff',
-                                fontSize: '20px',
-                                fontWeight: 900,
-                                cursor: 'pointer',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                gap: '15px',
-                            }}
-                            onClick={() => useGameStore.getState().showAlert('Режим тренировки скоро будет доступен!')}
-                        >
-                            <span>🎮</span> ПОПРОБОВАТЬ
-                        </motion.button>
-
                         {isOwned ? (
                             <motion.button
                                 whileHover={{ scale: 1.05 }}

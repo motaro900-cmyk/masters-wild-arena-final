@@ -67,7 +67,7 @@ export const HeroScene: React.FC = () => {
 
     // -- UI State --
     const [activeTab, setActiveTab] = useState<SceneTab>((heroesInitialTab as SceneTab) || 'LIST');
-    const [detailSubTab, setDetailSubTab] = useState<'STATS' | 'LORE' | 'INVENTORY'>('INVENTORY');
+    const [detailSubTab, setDetailSubTab] = useState<'LORE' | 'INVENTORY' | 'TALENTS'>('INVENTORY');
     const [activeFilter, setActiveFilter] = useState<string>('ВСЕ');
     const [viewingHero, setViewingHero] = useState<any>(null);
     const [confirmingHero, setConfirmingHero] = useState<any>(null);
@@ -241,7 +241,7 @@ export const HeroScene: React.FC = () => {
                                 if (tab === 'GOLD' || tab === 'GEMS' || tab === 'ENERGY') {
                                     goToShop('BANK', tab);
                                 } else {
-                                    goToShop('ALCHEMY');
+                                    goToShop('ARSENAL');
                                 }
                             }}
                         />

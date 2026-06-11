@@ -33,6 +33,10 @@ type GameStoreState = {
     isMuted: boolean;
     showSummonOverlay?: boolean;
     setShowSummonOverlay?: (show: boolean) => void;
+    inspectPlayerId?: string | null;
+    inspectPlayerName?: string | null;
+    setInspectPlayerId?: (id: string | null) => void;
+    setInspectPlayerName?: (name: string | null) => void;
     pvpCooldowns?: Record<string, number>;
     recordAttack?: (targetId: string) => void;
     lastSavedTimestamp?: number;
@@ -56,6 +60,11 @@ const store = create<GameStoreState>()(
 
             showSummonOverlay: false,
             setShowSummonOverlay: (show: boolean) => set({ showSummonOverlay: show }),
+
+            inspectPlayerId: null as string | null,
+            inspectPlayerName: null as string | null,
+            setInspectPlayerId: (id: string | null) => set({ inspectPlayerId: id, inspectPlayerName: null }),
+            setInspectPlayerName: (name: string | null) => set({ inspectPlayerName: name, inspectPlayerId: null }),
 
             pvpCooldowns: {} as Record<string, number>,
             recordAttack: (targetId: string) => {

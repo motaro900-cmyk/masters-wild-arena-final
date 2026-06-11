@@ -13,6 +13,28 @@ export const initVKProfile = async (): Promise<void> => {
         window.location.protocol === 'file:';
 
     if (!isLocalhostEarly) {
+        // 🔒 Проверка подписи параметров запуска через Vercel Serverless Function
+        try {
+            const searchParams = window.location.search;
+            if (searchParams) {
+                const response = await fetch(`/api/verify-sign${searchParams}`);
+                if (!response.ok) {
+                    throw new Error(`Server returned status ${response.status}`);
+                }
+                const data = await response.json();
+                if (data && data.valid === false) {
+                    throw new Error('Invalid signature');
+                }
+            } else if (isVkMiniApp()) {
+                throw new Error('Launch parameters are missing');
+            }
+        } catch (err) {
+            console.error('🔒 Security verification failed:', err);
+            throw new Error(
+                'Ошибка безопасности: проверка подписи параметров запуска не удалась. Пожалуйста, перезапустите игру из официального приложения ВКонтакте.'
+            );
+        }
+
         try {
             const vkAvailable = await initVK();
             console.log('📡 VK Status:', vkAvailable ? 'Connected' : 'Standalone');
@@ -44,6 +66,7 @@ export const initVKProfile = async (): Promise<void> => {
             console.warn('⚠️ VK Bridge failed to init, continuing in standalone mode', vkErr);
         }
     } else {
-        console.log('🛠️ Localhost detected — skipping VK Bridge init');
+        console.log('🛠️ Localhost detected — skipping VK Bridge init and signature verification');
     }
 };
+

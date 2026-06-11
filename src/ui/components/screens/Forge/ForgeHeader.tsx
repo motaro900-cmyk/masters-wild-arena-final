@@ -17,22 +17,37 @@ export const ForgeHeader: React.FC<ForgeHeaderProps> = ({ goToCity }) => {
                     display: 'flex',
                     alignItems: 'center',
                     gap: '10px',
-                    background: 'none',
-                    border: 'none',
+                    background: 'linear-gradient(180deg, rgba(185, 28, 28, 0.4) 0%, rgba(127, 29, 29, 0.6) 100%)',
+                    border: '1.5px solid rgba(239, 68, 68, 0.5)',
+                    borderRadius: '8px',
                     cursor: 'pointer',
                     color: '#fff',
                     fontFamily: "'Cinzel', serif",
-                    fontSize: '14px',
+                    fontSize: '12px',
                     fontWeight: 700,
+                    padding: '8px 16px',
+                    boxShadow: '0 4px 10px rgba(0,0,0,0.3)',
+                    transition: 'all 0.2s',
+                }}
+                onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = '#ef4444';
+                    e.currentTarget.style.boxShadow = '0 0 15px rgba(239, 68, 68, 0.4)';
+                    e.currentTarget.style.transform = 'scale(1.03)';
+                }}
+                onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = 'rgba(239, 68, 68, 0.5)';
+                    e.currentTarget.style.boxShadow = '0 4px 10px rgba(0,0,0,0.3)';
+                    e.currentTarget.style.transform = 'scale(1)';
                 }}
             >
                 <div
                     style={{
-                        width: '28px',
-                        height: '28px',
+                        width: '18px',
+                        height: '18px',
                         backgroundImage: `url(${AssetsMap.UI.ICON_EXIT})`,
                         backgroundSize: 'contain',
                         backgroundRepeat: 'no-repeat',
+                        filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))',
                     }}
                 />
                 <span>ВЫХОД [ESC]</span>
@@ -46,7 +61,7 @@ export const ForgeHeader: React.FC<ForgeHeaderProps> = ({ goToCity }) => {
                     if (tab === 'GOLD' || tab === 'GEMS' || tab === 'ENERGY') {
                         useGameStore.getState().goToShop('BANK', tab);
                     } else {
-                        useGameStore.getState().goToShop('ALCHEMY');
+                        useGameStore.getState().goToShop('ARSENAL');
                     }
                 }}
             />

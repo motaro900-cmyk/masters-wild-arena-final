@@ -221,19 +221,19 @@
 .clan-dragon,
 .clan-owl {
     background-image: url('/assets/images/sheets/clans_sheet.png');
-    background-size: 400% 400%; /* Fix squashing */
+    background-size: 400% 200%; /* Fix squashing for 4x2 grid */
 }
 .clan-fox {
-    background-position: 0% 50%;
+    background-position: 0% 100%;
 }
 .clan-tiger {
-    background-position: 33.33% 50%;
+    background-position: 33.33% 100%;
 }
 .clan-dragon {
-    background-position: 66.66% 50%;
+    background-position: 66.66% 100%;
 }
 .clan-owl {
-    background-position: 100% 50%;
+    background-position: 100% 100%;
 }
 
 /* Misc UI Icons */

@@ -24,7 +24,6 @@ export const BattlePassScene: React.FC<{ onClose: () => void }> = ({ onClose }) 
         buyBpLevel,
         addItemToInventory,
         setEquippedWeapon,
-        claimQuestReward,
         claimBpDailyQuestReward,
         claimWeeklyQuestReward,
         showBpLevelUpOverlay,
@@ -263,53 +262,74 @@ export const BattlePassScene: React.FC<{ onClose: () => void }> = ({ onClose }) 
                                         }}
                                     >
                                         {/* ЛЕВАЯ СТРЕЛКА */}
-                                        <motion.button
-                                            disabled={currentPage === 0}
-                                            whileHover={
-                                                currentPage > 0
-                                                    ? { scale: 1.1, boxShadow: '0 0 15px rgba(240, 192, 64, 0.4)' }
-                                                    : {}
-                                            }
-                                            whileTap={currentPage > 0 ? { scale: 0.9 } : {}}
-                                            onClick={() => {
-                                                if (currentPage > 0) {
-                                                    setCurrentPage(currentPage - 1);
-                                                    audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
+                                        {!isMobile && (
+                                            <motion.button
+                                                disabled={currentPage === 0}
+                                                whileHover={
+                                                    currentPage > 0
+                                                        ? { scale: 1.1, boxShadow: '0 0 15px rgba(240, 192, 64, 0.4)' }
+                                                        : {}
                                                 }
-                                            }}
-                                            style={{
-                                                width: '50px',
-                                                height: '60px',
-                                                background:
-                                                    currentPage === 0
-                                                        ? 'rgba(25, 17, 12, 0.4)'
-                                                        : 'linear-gradient(180deg, #4a2f1b 0%, #2b180a 100%)',
-                                                border: '2px solid #b8860b',
-                                                borderColor: currentPage === 0 ? 'rgba(184, 134, 11, 0.2)' : '#b8860b',
-                                                borderRadius: '8px',
-                                                color: currentPage === 0 ? 'rgba(200, 168, 112, 0.3)' : '#ffd700',
-                                                fontSize: '22px',
-                                                fontWeight: 900,
-                                                cursor: currentPage === 0 ? 'default' : 'pointer',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                opacity: currentPage === 0 ? 0.45 : 1,
-                                                boxShadow: currentPage === 0 ? 'none' : '0 4px 10px rgba(0,0,0,0.5)',
-                                                transition: 'all 0.2s ease',
-                                            }}
-                                        >
-                                            ◀
-                                        </motion.button>
+                                                whileTap={currentPage > 0 ? { scale: 0.9 } : {}}
+                                                onClick={() => {
+                                                    if (currentPage > 0) {
+                                                        setCurrentPage(currentPage - 1);
+                                                        audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
+                                                    }
+                                                }}
+                                                style={{
+                                                    width: '50px',
+                                                    height: '60px',
+                                                    background:
+                                                        currentPage === 0
+                                                            ? 'rgba(25, 17, 12, 0.4)'
+                                                            : 'linear-gradient(180deg, #4a2f1b 0%, #2b180a 100%)',
+                                                    border: '2px solid #b8860b',
+                                                    borderColor: currentPage === 0 ? 'rgba(184, 134, 11, 0.2)' : '#b8860b',
+                                                    borderRadius: '8px',
+                                                    color: currentPage === 0 ? 'rgba(200, 168, 112, 0.3)' : '#ffd700',
+                                                    fontSize: '22px',
+                                                    fontWeight: 900,
+                                                    cursor: currentPage === 0 ? 'default' : 'pointer',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    opacity: currentPage === 0 ? 0.45 : 1,
+                                                    boxShadow: currentPage === 0 ? 'none' : '0 4px 10px rgba(0,0,0,0.5)',
+                                                    transition: 'all 0.2s ease',
+                                                }}
+                                            >
+                                                ◀
+                                            </motion.button>
+                                        )}
 
                                         {/* КОЛОНКИ НАГРАД ТЕКУЩЕЙ СТРАНИЦЫ */}
-                                        <div
+                                        <motion.div
+                                            drag={isMobile ? "x" : undefined}
+                                            dragConstraints={{ left: 0, right: 0 }}
+                                            dragElastic={0.15}
+                                            onDragEnd={(_, info) => {
+                                                if (!isMobile) return;
+                                                const swipeThreshold = 50;
+                                                if (info.offset.x < -swipeThreshold) {
+                                                    if (currentPage < 2) {
+                                                        setCurrentPage(currentPage + 1);
+                                                        audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
+                                                    }
+                                                } else if (info.offset.x > swipeThreshold) {
+                                                    if (currentPage > 0) {
+                                                        setCurrentPage(currentPage - 1);
+                                                        audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
+                                                    }
+                                                }
+                                            }}
                                             style={{
                                                 flex: 1,
                                                 display: 'flex',
                                                 alignItems: 'center',
                                                 justifyContent: 'center',
-                                                gap: '30px',
+                                                gap: isMobile ? '10px' : '30px',
+                                                touchAction: isMobile ? 'pan-y' : 'auto',
                                             }}
                                         >
                                             {BATTLE_PASS_REWARDS.slice(currentPage * 5, currentPage * 5 + 5).map(
@@ -326,47 +346,49 @@ export const BattlePassScene: React.FC<{ onClose: () => void }> = ({ onClose }) 
                                                     />
                                                 ),
                                             )}
-                                        </div>
+                                        </motion.div>
 
                                         {/* ПРАВАЯ СТРЕЛКА */}
-                                        <motion.button
-                                            disabled={currentPage === 2}
-                                            whileHover={
-                                                currentPage < 2
-                                                    ? { scale: 1.1, boxShadow: '0 0 15px rgba(240, 192, 64, 0.4)' }
-                                                    : {}
-                                            }
-                                            whileTap={currentPage < 2 ? { scale: 0.9 } : {}}
-                                            onClick={() => {
-                                                if (currentPage < 2) {
-                                                    setCurrentPage(currentPage + 1);
-                                                    audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
+                                        {!isMobile && (
+                                            <motion.button
+                                                disabled={currentPage === 2}
+                                                whileHover={
+                                                    currentPage < 2
+                                                        ? { scale: 1.1, boxShadow: '0 0 15px rgba(240, 192, 64, 0.4)' }
+                                                        : {}
                                                 }
-                                            }}
-                                            style={{
-                                                width: '50px',
-                                                height: '60px',
-                                                background:
-                                                    currentPage === 2
-                                                        ? 'rgba(25, 17, 12, 0.4)'
-                                                        : 'linear-gradient(180deg, #4a2f1b 0%, #2b180a 100%)',
-                                                border: '2px solid #b8860b',
-                                                borderColor: currentPage === 2 ? 'rgba(184, 134, 11, 0.2)' : '#b8860b',
-                                                borderRadius: '8px',
-                                                color: currentPage === 2 ? 'rgba(200, 168, 112, 0.3)' : '#ffd700',
-                                                fontSize: '22px',
-                                                fontWeight: 900,
-                                                cursor: currentPage === 2 ? 'default' : 'pointer',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                opacity: currentPage === 2 ? 0.45 : 1,
-                                                boxShadow: currentPage === 2 ? 'none' : '0 4px 10px rgba(0,0,0,0.5)',
-                                                transition: 'all 0.2s ease',
-                                            }}
-                                        >
-                                            ▶
-                                        </motion.button>
+                                                whileTap={currentPage < 2 ? { scale: 0.9 } : {}}
+                                                onClick={() => {
+                                                    if (currentPage < 2) {
+                                                        setCurrentPage(currentPage + 1);
+                                                        audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
+                                                    }
+                                                }}
+                                                style={{
+                                                    width: '50px',
+                                                    height: '60px',
+                                                    background:
+                                                        currentPage === 2
+                                                            ? 'rgba(25, 17, 12, 0.4)'
+                                                            : 'linear-gradient(180deg, #4a2f1b 0%, #2b180a 100%)',
+                                                    border: '2px solid #b8860b',
+                                                    borderColor: currentPage === 2 ? 'rgba(184, 134, 11, 0.2)' : '#b8860b',
+                                                    borderRadius: '8px',
+                                                    color: currentPage === 2 ? 'rgba(200, 168, 112, 0.3)' : '#ffd700',
+                                                    fontSize: '22px',
+                                                    fontWeight: 900,
+                                                    cursor: currentPage === 2 ? 'default' : 'pointer',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    opacity: currentPage === 2 ? 0.45 : 1,
+                                                    boxShadow: currentPage === 2 ? 'none' : '0 4px 10px rgba(0,0,0,0.5)',
+                                                    transition: 'all 0.2s ease',
+                                                }}
+                                            >
+                                                ▶
+                                            </motion.button>
+                                        )}
                                     </div>
 
                                     {/* ПЕРЕКЛЮЧАТЕЛИ СТРАНИЦ + КНОПКА ЗАБРАТЬ ВСЁ */}

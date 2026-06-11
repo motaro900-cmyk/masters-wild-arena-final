@@ -5,7 +5,6 @@ import { AssetsMap } from '../../../configs/AssetsMap';
 import { audioService } from '../../../services/AudioService';
 import '../../styles/profile-hub.css';
 import { getAvatarFrameStyle, getAvatarFramePath, getAvatarImageStyle } from '../../../configs/ProfileCustomization';
-
 export const ProfileHub: React.FC = () => {
     const { level, vipLevel, exp, vkUser, title, name, avatar, frame, glowEnabled, uiAnimations } = useGameStore();
     const activeFrameStyle = getAvatarFrameStyle(frame);

@@ -1,5 +1,4 @@
 import React from 'react';
-import { motion } from 'framer-motion';
 import { useGameStore } from '../../../store/useGameStore';
 import { requestNotifications } from '../../../utils/VKBridge';
 import { settingsTranslations } from './SettingsLocalization';

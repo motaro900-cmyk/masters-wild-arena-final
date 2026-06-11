@@ -30,7 +30,7 @@ export const ShopScene: React.FC = () => {
         setShowConfirm,
         toastMessage,
         filteredItems,
-        isMobile,
+        isMobile: isMobileFromStore,
         dailyAdWatchesCount,
         playerLevel,
         shopDiscounts,
@@ -40,6 +40,18 @@ export const ShopScene: React.FC = () => {
         confirmPurchase,
     } = useShopScene();
 
+    const [isMobile, setIsMobile] = React.useState(isMobileFromStore);
+
+    React.useEffect(() => {
+        const checkLayout = () => {
+            const isSmallScreen = typeof window !== 'undefined' && window.innerWidth < 1024;
+            setIsMobile(isMobileFromStore || isSmallScreen);
+        };
+        checkLayout();
+        window.addEventListener('resize', checkLayout);
+        return () => window.removeEventListener('resize', checkLayout);
+    }, [isMobileFromStore]);
+
     const equippedItems = useGameStore((state: any) => state.heroEquipment?.[state.selectedHeroId || 'panda'] || {});
 
     const itemPower = selectedItem ? calculateItemPower(selectedItem) : 0;
@@ -48,8 +60,9 @@ export const ShopScene: React.FC = () => {
     const equippedPower = equippedItem ? calculateItemPower(equippedItem) : 0;
     const powerDiff = itemPower - equippedPower;
 
-    const ITEMS_PER_PAGE = 7;
+    const ITEMS_PER_PAGE = isMobile ? 4 : 7;
     const [currentPage, setCurrentPage] = React.useState(0);
+    const [direction, setDirection] = React.useState(0);
 
     React.useEffect(() => {
         const timer = setTimeout(() => {
@@ -222,13 +235,13 @@ export const ShopScene: React.FC = () => {
                             image={AssetsMap.UI.TAB_ARSENAL}
                             isMobile={isMobile}
                         />
-                        <SidebarBtn
+{/* <SidebarBtn
                             active={activeMainTab === 'ALCHEMY'}
                             onClick={() => setActiveMainTab('ALCHEMY')}
                             label="АЛХИМИЯ"
                             image={AssetsMap.UI.TAB_ALCHEMY}
                             isMobile={isMobile}
-                        />
+                        /> */}
                         <SidebarBtn
                             active={activeMainTab === 'SKINS'}
                             onClick={() => setActiveMainTab('SKINS')}
@@ -264,7 +277,7 @@ export const ShopScene: React.FC = () => {
                         style={{
                             display: 'flex',
                             gap: isMobile ? '8px' : '15px',
-                            borderBottom: '2px solid rgba(240,192,64,0.15)',
+                            borderBottom: 'none',
                             paddingBottom: isMobile ? '6px' : '10px',
                             alignItems: 'center',
                             overflowX: 'auto',
@@ -277,6 +290,7 @@ export const ShopScene: React.FC = () => {
                                 label={tab.label}
                                 isActive={activeSubTab === tab.id}
                                 onClick={() => setActiveSubTab(tab.id)}
+                                isMobile={isMobile}
                             />
                         ))}
                     </div>
@@ -293,7 +307,40 @@ export const ShopScene: React.FC = () => {
                             }}
                         >
                             {/* CENTRAL SHOWCASE PEDESTAL */}
-                            <div
+                            <motion.div
+                                drag={isMobile ? "x" : undefined}
+                                dragConstraints={{ left: 0, right: 0 }}
+                                dragElastic={0.2}
+                                onDragEnd={(_, info) => {
+                                    if (!isMobile) return;
+                                    const swipeThreshold = 50;
+                                    const selectedIndex = filteredItems.findIndex(i => i.id === selectedItem?.id);
+                                    if (selectedIndex === -1) return;
+
+                                    if (info.offset.x < -swipeThreshold) {
+                                        // Swipe Left -> Next Item
+                                        if (selectedIndex < filteredItems.length - 1) {
+                                            const nextItem = filteredItems[selectedIndex + 1];
+                                            handleItemClick(nextItem);
+                                            const nextItemPage = Math.floor((selectedIndex + 1) / ITEMS_PER_PAGE);
+                                            if (nextItemPage !== currentPage) {
+                                                setDirection(1);
+                                                setCurrentPage(nextItemPage);
+                                            }
+                                        }
+                                    } else if (info.offset.x > swipeThreshold) {
+                                        // Swipe Right -> Previous Item
+                                        if (selectedIndex > 0) {
+                                            const prevItem = filteredItems[selectedIndex - 1];
+                                            handleItemClick(prevItem);
+                                            const prevItemPage = Math.floor((selectedIndex - 1) / ITEMS_PER_PAGE);
+                                            if (prevItemPage !== currentPage) {
+                                                setDirection(-1);
+                                                setCurrentPage(prevItemPage);
+                                            }
+                                        }
+                                    }
+                                }}
                                 style={{
                                     flex: 1.4,
                                     background: 'rgba(15,12,12,0.6)',
@@ -306,6 +353,7 @@ export const ShopScene: React.FC = () => {
                                     justifyContent: 'space-between',
                                     position: 'relative',
                                     overflow: 'hidden',
+                                    touchAction: isMobile ? 'pan-y' : 'auto',
                                 }}
                             >
                                 {/* Decorative Vignette */}
@@ -407,19 +455,23 @@ export const ShopScene: React.FC = () => {
                                             <div
                                                 style={{
                                                     zIndex: 5,
-                                                    animation: 'float-item 4s infinite ease-in-out',
+                                                    // Для скинов-персонажей — без левитации, ставим на пьедестал
+                                                    animation: selectedItem.mainTab === 'SKINS' ? undefined : 'float-item 4s infinite ease-in-out',
                                                     display: 'flex',
-                                                    alignItems: 'center',
+                                                    alignItems: 'flex-end',
                                                     justifyContent: 'center',
-                                                    marginBottom: isMobile ? '35px' : '45px',
+                                                    // Для скинов опускаем персонажа к пьедесталу
+                                                    marginBottom: selectedItem.mainTab === 'SKINS'
+                                                        ? (isMobile ? '10px' : '14px')
+                                                        : (isMobile ? '35px' : '45px'),
                                                 }}
                                             >
                                                 {selectedItem.spriteClass ? (
                                                     <div
                                                         className={selectedItem.spriteClass}
                                                         style={{
-                                                            width: isMobile ? '260px' : '260px',
-                                                            height: isMobile ? '260px' : '260px',
+                                                            width: isMobile ? '300px' : '260px',
+                                                            height: isMobile ? '300px' : '260px',
                                                             filter: `contrast(1.2) brightness(1.2) drop-shadow(0 0 20px ${getRarityColor(selectedItem.rarity)}cc)`,
                                                         }}
                                                     />
@@ -430,10 +482,16 @@ export const ShopScene: React.FC = () => {
                                                             (e.currentTarget.src = AssetsMap.UI.ICON_DAILY_CHEST)
                                                         }
                                                         style={{
-                                                            width: isMobile ? '260px' : '260px',
-                                                            height: isMobile ? '260px' : '260px',
+                                                            // Скины-персонажи рисуем крупнее и выравниваем по низу
+                                                            width: selectedItem.mainTab === 'SKINS'
+                                                                ? (isMobile ? '340px' : '320px')
+                                                                : (isMobile ? '300px' : '260px'),
+                                                            height: selectedItem.mainTab === 'SKINS'
+                                                                ? (isMobile ? '340px' : '320px')
+                                                                : (isMobile ? '300px' : '260px'),
                                                             objectFit: 'contain',
-                                                            filter: `contrast(1.2) brightness(1.2) drop-shadow(0 0 20px ${getRarityColor(selectedItem.rarity)}cc)`,
+                                                            objectPosition: selectedItem.mainTab === 'SKINS' ? 'bottom center' : 'center',
+                                                            filter: `contrast(1.1) brightness(1.15) drop-shadow(0 0 25px ${getRarityColor(selectedItem.rarity)}cc)`,
                                                         }}
                                                         alt=""
                                                     />
@@ -473,7 +531,7 @@ export const ShopScene: React.FC = () => {
                                         ))}
                                     </div>
                                 )}
-                            </div>
+                            </motion.div>
 
                             {/* RIGHT SIDE DETAILED INSPECTION CARD */}
                             <ShopDetailPanel
@@ -548,7 +606,7 @@ export const ShopScene: React.FC = () => {
                                 </div>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '15px', width: '100%' }}>
                                     {/* LEFT ARROW */}
-                                    {totalPages > 1 && (
+                                    {totalPages > 1 && !isMobile && (
                                         <motion.button
                                             whileHover={
                                                 currentPage !== 0
@@ -560,7 +618,10 @@ export const ShopScene: React.FC = () => {
                                                     : {}
                                             }
                                             whileTap={currentPage !== 0 ? { scale: 0.95 } : {}}
-                                            onClick={() => setCurrentPage((prev) => Math.max(0, prev - 1))}
+                                            onClick={() => {
+                                                setDirection(-1);
+                                                setCurrentPage((prev) => Math.max(0, prev - 1));
+                                            }}
                                             disabled={currentPage === 0}
                                             style={{
                                                 background:
@@ -574,6 +635,8 @@ export const ShopScene: React.FC = () => {
                                                 borderRadius: '50%',
                                                 width: isMobile ? '32px' : '48px',
                                                 height: isMobile ? '32px' : '48px',
+                                                minWidth: 'unset',
+                                                minHeight: 'unset',
                                                 color: currentPage === 0 ? 'rgba(255,255,255,0.15)' : '#f0c040',
                                                 fontSize: isMobile ? '14px' : '20px',
                                                 cursor: currentPage === 0 ? 'default' : 'pointer',
@@ -608,34 +671,86 @@ export const ShopScene: React.FC = () => {
                                     <div
                                         style={{
                                             flex: 1,
-                                            height: isMobile ? '140px' : '210px',
+                                            height: isMobile ? '155px' : '210px',
                                             background: 'rgba(10,8,8,0.7)',
-                                            border: '1px solid rgba(240,192,64,0.1)',
+                                            border: isMobile ? '1.5px solid rgba(240,192,64,0.2)' : '1px solid rgba(240,192,64,0.1)',
                                             borderRadius: '12px',
-                                            padding: isMobile ? '6px 10px' : '12px 20px',
+                                            padding: isMobile ? '6px 12px' : '12px 20px',
                                             display: 'flex',
-                                            gap: isMobile ? '8px' : '12px',
                                             alignItems: 'center',
                                             justifyContent: 'center',
                                             minWidth: 0,
-                                            overflow: 'visible',
+                                            overflow: 'hidden',
+                                            position: 'relative',
                                         }}
                                     >
-                                        {paginatedItems.map((item: ShopItem) => (
-                                            <ShopItemCard
-                                                key={item.id}
-                                                item={item}
-                                                isSelected={selectedItem?.id === item.id}
-                                                playerLevel={playerLevel}
-                                                discount={shopDiscounts?.[item.id]}
-                                                onClick={() => handleItemClick(item)}
-                                                isMobile={isMobile}
-                                            />
-                                        ))}
+                                        <AnimatePresence initial={false} custom={direction} mode="wait">
+                                            <motion.div
+                                                key={currentPage}
+                                                custom={direction}
+                                                variants={{
+                                                    initial: (direction: number) => ({
+                                                        x: direction > 0 ? 100 : -100,
+                                                        opacity: 0,
+                                                    }),
+                                                    animate: {
+                                                        x: 0,
+                                                        opacity: 1,
+                                                    },
+                                                    exit: (direction: number) => ({
+                                                        x: direction > 0 ? -100 : 100,
+                                                        opacity: 0,
+                                                    }),
+                                                }}
+                                                initial="initial"
+                                                animate="animate"
+                                                exit="exit"
+                                                transition={{ type: 'spring', stiffness: 350, damping: 32 }}
+                                                drag={isMobile ? "x" : undefined}
+                                                dragConstraints={{ left: 0, right: 0 }}
+                                                dragElastic={0.2}
+                                                onDragEnd={(_, info) => {
+                                                    if (!isMobile) return;
+                                                    const swipeThreshold = 50;
+                                                    if (info.offset.x < -swipeThreshold) {
+                                                        if (currentPage < totalPages - 1) {
+                                                            setDirection(1);
+                                                            setCurrentPage((prev) => prev + 1);
+                                                        }
+                                                    } else if (info.offset.x > swipeThreshold) {
+                                                        if (currentPage > 0) {
+                                                            setDirection(-1);
+                                                            setCurrentPage((prev) => prev - 1);
+                                                        }
+                                                    }
+                                                }}
+                                                style={{
+                                                    display: 'flex',
+                                                    gap: isMobile ? '16px' : '12px',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    width: '100%',
+                                                    height: '100%',
+                                                    touchAction: isMobile ? 'pan-y' : 'auto',
+                                                }}
+                                            >
+                                                {paginatedItems.map((item: ShopItem) => (
+                                                    <ShopItemCard
+                                                        key={item.id}
+                                                        item={item}
+                                                        isSelected={selectedItem?.id === item.id}
+                                                        playerLevel={playerLevel}
+                                                        discount={shopDiscounts?.[item.id]}
+                                                        onClick={() => handleItemClick(item)}
+                                                        isMobile={isMobile}
+                                                    />
+                                                ))}
+                                            </motion.div>
+                                        </AnimatePresence>
                                     </div>
 
                                     {/* RIGHT ARROW */}
-                                    {totalPages > 1 && (
+                                    {totalPages > 1 && !isMobile && (
                                         <motion.button
                                             whileHover={
                                                 currentPage !== totalPages - 1
@@ -647,7 +762,10 @@ export const ShopScene: React.FC = () => {
                                                     : {}
                                             }
                                             whileTap={currentPage !== totalPages - 1 ? { scale: 0.95 } : {}}
-                                            onClick={() => setCurrentPage((prev) => Math.min(totalPages - 1, prev + 1))}
+                                            onClick={() => {
+                                                setDirection(1);
+                                                setCurrentPage((prev) => Math.min(totalPages - 1, prev + 1));
+                                            }}
                                             disabled={currentPage === totalPages - 1}
                                             style={{
                                                 background:
@@ -661,6 +779,8 @@ export const ShopScene: React.FC = () => {
                                                 borderRadius: '50%',
                                                 width: isMobile ? '32px' : '48px',
                                                 height: isMobile ? '32px' : '48px',
+                                                minWidth: 'unset',
+                                                minHeight: 'unset',
                                                 color:
                                                     currentPage === totalPages - 1
                                                         ? 'rgba(255,255,255,0.15)'
@@ -708,7 +828,10 @@ export const ShopScene: React.FC = () => {
                                         {Array.from({ length: totalPages }).map((_, idx) => (
                                             <button
                                                 key={idx}
-                                                onClick={() => setCurrentPage(idx)}
+                                                onClick={() => {
+                                                    setDirection(idx > currentPage ? 1 : -1);
+                                                    setCurrentPage(idx);
+                                                }}
                                                 style={{
                                                     width: '8px',
                                                     height: '8px',

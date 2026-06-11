@@ -1,4 +1,5 @@
 import { Howl, Howler } from 'howler';
+import bridge from '@vkontakte/vk-bridge';
 import { AssetsMap } from '../configs/AssetsMap';
 
 /**
@@ -18,6 +19,8 @@ class AudioService {
     constructor() {
         if (!AudioService.visibilityListenerAdded) {
             AudioService.visibilityListenerAdded = true;
+
+            // 1. Стандартный браузерный Visibility API
             document.addEventListener('visibilitychange', () => {
                 if (document.hidden) {
                     console.log('🤫 App hidden - Muting audio');
@@ -37,6 +40,34 @@ class AudioService {
                         });
                 }
             });
+
+            // 2. Жизненный цикл VK Bridge (Обязательно для прохождения модерации VK)
+            try {
+                bridge.subscribe((event) => {
+                    if (!event || !event.detail) return;
+                    const { type } = event.detail;
+
+                    if (type === 'VKWebAppViewHide') {
+                        console.log('🤫 VK Bridge: VKWebAppViewHide - Muting audio');
+                        Howler.mute(true);
+                    } else if (type === 'VKWebAppViewRestore') {
+                        console.log('🔊 VK Bridge: VKWebAppViewRestore - Unmuting audio');
+                        import('../store/useGameStore')
+                            .then(({ useGameStore }) => {
+                                const isMuted = useGameStore.getState().isMuted;
+                                if (!isMuted) {
+                                    Howler.mute(false);
+                                }
+                            })
+                            .catch((err) => {
+                                console.warn('Could not read mute state on VKWebAppViewRestore:', err);
+                                Howler.mute(false);
+                            });
+                    }
+                });
+            } catch (err) {
+                console.warn('Failed to subscribe to VK Bridge lifecycle events:', err);
+            }
         } // end if (!AudioService.visibilityListenerAdded)
         // Run background assets verification check
         this.verifyIntegrity();

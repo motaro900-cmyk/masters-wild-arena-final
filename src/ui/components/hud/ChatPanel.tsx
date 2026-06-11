@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../../../store/useGameStore';
+import { db } from '../../../utils/firebase';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
 // Subcomponents
 import { ChatMessages } from './Chat/ChatMessages';
@@ -24,11 +26,20 @@ export const ChatPanel = React.memo(() => {
     const [isFocused, setIsFocused] = useState(false);
     const [hasNewMessages, setHasNewMessages] = useState(false);
 
-    const [contextMenu, setContextMenu] = useState<{ visible: boolean; x: number; y: number; author: string | null }>({
+    const [contextMenu, setContextMenu] = useState<{
+        visible: boolean;
+        x: number;
+        y: number;
+        author: string | null;
+        messageText?: string;
+        messageTimestamp?: number;
+        senderId?: string | null;
+    }>({
         visible: false,
         x: 0,
         y: 0,
         author: null,
+        senderId: null,
     });
     const scrollRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
@@ -92,7 +103,7 @@ export const ChatPanel = React.memo(() => {
 
     useEffect(() => {
         // Устанавливаем флаг сессии после первого отображения сообщений
-        const hasWelcome = filteredMessages.some((msg) => msg.id === 'welcome-1' || msg.id === 'codex-1');
+        const hasWelcome = filteredMessages.some((msg: any) => msg.id === 'welcome-1' || msg.id === 'codex-1');
         if (hasWelcome) {
             sessionStorage.setItem('session_welcome_seen', 'true');
         }
@@ -155,23 +166,32 @@ export const ChatPanel = React.memo(() => {
         }
     };
 
-    const openContextMenu = (e: React.MouseEvent, author: string) => {
+    const openContextMenu = (e: React.MouseEvent, author: string, text?: string, timestamp?: number, senderId?: string) => {
         e.preventDefault();
-        setActiveChatTab('private');
-        setPrivateRecipient(author);
-        setInputText('');
-        setTimeout(() => inputRef.current?.focus(), 50);
 
         setContextMenu({
             visible: true,
             x: e.clientX,
             y: e.clientY,
             author,
+            messageText: text,
+            messageTimestamp: timestamp,
+            senderId,
         });
     };
 
-    const handleMenuAction = (type: string, author: string | null) => {
+    const handleMenuAction = (type: string, author: string | null, senderId?: string | null) => {
         switch (type) {
+            case 'profile': {
+                const setInspectId = useGameStore.getState().setInspectPlayerId;
+                const setInspectName = useGameStore.getState().setInspectPlayerName;
+                if (senderId && setInspectId) {
+                    setInspectId(senderId);
+                } else if (author && setInspectName) {
+                    setInspectName(author);
+                }
+                break;
+            }
             case 'pm':
                 setActiveChatTab('private');
                 setPrivateRecipient(author);
@@ -180,6 +200,30 @@ export const ChatPanel = React.memo(() => {
                 break;
             case 'copy':
                 navigator.clipboard.writeText(author || '');
+                break;
+            case 'report':
+                if (author) {
+                    const reportMessage = async () => {
+                        try {
+                            const reporterId = useGameStore.getState().playerId || 'unknown';
+                            const reporterName = useGameStore.getState().name || 'Мастер';
+                            await addDoc(collection(db, 'reports'), {
+                                reportedUser: author,
+                                messageText: contextMenu.messageText || '',
+                                messageTimestamp: contextMenu.messageTimestamp || 0,
+                                reporterId,
+                                reporterName,
+                                timestamp: serverTimestamp(),
+                                status: 'pending',
+                            });
+                            useGameStore.getState().showAlert('Жалоба принята. Модерация рассмотрит её в течение 48 часов.');
+                        } catch (error) {
+                            console.error('Failed to send report:', error);
+                            useGameStore.getState().showAlert('Не удалось отправить жалобу. Попробуйте позже.');
+                        }
+                    };
+                    reportMessage();
+                }
                 break;
         }
     };
@@ -476,6 +520,7 @@ export const ChatPanel = React.memo(() => {
                 x={contextMenu.x}
                 y={contextMenu.y}
                 author={contextMenu.author}
+                senderId={contextMenu.senderId}
                 onClose={() => setContextMenu((prev) => ({ ...prev, visible: false }))}
                 handleMenuAction={handleMenuAction}
             />

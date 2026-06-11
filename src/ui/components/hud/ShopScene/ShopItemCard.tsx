@@ -50,28 +50,37 @@ export const ShopItemCard: React.FC<ShopItemCardProps> = ({
             onClick={onClick}
             whileHover={{ y: -6, scale: 1.03 }}
             style={{
-                minWidth: isMobile ? '105px' : '155px',
+                width: isMobile ? '130px' : '155px',
+                maxWidth: isMobile ? '130px' : '155px',
+                minWidth: isMobile ? '130px' : '155px',
+                boxSizing: 'border-box',
                 flexShrink: 0,
-                height: isMobile ? '125px' : '175px',
+                height: isMobile ? '150px' : '175px',
                 background: isSelected
-                    ? `radial-gradient(circle, rgba(240,192,64,0.2) 0%, rgba(20,20,25,0.96) 100%)`
+                    ? (isMobile
+                        ? `radial-gradient(circle, rgba(240,192,64,0.25) 0%, rgba(20,15,15,0.98) 100%)`
+                        : `radial-gradient(circle, rgba(240,192,64,0.2) 0%, rgba(20,20,25,0.96) 100%)`)
                     : isLocked
-                      ? 'linear-gradient(180deg, rgba(25,20,15,0.5) 0%, rgba(15,10,10,0.75) 100%)'
-                      : 'linear-gradient(180deg, rgba(30,25,25,0.85) 0%, rgba(15,15,20,0.95) 100%)',
+                      ? (isMobile
+                          ? 'linear-gradient(180deg, rgba(35,25,20,0.95) 0%, rgba(20,15,15,0.98) 100%)'
+                          : 'linear-gradient(180deg, rgba(25,20,15,0.5) 0%, rgba(15,10,10,0.75) 100%)')
+                      : (isMobile
+                          ? 'linear-gradient(180deg, rgba(40,35,35,0.96) 0%, rgba(20,20,25,0.98) 100%)'
+                          : 'linear-gradient(180deg, rgba(30,25,25,0.85) 0%, rgba(15,15,20,0.95) 100%)'),
                 border: isSelected
                     ? `2.5px solid #f0c040`
                     : discount > 0 && !isLocked
-                      ? `1.5px solid #e11d48`
+                      ? (isMobile ? `2px solid #e11d48` : `1.5px solid #e11d48`)
                       : isLocked
-                        ? '1.5px solid rgba(240, 192, 64, 0.15)'
-                        : `1.5px solid ${glow}44`,
+                        ? (isMobile ? '1.5px solid rgba(240, 192, 64, 0.25)' : '1.5px solid rgba(240, 192, 64, 0.15)')
+                        : (isMobile ? `2px solid ${glow}66` : `1.5px solid ${glow}44`),
                 boxShadow: isSelected
                     ? `0 0 15px #f0c04066`
                     : discount > 0 && !isLocked
                       ? `0 4px 10px rgba(0,0,0,0.6), 0 0 10px rgba(225, 29, 72, 0.4)`
                       : `0 4px 10px rgba(0,0,0,0.5), 0 0 5px ${glow}11`,
                 borderRadius: '10px',
-                padding: isMobile ? '5px 5px 4px 5px' : '10px 10px 8px 10px',
+                padding: isMobile ? '8px 8px 6px 8px' : '10px 10px 8px 10px',
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
@@ -181,8 +190,8 @@ export const ShopItemCard: React.FC<ShopItemCardProps> = ({
             {/* Sprite Container — large */}
             <div
                 style={{
-                    width: isMobile ? '55px' : '90px',
-                    height: isMobile ? '55px' : '90px',
+                    width: isMobile ? '70px' : '90px',
+                    height: isMobile ? '70px' : '90px',
                     position: 'relative',
                     flex: 1,
                     display: 'flex',
@@ -195,8 +204,8 @@ export const ShopItemCard: React.FC<ShopItemCardProps> = ({
                     <div
                         className={item.spriteClass}
                         style={{
-                            width: isMobile ? '45px' : '80px',
-                            height: isMobile ? '45px' : '80px',
+                            width: isMobile ? '60px' : '80px',
+                            height: isMobile ? '60px' : '80px',
                             filter: isLocked
                                 ? 'grayscale(1) brightness(0.4)'
                                 : `drop-shadow(0 2px 6px rgba(0,0,0,0.6)) drop-shadow(0 0 4px ${glow}66)`,
@@ -207,8 +216,8 @@ export const ShopItemCard: React.FC<ShopItemCardProps> = ({
                         src={resolveAssetPath(item.image)}
                         onError={(e) => (e.currentTarget.src = AssetsMap.UI.ICON_DAILY_CHEST)}
                         style={{
-                            width: isMobile ? '45px' : '80px',
-                            height: isMobile ? '45px' : '80px',
+                            width: isMobile ? '60px' : '80px',
+                            height: isMobile ? '60px' : '80px',
                             objectFit: 'contain',
                             filter: isLocked
                                 ? 'grayscale(1) brightness(0.4)'
@@ -222,14 +231,14 @@ export const ShopItemCard: React.FC<ShopItemCardProps> = ({
             {/* Tiny Item Name */}
             <span
                 style={{
-                    fontSize: '10px',
+                    fontSize: isMobile ? '11px' : '12px',
                     color: '#e8d5a0',
                     whiteSpace: 'nowrap',
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
                     maxWidth: '100%',
                     fontFamily: "'Nunito', sans-serif",
-                    fontWeight: 700,
+                    fontWeight: isMobile ? 800 : 700,
                     textAlign: 'center',
                 }}
             >

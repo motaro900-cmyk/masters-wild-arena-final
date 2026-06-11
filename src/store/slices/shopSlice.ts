@@ -138,7 +138,7 @@ export const createShopSlice = (set: any, get: any) => ({
                             const currentScene = sceneManager.getCurrentScene();
                             if (
                                 currentScene &&
-                                (currentScene.label === 'ShopScreen' || currentScene.name === 'ShopScreen')
+                                currentScene.label === 'ShopScreen'
                             ) {
                                 console.log('[ShopSlice] exitShop: Switching PIXI scene back to MainScreen');
                                 sceneManager.switchScene(new MainScreen());

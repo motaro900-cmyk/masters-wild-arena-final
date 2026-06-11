@@ -4,6 +4,7 @@ import { audioService } from '../../../services/AudioService';
 import { AssetsMap } from '../../../configs/AssetsMap';
 import { useGameStore } from '../../../store/useGameStore';
 import { syncService, SyncService } from '../../../services/SyncService';
+import { openExternalUrl } from '../../../utils/VKBridge';
 
 interface IntroScreenProps {
     onComplete: () => void;
@@ -15,6 +16,8 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
     const [nickname, setNickname] = useState(storeName && storeName !== 'Мастер' ? storeName : '');
     const [isChecking, setIsChecking] = useState(false);
     const [error, setError] = useState('');
+    const [legalAccepted, setLegalAccepted] = useState(false);
+    const [isTransitioning, setIsTransitioning] = useState(false);
     const isMobile = useGameStore((state) => state.isMobile);
     const backgroundSrc = isMobile ? AssetsMap.BACKGROUNDS.MAIN_MENU_MOBILE : AssetsMap.BACKGROUNDS.MAIN_MENU;
     const changeName = useGameStore((state) => state.changeName);
@@ -53,6 +56,7 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
             'еблан',
             'сука',
             'бля',
+            'блять',
             'админ',
             'gm',
             'admin',
@@ -61,6 +65,8 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
             'гнида',
             'мразь',
             'шлюха',
+            'vk',
+            'вконтакте',
         ];
         const lowerName = cleanName.toLowerCase();
         if (forbidden.some((word) => lowerName.includes(word))) {
@@ -88,6 +94,10 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
     };
 
     const nextStep = async () => {
+        if (isTransitioning) return;
+        setIsTransitioning(true);
+        setTimeout(() => setIsTransitioning(false), 400);
+
         // Request fullscreen on first interaction
         if (step === 1) {
             audioService.resumeContext();
@@ -109,6 +119,11 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
         }
 
         if (step === 4) {
+            if (!legalAccepted) {
+                setError('Необходимо принять Пользовательское соглашение и Политику конфиденциальности');
+                audioService.playSFX(AssetsMap.AUDIO.SFX_ERROR || '');
+                return;
+            }
             const validationError = await validateNickname(nickname);
             if (validationError) {
                 setError(validationError);
@@ -177,6 +192,10 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
                 pointerEvents: 'auto',
             }}
         >
+            {/* Возрастной ценз для модерации VK */}
+            <div className="absolute top-4 right-4 bg-black/60 text-gray-400 text-xs font-bold border border-gray-700 px-2 py-1 rounded z-20">
+                12+
+            </div>
             {/* BACKGROUND IMAGE */}
             <img
                 src={backgroundSrc}
@@ -410,20 +429,20 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
                                 </h2>
                                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px' }}>
                                     <GuideItem
-                                        title="ЗВЕРИ"
-                                        desc="Твой основной отряд. Прокачивай характеристики своей панды или кабана, выбирай лучшие способности и доминируй!"
+                                        title="ГЕРОИ"
+                                        desc="Твой чемпион. Нанимай и повышай уровень могучих воинов: от верного Панды Фэн Луна до благородного Льва Аурелиуса и свирепого Минотавра Громма."
                                     />
                                     <GuideItem
                                         title="МАГАЗИН"
-                                        desc="Экипировка и Алхимия. Здесь ты найдешь всё: от простых палок до легендарных мечей, а также ценную энергию."
+                                        desc="Снаряжение и ресурсы. Здесь ты найдешь всё необходимое для подготовки к битвам: от простых клинков до редких доспехов и эликсиров энергии."
                                     />
                                     <GuideItem
                                         title="РАНГИ"
-                                        desc="Дорога к славе. Сражайся на арене, чтобы подняться в мировом рейтинге и получить статус 'Легенда Арены'."
+                                        desc="Путь к славе. Сражайся на Арене, зарабатывай рейтинг и кубки, поднимаясь от скромного Странника до великой Легенды Арены!"
                                     />
                                     <GuideItem
-                                        title="БОЕВОЙ ПРОПУСК"
-                                        desc="Сезонные награды. Выполняй ежедневные квесты, зарабатывай опыт и забирай эксклюзивные подарки каждый день."
+                                        title="КУЗНИЦА"
+                                        desc="Снаряжение и ковка. Переплавляй ненужные предметы в Кузнице, создавая легендарное снаряжение и многократно усиливая боевую мощь твоего Героя."
                                     />
                                 </div>
                             </motion.div>
@@ -478,8 +497,7 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
                                     }}
                                 >
                                     Каждый великий Мастер начинает свой путь с имени. <br />
-                                    Выбери его мудро — оно будет высечено в истории Диких Земель{' '}
-                                    <span style={{ color: '#ffd700', fontWeight: 'bold' }}>навечно</span>.
+                                    Выбери его мудро — под этим именем тебя запомнят на Арене Диких Земель.
                                 </p>
 
                                 {/* КОДЕКС ИМЕНИ (ПРАВИЛА) */}
@@ -511,7 +529,7 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
                                             📜 УНИКАЛЬНОСТЬ
                                         </div>
                                         <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)' }}>
-                                            Двух одинаковых Мастеров не бывает.
+                                            Двух одинаковых Мастеров не существует.
                                         </div>
                                     </div>
                                     <div
@@ -533,7 +551,7 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
                                             🛡️ ЧЕСТЬ
                                         </div>
                                         <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)' }}>
-                                            Без мата и оскорблений. Соблюдай закон.
+                                            Без нецензурной лексики. Соблюдай правила Арены.
                                         </div>
                                     </div>
                                     <div
@@ -552,10 +570,10 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
                                                 marginBottom: '5px',
                                             }}
                                         >
-                                            ♾️ ВЕЧНОСТЬ
+                                            🏆 СЛАВА
                                         </div>
                                         <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)' }}>
-                                            Имя нельзя будет изменить. Никогда.
+                                            Это имя увидят все соперники в таблице лидеров.
                                         </div>
                                     </div>
                                 </div>
@@ -626,6 +644,56 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
                                     </motion.div>
                                 )}
 
+                                {/* LEGAL CONSENT */}
+                                <div
+                                    style={{
+                                        marginTop: '20px',
+                                        display: 'flex',
+                                        alignItems: 'flex-start',
+                                        gap: '12px',
+                                        background: legalAccepted ? 'rgba(240,192,64,0.07)' : 'rgba(255,255,255,0.03)',
+                                        border: `1px solid ${legalAccepted ? 'rgba(240,192,64,0.35)' : 'rgba(255,255,255,0.1)'}`,
+                                        borderRadius: '14px',
+                                        padding: '14px 18px',
+                                        cursor: 'pointer',
+                                        transition: 'all 0.2s',
+                                    }}
+                                    onClick={() => { setLegalAccepted(!legalAccepted); setError(''); }}
+                                >
+                                    <div style={{
+                                        width: '22px',
+                                        height: '22px',
+                                        borderRadius: '6px',
+                                        border: `2px solid ${legalAccepted ? '#f0c040' : 'rgba(255,255,255,0.3)'}`,
+                                        background: legalAccepted ? '#f0c040' : 'transparent',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        flexShrink: 0,
+                                        marginTop: '1px',
+                                        transition: 'all 0.2s',
+                                    }}>
+                                        {legalAccepted && <span style={{ color: '#1a0e05', fontSize: '14px', fontWeight: 900 }}>✓</span>}
+                                    </div>
+                                    <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.65)', lineHeight: 1.5, textAlign: 'left' }}>
+                                        Я прочитал(а) и принимаю{' '}
+                                        <span
+                                            onClick={(e) => { e.stopPropagation(); openExternalUrl('https://dev.vk.com/ru/user-agreement'); }}
+                                            style={{ color: '#f0c040', textDecoration: 'underline', cursor: 'pointer' }}
+                                        >
+                                            Пользовательское соглашение
+                                        </span>
+                                        {' '}и{' '}
+                                        <span
+                                            onClick={(e) => { e.stopPropagation(); openExternalUrl('https://dev.vk.com/ru/privacy-policy'); }}
+                                            style={{ color: '#f0c040', textDecoration: 'underline', cursor: 'pointer' }}
+                                        >
+                                            Политику конфиденциальности
+                                        </span>
+                                        {' '}игры Masters of the Wild.
+                                    </div>
+                                </div>
+
                                 <p
                                     style={{
                                         marginTop: '25px',
@@ -640,39 +708,39 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
                             </motion.div>
                         )}
                     </AnimatePresence>
-                </div>
 
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', paddingBottom: '20px' }}>
-                    <motion.button
-                        whileHover={{ scale: 1.05, boxShadow: '0 0 50px rgba(200,149,42,0.7)' }}
-                        whileTap={{ scale: 0.95 }}
-                        disabled={isChecking}
-                        onClick={nextStep}
-                        style={{
-                            padding: '20px 80px',
-                            background: isChecking ? '#333' : 'linear-gradient(135deg, #ffe082, #c8952a)',
-                            border: 'none',
-                            borderRadius: '12px',
-                            fontSize: '24px',
-                            fontWeight: 'bold',
-                            color: isChecking ? '#666' : '#1a0e05',
-                            cursor: isChecking ? 'not-allowed' : 'pointer',
-                            letterSpacing: '0.2em',
-                            boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
-                        }}
-                    >
-                        {step === 4 ? 'НАЧАТЬ ПУТЬ' : 'ДАЛЕЕ'}
-                    </motion.button>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '30px', paddingBottom: '20px' }}>
+                        <motion.button
+                            whileHover={{ scale: 1.05, boxShadow: '0 0 50px rgba(200,149,42,0.7)' }}
+                            whileTap={{ scale: 0.95 }}
+                            disabled={isChecking}
+                            onClick={nextStep}
+                            style={{
+                                padding: '20px 80px',
+                                background: isChecking ? '#333' : 'linear-gradient(135deg, #ffe082, #c8952a)',
+                                border: 'none',
+                                borderRadius: '12px',
+                                fontSize: '24px',
+                                fontWeight: 'bold',
+                                color: isChecking ? '#666' : '#1a0e05',
+                                cursor: isChecking ? 'not-allowed' : 'pointer',
+                                letterSpacing: '0.2em',
+                                boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
+                            }}
+                        >
+                            {step === 4 ? 'НАЧАТЬ ПУТЬ' : 'ДАЛЕЕ'}
+                        </motion.button>
 
-                    <div
-                        style={{
-                            marginTop: '15px',
-                            color: 'rgba(255,255,255,0.4)',
-                            fontSize: '14px',
-                            letterSpacing: '0.1em',
-                        }}
-                    >
-                        ШАГ {step} ИЗ 4
+                        <div
+                            style={{
+                                marginTop: '15px',
+                                color: 'rgba(255,255,255,0.4)',
+                                fontSize: '14px',
+                                letterSpacing: '0.1em',
+                            }}
+                        >
+                            ШАГ {step} ИЗ 4
+                        </div>
                     </div>
                 </div>
             </div>

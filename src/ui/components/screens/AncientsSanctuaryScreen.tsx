@@ -279,7 +279,7 @@ export const AncientsSanctuaryScreen: React.FC = () => {
                             if (tab === 'GOLD' || tab === 'GEMS' || tab === 'ENERGY') {
                                 goToShop('BANK', tab);
                             } else {
-                                goToShop('ALCHEMY');
+                                goToShop('ARSENAL');
                             }
                         }}
                     />

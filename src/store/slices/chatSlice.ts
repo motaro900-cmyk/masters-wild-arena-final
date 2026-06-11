@@ -161,13 +161,17 @@ export const createChatSlice = (set: any, get: any) => ({
                 top1.id === `GUEST-${state.playerId}` ||
                 (state.vkUser && top1.id === `VK-${state.vkUser.id}`));
 
+        const activeHeroId = state.selectedHeroId || 'panda';
+        const activeHeroLevel = state.heroes?.[activeHeroId]?.level || 1;
+
         const newMessage: any = {
+            senderId: SyncService.getPrefixedUserId(state.vkUser, state.playerId),
             author: finalAuthor,
             avatar: finalAvatar,
             text,
             type: finalType,
             timestamp: Date.now(),
-            level: state.level || 1,
+            level: activeHeroLevel,
             rankIcon: rankInfo.icon,
             vipLevel: state.vipLevel || 0,
             isTop1,
@@ -283,7 +287,7 @@ export const createChatSlice = (set: any, get: any) => ({
             text,
             userId: state.playerId,
             userName: state.vkUser ? `${state.vkUser.first_name} ${state.vkUser.last_name}` : 'Мастер',
-            level: state.level,
+            level: state.heroes?.[state.selectedHeroId || 'panda']?.level || 1,
             platform: typeof navigator !== 'undefined' ? navigator.platform : 'unknown',
             version: 'v1.1.0',
             timestamp: Date.now(),

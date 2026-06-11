@@ -12,7 +12,6 @@ export const CityScreen: React.FC = () => {
     const isMobile = useGameStore((state) => state.isMobile);
     const goToMainMenu = useGameStore((state) => state.goToMainMenu);
     const goToShop = useGameStore((state) => state.goToShop);
-    const goToForge = useGameStore((state) => state.goToForge);
     const openChest = useGameStore((state) => state.openChest);
     const crystals = useGameStore((state) => state.crystals);
 
@@ -307,6 +306,7 @@ export const CityScreen: React.FC = () => {
             </div>
 
             {/* ИНТЕРАКТИВНЫЕ ЗОНЫ (Хотспоты) */}
+            {/*
             <BuildingHotspot
                 x="64%"
                 y="82%"
@@ -316,6 +316,7 @@ export const CityScreen: React.FC = () => {
                     goToForge();
                 }}
             />
+            */}
 
             <BuildingHotspot
                 x="8%"
@@ -331,6 +332,8 @@ export const CityScreen: React.FC = () => {
                 }}
             />
 
+            {/* ТАВЕРНА и ЗАЛ СЛАВЫ скрыты, так как они не завершены и ведут к отклонению приложения модерацией VK */}
+            {/*
             <BuildingHotspot
                 x="53%"
                 y="43%"
@@ -349,6 +352,7 @@ export const CityScreen: React.FC = () => {
                 label="ЗАЛ СЛАВЫ"
                 onClick={() => setModalText('Зал Славы станет доступен в следующем обновлении. Копите победы!')}
             />
+            */}
 
             <BuildingHotspot
                 x="32%"
@@ -360,7 +364,7 @@ export const CityScreen: React.FC = () => {
                 }}
             />
 
-            <BuildingHotspot x="78%" y="78%" label="РЫНОК" onClick={() => goToShop('BANK')} />
+            <BuildingHotspot x="78%" y="78%" label="МАГАЗИН" onClick={() => goToShop('BANK')} />
 
             {/* Custom Modal */}
             {modalText && (

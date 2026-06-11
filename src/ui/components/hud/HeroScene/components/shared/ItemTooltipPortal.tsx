@@ -4,6 +4,8 @@ import { ITEMS_DATABASE } from '../../../../../../game/configs/ItemsConfig';
 import { rarityColors } from '../../constants/roleIcons';
 import { resolveAssetPath } from '../../../../../../utils/assetPath';
 
+import { useGameStore } from '../../../../../../store/useGameStore';
+
 interface ItemTooltipPortalProps {
     hoveredItem: { id: string; x: number; y: number } | null;
     heroEquipment: any;
@@ -11,9 +13,13 @@ interface ItemTooltipPortalProps {
 }
 
 export const ItemTooltipPortal: React.FC<ItemTooltipPortalProps> = ({ hoveredItem, heroEquipment, selectedHeroId }) => {
-    if (!hoveredItem || !ITEMS_DATABASE[hoveredItem.id]) return null;
+    const inventory = useGameStore((s: any) => s.inventory) || [];
+    const invItem = hoveredItem ? inventory.find((i: any) => (i.instanceId || i.id) === hoveredItem.id) : null;
+    const templateId = invItem ? invItem.id : (hoveredItem?.id || '');
 
-    const itemData = ITEMS_DATABASE[hoveredItem.id] as any;
+    if (!hoveredItem || !ITEMS_DATABASE[templateId]) return null;
+
+    const itemData = ITEMS_DATABASE[templateId] as any;
     const rarityColor = (rarityColors as any)[itemData.rarity] || '#fff';
 
     return createPortal(

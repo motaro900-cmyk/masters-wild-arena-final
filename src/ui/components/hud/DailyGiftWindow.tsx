@@ -69,6 +69,16 @@ export const DailyGiftWindow: React.FC<DailyGiftWindowProps> = ({ onClose }) => 
     // Tab control
     const [activeTab, setActiveTab] = useState<'CALENDAR' | 'WHEEL'>('CALENDAR');
 
+    const [isMobile, setIsMobile] = useState(false);
+    useEffect(() => {
+        const checkLayout = () => {
+            setIsMobile(typeof window !== 'undefined' && window.innerWidth < 1024);
+        };
+        checkLayout();
+        window.addEventListener('resize', checkLayout);
+        return () => window.removeEventListener('resize', checkLayout);
+    }, []);
+
     // Calendar states
     const [streak, setStreak] = useState<number>(1);
     const [claimedToday, setClaimedToday] = useState<boolean>(false);
@@ -427,7 +437,29 @@ export const DailyGiftWindow: React.FC<DailyGiftWindowProps> = ({ onClose }) => 
                 </button>
             </div>
 
-            {activeTab === 'CALENDAR' ? (
+            <motion.div
+                drag={isMobile ? "x" : undefined}
+                dragConstraints={{ left: 0, right: 0 }}
+                dragElastic={0.15}
+                onDragEnd={(_, info) => {
+                    if (!isMobile) return;
+                    if (isSpinning) return;
+                    const swipeThreshold = 50;
+                    if (info.offset.x < -swipeThreshold && activeTab === 'CALENDAR') {
+                        setActiveTab('WHEEL');
+                    } else if (info.offset.x > swipeThreshold && activeTab === 'WHEEL') {
+                        setActiveTab('CALENDAR');
+                    }
+                }}
+                style={{
+                    width: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    touchAction: isMobile ? 'pan-y' : 'auto',
+                }}
+            >
+                {activeTab === 'CALENDAR' ? (
                 <>
                     <p style={{ color: '#a08860', fontSize: '15px', margin: '0 0 15px 0', textAlign: 'center' }}>
                         Заходи в игру каждый день, чтобы забирать более ценные дары!
@@ -873,6 +905,7 @@ export const DailyGiftWindow: React.FC<DailyGiftWindowProps> = ({ onClose }) => 
                     </div>
                 </div>
             )}
+            </motion.div>
 
             <GiftCongratsModal rewardClaimed={rewardClaimed} onClose={() => setRewardClaimed(null)} />
         </div>

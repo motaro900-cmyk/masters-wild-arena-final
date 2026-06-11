@@ -20,7 +20,7 @@ export const SidebarBtn: React.FC<SidebarBtnProps> = ({ active, onClick, label, 
         whileHover={{ x: 5, color: '#fff' }}
         style={{
             width: '100%',
-            height: isMobile ? '42px' : '70px',
+            height: isMobile ? '50px' : '70px',
             background: active ? 'rgba(240, 192, 64, 0.08)' : 'transparent',
             border: 'none',
             cursor: 'pointer',
@@ -33,7 +33,7 @@ export const SidebarBtn: React.FC<SidebarBtnProps> = ({ active, onClick, label, 
             color: active ? '#ffd700' : '#c8a870',
             fontFamily: "'Cinzel', 'Philosopher', serif",
             fontWeight: 900,
-            fontSize: isMobile ? '11px' : '16px',
+            fontSize: isMobile ? '12.5px' : '16px',
             letterSpacing: '1px',
             textTransform: 'uppercase',
             borderLeft: active ? '3px solid #f0c040' : '3px solid transparent',
@@ -43,8 +43,8 @@ export const SidebarBtn: React.FC<SidebarBtnProps> = ({ active, onClick, label, 
     >
         <div
             style={{
-                width: isMobile ? '30px' : '45px',
-                height: isMobile ? '30px' : '45px',
+                width: isMobile ? '34px' : '45px',
+                height: isMobile ? '34px' : '45px',
                 borderRadius: '6px',
                 overflow: 'hidden',
                 boxShadow: active ? '0 0 10px rgba(240,192,64,0.3)' : 'none',

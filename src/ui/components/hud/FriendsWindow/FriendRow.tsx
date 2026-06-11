@@ -1,7 +1,8 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { resolveAssetPath } from '../../../../utils/assetPath';
 import { sendGameRequest } from '../../../../utils/VKBridge';
+import { useGameStore } from '../../../../store/useGameStore';
+import { resolveAvatarPath } from '../../../../configs/ProfileCustomization';
 
 interface FriendRowProps {
     friend: any;
@@ -26,6 +27,10 @@ export const FriendRow: React.FC<FriendRowProps> = ({
 }) => {
     return (
         <div
+            onClick={() => {
+                const setInspect = useGameStore.getState().setInspectPlayerId;
+                if (setInspect) setInspect(friend.id);
+            }}
             style={{
                 background: colors.cardBg,
                 border: `1px solid ${colors.border}`,
@@ -35,6 +40,7 @@ export const FriendRow: React.FC<FriendRowProps> = ({
                 alignItems: 'center',
                 gap: 15,
                 transition: '0.2s',
+                cursor: 'pointer',
             }}
         >
             <div style={{ position: 'relative' }}>
@@ -55,7 +61,7 @@ export const FriendRow: React.FC<FriendRowProps> = ({
                             height: '100%',
                             borderRadius: 6,
                             overflow: 'hidden',
-                            backgroundImage: `url(${friend.avatar && (friend.avatar.startsWith('http://') || friend.avatar.startsWith('https://')) ? friend.avatar : resolveAssetPath(`/assets/images/avatars/${friend.avatar || 'avatar_1.png'}`)})`,
+                            backgroundImage: `url(${resolveAvatarPath(friend.avatar)})`,
                             backgroundSize: 'cover',
                             backgroundPosition: 'center',
                         }}
@@ -127,7 +133,10 @@ export const FriendRow: React.FC<FriendRowProps> = ({
                 {activeTab === 'REQUESTS' ? (
                     <>
                         <button
-                            onClick={() => acceptFriendRequest(friend.id)}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                acceptFriendRequest(friend.id);
+                            }}
                             style={{
                                 width: 40,
                                 height: 40,
@@ -142,7 +151,10 @@ export const FriendRow: React.FC<FriendRowProps> = ({
                             ✓
                         </button>
                         <button
-                            onClick={() => declineFriendRequest(friend.id)}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                declineFriendRequest(friend.id);
+                            }}
                             style={{
                                 width: 40,
                                 height: 40,
@@ -162,7 +174,8 @@ export const FriendRow: React.FC<FriendRowProps> = ({
                         <motion.button
                             whileHover={{ scale: 1.1 }}
                             whileTap={{ scale: 0.92 }}
-                            onClick={() => {
+                            onClick={(e) => {
+                                e.stopPropagation();
                                 sendGift(friend.id);
                                 // Если это пользователь ВК, отправляем ему еще и сообщение в ЛС
                                 if (friend.id.toLowerCase().startsWith('vk-') || friend.vkId) {
@@ -189,6 +202,7 @@ export const FriendRow: React.FC<FriendRowProps> = ({
                         <motion.button
                             whileHover={{ scale: 1.1 }}
                             whileTap={{ scale: 0.92 }}
+                            onClick={(e) => e.stopPropagation()}
                             style={{
                                 width: 42,
                                 height: 42,
@@ -203,7 +217,10 @@ export const FriendRow: React.FC<FriendRowProps> = ({
                             ⚔️
                         </motion.button>
                         <button
-                            onClick={() => removeFriend(friend.id)}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                removeFriend(friend.id);
+                            }}
                             style={{
                                 width: 42,
                                 height: 42,

@@ -42,8 +42,8 @@ export const DraggableItem: React.FC<DraggableItemProps> = ({
             onMouseMove={(e: any) => setGlobalHoveredItem?.(item.instanceId || item.id, e.clientX, e.clientY)}
             onMouseEnter={(e: any) => setGlobalHoveredItem?.(item.instanceId || item.id, e.clientX, e.clientY)}
             onMouseLeave={() => setGlobalHoveredItem?.(null, 0, 0)}
-            onClick={() => {
-                if (!isDragging && !item.isResource) {
+            onClick={(e) => {
+                if (!isDragging && !item.isResource && !e.shiftKey) {
                     onItemClick(item.instanceId || item.id);
                 }
             }}
@@ -80,43 +80,7 @@ export const DraggableItem: React.FC<DraggableItemProps> = ({
                     opacity: 0.65,
                 }}
             />
-            {!item.isResource && (
-                <motion.div
-                    initial={{ opacity: 0 }}
-                    whileHover={{ opacity: 1 }}
-                    style={{
-                        position: 'absolute',
-                        inset: 0,
-                        background: 'rgba(0,0,0,0.7)',
-                        borderRadius: '8px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        zIndex: 20,
-                        pointerEvents: 'none',
-                    }}
-                >
-                    <div
-                        style={{
-                            background: isEquippedOnCurrent ? '#ef4444' : '#f0c040',
-                            color: '#000',
-                            fontSize: '9px',
-                            fontWeight: 900,
-                            padding: '4px 8px',
-                            borderRadius: '4px',
-                            fontFamily: "'Cinzel', serif",
-                            boxShadow: '0 4px 10px rgba(0,0,0,0.5)',
-                            pointerEvents: 'auto',
-                        }}
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            onItemClick?.(item.instanceId || item.id);
-                        }}
-                    >
-                        {item.id === 'season_chest' ? 'ОТКРЫТЬ' : isEquippedOnCurrent ? 'СНЯТЬ' : 'НАДЕТЬ'}
-                    </div>
-                </motion.div>
-            )}
+            {/* Removed hover overlay button for direct and simpler click-to-equip */}
 
             {!item.isResource && (
                 <div
@@ -217,16 +181,36 @@ export const DraggableItem: React.FC<DraggableItemProps> = ({
                 <div
                     style={{
                         position: 'absolute',
-                        bottom: '2px',
+                        bottom: '4px',
                         right: '4px',
-                        fontSize: '9px',
-                        fontWeight: 900,
-                        color: '#f0c040',
-                        opacity: 0.8,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px',
                         pointerEvents: 'none',
+                        zIndex: 10,
+                        background: 'rgba(20, 14, 8, 0.9)',
+                        border: '1.5px solid #f0c040',
+                        borderRadius: '6px',
+                        padding: '2px 6px',
+                        boxShadow: '0 2px 6px rgba(0,0,0,0.6)',
                     }}
                 >
-                    {Math.round(calculateItemPower(data) * (item.level === 3 ? 1.35 : item.level === 2 ? 1.15 : 1.0))}
+                    <img
+                        src="/assets/images/ui/mosh.png"
+                        style={{ width: '15px', height: '15px', objectFit: 'contain' }}
+                        alt="Power"
+                    />
+                    <span
+                        style={{
+                            fontSize: '13px',
+                            fontWeight: 900,
+                            color: '#f0c040',
+                            textShadow: '0 1px 2px rgba(0,0,0,0.8)',
+                            fontFamily: "'Cinzel', serif",
+                        }}
+                    >
+                        {Math.round(calculateItemPower(data) * (item.level === 3 ? 1.35 : item.level === 2 ? 1.15 : 1.0))}
+                    </span>
                 </div>
             )}
 
@@ -237,10 +221,10 @@ export const DraggableItem: React.FC<DraggableItemProps> = ({
                         position: 'absolute',
                         bottom: '2px',
                         left: '4px',
-                        fontSize: '10px',
+                        fontSize: '12px',
                         fontWeight: 900,
                         color: '#f0c040',
-                        textShadow: '0 1px 3px #000',
+                        textShadow: '0 2px 4px rgba(0,0,0,0.95)',
                         pointerEvents: 'none',
                         zIndex: 10,
                     }}
@@ -256,10 +240,10 @@ export const DraggableItem: React.FC<DraggableItemProps> = ({
                         position: 'absolute',
                         bottom: '2px',
                         right: '6px',
-                        fontSize: '10px',
+                        fontSize: '11.5px',
                         fontWeight: 900,
                         color: '#fff',
-                        textShadow: '0 1px 2px #000',
+                        textShadow: '0 2px 4px #000',
                         pointerEvents: 'none',
                         background: 'rgba(0, 0, 0, 0.65)',
                         padding: '2px 5px',

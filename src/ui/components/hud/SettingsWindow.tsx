@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { useGameStore } from '../../../store/useGameStore';
 import { AssetsMap } from '../../../configs/AssetsMap';
-import { requestNotifications, addToFavorites, joinGroup } from '../../../utils/VKBridge';
+import { addToFavorites, joinGroup, openExternalUrl } from '../../../utils/VKBridge';
 import { audioService } from '../../../services/AudioService';
 import { AdvancedSettingsBlock } from './AdvancedSettingsBlock';
 import { settingsTranslations } from './SettingsLocalization';
@@ -27,13 +27,14 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
         language,
         setLanguage,
         isAdmin,
+        isMobile,
     } = useGameStore();
 
     const [confirmWipeChat, setConfirmWipeChat] = React.useState(false);
     const [confirmWipeProgress, setConfirmWipeProgress] = React.useState(false);
     const [isFullscreen, setIsFullscreen] = React.useState(!!document.fullscreenElement);
     const [copied, setCopied] = React.useState(false);
-    const [trackProgress, setTrackProgress] = React.useState(25); // Simulated progress pct
+    const [trackProgress, setTrackProgress] = React.useState(25);
 
     const t = settingsTranslations[(language || 'RU') as 'RU' | 'EN'] || settingsTranslations.RU;
 
@@ -161,8 +162,8 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
                 height: '680px',
                 display: 'flex',
                 flexDirection: 'column',
-                gap: '20px',
-                padding: '10px 30px',
+                gap: isMobile ? '12px' : '20px',
+                padding: isMobile ? '5px 15px' : '10px 30px',
                 color: colors.text,
                 overflowY: 'auto',
             }}
@@ -241,7 +242,7 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
                     style={{
                         display: 'grid',
                         gridTemplateColumns: '1fr 1fr',
-                        gap: '24px',
+                        gap: isMobile ? '12px' : '24px',
                         opacity: isMuted ? 0.3 : 1,
                         pointerEvents: isMuted ? 'none' : 'auto',
                         marginTop: '5px',
@@ -310,9 +311,9 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
                         style={{
                             display: 'flex',
                             alignItems: 'center',
-                            gap: '18px',
+                            gap: isMobile ? '10px' : '18px',
                             background: 'rgba(0,0,0,0.25)',
-                            padding: '14px 20px',
+                            padding: isMobile ? '10px 14px' : '14px 20px',
                             borderRadius: '12px',
                             border: '1px solid rgba(240,192,64,0.1)',
                             marginTop: '8px',
@@ -321,8 +322,8 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
                         {/* Крупная виниловая пластинка */}
                         <div
                             style={{
-                                width: '56px',
-                                height: '56px',
+                                width: isMobile ? '46px' : '56px',
+                                height: isMobile ? '46px' : '56px',
                                 borderRadius: '50%',
                                 background: 'radial-gradient(circle, #2a2a2a 24%, #151515 55%, #050505 100%)',
                                 border: '2px solid rgba(240,192,64,0.25)',
@@ -362,19 +363,19 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
                                 </div>
 
                                 {/* Кнопки управления - Крупные круглые кнопки для мобильных */}
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '8px' : '10px' }}>
                                     <motion.button
                                         whileHover={{ scale: 1.1, backgroundColor: 'rgba(240,192,64,0.15)', borderColor: 'rgba(240,192,64,0.4)' }}
                                         whileTap={{ scale: 0.9 }}
                                         onClick={() => audioService.prevTrack()}
                                         style={{
-                                            width: '44px',
-                                            height: '44px',
+                                            width: isMobile ? '36px' : '44px',
+                                            height: isMobile ? '36px' : '44px',
                                             borderRadius: '50%',
                                             background: 'rgba(255,255,255,0.03)',
                                             border: '1px solid rgba(240,192,64,0.15)',
                                             cursor: 'pointer',
-                                            fontSize: '18px',
+                                            fontSize: isMobile ? '14px' : '18px',
                                             color: colors.accent,
                                             display: 'flex',
                                             alignItems: 'center',
@@ -389,13 +390,13 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
                                         whileTap={{ scale: 0.9 }}
                                         onClick={() => audioService.toggleMusic()}
                                         style={{
-                                            width: '48px',
-                                            height: '48px',
+                                            width: isMobile ? '40px' : '48px',
+                                            height: isMobile ? '40px' : '48px',
                                             borderRadius: '50%',
                                             background: 'rgba(255,255,255,0.03)',
                                             border: '1.5px solid rgba(240,192,64,0.25)',
                                             cursor: 'pointer',
-                                            fontSize: '20px',
+                                            fontSize: isMobile ? '16px' : '20px',
                                             color: colors.accent,
                                             display: 'flex',
                                             alignItems: 'center',
@@ -410,13 +411,13 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
                                         whileTap={{ scale: 0.9 }}
                                         onClick={() => audioService.nextTrack()}
                                         style={{
-                                            width: '44px',
-                                            height: '44px',
+                                            width: isMobile ? '36px' : '44px',
+                                            height: isMobile ? '36px' : '44px',
                                             borderRadius: '50%',
                                             background: 'rgba(255,255,255,0.03)',
                                             border: '1px solid rgba(240,192,64,0.15)',
                                             cursor: 'pointer',
-                                            fontSize: '18px',
+                                            fontSize: isMobile ? '14px' : '18px',
                                             color: colors.accent,
                                             display: 'flex',
                                             alignItems: 'center',
@@ -463,7 +464,7 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
             />
 
             {/* БЛОК: АККАУНТ И ЯЗЫК */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', alignItems: 'start' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: isMobile ? '12px' : '20px', alignItems: 'start' }}>
                 {/* АККАУНТ */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -587,7 +588,7 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
 
             {/* БЛОК: КНОПКИ ДЕЙСТВИЙ */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '10px' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: isMobile ? '8px' : '12px' }}>
                     {!claimedSocialRewards?.includes('group') && (
                         <button
                             onClick={async () => {
@@ -744,6 +745,38 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
                 </div>
             </div>
 
+            {/* УДАЛЕНИЕ АККАУНТА — для всех пользователей (требование VK) */}
+            <div style={{ borderTop: '1px solid rgba(255,255,255,0.04)', paddingTop: '12px' }}>
+                <button
+                    onClick={async () => {
+                        if (!confirmWipeProgress) {
+                            setConfirmWipeProgress(true);
+                            setTimeout(() => setConfirmWipeProgress(false), 4000);
+                            return;
+                        }
+                        handleClearCache();
+                    }}
+                    style={{
+                        width: '100%',
+                        padding: '11px',
+                        borderRadius: '10px',
+                        background: confirmWipeProgress ? 'rgba(239,68,68,0.15)' : 'rgba(255,255,255,0.02)',
+                        border: `1px solid ${confirmWipeProgress ? 'rgba(239,68,68,0.5)' : 'rgba(239,68,68,0.2)'}`,
+                        color: confirmWipeProgress ? '#ef4444' : 'rgba(239,68,68,0.5)',
+                        fontSize: '11px',
+                        fontWeight: 900,
+                        cursor: 'pointer',
+                        letterSpacing: '0.05em',
+                        transition: 'all 0.3s',
+                    }}
+                >
+                    {confirmWipeProgress ? '⚠️ ПОДТВЕРДИТЬ УДАЛЕНИЕ АККАУНТА?' : '🗑️ Удалить аккаунт и все данные'}
+                </button>
+                <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.2)', textAlign: 'center', marginTop: '5px' }}>
+                    Это действие удалит все ваши данные без возможности восстановления
+                </div>
+            </div>
+
             {/* ВЕРСИЯ КЛИЕНТА */}
             <div
                 onClick={() => {
@@ -773,8 +806,24 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
                         textDecoration: 'underline',
                     }}
                 >
-                    <span style={{ cursor: 'pointer' }}>Privacy Policy</span>
-                    <span style={{ cursor: 'pointer' }}>Terms of Service</span>
+                    <span
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            openExternalUrl('https://vk.com/dev/privacy');
+                        }}
+                        style={{ cursor: 'pointer' }}
+                    >
+                        Политика конфиденциальности
+                    </span>
+                    <span
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            openExternalUrl('https://dev.vk.com/ru/user-agreement');
+                        }}
+                        style={{ cursor: 'pointer' }}
+                    >
+                        Пользовательское соглашение
+                    </span>
                 </div>
             </div>
         </div>

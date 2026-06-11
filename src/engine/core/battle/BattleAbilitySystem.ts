@@ -17,7 +17,6 @@ export async function castActiveAbility(engine: BattleEngine) {
     // Consume all mana
     engine.updateState({ playerMana: 0 });
 
-    const store = useGameStore.getState();
     const heroId = anyEngine.player?.config?.id;
     const role = anyEngine.player?.config?.role || 'WARRIOR';
     const heroName = anyEngine.player?.config?.name || 'Герой';

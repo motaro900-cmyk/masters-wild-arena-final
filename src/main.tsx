@@ -54,6 +54,27 @@ export const Root = () => {
     const [isAppLoading, setIsAppLoading] = React.useState(true);
     const [loadingText, setLoadingText] = React.useState('Инициализация приложения...');
 
+    // [VK Back Button] Intercept browser/mouse Back button to prevent frame exit
+    React.useEffect(() => {
+        const handleBrowserBack = (event: PopStateEvent) => {
+            event.preventDefault();
+            const currentScreen = useGameStore.getState().activeScreen;
+            if (currentScreen !== 'CITY' && currentScreen !== 'INTRO' && currentScreen !== 'MAIN_MENU') {
+                useGameStore.setState({ activeScreen: 'CITY' });
+                // Re-push fake state to keep the loop intact for future Back button clicks
+                window.history.pushState({ page: 'game' }, '');
+            }
+        };
+
+        window.addEventListener('popstate', handleBrowserBack);
+        // Initialize the first state
+        window.history.pushState({ page: 'game' }, '');
+
+        return () => {
+            window.removeEventListener('popstate', handleBrowserBack);
+        };
+    }, []);
+
     React.useEffect(() => {
         if (isAppInitialized || !containerRef.current) return;
         isAppInitialized = true;
@@ -221,6 +242,11 @@ export const Root = () => {
                         lastScreen = state.activeScreen;
                         syncService.logPlayerAction(`Перешёл на экран: ${name}`);
                         syncService.debouncedSync();
+
+                        // [VK Back Button] Push state to enable popstate interception on back button click
+                        if (state.activeScreen !== 'INTRO' && state.activeScreen !== 'MAIN_MENU') {
+                            window.history.pushState({ page: 'game', screen: state.activeScreen }, '');
+                        }
                     }
                 });
                 activeUnsubs.push(unsubScreenChange);

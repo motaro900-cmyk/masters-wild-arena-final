@@ -290,3 +290,17 @@ export function isTitleUnlocked(
     if (title.requiredTrophies && playerTrophies >= title.requiredTrophies) return true;
     return false;
 }
+
+export function resolveAvatarPath(avatarVal: string | undefined | null): string {
+    let clean = avatarVal ? avatarVal.trim() : '';
+    if (!clean || clean === '🐺' || clean === 'none' || clean.startsWith('sprite:')) {
+        return resolveAssetPath('/assets/images/avatars/panda.webp');
+    }
+    if (clean.startsWith('http') || clean.startsWith('data:')) {
+        return clean;
+    }
+    if (clean.startsWith('/')) {
+        return resolveAssetPath(clean);
+    }
+    return resolveAssetPath(`/assets/images/avatars/${clean.replace(/\.(png|webp)$/, '')}.webp`);
+}

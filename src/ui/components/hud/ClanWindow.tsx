@@ -29,6 +29,16 @@ export const ClanWindow: React.FC = () => {
     const [view, setView] = useState<'BROWSE' | 'CREATE' | 'DASHBOARD'>(clanId ? 'DASHBOARD' : 'BROWSE');
     const [dashboardTab, setDashboardTab] = useState<'LOBBY' | 'MEMBERS' | 'STORE'>('LOBBY');
 
+    const [isMobile, setIsMobile] = useState(false);
+    useEffect(() => {
+        const checkLayout = () => {
+            setIsMobile(typeof window !== 'undefined' && window.innerWidth < 1024);
+        };
+        checkLayout();
+        window.addEventListener('resize', checkLayout);
+        return () => window.removeEventListener('resize', checkLayout);
+    }, []);
+
     const [members, setMembers] = useState<ClanMember[]>([]);
 
     useEffect(() => {
@@ -223,63 +233,92 @@ export const ClanWindow: React.FC = () => {
                 )}
             </div>
 
-            <AnimatePresence mode="wait">
-                {view === 'BROWSE' && (
-                    <ClanBrowseTab
-                        colors={colors}
-                        playerTrophies={rating}
-                        onJoin={handleJoin}
-                        onCreateClick={() => {
-                            setError(null);
-                            setView('CREATE');
-                        }}
-                    />
-                )}
+            <motion.div
+                drag={isMobile && view === 'DASHBOARD' ? "x" : undefined}
+                dragConstraints={{ left: 0, right: 0 }}
+                dragElastic={0.15}
+                onDragEnd={(_, info) => {
+                    if (!isMobile || view !== 'DASHBOARD') return;
+                    const TABS = ['LOBBY', 'MEMBERS', 'STORE'] as const;
+                    const swipeThreshold = 50;
+                    const currentIndex = TABS.indexOf(dashboardTab);
+                    if (info.offset.x < -swipeThreshold) {
+                        if (currentIndex < TABS.length - 1) {
+                            setDashboardTab(TABS[currentIndex + 1]);
+                        }
+                    } else if (info.offset.x > swipeThreshold) {
+                        if (currentIndex > 0) {
+                            setDashboardTab(TABS[currentIndex - 1]);
+                        }
+                    }
+                }}
+                style={{
+                    flex: 1,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    overflow: 'hidden',
+                    touchAction: isMobile && view === 'DASHBOARD' ? 'pan-y' : 'auto',
+                }}
+            >
+                <AnimatePresence mode="wait">
+                    {view === 'BROWSE' && (
+                        <ClanBrowseTab
+                            colors={colors}
+                            playerTrophies={rating}
+                            onJoin={handleJoin}
+                            onCreateClick={() => {
+                                setError(null);
+                                setView('CREATE');
+                            }}
+                        />
+                    )}
 
-                {view === 'CREATE' && (
-                    <ClanCreateTab
-                        colors={colors}
-                        error={error}
-                        setError={setError}
-                        onCancel={() => setView('BROWSE')}
-                        onCreate={handleCreateClan}
-                    />
-                )}
+                    {view === 'CREATE' && (
+                        <ClanCreateTab
+                            colors={colors}
+                            error={error}
+                            setError={setError}
+                            onCancel={() => setView('BROWSE')}
+                            onCreate={handleCreateClan}
+                        />
+                    )}
 
-                {view === 'DASHBOARD' && dashboardTab === 'LOBBY' && (
-                    <ClanLobbyTab
-                        colors={colors}
-                        clanData={clanData}
-                        newClanName={createdClanName}
-                        newClanMotto={createdClanMotto}
-                        selectedEmblem={selectedEmblem}
-                        clanLevelData={clanLevelData}
-                        members={members}
-                        rating={rating}
-                        onDonate={handleDonate}
-                        onEditClan={() => setIsEditingClan(true)}
-                        onLeave={handleLeave}
-                    />
-                )}
+                    {view === 'DASHBOARD' && dashboardTab === 'LOBBY' && (
+                        <ClanLobbyTab
+                            colors={colors}
+                            clanData={clanData}
+                            newClanName={createdClanName}
+                            newClanMotto={createdClanMotto}
+                            selectedEmblem={selectedEmblem}
+                            clanLevelData={clanLevelData}
+                            members={members}
+                            rating={rating}
+                            onDonate={handleDonate}
+                            onEditClan={() => setIsEditingClan(true)}
+                            onLeave={handleLeave}
+                        />
+                    )}
 
-                {view === 'DASHBOARD' && dashboardTab === 'MEMBERS' && (
-                    <ClanMembersTab
-                        colors={colors}
-                        members={members}
-                        isLight={isLight}
-                        onKickMember={handleKickMember}
-                    />
-                )}
+                    {view === 'DASHBOARD' && dashboardTab === 'MEMBERS' && (
+                        <ClanMembersTab
+                            colors={colors}
+                            members={members}
+                            isLight={isLight}
+                            onKickMember={handleKickMember}
+                        />
+                    )}
 
-                {view === 'DASHBOARD' && dashboardTab === 'STORE' && (
-                    <ClanStoreTab colors={colors} onBuyItem={handleBuyItem} />
-                )}
-            </AnimatePresence>
+                    {view === 'DASHBOARD' && dashboardTab === 'STORE' && (
+                        <ClanStoreTab colors={colors} onBuyItem={handleBuyItem} />
+                    )}
+                </AnimatePresence>
+            </motion.div>
 
             {/* CLAN SETTINGS MODAL */}
             <AnimatePresence>
                 {isEditingClan && (
                     <div
+                        onClick={() => setIsEditingClan(false)}
                         style={{
                             position: 'absolute',
                             top: 0,
@@ -292,12 +331,14 @@ export const ClanWindow: React.FC = () => {
                             alignItems: 'center',
                             justifyContent: 'center',
                             backdropFilter: 'blur(10px)',
+                            cursor: 'pointer',
                         }}
                     >
                         <motion.div
                             initial={{ scale: 0.9, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
                             exit={{ scale: 0.9, opacity: 0 }}
+                            onClick={(e) => e.stopPropagation()}
                             style={{
                                 width: '450px',
                                 background: isLight ? '#f5f0e1' : '#1a1510',
@@ -378,6 +419,10 @@ export const ClanWindow: React.FC = () => {
             <AnimatePresence>
                 {showSuccess && (
                     <div
+                        onClick={() => {
+                            setShowSuccess(false);
+                            setView('DASHBOARD');
+                        }}
                         style={{
                             position: 'absolute',
                             top: 0,
@@ -390,19 +435,53 @@ export const ClanWindow: React.FC = () => {
                             alignItems: 'center',
                             justifyContent: 'center',
                             backdropFilter: 'blur(15px)',
+                            cursor: 'pointer',
                         }}
                     >
                         <motion.div
                             initial={{ scale: 0.5, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
+                            onClick={(e) => e.stopPropagation()}
                             style={{
                                 textAlign: 'center',
                                 display: 'flex',
                                 flexDirection: 'column',
                                 alignItems: 'center',
                                 gap: '30px',
+                                position: 'relative',
+                                padding: '40px',
+                                cursor: 'default',
                             }}
                         >
+                            {/* Кнопка закрытия (крестик) */}
+                            <button
+                                onClick={() => {
+                                    setShowSuccess(false);
+                                    setView('DASHBOARD');
+                                }}
+                                style={{
+                                    position: 'absolute',
+                                    top: '-10px',
+                                    right: '-10px',
+                                    background: 'rgba(255,255,255,0.08)',
+                                    border: '1.5px solid rgba(251, 191, 36, 0.4)',
+                                    borderRadius: '50%',
+                                    width: '36px',
+                                    height: '36px',
+                                    color: '#fbbf24',
+                                    fontSize: '16px',
+                                    fontWeight: 'bold',
+                                    cursor: 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    transition: 'all 0.2s',
+                                    boxShadow: '0 0 10px rgba(251, 191, 36, 0.1)',
+                                }}
+                            >
+                                ✖
+                            </button>
+
                             <motion.div
                                 animate={{ rotate: [0, 10, -10, 0], scale: [1, 1.1, 1] }}
                                 transition={{ repeat: Infinity, duration: 4 }}

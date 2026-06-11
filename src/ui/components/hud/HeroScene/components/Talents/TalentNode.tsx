@@ -27,18 +27,45 @@ export const TalentNode = ({
                 display: 'inline-flex',
             }}
         >
-            {/* Только спрайт — без ячейки, без обрезки */}
+            {/* Красивая круглая иконка на основе эмодзи */}
             <div
-                className={talent.iconClass}
                 style={{
-                    filter: isUnlocked
-                        ? isMax
-                            ? `drop-shadow(0 0 16px ${branchColor}) drop-shadow(0 0 8px #f0c040)`
-                            : `drop-shadow(0 0 10px ${branchColor}99)`
-                        : 'grayscale(0.7) brightness(0.55)',
-                    transition: 'filter 0.25s ease',
+                    width: '60px',
+                    height: '60px',
+                    borderRadius: '50%',
+                    background: isUnlocked
+                        ? 'radial-gradient(circle, rgba(45, 45, 60, 0.95) 0%, rgba(20, 20, 25, 0.98) 100%)'
+                        : 'rgba(20, 20, 20, 0.85)',
+                    border: `2px solid ${isUnlocked ? (isMax ? '#ffd700' : branchColor) : '#444'}`,
+                    boxShadow: isUnlocked
+                        ? `0 0 15px ${branchColor}66, inset 0 0 10px rgba(255,255,255,0.05)`
+                        : 'none',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '26px',
+                    filter: isUnlocked ? 'none' : 'grayscale(1) brightness(0.4)',
+                    transition: 'all 0.25s ease',
                 }}
-            />
+            >
+                {(() => {
+                    const emojiMap: Record<string, string> = {
+                        atk_base: '🔥',
+                        atk_crit: '🐾',
+                        atk_pen: '🐯',
+                        atk_ult: '⚡',
+                        def_base: '🛡️',
+                        def_res: '🌀',
+                        def_eva: '🔮',
+                        def_ult: '🐦',
+                        mas_base: '🧘',
+                        mas_spd: '🌙',
+                        mas_focus: '🪷',
+                        mas_ult: '💧',
+                    };
+                    return emojiMap[talent.id] || '✨';
+                })()}
+            </div>
 
             {/* Замок поверх */}
             {!isUnlocked && (

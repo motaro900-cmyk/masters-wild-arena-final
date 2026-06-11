@@ -288,9 +288,18 @@ export const HeroCard = ({
                                         marginBottom: '6px',
                                     }}
                                 >
-                                    {hero.unlockType === 'level'
-                                        ? `⭐ УРОВЕНЬ ${hero.unlockCost}`
-                                        : `🏆 ${hero.unlockAchievement}`}
+                                    {hero.unlockType === 'level' ? (
+                                        `⭐ УРОВЕНЬ ${hero.unlockCost}`
+                                    ) : (
+                                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', verticalAlign: 'middle' }}>
+                                            <img
+                                                src={resolveAssetPath(AssetsMap.UI.TROPHY_PREMIUM)}
+                                                style={{ width: '14px', height: '14px', objectFit: 'contain' }}
+                                                alt="trophy"
+                                            />
+                                            {hero.unlockAchievement}
+                                        </span>
+                                    )}
                                 </div>
                                 {achievementProgress && (
                                     <div style={{ width: '100%' }}>

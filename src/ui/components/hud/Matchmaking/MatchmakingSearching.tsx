@@ -2,6 +2,8 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { useGameStore } from '../../../../store/useGameStore';
 import { getAvatarFrameStyle, getAvatarFramePath, getAvatarImageStyle } from '../../../../configs/ProfileCustomization';
+import { AssetsMap } from '../../../../configs/AssetsMap';
+import { resolveAssetPath } from '../../../../utils/assetPath';
 
 interface MatchmakingSearchingProps {
     playerAvatarSrc: string;
@@ -262,7 +264,14 @@ export const MatchmakingSearching: React.FC<MatchmakingSearchingProps> = ({
                         textShadow: '0 2px 4px rgba(0,0,0,0.8)',
                     }}
                 >
-                    <span style={{ color: '#fbbf24', textShadow: '0 0 8px rgba(251, 191, 36, 0.4)' }}>{rating} 🏆</span>{' '}
+                    <span style={{ color: '#fbbf24', textShadow: '0 0 8px rgba(251, 191, 36, 0.4)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                        {rating}
+                        <img
+                            src={resolveAssetPath(AssetsMap.UI.TROPHY_PREMIUM)}
+                            style={{ width: '18px', height: '18px', objectFit: 'contain' }}
+                            alt="trophy"
+                        />
+                    </span>{' '}
                     • {playerRank.name}
                 </div>
 
@@ -345,7 +354,14 @@ export const MatchmakingSearching: React.FC<MatchmakingSearchingProps> = ({
                     >
                         ДИАПАЗОН КУБКОВ:{' '}
                         <span style={{ color: '#fbbf24', fontWeight: 900 }}>
-                            {Math.max(0, rating - searchRange)} - {rating + searchRange} 🏆
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', verticalAlign: 'bottom' }}>
+                                {Math.max(0, rating - searchRange)} - {rating + searchRange}
+                                <img
+                                    src={resolveAssetPath(AssetsMap.UI.TROPHY_PREMIUM)}
+                                    style={{ width: '16px', height: '16px', objectFit: 'contain' }}
+                                    alt="trophy"
+                                />
+                            </span>
                         </span>
                     </div>
                 </div>

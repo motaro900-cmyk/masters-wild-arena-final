@@ -18,7 +18,9 @@ export const useFriendsWindow = () => {
     const playerId = useGameStore((state) => state.playerId);
     const name = useGameStore((state) => state.name);
     const avatar = useGameStore((state) => state.avatar);
-    const level = useGameStore((state) => state.level);
+    const selectedHeroId = useGameStore((state) => state.selectedHeroId);
+    const heroes = useGameStore((state) => state.heroes) || {};
+    const level = heroes[selectedHeroId]?.level || 1;
 
     const isLight = uiTheme === 'LIGHT';
 

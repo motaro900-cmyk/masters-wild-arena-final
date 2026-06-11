@@ -12,6 +12,7 @@ interface MatchmakingNameplateProps {
     title: string;
     playerRankName: string;
     playerWinRateStr: string;
+    playerHeroName?: string; // Имя персонажа игрока
 
     // Данные противника
     opponentName: string;
@@ -19,6 +20,7 @@ interface MatchmakingNameplateProps {
     opponentLevel: number;
     opponentVipLevel?: number;
     opponentWinRateStr: string;
+    opponentHeroName?: string; // Имя персонажа противника
 }
 
 /** Плашка (nameplate) одного из бойцов: заголовок "ВЫ" / "ВРАГ", ник, кубки, ранг, винрейт, уровень. */
@@ -33,7 +35,8 @@ const Nameplate: React.FC<{
     rankColor: string;
     rankIcon: string;
     rankName: string;
-}> = ({ side, displayName, vipLevel, rating, level, titleLine, winRateStr, rankColor, rankIcon, rankName }) => {
+    titleText: string;
+}> = ({ side, displayName, vipLevel, rating, level, titleLine, winRateStr, rankColor, rankIcon, rankName, titleText }) => {
     const isPlayer = side === 'player';
     const accentColor = isPlayer ? 'rgba(240, 192, 64, 0.55)' : 'rgba(239, 68, 68, 0.55)';
     const bgGradient = isPlayer
@@ -106,14 +109,14 @@ const Nameplate: React.FC<{
                     <span
                         style={{
                             fontFamily: "'Georgia', serif",
-                            fontSize: '21px',
+                            fontSize: '20px',
                             fontWeight: 'bold',
                             color: '#fff',
                             textShadow: '0 2px 4px rgba(0,0,0,0.85)',
                             lineHeight: 1.1,
                         }}
                     >
-                        {displayName}
+                        {displayName} <span style={{ fontSize: '13px', color: '#a1a1aa', fontWeight: 'bold', fontFamily: "'Montserrat', sans-serif", textTransform: 'uppercase' }}>• {titleText}</span>
                     </span>
                     {vipLevel > 0 && (
                         <div
@@ -329,13 +332,14 @@ export const MatchmakingNameplates: React.FC<MatchmakingNameplateProps> = ({
     rating,
     level,
     title,
-    playerRankName,
     playerWinRateStr,
+    playerHeroName = 'Панда',
     opponentName,
     opponentRating,
     opponentLevel,
     opponentVipLevel,
     opponentWinRateStr,
+    opponentHeroName = 'Пантера',
 }) => {
     const pRank = getRankInfo(rating);
     const eRank = getRankInfo(opponentRating);
@@ -348,11 +352,12 @@ export const MatchmakingNameplates: React.FC<MatchmakingNameplateProps> = ({
                 vipLevel={vipLevel}
                 rating={rating}
                 level={level}
-                titleLine={`Уровень ${level} • ${title || playerRankName}`}
+                titleLine={`Уровень ${level} • ${playerHeroName}`}
                 winRateStr={playerWinRateStr}
                 rankColor={pRank.color}
                 rankIcon={pRank.icon}
                 rankName={pRank.name}
+                titleText={title || pRank.name}
             />
             <Nameplate
                 side="opponent"
@@ -360,11 +365,12 @@ export const MatchmakingNameplates: React.FC<MatchmakingNameplateProps> = ({
                 vipLevel={opponentVipLevel ?? 0}
                 rating={opponentRating}
                 level={opponentLevel || 2}
-                titleLine={`Уровень ${opponentLevel || 2} • ${eRank.name}`}
+                titleLine={`Уровень ${opponentLevel || 2} • ${opponentHeroName}`}
                 winRateStr={opponentWinRateStr}
                 rankColor={eRank.color}
                 rankIcon={eRank.icon}
                 rankName={eRank.name}
+                titleText={eRank.name}
             />
         </>
     );

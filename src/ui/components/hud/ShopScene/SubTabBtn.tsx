@@ -1,5 +1,4 @@
 import React from 'react';
-import { motion } from 'framer-motion';
 import { audioService } from '../../../../services/AudioService';
 import { AssetsMap } from '../../../../configs/AssetsMap';
 
@@ -7,9 +6,10 @@ interface SubTabBtnProps {
     label: string;
     isActive: boolean;
     onClick: () => void;
+    isMobile?: boolean;
 }
 
-export const SubTabBtn: React.FC<SubTabBtnProps> = ({ label, isActive, onClick }) => {
+export const SubTabBtn: React.FC<SubTabBtnProps> = ({ label, isActive, onClick, isMobile = false }) => {
     return (
         <button
             onClick={() => {
@@ -17,36 +17,24 @@ export const SubTabBtn: React.FC<SubTabBtnProps> = ({ label, isActive, onClick }
                 onClick();
             }}
             style={{
-                background: 'transparent',
-                border: 'none',
+                background: isActive ? 'rgba(240, 192, 64, 0.15)' : 'rgba(10, 8, 8, 0.75)',
+                border: isActive ? '2px solid #f0c040' : '1px solid rgba(240, 192, 64, 0.25)',
+                borderRadius: '8px',
                 color: isActive ? '#ffd700' : '#c8a870',
                 fontFamily: "'Cinzel', 'Philosopher', serif",
                 fontWeight: 900,
-                fontSize: '16px',
+                fontSize: isMobile ? '12px' : '15px',
                 textTransform: 'uppercase',
                 cursor: 'pointer',
-                padding: '5px 15px',
+                padding: isMobile ? '8px 16px' : '6px 16px',
                 position: 'relative',
                 transition: 'all 0.3s',
+                minWidth: 'unset',
+                minHeight: 'unset',
+                boxShadow: isActive ? '0 0 10px rgba(240, 192, 64, 0.2)' : 'none',
             }}
         >
             {label}
-            {isActive && (
-                <motion.div
-                    layoutId="subTabMarker"
-                    style={{
-                        position: 'absolute',
-                        top: '-8px',
-                        left: '50%',
-                        transform: 'translateX(-50%)',
-                        width: '6px',
-                        height: '6px',
-                        backgroundColor: '#ef4444',
-                        borderRadius: '50%',
-                        boxShadow: '0 0 10px #ef4444, 0 0 5px #ef4444',
-                    }}
-                />
-            )}
         </button>
     );
 };

@@ -7,6 +7,7 @@ import { CircularGearLayout } from './components/CircularGearLayout';
 import { LaurelLeft, LaurelRight } from './components/MatchmakingDecorations';
 import { MatchmakingNameplates } from './components/MatchmakingNameplate';
 import { calculateTotalPower, calculateWinRewards } from './utils/matchmakingUtils';
+import { getHeroConfig } from '../../../../configs/HeroesConfig';
 
 interface MatchmakingFoundProps {
     opponent: {
@@ -19,6 +20,7 @@ interface MatchmakingFoundProps {
         equipment?: Record<string, string | null>;
         winRate?: number;
         vipLevel?: number;
+        heroId?: string;
         stats: {
             hp: number;
             attack: number;
@@ -58,6 +60,7 @@ export const MatchmakingFound: React.FC<MatchmakingFoundProps> = ({
     onStartFight,
 }) => {
     const { heroEquipment, selectedHeroId, title, name, wins, totalBattles, isPremium } = useGameStore();
+    const [isStarting, setIsStarting] = React.useState(false);
 
     // --- Мемоизированные вычисления ---
     const playerEq = React.useMemo(() => {
@@ -119,11 +122,13 @@ export const MatchmakingFound: React.FC<MatchmakingFoundProps> = ({
                 title={title}
                 playerRankName={playerRank.name}
                 playerWinRateStr={playerWinRateStr}
+                playerHeroName={playerHero?.name || 'Панда'}
                 opponentName={opponent.name}
                 opponentRating={opponent.rating}
                 opponentLevel={opponent.level ?? 2}
                 opponentVipLevel={opponent.vipLevel}
                 opponentWinRateStr={opponentWinRateStr}
+                opponentHeroName={getHeroConfig(opponent.heroId || opponent.id || 'panther')?.name || 'Пантера'}
             />
 
             {/* СЕТКА VS: ЛЕВАЯ ПОЛОВИНА (ИГРОК) */}
@@ -705,42 +710,55 @@ export const MatchmakingFound: React.FC<MatchmakingFoundProps> = ({
 
                     {/* Кнопка НАЧАТЬ БОЙ */}
                     <button
-                        onClick={onStartFight}
+                        onClick={() => {
+                            if (isStarting) return;
+                            setIsStarting(true);
+                            onStartFight();
+                        }}
+                        disabled={isStarting}
                         onMouseEnter={(e) => {
+                            if (isStarting) return;
                             e.currentTarget.style.transform = 'scale(1.03)';
                             e.currentTarget.style.boxShadow = '0 0 20px rgba(245, 158, 11, 0.7)';
                         }}
                         onMouseLeave={(e) => {
+                            if (isStarting) return;
                             e.currentTarget.style.transform = 'scale(1)';
                             e.currentTarget.style.boxShadow = '0 8px 16px rgba(245, 158, 11, 0.4)';
                         }}
                         style={{
                             width: '100%',
                             padding: '12px 0',
-                            background: 'linear-gradient(180deg, #f59e0b 0%, #b45309 100%)',
-                            border: '2.5px solid #fcd34d',
+                            background: isStarting
+                                ? 'linear-gradient(180deg, #4b5563 0%, #1f2937 100%)'
+                                : 'linear-gradient(180deg, #f59e0b 0%, #b45309 100%)',
+                            border: isStarting ? '2.5px solid #4b5563' : '2.5px solid #fcd34d',
                             borderRadius: '8px',
-                            color: '#fff',
+                            color: isStarting ? '#9ca3af' : '#fff',
                             fontSize: '15px',
                             fontWeight: 900,
-                            cursor: 'pointer',
+                            cursor: isStarting ? 'not-allowed' : 'pointer',
                             transition: 'all 0.2s',
-                            boxShadow: '0 8px 16px rgba(245, 158, 11, 0.4)',
+                            boxShadow: isStarting ? 'none' : '0 8px 16px rgba(245, 158, 11, 0.4)',
                             fontFamily: "'Cinzel', serif",
                             letterSpacing: '1.5px',
                             marginBottom: '8px',
+                            opacity: isStarting ? 0.7 : 1,
                         }}
                     >
-                        НАЧАТЬ БОЙ
+                        {isStarting ? 'ЗАГРУЗКА...' : 'НАЧАТЬ БОЙ'}
                     </button>
 
                     {/* Кнопка НАЗАД */}
                     <button
                         onClick={onCancel}
+                        disabled={isStarting}
                         onMouseEnter={(e) => {
+                            if (isStarting) return;
                             e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
                         }}
                         onMouseLeave={(e) => {
+                            if (isStarting) return;
                             e.currentTarget.style.background = 'rgba(255, 255, 255, 0.04)';
                         }}
                         style={{
@@ -752,10 +770,11 @@ export const MatchmakingFound: React.FC<MatchmakingFoundProps> = ({
                             color: '#b5a695',
                             fontSize: '11px',
                             fontWeight: 'bold',
-                            cursor: 'pointer',
+                            cursor: isStarting ? 'not-allowed' : 'pointer',
                             transition: 'all 0.2s',
                             fontFamily: "'Cinzel', serif",
                             letterSpacing: '1px',
+                            opacity: isStarting ? 0.5 : 1,
                         }}
                     >
                         НАЗАД

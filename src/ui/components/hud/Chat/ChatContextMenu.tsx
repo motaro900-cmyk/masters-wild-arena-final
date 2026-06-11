@@ -6,8 +6,9 @@ interface ChatContextMenuProps {
     x: number;
     y: number;
     author: string | null;
+    senderId?: string | null;
     onClose: () => void;
-    handleMenuAction: (type: string, author: string | null) => void;
+    handleMenuAction: (type: string, author: string | null, senderId?: string | null) => void;
 }
 
 export const ChatContextMenu: React.FC<ChatContextMenuProps> = ({
@@ -15,6 +16,7 @@ export const ChatContextMenu: React.FC<ChatContextMenuProps> = ({
     x,
     y,
     author,
+    senderId,
     onClose,
     handleMenuAction,
 }) => {
@@ -55,13 +57,15 @@ export const ChatContextMenu: React.FC<ChatContextMenuProps> = ({
                         {author}
                     </div>
                     {[
+                        { label: '👤 Профиль', type: 'profile' },
                         { label: '💬 Написать ЛС', type: 'pm' },
                         { label: '📋 Копировать ник', type: 'copy' },
+                        { label: '⚠️ Пожаловаться', type: 'report' },
                     ].map((item) => (
                         <div
                             key={item.label}
                             onClick={() => {
-                                handleMenuAction(item.type, author);
+                                handleMenuAction(item.type, author, senderId);
                                 onClose();
                             }}
                             className="context-menu-item"

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../../../store/useGameStore';
 import { QUESTS_POOL } from '../../../configs/QuestsConfig';
@@ -19,6 +19,19 @@ export const DailyTaskPanel = React.memo(() => {
     const refreshDailyQuests = useGameStore((state) => state.refreshDailyQuests);
     const vipLevel = useGameStore((state) => state.vipLevel);
     const vipEndTime = useGameStore((state) => state.vipEndTime);
+    const isMobileFromStore = useGameStore((state) => state.isMobile);
+    const [isMobileLayout, setIsMobileLayout] = useState(isMobileFromStore);
+
+    useEffect(() => {
+        const checkLayout = () => {
+            const isSmallScreen = typeof window !== 'undefined' && window.innerWidth < 1024;
+            setIsMobileLayout(isMobileFromStore || isSmallScreen);
+        };
+        checkLayout();
+        window.addEventListener('resize', checkLayout);
+        return () => window.removeEventListener('resize', checkLayout);
+    }, [isMobileFromStore]);
+
     const [floatingRewards, setFloatingRewards] = useState<{ id: number; text: string; x: number; y: number }[]>([]);
 
     const handleClaimReward = (dq: IDailyQuest, qData: any, e: React.MouseEvent) => {
@@ -83,7 +96,7 @@ export const DailyTaskPanel = React.memo(() => {
         safeSetItem('lastVipQuestPassDate', todayStr);
         setLastPassDate(todayStr);
 
-        audioService.playSFX(AssetsMap.AUDIO.SFX_UPGRADE);
+        audioService.playSFX(AssetsMap.AUDIO.SFX_LEVEL_UP);
     };
 
     React.useEffect(() => {
@@ -187,10 +200,11 @@ export const DailyTaskPanel = React.memo(() => {
                         style={{
                             display: 'flex',
                             flexDirection: 'column',
-                            gap: '10px',
+                            gap: isMobileLayout ? '8px' : '10px',
                             flex: 1,
                             overflow: 'hidden',
                             marginTop: '0px',
+                            paddingTop: isMobileLayout ? '7px' : '0px',
                             position: 'relative',
                             zIndex: 1,
                         }}
@@ -269,7 +283,7 @@ export const DailyTaskPanel = React.memo(() => {
                                             style={{
                                                 display: 'flex',
                                                 alignItems: 'center',
-                                                gap: '15px',
+                                                gap: isMobileLayout ? '10px' : '15px',
                                                 marginTop: '8px',
                                             }}
                                         >
@@ -328,7 +342,9 @@ export const DailyTaskPanel = React.memo(() => {
                                                 <button
                                                     onClick={(e) => handleClaimReward(dq, qData, e)}
                                                     style={{
-                                                        padding: '5px 12px',
+                                                        minWidth: 'unset',
+                                                        minHeight: 'unset',
+                                                        padding: isMobileLayout ? '3.5px 10px' : '5px 12px',
                                                         background: 'linear-gradient(180deg, #f0c040 0%, #c87820 100%)',
                                                         border: '1px solid #3d2a10',
                                                         borderRadius: '4px',
@@ -341,11 +357,13 @@ export const DailyTaskPanel = React.memo(() => {
                                                     ЗАБРАТЬ
                                                 </button>
                                             ) : (
-                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                 <div style={{ display: 'flex', alignItems: 'center', gap: isMobileLayout ? '5px' : '8px' }}>
                                                      {/* Шкала прогресса */}
                                                      <div
                                                          style={{
-                                                             width: '60px',
+                                                             width: (hasVip && canInstantPass)
+                                                                 ? (isMobileLayout ? '50px' : '60px')
+                                                                 : (isMobileLayout ? '100px' : '120px'),
                                                              height: '8px',
                                                              background: 'rgba(0,0,0,0.1)',
                                                              borderRadius: '4px',
@@ -362,44 +380,40 @@ export const DailyTaskPanel = React.memo(() => {
                                                          />
                                                      </div>
 
-                                                     {/* Кнопка VIP Пройти */}
-                                                     <button
-                                                         onClick={(e) => {
-                                                             e.stopPropagation();
-                                                             if (hasVip && canInstantPass) {
+                                                     {/* Кнопка VIP Пройти (показывается только при наличии VIP и возможности прохождения) */}
+                                                     {hasVip && canInstantPass && (
+                                                         <button
+                                                             onClick={(e) => {
+                                                                 e.stopPropagation();
                                                                  handleInstantPassQuest(dq.questId);
-                                                             } else if (!hasVip) {
-                                                                 useGameStore.getState().showAlert('Необходим VIP статус!');
-                                                             } else {
-                                                                 useGameStore.getState().showAlert('Лимит авто-прохождений на сегодня исчерпан!');
-                                                             }
-                                                         }}
-                                                         style={{
-                                                             padding: '3px 6px',
-                                                             background: (hasVip && canInstantPass)
-                                                                 ? 'linear-gradient(180deg, #8b5cf6 0%, #6d28d9 100%)' // Фиолетовый градиент VIP
-                                                                 : 'linear-gradient(180deg, #4b5563 0%, #1f2937 100%)', // Серый градиент (недоступно)
-                                                             border: `1.2px solid ${(hasVip && canInstantPass) ? '#c084fc' : '#4b5563'}`,
-                                                             borderRadius: '4px',
-                                                             color: (hasVip && canInstantPass) ? '#ffffff' : '#9ca3af',
-                                                             fontWeight: 900,
-                                                             fontSize: '9px',
-                                                             cursor: 'pointer',
-                                                             boxShadow: (hasVip && canInstantPass) ? '0 0 8px rgba(139, 92, 246, 0.45)' : 'none',
-                                                             fontFamily: "'Montserrat', sans-serif",
-                                                             display: 'flex',
-                                                             alignItems: 'center',
-                                                             justifyContent: 'center',
-                                                             gap: '2px',
-                                                             transition: 'all 0.2s',
-                                                             pointerEvents: 'auto',
-                                                             zIndex: 10,
-                                                         }}
-                                                         title="Авто-прохождение задания (1 раз в день для VIP)"
-                                                     >
-                                                         <span style={{ fontSize: '8px' }}>★</span>
-                                                         <span>VIP АВТО</span>
-                                                     </button>
+                                                             }}
+                                                             style={{
+                                                                 minWidth: 'unset',
+                                                                 minHeight: 'unset',
+                                                                 padding: isMobileLayout ? '2.5px 6px' : '3.5px 7px',
+                                                                 background: 'linear-gradient(180deg, #8b5cf6 0%, #6d28d9 100%)', // Фиолетовый градиент VIP
+                                                                 border: '1.2px solid #c084fc',
+                                                                 borderRadius: '4px',
+                                                                 color: '#ffffff',
+                                                                 fontWeight: 900,
+                                                                 fontSize: '9.5px',
+                                                                 cursor: 'pointer',
+                                                                 boxShadow: '0 0 8px rgba(139, 92, 246, 0.45)',
+                                                                 fontFamily: "'Montserrat', sans-serif",
+                                                                 display: 'flex',
+                                                                 alignItems: 'center',
+                                                                 justifyContent: 'center',
+                                                                 gap: '2px',
+                                                                 transition: 'all 0.2s',
+                                                                 pointerEvents: 'auto',
+                                                                 zIndex: 10,
+                                                             }}
+                                                             title="Авто-прохождение задания (1 раз в день для VIP)"
+                                                         >
+                                                             <span style={{ fontSize: '8.5px' }}>★</span>
+                                                             <span>{isMobileLayout ? 'АВТО' : 'VIP АВТО'}</span>
+                                                         </button>
+                                                     )}
                                                  </div>
                                             )}
                                         </div>
@@ -412,8 +426,10 @@ export const DailyTaskPanel = React.memo(() => {
                             marginTop: '10px',
                             textAlign: 'center',
                             fontSize: '12px',
-                            color: '#7a5828',
-                            fontWeight: 700,
+                            color: '#3d2a10',
+                            fontWeight: 900,
+                            fontFamily: "'Montserrat', sans-serif",
+                            textShadow: '0.5px 0.5px 0px rgba(255,255,255,0.4)',
                             position: 'relative',
                             zIndex: 1,
                         }}

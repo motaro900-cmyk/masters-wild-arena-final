@@ -18,6 +18,7 @@ import { AlertDialog, ConfirmDialog } from './hud/GlobalDialogs';
 import { UnderDevelopmentModal } from './hud/SharedUI';
 import { MatchmakingOverlay } from './hud/MatchmakingOverlay';
 import { LevelUpOverlay } from './hud/LevelUpOverlay';
+import { PlayerInspectModal } from './hud/PlayerInspectModal';
 import { safeGetItem, safeSetItem } from '../../utils/SafeStorage';
 
 const AdminPanel = React.lazy(() => import('./hud/AdminPanel').then((m) => ({ default: m.AdminPanel })));
@@ -228,7 +229,7 @@ export const GameHUD: React.FC = () => {
                                 if (tab === 'GOLD' || tab === 'GEMS' || tab === 'ENERGY') {
                                     goToShop('BANK', tab);
                                 } else {
-                                    goToShop('ALCHEMY');
+                                    goToShop('ARSENAL');
                                 }
                             }}
                         />
@@ -295,7 +296,7 @@ export const GameHUD: React.FC = () => {
                     </div>
 
                     <div
-                        className="absolute top-[160px] right-[25px] flex flex-col gap-3 items-end hud-interactive w-[260px] md:w-[400px]"
+                        className="absolute top-[160px] right-[25px] flex flex-col gap-3 items-end hud-interactive w-[400px]"
                         style={{ zIndex: 100, transform: `scale(${hudScale})`, transformOrigin: 'top right' }}
                     >
                         <DailyGiftBanner onClick={() => setActiveWindow('GIFT')} />
@@ -560,6 +561,7 @@ export const GameHUD: React.FC = () => {
             <LevelUpOverlay />
             <AlertDialog />
             <ConfirmDialog />
+            <PlayerInspectModal />
         </div>
     );
 };

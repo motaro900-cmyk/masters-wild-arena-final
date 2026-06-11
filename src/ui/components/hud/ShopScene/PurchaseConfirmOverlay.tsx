@@ -231,26 +231,29 @@ export const PurchaseConfirmOverlay: React.FC<PurchaseConfirmOverlayProps> = ({
 
                     {item.isAd && (
                         <button
-                            onClick={() => onConfirm('ad')}
-                            disabled={dailyAdWatchesCount >= 2}
+                            onClick={() => handleConfirm('ad')}
+                            disabled={isProcessing || dailyAdWatchesCount >= 2}
                             style={{
                                 flex: 1.5,
                                 height: '50px',
-                                background: 'linear-gradient(180deg, #4ade80 0%, #166534 100%)',
+                                background: isProcessing || dailyAdWatchesCount >= 2
+                                    ? 'linear-gradient(180deg, #4b5563 0%, #1f2937 100%)'
+                                    : 'linear-gradient(180deg, #4ade80 0%, #166534 100%)',
                                 border: 'none',
                                 borderRadius: '8px',
-                                color: '#fff',
+                                color: isProcessing || dailyAdWatchesCount >= 2 ? '#9ca3af' : '#fff',
                                 fontWeight: 900,
                                 fontSize: '18px',
-                                cursor: 'pointer',
+                                cursor: isProcessing || dailyAdWatchesCount >= 2 ? 'not-allowed' : 'pointer',
                                 fontFamily: "'Cinzel', 'Philosopher', serif",
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
                                 gap: '8px',
+                                opacity: isProcessing || dailyAdWatchesCount >= 2 ? 0.6 : 1,
                             }}
                         >
-                            СМОТРЕТЬ РЕКЛАМУ
+                            {isProcessing ? '...' : 'СМОТРЕТЬ РЕКЛАМУ'}
                         </button>
                     )}
                 </div>

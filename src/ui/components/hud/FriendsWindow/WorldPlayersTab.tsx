@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { resolveAssetPath } from '../../../../utils/assetPath';
 import { useGameStore } from '../../../../store/useGameStore';
+import { resolveAvatarPath } from '../../../../configs/ProfileCustomization';
 
 interface WorldPlayersTabProps {
     isLoadingWorld: boolean;
@@ -35,6 +35,10 @@ export const WorldPlayersTab: React.FC<WorldPlayersTabProps> = ({
                             key={p.id}
                             initial={{ opacity: 0, x: -10 }}
                             animate={{ opacity: 1, x: 0 }}
+                            onClick={() => {
+                                const setInspect = useGameStore.getState().setInspectPlayerId;
+                                if (setInspect) setInspect(p.id);
+                            }}
                             style={{
                                 background: colors.cardBg,
                                 border: `1px solid ${colors.border}`,
@@ -44,6 +48,7 @@ export const WorldPlayersTab: React.FC<WorldPlayersTabProps> = ({
                                 alignItems: 'center',
                                 gap: 12,
                                 transition: 'all 0.2s',
+                                cursor: 'pointer',
                             }}
                             onMouseEnter={(e) => (e.currentTarget.style.borderColor = colors.accent)}
                             onMouseLeave={(e) => (e.currentTarget.style.borderColor = colors.border)}
@@ -63,7 +68,7 @@ export const WorldPlayersTab: React.FC<WorldPlayersTabProps> = ({
                                     style={{
                                         width: '100%',
                                         height: '100%',
-                                        backgroundImage: `url(${(p.фото || p.avatar || '').startsWith('http') ? p.фото || p.avatar : resolveAssetPath(`/assets/images/avatars/${(p.фото || p.avatar || 'панда.webp').replace(/\.(png|webp)$/, '')}.webp`)})`,
+                                        backgroundImage: `url(${resolveAvatarPath(p.фото || p.avatar)})`,
                                         backgroundSize: 'cover',
                                         backgroundPosition: 'center',
                                     }}
@@ -101,7 +106,8 @@ export const WorldPlayersTab: React.FC<WorldPlayersTabProps> = ({
                             <motion.button
                                 whileHover={{ scale: 1.1 }}
                                 whileTap={{ scale: 0.92 }}
-                                onClick={async () => {
+                                onClick={async (e) => {
+                                    e.stopPropagation();
                                     const ok = await handleSendFriendRequest(p.id, p.name);
                                     if (ok) useGameStore.getState().showAlert('Запрос отправлен!');
                                 }}

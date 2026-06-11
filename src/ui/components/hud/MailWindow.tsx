@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../../../store/useGameStore';
 import { AssetsMap } from '../../../configs/AssetsMap';
@@ -26,6 +26,18 @@ export const MailWindow: React.FC<MailWindowProps> = () => {
     const [view, setView] = useState<'LIST' | 'READ' | 'WRITE'>('LIST');
     const [activeTab, setActiveTab] = useState<'INBOX' | 'NEWS' | 'ARCHIVE' | 'SUPPORT' | 'PROMO'>('INBOX');
     const [selectedMail, setSelectedMail] = useState<any>(null);
+
+    const [isMobile, setIsMobile] = useState(false);
+    useEffect(() => {
+        const checkLayout = () => {
+            setIsMobile(typeof window !== 'undefined' && window.innerWidth < 1024);
+        };
+        checkLayout();
+        window.addEventListener('resize', checkLayout);
+        return () => window.removeEventListener('resize', checkLayout);
+    }, []);
+
+    const TABS = ['INBOX', 'NEWS', 'ARCHIVE', 'SUPPORT', 'PROMO'] as const;
     const [feedbackCategory, setFeedbackCategory] = useState<'BUG' | 'IDEA' | 'QUESTION'>('BUG');
     const [feedbackText, setFeedbackText] = useState('');
     const [promoInput, setPromoInput] = useState('');
@@ -228,6 +240,23 @@ export const MailWindow: React.FC<MailWindowProps> = () => {
                                 key="support"
                                 initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}
+                                drag={isMobile ? "x" : undefined}
+                                dragConstraints={{ left: 0, right: 0 }}
+                                dragElastic={0.15}
+                                onDragEnd={(_, info) => {
+                                    if (!isMobile) return;
+                                    const swipeThreshold = 50;
+                                    const currentIndex = TABS.indexOf(activeTab);
+                                    if (info.offset.x < -swipeThreshold) {
+                                        if (currentIndex < TABS.length - 1) {
+                                            setActiveTab(TABS[currentIndex + 1] as any);
+                                        }
+                                    } else if (info.offset.x > swipeThreshold) {
+                                        if (currentIndex > 0) {
+                                            setActiveTab(TABS[currentIndex - 1] as any);
+                                        }
+                                    }
+                                }}
                                 style={{
                                     display: 'flex',
                                     flexDirection: 'column',
@@ -236,6 +265,7 @@ export const MailWindow: React.FC<MailWindowProps> = () => {
                                     background: 'rgba(0,0,0,0.2)',
                                     borderRadius: '15px',
                                     border: `1px solid ${colors.border}`,
+                                    touchAction: isMobile ? 'pan-y' : 'auto',
                                 }}
                             >
                                 <div style={{ textAlign: 'center' }}>
@@ -350,6 +380,23 @@ export const MailWindow: React.FC<MailWindowProps> = () => {
                                 key="promo"
                                 initial={{ opacity: 0, scale: 0.95 }}
                                 animate={{ opacity: 1, scale: 1 }}
+                                drag={isMobile ? "x" : undefined}
+                                dragConstraints={{ left: 0, right: 0 }}
+                                dragElastic={0.15}
+                                onDragEnd={(_, info) => {
+                                    if (!isMobile) return;
+                                    const swipeThreshold = 50;
+                                    const currentIndex = TABS.indexOf(activeTab);
+                                    if (info.offset.x < -swipeThreshold) {
+                                        if (currentIndex < TABS.length - 1) {
+                                            setActiveTab(TABS[currentIndex + 1] as any);
+                                        }
+                                    } else if (info.offset.x > swipeThreshold) {
+                                        if (currentIndex > 0) {
+                                            setActiveTab(TABS[currentIndex - 1] as any);
+                                        }
+                                    }
+                                }}
                                 style={{
                                     display: 'flex',
                                     flexDirection: 'column',
@@ -360,6 +407,7 @@ export const MailWindow: React.FC<MailWindowProps> = () => {
                                     background: 'rgba(0,0,0,0.2)',
                                     borderRadius: '20px',
                                     border: `1px solid ${colors.border}`,
+                                    touchAction: isMobile ? 'pan-y' : 'auto',
                                 }}
                             >
                                 <div style={{ textAlign: 'center' }}>
@@ -475,7 +523,29 @@ export const MailWindow: React.FC<MailWindowProps> = () => {
                             <motion.div
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
-                                style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}
+                                drag={isMobile ? "x" : undefined}
+                                dragConstraints={{ left: 0, right: 0 }}
+                                dragElastic={0.15}
+                                onDragEnd={(_, info) => {
+                                    if (!isMobile) return;
+                                    const swipeThreshold = 50;
+                                    const currentIndex = TABS.indexOf(activeTab);
+                                    if (info.offset.x < -swipeThreshold) {
+                                        if (currentIndex < TABS.length - 1) {
+                                            setActiveTab(TABS[currentIndex + 1] as any);
+                                        }
+                                    } else if (info.offset.x > swipeThreshold) {
+                                        if (currentIndex > 0) {
+                                            setActiveTab(TABS[currentIndex - 1] as any);
+                                        }
+                                    }
+                                }}
+                                style={{
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    gap: '10px',
+                                    touchAction: isMobile ? 'pan-y' : 'auto',
+                                }}
                             >
                                 {filteredMails.length > 0 ? (
                                     filteredMails.map((m: any) => (

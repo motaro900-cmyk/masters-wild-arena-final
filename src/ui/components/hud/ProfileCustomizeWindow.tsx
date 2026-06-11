@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { useGameStore } from '../../../store/useGameStore';
 import { audioService } from '../../../services/AudioService';
 import { AssetsMap } from '../../../configs/AssetsMap';
@@ -37,6 +38,18 @@ export const ProfileCustomizeWindow: React.FC<ProfileCustomizeWindowProps> = () 
 
     // Tab state: 'AVATARS' | 'FRAMES' | 'TITLES'
     const [activeTab, setActiveTab] = useState<'AVATARS' | 'FRAMES' | 'TITLES'>('AVATARS');
+
+    const [isMobile, setIsMobile] = useState(false);
+    useEffect(() => {
+        const checkLayout = () => {
+            setIsMobile(typeof window !== 'undefined' && window.innerWidth < 1024);
+        };
+        checkLayout();
+        window.addEventListener('resize', checkLayout);
+        return () => window.removeEventListener('resize', checkLayout);
+    }, []);
+
+    const TABS = ['AVATARS', 'FRAMES', 'TITLES'] as const;
 
     const handleSelectAvatar = (avatarPath: string, unlocked: boolean) => {
         if (!unlocked) {
@@ -153,8 +166,25 @@ export const ProfileCustomizeWindow: React.FC<ProfileCustomizeWindowProps> = () 
                 </div>
 
                 {/* СПИСОК ЭЛЕМЕНТОВ (SCROLLABLE - 3 COLUMNS) */}
-                <div
+                <motion.div
                     className="leaderboard-scroll"
+                    drag={isMobile ? "x" : undefined}
+                    dragConstraints={{ left: 0, right: 0 }}
+                    dragElastic={0.15}
+                    onDragEnd={(_, info) => {
+                        if (!isMobile) return;
+                        const swipeThreshold = 50;
+                        const currentIndex = TABS.indexOf(activeTab);
+                        if (info.offset.x < -swipeThreshold) {
+                            if (currentIndex < TABS.length - 1) {
+                                setActiveTab(TABS[currentIndex + 1]);
+                            }
+                        } else if (info.offset.x > swipeThreshold) {
+                            if (currentIndex > 0) {
+                                setActiveTab(TABS[currentIndex - 1]);
+                            }
+                        }
+                    }}
                     style={{
                         flex: 1,
                         overflowY: 'auto',
@@ -162,6 +192,7 @@ export const ProfileCustomizeWindow: React.FC<ProfileCustomizeWindowProps> = () 
                         display: 'flex',
                         flexDirection: 'column',
                         gap: '12px',
+                        touchAction: isMobile ? 'pan-y' : 'auto',
                     }}
                 >
                     {activeTab === 'AVATARS' && (
@@ -620,7 +651,7 @@ export const ProfileCustomizeWindow: React.FC<ProfileCustomizeWindowProps> = () 
                             })}
                         </div>
                     )}
-                </div>
+                </motion.div>
             </div>
         </div>
     );

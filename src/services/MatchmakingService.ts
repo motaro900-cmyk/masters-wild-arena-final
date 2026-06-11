@@ -86,7 +86,7 @@ const generateOpponentEquipment = (
     return equip;
 };
 
-const buildStatsFromEquipment = (heroId: string, level: number, equipment: Record<string, string | null>, avgItemLevel: number = 1) => {
+export const buildStatsFromEquipment = (heroId: string, level: number, equipment: Record<string, string | null>, avgItemLevel: number = 1) => {
     const heroData = HEROES_DB.find((h) => h.id === heroId) || HEROES_DB[0];
     const levelMult = 1 + (level - 1) * 0.05;
     const total = {
