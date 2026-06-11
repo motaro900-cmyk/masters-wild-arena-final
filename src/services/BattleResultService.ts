@@ -1,6 +1,5 @@
 import { db, USERS_COLLECTION } from '../utils/firebase';
 import { collection, doc, setDoc, serverTimestamp } from 'firebase/firestore';
-// import { httpsCallable } from 'firebase/functions';
 import { matchmakingService } from './MatchmakingService';
 import { useGameStore } from '../store/useGameStore';
 
@@ -118,27 +117,7 @@ class BattleResultServiceClass {
         let myGoldChange = 0;
         let myExpChange = 0;
 
-        // TODO: server-authoritative battle resolution - disabled until Cloud Functions deployed
-        /*
-        try {
-            const resolveBattleFn = httpsCallable<any, any>(functions, 'resolveBattle');
-            const battleId = `battle_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
-            const response = await resolveBattleFn({
-                battleId,
-                attackerId: myUserId,
-                defenderId: opponentUserId || 'bot_opponent',
-                mode: isOpponentBot ? 'pve' : 'pvp',
-            });
-            const data = response.data;
-            if (data && data.success) {
-                serverResult = data.result;
-                myGoldChange = data.reward.gold;
-                myExpChange = data.reward.xp;
-            }
-        } catch (error) {
-            console.error('[BattleResultService] Failed to call resolveBattle cloud function:', error);
-        }
-        */
+        // TODO: Cloud Function resolveBattle — uncomment when Cloud Functions are deployed.
 
         // Fallback to client calculation to ensure game stays playable
         myGoldChange = getGoldReward(params.myLevel, attackerWon);

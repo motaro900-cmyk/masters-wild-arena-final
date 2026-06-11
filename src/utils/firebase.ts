@@ -11,14 +11,12 @@ const firebaseConfig = {
     appId: '1:474922234777:web:2300a8c87464b08c339908',
 };
 
-import { getFunctions } from 'firebase/functions';
 
 // Инициализация
 const app = initializeApp(firebaseConfig);
 export const db = initializeFirestore(app, {
     localCache: persistentLocalCache(),
 });
-export const functions = getFunctions(app);
 
 const isLocalhost =
     typeof window !== 'undefined' &&

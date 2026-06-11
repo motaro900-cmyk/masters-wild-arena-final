@@ -90,6 +90,18 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     sourcemap: false,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-react':    ['react', 'react-dom'],
+          'vendor-firebase': ['firebase/app', 'firebase/firestore', 'firebase/functions'],
+          'vendor-pixi':     ['pixi.js'],
+          'vendor-gsap':     ['gsap'],
+          'vendor-framer':   ['framer-motion'],
+          'vendor-zustand':  ['zustand'],
+        },
+      },
+    },
   },
   esbuild: {
     // [Lead Architect]: Мы оставляем логи для отладки у игроков в продакшене.
