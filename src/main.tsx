@@ -138,6 +138,46 @@ export const Root = () => {
 
                 useGameStore.setState({ profileStatus: 'loaded' });
 
+                // Check for pendingPurchase
+                if (typeof window !== 'undefined') {
+                    const pendingRaw = localStorage.getItem('pendingPurchase');
+                    if (pendingRaw) {
+                        try {
+                            const pending = JSON.parse(pendingRaw);
+                            const amount = Number(pending.amount);
+                            const packId = pending.item;
+                            if (amount > 0 && packId) {
+                                console.log(`🔄 Found pending purchase: ${packId} (+${amount} crystals). Recovering...`);
+                                const store = useGameStore.getState();
+                                const { syncService: recoverySync } = await import('./services/SyncService');
+                                if (packId === 'starter_pack') {
+                                    const now = Date.now();
+                                    const currentEndTime = store.vipEndTime && store.vipEndTime > now ? store.vipEndTime : now;
+                                    const newEndTime = currentEndTime + 3 * 24 * 60 * 60 * 1000;
+                                    const premiumBonus = store.isPremium ? 15 : 0;
+                                    const maxEnergy = 50 + Math.max(premiumBonus, 15);
+                                    useGameStore.setState({
+                                        crystals: (store.crystals || 0) + 200,
+                                        vipLevel: 1,
+                                        maxEnergy: maxEnergy,
+                                        vipEndTime: newEndTime,
+                                        hasBoughtStarterPack: true,
+                                    });
+                                    localStorage.setItem('vipEndTime', newEndTime.toString());
+                                } else {
+                                    store.addCrystals(amount);
+                                }
+                                recoverySync.logPlayerAction(`Восстановлена покупка: ${packId} (+${amount} 💎)`);
+                                await recoverySync.syncPlayerData();
+                                localStorage.removeItem('pendingPurchase');
+                                console.log('✅ Pending purchase successfully recovered and synced.');
+                            }
+                        } catch (e) {
+                            console.error('Failed to parse or recover pendingPurchase:', e);
+                        }
+                    }
+                }
+
                 // 3. Game Systems
                 initGameSystems(timeOffset);
 

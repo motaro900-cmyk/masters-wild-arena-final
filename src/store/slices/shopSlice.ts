@@ -228,6 +228,20 @@ export const createShopSlice = (set: any, get: any) => ({
         if (success) {
             const state = get() as any;
 
+            let amount = 0;
+            if (packId === 'gem_pack_1') amount = 100;
+            if (packId === 'gem_pack_2') amount = 700;
+            if (packId === 'gem_pack_3') amount = 4000;
+            if (packId === 'starter_pack') amount = 200;
+
+            if (typeof window !== 'undefined' && amount > 0) {
+                localStorage.setItem('pendingPurchase', JSON.stringify({
+                    item: packId,
+                    amount: amount,
+                    timestamp: Date.now()
+                }));
+            }
+
             if (packId === 'starter_pack') {
                 const now = Date.now();
                 const currentEndTime = state.vipEndTime && state.vipEndTime > now ? state.vipEndTime : now;
@@ -248,19 +262,20 @@ export const createShopSlice = (set: any, get: any) => ({
                 }
 
                 syncService.logPlayerAction(`Купил Стартовый Пакет: +200 💎, +3 дня VIP 👑`);
-                syncService.syncPlayerData();
+                await syncService.syncPlayerData();
+                if (typeof window !== 'undefined') {
+                    localStorage.removeItem('pendingPurchase');
+                }
                 return true;
             }
-
-            let amount = 0;
-            if (packId === 'gem_pack_1') amount = 100;
-            if (packId === 'gem_pack_2') amount = 700;
-            if (packId === 'gem_pack_3') amount = 4000;
 
             if (amount > 0) {
                 get().addCrystals(amount);
                 syncService.logPlayerAction(`Купил пак кристаллов: +${amount} 💎`);
-                syncService.syncPlayerData();
+                await syncService.syncPlayerData();
+                if (typeof window !== 'undefined') {
+                    localStorage.removeItem('pendingPurchase');
+                }
                 return true;
             }
         }

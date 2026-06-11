@@ -168,7 +168,7 @@ export const ShopDetailPanel: React.FC<ShopDetailPanelProps> = ({
                             >
                                 {selectedItem.name}
                             </h4>
-                            {selectedItem.mainTab !== 'BANK' && selectedItem.mainTab !== 'SKINS' && (
+                            {selectedItem.mainTab === 'ARSENAL' && (
                                 <div
                                     style={{
                                         display: 'flex',

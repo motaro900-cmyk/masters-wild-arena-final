@@ -143,8 +143,8 @@ export const consumables: Record<string, IEquipmentStats> = {
         rarity: 'COMMON',
         mainTab: 'BANK',
         subTab: 'ENERGY',
-        desc: 'Смотрите рекламу, чтобы получить 20 энергии.',
-        amount: 20,
+        desc: 'Смотрите рекламу, чтобы получить 25 энергии.',
+        amount: 25,
     },
     ad_gold: {
         id: 'ad_gold',
@@ -154,8 +154,8 @@ export const consumables: Record<string, IEquipmentStats> = {
         rarity: 'COMMON',
         mainTab: 'BANK',
         subTab: 'GOLD',
-        desc: 'Смотрите рекламу, чтобы получить 2 500 золота.',
-        amount: 2500,
+        desc: 'Смотрите рекламу, чтобы получить 700 золота.',
+        amount: 700,
     },
     ad_gems: {
         id: 'ad_gems',
@@ -165,8 +165,8 @@ export const consumables: Record<string, IEquipmentStats> = {
         rarity: 'COMMON',
         mainTab: 'BANK',
         subTab: 'GEMS',
-        desc: 'Смотрите рекламу, чтобы получить 20 алмазов.',
-        amount: 20,
+        desc: 'Смотрите рекламу, чтобы получить 25 алмазов.',
+        amount: 25,
     },
     '40': {
         id: '40',
