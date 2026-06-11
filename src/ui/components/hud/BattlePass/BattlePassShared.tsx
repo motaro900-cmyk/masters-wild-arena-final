@@ -98,23 +98,23 @@ export interface Reward {
 export const BATTLE_PASS_REWARDS: Reward[] = [
     {
         level: 1,
-        free: { id: 'gold_500', name: '500 Золота', icon: '💰', amount: 500, type: 'GOLD' },
-        premium: { id: 'gems_150', name: '150 Алмазов', icon: '💎', amount: 150, type: 'GEMS' },
+        free: { id: 'gold_250', name: '250 Золота', icon: '💰', amount: 250, type: 'GOLD' },
+        premium: { id: 'gems_75', name: '75 Алмазов', icon: '💎', amount: 75, type: 'GEMS' },
     },
     {
         level: 2,
-        free: { id: 'energy_25', name: '25 Энергии', icon: '⚡', amount: 25, type: 'ENERGY' },
-        premium: { id: 'gold_2000', name: '2000 Золота', icon: '💰', amount: 2000, type: 'GOLD' },
+        free: { id: 'energy_15', name: '15 Энергии', icon: '⚡', amount: 15, type: 'ENERGY' },
+        premium: { id: 'gold_600', name: '600 Золота', icon: '💰', amount: 600, type: 'GOLD' },
     },
     {
         level: 3,
-        free: { id: 'gems_50', name: '50 Алмазов', icon: '💎', amount: 50, type: 'GEMS' },
-        premium: { id: 'energy_50', name: '50 Энергии', icon: '⚡', amount: 50, type: 'ENERGY' },
+        free: { id: 'gems_30', name: '30 Алмазов', icon: '💎', amount: 30, type: 'GEMS' },
+        premium: { id: 'energy_20', name: '20 Энергии', icon: '⚡', amount: 20, type: 'ENERGY' },
     },
     {
         level: 4,
-        free: { id: 'gold_1000', name: '1000 Золота', icon: '💰', amount: 1000, type: 'GOLD' },
-        premium: { id: 'gems_200', name: '200 Алмазов', icon: '💎', amount: 200, type: 'GEMS' },
+        free: { id: 'gold_350', name: '350 Золота', icon: '💰', amount: 350, type: 'GOLD' },
+        premium: { id: 'gems_100', name: '100 Алмазов', icon: '💎', amount: 100, type: 'GEMS' },
     },
     {
         level: 5,
@@ -123,23 +123,23 @@ export const BATTLE_PASS_REWARDS: Reward[] = [
     },
     {
         level: 6,
-        free: { id: 'energy_30', name: '30 Энергии', icon: '⚡', amount: 30, type: 'ENERGY' },
-        premium: { id: 'gold_3000', name: '3000 Золота', icon: '💰', amount: 3000, type: 'GOLD' },
+        free: { id: 'energy_20', name: '20 Энергии', icon: '⚡', amount: 20, type: 'ENERGY' },
+        premium: { id: 'gold_800', name: '800 Золота', icon: '💰', amount: 800, type: 'GOLD' },
     },
     {
         level: 7,
-        free: { id: 'gems_100', name: '100 Алмазов', icon: '💎', amount: 100, type: 'GEMS' },
-        premium: { id: 'energy_60', name: '60 Энергии', icon: '⚡', amount: 60, type: 'ENERGY' },
+        free: { id: 'gems_40', name: '40 Алмазов', icon: '💎', amount: 40, type: 'GEMS' },
+        premium: { id: 'energy_30', name: '30 Энергии', icon: '⚡', amount: 30, type: 'ENERGY' },
     },
     {
         level: 8,
-        free: { id: 'gold_1500', name: '1500 Золота', icon: '💰', amount: 1500, type: 'GOLD' },
-        premium: { id: 'gems_250', name: '250 Алмазов', icon: '💎', amount: 250, type: 'GEMS' },
+        free: { id: 'gold_400', name: '400 Золота', icon: '💰', amount: 400, type: 'GOLD' },
+        premium: { id: 'gems_120', name: '120 Алмазов', icon: '💎', amount: 120, type: 'GEMS' },
     },
     {
         level: 9,
-        free: { id: 'energy_35', name: '35 Энергии', icon: '⚡', amount: 35, type: 'ENERGY' },
-        premium: { id: 'gold_4000', name: '4000 Золота', icon: '💰', amount: 4000, type: 'GOLD' },
+        free: { id: 'energy_25', name: '25 Энергии', icon: '⚡', amount: 25, type: 'ENERGY' },
+        premium: { id: 'gold_1000', name: '1000 Золота', icon: '💰', amount: 1000, type: 'GOLD' },
     },
     {
         level: 10,
@@ -148,28 +148,28 @@ export const BATTLE_PASS_REWARDS: Reward[] = [
     },
     {
         level: 11,
-        free: { id: 'gold_2000', name: '2000 Золота', icon: '💰', amount: 2000, type: 'GOLD' },
-        premium: { id: 'gems_300', name: '300 Алмазов', icon: '💎', amount: 300, type: 'GEMS' },
+        free: { id: 'gold_450', name: '450 Золота', icon: '💰', amount: 450, type: 'GOLD' },
+        premium: { id: 'gems_130', name: '130 Алмазов', icon: '💎', amount: 130, type: 'GEMS' },
     },
     {
         level: 12,
-        free: { id: 'energy_40', name: '40 Энергии', icon: '⚡', amount: 40, type: 'ENERGY' },
-        premium: { id: 'gold_5000', name: '5000 Золота', icon: '💰', amount: 5000, type: 'GOLD' },
+        free: { id: 'energy_30', name: '30 Энергии', icon: '⚡', amount: 30, type: 'ENERGY' },
+        premium: { id: 'gold_1200', name: '1200 Золота', icon: '💰', amount: 1200, type: 'GOLD' },
     },
     {
         level: 13,
-        free: { id: 'gems_150', name: '150 Алмазов', icon: '💎', amount: 150, type: 'GEMS' },
-        premium: { id: 'energy_80', name: '80 Энергии', icon: '⚡', amount: 80, type: 'ENERGY' },
+        free: { id: 'gems_50', name: '50 Алмазов', icon: '💎', amount: 50, type: 'GEMS' },
+        premium: { id: 'energy_40', name: '40 Энергии', icon: '⚡', amount: 40, type: 'ENERGY' },
     },
     {
         level: 14,
-        free: { id: 'gold_3000', name: '3000 Золота', icon: '💰', amount: 3000, type: 'GOLD' },
-        premium: { id: 'gems_400', name: '400 Алмазов', icon: '💎', amount: 400, type: 'GEMS' },
+        free: { id: 'gold_500', name: '500 Золота', icon: '💰', amount: 500, type: 'GOLD' },
+        premium: { id: 'gems_150', name: '150 Алмазов', icon: '💎', amount: 150, type: 'GEMS' },
     },
     {
         level: 15,
         free: { id: 'weapon_moon_sword', name: 'Меч Луны', icon: '⚔️', type: 'WEAPON' },
-        premium: { id: 'gems_500', name: '500 Алмазов', icon: '💎', amount: 500, type: 'GEMS' },
+        premium: { id: 'panda_frost', name: 'Лазурный Дракон', icon: '❄️', type: 'SKIN' },
     },
 ];
 
