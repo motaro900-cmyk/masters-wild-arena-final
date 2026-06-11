@@ -258,8 +258,14 @@ export function getAvatarImageStyle(avatarPath: string): React.CSSProperties {
     };
 }
 
-export function isAvatarUnlocked(avatar: AvatarOption, playerLevel: number, playerVip: number): boolean {
+export function isAvatarUnlocked(
+    avatar: AvatarOption,
+    playerLevel: number,
+    playerVip: number,
+    claimedRewards: string[] = [],
+): boolean {
     if (avatar.id === 'panda') return true;
+    if (avatar.id === 'monkey' && claimedRewards.includes('avatar_monkey')) return true;
     if (avatar.requiredLevel && playerLevel >= avatar.requiredLevel) return true;
     if (avatar.requiredVip && playerVip >= avatar.requiredVip) return true;
     return false;
@@ -270,8 +276,10 @@ export function isFrameUnlocked(
     playerLevel: number,
     playerVip: number,
     playerTitle: string,
+    claimedRewards: string[] = [],
 ): boolean {
     if (frame.id === 'none') return true;
+    if (frame.id === 'emerald_dragon_frame.webp' && claimedRewards.includes('frame_emerald_dragon')) return true;
     if (frame.requiredLevel && playerLevel >= frame.requiredLevel) return true;
     if (frame.requiredVip && playerVip >= frame.requiredVip) return true;
     if (frame.requiresTitle && playerTitle === frame.requiresTitle) return true;
@@ -283,8 +291,10 @@ export function isTitleUnlocked(
     playerLevel: number,
     playerVip: number,
     playerTrophies: number,
+    claimedRewards: string[] = [],
 ): boolean {
     if (title.id === 'wanderer') return true;
+    if (title.id === 'arena_king' && claimedRewards.includes('avatar_monkey')) return true;
     if (title.requiredLevel && playerLevel >= title.requiredLevel) return true;
     if (title.requiredVip && playerVip >= title.requiredVip) return true;
     if (title.requiredTrophies && playerTrophies >= title.requiredTrophies) return true;

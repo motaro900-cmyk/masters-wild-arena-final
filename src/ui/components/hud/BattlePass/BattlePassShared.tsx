@@ -79,12 +79,14 @@ export const CornerOrnament: React.FC<{ style: React.CSSProperties }> = ({ style
     </svg>
 );
 
+import { AVATARS, AVATAR_FRAMES } from '../../../../configs/ProfileCustomization';
+
 export interface RewardItem {
     id: string;
     name: string;
     icon: string;
     amount?: number;
-    type: 'GOLD' | 'ITEM' | 'CHEST' | 'WEAPON' | 'GEMS' | 'SKIN';
+    type: 'GOLD' | 'ITEM' | 'CHEST' | 'WEAPON' | 'GEMS' | 'SKIN' | 'FRAME' | 'AVATAR' | 'TITLE' | 'ENERGY';
 }
 
 export interface Reward {
@@ -97,52 +99,52 @@ export const BATTLE_PASS_REWARDS: Reward[] = [
     {
         level: 1,
         free: { id: 'gold_500', name: '500 Золота', icon: '💰', amount: 500, type: 'GOLD' },
-        premium: { id: 'weapon_moon_sword', name: 'Меч Луны', icon: '⚔️', type: 'WEAPON' },
+        premium: { id: 'gems_150', name: '150 Алмазов', icon: '💎', amount: 150, type: 'GEMS' },
     },
     {
         level: 2,
-        free: { id: 'chest_small', name: 'Малый Сундук', icon: '📦', type: 'CHEST' },
-        premium: { id: 'gems_100', name: '100 Алмазов', icon: '💎', amount: 100, type: 'GEMS' },
+        free: { id: 'energy_25', name: '25 Энергии', icon: '⚡', amount: 25, type: 'ENERGY' },
+        premium: { id: 'gold_2000', name: '2000 Золота', icon: '💰', amount: 2000, type: 'GOLD' },
     },
     {
         level: 3,
-        free: { id: 'potion_strength', name: 'Зелье Силы', icon: '🧪', type: 'ITEM' },
-        premium: { id: 'chest_epic', name: 'Эпич. Сундук', icon: 'sprite-gift', type: 'CHEST' },
+        free: { id: 'gems_50', name: '50 Алмазов', icon: '💎', amount: 50, type: 'GEMS' },
+        premium: { id: 'energy_50', name: '50 Энергии', icon: '⚡', amount: 50, type: 'ENERGY' },
     },
     {
         level: 4,
         free: { id: 'gold_1000', name: '1000 Золота', icon: '💰', amount: 1000, type: 'GOLD' },
-        premium: { id: 'gems_150', name: '150 Алмазов', icon: '💎', amount: 150, type: 'GEMS' },
-    },
-    {
-        level: 5,
-        free: { id: 'shard_rare', name: 'Редкий Осколок', icon: '✨', type: 'ITEM' },
-        premium: { id: 'pedestal_legendary', name: 'Легенд. Плащ', icon: '🏛️', type: 'ITEM' },
-    },
-    {
-        level: 6,
-        free: { id: 'gold_1500', name: '1500 Золота', icon: '💰', amount: 1500, type: 'GOLD' },
         premium: { id: 'gems_200', name: '200 Алмазов', icon: '💎', amount: 200, type: 'GEMS' },
     },
     {
-        level: 7,
-        free: { id: 'potion_healing', name: 'Зелье Жизни', icon: '🧪', type: 'ITEM' },
-        premium: { id: 'shard_legendary', name: 'Легенд. Осколок', icon: '✨', type: 'ITEM' },
+        level: 5,
+        free: { id: 'dagger_rusty', name: 'Ржавый Тесак', icon: '⚔️', type: 'WEAPON' },
+        premium: { id: 'frame_emerald_dragon', name: 'Изумрудный Дракон', icon: '🖼️', type: 'FRAME' },
     },
     {
-        level: 8,
-        free: { id: 'chest_small', name: 'Малый Сундук', icon: '📦', type: 'CHEST' },
+        level: 6,
+        free: { id: 'energy_30', name: '30 Энергии', icon: '⚡', amount: 30, type: 'ENERGY' },
         premium: { id: 'gold_3000', name: '3000 Золота', icon: '💰', amount: 3000, type: 'GOLD' },
     },
     {
+        level: 7,
+        free: { id: 'gems_100', name: '100 Алмазов', icon: '💎', amount: 100, type: 'GEMS' },
+        premium: { id: 'energy_60', name: '60 Энергии', icon: '⚡', amount: 60, type: 'ENERGY' },
+    },
+    {
+        level: 8,
+        free: { id: 'gold_1500', name: '1500 Золота', icon: '💰', amount: 1500, type: 'GOLD' },
+        premium: { id: 'gems_250', name: '250 Алмазов', icon: '💎', amount: 250, type: 'GEMS' },
+    },
+    {
         level: 9,
-        free: { id: 'gems_50', name: '50 Алмазов', icon: '💎', amount: 50, type: 'GEMS' },
-        premium: { id: 'weapon_fire_staff', name: 'Посох Огня', icon: '🔥', type: 'WEAPON' },
+        free: { id: 'energy_35', name: '35 Энергии', icon: '⚡', amount: 35, type: 'ENERGY' },
+        premium: { id: 'gold_4000', name: '4000 Золота', icon: '💰', amount: 4000, type: 'GOLD' },
     },
     {
         level: 10,
-        free: { id: 'chest_epic', name: 'Эпич. Сундук', icon: 'sprite-gift', type: 'CHEST' },
-        premium: { id: 'skin_lava_golem', name: 'Облик: Голем', icon: '🌋', type: 'SKIN' },
+        free: { id: 'dagger_bone', name: 'Клык Жнеца', icon: '⚔️', type: 'WEAPON' },
+        premium: { id: 'avatar_monkey', name: 'Король Обезьян', icon: '🐵', type: 'AVATAR' },
     },
     {
         level: 11,
@@ -151,23 +153,23 @@ export const BATTLE_PASS_REWARDS: Reward[] = [
     },
     {
         level: 12,
-        free: { id: 'potion_defense', name: 'Зелье Брони', icon: '🧪', type: 'ITEM' },
-        premium: { id: 'chest_legendary', name: 'Легенд. Сундук', icon: 'sprite-gift', type: 'CHEST' },
-    },
-    {
-        level: 13,
-        free: { id: 'shard_rare', name: 'Редкий Осколок', icon: '✨', type: 'ITEM' },
+        free: { id: 'energy_40', name: '40 Энергии', icon: '⚡', amount: 40, type: 'ENERGY' },
         premium: { id: 'gold_5000', name: '5000 Золота', icon: '💰', amount: 5000, type: 'GOLD' },
     },
     {
-        level: 14,
+        level: 13,
         free: { id: 'gems_150', name: '150 Алмазов', icon: '💎', amount: 150, type: 'GEMS' },
-        premium: { id: 'potion_strength_great', name: 'Вел. Зелье Силы', icon: '🧪', type: 'ITEM' },
+        premium: { id: 'energy_80', name: '80 Энергии', icon: '⚡', amount: 80, type: 'ENERGY' },
+    },
+    {
+        level: 14,
+        free: { id: 'gold_3000', name: '3000 Золота', icon: '💰', amount: 3000, type: 'GOLD' },
+        premium: { id: 'gems_400', name: '400 Алмазов', icon: '💎', amount: 400, type: 'GEMS' },
     },
     {
         level: 15,
-        free: { id: 'chest_legendary', name: 'Легенд. Сундук', icon: 'sprite-gift', type: 'CHEST' },
-        premium: { id: 'panda_frost', name: 'Облик: Морозный Дзен', icon: '❄️', type: 'SKIN' },
+        free: { id: 'weapon_moon_sword', name: 'Меч Луны', icon: '⚔️', type: 'WEAPON' },
+        premium: { id: 'gems_500', name: '500 Алмазов', icon: '💎', amount: 500, type: 'GEMS' },
     },
 ];
 
@@ -181,6 +183,19 @@ export const getRewardImage = (item: RewardItem): string => {
     }
     if (item.type === 'GEMS') {
         return '/assets/images/ui/icons/almaz.webp';
+    }
+    if (item.type === 'ENERGY') {
+        return '/assets/images/ui/icons/energy.webp';
+    }
+    if (item.type === 'FRAME') {
+        const frameId = item.id.replace('frame_', '') + '_frame.webp';
+        const frame = AVATAR_FRAMES.find((f) => f.id === frameId);
+        if (frame) return frame.path;
+    }
+    if (item.type === 'AVATAR') {
+        const avatarId = item.id.replace('avatar_', '');
+        const avatar = AVATARS.find((a) => a.id === avatarId);
+        if (avatar) return avatar.path;
     }
     if (item.type === 'CHEST') {
         return '/assets/images/ui/icons/season_chest.webp';

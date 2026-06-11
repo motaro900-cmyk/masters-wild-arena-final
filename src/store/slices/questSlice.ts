@@ -243,6 +243,7 @@ export const createQuestSlice = (set: any, get: any) => ({
 
         let goldToAdd = 0;
         let gemsToAdd = 0;
+        let energyToAdd = 0;
         const newInventory = [...state.inventory];
         const newOwnedSkins = [...(state.ownedSkins || ['default'])];
         const newEquippedSkins = { ...(state.equippedSkins || { panda: 'default' }) };
@@ -254,6 +255,27 @@ export const createQuestSlice = (set: any, get: any) => ({
         } else if (rewardId.startsWith('gems_')) {
             const amt = parseInt(rewardId.split('_')[1]);
             if (!isNaN(amt)) gemsToAdd = amt;
+        } else if (rewardId.startsWith('energy_')) {
+            const amt = parseInt(rewardId.split('_')[1]);
+            if (!isNaN(amt)) energyToAdd = amt;
+        } else if (rewardId === 'dagger_rusty') {
+            const weaponObj = {
+                id: 'dagger_rusty',
+                type: 'WEAPONS',
+                rarity: 'RARE',
+                level: 1,
+                instanceId: `dagger_rusty_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+            };
+            newInventory.push(weaponObj);
+        } else if (rewardId === 'dagger_bone') {
+            const weaponObj = {
+                id: 'dagger_bone',
+                type: 'WEAPONS',
+                rarity: 'RARE',
+                level: 1,
+                instanceId: `dagger_bone_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+            };
+            newInventory.push(weaponObj);
         } else if (rewardId === 'weapon_moon_sword') {
             const weaponObj = {
                 id: 'weapon_moon_sword',
@@ -345,6 +367,7 @@ export const createQuestSlice = (set: any, get: any) => ({
             claimedRewards: [...state.claimedRewards, rewardId],
             gold: state.gold + goldToAdd,
             crystals: state.crystals + gemsToAdd,
+            energy: state.energy + energyToAdd,
             inventory: newInventory,
             ownedSkins: newOwnedSkins,
             equippedSkins: newEquippedSkins,

@@ -34,6 +34,7 @@ export const ProfileCustomizeWindow: React.FC<ProfileCustomizeWindowProps> = () 
         setFrame,
         setTitle,
         setAvatar,
+        claimedRewards,
     } = useGameStore();
 
     // Tab state: 'AVATARS' | 'FRAMES' | 'TITLES'
@@ -299,7 +300,7 @@ export const ProfileCustomizeWindow: React.FC<ProfileCustomizeWindowProps> = () 
 
                             {/* Standard Avatars */}
                             {AVATARS.map((a) => {
-                                const unlocked = isAvatarUnlocked(a, level, vipLevel);
+                                const unlocked = isAvatarUnlocked(a, level, vipLevel, claimedRewards);
                                 const active = playerAvatar === a.path;
 
                                 return (
@@ -430,7 +431,7 @@ export const ProfileCustomizeWindow: React.FC<ProfileCustomizeWindowProps> = () 
                     {activeTab === 'FRAMES' && (
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '14px' }}>
                             {AVATAR_FRAMES.map((f) => {
-                                const unlocked = isFrameUnlocked(f, level, vipLevel, playerTitle);
+                                const unlocked = isFrameUnlocked(f, level, vipLevel, playerTitle, claimedRewards);
                                 const active = playerFrame === f.id;
 
                                 return (
@@ -571,7 +572,7 @@ export const ProfileCustomizeWindow: React.FC<ProfileCustomizeWindowProps> = () 
                     {activeTab === 'TITLES' && (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                             {TITLES.map((t) => {
-                                const unlocked = isTitleUnlocked(t, level, vipLevel, trophies);
+                                const unlocked = isTitleUnlocked(t, level, vipLevel, trophies, claimedRewards);
                                 const active = playerTitle === t.name;
 
                                 return (

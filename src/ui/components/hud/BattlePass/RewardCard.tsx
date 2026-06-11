@@ -27,6 +27,14 @@ const getTypeNameRu = (type: string) => {
             return 'ПРЕДМЕТ';
         case 'SKIN':
             return 'ОБЛИК';
+        case 'FRAME':
+            return 'РАМКА';
+        case 'AVATAR':
+            return 'АВАТАР';
+        case 'TITLE':
+            return 'ТИТУЛ';
+        case 'ENERGY':
+            return 'ЭНЕРГИЯ';
         default:
             return type;
     }
