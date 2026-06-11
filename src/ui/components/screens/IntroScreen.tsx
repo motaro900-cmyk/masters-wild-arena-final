@@ -4,7 +4,6 @@ import { audioService } from '../../../services/AudioService';
 import { AssetsMap } from '../../../configs/AssetsMap';
 import { useGameStore } from '../../../store/useGameStore';
 import { syncService, SyncService } from '../../../services/SyncService';
-import mainBg from '../../../assets/backgrounds/main-bg.jpg';
 
 interface IntroScreenProps {
     onComplete: () => void;
@@ -16,6 +15,8 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
     const [nickname, setNickname] = useState(storeName && storeName !== 'Мастер' ? storeName : '');
     const [isChecking, setIsChecking] = useState(false);
     const [error, setError] = useState('');
+    const isMobile = useGameStore((state) => state.isMobile);
+    const backgroundSrc = isMobile ? AssetsMap.BACKGROUNDS.MAIN_MENU_MOBILE : AssetsMap.BACKGROUNDS.MAIN_MENU;
     const changeName = useGameStore((state) => state.changeName);
 
     const hasPrepopulated = React.useRef(false);
@@ -178,7 +179,7 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
         >
             {/* BACKGROUND IMAGE */}
             <img
-                src={mainBg}
+                src={backgroundSrc}
                 alt="background"
                 style={{
                     position: 'absolute',
