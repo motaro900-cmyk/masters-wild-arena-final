@@ -100,7 +100,7 @@ export class EffectsManager {
             timeline.to({}, { duration: duration / 1000, onUpdate: () => {} });
             this.activeEffects.set(effectId, timeline);
 
-            console.log(`⚡ Screen shake: intensity=${intensity}, duration=${duration}ms`);
+            if (import.meta.env.DEV) console.log(`⚡ Screen shake: intensity=${intensity}, duration=${duration}ms`);
         } catch (error) {
             console.error('❌ Screen shake error:', error);
         }
@@ -146,7 +146,7 @@ export class EffectsManager {
 
             this.activeEffects.set(effectId, timeline);
 
-            console.log(`🔴 Color flash: color=${color.toString(16)}, duration=${duration}s`);
+            if (import.meta.env.DEV) console.log(`🔴 Color flash: color=${color.toString(16)}, duration=${duration}s`);
         } catch (error) {
             console.error('❌ Color flash error:', error);
         }
@@ -194,7 +194,7 @@ export class EffectsManager {
                 });
             }
 
-            console.log(`💥 Particle burst: ${particleCount} particles at (${x}, ${y})`);
+            if (import.meta.env.DEV) console.log(`💥 Particle burst: ${particleCount} particles at (${x}, ${y})`);
         } catch (error) {
             console.error('❌ Particle burst error:', error);
         }
@@ -232,7 +232,7 @@ export class EffectsManager {
 
             this.activeEffects.set(effectId, timeline);
 
-            console.log(`⏱️ Slow motion: ${speedMultiplier * 100}% speed for ${duration}s`);
+            if (import.meta.env.DEV) console.log(`⏱️ Slow motion: ${speedMultiplier * 100}% speed for ${duration}s`);
         } catch (error) {
             console.error('❌ Slow motion error:', error);
         }
@@ -259,7 +259,7 @@ export class EffectsManager {
             });
 
             this.activeEffects.set(effectId, tween);
-            console.log(`❄️ Freeze Frame active: speed=${speedMultiplier} for ${durationMs}ms`);
+            if (import.meta.env.DEV) console.log(`❄️ Freeze Frame active: speed=${speedMultiplier} for ${durationMs}ms`);
         } catch (error) {
             console.error('❌ Freeze frame error:', error);
         }
@@ -510,7 +510,7 @@ export class EffectsManager {
             });
             this.activeTrails = [];
 
-            console.log('🛑 All effects stopped');
+            if (import.meta.env.DEV) console.log('🛑 All effects stopped');
         } catch (error) {
             console.error('❌ Stop all effects error:', error);
         }
@@ -537,7 +537,7 @@ export class EffectsManager {
     public setTimeScale(scale: number): void {
         try {
             this.timeScale = Math.max(0.1, Math.min(scale, 2));
-            console.log(`⏰ Time scale set to ${this.timeScale}`);
+            if (import.meta.env.DEV) console.log(`⏰ Time scale set to ${this.timeScale}`);
         } catch (error) {
             console.error('❌ Set time scale error:', error);
         }
@@ -557,7 +557,7 @@ export class EffectsManager {
         try {
             this.stopAllEffects();
             ParticlePool.getInstance().destroy();
-            console.log('💥 EffectsManager destroyed');
+            if (import.meta.env.DEV) console.log('💥 EffectsManager destroyed');
         } catch (error) {
             console.error('❌ Destroy error:', error);
         }

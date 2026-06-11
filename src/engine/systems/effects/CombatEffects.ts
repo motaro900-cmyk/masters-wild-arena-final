@@ -117,7 +117,7 @@ export function applyHitResolution(
 
 export function criticalHit(target: IEffectTarget, intensity: number = 1.5): void {
     try {
-        console.log(`🌟 CRITICAL HIT EFFECT!`);
+        if (import.meta.env.DEV) console.log(`🌟 CRITICAL HIT EFFECT!`);
 
         const fx = EffectsManager.getInstance();
 
