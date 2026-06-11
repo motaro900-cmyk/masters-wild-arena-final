@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ShopItem } from '../../../../configs/ShopConfig';
 import { getRarityColor } from './shopHelpers';
@@ -16,7 +16,14 @@ export const PurchaseConfirmOverlay: React.FC<PurchaseConfirmOverlayProps> = ({
     onCancel,
     onConfirm,
 }) => {
+    const [isProcessing, setIsProcessing] = useState(false);
     const rarityColor = getRarityColor(item.rarity);
+
+    const handleConfirm = (currency: 'gold' | 'gem' | 'votes' | 'ad') => {
+        if (isProcessing) return;
+        setIsProcessing(true);
+        onConfirm(currency);
+    };
     return (
         <motion.div
             initial={{ opacity: 0 }}
@@ -140,73 +147,85 @@ export const PurchaseConfirmOverlay: React.FC<PurchaseConfirmOverlayProps> = ({
 
                     {item.priceGold !== undefined && (
                         <button
-                            onClick={() => onConfirm('gold')}
+                            onClick={() => handleConfirm('gold')}
+                            disabled={isProcessing}
                             style={{
                                 flex: 1.5,
                                 height: '50px',
-                                background: 'linear-gradient(180deg, #f0c040 0%, #a67c00 100%)',
+                                background: isProcessing
+                                    ? 'linear-gradient(180deg, #4b5563 0%, #1f2937 100%)'
+                                    : 'linear-gradient(180deg, #f0c040 0%, #a67c00 100%)',
                                 border: 'none',
                                 borderRadius: '8px',
-                                color: '#1a0f00',
+                                color: isProcessing ? '#9ca3af' : '#1a0f00',
                                 fontWeight: 900,
                                 fontSize: '18px',
-                                cursor: 'pointer',
+                                cursor: isProcessing ? 'not-allowed' : 'pointer',
                                 fontFamily: "'Cinzel', 'Philosopher', serif",
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
                                 gap: '8px',
+                                opacity: isProcessing ? 0.6 : 1,
                             }}
                         >
-                            КУПИТЬ
+                            {isProcessing ? '...' : 'КУПИТЬ'}
                         </button>
                     )}
 
                     {item.priceGem !== undefined && (
                         <button
-                            onClick={() => onConfirm('gem')}
+                            onClick={() => handleConfirm('gem')}
+                            disabled={isProcessing}
                             style={{
                                 flex: 1.5,
                                 height: '50px',
-                                background: 'linear-gradient(180deg, #00ffff 0%, #008888 100%)',
+                                background: isProcessing
+                                    ? 'linear-gradient(180deg, #4b5563 0%, #1f2937 100%)'
+                                    : 'linear-gradient(180deg, #00ffff 0%, #008888 100%)',
                                 border: 'none',
                                 borderRadius: '8px',
-                                color: '#000',
+                                color: isProcessing ? '#9ca3af' : '#000',
                                 fontWeight: 900,
                                 fontSize: '18px',
-                                cursor: 'pointer',
+                                cursor: isProcessing ? 'not-allowed' : 'pointer',
                                 fontFamily: "'Cinzel', 'Philosopher', serif",
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
                                 gap: '8px',
+                                opacity: isProcessing ? 0.6 : 1,
                             }}
                         >
-                            КУПИТЬ
+                            {isProcessing ? '...' : 'КУПИТЬ'}
                         </button>
                     )}
 
                     {item.priceVotes !== undefined && (
                         <button
-                            onClick={() => onConfirm('votes')}
+                            onClick={() => handleConfirm('votes')}
+                            disabled={isProcessing}
                             style={{
                                 flex: 1.5,
                                 height: '50px',
-                                background: 'linear-gradient(180deg, #5de2ff 0%, #0066ff 100%)',
+                                background: isProcessing
+                                    ? 'linear-gradient(180deg, #4b5563 0%, #1f2937 100%)'
+                                    : 'linear-gradient(180deg, #5de2ff 0%, #0066ff 100%)',
                                 border: 'none',
                                 borderRadius: '8px',
-                                color: '#fff',
+                                color: isProcessing ? '#9ca3af' : '#fff',
                                 fontWeight: 900,
                                 fontSize: '18px',
-                                cursor: 'pointer',
+                                cursor: isProcessing ? 'not-allowed' : 'pointer',
                                 fontFamily: "'Cinzel', 'Philosopher', serif",
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
                                 gap: '8px',
+                                opacity: isProcessing ? 0.6 : 1,
                             }}
                         >
-                            КУПИТЬ
+                            {isProcessing ? '...' : 'КУПИТЬ'}
                         </button>
                     )}
 

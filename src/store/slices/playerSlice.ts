@@ -1,4 +1,5 @@
 import { ENERGY_CONFIG, BATTLE_CONFIG } from '../../game/configs/constants';
+import { AssetsMap } from '../../configs/AssetsMap';
 import { getRankInfo, RANK_SYSTEM } from '../../configs/RankSystem';
 import { syncService } from '../../services/SyncService';
 import { audioService } from '../../services/AudioService';
@@ -292,7 +293,7 @@ export const createPlayerSlice = (set: any, get: any) => ({
                 newExp -= needed;
                 newLevel++;
                 needed = getExpNeeded(newLevel);
-                audioService.playSfx(ENERGY_CONFIG.SFX_LEVEL_UP || '');
+                audioService.playSFX(AssetsMap.AUDIO.SFX_LEVEL_UP);
                 get().broadcastEvent('LEVEL_UP', { playerName: state.name, level: newLevel });
             }
 

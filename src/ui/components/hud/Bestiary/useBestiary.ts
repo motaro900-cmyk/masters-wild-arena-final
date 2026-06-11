@@ -39,6 +39,10 @@ export const useBestiary = () => {
     const [isAnimating, setIsAnimating] = useState(false);
     const [particles, setParticles] = useState<Particle[]>([]);
 
+    // Loading guards — prevent double-tap on pet/feed actions
+    const [isPettingLoading, setIsPettingLoading] = useState(false);
+    const [isFeedingLoading, setIsFeedingLoading] = useState(false);
+
     // UI state toggles
     const [isHovered, setIsHovered] = useState(false);
     const [showFoodSelector, setShowFoodSelector] = useState(false);
@@ -254,6 +258,9 @@ export const useBestiary = () => {
     };
 
     const handleFeedItem = (type: 'meat' | 'berry' | 'crystal') => {
+        if (isFeedingLoading) return;
+        setIsFeedingLoading(true);
+
         const store = useGameStore.getState();
         const currentGold = store.gold;
         const currentCrystals = store.crystals;
@@ -295,6 +302,7 @@ export const useBestiary = () => {
         if (pet.hunger >= 100) {
             audioService.playSFX(AssetsMap.AUDIO.SFX_ERROR);
             setActionLog(`${pet.name} уже полностью сыт!`);
+            setIsFeedingLoading(false);
             return;
         }
 
@@ -302,6 +310,7 @@ export const useBestiary = () => {
         if (balance < cost) {
             audioService.playSFX(AssetsMap.AUDIO.SFX_ERROR);
             setActionLog(`Недостаточно ${currency === 'gold' ? 'золота' : 'алмазов'}!`);
+            setIsFeedingLoading(false);
             return;
         }
 
@@ -347,6 +356,7 @@ export const useBestiary = () => {
             }));
             setActionLog(log);
             setIsAnimating(false);
+            setIsFeedingLoading(false); // finally-equivalent: unlock after transaction completes
 
             // Delay returning to normal/sad state
             scheduleTimeout(() => {
@@ -357,9 +367,13 @@ export const useBestiary = () => {
     };
 
     const handlePet = () => {
+        if (isPettingLoading) return;
+        setIsPettingLoading(true);
+
         if (petCharges <= 0) {
             audioService.playSFX(AssetsMap.AUDIO.SFX_ERROR);
             setActionLog(`Нет энергии ласки! Подождите восстановления.`);
+            setIsPettingLoading(false);
             return;
         }
 
@@ -405,6 +419,7 @@ export const useBestiary = () => {
             }));
             setActionLog(log);
             setIsAnimating(false);
+            setIsPettingLoading(false); // finally-equivalent: unlock after transaction completes
 
             // Delay returning to normal/sad state
             scheduleTimeout(() => {
@@ -430,6 +445,8 @@ export const useBestiary = () => {
         currentTime,
         timerText,
         petCharges,
+        isPettingLoading,
+        isFeedingLoading,
         handleFeedItem,
         handlePet,
         resetIdle,
