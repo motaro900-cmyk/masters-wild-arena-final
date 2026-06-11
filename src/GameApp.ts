@@ -1,8 +1,6 @@
 import { PixiApp, ResolutionType, IPixiAppConfig } from './engine/core/PixiApp';
 import { AssetLoader } from './engine/systems/AssetLoader';
 import { EffectsManager } from './engine/systems/EffectsManager';
-import { SceneManager } from './engine/core/SceneManager';
-import { MainScreen } from './ui/screens/MainScreen';
 import { useGameStore } from './store/useGameStore';
 
 export class GameApp {
@@ -65,8 +63,15 @@ export class GameApp {
             this.handleScreenTicker(state.activeScreen);
             await this.loadAssets();
 
-            const sceneManager = SceneManager.getInstance();
-            sceneManager.switchScene(new MainScreen());
+            // Dynamically import engine-only modules so Vite can code-split them
+            // into a separate chunk instead of forcing them into the main vendor bundle.
+            // Previously, static imports here prevented Rollup from splitting
+            // SceneManager and MainScreen out of index-B_bxP53D.js (1.87 MB).
+            const [{ SceneManager }, { MainScreen }] = await Promise.all([
+                import('./engine/core/SceneManager'),
+                import('./ui/screens/MainScreen'),
+            ]);
+            SceneManager.getInstance().switchScene(new MainScreen());
 
             // NOTE: startAutoSync вызывается только в main.tsx, убрано дублирование отсюда
 
