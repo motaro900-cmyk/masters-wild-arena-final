@@ -21,6 +21,8 @@ export const BestiaryWindow: React.FC = () => {
         currentTime,
         timerText,
         petCharges,
+        isPettingLoading,
+        isFeedingLoading,
         handleFeedItem,
         handlePet,
         resetIdle,
@@ -328,6 +330,7 @@ export const BestiaryWindow: React.FC = () => {
                             crystals={crystals}
                             onFeedItem={handleFeedItem}
                             onBack={() => setShowFoodSelector(false)}
+                            disabled={isFeedingLoading}
                         />
                     ) : (
                         /* REGULAR ACTION CONTROLS & LOG */
@@ -373,14 +376,21 @@ export const BestiaryWindow: React.FC = () => {
                                         resetIdle();
                                     }}
                                     colorScheme="green"
+                                    disabled={isFeedingLoading}
                                 >
-                                    <span>КОРМЛЕНИЕ 🥩</span>
+                                    <span>{isFeedingLoading ? '...' : 'КОРМЛЕНИЕ 🥩'}</span>
                                 </PetActionButton>
 
-                                <PetActionButton onClick={handlePet} colorScheme="gold" disabled={petCharges <= 0}>
+                                <PetActionButton
+                                    onClick={handlePet}
+                                    colorScheme="gold"
+                                    disabled={petCharges <= 0 || isPettingLoading}
+                                >
                                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                                        <span style={{ fontSize: '14px' }}>ПОГЛАДИТЬ ✨ {petCharges}/5</span>
-                                        {petCharges < 5 && (
+                                        <span style={{ fontSize: '14px' }}>
+                                            {isPettingLoading ? '...' : `ПОГЛАДИТЬ ✨ ${petCharges}/5`}
+                                        </span>
+                                        {petCharges < 5 && !isPettingLoading && (
                                             <span
                                                 style={{
                                                     fontSize: '10px',

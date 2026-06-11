@@ -6,9 +6,10 @@ interface PetFoodSelectorProps {
     crystals: number;
     onFeedItem: (type: 'meat' | 'berry' | 'crystal') => void;
     onBack: () => void;
+    disabled?: boolean;
 }
 
-export const PetFoodSelector: React.FC<PetFoodSelectorProps> = ({ gold, crystals, onFeedItem, onBack }) => {
+export const PetFoodSelector: React.FC<PetFoodSelectorProps> = ({ gold, crystals, onFeedItem, onBack, disabled }) => {
     return (
         <motion.div
             initial={{ opacity: 0, y: 15 }}
@@ -69,15 +70,17 @@ export const PetFoodSelector: React.FC<PetFoodSelectorProps> = ({ gold, crystals
             <div style={{ display: 'flex', gap: '10px' }}>
                 {/* Meat Option */}
                 <motion.div
-                    whileHover={{ scale: 1.04, borderColor: '#10b981' }}
-                    onClick={() => onFeedItem('meat')}
+                    whileHover={disabled ? {} : { scale: 1.04, borderColor: '#10b981' }}
+                    onClick={disabled ? undefined : () => onFeedItem('meat')}
                     style={{
                         flex: 1,
                         background: 'rgba(20, 15, 12, 0.85)',
                         border: '2px solid rgba(196, 139, 59, 0.2)',
                         borderRadius: '16px',
                         padding: '10px 4px',
-                        cursor: 'pointer',
+                        cursor: disabled ? 'not-allowed' : 'pointer',
+                        opacity: disabled ? 0.45 : 1,
+                        pointerEvents: disabled ? 'none' : 'auto',
                         display: 'flex',
                         flexDirection: 'column',
                         alignItems: 'center',
@@ -113,15 +116,17 @@ export const PetFoodSelector: React.FC<PetFoodSelectorProps> = ({ gold, crystals
 
                 {/* Berry Option */}
                 <motion.div
-                    whileHover={{ scale: 1.04, borderColor: '#10b981' }}
-                    onClick={() => onFeedItem('berry')}
+                    whileHover={disabled ? {} : { scale: 1.04, borderColor: '#10b981' }}
+                    onClick={disabled ? undefined : () => onFeedItem('berry')}
                     style={{
                         flex: 1,
                         background: 'rgba(20, 15, 12, 0.85)',
                         border: '2px solid rgba(196, 139, 59, 0.2)',
                         borderRadius: '16px',
                         padding: '10px 4px',
-                        cursor: 'pointer',
+                        cursor: disabled ? 'not-allowed' : 'pointer',
+                        opacity: disabled ? 0.45 : 1,
+                        pointerEvents: disabled ? 'none' : 'auto',
                         display: 'flex',
                         flexDirection: 'column',
                         alignItems: 'center',
@@ -157,15 +162,17 @@ export const PetFoodSelector: React.FC<PetFoodSelectorProps> = ({ gold, crystals
 
                 {/* Phoenix Feast Option */}
                 <motion.div
-                    whileHover={{ scale: 1.04, borderColor: '#f97316' }}
-                    onClick={() => onFeedItem('crystal')}
+                    whileHover={disabled ? {} : { scale: 1.04, borderColor: '#f97316' }}
+                    onClick={disabled ? undefined : () => onFeedItem('crystal')}
                     style={{
                         flex: 1,
                         background: 'linear-gradient(160deg, rgba(30, 15, 5, 0.9) 0%, rgba(50, 20, 5, 0.85) 100%)',
                         border: '2px solid rgba(251, 146, 60, 0.4)',
                         borderRadius: '16px',
                         padding: '10px 4px',
-                        cursor: 'pointer',
+                        cursor: disabled ? 'not-allowed' : 'pointer',
+                        opacity: disabled ? 0.45 : 1,
+                        pointerEvents: disabled ? 'none' : 'auto',
                         display: 'flex',
                         flexDirection: 'column',
                         alignItems: 'center',
