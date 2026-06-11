@@ -274,7 +274,7 @@ export const CityScreen: React.FC = () => {
                 style={{
                     position: 'absolute',
                     top: '40px',
-                    left: isMobile ? '120px' : '40px',
+                    left: '40px',
                     zIndex: 10,
                 }}
             >
