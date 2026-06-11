@@ -7,8 +7,8 @@ import { useGameStore } from '../../../../store/useGameStore';
 interface RewardsTabProps {
     colors: any;
     claimedSocialRewards: string[] | undefined;
-    claimFavoriteReward: () => void;
-    claimGroupReward: () => void;
+    claimFavoriteReward: (force?: boolean) => void;
+    claimGroupReward: (force?: boolean) => void;
 }
 
 export const RewardsTab: React.FC<RewardsTabProps> = ({
@@ -175,7 +175,7 @@ export const RewardsTab: React.FC<RewardsTabProps> = ({
                                 const { addToFavorites } = await import('../../../../utils/VKBridge');
                                 const ok = await addToFavorites();
                                 if (ok) {
-                                    claimFavoriteReward();
+                                    claimFavoriteReward(true);
                                     useGameStore
                                         .getState()
                                         .showAlert('Награда за добавление в избранное: 50 кристаллов! 💎');
@@ -213,7 +213,7 @@ export const RewardsTab: React.FC<RewardsTabProps> = ({
                                 const { joinGroup } = await import('../../../../utils/VKBridge');
                                 const ok = await joinGroup();
                                 if (ok) {
-                                    claimGroupReward();
+                                    claimGroupReward(true);
                                     useGameStore
                                         .getState()
                                         .showAlert('Награда за вступление в группу: 50 кристаллов! 💎');

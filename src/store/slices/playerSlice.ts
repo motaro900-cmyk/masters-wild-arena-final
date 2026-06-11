@@ -474,13 +474,13 @@ export const createPlayerSlice = (set: any, get: any) => ({
         }
     },
 
-    claimFavoriteReward: async () => {
+    claimFavoriteReward: async (force: boolean = false) => {
         const state = get() as any;
         const rewards = state.claimedSocialRewards || [];
         if (rewards.includes('favorites')) return;
 
         const params = new URLSearchParams(window.location.search);
-        const isFav = params.get('vk_is_favorite') === '1' || window.location.hostname === 'localhost';
+        const isFav = force || params.get('vk_is_favorite') === '1' || window.location.hostname === 'localhost';
         if (!isFav) {
             console.warn('claimFavoriteReward: приложение не добавлено в избранное');
             return;
@@ -491,14 +491,14 @@ export const createPlayerSlice = (set: any, get: any) => ({
         syncService.debouncedSync();
     },
 
-    claimGroupReward: async () => {
+    claimGroupReward: async (force: boolean = false) => {
         const state = get() as any;
         const rewards = state.claimedSocialRewards || [];
         if (rewards.includes('group') || state.isClaimingReward) return;
 
         set({ isClaimingReward: true });
         try {
-            const isMember = await isGroupMember();
+            const isMember = force || await isGroupMember();
             if (!isMember) {
                 console.warn('claimGroupReward: пользователь не состоит в группе');
                 return;

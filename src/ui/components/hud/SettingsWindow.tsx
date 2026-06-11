@@ -594,7 +594,7 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
                             onClick={async () => {
                                 const success = await joinGroup();
                                 if (success) {
-                                    claimGroupReward();
+                                    claimGroupReward(true);
                                     useGameStore
                                         .getState()
                                         .showAlert(language === 'EN' ? 'Group join reward: 50 crystals! 💎' : 'Награда за вступление в группу: 50 кристаллов! 💎');
@@ -631,7 +631,7 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
                             onClick={async () => {
                                 const success = await addToFavorites();
                                 if (success) {
-                                    claimFavoriteReward();
+                                    claimFavoriteReward(true);
                                 }
                             }}
                             style={{
