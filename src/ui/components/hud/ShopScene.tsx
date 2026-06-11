@@ -121,7 +121,7 @@ export const ShopScene: React.FC = () => {
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center',
-                    padding: isMobile ? '0 20px' : '0 80px',
+                    padding: isMobile ? '0 20px 0 120px' : '0 80px',
                     pointerEvents: 'none',
                     borderBottom: '1px solid rgba(240, 192, 64, 0.1)',
                     background: 'linear-gradient(180deg, rgba(0,0,0,0.8) 0%, transparent 100%)',

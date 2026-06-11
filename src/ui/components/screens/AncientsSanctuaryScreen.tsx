@@ -236,6 +236,7 @@ export const AncientsSanctuaryScreen: React.FC = () => {
                             alignItems: 'center',
                             gap: '6px',
                             boxShadow: '0 4px 10px rgba(0,0,0,0.3)',
+                            marginLeft: isMobile ? '80px' : '0',
                         }}
                     >
                         <span style={{ fontSize: '14px' }}>←</span> В ГОРОД

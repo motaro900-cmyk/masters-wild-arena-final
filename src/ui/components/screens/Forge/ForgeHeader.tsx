@@ -9,6 +9,8 @@ interface ForgeHeaderProps {
 }
 
 export const ForgeHeader: React.FC<ForgeHeaderProps> = ({ goToCity }) => {
+    const isMobile = useGameStore((state) => state.isMobile);
+
     return (
         <div style={styles.header}>
             <button
@@ -24,6 +26,7 @@ export const ForgeHeader: React.FC<ForgeHeaderProps> = ({ goToCity }) => {
                     fontFamily: "'Cinzel', serif",
                     fontSize: '14px',
                     fontWeight: 700,
+                    marginLeft: isMobile ? '80px' : '0',
                 }}
             >
                 <div

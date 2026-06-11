@@ -184,7 +184,7 @@ export const HeroScene: React.FC = () => {
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'space-between',
-                            padding: '0 28px 0 16px',
+                            padding: isMobile ? '0 28px 0 120px' : '0 28px 0 16px',
                             background: 'linear-gradient(180deg, #1c1612 0%, #120e0b 100%)',
                             borderBottom: '1px solid rgba(240, 192, 64, 0.25)',
                             boxShadow: '0 4px 24px rgba(0, 0, 0, 0.5)',
