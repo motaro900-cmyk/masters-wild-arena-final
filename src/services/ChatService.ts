@@ -3,6 +3,7 @@
  * Не содержит бизнес-логики синхронизации профиля.
  */
 import { db, CHAT_COLLECTION, USERS_COLLECTION } from '../utils/firebase';
+import { censorText } from '../utils/censor';
 import {
     doc,
     setDoc,
@@ -22,6 +23,9 @@ type TrackFn = (unsub: () => void) => () => void;
 
 export async function sendChatMessage(message: any): Promise<void> {
     try {
+        if (message && typeof message.text === 'string') {
+            message.text = censorText(message.text);
+        }
         const chatRef = doc(collection(db, CHAT_COLLECTION));
         await setDoc(chatRef, { ...message, serverTimestamp: serverTimestamp() });
     } catch (error) {
@@ -84,6 +88,9 @@ export async function sendPrivateMessage(
     message: any,
 ): Promise<void> {
     try {
+        if (message && typeof message.text === 'string') {
+            message.text = censorText(message.text);
+        }
         const senderRef = doc(collection(db, USERS_COLLECTION, senderId, 'личные_сообщения'));
         const msgId = senderRef.id;
         const payload = { ...message, id: msgId, serverTimestamp: serverTimestamp() };

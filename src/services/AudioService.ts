@@ -20,23 +20,31 @@ class AudioService {
         if (!AudioService.visibilityListenerAdded) {
             AudioService.visibilityListenerAdded = true;
 
+            const safeMute = (muted: boolean) => {
+                try {
+                    Howler.mute(muted);
+                } catch (err) {
+                    console.warn('Howler.mute failed safely:', err);
+                }
+            };
+
             // 1. Стандартный браузерный Visibility API
             document.addEventListener('visibilitychange', () => {
                 if (document.hidden) {
                     console.log('🤫 App hidden - Muting audio');
-                    Howler.mute(true);
+                    safeMute(true);
                 } else {
                     console.log('🔊 App visible - Unmuting audio');
                     import('../store/useGameStore')
                         .then(({ useGameStore }) => {
                             const isMuted = useGameStore.getState().isMuted;
                             if (!isMuted) {
-                                Howler.mute(false);
+                                safeMute(false);
                             }
                         })
                         .catch((err) => {
                             console.warn('Could not read mute state on visibility change:', err);
-                            Howler.mute(false);
+                            safeMute(false);
                         });
                 }
             });
@@ -49,19 +57,19 @@ class AudioService {
 
                     if (type === 'VKWebAppViewHide') {
                         console.log('🤫 VK Bridge: VKWebAppViewHide - Muting audio');
-                        Howler.mute(true);
+                        safeMute(true);
                     } else if (type === 'VKWebAppViewRestore') {
                         console.log('🔊 VK Bridge: VKWebAppViewRestore - Unmuting audio');
                         import('../store/useGameStore')
                             .then(({ useGameStore }) => {
                                 const isMuted = useGameStore.getState().isMuted;
                                 if (!isMuted) {
-                                    Howler.mute(false);
+                                    safeMute(false);
                                 }
                             })
                             .catch((err) => {
                                 console.warn('Could not read mute state on VKWebAppViewRestore:', err);
-                                Howler.mute(false);
+                                safeMute(false);
                             });
                     }
                 });
@@ -415,7 +423,11 @@ class AudioService {
      * Установка режима тишины (mute) для Howler
      */
     public setMuted(muted: boolean) {
-        Howler.mute(muted);
+        try {
+            Howler.mute(muted);
+        } catch (err) {
+            console.warn('Howler.mute failed safely in setMuted:', err);
+        }
     }
 
     /**
