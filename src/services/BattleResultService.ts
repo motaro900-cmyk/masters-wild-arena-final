@@ -1,5 +1,6 @@
 import { db, USERS_COLLECTION } from '../utils/firebase';
 import { collection, doc, setDoc, serverTimestamp } from 'firebase/firestore';
+// import { httpsCallable } from 'firebase/functions';
 import { matchmakingService } from './MatchmakingService';
 import { useGameStore } from '../store/useGameStore';
 
@@ -103,26 +104,53 @@ class BattleResultServiceClass {
         isOpponentBot: boolean;
         attackerWon: boolean;
         winStreak?: number;
-    }): Promise<{ myCupsChange: number; myGoldChange: number; myExpChange: number }> {
+    }): Promise<{ myCupsChange: number; myGoldChange: number; myExpChange: number; serverResult?: 'win' | 'lose' }> {
         const {
             myUserId,
-            myName,
-            myRating,
-            myLevel,
             opponentUserId,
             opponentRating,
-            opponentLevel = 1,
             isOpponentBot,
             attackerWon,
-            winStreak = 0,
         } = params;
 
-        let myCupsChange = calcCupsChange(myRating, opponentRating, attackerWon);
+        // ⚔️ Call resolveBattle Cloud Function (Server Authoritative)
+        let serverResult: 'win' | 'lose' = attackerWon ? 'win' : 'lose';
+        let myGoldChange = 0;
+        let myExpChange = 0;
+
+        // TODO: server-authoritative battle resolution - disabled until Cloud Functions deployed
+        /*
+        try {
+            const resolveBattleFn = httpsCallable<any, any>(functions, 'resolveBattle');
+            const battleId = `battle_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+            const response = await resolveBattleFn({
+                battleId,
+                attackerId: myUserId,
+                defenderId: opponentUserId || 'bot_opponent',
+                mode: isOpponentBot ? 'pve' : 'pvp',
+            });
+            const data = response.data;
+            if (data && data.success) {
+                serverResult = data.result;
+                myGoldChange = data.reward.gold;
+                myExpChange = data.reward.xp;
+            }
+        } catch (error) {
+            console.error('[BattleResultService] Failed to call resolveBattle cloud function:', error);
+        }
+        */
+
+        // Fallback to client calculation to ensure game stays playable
+        myGoldChange = getGoldReward(params.myLevel, attackerWon);
+        myExpChange = Math.round(getXPReward(attackerWon, params.myLevel) * (useGameStore.getState().isPremium ? 1.25 : 1.0));
+
+        const serverAttackerWon = serverResult === 'win';
+        let myCupsChange = calcCupsChange(params.myRating, opponentRating, serverAttackerWon);
 
         // Применяем Catch-up множитель (до 3000 кубков)
-        if (attackerWon && myRating < 3000) {
-            const expectedLevel = myRating < 1000 ? 1 : (myRating < 2000 ? 10 : 20);
-            const levelDiff = myLevel - expectedLevel;
+        if (serverAttackerWon && params.myRating < 3000) {
+            const expectedLevel = params.myRating < 1000 ? 1 : (params.myRating < 2000 ? 10 : 20);
+            const levelDiff = params.myLevel - expectedLevel;
             if (levelDiff >= 20) {
                 const multiplier = Math.min(5, 1 + levelDiff / 20);
                 myCupsChange = Math.round(myCupsChange * multiplier);
@@ -130,8 +158,8 @@ class BattleResultServiceClass {
         }
 
         // Применяем стрик-бонус за победы
-        if (attackerWon) {
-            const streak = winStreak + 1; // стрик включая текущую победу
+        if (serverAttackerWon) {
+            const streak = (params.winStreak || 0) + 1; // стрик включая текущую победу
             let streakBonus = 0;
             if (streak >= 10) {
                 streakBonus = 35;
@@ -142,35 +170,16 @@ class BattleResultServiceClass {
             }
             myCupsChange += streakBonus;
         }
-        const myGoldChange = getGoldReward(myLevel, attackerWon);
-
-        // Experience rewards calculation with Premium BP bonus multiplier and level-based scaling
-        const baseXP = getXPReward(attackerWon, myLevel);
-        const state = useGameStore.getState();
-        const hasPremiumBP = state.isPremium;
-        const expMultiplier = hasPremiumBP ? 1.25 : 1.0;
-        const myExpChange = Math.round(baseXP * expMultiplier);
 
         if (!isOpponentBot && opponentUserId) {
-            // Записываем результат в Firebase защищающегося игрока
-            await this.writePendingResult(opponentUserId, {
-                attackerId: myUserId,
-                attackerName: myName,
-                attackerRating: myRating,
-                // С точки зрения защитника: если атакующий выиграл → защитник проиграл
-                defenderResult: attackerWon ? 'LOSS' : 'WIN',
-                cupsChange: calcCupsChange(opponentRating, myRating, !attackerWon),
-                goldChange: !attackerWon ? Math.round(getGoldReward(opponentLevel, true) * 0.5) : 0, // золото только если ghost победил
-            });
-
             // Записываем cooldown — нельзя атаковать этого игрока ещё 1 час
             matchmakingService.recordAttack(myUserId, opponentUserId);
         }
 
-        return { myCupsChange, myGoldChange, myExpChange };
+        return { myCupsChange, myGoldChange, myExpChange, serverResult };
     }
 
-    private async writePendingResult(targetUserId: string, data: any): Promise<void> {
+    public async writePendingResult(targetUserId: string, data: any): Promise<void> {
         try {
             const pendingRef = doc(collection(db, USERS_COLLECTION, targetUserId, 'pendingResults'));
             await setDoc(pendingRef, {
