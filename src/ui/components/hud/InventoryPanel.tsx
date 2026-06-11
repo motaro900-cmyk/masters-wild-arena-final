@@ -29,12 +29,21 @@ interface ContextMenu {
 }
 
 export const InventoryPanel: React.FC<InventoryPanelProps> = ({ mode = 'FULL', onItemClick, setGlobalHoveredItem }) => {
-    const {
-        inventory, sellItem, equippedItems, getHeroByItemId,
-        selectedHeroId, openSeasonChest,
-        coal, steel_bars, runic_shards, ancient_compass,
-        astral_crystal, void_sphere, golden_sprout, dragon_scale, lava_heart,
-    } = useGameStore();
+    const inventory = useGameStore((state) => state.inventory);
+    const sellItem = useGameStore((state) => state.sellItem);
+    const equippedItems = useGameStore((state) => state.equippedItems);
+    const getHeroByItemId = useGameStore((state) => state.getHeroByItemId);
+    const selectedHeroId = useGameStore((state) => state.selectedHeroId);
+    const openSeasonChest = useGameStore((state) => state.openSeasonChest);
+    const coal = useGameStore((state) => state.coal);
+    const steel_bars = useGameStore((state) => state.steel_bars);
+    const runic_shards = useGameStore((state) => state.runic_shards);
+    const ancient_compass = useGameStore((state) => state.ancient_compass);
+    const astral_crystal = useGameStore((state) => state.astral_crystal);
+    const void_sphere = useGameStore((state) => state.void_sphere);
+    const golden_sprout = useGameStore((state) => state.golden_sprout);
+    const dragon_scale = useGameStore((state) => state.dragon_scale);
+    const lava_heart = useGameStore((state) => state.lava_heart);
 
     const [activeTab, setActiveTab] = useState<'ALL' | 'EQUIPMENT' | 'POTIONS' | 'RESOURCES'>('ALL');
     const [sortBy, setSortBy] = useState<'POWER' | 'RARITY'>('POWER');
@@ -607,3 +616,5 @@ const CtxBtn: React.FC<{ icon: string; label: string; color: string; onClick: ()
         <span>{label}</span>
     </button>
 );
+
+export default InventoryPanel;

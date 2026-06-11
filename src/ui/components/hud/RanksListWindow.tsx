@@ -186,3 +186,5 @@ export const RanksListWindow: React.FC = () => {
         </div>
     );
 };
+
+export default RanksListWindow;

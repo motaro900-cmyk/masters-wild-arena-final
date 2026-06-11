@@ -6,12 +6,10 @@ import { useGameStore } from '../../store/useGameStore';
  * Оверлей блокировки аккаунта (ban).
  * Рендерится поверх всего контента, когда isBanned === true.
  */
-export const BannedOverlay: React.FC = () => {
-    const { isBanned, banReason, banUntil } = useGameStore((state) => ({
-        isBanned: state.isBanned,
-        banReason: state.banReason,
-        banUntil: state.banUntil,
-    }));
+export const BannedOverlay = React.memo(() => {
+    const isBanned = useGameStore((state) => state.isBanned);
+    const banReason = useGameStore((state) => state.banReason);
+    const banUntil = useGameStore((state) => state.banUntil);
 
     return (
         <AnimatePresence>
@@ -107,4 +105,4 @@ export const BannedOverlay: React.FC = () => {
             )}
         </AnimatePresence>
     );
-};
+});

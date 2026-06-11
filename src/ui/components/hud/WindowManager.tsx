@@ -3,18 +3,18 @@ import { useGameStore } from '../../../store/useGameStore';
 import { ITEMS_DATABASE } from '../../../game/configs/ItemsConfig';
 
 // Window Components
-import { FriendsWindow } from './FriendsWindow';
-import { MailWindow } from './MailWindow';
-import { SettingsWindow } from './SettingsWindow';
-import { ProfileCustomizeWindow } from './ProfileCustomizeWindow';
-import { DailyGiftWindow } from './DailyGiftWindow';
-import { RankingWindow } from './RankingWindow';
-import { ClanWindow } from './ClanWindow';
-import { RanksListWindow } from './RanksListWindow';
-import { InventoryPanel } from './InventoryPanel';
-import { VIPWindow } from './VIPWindow';
-import { BestiaryWindow } from './BestiaryWindow';
-import { ServerTime } from './ServerTime';
+const FriendsWindow = React.lazy(() => import('./FriendsWindow'));
+const MailWindow = React.lazy(() => import('./MailWindow'));
+const SettingsWindow = React.lazy(() => import('./SettingsWindow'));
+const ProfileCustomizeWindow = React.lazy(() => import('./ProfileCustomizeWindow'));
+const DailyGiftWindow = React.lazy(() => import('./DailyGiftWindow'));
+const RankingWindow = React.lazy(() => import('./RankingWindow'));
+const ClanWindow = React.lazy(() => import('./ClanWindow'));
+const RanksListWindow = React.lazy(() => import('./RanksListWindow'));
+const InventoryPanel = React.lazy(() => import('./InventoryPanel'));
+const VIPWindow = React.lazy(() => import('./VIPWindow'));
+const BestiaryWindow = React.lazy(() => import('./BestiaryWindow'));
+const ServerTime = React.lazy(() => import('./ServerTime').then(m => ({ default: m.ServerTime })));
 import { BaseWindow } from './BaseWindow';
 
 interface WindowManagerProps {
@@ -39,7 +39,8 @@ export const WindowManager: React.FC<WindowManagerProps> = ({
                 className="absolute top-[515px] left-[960px] -translate-x-1/2 -translate-y-1/2 hud-interactive"
                 onClick={(e) => e.stopPropagation()}
             >
-                {activeWindow === 'FRIENDS' && (
+                <React.Suspense fallback={null}>
+                    {activeWindow === 'FRIENDS' && (
                     <BaseWindow
                         title="ДРУЗЬЯ"
                         isOpen={true}
@@ -208,7 +209,10 @@ export const WindowManager: React.FC<WindowManagerProps> = ({
                         <BestiaryWindow />
                     </BaseWindow>
                 )}
+                </React.Suspense>
             </div>
         </div>
     );
 };
+
+export default WindowManager;

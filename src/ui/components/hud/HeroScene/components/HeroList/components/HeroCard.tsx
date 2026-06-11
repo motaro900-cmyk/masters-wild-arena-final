@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, memo } from 'react';
 import { motion } from 'framer-motion';
 import { rarityColors } from '../../../constants/roleIcons';
 import { ROLE_ICONS } from '../../../constants/roleIcons';
@@ -19,14 +19,12 @@ interface HeroCardProps {
     onClick: () => void;
 }
 
-export function HeroCard({ hero, isOwned, isActive, isSelected, activeSkin, onClick }: HeroCardProps) {
+export const HeroCard = memo(function HeroCard({ hero, isOwned, isActive, isSelected, activeSkin, onClick }: HeroCardProps) {
     const [isHovered, setIsHovered] = useState(false);
 
-    const { rating, crystals, gold } = useGameStore((state) => ({
-        rating: state.rating,
-        crystals: state.crystals,
-        gold: state.gold,
-    }));
+    const rating = useGameStore((state) => state.rating);
+    const crystals = useGameStore((state) => state.crystals);
+    const gold = useGameStore((state) => state.gold);
 
     const hasEnoughTrophies = !hero.requiredTrophies || rating >= hero.requiredTrophies;
     const hasEnoughGold = !hero.unlockGoldCost || gold >= hero.unlockGoldCost;
@@ -480,4 +478,4 @@ export function HeroCard({ hero, isOwned, isActive, isSelected, activeSkin, onCl
             </div>
         </motion.div>
     );
-}
+});

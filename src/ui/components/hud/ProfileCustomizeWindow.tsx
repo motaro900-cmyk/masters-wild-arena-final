@@ -625,3 +625,5 @@ export const ProfileCustomizeWindow: React.FC<ProfileCustomizeWindowProps> = () 
         </div>
     );
 };
+
+export default ProfileCustomizeWindow;

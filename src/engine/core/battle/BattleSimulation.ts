@@ -195,7 +195,6 @@ export function skipToEndOfBattle(engine: BattleEngine) {
                     eHP = Math.max(0, eHP - finalDmg);
                     engine.totalDamageDealt += finalDmg;
                     engine.totalTurnsPlayed += 1;
-                    store.updateQuestProgress('DAMAGE', finalDmg);
 
                     // Вампиризм (lifesteal)
                     if (pStats.lifesteal && pStats.lifesteal > 0) {
@@ -263,7 +262,6 @@ export function skipToEndOfBattle(engine: BattleEngine) {
                         eHP = Math.max(0, eHP - finalDmg);
                         engine.totalDamageDealt += finalDmg;
                         engine.totalTurnsPlayed += 1;
-                        store.updateQuestProgress('DAMAGE', finalDmg);
 
                         simulateStatusEffects(anyEngine.player!, anyEngine.enemy!, pStats, true, isCrit && !blockCheck);
                     }

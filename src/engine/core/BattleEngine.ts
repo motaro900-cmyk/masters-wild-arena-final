@@ -134,6 +134,12 @@ export class BattleEngine {
 
     private updateCallback: ((dt: number) => void) | null = null;
     private storeUnsubscribe: (() => void) | null = null;
+    private localCombatLogs: string[] = [];
+    private isCombatEndChecked = false;
+
+    public addCombatLog(msg: string) {
+        this.localCombatLogs.push(msg);
+    }
 
     private constructor() {}
 
@@ -146,6 +152,7 @@ export class BattleEngine {
             this.totalDamageDealt = 0;
             this.totalDamageTaken = 0;
             this.totalTurnsPlayed = 0;
+            this.isCombatEndChecked = false;
         }
         this.isInitialized = true;
 
@@ -153,6 +160,8 @@ export class BattleEngine {
             this.totalDamageDealt = 0;
             this.totalDamageTaken = 0;
             this.totalTurnsPlayed = 0;
+            this.localCombatLogs = [];
+            this.isCombatEndChecked = false;
 
             const pCrit = Number(playerStats?.critChance) || 10;
             const pDodge = Number(playerStats?.evasion ?? playerStats?.dodge) || 5;
@@ -256,7 +265,7 @@ export class BattleEngine {
                 playerShield: 0,
                 log: 'БИТВА НАЧИНАЕТСЯ!',
             });
-            useGameStore.getState().addCombatLog('--- НАЧАЛО БОЯ ---');
+            this.addCombatLog('--- НАЧАЛО БОЯ ---');
 
             this.updateCallback = (dt: number) => {
                 const { timeScale } = useGameStore.getState();
@@ -296,7 +305,7 @@ export class BattleEngine {
                 ? `Вы наносите удар первыми! (Скорость: ${this.playerStats!.speed} → ${this.enemyStats!.speed})`
                 : `Враг атакует первым! (Скорость: ${this.enemyStats!.speed} → ${this.playerStats!.speed})`;
         this.updateState({ log: openingMsg });
-        useGameStore.getState().addCombatLog('--- НАЧАЛО БОЯ ---');
+        this.addCombatLog('--- НАЧАЛО БОЯ ---');
 
         let totalBattleTicks = 0;
         let isRageActive = false;
@@ -317,7 +326,7 @@ export class BattleEngine {
 
                     const rageMsg = '🔥 [ЯРОСТЬ] Бой затянулся! Атака обоих +50%, защита -30%!';
                     this.updateState({ log: rageMsg });
-                    useGameStore.getState().addCombatLog(rageMsg);
+                    this.addCombatLog(rageMsg);
                     this.onCombatEvent({
                         type: 'INSTINCT',
                         damage: 0,
@@ -329,14 +338,14 @@ export class BattleEngine {
                 if (totalBattleTicks >= 10000) {
                     const limitMsg = '⏱️ [ЛИМИТ ВРЕМЕНИ] Превышен лимит в 10000 тиков!';
                     this.updateState({ log: limitMsg });
-                    useGameStore.getState().addCombatLog(limitMsg);
+                    this.addCombatLog(limitMsg);
 
                     if (this.state.playerHP >= this.state.enemyHP) {
                         this.updateState({ enemyHP: 0 });
-                        useGameStore.getState().addCombatLog('🏆 Победа по решению судей (больше здоровья)!');
+                        this.addCombatLog('🏆 Победа по решению судей (больше здоровья)!');
                     } else {
                         this.updateState({ playerHP: 0 });
-                        useGameStore.getState().addCombatLog('💀 Поражение по решению судей (меньше здоровья)!');
+                        this.addCombatLog('💀 Поражение по решению судей (меньше здоровья)!');
                     }
                     break;
                 }
@@ -354,7 +363,7 @@ export class BattleEngine {
                 if (this.player!.isStunnedStatus) {
                     const skipMsg = 'Вы оглушены и пропускаете ход!';
                     this.updateState({ log: skipMsg });
-                    useGameStore.getState().addCombatLog(`💫 ${skipMsg}`);
+                    this.addCombatLog(`💫 ${skipMsg}`);
                     await new Promise((r) => setTimeout(r, 1500 / timeScale));
                 } else if (this.state.playerMana >= 100) {
                     await this.castActiveAbility();
@@ -372,9 +381,9 @@ export class BattleEngine {
                     if (!this.isCombatRunning || this.state.playerHP <= 0 || this.state.enemyHP <= 0) break;
 
                     if (this.enemy!.isStunnedStatus) {
-                        const skipMsg = 'Враг оглушен и пропускает ход!';
+                        const skipMsg = 'Враг оглушен и пропускаете ход!';
                         this.updateState({ log: skipMsg });
-                        useGameStore.getState().addCombatLog(`💫 ${skipMsg}`);
+                        this.addCombatLog(`💫 ${skipMsg}`);
                         await new Promise((r) => setTimeout(r, 1500 / timeScale));
                     } else {
                         await this.executeAttack(this.enemy!, this.player!, false);
@@ -397,6 +406,9 @@ export class BattleEngine {
     }
 
     private checkCombatEnd() {
+        if (this.isCombatEndChecked) return;
+        this.isCombatEndChecked = true;
+
         this.isCombatRunning = false;
         const isWin = this.state.playerHP > 0;
 
@@ -416,8 +428,16 @@ export class BattleEngine {
         }
 
         const store = useGameStore.getState();
-        store.addCombatLog(isWin ? '🏁 БОЙ ЗАВЕРШЕН: ПОБЕДА' : '🏁 БОЙ ЗАВЕРШЕН: ПОРАЖЕНИЕ');
+        this.localCombatLogs.push(isWin ? '🏁 БОЙ ЗАВЕРШЕН: ПОБЕДА' : '🏁 БОЙ ЗАВЕРШЕН: ПОРАЖЕНИЕ');
 
+        const formattedLogs = this.localCombatLogs.map(
+            (msg) => `${new Date().toLocaleTimeString()} - ${msg}`
+        );
+        useGameStore.setState((state: any) => ({
+            combatLogs: [...state.combatLogs, ...formattedLogs].slice(-50),
+        }));
+
+        store.updateQuestProgress('DAMAGE', this.totalDamageDealt);
         store.updateQuestProgress('PLAY', 1);
         if (isWin) store.updateQuestProgress('WIN', 1);
     }
@@ -425,7 +445,7 @@ export class BattleEngine {
     private async executeAttack(attacker: HeroUnit, victim: HeroUnit, isPlayer: boolean) {
         if (!this.isCombatRunning) return;
 
-        const { timeScale, addCombatLog } = useGameStore.getState();
+        const { timeScale } = useGameStore.getState();
         const attackerEquipment = useGameStore.getState().heroEquipment[attacker.config?.id || ''] || {};
         const attackerWeaponId = attackerEquipment.WEAPONS || null;
         const attackerWeaponArchetype = getWeaponArchetype(attackerWeaponId);
@@ -471,7 +491,7 @@ export class BattleEngine {
         if (isShadowStep) {
             const stepLog = `👤 ${attacker.config.name} уходит в тень (Shadow Step)!`;
             this.updateState({ log: stepLog });
-            addCombatLog(stepLog);
+            this.addCombatLog(stepLog);
 
             await attacker.animateTeleportOut();
             if (!this.isCombatRunning) return;
@@ -585,7 +605,7 @@ export class BattleEngine {
                     target: isPlayer ? 'enemy' : 'player',
                     label: '🛡️ ИММУНИТЕТ К СТАНУ',
                 });
-                addCombatLog(`🛡️ ${victim.config.name} защищен от оглушения иммунитетом!`);
+                this.addCombatLog(`🛡️ ${victim.config.name} защищен от оглушения иммунитетом!`);
             }
 
             victim.playHitEffect();
@@ -593,7 +613,7 @@ export class BattleEngine {
 
             const comboMsg = `💥 [КОМБО] ${attacker.config.name} проводит Сокрушительный прыжок на ${finalDamage} урона с оглушением!`;
             this.updateState({ log: comboMsg });
-            addCombatLog(comboMsg);
+            this.addCombatLog(comboMsg);
 
             if (isPlayer) {
                 const nextHP = this.applyDamage('enemy', finalDamage);
@@ -653,7 +673,7 @@ export class BattleEngine {
                           : 'enemy',
                 label: instinctEvent.label,
             });
-            addCombatLog(`⚡ Сработал инстинкт: ${instinctEvent.label}!`);
+            this.addCombatLog(`⚡ Сработал инстинкт: ${instinctEvent.label}!`);
 
             await new Promise((r) => setTimeout(r, 400 / timeScale));
         }
@@ -683,7 +703,7 @@ export class BattleEngine {
             const dodgeTypeLabel = victimWeaponArchetype === 'BOW' ? ' (Благодаря луку!)' : '';
             const logMsg = `[Раунд] ${isPlayer ? 'Враг' : 'Вы'} уклоняется от атаки! (УВОРОТ)${dodgeTypeLabel}`;
             this.updateState({ log: logMsg });
-            addCombatLog(logMsg);
+            this.addCombatLog(logMsg);
             this.onCombatEvent({ type: 'DODGE', damage: 0, target: isPlayer ? 'enemy' : 'player' });
 
             const dodgePromise = victim.animateDodge(!isPlayer);
@@ -712,7 +732,7 @@ export class BattleEngine {
         let targetDefense = effectiveDef;
         if (attackerWeaponArchetype === 'STAFF') {
             targetDefense *= 0.5;
-            addCombatLog(`✨ [Магия] Атака посохом игнорирует 50% защиты цели!`);
+            this.addCombatLog(`✨ [Магия] Атака посохом игнорирует 50% защиты цели!`);
         }
 
         const targetAvgItemLevel = targetStats.avgItemLevel || 1;
@@ -751,7 +771,7 @@ export class BattleEngine {
             if (isPlayer) this.totalDamageDealt += blockedDamage;
             const logMsg = `[Раунд] ${isPlayer ? 'Враг' : 'Вы'} блокирует удар! Урон снижен до ${blockedDamage}.`;
             this.updateState({ log: logMsg });
-            addCombatLog(logMsg);
+            this.addCombatLog(logMsg);
             this.onCombatEvent({ type: 'BLOCK', damage: blockedDamage, target: isPlayer ? 'enemy' : 'player' });
 
             victim.animateHitReaction(false);
@@ -760,7 +780,6 @@ export class BattleEngine {
 
             if (isPlayer) {
                 const nextHP = this.applyDamage('enemy', blockedDamage);
-                useGameStore.getState().updateQuestProgress('DAMAGE', blockedDamage);
                 if (nextHP <= 0) victim.animateDeath(false);
             } else {
                 const nextHP = this.applyDamage('player', blockedDamage);
@@ -826,7 +845,7 @@ export class BattleEngine {
             victim.animateHitReaction(true);
             EffectsManager.getInstance().criticalHit(victim);
             if (isStunnedThisHit) {
-                addCombatLog(`💫 ${isPlayer ? 'Враг' : 'Вы'} оглушен критическим ударом!`);
+                this.addCombatLog(`💫 ${isPlayer ? 'Враг' : 'Вы'} оглушен критическим ударом!`);
             }
         } else {
             audioService.playStrikeSFX(attackerWeaponArchetype);
@@ -839,11 +858,10 @@ export class BattleEngine {
 
         victim.playHitEffect();
         this.updateState({ log: logMsg });
-        addCombatLog(logMsg);
+        this.addCombatLog(logMsg);
 
         if (isPlayer) {
             const nextHP = this.applyDamage('enemy', finalDamage);
-            useGameStore.getState().updateQuestProgress('DAMAGE', finalDamage);
             if (nextHP <= 0) victim.animateDeath(false);
         } else {
             const nextHP = this.applyDamage('player', finalDamage);
@@ -875,7 +893,7 @@ export class BattleEngine {
         const result = cfg.passive.onTurnStart(ctx);
         if (result.extraLog) {
             this.updateState({ log: result.extraLog });
-            useGameStore.getState().addCombatLog(result.extraLog);
+            this.addCombatLog(result.extraLog);
         }
     }
 
@@ -911,7 +929,7 @@ export class BattleEngine {
 
                 if (attackerUnit) {
                     const lifestealPct = Math.round(attackerStats.lifesteal * 100);
-                    useGameStore.getState().addCombatLog(`💚 [ВАМПИРИЗМ] ${attackerUnit.config.name} исцеляется на +${healAmount} HP (Вампиризм: ${lifestealPct}%)`);
+                    this.addCombatLog(`💚 [ВАМПИРИЗМ] ${attackerUnit.config.name} исцеляется на +${healAmount} HP (Вампиризм: ${lifestealPct}%)`);
                 }
             }
         }
@@ -941,17 +959,18 @@ export class BattleEngine {
 
     public instantWin() {
         this.updateState({ enemyHP: 0 });
-        useGameStore.getState().addCombatLog('⚡ ADMIN: Мгновенная победа');
+        this.addCombatLog('⚡ ADMIN: Мгновенная победа');
     }
 
     public instantLose() {
         this.updateState({ playerHP: 0 });
-        useGameStore.getState().addCombatLog('💀 ADMIN: Самоубийство');
+        this.addCombatLog('💀 ADMIN: Самоубийство');
     }
 
     // --- Subsystem Delegation ---
     public skipToEndOfBattle() {
         BattleSimulation.skipToEndOfBattle(this);
+        this.checkCombatEnd();
     }
 
     public async castActiveAbility() {
@@ -976,7 +995,7 @@ export class BattleEngine {
         const result = cfg.passive.onDealDamage(ctx);
         if (result.extraLog) {
             this.updateState({ log: result.extraLog });
-            useGameStore.getState().addCombatLog(result.extraLog);
+            this.addCombatLog(result.extraLog);
         }
         if (result.damageModifier != null) return Math.ceil(damage * result.damageModifier);
         return damage;
@@ -998,7 +1017,7 @@ export class BattleEngine {
         const result = cfg.passive.onTakeDamage(ctx);
         if (result.extraLog) {
             this.updateState({ log: result.extraLog });
-            useGameStore.getState().addCombatLog(result.extraLog);
+            this.addCombatLog(result.extraLog);
         }
         if (result.cancelDamage) return 0;
         if (result.damageModifier != null) return Math.ceil(damage * result.damageModifier);

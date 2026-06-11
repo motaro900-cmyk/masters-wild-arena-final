@@ -178,8 +178,7 @@ export async function resolvePeriodicDamage(engine: BattleEngine, unit: HeroUnit
                     : `🤢 [Отравление] ${unit.config.name} получает ${tickDamage} урона от яда! (${status.stacks} стак.)`;
 
             engine.updateState({ log: logMsg });
-            const addCombatLog = useGameStore.getState().addCombatLog;
-            addCombatLog(logMsg);
+            engine.addCombatLog(logMsg);
 
             unit.playHitEffect();
             unit.animateHitReaction(false);
@@ -216,13 +215,13 @@ export async function resolvePeriodicDamage(engine: BattleEngine, unit: HeroUnit
                 target: isPlayer ? 'player' : 'enemy',
                 label: `🌿 +${healAmount} HP`,
             });
-            useGameStore.getState().addCombatLog(`[РЕГЕНЕРАЦИЯ ${isPlayer ? 'ИГРОКА' : 'ВРАГА'}] +${healAmount} HP`);
+            engine.addCombatLog(`[РЕГЕНЕРАЦИЯ ${isPlayer ? 'ИГРОКА' : 'ВРАГА'}] +${healAmount} HP`);
             await new Promise((r) => setTimeout(r, 400 / timeScale));
         }
 
         // STORM_CHARGE — показываем счётчик заряда
         if (status.type === 'STORM_CHARGE') {
-            useGameStore.getState().addCombatLog(`⚡ Гроза заряжается... (${status.duration} ходов до взрыва)`);
+            engine.addCombatLog(`⚡ Гроза заряжается... (${status.duration} ходов до взрыва)`);
         }
     }
 }
@@ -260,7 +259,7 @@ export function decrementStatusDurations(engine: BattleEngine, unit: HeroUnit) {
                     target: isEnemy ? 'enemy' : 'player',
                     label: '⚡ ВЗРЫВ ГРОЗЫ!',
                 });
-                useGameStore.getState().addCombatLog(`[ГРОЗА] Разряд наносит ${explosionDmg} урона!`);
+                engine.addCombatLog(`[ГРОЗА] Разряд наносит ${explosionDmg} урона!`);
             } else if (status.type === 'SHADOW_MARK') {
                 unit.removeCustomEffect?.('shadow_mark');
             } else if (status.type === 'CRYSTAL_SHIELD') {

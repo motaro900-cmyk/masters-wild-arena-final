@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { motion } from 'framer-motion';
 import { rarityColors } from '../../../constants/roleIcons';
 import { ROLE_ICONS } from '../../../constants/roleIcons';
@@ -81,7 +82,7 @@ interface HeroDetailPanelProps {
     setPreviewSkinId: (id: string | null) => void;
 }
 
-export function HeroDetailPanel({
+export const HeroDetailPanel = memo(function HeroDetailPanel({
     hero,
     isOwned,
     isActive,
@@ -93,11 +94,9 @@ export function HeroDetailPanel({
     previewSkinId,
     setPreviewSkinId,
 }: HeroDetailPanelProps) {
-    const { rating, gold, crystals } = useGameStore((state) => ({
-        rating: state.rating,
-        gold: state.gold,
-        crystals: state.crystals,
-    }));
+    const rating = useGameStore((state) => state.rating);
+    const gold = useGameStore((state) => state.gold);
+    const crystals = useGameStore((state) => state.crystals);
     const hasEnoughTrophies = !hero.requiredTrophies || rating >= hero.requiredTrophies;
     const hasEnoughGold = !hero.unlockGoldCost || gold >= hero.unlockGoldCost;
     const hasEnoughDiamonds = !hero.unlockCost || crystals >= hero.unlockCost;
@@ -739,4 +738,4 @@ export function HeroDetailPanel({
             </div>
         </motion.div>
     );
-}
+});

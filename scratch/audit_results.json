@@ -1,0 +1,1681 @@
+[
+  {
+    "file": "src\\hooks\\useAvatarRenderer.ts",
+    "calls": [
+      {
+        "lineNum": 65,
+        "content": "const equippedSkins = useGameStore((s: any) => s.equippedSkins) || {};",
+        "hasSelector": true,
+        "argText": "(s: any"
+      }
+    ]
+  },
+  {
+    "file": "src\\ui\\BeastsScreen.tsx",
+    "calls": [
+      {
+        "lineNum": 276,
+        "content": "const selectedHeroId = useGameStore((state) => state.selectedHeroId);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 277,
+        "content": "const inventory = useGameStore((state) => state.inventory);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 278,
+        "content": "const equipment = useGameStore((state) => state.equipment);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 279,
+        "content": "const equipWeapon = useGameStore((state) => state.equipWeapon);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 280,
+        "content": "const equippedWeaponId = useGameStore((state) => state.equippedWeaponId);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 281,
+        "content": "const equippedSkins = useGameStore((state) => state.equippedSkins);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 689,
+        "content": "const goToMainMenu = useGameStore((state) => state.goToMainMenu);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 690,
+        "content": "const selectedBeastId = useGameStore((state) => state.selectedBeastId);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 691,
+        "content": "const setSelectedBeastId = useGameStore((state) => state.setSelectedBeastId);",
+        "hasSelector": true,
+        "argText": "(state"
+      }
+    ]
+  },
+  {
+    "file": "src\\ui\\components\\ActionPanel.tsx",
+    "calls": [
+      {
+        "lineNum": 18,
+        "content": "const goToArena = useGameStore((state) => state.goToArena);",
+        "hasSelector": true,
+        "argText": "(state"
+      }
+    ]
+  },
+  {
+    "file": "src\\ui\\components\\BannedOverlay.tsx",
+    "calls": [
+      {
+        "lineNum": 10,
+        "content": "const { isBanned, banReason, banUntil } = useGameStore((state) => ({",
+        "hasSelector": true,
+        "argText": "(state"
+      }
+    ]
+  },
+  {
+    "file": "src\\ui\\components\\BattleCanvas.tsx",
+    "calls": [
+      {
+        "lineNum": 16,
+        "content": "const selectedHeroId = useGameStore((s) => s.selectedHeroId);",
+        "hasSelector": true,
+        "argText": "(s"
+      }
+    ]
+  },
+  {
+    "file": "src\\ui\\components\\GameHUD.tsx",
+    "calls": [
+      {
+        "lineNum": 26,
+        "content": "const activeScreen = useGameStore((state) => state.activeScreen);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 27,
+        "content": "const showSummonOverlay = useGameStore((state) => state.showSummonOverlay);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 28,
+        "content": "const mails = useGameStore((state) => state.mail) || [];",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 30,
+        "content": "const vipLevel = useGameStore((state) => state.vipLevel);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 31,
+        "content": "const vipEndTime = useGameStore((state) => state.vipEndTime);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 32,
+        "content": "const isMobile = useGameStore((state) => state.isMobile);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 36,
+        "content": "const goToShop = useGameStore((state) => state.goToShop);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 40,
+        "content": "const showFps = useGameStore((state) => state.showFps);",
+        "hasSelector": true,
+        "argText": "(state"
+      }
+    ]
+  },
+  {
+    "file": "src\\ui\\components\\hud\\ActionButtons.tsx",
+    "calls": [
+      {
+        "lineNum": 18,
+        "content": "const rating = useGameStore((state) => state.rating);",
+        "hasSelector": true,
+        "argText": "(state"
+      }
+    ]
+  },
+  {
+    "file": "src\\ui\\components\\hud\\Admin\\AdminPlayersTab.tsx",
+    "calls": [
+      {
+        "lineNum": 163,
+        "content": "const gold         = useGameStore((s) => s.gold);",
+        "hasSelector": true,
+        "argText": "(s"
+      },
+      {
+        "lineNum": 164,
+        "content": "const crystals     = useGameStore((s) => s.crystals);",
+        "hasSelector": true,
+        "argText": "(s"
+      },
+      {
+        "lineNum": 165,
+        "content": "const level        = useGameStore((s) => s.level);",
+        "hasSelector": true,
+        "argText": "(s"
+      },
+      {
+        "lineNum": 166,
+        "content": "const talentPoints = useGameStore((s) => s.talentPoints);",
+        "hasSelector": true,
+        "argText": "(s"
+      },
+      {
+        "lineNum": 167,
+        "content": "const rating       = useGameStore((s) => s.rating);",
+        "hasSelector": true,
+        "argText": "(s"
+      },
+      {
+        "lineNum": 168,
+        "content": "const activeScreen = useGameStore((s) => s.activeScreen);",
+        "hasSelector": true,
+        "argText": "(s"
+      },
+      {
+        "lineNum": 169,
+        "content": "const hasInfiniteEnergy = useGameStore((s) => s.hasInfiniteEnergy);",
+        "hasSelector": true,
+        "argText": "(s"
+      }
+    ]
+  },
+  {
+    "file": "src\\ui\\components\\hud\\AdminPanel.tsx",
+    "calls": [
+      {
+        "lineNum": 132,
+        "content": "const messages = useGameStore((state) => state.messages);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 133,
+        "content": "const combatLogs = useGameStore((state) => state.combatLogs);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 134,
+        "content": "const timeScale = useGameStore((state) => state.timeScale);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 135,
+        "content": "const isGodMode = useGameStore((state) => state.isGodMode);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 136,
+        "content": "const isOneShot = useGameStore((state) => state.isOneShot);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 137,
+        "content": "const isEnemyFrozen = useGameStore((state) => state.isEnemyFrozen);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 138,
+        "content": "const showFps = useGameStore((state) => state.showFps);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 139,
+        "content": "const showHitboxes = useGameStore((state) => state.showHitboxes);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 140,
+        "content": "const showSafeZone = useGameStore((state) => state.showSafeZone);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 141,
+        "content": "const debugPing = useGameStore((state) => state.debugPing);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 142,
+        "content": "const isOfflineMode = useGameStore((state) => state.isOfflineMode);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 657,
+        "content": "const isAdmin = useGameStore((state) => state.isAdmin);",
+        "hasSelector": true,
+        "argText": "(state"
+      }
+    ]
+  },
+  {
+    "file": "src\\ui\\components\\hud\\AdvancedSettingsBlock.tsx",
+    "calls": [
+      {
+        "lineNum": 32,
+        "content": "} = useGameStore();",
+        "hasSelector": false,
+        "argText": ""
+      }
+    ]
+  },
+  {
+    "file": "src\\ui\\components\\hud\\BaseWindow.tsx",
+    "calls": [
+      {
+        "lineNum": 64,
+        "content": "const { uiTheme, language } = useGameStore((state: any) => ({",
+        "hasSelector": true,
+        "argText": "(state: any"
+      }
+    ]
+  },
+  {
+    "file": "src\\ui\\components\\hud\\Battle\\BattleHUD.tsx",
+    "calls": [
+      {
+        "lineNum": 316,
+        "content": "const selectedHeroId = useGameStore((s) => s.selectedHeroId) || 'panda';",
+        "hasSelector": true,
+        "argText": "(s"
+      },
+      {
+        "lineNum": 317,
+        "content": "const heroes = useGameStore((s) => s.heroes) || {};",
+        "hasSelector": true,
+        "argText": "(s"
+      },
+      {
+        "lineNum": 319,
+        "content": "const playerLevel = useGameStore((s) => s.level) || 1;",
+        "hasSelector": true,
+        "argText": "(s"
+      },
+      {
+        "lineNum": 320,
+        "content": "const playerRating = useGameStore((s) => s.rating || s.trophies || 0);",
+        "hasSelector": true,
+        "argText": "(s"
+      },
+      {
+        "lineNum": 322,
+        "content": "const playerName = useGameStore((s) => s.name) || 'Мастер';",
+        "hasSelector": true,
+        "argText": "(s"
+      },
+      {
+        "lineNum": 323,
+        "content": "const rawAvatar = useGameStore((s) => s.avatar);",
+        "hasSelector": true,
+        "argText": "(s"
+      },
+      {
+        "lineNum": 324,
+        "content": "const vkUser = useGameStore((s) => s.vkUser);",
+        "hasSelector": true,
+        "argText": "(s"
+      },
+      {
+        "lineNum": 325,
+        "content": "const playerFrame = useGameStore((s) => s.frame) || 'default';",
+        "hasSelector": true,
+        "argText": "(s"
+      },
+      {
+        "lineNum": 326,
+        "content": "const vipLevel = useGameStore((s) => s.vipLevel) || 0;",
+        "hasSelector": true,
+        "argText": "(s"
+      },
+      {
+        "lineNum": 333,
+        "content": "const activeRankedOpponent = useGameStore((s) => s.activeRankedOpponent);",
+        "hasSelector": true,
+        "argText": "(s"
+      }
+    ]
+  },
+  {
+    "file": "src\\ui\\components\\hud\\BattlePass\\PurchaseModal.tsx",
+    "calls": [
+      {
+        "lineNum": 6,
+        "content": "const { crystals } = useGameStore();",
+        "hasSelector": false,
+        "argText": ""
+      }
+    ]
+  },
+  {
+    "file": "src\\ui\\components\\hud\\BattlePass\\useBattlePassQuests.ts",
+    "calls": [
+      {
+        "lineNum": 9,
+        "content": "const { bpDailyQuests, weeklyQuests } = useGameStore();",
+        "hasSelector": false,
+        "argText": ""
+      }
+    ]
+  },
+  {
+    "file": "src\\ui\\components\\hud\\BattlePassBar.tsx",
+    "calls": [
+      {
+        "lineNum": 9,
+        "content": "const { bpLevel, bpExp, setScreen } = useGameStore();",
+        "hasSelector": false,
+        "argText": ""
+      }
+    ]
+  },
+  {
+    "file": "src\\ui\\components\\hud\\BattlePassScene.tsx",
+    "calls": [
+      {
+        "lineNum": 33,
+        "content": "} = useGameStore();",
+        "hasSelector": false,
+        "argText": ""
+      }
+    ]
+  },
+  {
+    "file": "src\\ui\\components\\hud\\BattleResultScreen.tsx",
+    "calls": [
+      {
+        "lineNum": 100,
+        "content": "const goToForge = useGameStore((state) => state.goToForge);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 101,
+        "content": "const goToHeroes = useGameStore((state) => state.goToHeroes);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 102,
+        "content": "const trophies = useGameStore((state) => state.trophies);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 103,
+        "content": "const crystals = useGameStore((state) => state.crystals);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 104,
+        "content": "const battleMode = useGameStore((state) => state.battleMode);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 105,
+        "content": "const pveLoot = useGameStore((state) => state.pveLoot);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 107,
+        "content": "const { level, exp, gold } = useGameStore();",
+        "hasSelector": false,
+        "argText": ""
+      }
+    ]
+  },
+  {
+    "file": "src\\ui\\components\\hud\\BattleScene.tsx",
+    "calls": [
+      {
+        "lineNum": 19,
+        "content": "const selectedHeroId = useGameStore((state) => state.selectedHeroId);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 20,
+        "content": "const selectedEnemyId = useGameStore((state) => state.selectedEnemyId);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 21,
+        "content": "const goToMainMenu = useGameStore((state) => state.goToMainMenu);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 22,
+        "content": "const getCalculatedStats = useGameStore((state) => state.getCalculatedStats);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 23,
+        "content": "const timeScale = useGameStore((state) => state.timeScale);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 24,
+        "content": "const setTimeScale = useGameStore((state) => state.setTimeScale);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 25,
+        "content": "const activePveEnemy = useGameStore((state) => state.activePveEnemy);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 26,
+        "content": "const activeRankedOpponent = useGameStore((state) => state.activeRankedOpponent);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 27,
+        "content": "const battleMode = useGameStore((state) => state.battleMode);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 28,
+        "content": "const equippedSkins = useGameStore((state) => state.equippedSkins);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 588,
+        "content": "const isMobile = useGameStore((state) => state.isMobile);",
+        "hasSelector": true,
+        "argText": "(state"
+      }
+    ]
+  },
+  {
+    "file": "src\\ui\\components\\hud\\Bestiary\\useBestiary.ts",
+    "calls": [
+      {
+        "lineNum": 37,
+        "content": "const { pet, gold, crystals, collectPetDailyReward } = useGameStore();",
+        "hasSelector": false,
+        "argText": ""
+      }
+    ]
+  },
+  {
+    "file": "src\\ui\\components\\hud\\BottomNavigation.tsx",
+    "calls": [
+      {
+        "lineNum": 21,
+        "content": "const activeScreen = useGameStore((state) => state.activeScreen);",
+        "hasSelector": true,
+        "argText": "(state"
+      }
+    ]
+  },
+  {
+    "file": "src\\ui\\components\\hud\\ChatPanel.tsx",
+    "calls": [
+      {
+        "lineNum": 14,
+        "content": "const { messages, privateMessages, clanMessages, addMessage, name, clanId } = useGameStore();",
+        "hasSelector": false,
+        "argText": ""
+      }
+    ]
+  },
+  {
+    "file": "src\\ui\\components\\hud\\ClanWindow.tsx",
+    "calls": [
+      {
+        "lineNum": 25,
+        "content": "} = useGameStore();",
+        "hasSelector": false,
+        "argText": ""
+      }
+    ]
+  },
+  {
+    "file": "src\\ui\\components\\hud\\DailyGiftBanner.tsx",
+    "calls": [
+      {
+        "lineNum": 9,
+        "content": "const canClaim = useGameStore((state) => state.canClaimDailyGift);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 10,
+        "content": "const setCanClaim = useGameStore((state) => state.setCanClaimDailyGift);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 11,
+        "content": "const lastDailyGiftClaimedTime = useGameStore((state) => state.lastDailyGiftClaimedTime);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 12,
+        "content": "const lastWheelSpinTime = useGameStore((state) => state.lastWheelSpinTime);",
+        "hasSelector": true,
+        "argText": "(state"
+      }
+    ]
+  },
+  {
+    "file": "src\\ui\\components\\hud\\DailyGiftWindow.tsx",
+    "calls": [
+      {
+        "lineNum": 67,
+        "content": "const { addGold, addCrystals, addEnergy, setCanClaimDailyGift } = useGameStore();",
+        "hasSelector": false,
+        "argText": ""
+      }
+    ]
+  },
+  {
+    "file": "src\\ui\\components\\hud\\DailyTaskPanel.tsx",
+    "calls": [
+      {
+        "lineNum": 17,
+        "content": "const { dailyQuests, claimQuestReward, refreshDailyQuests, vipLevel, vipEndTime } = useGameStore();",
+        "hasSelector": false,
+        "argText": ""
+      }
+    ]
+  },
+  {
+    "file": "src\\ui\\components\\hud\\ForgeWindow.tsx",
+    "calls": [
+      {
+        "lineNum": 22,
+        "content": "const { gold, crystals, inventory, heroEquipment, selectedHeroId, upgradeItem } = useGameStore();",
+        "hasSelector": false,
+        "argText": ""
+      }
+    ]
+  },
+  {
+    "file": "src\\ui\\components\\hud\\FriendsWindow\\useFriendsWindow.ts",
+    "calls": [
+      {
+        "lineNum": 23,
+        "content": "} = useGameStore();",
+        "hasSelector": false,
+        "argText": ""
+      }
+    ]
+  },
+  {
+    "file": "src\\ui\\components\\hud\\GlobalDialogs.tsx",
+    "calls": [
+      {
+        "lineNum": 6,
+        "content": "const activeAlert = useGameStore((state) => state.activeAlert);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 81,
+        "content": "const { activeConfirm } = useGameStore();",
+        "hasSelector": false,
+        "argText": ""
+      }
+    ]
+  },
+  {
+    "file": "src\\ui\\components\\hud\\HeroScene\\components\\Equipment\\EquipmentSlot.tsx",
+    "calls": [
+      {
+        "lineNum": 29,
+        "content": "const inventory = useGameStore((state) => state.inventory);",
+        "hasSelector": true,
+        "argText": "(state"
+      }
+    ]
+  },
+  {
+    "file": "src\\ui\\components\\hud\\HeroScene\\components\\Equipment\\GearView.tsx",
+    "calls": [
+      {
+        "lineNum": 31,
+        "content": "const equippedSkins = useGameStore((s: any) => s.equippedSkins) || {};",
+        "hasSelector": true,
+        "argText": "(s: any"
+      },
+      {
+        "lineNum": 36,
+        "content": "const heroesState = useGameStore((s: any) => s.heroes) || {};",
+        "hasSelector": true,
+        "argText": "(s: any"
+      },
+      {
+        "lineNum": 63,
+        "content": "const { inventory: rawInventory } = useGameStore();",
+        "hasSelector": false,
+        "argText": ""
+      }
+    ]
+  },
+  {
+    "file": "src\\ui\\components\\hud\\HeroScene\\components\\HeroDetails\\PurchaseModal.tsx",
+    "calls": [
+      {
+        "lineNum": 9,
+        "content": "const { gold, crystals, rating, unlockHero, spendGold, spendDiamonds } = useGameStore();",
+        "hasSelector": false,
+        "argText": ""
+      }
+    ]
+  },
+  {
+    "file": "src\\ui\\components\\hud\\HeroScene\\components\\HeroList\\components\\HeroCard.tsx",
+    "calls": [
+      {
+        "lineNum": 25,
+        "content": "const { rating, crystals, gold } = useGameStore((state) => ({",
+        "hasSelector": true,
+        "argText": "(state"
+      }
+    ]
+  },
+  {
+    "file": "src\\ui\\components\\hud\\HeroScene\\components\\HeroList\\components\\HeroDetailPanel.tsx",
+    "calls": [
+      {
+        "lineNum": 96,
+        "content": "const { rating, gold, crystals } = useGameStore((state) => ({",
+        "hasSelector": true,
+        "argText": "(state"
+      }
+    ]
+  },
+  {
+    "file": "src\\ui\\components\\hud\\HeroScene\\components\\HeroList\\FilterBar.tsx",
+    "calls": [
+      {
+        "lineNum": 7,
+        "content": "const { gold, crystals, ownedHeroes } = useGameStore((s: any) => ({",
+        "hasSelector": true,
+        "argText": "(s: any"
+      }
+    ]
+  },
+  {
+    "file": "src\\ui\\components\\hud\\HeroScene\\components\\HeroList\\HeroCard.tsx",
+    "calls": [
+      {
+        "lineNum": 18,
+        "content": "const { gold, crystals, level, trophies, heroes } = useGameStore((s: any) => ({",
+        "hasSelector": true,
+        "argText": "(s: any"
+      }
+    ]
+  },
+  {
+    "file": "src\\ui\\components\\hud\\HeroScene\\components\\HeroList\\HeroTooltip.tsx",
+    "calls": [
+      {
+        "lineNum": 26,
+        "content": "const { ownedHeroes, graphicsQuality } = useGameStore();",
+        "hasSelector": false,
+        "argText": ""
+      }
+    ]
+  },
+  {
+    "file": "src\\ui\\components\\hud\\HeroScene\\components\\HeroList\\index.tsx",
+    "calls": [
+      {
+        "lineNum": 72,
+        "content": "const { setSelectedHeroId, ownedSkins, equippedSkins, equipSkin, setHeroGalleryId } = useGameStore((s: any) => ({",
+        "hasSelector": true,
+        "argText": "(s: any"
+      }
+    ]
+  },
+  {
+    "file": "src\\ui\\components\\hud\\HeroScene\\components\\Skins\\SkinsView.tsx",
+    "calls": [
+      {
+        "lineNum": 26,
+        "content": "const { ownedSkins, equippedSkins, equipSkin } = useGameStore((s: any) => ({",
+        "hasSelector": true,
+        "argText": "(s: any"
+      }
+    ]
+  },
+  {
+    "file": "src\\ui\\components\\hud\\HeroScene\\components\\Talents\\TalentsView.tsx",
+    "calls": [
+      {
+        "lineNum": 11,
+        "content": "const { heroTalents, upgradeTalent, resetTalents, talentPoints } = useGameStore();",
+        "hasSelector": false,
+        "argText": ""
+      },
+      {
+        "lineNum": 15,
+        "content": "const heroesState = useGameStore((s: any) => s.heroes) || {};",
+        "hasSelector": true,
+        "argText": "(s: any"
+      }
+    ]
+  },
+  {
+    "file": "src\\ui\\components\\hud\\HeroScene\\HeroScene.tsx",
+    "calls": [
+      {
+        "lineNum": 54,
+        "content": "const getCalculatedStats = useGameStore((state) => state.getCalculatedStats);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 55,
+        "content": "const inventory = useGameStore((state) => state.inventory);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 56,
+        "content": "const equipItem = useGameStore((state) => state.equipItem);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 57,
+        "content": "const unequipItem = useGameStore((state) => state.unequipItem);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 58,
+        "content": "const heroEquipment = useGameStore((state) => state.heroEquipment);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 59,
+        "content": "const heroesInitialTab = useGameStore((state) => state.heroesInitialTab);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 60,
+        "content": "const selectedHeroId = useGameStore((state) => state.selectedHeroId);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 61,
+        "content": "const setSelectedHeroId = useGameStore((state) => state.setSelectedHeroId);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 62,
+        "content": "const setHeroGalleryId = useGameStore((state) => state.setHeroGalleryId);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 63,
+        "content": "const ownedHeroes = useGameStore((state) => state.ownedHeroes);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 64,
+        "content": "const goToMainMenu = useGameStore((state) => state.goToMainMenu);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 65,
+        "content": "const goToShop = useGameStore((state) => state.goToShop);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 66,
+        "content": "const isMobile = useGameStore((state) => state.isMobile);",
+        "hasSelector": true,
+        "argText": "(state"
+      }
+    ]
+  },
+  {
+    "file": "src\\ui\\components\\hud\\Inventory\\ItemTooltip.tsx",
+    "calls": [
+      {
+        "lineNum": 23,
+        "content": "const store = useGameStore();",
+        "hasSelector": false,
+        "argText": ""
+      }
+    ]
+  },
+  {
+    "file": "src\\ui\\components\\hud\\InventoryPanel.tsx",
+    "calls": [
+      {
+        "lineNum": 37,
+        "content": "} = useGameStore();",
+        "hasSelector": false,
+        "argText": ""
+      }
+    ]
+  },
+  {
+    "file": "src\\ui\\components\\hud\\LeftSidebar.tsx",
+    "calls": [
+      {
+        "lineNum": 26,
+        "content": "const activeScreen = useGameStore((state) => state.activeScreen);",
+        "hasSelector": true,
+        "argText": "(state"
+      }
+    ]
+  },
+  {
+    "file": "src\\ui\\components\\hud\\LevelUpOverlay.tsx",
+    "calls": [
+      {
+        "lineNum": 9,
+        "content": "const { latestLevelUp, clearLatestLevelUp } = useGameStore((s: any) => ({",
+        "hasSelector": true,
+        "argText": "(s: any"
+      }
+    ]
+  },
+  {
+    "file": "src\\ui\\components\\hud\\MailWindow.tsx",
+    "calls": [
+      {
+        "lineNum": 25,
+        "content": "} = useGameStore();",
+        "hasSelector": false,
+        "argText": ""
+      },
+      {
+        "lineNum": 81,
+        "content": "const { redeemPromoCode } = useGameStore();",
+        "hasSelector": false,
+        "argText": ""
+      }
+    ]
+  },
+  {
+    "file": "src\\ui\\components\\hud\\Matchmaking\\components\\EquipmentSlotItem.tsx",
+    "calls": [
+      {
+        "lineNum": 51,
+        "content": "const inventory = useGameStore((s: any) => s.inventory) || [];",
+        "hasSelector": true,
+        "argText": "(s: any"
+      }
+    ]
+  },
+  {
+    "file": "src\\ui\\components\\hud\\Matchmaking\\MatchmakingFound.tsx",
+    "calls": [
+      {
+        "lineNum": 60,
+        "content": "const { heroEquipment, selectedHeroId, title, name, wins, totalBattles, isPremium } = useGameStore();",
+        "hasSelector": false,
+        "argText": ""
+      }
+    ]
+  },
+  {
+    "file": "src\\ui\\components\\hud\\Matchmaking\\MatchmakingSearching.tsx",
+    "calls": [
+      {
+        "lineNum": 31,
+        "content": "const { frame } = useGameStore();",
+        "hasSelector": false,
+        "argText": ""
+      }
+    ]
+  },
+  {
+    "file": "src\\ui\\components\\hud\\MatchmakingOverlay.tsx",
+    "calls": [
+      {
+        "lineNum": 29,
+        "content": "const name = useGameStore((state) => state.name);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 30,
+        "content": "const rating = useGameStore((state) => state.rating);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 31,
+        "content": "const vipLevel = useGameStore((state) => state.vipLevel);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 32,
+        "content": "const selectedHeroId = useGameStore((state) => state.selectedHeroId);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 33,
+        "content": "const level = useGameStore((state) => state.level);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 34,
+        "content": "const getCalculatedStats = useGameStore((state) => state.getCalculatedStats);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 35,
+        "content": "const avatar = useGameStore((state) => state.avatar);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 36,
+        "content": "const vkUser = useGameStore((state) => state.vkUser);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 37,
+        "content": "const isMobile = useGameStore((state) => state.isMobile);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 38,
+        "content": "const equippedSkins = useGameStore((state) => state.equippedSkins);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 39,
+        "content": "const winStreak = useGameStore((state) => state.winStreak);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 40,
+        "content": "const lossStreak = useGameStore((state) => state.lossStreak);",
+        "hasSelector": true,
+        "argText": "(state"
+      }
+    ]
+  },
+  {
+    "file": "src\\ui\\components\\hud\\PlayerProfile.tsx",
+    "calls": [
+      {
+        "lineNum": 17,
+        "content": "const store = useGameStore();",
+        "hasSelector": false,
+        "argText": ""
+      }
+    ]
+  },
+  {
+    "file": "src\\ui\\components\\hud\\PreBattleScreen.tsx",
+    "calls": [
+      {
+        "lineNum": 367,
+        "content": "const { rating, heroEquipment, selectedHeroId } = useGameStore();",
+        "hasSelector": false,
+        "argText": ""
+      }
+    ]
+  },
+  {
+    "file": "src\\ui\\components\\hud\\ProfileBar.tsx",
+    "calls": [
+      {
+        "lineNum": 11,
+        "content": "const avatar = useGameStore((s) => s.avatar) || 'панда.png';",
+        "hasSelector": true,
+        "argText": "(s"
+      },
+      {
+        "lineNum": 12,
+        "content": "const frame = useGameStore((s) => s.frame) || 'harvest_wheat_frame.webp';",
+        "hasSelector": true,
+        "argText": "(s"
+      },
+      {
+        "lineNum": 13,
+        "content": "const trophies = useGameStore((s) => s.trophies) ?? 0;",
+        "hasSelector": true,
+        "argText": "(s"
+      },
+      {
+        "lineNum": 14,
+        "content": "const exp = useGameStore((s) => s.exp) ?? 0;",
+        "hasSelector": true,
+        "argText": "(s"
+      },
+      {
+        "lineNum": 15,
+        "content": "const level = useGameStore((s) => s.level) ?? 1;",
+        "hasSelector": true,
+        "argText": "(s"
+      },
+      {
+        "lineNum": 16,
+        "content": "const vkUser = useGameStore((s) => s.vkUser);",
+        "hasSelector": true,
+        "argText": "(s"
+      },
+      {
+        "lineNum": 17,
+        "content": "const name = useGameStore((s) => s.name);",
+        "hasSelector": true,
+        "argText": "(s"
+      }
+    ]
+  },
+  {
+    "file": "src\\ui\\components\\hud\\ProfileCustomizeWindow.tsx",
+    "calls": [
+      {
+        "lineNum": 36,
+        "content": "} = useGameStore();",
+        "hasSelector": false,
+        "argText": ""
+      }
+    ]
+  },
+  {
+    "file": "src\\ui\\components\\hud\\ProfileHub.tsx",
+    "calls": [
+      {
+        "lineNum": 10,
+        "content": "const { level, vipLevel, exp, vkUser, title, name, avatar, frame, glowEnabled, uiAnimations } = useGameStore();",
+        "hasSelector": false,
+        "argText": ""
+      }
+    ]
+  },
+  {
+    "file": "src\\ui\\components\\hud\\RankingPanel.tsx",
+    "calls": [
+      {
+        "lineNum": 11,
+        "content": "const { rating, wins, totalBattles } = useGameStore();",
+        "hasSelector": false,
+        "argText": ""
+      }
+    ]
+  },
+  {
+    "file": "src\\ui\\components\\hud\\RankingWindow.tsx",
+    "calls": [
+      {
+        "lineNum": 23,
+        "content": "const { rating, vkUser, avatar: playerAvatar } = useGameStore();",
+        "hasSelector": false,
+        "argText": ""
+      }
+    ]
+  },
+  {
+    "file": "src\\ui\\components\\hud\\RanksListWindow.tsx",
+    "calls": [
+      {
+        "lineNum": 9,
+        "content": "const { rating: playerTrophies } = useGameStore();",
+        "hasSelector": false,
+        "argText": ""
+      }
+    ]
+  },
+  {
+    "file": "src\\ui\\components\\hud\\ResourceBar.tsx",
+    "calls": [
+      {
+        "lineNum": 12,
+        "content": "const gold = useGameStore((s) => s.gold);",
+        "hasSelector": true,
+        "argText": "(s"
+      },
+      {
+        "lineNum": 13,
+        "content": "const crystals = useGameStore((s) => s.crystals);",
+        "hasSelector": true,
+        "argText": "(s"
+      },
+      {
+        "lineNum": 14,
+        "content": "const energy = useGameStore((s) => s.energy);",
+        "hasSelector": true,
+        "argText": "(s"
+      },
+      {
+        "lineNum": 15,
+        "content": "const maxEnergy = useGameStore((s) => s.maxEnergy);",
+        "hasSelector": true,
+        "argText": "(s"
+      },
+      {
+        "lineNum": 16,
+        "content": "const lastEnergyUpdate = useGameStore((s) => s.lastEnergyUpdate);",
+        "hasSelector": true,
+        "argText": "(s"
+      },
+      {
+        "lineNum": 17,
+        "content": "const regenerateEnergy = useGameStore((s) => s.regenerateEnergy);",
+        "hasSelector": true,
+        "argText": "(s"
+      }
+    ]
+  },
+  {
+    "file": "src\\ui\\components\\hud\\RightPanel.tsx",
+    "calls": [
+      {
+        "lineNum": 11,
+        "content": "const canClaimDailyGift = useGameStore((s: any) => s.canClaimDailyGift);",
+        "hasSelector": true,
+        "argText": "(s: any"
+      }
+    ]
+  },
+  {
+    "file": "src\\ui\\components\\hud\\SettingsWindow.tsx",
+    "calls": [
+      {
+        "lineNum": 30,
+        "content": "} = useGameStore();",
+        "hasSelector": false,
+        "argText": ""
+      }
+    ]
+  },
+  {
+    "file": "src\\ui\\components\\hud\\SharedUI.tsx",
+    "calls": [
+      {
+        "lineNum": 26,
+        "content": "const isLow = useGameStore((state) => state.graphicsQuality === 'LOW');",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 94,
+        "content": "const isLow = useGameStore((state) => state.graphicsQuality === 'LOW');",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 122,
+        "content": "const isLow = useGameStore((state) => state.graphicsQuality === 'LOW');",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 159,
+        "content": "const isLow = useGameStore((state) => state.graphicsQuality === 'LOW');",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 228,
+        "content": "const isLow = useGameStore((state) => state.graphicsQuality === 'LOW');",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 303,
+        "content": "const isMobile = useGameStore((state) => state.isMobile);",
+        "hasSelector": true,
+        "argText": "(state"
+      }
+    ]
+  },
+  {
+    "file": "src\\ui\\components\\hud\\ShopScene\\BuyBtn.tsx",
+    "calls": [
+      {
+        "lineNum": 20,
+        "content": "const { ownedSkins, equippedSkins, equipSkin, unequipSkin, inventory, heroEquipment, level } = useGameStore();",
+        "hasSelector": false,
+        "argText": ""
+      }
+    ]
+  },
+  {
+    "file": "src\\ui\\components\\hud\\ShopScene\\useShopScene.ts",
+    "calls": [
+      {
+        "lineNum": 25,
+        "content": "} = useGameStore();",
+        "hasSelector": false,
+        "argText": ""
+      }
+    ]
+  },
+  {
+    "file": "src\\ui\\components\\hud\\ShopScene.tsx",
+    "calls": [
+      {
+        "lineNum": 43,
+        "content": "const equippedItems = useGameStore((state: any) => state.heroEquipment?.[state.selectedHeroId || 'panda'] || {});",
+        "hasSelector": true,
+        "argText": "(state: any"
+      }
+    ]
+  },
+  {
+    "file": "src\\ui\\components\\hud\\TopBar.tsx",
+    "calls": [
+      {
+        "lineNum": 12,
+        "content": "const avatar = useGameStore((state) => state.avatar);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 13,
+        "content": "const title = useGameStore((state) => state.title);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 14,
+        "content": "const level = useGameStore((state) => state.level);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 15,
+        "content": "const crystals = useGameStore((state) => state.crystals);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 16,
+        "content": "const gold = useGameStore((state) => state.gold);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 17,
+        "content": "const energy = useGameStore((state) => state.energy);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 18,
+        "content": "const maxEnergy = useGameStore((state) => state.maxEnergy);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 19,
+        "content": "const exp = useGameStore((state) => state.exp);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 20,
+        "content": "const vkUser = useGameStore((state) => state.vkUser);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 21,
+        "content": "const name = useGameStore((state) => state.name);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 22,
+        "content": "const frame = useGameStore((state) => state.frame);",
+        "hasSelector": true,
+        "argText": "(state"
+      }
+    ]
+  },
+  {
+    "file": "src\\ui\\components\\hud\\VIPWindow.tsx",
+    "calls": [
+      {
+        "lineNum": 101,
+        "content": "const { vipLevel, isPremium, vipEndTime } = useGameStore();",
+        "hasSelector": false,
+        "argText": ""
+      }
+    ]
+  },
+  {
+    "file": "src\\ui\\components\\LeftBar.tsx",
+    "calls": [
+      {
+        "lineNum": 15,
+        "content": "const level = useGameStore((state) => state.level);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 16,
+        "content": "const exp = useGameStore((state) => state.exp);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 17,
+        "content": "const currentHeroId = useGameStore((state) => state.currentHeroId);",
+        "hasSelector": true,
+        "argText": "(state"
+      }
+    ]
+  },
+  {
+    "file": "src\\ui\\components\\RightBar.tsx",
+    "calls": [
+      {
+        "lineNum": 6,
+        "content": "const currentHeroId = useGameStore((state) => state.currentHeroId);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 7,
+        "content": "const getCalculatedStats = useGameStore((state) => state.getCalculatedStats);",
+        "hasSelector": true,
+        "argText": "(state"
+      }
+    ]
+  },
+  {
+    "file": "src\\ui\\components\\SceneSwitcher.tsx",
+    "calls": [
+      {
+        "lineNum": 18,
+        "content": "const activeScreen = useGameStore((state) => state.activeScreen);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 19,
+        "content": "const profileStatus = useGameStore((state) => state.profileStatus);",
+        "hasSelector": true,
+        "argText": "(state"
+      }
+    ]
+  },
+  {
+    "file": "src\\ui\\components\\screens\\AncientsSanctuaryScreen.tsx",
+    "calls": [
+      {
+        "lineNum": 56,
+        "content": "} = useGameStore();",
+        "hasSelector": false,
+        "argText": ""
+      }
+    ]
+  },
+  {
+    "file": "src\\ui\\components\\screens\\CityScreen.tsx",
+    "calls": [
+      {
+        "lineNum": 12,
+        "content": "const isMobile = useGameStore((state) => state.isMobile);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 13,
+        "content": "const goToMainMenu = useGameStore((state) => state.goToMainMenu);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 14,
+        "content": "const goToShop = useGameStore((state) => state.goToShop);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 15,
+        "content": "const goToForge = useGameStore((state) => state.goToForge);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 16,
+        "content": "const openChest = useGameStore((state) => state.openChest);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 17,
+        "content": "const crystals = useGameStore((state) => state.crystals);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 20,
+        "content": "const showSummonOverlay = useGameStore((state) => state.showSummonOverlay) || false;",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 21,
+        "content": "const setShowSummonOverlay = useGameStore((state) => state.setShowSummonOverlay);",
+        "hasSelector": true,
+        "argText": "(state"
+      }
+    ]
+  },
+  {
+    "file": "src\\ui\\components\\screens\\ForgeScreen.tsx",
+    "calls": [
+      {
+        "lineNum": 17,
+        "content": "const stateStore = useGameStore();",
+        "hasSelector": false,
+        "argText": ""
+      }
+    ]
+  },
+  {
+    "file": "src\\ui\\components\\screens\\IntroScreen.tsx",
+    "calls": [
+      {
+        "lineNum": 14,
+        "content": "const storeName = useGameStore((state) => state.name);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 18,
+        "content": "const isMobile = useGameStore((state) => state.isMobile);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 20,
+        "content": "const changeName = useGameStore((state) => state.changeName);",
+        "hasSelector": true,
+        "argText": "(state"
+      }
+    ]
+  },
+  {
+    "file": "src\\ui\\components\\SideMenu.tsx",
+    "calls": [
+      {
+        "lineNum": 18,
+        "content": "const goToInventory = useGameStore((state) => state.goToInventory);",
+        "hasSelector": true,
+        "argText": "(state"
+      }
+    ]
+  },
+  {
+    "file": "src\\ui\\components\\TopBar.tsx",
+    "calls": [
+      {
+        "lineNum": 6,
+        "content": "const gold = useGameStore((state) => state.gold);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 7,
+        "content": "const crystals = useGameStore((state) => state.crystals);",
+        "hasSelector": true,
+        "argText": "(state"
+      }
+    ]
+  },
+  {
+    "file": "src\\ui\\components\\TopPanel.tsx",
+    "calls": [
+      {
+        "lineNum": 14,
+        "content": "const gold = useGameStore((state) => state.gold);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 15,
+        "content": "const crystals = useGameStore((state) => state.crystals);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 16,
+        "content": "const energy = useGameStore((state) => state.energy);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 17,
+        "content": "const maxEnergy = useGameStore((state) => state.maxEnergy);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 18,
+        "content": "const level = useGameStore((state) => state.level);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 19,
+        "content": "const exp = useGameStore((state) => state.exp);",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 20,
+        "content": "const currentHeroId = useGameStore((state) => state.currentHeroId);",
+        "hasSelector": true,
+        "argText": "(state"
+      }
+    ]
+  },
+  {
+    "file": "src\\ui\\layouts\\SafeGameLayout.tsx",
+    "calls": [
+      {
+        "lineNum": 24,
+        "content": "const { setShowFps, showFps, isBanned, banReason, banUntil, sessionConflict } = useGameStore((state) => ({",
+        "hasSelector": true,
+        "argText": "(state"
+      },
+      {
+        "lineNum": 92,
+        "content": "const isMobile = useGameStore((state) => state.isMobile);",
+        "hasSelector": true,
+        "argText": "(state"
+      }
+    ]
+  },
+  {
+    "file": "src\\ui\\ModalManager.tsx",
+    "calls": [
+      {
+        "lineNum": 17,
+        "content": "const activeScreen = useGameStore((state: any) => state.activeScreen);",
+        "hasSelector": true,
+        "argText": "(state: any"
+      }
+    ]
+  },
+  {
+    "file": "src\\ui\\screens\\MainHUD.tsx",
+    "calls": [
+      {
+        "lineNum": 7,
+        "content": "const store = useGameStore();",
+        "hasSelector": false,
+        "argText": ""
+      }
+    ]
+  }
+]

@@ -19,7 +19,12 @@ const STATIC_SPARKS = [...Array(40)].map((_, i) => ({
  * Позволяет улучшать предметы, повышая их характеристики и мощь.
  */
 export const ForgeWindow: React.FC = () => {
-    const { gold, crystals, inventory, heroEquipment, selectedHeroId, upgradeItem } = useGameStore();
+    const gold = useGameStore((state) => state.gold);
+    const crystals = useGameStore((state) => state.crystals);
+    const inventory = useGameStore((state) => state.inventory);
+    const heroEquipment = useGameStore((state) => state.heroEquipment);
+    const selectedHeroId = useGameStore((state) => state.selectedHeroId);
+    const upgradeItem = useGameStore((state) => state.upgradeItem);
     const heroId = selectedHeroId || 'panda';
     const equipped = heroEquipment[heroId] || {};
 

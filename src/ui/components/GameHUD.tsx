@@ -13,7 +13,7 @@ import { DailyGiftBanner } from './hud/DailyGiftBanner';
 import { ProfileHub } from './hud/ProfileHub';
 
 // Dialogs & Windows
-import { WindowManager } from './hud/WindowManager';
+const WindowManager = React.lazy(() => import('./hud/WindowManager'));
 import { AlertDialog, ConfirmDialog } from './hud/GlobalDialogs';
 import { UnderDevelopmentModal } from './hud/SharedUI';
 import { MatchmakingOverlay } from './hud/MatchmakingOverlay';
@@ -515,11 +515,13 @@ export const GameHUD: React.FC = () => {
             )}
 
             {/* --- WINDOW MANAGER --- */}
-            <WindowManager
-                activeWindow={activeWindow}
-                setActiveWindow={setActiveWindow}
-                setShowAdmin={setShowAdmin}
-            />
+            <React.Suspense fallback={null}>
+                <WindowManager
+                    activeWindow={activeWindow}
+                    setActiveWindow={setActiveWindow}
+                    setShowAdmin={setShowAdmin}
+                />
+            </React.Suspense>
 
             {/* --- ADMIN PANEL (GLOBAL OVERLAY) --- */}
             {showAdmin && (

@@ -37,7 +37,7 @@ export async function castActiveAbility(engine: BattleEngine) {
 
     const logMsg = `✨ [АКТИВ СПОСОБНОСТЬ] ${heroName} использует "${abilityName}"!`;
     engine.updateState({ log: logMsg });
-    store.addCombatLog(logMsg);
+    engine.addCombatLog(logMsg);
 
     engine.onCombatEvent({
         type: 'INSTINCT',
@@ -61,7 +61,7 @@ export async function castActiveAbility(engine: BattleEngine) {
 
     engine.totalDamageDealt += finalDamage;
     const damageLog = `💥 ${abilityName} наносит ${finalDamage} урона врагу!`;
-    store.addCombatLog(damageLog);
+    engine.addCombatLog(damageLog);
 
     engine.onCombatEvent({
         type: 'CRIT',
@@ -93,14 +93,13 @@ export async function castActiveAbility(engine: BattleEngine) {
 
     const nextE_HP = Math.max(0, engine.state.enemyHP - finalDamage);
     engine.updateState({ enemyHP: nextE_HP });
-    store.updateQuestProgress('DAMAGE', finalDamage);
 
     if (healAmount > 0) {
         const nextP_HP = Math.min(anyEngine.playerStats!.hp, engine.state.playerHP + healAmount);
         engine.updateState({ playerHP: nextP_HP });
         const healLog = `💚 ${abilityName} исцеляет вас на +${healAmount} HP!`;
         engine.updateState({ log: healLog });
-        store.addCombatLog(healLog);
+        engine.addCombatLog(healLog);
         engine.onCombatEvent({
             type: 'BLOCK',
             damage: healAmount,
@@ -116,7 +115,7 @@ export async function castActiveAbility(engine: BattleEngine) {
         engine.updateState({ playerShield: newShield });
         const shieldLog = `🛡️ ${abilityName} накладывает щит на +${shieldAmount} прочности!`;
         engine.updateState({ log: shieldLog });
-        store.addCombatLog(shieldLog);
+        engine.addCombatLog(shieldLog);
         engine.onCombatEvent({
             type: 'BLOCK',
             damage: shieldAmount,

@@ -627,3 +627,5 @@ export const VIPWindow: React.FC<VIPWindowProps> = () => {
         </div>
     );
 };
+
+export default VIPWindow;

@@ -941,3 +941,5 @@ const LeaderItem: React.FC<{ player: LeaderboardEntry; onClick: () => void }> = 
         </motion.div>
     );
 };
+
+export default RankingWindow;

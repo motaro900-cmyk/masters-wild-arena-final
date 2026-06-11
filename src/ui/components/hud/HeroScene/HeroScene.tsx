@@ -51,21 +51,19 @@ const scaleRect = (element: HTMLElement) => {
 };
 
 export const HeroScene: React.FC = () => {
-    const {
-        getCalculatedStats,
-        inventory,
-        equipItem,
-        unequipItem,
-        heroEquipment,
-        heroesInitialTab,
-        selectedHeroId,
-        setSelectedHeroId,
-        setHeroGalleryId,
-        ownedHeroes,
-        goToMainMenu,
-        goToShop,
-        isMobile,
-    } = useGameStore();
+    const getCalculatedStats = useGameStore((state) => state.getCalculatedStats);
+    const inventory = useGameStore((state) => state.inventory);
+    const equipItem = useGameStore((state) => state.equipItem);
+    const unequipItem = useGameStore((state) => state.unequipItem);
+    const heroEquipment = useGameStore((state) => state.heroEquipment);
+    const heroesInitialTab = useGameStore((state) => state.heroesInitialTab);
+    const selectedHeroId = useGameStore((state) => state.selectedHeroId);
+    const setSelectedHeroId = useGameStore((state) => state.setSelectedHeroId);
+    const setHeroGalleryId = useGameStore((state) => state.setHeroGalleryId);
+    const ownedHeroes = useGameStore((state) => state.ownedHeroes);
+    const goToMainMenu = useGameStore((state) => state.goToMainMenu);
+    const goToShop = useGameStore((state) => state.goToShop);
+    const isMobile = useGameStore((state) => state.isMobile);
 
     // -- UI State --
     const [activeTab, setActiveTab] = useState<SceneTab>((heroesInitialTab as SceneTab) || 'LIST');

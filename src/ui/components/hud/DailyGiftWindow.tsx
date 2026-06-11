@@ -878,3 +878,5 @@ export const DailyGiftWindow: React.FC<DailyGiftWindowProps> = ({ onClose }) => 
         </div>
     );
 };
+
+export default DailyGiftWindow;

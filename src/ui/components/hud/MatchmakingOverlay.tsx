@@ -26,20 +26,18 @@ interface MatchmakingOverlayProps {
 }
 
 export const MatchmakingOverlay: React.FC<MatchmakingOverlayProps> = ({ onFound, onCancel }) => {
-    const {
-        name,
-        rating,
-        vipLevel,
-        selectedHeroId,
-        level,
-        getCalculatedStats,
-        avatar,
-        vkUser,
-        isMobile,
-        equippedSkins,
-        winStreak,
-        lossStreak,
-    } = useGameStore();
+    const name = useGameStore((state) => state.name);
+    const rating = useGameStore((state) => state.rating);
+    const vipLevel = useGameStore((state) => state.vipLevel);
+    const selectedHeroId = useGameStore((state) => state.selectedHeroId);
+    const level = useGameStore((state) => state.level);
+    const getCalculatedStats = useGameStore((state) => state.getCalculatedStats);
+    const avatar = useGameStore((state) => state.avatar);
+    const vkUser = useGameStore((state) => state.vkUser);
+    const isMobile = useGameStore((state) => state.isMobile);
+    const equippedSkins = useGameStore((state) => state.equippedSkins);
+    const winStreak = useGameStore((state) => state.winStreak);
+    const lossStreak = useGameStore((state) => state.lossStreak);
 
     const playerName = name && name !== 'Мастер' ? name : vkUser?.first_name || vkUser?.firstName || 'Мастер';
     const playerAvatarSrc =

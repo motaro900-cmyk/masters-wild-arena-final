@@ -8,10 +8,15 @@ import { ChatEmojiMenu } from './Chat/ChatEmojiMenu';
 import { ChatInputArea } from './Chat/ChatInputArea';
 import { ChatContextMenu } from './Chat/ChatContextMenu';
 
-export const ChatPanel: React.FC = () => {
+export const ChatPanel = React.memo(() => {
     const [isOpen, setIsOpen] = useState(true);
     const [inputText, setInputText] = useState('');
-    const { messages, privateMessages, clanMessages, addMessage, name, clanId } = useGameStore();
+    const messages = useGameStore((state) => state.messages);
+    const privateMessages = useGameStore((state) => state.privateMessages);
+    const clanMessages = useGameStore((state) => state.clanMessages);
+    const addMessage = useGameStore((state) => state.addMessage);
+    const name = useGameStore((state) => state.name);
+    const clanId = useGameStore((state) => state.clanId);
     const [showEmoji, setShowEmoji] = useState(false);
     const [activeTab, setActiveTab] = useState('general');
     const [activeChatTab, setActiveChatTab] = useState<'all' | 'system' | 'clan' | 'private'>('all');
@@ -476,4 +481,4 @@ export const ChatPanel: React.FC = () => {
             />
         </div>
     );
-};
+});

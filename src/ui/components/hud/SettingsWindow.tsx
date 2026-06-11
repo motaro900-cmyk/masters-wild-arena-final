@@ -780,3 +780,5 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
         </div>
     );
 };
+
+export default SettingsWindow;

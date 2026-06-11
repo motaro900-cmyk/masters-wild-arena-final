@@ -12,9 +12,13 @@ interface IDailyQuest {
     isClaimed: boolean;
 }
 
-export const DailyTaskPanel: React.FC = () => {
+export const DailyTaskPanel = React.memo(() => {
     const [isCollapsed, setIsCollapsed] = useState(false);
-    const { dailyQuests, claimQuestReward, refreshDailyQuests, vipLevel, vipEndTime } = useGameStore();
+    const dailyQuests = useGameStore((state) => state.dailyQuests);
+    const claimQuestReward = useGameStore((state) => state.claimQuestReward);
+    const refreshDailyQuests = useGameStore((state) => state.refreshDailyQuests);
+    const vipLevel = useGameStore((state) => state.vipLevel);
+    const vipEndTime = useGameStore((state) => state.vipEndTime);
     const [floatingRewards, setFloatingRewards] = useState<{ id: number; text: string; x: number; y: number }[]>([]);
 
     const handleClaimReward = (dq: IDailyQuest, qData: any, e: React.MouseEvent) => {
@@ -450,4 +454,4 @@ export const DailyTaskPanel: React.FC = () => {
             </AnimatePresence>
         </div>
     );
-};
+});

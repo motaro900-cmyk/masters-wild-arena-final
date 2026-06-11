@@ -4,23 +4,21 @@ import { syncService, SyncService } from '../../../../services/SyncService';
 import { getVkFriendsWhoPlay, isVkMiniApp } from '../../../../utils/VKBridge';
 
 export const useFriendsWindow = () => {
-    const {
-        uiTheme,
-        friends,
-        friendRequests,
-        removeFriend,
-        acceptFriendRequest,
-        declineFriendRequest,
-        sendGift,
-        collectAllGifts,
-        claimedSocialRewards,
-        claimGroupReward,
-        claimFavoriteReward,
-        playerId,
-        name,
-        avatar,
-        level,
-    } = useGameStore();
+    const uiTheme = useGameStore((state) => state.uiTheme);
+    const friends = useGameStore((state) => state.friends);
+    const friendRequests = useGameStore((state) => state.friendRequests);
+    const removeFriend = useGameStore((state) => state.removeFriend);
+    const acceptFriendRequest = useGameStore((state) => state.acceptFriendRequest);
+    const declineFriendRequest = useGameStore((state) => state.declineFriendRequest);
+    const sendGift = useGameStore((state) => state.sendGift);
+    const collectAllGifts = useGameStore((state) => state.collectAllGifts);
+    const claimedSocialRewards = useGameStore((state) => state.claimedSocialRewards);
+    const claimGroupReward = useGameStore((state) => state.claimGroupReward);
+    const claimFavoriteReward = useGameStore((state) => state.claimFavoriteReward);
+    const playerId = useGameStore((state) => state.playerId);
+    const name = useGameStore((state) => state.name);
+    const avatar = useGameStore((state) => state.avatar);
+    const level = useGameStore((state) => state.level);
 
     const isLight = uiTheme === 'LIGHT';
 

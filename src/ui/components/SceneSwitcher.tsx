@@ -1,8 +1,6 @@
 import { AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../../store/useGameStore';
 import { lazyWithRetry } from '../../utils/LazyWithRetry';
-import { AncientsSanctuaryScreen } from './screens/AncientsSanctuaryScreen';
-
 // Ленивая загрузка экранов и сцен для оптимизации размера бандла (Шаг 11)
 const ShopScene = lazyWithRetry(() => import('./hud/ShopScene').then((m) => ({ default: m.ShopScene })));
 const BattlePassScene = lazyWithRetry(() =>
@@ -13,6 +11,9 @@ const IntroScreen = lazyWithRetry(() => import('./screens/IntroScreen').then((m)
 const CityScreen = lazyWithRetry(() => import('./screens/CityScreen').then((m) => ({ default: m.CityScreen })));
 const ForgeScreen = lazyWithRetry(() => import('./screens/ForgeScreen').then((m) => ({ default: m.ForgeScreen })));
 const BattleScene = lazyWithRetry(() => import('./hud/BattleScene').then((m) => ({ default: m.BattleScene })));
+const AncientsSanctuaryScreen = lazyWithRetry(() =>
+    import('./screens/AncientsSanctuaryScreen').then((m) => ({ default: m.AncientsSanctuaryScreen })),
+);
 
 export const SceneSwitcher = () => {
     const activeScreen = useGameStore((state) => state.activeScreen);

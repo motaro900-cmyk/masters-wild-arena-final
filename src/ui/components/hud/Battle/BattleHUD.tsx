@@ -18,7 +18,7 @@ interface BattleHUDProps {
 }
 
 /** Угловая декорация для панели */
-const CornerAccent: React.FC<{ position: 'tl' | 'tr' | 'bl' | 'br'; color: string }> = ({ position, color }) => {
+const CornerAccent = React.memo<{ position: 'tl' | 'tr' | 'bl' | 'br'; color: string }>(({ position, color }) => {
     const style: React.CSSProperties = {
         position: 'absolute',
         width: '12px',
@@ -50,16 +50,16 @@ const CornerAccent: React.FC<{ position: 'tl' | 'tr' | 'bl' | 'br'; color: strin
         }),
     };
     return <div style={style} />;
-};
+});
 
 /** Сочный HP-бар с цветом в зависимости от процента */
-const HpBar: React.FC<{
+const HpBar = React.memo<{
     current: number;
     max: number;
     reverse?: boolean;
     isEnemy?: boolean;
     shield?: number;
-}> = ({ current, max, reverse = false, isEnemy = false, shield = 0 }) => {
+}>(({ current, max, reverse = false, isEnemy = false, shield = 0 }) => {
     const pct = Math.max(0, Math.min(100, (Math.max(0, current) / Math.max(1, max)) * 100));
     const shieldPct = Math.max(0, Math.min(100 - pct, (shield / Math.max(1, max)) * 100));
 
@@ -206,13 +206,13 @@ const HpBar: React.FC<{
             </div>
         </div>
     );
-};
+});
 
 /** Панель отображения активных дебаффов/эффектов под HP-баром */
-const StatusIcons: React.FC<{
+const StatusIcons = React.memo<{
     statuses?: Array<{ type: string; stacks: number; duration: number }>;
     isEnemy?: boolean;
-}> = ({ statuses = [], isEnemy = false }) => {
+}>(({ statuses = [], isEnemy = false }) => {
     if (!statuses || statuses.length === 0) return null;
 
     return (
@@ -286,9 +286,9 @@ const StatusIcons: React.FC<{
             })}
         </div>
     );
-};
+});
 
-export const BattleHUD: React.FC<BattleHUDProps> = ({
+export const BattleHUD = React.memo<BattleHUDProps>(({
     enemyData,
     battleMode,
     activePveEnemy,
@@ -1120,4 +1120,4 @@ export const BattleHUD: React.FC<BattleHUDProps> = ({
             </div>
         </div>
     );
-};
+});

@@ -390,3 +390,5 @@ export const FriendsWindow: React.FC<FriendsWindowProps> = () => {
         </div>
     );
 };
+
+export default FriendsWindow;

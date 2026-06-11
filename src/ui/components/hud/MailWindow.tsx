@@ -10,19 +10,18 @@ interface MailWindowProps {
 }
 
 export const MailWindow: React.FC<MailWindowProps> = () => {
-    const {
-        mail: mails,
-        markMailAsRead,
-        deleteMail,
-        toggleMailStar,
-        claimMailReward,
-        collectAllMailRewards,
-        sendFeedback,
-        archiveMail,
-        playerId,
-        friends,
-        name: playerName,
-    } = useGameStore();
+    const mails = useGameStore((state) => state.mail);
+    const markMailAsRead = useGameStore((state) => state.markMailAsRead);
+    const deleteMail = useGameStore((state) => state.deleteMail);
+    const toggleMailStar = useGameStore((state) => state.toggleMailStar);
+    const claimMailReward = useGameStore((state) => state.claimMailReward);
+    const collectAllMailRewards = useGameStore((state) => state.collectAllMailRewards);
+    const sendFeedback = useGameStore((state) => state.sendFeedback);
+    const archiveMail = useGameStore((state) => state.archiveMail);
+    const playerId = useGameStore((state) => state.playerId);
+    const friends = useGameStore((state) => state.friends);
+    const playerName = useGameStore((state) => state.name);
+    const redeemPromoCode = useGameStore((state) => state.redeemPromoCode);
 
     const [view, setView] = useState<'LIST' | 'READ' | 'WRITE'>('LIST');
     const [activeTab, setActiveTab] = useState<'INBOX' | 'NEWS' | 'ARCHIVE' | 'SUPPORT' | 'PROMO'>('INBOX');
@@ -78,7 +77,7 @@ export const MailWindow: React.FC<MailWindowProps> = () => {
         }
     };
 
-    const { redeemPromoCode } = useGameStore();
+
 
     const handleRedeem = () => {
         if (!promoInput.trim()) return;
@@ -986,3 +985,5 @@ export const MailWindow: React.FC<MailWindowProps> = () => {
         </div>
     );
 };
+
+export default MailWindow;

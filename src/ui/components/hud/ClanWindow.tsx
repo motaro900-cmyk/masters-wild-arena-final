@@ -480,3 +480,5 @@ export const ClanWindow: React.FC = () => {
         </div>
     );
 };
+
+export default ClanWindow;

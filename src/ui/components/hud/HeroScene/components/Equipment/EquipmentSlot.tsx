@@ -26,7 +26,7 @@ const getTemplateId = (id: string) => {
 
 export const EquipmentSlot = ({ id, label, itemId, activeDraggingId, onClick, setGlobalHoveredItem }: any) => {
     const { isOver, setNodeRef } = useDroppable({ id });
-    const store = useGameStore();
+    const inventory = useGameStore((state) => state.inventory);
 
     const resolvedItemId = itemId ? getTemplateId(String(itemId)) : '';
     const itemData = resolvedItemId ? (ITEMS_DATABASE[resolvedItemId] as any) : null;
@@ -36,7 +36,7 @@ export const EquipmentSlot = ({ id, label, itemId, activeDraggingId, onClick, se
     const draggingItemData = resolvedDraggingId ? (ITEMS_DATABASE[resolvedDraggingId] as any) : null;
     const isCompatible = draggingItemData && draggingItemData.subTab === id;
 
-    const invItem = (store.inventory || []).find(
+    const invItem = (inventory || []).find(
         (i: any) => String(i.instanceId) === String(itemId) || String(i.id) === String(itemId),
     );
     const itemLevel = invItem?.level || 1;

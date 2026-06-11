@@ -567,3 +567,5 @@ export const BestiaryWindow: React.FC = () => {
         </div>
     );
 };
+
+export default BestiaryWindow;
