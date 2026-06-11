@@ -5,6 +5,7 @@ import { ITEMS_DATABASE } from '../game/configs/ItemsConfig';
 import { getRandomBotName } from '../data/botNames';
 import { getRankInfo } from '../configs/RankSystem';
 import { useGameStore } from '../store/useGameStore';
+import { TimeService } from '../utils/TimeService';
 
 const SEARCH_TIMEOUT_MS = 10000; // 10 секунд поиск реального игрока
 const ATTACK_COOLDOWN_MS = 60 * 60 * 1000; // 1 час — нельзя атаковать одного игрока
@@ -560,7 +561,7 @@ class MatchmakingServiceClass {
 
             const lastTime = last || (localLast ? Number(localLast) : 0);
             if (!lastTime) return true;
-            return Date.now() - lastTime >= ATTACK_COOLDOWN_MS;
+            return TimeService.now() - lastTime >= ATTACK_COOLDOWN_MS;
         } catch {
             return true;
         }
@@ -572,7 +573,7 @@ class MatchmakingServiceClass {
     public recordAttack(myUserId: string, targetUserId: string): void {
         try {
             const localKey = `atk_cd_${myUserId}_${targetUserId}`;
-            localStorage.setItem(localKey, String(Date.now()));
+            localStorage.setItem(localKey, String(TimeService.now()));
 
             const state = useGameStore.getState();
             if (state.recordAttack) {

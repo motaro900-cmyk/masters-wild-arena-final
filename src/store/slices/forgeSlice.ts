@@ -1,6 +1,7 @@
 import { ITEMS_DATABASE } from '../../game/configs/ItemsConfig';
 import { FORGE_CONFIG } from '../../game/configs/constants';
 import { syncService } from '../../services/SyncService';
+import { TimeService } from '../../utils/TimeService';
 
 export const createForgeSlice = (set: any, get: any) => ({
     // --- FORGE COOLDOWNS ---
@@ -10,18 +11,18 @@ export const createForgeSlice = (set: any, get: any) => ({
         const s = get();
         const cd = s.isPremium ? FORGE_CONFIG.PREMIUM_COOLDOWN_MS : FORGE_CONFIG.COOLDOWN_MS;
         set((state: any) => ({
-            forgeCooldowns: { ...state.forgeCooldowns, [itemId]: Date.now() + cd },
+            forgeCooldowns: { ...state.forgeCooldowns, [itemId]: TimeService.now() + cd },
         }));
     },
 
     canUpgrade: (itemId: string) => {
         const expiry = get().forgeCooldowns[itemId];
-        return !expiry || expiry <= Date.now();
+        return !expiry || expiry <= TimeService.now();
     },
 
     getForgeTimeRemaining: (itemId: string) => {
         const expiry = get().forgeCooldowns[itemId];
-        return expiry ? Math.max(0, expiry - Date.now()) : 0;
+        return expiry ? Math.max(0, expiry - TimeService.now()) : 0;
     },
 
     // --- UPGRADE ---
@@ -288,7 +289,7 @@ export const createForgeSlice = (set: any, get: any) => ({
             return true;
         }
 
-        const now = Date.now();
+        const now = TimeService.now();
         const duration = 60 * 60 * 1000;
         const newBuffs = { ...(state.activeBuffs || {}) };
 

@@ -490,6 +490,11 @@ export class EffectsManager {
      */
     public stopAllEffects(): void {
         try {
+            const app = this.pixiApp.getApp();
+            if (app && app.ticker) {
+                app.ticker.speed = 1.0;
+            }
+
             for (const [, effect] of this.activeEffects) {
                 if (effect) effect.kill();
             }

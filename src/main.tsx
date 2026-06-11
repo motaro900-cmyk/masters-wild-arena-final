@@ -93,6 +93,8 @@ export const Root = () => {
                         const latency = (Date.now() - start) / 2;
                         timeOffset = serverTime + latency - Date.now();
                         console.log('🕒 Secure server time offset calibrated (ms):', timeOffset);
+                        const { TimeService } = await import('./utils/TimeService');
+                        TimeService.setOffset(timeOffset);
                     }
                 } catch (timeError) {
                     console.warn('Failed to fetch server time offset, using local device clock:', timeError);

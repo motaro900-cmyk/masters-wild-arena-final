@@ -406,7 +406,12 @@ store.setState = (partial: any, replace?: boolean) => {
     // Check if crystals decreased (spent)
     const crystalsSpent = patch && patch.crystals !== undefined && patch.crystals < (currentState.crystals || 0);
 
-    if (patch && !Object.prototype.hasOwnProperty.call(patch, 'lastSavedTimestamp')) {
+    const isSystemUpdate = patch && patch.isSystemUpdate;
+
+    if (isSystemUpdate) {
+        const { isSystemUpdate: _, ...cleanPatch } = patch;
+        originalSetState(cleanPatch, replace);
+    } else if (patch && !Object.prototype.hasOwnProperty.call(patch, 'lastSavedTimestamp')) {
         originalSetState({ ...patch, lastSavedTimestamp: Date.now() }, replace);
     } else {
         originalSetState(partial, replace);

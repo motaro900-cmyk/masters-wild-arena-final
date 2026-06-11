@@ -42,14 +42,13 @@ export async function deletePlayerMessages(playerName: string): Promise<void> {
 }
 
 export async function wipeGlobalChat(): Promise<void> {
-    const state = useGameStore.getState();
     const isLocalhost =
         typeof window !== 'undefined' &&
         (window.location.hostname === 'localhost' ||
             window.location.hostname === '127.0.0.1' ||
             window.location.protocol === 'file:');
-    if (!isLocalhost && state.name !== 'Разработчик') {
-        console.error('[ChatService] Unauthorized attempt to wipe global chat.');
+    if (!isLocalhost) {
+        console.error('[ChatService] Unauthorized attempt to wipe global chat. Wiping chat is only allowed on localhost.');
         return;
     }
     try {

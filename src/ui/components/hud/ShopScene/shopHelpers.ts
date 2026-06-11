@@ -31,7 +31,10 @@ export const getSubTabs = (mainTab: MainTab): ISubTabInfo[] => {
                 { id: 'BOOTS', label: 'САПОГИ' },
             ];
         case 'ALCHEMY':
-            return [{ id: 'POTIONS', label: 'ЗЕЛЬЯ' }];
+            return [
+                { id: 'POTIONS', label: 'ЗЕЛЬЯ' },
+                { id: 'CHESTS', label: 'СУНДУКИ' },
+            ];
         case 'BANK':
             return [
                 { id: 'GOLD', label: 'ЗОЛОТО' },

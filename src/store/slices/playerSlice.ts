@@ -724,6 +724,7 @@ export const createPlayerSlice = (set: any, get: any) => ({
             name: newName,
             avatar: user.photo || state.avatar,
             playerId: newPlayerId,
+            isSystemUpdate: true,
         });
     },
 

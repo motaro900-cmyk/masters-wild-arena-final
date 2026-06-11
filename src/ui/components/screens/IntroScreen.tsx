@@ -13,7 +13,7 @@ interface IntroScreenProps {
 export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
     const [step, setStep] = useState(1);
     const storeName = useGameStore((state) => state.name);
-    const [nickname, setNickname] = useState(storeName === 'Мастер' ? '' : storeName);
+    const [nickname, setNickname] = useState(storeName && storeName !== 'Мастер' ? storeName : '');
     const [isChecking, setIsChecking] = useState(false);
     const [error, setError] = useState('');
     const changeName = useGameStore((state) => state.changeName);
@@ -37,6 +37,9 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
     }, [step]);
 
     const validateNickname = async (name: string) => {
+        if (!name) {
+            return 'Имя должно быть от 2 до 15 символов';
+        }
         const cleanName = name.trim();
         if (cleanName.length < 2 || cleanName.length > 15) {
             return 'Имя должно быть от 2 до 15 символов';

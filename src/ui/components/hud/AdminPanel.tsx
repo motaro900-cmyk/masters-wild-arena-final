@@ -22,7 +22,6 @@ import {
     contentGrid,
 } from './Admin/AdminShared';
 
-const ADMIN_VK_IDS = [212359386, 1035794378];
 
 type AdminTab = 'ИГРОК' | 'БОЙ' | 'СЕРВЕР' | 'ПОЧТА' | 'ЧАТ' | 'ОТЗЫВЫ' | 'СИСТЕМА';
 
@@ -655,10 +654,7 @@ const AdminPanelContent: React.FC<{ onClose: () => void }> = ({ onClose }) => {
 };
 
 export const AdminPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
-    const vkUser = useGameStore((state) => state.vkUser);
-    const userVkId = vkUser?.id || vkUser?.uid;
-    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    const isAdmin = ADMIN_VK_IDS.includes(Number(userVkId)) || isLocal;
+    const isAdmin = useGameStore((state) => state.isAdmin);
 
     if (!isAdmin) return null;
 

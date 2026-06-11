@@ -26,6 +26,7 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
         claimFavoriteReward,
         language,
         setLanguage,
+        isAdmin,
     } = useGameStore();
 
     const [confirmWipeChat, setConfirmWipeChat] = React.useState(false);
@@ -62,9 +63,7 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
         setTrackProgress(Math.floor(Math.random() * 30));
     }, [trackName]);
 
-    const userVkId = useGameStore.getState().vkUser?.id || useGameStore.getState().vkUser?.uid;
-    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    const isAdmin = Number(userVkId) === 212359386 || isLocal;
+
 
     const colors = {
         text: '#e8d8a8',
@@ -748,14 +747,10 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
             {/* ВЕРСИЯ КЛИЕНТА */}
             <div
                 onClick={() => {
-                    const userVkId = useGameStore.getState().vkUser?.id || useGameStore.getState().vkUser?.uid;
-                    const isLocal =
-                        window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-
-                    if (Number(userVkId) === 212359386 || isLocal) {
+                    if (isAdmin) {
                         onOpenAdmin?.();
                     } else {
-                        console.log('Current User ID:', userVkId);
+                        console.log('Current User ID:', useGameStore.getState().vkUser?.id || useGameStore.getState().vkUser?.uid);
                     }
                 }}
                 style={{

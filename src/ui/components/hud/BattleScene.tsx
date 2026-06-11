@@ -578,6 +578,7 @@ export const BattleScene: React.FC = () => {
         run();
 
         return () => {
+            gsap.globalTimeline.timeScale(1);
             engine.destroy();
             (window as any).__BATTLE_ENGINE__ = null;
         };

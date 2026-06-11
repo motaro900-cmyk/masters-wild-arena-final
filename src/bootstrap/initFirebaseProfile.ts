@@ -70,10 +70,30 @@ export const initFirebaseProfile = async (
             setInitError(
                 'Не удалось загрузить данные вашего профиля из-за проблем с сетью. Пожалуйста, проверьте интернет-соединение и попробуйте снова.',
             );
-            useGameStore.setState({ profileStatus: 'error' });
+            useGameStore.setState({ profileStatus: 'error', isSystemUpdate: true });
             clearTimeout(timeoutId);
             return null;
         }
+
+        let isAdminUser = false;
+        try {
+            const { db } = await import('../utils/firebase');
+            const { doc, getDoc } = await import('firebase/firestore');
+            const adminDocRef = doc(db, 'system', 'admins');
+            const adminDocSnap = await getDoc(adminDocRef);
+            if (adminDocSnap.exists()) {
+                const adminData = adminDocSnap.data();
+                const vkIds = adminData?.vkIds || [];
+                const userVkId = state.vkUser?.id || state.vkUser?.uid;
+                if (userVkId && vkIds.map(Number).includes(Number(userVkId))) {
+                    isAdminUser = true;
+                }
+            }
+        } catch (err) {
+            console.error('Failed to load admin whitelist from Firestore:', err);
+        }
+
+        const finalAdminStatus = isAdminUser || isLocalhost;
 
         if (result.isNew) {
             console.log('👶 No remote profile found in Firestore. Resetting store for new player.');
@@ -83,6 +103,9 @@ export const initFirebaseProfile = async (
                 onboardingCompleted: false,
                 tutorialStep: 0,
                 activeScreen: 'INTRO',
+                isAdmin: finalAdminStatus,
+                isDeveloper: finalAdminStatus,
+                isSystemUpdate: true,
             });
             state = useGameStore.getState();
 
@@ -127,7 +150,7 @@ export const initFirebaseProfile = async (
                 setInitError(
                     'Не удалось загрузить данные вашего профиля. Пожалуйста, проверьте интернет-соединение и попробуйте снова.',
                 );
-                useGameStore.setState({ profileStatus: 'error' });
+                useGameStore.setState({ profileStatus: 'error', isSystemUpdate: true });
                 clearTimeout(timeoutId);
                 return null;
             }
@@ -144,6 +167,11 @@ export const initFirebaseProfile = async (
                     '[SyncService] Local offline progress is newer than remote. Keeping local state and syncing to remote.',
                 );
                 syncService.syncPlayerData();
+                useGameStore.setState({
+                    isAdmin: finalAdminStatus,
+                    isDeveloper: finalAdminStatus,
+                    isSystemUpdate: true,
+                });
             } else {
                 console.log('💾 Found remote profile, restoring state...', fbProfile.name);
                 const stateToRestore = { ...fbProfile };
@@ -165,6 +193,11 @@ export const initFirebaseProfile = async (
                 }
 
                 useGameStore.setState(stateToRestore);
+                useGameStore.setState({
+                    isAdmin: finalAdminStatus,
+                    isDeveloper: finalAdminStatus,
+                    isSystemUpdate: true,
+                });
             }
             return { userId, isNew: false, data: fbProfile };
         }
