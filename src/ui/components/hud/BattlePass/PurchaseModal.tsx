@@ -39,6 +39,30 @@ export const PurchaseModal: React.FC<{ onClose: () => void; onBuy: () => void }>
                     boxShadow: '0 30px 80px rgba(0,0,0,0.95), inset 0 0 40px rgba(0,0,0,0.85)',
                 }}
             >
+                {/* CLOSE BUTTON */}
+                <button
+                    onClick={onClose}
+                    style={{
+                        position: 'absolute',
+                        top: '20px',
+                        right: '20px',
+                        background: 'transparent',
+                        border: 'none',
+                        color: '#c8a870',
+                        fontSize: '28px',
+                        cursor: 'pointer',
+                        zIndex: 100,
+                        outline: 'none',
+                        transition: 'color 0.2s',
+                        fontFamily: 'sans-serif',
+                        lineHeight: 1,
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.color = '#ffd700')}
+                    onMouseLeave={(e) => (e.currentTarget.style.color = '#c8a870')}
+                >
+                    ✕
+                </button>
+
                 <div style={{ flex: 1, padding: '50px' }}>
                     <h2
                         style={{

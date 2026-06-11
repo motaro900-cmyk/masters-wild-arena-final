@@ -118,7 +118,7 @@ export const BATTLE_PASS_REWARDS: Reward[] = [
     },
     {
         level: 5,
-        free: { id: 'dagger_rusty', name: 'Ржавый Тесак', icon: '⚔️', type: 'WEAPON' },
+        free: { id: 'boots_iron', name: 'Стальные Сабатоны', icon: '👢', type: 'ITEM' },
         premium: { id: 'frame_emerald_dragon', name: 'Изумрудный Дракон', icon: '🖼️', type: 'FRAME' },
     },
     {
@@ -143,7 +143,7 @@ export const BATTLE_PASS_REWARDS: Reward[] = [
     },
     {
         level: 10,
-        free: { id: 'dagger_bone', name: 'Клык Жнеца', icon: '⚔️', type: 'WEAPON' },
+        free: { id: 'dagger_rusty', name: 'Ржавый Тесак', icon: '⚔️', type: 'WEAPON' },
         premium: { id: 'avatar_monkey', name: 'Король Обезьян', icon: '🐵', type: 'AVATAR' },
     },
     {
@@ -168,7 +168,7 @@ export const BATTLE_PASS_REWARDS: Reward[] = [
     },
     {
         level: 15,
-        free: { id: 'weapon_moon_sword', name: 'Меч Луны', icon: '⚔️', type: 'WEAPON' },
+        free: { id: 'iron_helm', name: 'Шлем Гвардии', icon: '🪖', type: 'ITEM' },
         premium: { id: 'panda_frost', name: 'Лазурный Дракон', icon: '❄️', type: 'SKIN' },
     },
 ];

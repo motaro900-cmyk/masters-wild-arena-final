@@ -258,6 +258,24 @@ export const createQuestSlice = (set: any, get: any) => ({
         } else if (rewardId.startsWith('energy_')) {
             const amt = parseInt(rewardId.split('_')[1]);
             if (!isNaN(amt)) energyToAdd = amt;
+        } else if (rewardId === 'boots_iron') {
+            const itemObj = {
+                id: 'boots_iron',
+                type: 'BOOTS',
+                rarity: 'RARE',
+                level: 1,
+                instanceId: `boots_iron_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+            };
+            newInventory.push(itemObj);
+        } else if (rewardId === 'iron_helm') {
+            const itemObj = {
+                id: 'iron_helm',
+                type: 'HELMETS',
+                rarity: 'RARE',
+                level: 1,
+                instanceId: `iron_helm_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+            };
+            newInventory.push(itemObj);
         } else if (rewardId === 'dagger_rusty') {
             const weaponObj = {
                 id: 'dagger_rusty',
