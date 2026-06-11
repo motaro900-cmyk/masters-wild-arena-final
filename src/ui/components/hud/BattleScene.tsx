@@ -222,8 +222,8 @@ export const BattleScene: React.FC = () => {
                             const myRating = store.rating || 0;
                             const myLevel = store.level || 1;
 
-                            const { battleResultService } = await import('../../../services/BattleResultService');
-                            const { myCupsChange, myGoldChange, myExpChange } = await battleResultService.recordResult({
+                                                        const { battleResultService } = await import('../../../services/BattleResultService');
+                            const { myCupsChange, myGoldChange, myExpChange, serverResult } = await battleResultService.recordResult({
                                 myUserId,
                                 myName,
                                 myRating,
@@ -236,6 +236,10 @@ export const BattleScene: React.FC = () => {
                                 attackerWon: isVictory,
                                 winStreak: store.winStreak || 0,
                             });
+
+                            if (serverResult) {
+                                isVictory = serverResult === 'win';
+                            }
 
                             const { syncService } = await import('../../../services/SyncService');
                             syncService.logPlayerAction(
@@ -277,6 +281,8 @@ export const BattleScene: React.FC = () => {
                             patch.wins = store.wins + 1;
                         }
                         store.updateProfile(patch);
+                        const newRating = newTrophies;
+                        store.checkRankUpRewards(newRating);
 
                         if (isVictory) {
                             store.updateQuestProgress('WIN', 1);

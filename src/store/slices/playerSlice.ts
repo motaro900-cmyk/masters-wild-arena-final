@@ -3,6 +3,7 @@ import { getRankInfo, RANK_SYSTEM } from '../../configs/RankSystem';
 import { syncService } from '../../services/SyncService';
 import { audioService } from '../../services/AudioService';
 import { safeSetItem } from '../../utils/SafeStorage';
+import { TimeService } from '../../utils/TimeService';
 import { showRewardedVideo, isGroupMember } from '../../utils/VKBridge';
 import { getMskDateKey, calculatePetDailyReward } from '../../ui/components/hud/Bestiary/utils/petRewards';
 import { HEROES_DB } from '../../configs/HeroesConfig';
@@ -80,6 +81,8 @@ export const createPlayerSlice = (set: any, get: any) => ({
     exp: 0,
     gold: 300,
     crystals: 50,
+    isAdLoading: false,
+    isClaimingReward: false,
     shards: {} as Record<string, number>,
     rating: 0,
     energy: ENERGY_CONFIG.MAX_ENERGY,
@@ -141,6 +144,8 @@ export const createPlayerSlice = (set: any, get: any) => ({
     lastDailyGiftClaimedTime: 0,
     onboardingCompleted: true,
     newbieWins: 0,
+    isAdmin: false,
+    isDeveloper: false,
     profileStatus: 'loading' as 'loading' | 'loaded' | 'error',
     activeBuffs: {} as Record<string, number>,
     vkUser: null as any,
@@ -228,7 +233,7 @@ export const createPlayerSlice = (set: any, get: any) => ({
         set((state: any) => ({
             energy: Math.max(0, state.energy - amount),
             dailyBattles: state.dailyBattles + 1,
-            lastEnergyUpdate: wasFull ? Date.now() : state.lastEnergyUpdate,
+            lastEnergyUpdate: wasFull ? TimeService.now() : state.lastEnergyUpdate,
         }));
         if (get().updateQuestProgress) {
             get().updateQuestProgress('SPEND_ENERGY', amount);
@@ -294,7 +299,7 @@ export const createPlayerSlice = (set: any, get: any) => ({
             return {
                 exp: newExp,
                 level: newLevel,
-                maxEnergy: calculateMaxEnergy(state.isPremium, state.vipEndTime > Date.now()),
+                maxEnergy: calculateMaxEnergy(state.isPremium, state.vipEndTime > TimeService.now()),
                 title: getPlayerTitle(newLevel),
             };
         }),
@@ -394,23 +399,28 @@ export const createPlayerSlice = (set: any, get: any) => ({
     watchAdForReward: async (type: 'GOLD' | 'ENERGY' | 'CRYSTAL') => {
         const state = get() as any;
         const adCount = state.dailyAdWatchesCount || 0;
-        if (adCount >= 2) {
+        if (adCount >= 2 || state.isAdLoading) {
             return false;
         }
 
-        const success = await showRewardedVideo();
-        if (success) {
-            if (type === 'GOLD') get().addGold(700);
-            if (type === 'ENERGY') get().addEnergy(25);
-            if (type === 'CRYSTAL') get().addCrystals(25);
+        set({ isAdLoading: true });
+        try {
+            const success = await showRewardedVideo();
+            if (success) {
+                if (type === 'GOLD') get().addGold(700);
+                if (type === 'ENERGY') get().addEnergy(25);
+                if (type === 'CRYSTAL') get().addCrystals(25);
 
-            set((s: any) => ({ dailyAdWatchesCount: (s.dailyAdWatchesCount || 0) + 1 }));
+                set((s: any) => ({ dailyAdWatchesCount: (s.dailyAdWatchesCount || 0) + 1 }));
 
-            // Синхронизируем сразу после награды
-            syncService.debouncedSync();
-            return true;
+                // Синхронизируем сразу после награды
+                syncService.debouncedSync();
+                return true;
+            }
+            return false;
+        } finally {
+            set({ isAdLoading: false });
         }
-        return false;
     },
 
     buyVip: (days: number, price: number) => {
@@ -419,7 +429,7 @@ export const createPlayerSlice = (set: any, get: any) => ({
             return false;
         }
 
-        const now = Date.now();
+        const now = TimeService.now();
         const currentEndTime = state.vipEndTime && state.vipEndTime > now ? state.vipEndTime : now;
         const newEndTime = currentEndTime + days * 24 * 60 * 60 * 1000;
 
@@ -483,17 +493,22 @@ export const createPlayerSlice = (set: any, get: any) => ({
     claimGroupReward: async () => {
         const state = get() as any;
         const rewards = state.claimedSocialRewards || [];
-        if (rewards.includes('group')) return;
+        if (rewards.includes('group') || state.isClaimingReward) return;
 
-        const isMember = await isGroupMember();
-        if (!isMember) {
-            console.warn('claimGroupReward: пользователь не состоит в группе');
-            return;
+        set({ isClaimingReward: true });
+        try {
+            const isMember = await isGroupMember();
+            if (!isMember) {
+                console.warn('claimGroupReward: пользователь не состоит в группе');
+                return;
+            }
+
+            get().addCrystals(50);
+            set({ claimedSocialRewards: [...rewards, 'group'] });
+            syncService.debouncedSync();
+        } finally {
+            set({ isClaimingReward: false });
         }
-
-        get().addCrystals(50);
-        set({ claimedSocialRewards: [...rewards, 'group'] });
-        syncService.debouncedSync();
     },
 
     canBattle: () => {
@@ -508,7 +523,7 @@ export const createPlayerSlice = (set: any, get: any) => ({
         set((state: any) => ({
             energy: Math.max(0, state.energy - BATTLE_CONFIG.ENERGY_COST),
             dailyBattles: state.dailyBattles + 1,
-            lastEnergyUpdate: wasFull ? Date.now() : state.lastEnergyUpdate,
+            lastEnergyUpdate: wasFull ? TimeService.now() : state.lastEnergyUpdate,
         }));
         if (get().updateQuestProgress) {
             get().updateQuestProgress('SPEND_ENERGY', BATTLE_CONFIG.ENERGY_COST);
@@ -518,7 +533,7 @@ export const createPlayerSlice = (set: any, get: any) => ({
 
     regenerateEnergy: () => {
         const s = get();
-        const now = Date.now();
+        const now = TimeService.now();
         const regenMs = s.isPremium ? ENERGY_CONFIG.PREMIUM_REGEN_MS : ENERGY_CONFIG.REGEN_MS;
         const isVip = s.vipLevel > 0 || (s.vipEndTime && s.vipEndTime > now);
         // Always compute maxEnergy from config — ignore stale persisted maxEnergy
@@ -545,7 +560,7 @@ export const createPlayerSlice = (set: any, get: any) => ({
 
     resetDailyCounters: () => {
         const s = get();
-        const now = new Date();
+        const now = new Date(TimeService.now());
         const last = new Date(s.lastBattleReset);
 
         // Используем МСК время (UTC+3) для сброса как в остальных квестовых механиках
@@ -561,7 +576,7 @@ export const createPlayerSlice = (set: any, get: any) => ({
             set({
                 dailyBattles: 0,
                 dailyBattleLimit: s.isPremium ? BATTLE_CONFIG.PREMIUM_DAILY_LIMIT : BATTLE_CONFIG.DAILY_LIMIT,
-                lastBattleReset: Date.now(),
+                lastBattleReset: TimeService.now(),
                 dailyAdWatchesCount: 0, // Сбрасываем лимит рекламы каждый день
                 dailyEnergyPurchasesCount: 0, // Сбрасываем лимит покупки энергии каждый день
             });
@@ -714,7 +729,7 @@ export const createPlayerSlice = (set: any, get: any) => ({
 
     changeName: (newName: string) => {
         const state = get() as any;
-        const now = Date.now();
+        const now = TimeService.now();
         const thirtyDays = 30 * 24 * 60 * 60 * 1000;
 
         if (now - state.lastNameChange < thirtyDays && state.lastNameChange !== 0) {
