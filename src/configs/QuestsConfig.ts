@@ -6,7 +6,7 @@ export interface Quest {
     rewardGold: number;
     rewardGems: number;
     rewardExp: number;
-    type: 'LOGIN' | 'PLAY' | 'WIN' | 'DAMAGE' | 'SPEND_GOLD' | 'OPEN_CHEST' | 'UPGRADE' | 'WIN_STREAK';
+    type: 'LOGIN' | 'PLAY' | 'WIN' | 'DAMAGE' | 'SPEND_GOLD' | 'OPEN_CHEST' | 'UPGRADE' | 'WIN_STREAK' | 'SPEND_ENERGY' | 'SEND_CHAT' | 'SEND_GIFT';
 }
 
 export const QUESTS_POOL: Quest[] = [

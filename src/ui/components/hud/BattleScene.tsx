@@ -13,7 +13,7 @@ import { audioService } from '../../../services/AudioService';
 import { AssetsMap } from '../../../configs/AssetsMap';
 import { showInterstitialAd } from '../../../utils/VKBridge';
 import { BattleHUD } from './Battle/BattleHUD';
-import { BATTLE_CONFIG } from '../../../game/configs/constants';
+// import { BATTLE_CONFIG } from '../../../game/configs/constants';
 
 export const BattleScene: React.FC = () => {
     const selectedHeroId = useGameStore((state) => state.selectedHeroId);
@@ -145,8 +145,12 @@ export const BattleScene: React.FC = () => {
 
         // Списываем энергию при входе в рейтинговый бой, если он начинается сразу
         const store = useGameStore.getState() as any;
-        if (store.battleMode === 'RANKED' && store.consumeEnergy) {
-            store.consumeEnergy(BATTLE_CONFIG.ENERGY_COST);
+        if (store.battleMode === 'RANKED') {
+            if (!store.canBattle()) {
+                goToMainMenu();
+                return;
+            }
+            store.recordBattle();
         }
 
         return () => {
@@ -586,8 +590,9 @@ export const BattleScene: React.FC = () => {
     // Стабильный коллбэк для PreBattleScreen (избегаем пересоздания)
     const handleBattleStart = useCallback(() => {
         const store = useGameStore.getState() as any;
-        if (store.battleMode !== 'WARMUP' && store.consumeEnergy) {
-            store.consumeEnergy(BATTLE_CONFIG.ENERGY_COST);
+        if (store.battleMode !== 'WARMUP') {
+            if (!store.canBattle()) return;
+            store.recordBattle();
         }
         setShowPreBattle(false);
         setBattleStarted(true);

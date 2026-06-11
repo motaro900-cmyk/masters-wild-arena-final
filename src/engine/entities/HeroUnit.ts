@@ -174,6 +174,7 @@ export class HeroUnit extends PIXI.Container implements IEffectTarget, IStatusEf
     public statusEffects: any[] = [];
     private currentResolve: (() => void) | null = null;
     private trailInterval: any = null;
+    private timers: ReturnType<typeof setTimeout>[] = [];
     public isLunging: boolean = false;
 
     public defaultX: number = 0;
@@ -530,9 +531,11 @@ export class HeroUnit extends PIXI.Container implements IEffectTarget, IStatusEf
                         duration: 0.2,
                         ease: 'power1.inOut',
                     });
-                setTimeout(() => {
-                    this.setFrame(this.idleFrameIdx); // return to Idle
-                }, 700 / timeScale);
+                this.timers.push(
+                    setTimeout(() => {
+                        this.setFrame(this.idleFrameIdx); // return to Idle
+                    }, 700 / timeScale)
+                );
             } else if (attackIndex === 1) {
                 gsap.killTweensOf(this.bodyContainer.scale);
                 const baseScale = this.calculatedBaseScale;
@@ -551,9 +554,11 @@ export class HeroUnit extends PIXI.Container implements IEffectTarget, IStatusEf
                         duration: 0.22,
                         ease: 'sine.inOut',
                     });
-                setTimeout(() => {
-                    this.setFrame(this.idleFrameIdx);
-                }, 600 / timeScale);
+                this.timers.push(
+                    setTimeout(() => {
+                        this.setFrame(this.idleFrameIdx);
+                    }, 600 / timeScale)
+                );
             } else if (attackIndex >= 3) {
                 gsap.killTweensOf(this.bodyContainer);
                 const rotationTl = gsap.timeline();
@@ -569,9 +574,11 @@ export class HeroUnit extends PIXI.Container implements IEffectTarget, IStatusEf
                         duration: 0.35,
                         ease: 'elastic.out(1, 0.4)',
                     });
-                setTimeout(() => {
-                    this.setFrame(this.idleFrameIdx);
-                }, 650 / timeScale);
+                this.timers.push(
+                    setTimeout(() => {
+                        this.setFrame(this.idleFrameIdx);
+                    }, 650 / timeScale)
+                );
             } else {
                 gsap.killTweensOf(this.bodyContainer);
                 const swingAnimTl = gsap.timeline();
@@ -587,9 +594,11 @@ export class HeroUnit extends PIXI.Container implements IEffectTarget, IStatusEf
                         duration: 0.25,
                         ease: 'back.out(2)',
                     });
-                setTimeout(() => {
-                    this.setFrame(this.idleFrameIdx);
-                }, 550 / timeScale);
+                this.timers.push(
+                    setTimeout(() => {
+                        this.setFrame(this.idleFrameIdx);
+                    }, 550 / timeScale)
+                );
             }
         }
 
@@ -812,6 +821,9 @@ export class HeroUnit extends PIXI.Container implements IEffectTarget, IStatusEf
     }
 
     public destroy(options?: any) {
+        this.timers.forEach((t) => clearTimeout(t));
+        this.timers = [];
+
         if (this.trailInterval) {
             clearInterval(this.trailInterval);
             this.trailInterval = null;
