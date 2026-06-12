@@ -6,7 +6,6 @@ import { audioService } from '../../services/AudioService';
 import { AssetsMap } from '../../configs/AssetsMap';
 import { SceneSwitcher } from '../components/SceneSwitcher';
 import { GameHUD } from '../components/GameHUD';
-import { FpsCounter } from '../components/hud/FpsCounter';
 import { ItemBuilder } from '../../components/dev/ItemBuilder';
 
 export const SafeGameLayout = ({ containerRef }: { containerRef: React.RefObject<HTMLDivElement> }) => {
@@ -21,9 +20,8 @@ export const SafeGameLayout = ({ containerRef }: { containerRef: React.RefObject
         typeof window !== 'undefined' &&
         (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
 
-    const { setShowFps, showFps, isBanned, banReason, banUntil, sessionConflict } = useGameStore((state) => ({
+    const { setShowFps, isBanned, banReason, banUntil, sessionConflict } = useGameStore((state) => ({
         setShowFps: state.setShowFps,
-        showFps: state.showFps,
         isBanned: state.isBanned,
         banReason: state.banReason,
         banUntil: state.banUntil,
@@ -503,7 +501,6 @@ export const SafeGameLayout = ({ containerRef }: { containerRef: React.RefObject
                     </div>
                 </div>
             </div>
-            {showFps && <FpsCounter />}
             {isDev && (
                 <>
                     <button

@@ -300,7 +300,9 @@ export class PixiApp {
                   : 1;
 
         this.pixiApp.renderer.resolution = resolution;
-        this.resize();
+        // Temporarily resize to force PixiJS to reallocate canvas buffers at new resolution, then restore 1920x1080
+        this.pixiApp.renderer.resize(1919, 1079);
+        this.pixiApp.renderer.resize(1920, 1080);
     }
 
     public static getView(): HTMLCanvasElement | null {

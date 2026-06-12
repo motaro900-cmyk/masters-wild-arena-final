@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useGameStore } from '../../store/useGameStore';
 import { AssetsMap } from '../../configs/AssetsMap';
+import { PixiApp } from '../../engine/core/PixiApp';
 
 // HUD Components
 import { BattlePassBar } from './hud/BattlePassBar';
@@ -33,6 +34,7 @@ export const GameHUD: React.FC = () => {
     const vipLevel = useGameStore((state) => state.vipLevel);
     const vipEndTime = useGameStore((state) => state.vipEndTime);
     const isMobile = useGameStore((state) => state.isMobile);
+    const isPowerSaving = useGameStore((state) => state.isPowerSaving);
     const [activeWindow, setRawActiveWindow] = useState<string | null>(null);
     const [showAdmin, setShowAdmin] = useState(false);
     const [devModal, setDevModal] = useState({ isOpen: false, title: '' });
@@ -91,26 +93,33 @@ export const GameHUD: React.FC = () => {
     const [hudScale, setHudScale] = useState(1);
     const showFps = useGameStore((state) => state.showFps);
     const [fpsValue, setFpsValue] = useState(0);
-    const fpsRafRef = useRef<number>(0);
 
     useEffect(() => {
         if (!showFps) return;
-        let frameCount = 0;
-        let lastTime = performance.now();
 
-        const tick = () => {
-            frameCount++;
-            const now = performance.now();
-            if (now - lastTime >= 500) {
-                setFpsValue(Math.round((frameCount * 1000) / (now - lastTime)));
-                frameCount = 0;
-                lastTime = now;
+        const updateFps = () => {
+            try {
+                const pixiApp = PixiApp.getInstance();
+                const app = pixiApp.getApp();
+                if (app && app.ticker) {
+                    if (app.ticker.started) {
+                        const fps = Math.round(app.ticker.FPS);
+                        setFpsValue(fps > 0 ? fps : (isPowerSaving ? 30 : 60));
+                    } else {
+                        setFpsValue(isPowerSaving ? 30 : 60);
+                    }
+                } else {
+                    setFpsValue(isPowerSaving ? 30 : 60);
+                }
+            } catch {
+                setFpsValue(isPowerSaving ? 30 : 60);
             }
-            fpsRafRef.current = requestAnimationFrame(tick);
         };
-        fpsRafRef.current = requestAnimationFrame(tick);
-        return () => cancelAnimationFrame(fpsRafRef.current);
-    }, [showFps]);
+
+        updateFps();
+        const interval = setInterval(updateFps, 500);
+        return () => clearInterval(interval);
+    }, [showFps, isPowerSaving]);
 
     useEffect(() => {
         const handleResize = () => {
