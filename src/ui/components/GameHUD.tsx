@@ -130,10 +130,14 @@ export const GameHUD: React.FC = () => {
     }, [isMobile]);
 
     // Автоматически закрываем любые окна при смене основного экрана
-    if (activeScreen !== prevScreen) {
-        setPrevScreen(activeScreen);
-        setActiveWindow(null);
-    }
+    useEffect(() => {
+        if (activeScreen !== prevScreen) {
+            setPrevScreen(activeScreen);
+            // Закрываем окно напрямую без вызова history.back()
+            // чтобы избежать двойного срабатывания при переходе в бой
+            setRawActiveWindow(null);
+        }
+    }, [activeScreen]); // eslint-disable-line react-hooks/exhaustive-deps
 
     // Ежедневный VIP-подарок на почту и синхронизация VIP-статуса
     useEffect(() => {
@@ -586,7 +590,9 @@ export const GameHUD: React.FC = () => {
                 <MatchmakingOverlay
                     onCancel={() => setActiveWindow(null)}
                     onFound={(opp) => {
-                        setActiveWindow(null);
+                        // Используем setRawActiveWindow напрямую, чтобы не вызывать
+                        // window.history.back() и избежать двойного срабатывания
+                        setRawActiveWindow(null);
 
                         useGameStore.setState({
                             selectedEnemyId: opp.id,
