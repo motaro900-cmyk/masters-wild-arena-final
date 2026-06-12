@@ -421,11 +421,8 @@ export const BestiaryWindow: React.FC = () => {
                         exit={{ opacity: 0 }}
                         onClick={() => setClaimedReward(null)}
                         style={{
-                            position: 'fixed',
-                            top: 0,
-                            left: 0,
-                            width: '100vw',
-                            height: '100vh',
+                            position: 'absolute',
+                            inset: 0,
                             background: 'rgba(0, 0, 0, 0.85)',
                             backdropFilter: 'blur(8px)',
                             display: 'flex',
