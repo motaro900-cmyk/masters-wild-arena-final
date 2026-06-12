@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { EMBLEMS, CurrencyIcon } from './ClanShared';
 import { useGameStore } from '../../../../store/useGameStore';
+import { ClanEmblemIcon } from '../../GameIcons';
 
 interface ClanCreateTabProps {
     colors: any;
@@ -83,13 +84,7 @@ export const ClanCreateTab: React.FC<ClanCreateTabProps> = ({ colors, error, set
                             justifyContent: 'center',
                         }}
                     >
-                        <div
-                            className={`sprite-clan clan-${selectedEmblem}`}
-                            style={{
-                                transform: 'scale(2)',
-                                filter: 'drop-shadow(0 0 20px rgba(0,0,0,0.5))',
-                            }}
-                        />
+                        <ClanEmblemIcon emblem={selectedEmblem} size={84} />
                     </div>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px' }}>
                         {EMBLEMS.map((e) => (
@@ -110,7 +105,7 @@ export const ClanCreateTab: React.FC<ClanCreateTabProps> = ({ colors, error, set
                                     overflow: 'hidden',
                                 }}
                             >
-                                <div className={`sprite-clan clan-${e}`} style={{ transform: 'scale(0.5)' }} />
+                                <ClanEmblemIcon emblem={e} size={32} />
                             </button>
                         ))}
                     </div>

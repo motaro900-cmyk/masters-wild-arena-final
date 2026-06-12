@@ -9,6 +9,7 @@ import { PurchaseModal } from './BattlePass/PurchaseModal';
 import { RewardPreviewModal } from './BattlePass/RewardPreviewModal';
 import { BattlePassStyles, CornerOrnament, BATTLE_PASS_REWARDS } from './BattlePass/BattlePassShared';
 import { RewardColumn } from './BattlePass/RewardColumn';
+import { SKINS_DB } from '../../../configs/SkinsConfig';
 import { useBattlePassQuests } from './BattlePass/useBattlePassQuests';
 import { BattlePassSidePanel } from './BattlePass/components/BattlePassSidePanel';
 import { BattlePassHeader } from './BattlePass/components/BattlePassHeader';
@@ -22,8 +23,8 @@ export const BattlePassScene: React.FC<{ onClose: () => void }> = ({ onClose }) 
         claimedRewards,
         setPremium,
         buyBpLevel,
-        addItemToInventory,
         setEquippedWeapon,
+        equipSkin,
         claimBpDailyQuestReward,
         claimWeeklyQuestReward,
         showBpLevelUpOverlay,
@@ -64,12 +65,26 @@ export const BattlePassScene: React.FC<{ onClose: () => void }> = ({ onClose }) 
             const levelUnlocked = bpLevel >= reward.level;
             if (levelUnlocked && !claimedRewards.includes(reward.free.id)) {
                 claimReward(reward.free.id);
-                addItemToInventory(reward.free.id);
+                if (reward.free.type === 'WEAPON') {
+                    setEquippedWeapon(reward.free.id);
+                } else if (reward.free.type === 'SKIN') {
+                    const skinConfig = SKINS_DB.find((s) => s.id === reward.free.id);
+                    if (skinConfig) {
+                        equipSkin(skinConfig.heroId, skinConfig.id);
+                    }
+                }
                 claimedAny = true;
             }
             if (levelUnlocked && isPremium && !claimedRewards.includes(reward.premium.id)) {
                 claimReward(reward.premium.id);
-                addItemToInventory(reward.premium.id);
+                if (reward.premium.type === 'WEAPON') {
+                    setEquippedWeapon(reward.premium.id);
+                } else if (reward.premium.type === 'SKIN') {
+                    const skinConfig = SKINS_DB.find((s) => s.id === reward.premium.id);
+                    if (skinConfig) {
+                        equipSkin(skinConfig.heroId, skinConfig.id);
+                    }
+                }
                 claimedAny = true;
             }
         });
@@ -82,9 +97,13 @@ export const BattlePassScene: React.FC<{ onClose: () => void }> = ({ onClose }) 
 
     const handleClaim = (item: any) => {
         claimReward(item.id);
-        addItemToInventory(item.id);
-        if (item.type === 'WEAPON' || item.type === 'SKIN') {
+        if (item.type === 'WEAPON') {
             setEquippedWeapon(item.id); // Сразу надеваем для «ВАУ-эффекта»
+        } else if (item.type === 'SKIN') {
+            const skinConfig = SKINS_DB.find((s) => s.id === item.id);
+            if (skinConfig) {
+                equipSkin(skinConfig.heroId, skinConfig.id);
+            }
         }
         audioService.playSFX(AssetsMap.AUDIO.SFX_BUY);
     };

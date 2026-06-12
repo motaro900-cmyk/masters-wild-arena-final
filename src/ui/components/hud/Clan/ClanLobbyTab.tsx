@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ClanData, ClanMember, CurrencyIcon, StatBlock, PerkItem } from './ClanShared';
+import { ClanEmblemIcon } from '../../GameIcons';
 
 interface ClanLobbyTabProps {
     colors: any;
@@ -65,10 +66,7 @@ export const ClanLobbyTab: React.FC<ClanLobbyTabProps> = ({
                         border: `2px solid ${colors.accent}`,
                     }}
                 >
-                    <div
-                        className={`sprite-clan clan-${clanData?.emblem || selectedEmblem}`}
-                        style={{ transform: 'scale(1.5)' }}
-                    />
+                    <ClanEmblemIcon emblem={clanData?.emblem || selectedEmblem} size={64} />
                 </div>
 
                 <div style={{ flex: 1 }}>

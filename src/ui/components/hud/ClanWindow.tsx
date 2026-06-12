@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../../../store/useGameStore';
+import { ClanEmblemIcon } from '../GameIcons';
 import { ClanMember, ClanData, CurrencyIcon, TabButton, EMBLEMS, ActionButton, ShopItem } from './Clan/ClanShared';
 import { ClanBrowseTab } from './Clan/ClanBrowseTab';
 import { ClanCreateTab } from './Clan/ClanCreateTab';
@@ -491,10 +492,7 @@ export const ClanWindow: React.FC = () => {
                                     justifyContent: 'center',
                                 }}
                             >
-                                <div
-                                    className={`sprite-clan clan-${selectedEmblem}`}
-                                    style={{ transform: 'scale(3)' }}
-                                />
+                                <ClanEmblemIcon emblem={selectedEmblem} size={160} />
                             </motion.div>
 
                             <div>

@@ -292,10 +292,41 @@ export const ClanEmblemIcon: React.FC<IconProps & { emblem: string }> = ({
     style,
     className,
     onClick,
-}) => (
-    <div
-        className={`sprite-clan clan-${emblem} ${className || ''}`}
-        style={{ width: size, height: size, cursor: onClick ? 'pointer' : 'default', ...style }}
-        onClick={onClick}
-    />
-);
+}) => {
+    const emojiMap: Record<string, string> = {
+        lion: '🦁',
+        bear: '🐻',
+        eagle: '🦅',
+        wolf: '🐺',
+        fox: '🦊',
+        tiger: '🐯',
+        dragon: '🐉',
+        owl: '🦉',
+    };
+    const emoji = emojiMap[emblem] || '🛡️';
+
+    return (
+        <div
+            className={className}
+            onClick={onClick}
+            style={{
+                width: `${size}px`,
+                height: `${size}px`,
+                borderRadius: '50%',
+                background: 'radial-gradient(circle, rgba(40, 30, 20, 0.9) 0%, rgba(15, 10, 5, 0.95) 100%)',
+                border: '2px solid #f0c040',
+                boxShadow: '0 0 10px rgba(240, 192, 64, 0.35), inset 0 0 8px rgba(0, 0, 0, 0.8)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: `${size * 0.55}px`,
+                cursor: onClick ? 'pointer' : 'default',
+                userSelect: 'none',
+                flexShrink: 0,
+                ...style,
+            }}
+        >
+            {emoji}
+        </div>
+    );
+};

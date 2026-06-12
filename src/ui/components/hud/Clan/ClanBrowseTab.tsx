@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { ClanData, MOCK_CLANS, StatItem } from './ClanShared';
+import { ClanEmblemIcon } from '../../GameIcons';
 
 interface ClanCardProps {
     clan: ClanData;
@@ -37,7 +38,7 @@ const ClanCard: React.FC<ClanCardProps> = ({ clan, onJoin, colors, playerTrophie
                     border: `1px solid ${colors.accent}44`,
                 }}
             >
-                <div className={`sprite-clan clan-${clan.emblem}`} style={{ transform: 'scale(1)' }} />
+                <ClanEmblemIcon emblem={clan.emblem} size={48} />
             </div>
             <div style={{ flex: 1 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
