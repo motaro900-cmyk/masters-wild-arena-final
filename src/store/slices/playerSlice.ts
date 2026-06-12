@@ -177,8 +177,9 @@ export const createPlayerSlice = (set: any, get: any) => {
     graphicsQuality:
         typeof navigator !== 'undefined'
             ? (() => {
+                  if (isMobileVal) return 'LOW';
                   const memory = (navigator as any).deviceMemory || 4;
-                  return memory >= 6 ? 'ULTRA' : memory >= 4 ? 'MEDIUM' : 'LOW';
+                  return memory >= 8 ? 'ULTRA' : memory >= 4 ? 'MEDIUM' : 'LOW';
               })()
             : 'ULTRA',
     showFps: false,
@@ -188,8 +189,9 @@ export const createPlayerSlice = (set: any, get: any) => {
     sessionToken: 'sess_' + Math.random().toString(36).substring(2, 15) + '_' + Date.now(),
     sessionConflict: false,
     uiAnimations: true,
-    particlesQuality: 'HIGH',
-    glowEnabled: true,
+    particlesQuality: isMobileVal ? 'LOW' : 'HIGH',
+    glowEnabled: !isMobileVal,
+    hasCustomSettings: false,
     pet: {
         id: 'baby_dragon',
         name: 'Дракоша',
@@ -664,7 +666,7 @@ export const createPlayerSlice = (set: any, get: any) => {
     },
 
     setNotificationsEnabled: (enabled: boolean) => set({ notificationsEnabled: enabled }),
-    setIsPowerSaving: (enabled: boolean) => set({ isPowerSaving: enabled }),
+    setIsPowerSaving: (enabled: boolean) => set({ isPowerSaving: enabled, hasCustomSettings: true }),
     setIsMuted: (enabled: boolean) => {
         const isMuted = enabled;
         set({ isMuted });
@@ -691,11 +693,11 @@ export const createPlayerSlice = (set: any, get: any) => {
         set({ soundVolume: vol });
         if (!get().isMuted) audioService.setSFXVolume(vol / 100);
     },
-    setGraphicsQuality: (val: string) => set({ graphicsQuality: val }),
+    setGraphicsQuality: (val: string) => set({ graphicsQuality: val, hasCustomSettings: true }),
     setLanguage: (val: 'RU' | 'EN') => set({ language: val }),
-    setUiAnimations: (val: boolean) => set({ uiAnimations: val }),
-    setParticlesQuality: (val: 'LOW' | 'HIGH') => set({ particlesQuality: val }),
-    setGlowEnabled: (val: boolean) => set({ glowEnabled: val }),
+    setUiAnimations: (val: boolean) => set({ uiAnimations: val, hasCustomSettings: true }),
+    setParticlesQuality: (val: 'LOW' | 'HIGH') => set({ particlesQuality: val, hasCustomSettings: true }),
+    setGlowEnabled: (val: boolean) => set({ glowEnabled: val, hasCustomSettings: true }),
     setLevel: (val: number) => {
         set({ level: val, title: getPlayerTitle(val) });
         syncService.debouncedSync();

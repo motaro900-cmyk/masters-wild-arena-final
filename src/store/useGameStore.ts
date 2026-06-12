@@ -200,6 +200,7 @@ const store = create<GameStoreState>()(
                 pveStage: state.pveStage,
                 maxPveStage: state.maxPveStage,
                 isPowerSaving: state.isPowerSaving,
+                hasCustomSettings: state.hasCustomSettings,
                 isMuted: state.isMuted,
                 winStreak: state.winStreak,
                 lossStreak: state.lossStreak,

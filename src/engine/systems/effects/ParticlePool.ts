@@ -9,7 +9,8 @@ export class ParticlePool {
 
     private constructor() {
         this.pixiApp = PixiApp.getInstance();
-        this.init(100);
+        const quality = useGameStore.getState().particlesQuality;
+        this.init(quality === 'LOW' ? 50 : 100);
     }
 
     public static getInstance(): ParticlePool {
@@ -33,8 +34,9 @@ export class ParticlePool {
         }
     }
 
-    public getParticle(isDecorative: boolean = false): PIXI.Graphics | null {
+    public getParticle(typeOrDecorative: boolean | string = false): PIXI.Graphics | null {
         const quality = useGameStore.getState().particlesQuality;
+        const isDecorative = typeOrDecorative === true || typeOrDecorative === 'AMBIENT';
         if (quality === 'LOW' && isDecorative) {
             return null;
         }

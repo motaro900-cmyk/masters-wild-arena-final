@@ -18,7 +18,52 @@ export class GameApp {
         try {
             console.log('🎮 Initializing Game Engine...');
 
-            const state = useGameStore.getState();
+            let state = useGameStore.getState();
+            if (!state.hasCustomSettings) {
+                const isMobile = state.isMobile;
+                let autoGraphics = 'LOW';
+                let autoPowerSaving = isMobile;
+                let autoParticles = 'LOW';
+                let autoGlow = true;
+
+                if (isMobile) {
+                    autoPowerSaving = true;
+                    autoGraphics = 'LOW';
+                    autoParticles = 'LOW';
+                    autoGlow = false;
+                } else {
+                    const memory = typeof navigator !== 'undefined' ? ((navigator as any).deviceMemory || 4) : 4;
+                    if (memory >= 8) {
+                        autoGraphics = 'ULTRA';
+                        autoParticles = 'HIGH';
+                        autoGlow = true;
+                    } else if (memory >= 4) {
+                        autoGraphics = 'MEDIUM';
+                        autoParticles = 'HIGH';
+                        autoGlow = true;
+                    } else {
+                        autoGraphics = 'LOW';
+                        autoParticles = 'LOW';
+                        autoGlow = false;
+                    }
+                }
+
+                useGameStore.setState({
+                    graphicsQuality: autoGraphics,
+                    isPowerSaving: autoPowerSaving,
+                    particlesQuality: autoParticles,
+                    glowEnabled: autoGlow,
+                });
+
+                state = useGameStore.getState();
+                console.log(`🤖 Auto-detected graphics for ${isMobile ? 'mobile' : 'desktop'} (memory: ${typeof navigator !== 'undefined' ? (navigator as any).deviceMemory : 'unknown'}GB):`, {
+                    graphicsQuality: autoGraphics,
+                    isPowerSaving: autoPowerSaving,
+                    particlesQuality: autoParticles,
+                    glowEnabled: autoGlow
+                });
+            }
+
             const quality = state.graphicsQuality;
 
             const config: IPixiAppConfig = {

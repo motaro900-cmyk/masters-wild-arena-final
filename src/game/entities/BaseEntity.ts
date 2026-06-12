@@ -1,6 +1,7 @@
 import * as PIXI from 'pixi.js';
 import { gsap } from 'gsap';
 import { GlowFilter } from 'pixi-filters';
+import { useGameStore } from '../../store/useGameStore';
 
 export enum EntityState {
     IDLE = 'IDLE',
@@ -71,9 +72,11 @@ export class BaseEntity extends PIXI.Container {
                 ease: 'sine.inOut',
             });
 
-            // Эпичное свечение вокруг оружия
-            const glow = new GlowFilter({ distance: 15, outerStrength: 2, color: 0xffaa00 });
-            this.weaponSprite.filters = [glow];
+            // Эпичное свечение вокруг оружия (если включено в настройках)
+            if (useGameStore.getState().glowEnabled) {
+                const glow = new GlowFilter({ distance: 15, outerStrength: 2, color: 0xffaa00 });
+                this.weaponSprite.filters = [glow];
+            }
         }
 
         this.initIdleAnimation();
