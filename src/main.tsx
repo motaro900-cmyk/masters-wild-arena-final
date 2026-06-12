@@ -88,15 +88,15 @@ export const Root = () => {
                 refreshInterval = null;
             }
             
-            // Timeout after 40s
+            // Timeout after 15s
             const timeoutId = setTimeout(() => {
                 if (isAppLoading) {
-                    console.error('❌ Loading Timeout: App failed to initialize in 40s');
+                    console.error('❌ Loading Timeout: App failed to initialize in 15s');
                     setInitError(
                         'Превышено время ожидания загрузки. Пожалуйста, проверьте интернет-соединение и попробуйте снова.',
                     );
                 }
-            }, 40000);
+            }, 15000);
 
             let timeOffset = 0;
             try {

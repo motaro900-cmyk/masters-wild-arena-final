@@ -2,6 +2,7 @@ import * as PIXI from 'pixi.js';
 import { gsap } from 'gsap';
 import { PixiPlugin } from 'gsap/PixiPlugin';
 import { AppConfig } from '@/configs/AppConfig';
+import { useGameStore } from '../../store/useGameStore';
 
 gsap.registerPlugin(PixiPlugin);
 PixiPlugin.convertToPixi = (_object: any, _prop: string, value: string | number) => {
@@ -58,6 +59,36 @@ export class PixiApp {
             antialias: true,
             powerPreference: 'high-performance',
         };
+
+        if (typeof window !== 'undefined') {
+            document.addEventListener('visibilitychange', () => {
+                this.updateTickerState();
+            });
+
+            useGameStore.subscribe(() => {
+                this.updateTickerState();
+            });
+        }
+    }
+
+    public updateTickerState(): void {
+        if (!this.pixiApp || !this.pixiApp.ticker) return;
+
+        const isHidden = typeof document !== 'undefined' && document.hidden;
+        const activeScreen = useGameStore.getState().activeScreen;
+        const needsRendering = activeScreen === 'BATTLE' || activeScreen === 'SANCTUARY';
+
+        if (isHidden || !needsRendering) {
+            if (this.pixiApp.ticker.started) {
+                console.log(`[PixiApp] Stopping Ticker rendering (Screen: ${activeScreen}, Hidden: ${isHidden})`);
+                this.pixiApp.ticker.stop();
+            }
+        } else {
+            if (!this.pixiApp.ticker.started) {
+                console.log(`[PixiApp] Starting Ticker rendering (Screen: ${activeScreen})`);
+                this.pixiApp.ticker.start();
+            }
+        }
     }
 
     public static getInstance(): PixiApp {
@@ -68,6 +99,7 @@ export class PixiApp {
     public async destroy(): Promise<void> {
         if (this.pixiApp) {
             console.log('[PixiApp] Destroying application...');
+            this.updateLoops = [];
             // [Lead Architect]: texture: false is CRITICAL here to avoid
             // "Texture managed by Assets was destroyed instead of unloaded" warning.
             this.pixiApp.destroy(true, { children: true, texture: false });
@@ -146,6 +178,7 @@ export class PixiApp {
                 }
 
                 this.pixiApp.ticker.start();
+                this.updateTickerState();
             }
         } catch (error) {
             console.error('❌ PixiApp initialization failed:', error);

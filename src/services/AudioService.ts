@@ -107,14 +107,19 @@ class AudioService {
         }
     }
 
-    /**
-     * Принудительное возобновление аудио-контекста (для обхода блокировок браузера)
-     */
     public resumeContext() {
-        if (Howler.ctx && Howler.ctx.state === 'suspended') {
-            Howler.ctx.resume().then(() => {
-                console.log('🔊 AudioContext Resumed Successfully');
-            });
+        try {
+            if (Howler.ctx && typeof Howler.ctx.resume === 'function' && Howler.ctx.state === 'suspended') {
+                Howler.ctx.resume()
+                    .then(() => {
+                        console.log('🔊 AudioContext Resumed Successfully');
+                    })
+                    .catch((err) => {
+                        console.warn('AudioContext.resume failed async:', err);
+                    });
+            }
+        } catch (err) {
+            console.warn('AudioContext.resume failed safely:', err);
         }
     }
 
@@ -127,28 +132,38 @@ class AudioService {
     public playMusic(url: string) {
         if (this.music) {
             const oldMusic = this.music;
-            oldMusic.fade(this.musicVolume, 0, 1000);
-            oldMusic.once('fade', () => {
-                oldMusic.stop();
-                oldMusic.unload();
-            });
+            try {
+                oldMusic.fade(this.musicVolume, 0, 1000);
+                oldMusic.once('fade', () => {
+                    try {
+                        oldMusic.stop();
+                        oldMusic.unload();
+                    } catch (e) {
+                        console.warn('Failed to stop/unload old music:', e);
+                    }
+                });
+            } catch (err) {
+                console.warn('Failed to fade old music:', err);
+            }
         }
 
-        this.music = new Howl({
-            src: [url],
-            loop: true,
-            volume: 0,
-            html5: true,
-            onloaderror: (_id, err) => console.warn(`❌ Music Load Error: ${url}`, err),
-        });
+        try {
+            this.music = new Howl({
+                src: [url],
+                loop: true,
+                volume: 0,
+                html5: true,
+                onloaderror: (_id, err) => console.warn(`❌ Music Load Error: ${url}`, err),
+            });
 
-        this.music.play();
-        this.music.fade(0, this.musicVolume, 1000);
+            this.music.play();
+            this.music.fade(0, this.musicVolume, 1000);
+        } catch (err) {
+            console.warn(`❌ Failed to create/play music Howl for ${url}:`, err);
+            this.music = null;
+        }
     }
 
-    /**
-     * Остановка всей текущей музыки
-     */
     public stopAllMusic() {
         if (this.loadErrorTimeoutId) {
             clearTimeout(this.loadErrorTimeoutId);
@@ -158,11 +173,19 @@ class AudioService {
             console.log('⏹️ AudioService: Fading out and stopping music');
             const oldMusic = this.music;
             this.music = null;
-            oldMusic.fade(oldMusic.volume(), 0, 800);
-            oldMusic.once('fade', () => {
-                oldMusic.stop();
-                oldMusic.unload();
-            });
+            try {
+                oldMusic.fade(oldMusic.volume(), 0, 800);
+                oldMusic.once('fade', () => {
+                    try {
+                        oldMusic.stop();
+                        oldMusic.unload();
+                    } catch (e) {
+                        console.warn('Failed to stop/unload old music in stopAllMusic:', e);
+                    }
+                });
+            } catch (err) {
+                console.warn('Failed to fade old music in stopAllMusic:', err);
+            }
         }
     }
 
@@ -185,7 +208,11 @@ class AudioService {
      * Статус: играет ли сейчас музыка
      */
     public isPlaying(): boolean {
-        return this.music !== null && this.music.playing();
+        try {
+            return this.music !== null && this.music.playing();
+        } catch {
+            return false;
+        }
     }
 
     /**
@@ -200,10 +227,14 @@ class AudioService {
             return;
         }
 
-        if (this.music.playing()) {
-            this.music.pause();
-        } else {
-            this.music.play();
+        try {
+            if (this.music.playing()) {
+                this.music.pause();
+            } else {
+                this.music.play();
+            }
+        } catch (err) {
+            console.warn('Failed to toggle music:', err);
         }
     }
 
@@ -250,42 +281,58 @@ class AudioService {
 
         if (this.music) {
             const oldMusic = this.music;
-            oldMusic.fade(this.musicVolume, 0, 1000);
-            oldMusic.once('fade', () => {
-                oldMusic.stop();
-                oldMusic.unload();
-            });
+            try {
+                oldMusic.fade(this.musicVolume, 0, 1000);
+                oldMusic.once('fade', () => {
+                    try {
+                        oldMusic.stop();
+                        oldMusic.unload();
+                    } catch (e) {
+                        console.warn('Failed to stop/unload old music in playlist:', e);
+                    }
+                });
+            } catch (err) {
+                console.warn('Failed to fade old music in playlist:', err);
+            }
         }
 
-        this.music = new Howl({
-            src: [url],
-            loop: false,
-            volume: 0,
-            html5: true,
-            onplay: () => {
-                console.log(`▶️ AudioService: Now playing: ${url}`);
-                // Можно добавить обновление в стор здесь, если нужно
-            },
-            onload: () => console.log(`✅ AudioService: Track loaded successfully: ${url}`),
-            onend: () => {
-                console.log(`🏁 AudioService: Track finished: ${url}`);
-                this.nextTrack();
-            },
-            onloaderror: (_id, err) => {
-                console.error(`❌ AudioService: Load Error for ${url}:`, err);
-                if (this.loadErrorTimeoutId) {
-                    clearTimeout(this.loadErrorTimeoutId);
-                }
-                this.loadErrorTimeoutId = setTimeout(() => this.nextTrack(), 1000);
-            },
-            onplayerror: (_id, err) => {
-                console.error(`❌ AudioService: Play Error for ${url}:`, err);
-                this.resumeContext();
-            },
-        });
+        try {
+            this.music = new Howl({
+                src: [url],
+                loop: false,
+                volume: 0,
+                html5: true,
+                onplay: () => {
+                    console.log(`▶️ AudioService: Now playing: ${url}`);
+                },
+                onload: () => console.log(`✅ AudioService: Track loaded successfully: ${url}`),
+                onend: () => {
+                    console.log(`🏁 AudioService: Track finished: ${url}`);
+                    this.nextTrack();
+                },
+                onloaderror: (_id, err) => {
+                    console.error(`❌ AudioService: Load Error for ${url}:`, err);
+                    if (this.loadErrorTimeoutId) {
+                        clearTimeout(this.loadErrorTimeoutId);
+                    }
+                    this.loadErrorTimeoutId = setTimeout(() => this.nextTrack(), 1000);
+                },
+                onplayerror: (_id, err) => {
+                    console.error(`❌ AudioService: Play Error for ${url}:`, err);
+                    this.resumeContext();
+                },
+            });
 
-        this.music.play();
-        this.music.fade(0, this.musicVolume, 1000);
+            this.music.play();
+            this.music.fade(0, this.musicVolume, 1000);
+        } catch (err) {
+            console.warn(`❌ Failed to create/play playlist Howl for ${url}:`, err);
+            this.music = null;
+            if (this.loadErrorTimeoutId) {
+                clearTimeout(this.loadErrorTimeoutId);
+            }
+            this.loadErrorTimeoutId = setTimeout(() => this.nextTrack(), 1000);
+        }
     }
 
     /**
@@ -295,38 +342,55 @@ class AudioService {
         let sound = this.sfx.get(url);
 
         if (!sound) {
-            sound = new Howl({
-                src: [url],
-                volume: this.sfxVolume,
-                onloaderror: (_id, err) => console.warn(`❌ SFX Load Error: ${url}`, err),
-            });
-            this.sfx.set(url, sound);
+            try {
+                sound = new Howl({
+                    src: [url],
+                    volume: this.sfxVolume,
+                    onloaderror: (_id, err) => console.warn(`❌ SFX Load Error: ${url}`, err),
+                });
+                this.sfx.set(url, sound);
+            } catch (err) {
+                console.warn(`❌ Failed to create SFX Howl for ${url}:`, err);
+                return;
+            }
         }
 
-        // Всегда обновляем громкость перед проигрыванием (на случай если она менялась в Map)
-        sound.volume(this.sfxVolume);
-        sound.play();
+        try {
+            sound?.volume(this.sfxVolume);
+            sound?.play();
+        } catch (err) {
+            console.warn(`❌ Failed to play SFX for ${url}:`, err);
+        }
     }
 
     /**
      * Запуск цикличного эмбиента (фонового звука окружения)
      */
     public playAmbient(url: string) {
-        if (this.ambientUrl === url && this.ambient && this.ambient.playing()) {
-            return;
+        try {
+            if (this.ambientUrl === url && this.ambient && this.ambient.playing()) {
+                return;
+            }
+        } catch {
+            // Игнорируем ошибки проверки воспроизведения
         }
         this.stopAmbient();
 
         this.ambientUrl = url;
-        this.ambient = new Howl({
-            src: [url],
-            loop: true,
-            volume: this.musicVolume * 0.6,
-            html5: true,
-            onloaderror: (_id, err) => console.warn(`❌ Ambient Load Error: ${url}`, err),
-        });
-        this.ambient.play();
-        console.log(`🔊 Ambient started: ${url}`);
+        try {
+            this.ambient = new Howl({
+                src: [url],
+                loop: true,
+                volume: this.musicVolume * 0.6,
+                html5: true,
+                onloaderror: (_id, err) => console.warn(`❌ Ambient Load Error: ${url}`, err),
+            });
+            this.ambient.play();
+            console.log(`🔊 Ambient started: ${url}`);
+        } catch (err) {
+            console.warn(`❌ Failed to create/play Ambient Howl for ${url}:`, err);
+            this.ambient = null;
+        }
     }
 
     /**
@@ -335,8 +399,12 @@ class AudioService {
     public stopAmbient() {
         if (this.ambient) {
             console.log('⏹️ Stopping ambient audio');
-            this.ambient.stop();
-            this.ambient.unload();
+            try {
+                this.ambient.stop();
+                this.ambient.unload();
+            } catch (err) {
+                console.warn('Failed to stop/unload ambient:', err);
+            }
             this.ambient = null;
             this.ambientUrl = null;
         }
@@ -351,16 +419,25 @@ class AudioService {
         let sound = this.sfx.get(critUrl);
 
         if (!sound) {
-            sound = new Howl({
-                src: [critUrl, hitFallbackUrl],
-                volume: this.sfxVolume * 1.25,
-                onloaderror: (_id, err) => console.warn(`❌ Crit SFX Load Error, using fallback`, err),
-            });
-            this.sfx.set(critUrl, sound);
+            try {
+                sound = new Howl({
+                    src: [critUrl, hitFallbackUrl],
+                    volume: this.sfxVolume * 1.25,
+                    onloaderror: (_id, err) => console.warn(`❌ Crit SFX Load Error, using fallback`, err),
+                });
+                this.sfx.set(critUrl, sound);
+            } catch (err) {
+                console.warn(`❌ Failed to create Crit SFX Howl:`, err);
+                return;
+            }
         }
 
-        sound.volume(this.sfxVolume * 1.25);
-        sound.play();
+        try {
+            sound?.volume(this.sfxVolume * 1.25);
+            sound?.play();
+        } catch (err) {
+            console.warn(`❌ Failed to play Crit SFX:`, err);
+        }
     }
 
     /**
@@ -386,16 +463,25 @@ class AudioService {
         const hitFallbackUrl = '/assets/audio/sfx/impact_hit.mp3';
         let sound = this.sfx.get(url);
         if (!sound) {
-            sound = new Howl({
-                src: [url, hitFallbackUrl],
-                volume: this.sfxVolume,
-                onloaderror: () => console.log(`SFX ${url} not found, using hit fallback.`),
-            });
-            this.sfx.set(url, sound);
+            try {
+                sound = new Howl({
+                    src: [url, hitFallbackUrl],
+                    volume: this.sfxVolume,
+                    onloaderror: () => console.log(`SFX ${url} not found, using hit fallback.`),
+                });
+                this.sfx.set(url, sound);
+            } catch (err) {
+                console.warn(`❌ Failed to create Strike SFX Howl for ${url}:`, err);
+                return;
+            }
         }
 
-        sound.volume(this.sfxVolume);
-        sound.play();
+        try {
+            sound?.volume(this.sfxVolume);
+            sound?.play();
+        } catch (err) {
+            console.warn(`❌ Failed to play Strike SFX:`, err);
+        }
     }
 
     /**

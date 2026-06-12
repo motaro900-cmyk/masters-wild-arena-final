@@ -14,11 +14,13 @@ import { ProfileHub } from './hud/ProfileHub';
 
 // Dialogs & Windows
 const WindowManager = React.lazy(() => import('./hud/WindowManager'));
+import { WindowLoadingSpinner } from './hud/WindowManager';
 import { AlertDialog, ConfirmDialog } from './hud/GlobalDialogs';
 import { UnderDevelopmentModal } from './hud/SharedUI';
 import { MatchmakingOverlay } from './hud/MatchmakingOverlay';
 import { LevelUpOverlay } from './hud/LevelUpOverlay';
 import { PlayerInspectModal } from './hud/PlayerInspectModal';
+import bridge from '@vkontakte/vk-bridge';
 import { safeGetItem, safeSetItem } from '../../utils/SafeStorage';
 
 const AdminPanel = React.lazy(() => import('./hud/AdminPanel').then((m) => ({ default: m.AdminPanel })));
@@ -31,11 +33,60 @@ export const GameHUD: React.FC = () => {
     const vipLevel = useGameStore((state) => state.vipLevel);
     const vipEndTime = useGameStore((state) => state.vipEndTime);
     const isMobile = useGameStore((state) => state.isMobile);
-    const [activeWindow, setActiveWindow] = useState<string | null>(null);
+    const [activeWindow, setRawActiveWindow] = useState<string | null>(null);
     const [showAdmin, setShowAdmin] = useState(false);
     const [devModal, setDevModal] = useState({ isOpen: false, title: '' });
     const goToShop = useGameStore((state) => state.goToShop);
     const [prevScreen, setPrevScreen] = useState(activeScreen);
+
+    const activeWindowRef = useRef<string | null>(null);
+    useEffect(() => {
+        activeWindowRef.current = activeWindow;
+    }, [activeWindow]);
+
+    const setActiveWindow = (win: string | null) => {
+        if (win !== null) {
+            window.history.pushState({ windowOpen: true }, '');
+            setRawActiveWindow(win);
+        } else {
+            if (activeWindowRef.current !== null) {
+                window.history.back();
+            }
+        }
+    };
+
+    useEffect(() => {
+        const handlePopState = () => {
+            if (activeWindowRef.current !== null) {
+                setRawActiveWindow(null);
+            }
+        };
+
+        const handleVkBridgeEvent = (event: any) => {
+            if (!event || !event.detail) return;
+            const { type } = event.detail;
+
+            if (type === 'VKWebAppGoBack') {
+                if (activeWindowRef.current !== null) {
+                    setActiveWindow(null);
+                }
+            }
+        };
+
+        window.addEventListener('popstate', handlePopState);
+        try {
+            bridge.subscribe(handleVkBridgeEvent);
+        } catch (err) {
+            console.warn('VK Bridge subscription error for GoBack:', err);
+        }
+
+        return () => {
+            window.removeEventListener('popstate', handlePopState);
+            try {
+                bridge.unsubscribe(handleVkBridgeEvent);
+            } catch {}
+        };
+    }, []);
 
     const [hudScale, setHudScale] = useState(1);
     const showFps = useGameStore((state) => state.showFps);
@@ -516,7 +567,7 @@ export const GameHUD: React.FC = () => {
             )}
 
             {/* --- WINDOW MANAGER --- */}
-            <React.Suspense fallback={null}>
+            <React.Suspense fallback={<WindowLoadingSpinner />}>
                 <WindowManager
                     activeWindow={activeWindow}
                     setActiveWindow={setActiveWindow}
@@ -526,7 +577,7 @@ export const GameHUD: React.FC = () => {
 
             {/* --- ADMIN PANEL (GLOBAL OVERLAY) --- */}
             {showAdmin && (
-                <React.Suspense fallback={null}>
+                <React.Suspense fallback={<WindowLoadingSpinner />}>
                     <AdminPanel onClose={() => setShowAdmin(false)} />
                 </React.Suspense>
             )}
