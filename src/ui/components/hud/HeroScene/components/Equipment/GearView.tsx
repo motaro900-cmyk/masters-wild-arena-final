@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ITEMS_DATABASE, calculateItemPower } from '../../../../../../game/configs/ItemsConfig';
 import { useGameStore } from '../../../../../../store/useGameStore';
-import { getHeroExpNeeded } from '../../../../../../utils/HeroLevelCalculator';
+import { getHeroExpNeeded } from '../../../../../../features/heroes/leveling/HeroLevelConfig';
 import { audioService } from '../../../../../../services/AudioService';
 import { AssetsMap } from '../../../../../../configs/AssetsMap';
 import { EquippedHeroView } from '../../../../EquippedHeroView';

@@ -28,5 +28,7 @@
     }
   },
   "include": ["src", "vite-env.d.ts"],
+  "exclude": ["src/future"],
   "references": [{ "path": "./tsconfig.node.json" }]
+
 }

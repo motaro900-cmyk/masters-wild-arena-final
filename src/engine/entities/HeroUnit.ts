@@ -8,7 +8,7 @@ import { StatusEffectController } from './StatusEffectController';
 import { IStatusEffectTarget } from './IStatusEffectTarget';
 
 // New imports from extracted modular files
-import * as EquipmentManager from './HeroEquipmentManager';
+// EquipmentManager moved to src/future/ — visual equipment overlay system (dormant)
 import * as Animations from './HeroUnitAnimations';
 
 /**
@@ -440,22 +440,12 @@ export class HeroUnit extends PIXI.Container implements IEffectTarget, IStatusEf
         this.addChild(shadow);
     }
 
-    // --- Equipment Delegation ---
-    public equipWeapon(itemId: string | null): Promise<void> {
-        return EquipmentManager.equipWeapon(this, itemId);
-    }
-    public equipHelmet(itemId: string | null): Promise<void> {
-        return EquipmentManager.equipHelmet(this, itemId);
-    }
-    public equipArmor(itemId: string | null): Promise<void> {
-        return EquipmentManager.equipArmor(this, itemId);
-    }
-    public equipShield(itemId: string | null): Promise<void> {
-        return EquipmentManager.equipShield(this, itemId);
-    }
-    public updateEquipment(equipment: Record<string, string | null>): Promise<void> {
-        return EquipmentManager.updateEquipment(this, equipment);
-    }
+    // --- Equipment Delegation (dormant — visual overlay system in src/future/HeroEquipmentManager.ts) ---
+    public equipWeapon(_itemId: string | null): Promise<void> { return Promise.resolve(); }
+    public equipHelmet(_itemId: string | null): Promise<void> { return Promise.resolve(); }
+    public equipArmor(_itemId: string | null): Promise<void> { return Promise.resolve(); }
+    public equipShield(_itemId: string | null): Promise<void> { return Promise.resolve(); }
+    public updateEquipment(_equipment: Record<string, string | null>): Promise<void> { return Promise.resolve(); }
 
     /**
      * Получить визуальный центр персонажа в глобальных координатах сцены
