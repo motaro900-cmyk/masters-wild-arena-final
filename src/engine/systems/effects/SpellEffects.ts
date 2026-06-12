@@ -3,6 +3,7 @@ import { gsap } from 'gsap';
 import { GlowFilter } from 'pixi-filters';
 import { PixiApp } from '../../core/PixiApp';
 import { EffectsManager } from '../EffectsManager';
+import { useGameStore } from '../../../store/useGameStore';
 
 /**
  * Эффект удара молнии с неба
@@ -31,11 +32,13 @@ export function spawnLightningStrike(targetX: number, targetY: number): void {
         }
         lightning.stroke({ color: 0xcceeff, width: 3 });
 
-        try {
-            const glow = new GlowFilter({ distance: 15, outerStrength: 3, color: 0xcceeff });
-            lightning.filters = [glow];
-        } catch (e) {
-            console.warn('GlowFilter failed, playing lightning without glow:', e);
+        if (useGameStore.getState().glowEnabled) {
+            try {
+                const glow = new GlowFilter({ distance: 15, outerStrength: 3, color: 0xcceeff });
+                lightning.filters = [glow];
+            } catch (e) {
+                console.warn('GlowFilter failed, playing lightning without glow:', e);
+            }
         }
 
         pixiApp.effectsLayer.addChild(lightning);

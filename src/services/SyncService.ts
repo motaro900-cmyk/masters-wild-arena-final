@@ -233,6 +233,7 @@ export class SyncService {
                 shopLastRefreshTime: state.shopLastRefreshTime,
                 lastWheelSpinTime: state.lastWheelSpinTime,
                 lastDailyGiftClaimedTime: state.lastDailyGiftClaimedTime,
+                loginStreak: state.loginStreak || 0,
                 activeBuffs: state.activeBuffs || {},
                 dailyQuests: state.dailyQuests,
                 weeklyQuests: state.weeklyQuests,
@@ -406,6 +407,19 @@ export class SyncService {
                             muteReason: data.muteReason || '',
                             muteUntil: data.muteUntil || '',
                         };
+                        if (parsed.loginStreak === undefined && data.loginStreak !== undefined) {
+                            processedData.loginStreak = data.loginStreak;
+                        }
+                        if (parsed.lastDailyGiftClaimedTime === undefined && data.lastDailyGiftClaimed) {
+                            processedData.lastDailyGiftClaimedTime = typeof data.lastDailyGiftClaimed.toMillis === 'function'
+                                ? data.lastDailyGiftClaimed.toMillis()
+                                : data.lastDailyGiftClaimed.seconds * 1000;
+                        }
+                        if (parsed.lastWheelSpinTime === undefined && data.lastWheelSpinTimeServer) {
+                            processedData.lastWheelSpinTime = typeof data.lastWheelSpinTimeServer.toMillis === 'function'
+                                ? data.lastWheelSpinTimeServer.toMillis()
+                                : data.lastWheelSpinTimeServer.seconds * 1000;
+                        }
                     } catch (e) {
                         console.error('[SyncService] Failed to parse полноеСостояниеJSON:', e);
                     }
@@ -420,6 +434,19 @@ export class SyncService {
                             wasOnlineMs,
                             isNewPlayer: data.isNewPlayer !== undefined ? data.isNewPlayer : parsed.isNewPlayer,
                         };
+                        if (parsed.loginStreak === undefined && data.loginStreak !== undefined) {
+                            processedData.loginStreak = data.loginStreak;
+                        }
+                        if (parsed.lastDailyGiftClaimedTime === undefined && data.lastDailyGiftClaimed) {
+                            processedData.lastDailyGiftClaimedTime = typeof data.lastDailyGiftClaimed.toMillis === 'function'
+                                ? data.lastDailyGiftClaimed.toMillis()
+                                : data.lastDailyGiftClaimed.seconds * 1000;
+                        }
+                        if (parsed.lastWheelSpinTime === undefined && data.lastWheelSpinTimeServer) {
+                            processedData.lastWheelSpinTime = typeof data.lastWheelSpinTimeServer.toMillis === 'function'
+                                ? data.lastWheelSpinTimeServer.toMillis()
+                                : data.lastWheelSpinTimeServer.seconds * 1000;
+                        }
                     } catch (e) {
                         console.error('[SyncService] Failed to parse fullStateJSON:', e);
                     }

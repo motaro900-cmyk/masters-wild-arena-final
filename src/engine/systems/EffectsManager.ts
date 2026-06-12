@@ -171,8 +171,8 @@ export class EffectsManager {
 
             const pool = ParticlePool.getInstance();
             for (let i = 0; i < count; i++) {
-                const particle = pool.getParticle();
-                if (!particle) break;
+                const particle = pool.getParticle(i >= 3);
+                if (!particle) continue;
 
                 const angle = (Math.PI * 2 * i) / particleCount + (Math.random() - 0.5) * 0.5;
                 const vx = Math.cos(angle) * force;

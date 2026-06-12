@@ -6,7 +6,7 @@ import { audioService } from '../../../services/AudioService';
 import { GiftCongratsModal } from './DailyGift/GiftCongratsModal';
 import { db, USERS_COLLECTION } from '../../../utils/firebase';
 import { syncService, SyncService } from '../../../services/SyncService';
-import { doc, getDoc, updateDoc, serverTimestamp, Timestamp } from 'firebase/firestore';
+import { doc, updateDoc, serverTimestamp, Timestamp } from 'firebase/firestore';
 
 // Pure helper functions outside component to satisfy react-hooks/purity
 const getRandomSectorIndex = () => Math.floor(Math.random() * 8);
@@ -122,26 +122,15 @@ export const DailyGiftWindow: React.FC<DailyGiftWindowProps> = ({ onClose }) => 
 
             try {
                 const state = useGameStore.getState();
-                const userId = SyncService.getPrefixedUserId(state.vkUser, state.playerId);
-                const userDocRef = doc(db, USERS_COLLECTION, userId);
-                const userSnap = await getDoc(userDocRef);
+                const giftTime = state.lastDailyGiftClaimedTime || 0;
+                const wheelTime = state.lastWheelSpinTime || 0;
+                const streak = state.loginStreak || 0;
 
-                if (userSnap.exists()) {
-                    const data = userSnap.data();
-                    setLastGiftClaimedTime(data.lastDailyGiftClaimed || null);
-                    setLastWheelSpinTimeServer(data.lastWheelSpinTimeServer || null);
-                    setDbLoginStreak(data.loginStreak || 0);
-
-                    // Sync to local store so it persists and is available globally immediately
-                    const giftTime = data.lastDailyGiftClaimed ? data.lastDailyGiftClaimed.toMillis() : 0;
-                    const wheelTime = data.lastWheelSpinTimeServer ? data.lastWheelSpinTimeServer.toMillis() : 0;
-                    useGameStore.setState({
-                        lastDailyGiftClaimedTime: giftTime,
-                        lastWheelSpinTime: wheelTime,
-                    });
-                }
+                setLastGiftClaimedTime(giftTime ? Timestamp.fromMillis(giftTime) : null);
+                setLastWheelSpinTimeServer(wheelTime ? Timestamp.fromMillis(wheelTime) : null);
+                setDbLoginStreak(streak);
             } catch (e) {
-                console.error('Failed to load daily gift data from Firestore:', e);
+                console.error('Failed to load daily gift data from store:', e);
             } finally {
                 setIsLoading(false);
             }
@@ -258,7 +247,10 @@ export const DailyGiftWindow: React.FC<DailyGiftWindowProps> = ({ onClose }) => 
 
         // eslint-disable-next-line react-hooks/purity
         const nowMs = Date.now();
-        useGameStore.setState({ lastDailyGiftClaimedTime: nowMs });
+        useGameStore.setState({
+            lastDailyGiftClaimedTime: nowMs,
+            loginStreak: streak,
+        });
         setLastGiftClaimedTime(Timestamp.fromMillis(nowMs));
         setDbLoginStreak(streak);
 

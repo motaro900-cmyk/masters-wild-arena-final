@@ -74,7 +74,10 @@ export const getExpNeeded = (level: number): number => {
     return 300 + level * 100;
 };
 
-export const createPlayerSlice = (set: any, get: any) => ({
+export const createPlayerSlice = (set: any, get: any) => {
+    const isMobileVal = typeof navigator !== 'undefined' &&
+        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    return {
     // --- СОСТОЯНИЕ ИГРОКА ---
     level: 1,
     vipLevel: 0,
@@ -143,6 +146,7 @@ export const createPlayerSlice = (set: any, get: any) => ({
     canClaimDailyGift: false,
     lastWheelSpinTime: 0,
     lastDailyGiftClaimedTime: 0,
+    loginStreak: 0,
     onboardingCompleted: true,
     newbieWins: 0,
     isAdmin: false,
@@ -153,14 +157,8 @@ export const createPlayerSlice = (set: any, get: any) => ({
     isVkEnvironment:
         typeof window !== 'undefined' &&
         (window.location.search.includes('vk_app_id') || window.location.search.includes('vk_')),
-    isMobile:
-        typeof navigator !== 'undefined' &&
-        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent),
-    isPowerSaving:
-        typeof navigator !== 'undefined' &&
-        (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
-            (typeof window !== 'undefined' &&
-                (window.location.search.includes('vk_app_id') || window.location.search.includes('vk_')))),
+    isMobile: isMobileVal,
+    isPowerSaving: isMobileVal,
     isMuted: false,
     referralProcessed: false,
     referredBy: null as string | null,
@@ -647,6 +645,7 @@ export const createPlayerSlice = (set: any, get: any) => ({
     setCanClaimDailyGift: (val: boolean) => set({ canClaimDailyGift: val }),
     setLastDailyGiftClaimedTime: (time: number) => set({ lastDailyGiftClaimedTime: time }),
     setLastWheelSpinTime: (time: number) => set({ lastWheelSpinTime: time }),
+    setLoginStreak: (streak: number) => set({ loginStreak: streak }),
     setOnboardingCompleted: (val: boolean) => {
         set({ onboardingCompleted: val });
         syncService.debouncedSync();
@@ -849,4 +848,5 @@ export const createPlayerSlice = (set: any, get: any) => ({
         syncService.syncPlayerData();
         return rewards;
     },
-});
+};
+};

@@ -210,8 +210,9 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
             );
 
         // Simple scale fade for title instead of neon pulse
+        let titleTween: gsap.core.Tween | null = null;
         if (data.isVictory) {
-            gsap.to(titleRef.current, {
+            titleTween = gsap.to(titleRef.current, {
                 scale: 1.02,
                 duration: 1.5,
                 repeat: -1,
@@ -219,6 +220,12 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
                 delay: 1,
             });
         }
+
+        return () => {
+            if (titleTween) {
+                titleTween.kill();
+            }
+        };
     }, [data.isVictory]);
 
     const accentColor = isVictory ? '#fbbf24' : '#ef4444';

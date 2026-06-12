@@ -1,5 +1,6 @@
 import * as PIXI from 'pixi.js';
 import { PixiApp } from '../../core/PixiApp';
+import { useGameStore } from '../../../store/useGameStore';
 
 export class ParticlePool {
     private static instance: ParticlePool | null = null;
@@ -32,7 +33,12 @@ export class ParticlePool {
         }
     }
 
-    public getParticle(): PIXI.Graphics | null {
+    public getParticle(isDecorative: boolean = false): PIXI.Graphics | null {
+        const quality = useGameStore.getState().particlesQuality;
+        if (quality === 'LOW' && isDecorative) {
+            return null;
+        }
+
         // Filter out destroyed particles
         this.pool = this.pool.filter((p) => !p.destroyed);
 
@@ -43,9 +49,9 @@ export class ParticlePool {
             return free;
         }
 
-        const MAX_POOL_SIZE = 200;
+        const maxPoolSize = quality === 'LOW' ? 50 : 200;
         // Pool exhausted - expand dynamically
-        if (this.pool.length < MAX_POOL_SIZE) {
+        if (this.pool.length < maxPoolSize) {
             const newParticle = new PIXI.Graphics();
             newParticle.visible = true;
             this.pixiApp.effectsLayer.addChild(newParticle);

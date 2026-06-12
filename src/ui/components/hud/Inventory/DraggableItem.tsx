@@ -15,7 +15,7 @@ interface DraggableItemProps {
     setGlobalHoveredItem: (id: string | null, x: number, y: number) => void;
 }
 
-export const DraggableItem: React.FC<DraggableItemProps> = ({
+export const DraggableItem: React.FC<DraggableItemProps> = React.memo(({
     item,
     data,
     isEquippedOnCurrent,
@@ -256,4 +256,15 @@ export const DraggableItem: React.FC<DraggableItemProps> = ({
             )}
         </motion.div>
     );
-};
+}, (prevProps, nextProps) => {
+    return (
+        prevProps.isEquippedOnCurrent === nextProps.isEquippedOnCurrent &&
+        prevProps.isEquippedOnOther === nextProps.isEquippedOnOther &&
+        prevProps.equippedHeroId === nextProps.equippedHeroId &&
+        prevProps.item.id === nextProps.item.id &&
+        prevProps.item.amount === nextProps.item.amount &&
+        prevProps.item.instanceId === nextProps.item.instanceId &&
+        prevProps.data === nextProps.data &&
+        prevProps.rarity === nextProps.rarity
+    );
+});

@@ -33,7 +33,7 @@ const getRarityColor = (rarity: ShopItem['rarity']) => {
     }
 };
 
-export const ShopItemCard: React.FC<ShopItemCardProps> = ({
+export const ShopItemCard: React.FC<ShopItemCardProps> = React.memo(({
     item,
     isSelected,
     playerLevel,
@@ -246,4 +246,15 @@ export const ShopItemCard: React.FC<ShopItemCardProps> = ({
             </span>
         </motion.div>
     );
-};
+}, (prevProps, nextProps) => {
+    return (
+        prevProps.isSelected === nextProps.isSelected &&
+        prevProps.playerLevel === nextProps.playerLevel &&
+        prevProps.discount === nextProps.discount &&
+        prevProps.isMobile === nextProps.isMobile &&
+        prevProps.item.id === nextProps.item.id &&
+        prevProps.item.priceGold === nextProps.item.priceGold &&
+        prevProps.item.priceGem === nextProps.item.priceGem &&
+        prevProps.item.requiredLevel === nextProps.item.requiredLevel
+    );
+});

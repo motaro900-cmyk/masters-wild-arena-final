@@ -91,8 +91,7 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ mode = 'FULL', o
         return Math.floor((data?.priceGold || 100) * 0.5) * (item.amount || 1);
     };
 
-    // ── Filtered + searched items ─────────────────────────────────────────────
-    const filteredItems = useMemo(() => {
+    const items = useMemo(() => {
         const resourceItems = [
             { id: 'coal',            amount: coal || 0,            isResource: true },
             { id: 'steel_bar',       amount: steel_bars || 0,      isResource: true },
@@ -104,26 +103,32 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ mode = 'FULL', o
             { id: 'dragon_scale',    amount: dragon_scale || 0,    isResource: true },
             { id: 'lava_heart',      amount: lava_heart || 0,      isResource: true },
         ].filter((r: any) => r.amount > 0);
+        return [...inventory, ...resourceItems];
+    }, [inventory, coal, steel_bars, runic_shards, ancient_compass, astral_crystal, void_sphere, golden_sprout, dragon_scale, lava_heart]);
 
-        let items: any[] = [];
+    const sortType = sortBy;
+
+    // ── Filtered + searched items ─────────────────────────────────────────────
+    const filteredItems = useMemo(() => {
+        let result: any[] = [];
         if (activeTab === 'RESOURCES') {
-            items = resourceItems;
+            result = items.filter((item: any) => item.isResource);
         } else if (activeTab === 'EQUIPMENT') {
-            items = inventory.filter((item: any) => (ITEMS_DATABASE[item.id] as any)?.mainTab === 'ARSENAL');
+            result = items.filter((item: any) => !item.isResource && (ITEMS_DATABASE[item.id] as any)?.mainTab === 'ARSENAL');
         } else if (activeTab === 'POTIONS') {
-            items = inventory.filter((item: any) => (ITEMS_DATABASE[item.id] as any)?.mainTab === 'ALCHEMY' && (ITEMS_DATABASE[item.id] as any)?.subTab !== 'RESOURCES');
+            result = items.filter((item: any) => !item.isResource && (ITEMS_DATABASE[item.id] as any)?.mainTab === 'ALCHEMY' && (ITEMS_DATABASE[item.id] as any)?.subTab !== 'RESOURCES');
         } else {
-            const normalItems = inventory.filter((item: any) => {
+            result = items.filter((item: any) => {
+                if (item.isResource) return true;
                 const dbItem = ITEMS_DATABASE[item.id] as any;
                 return dbItem?.subTab !== 'RESOURCES' && dbItem?.mainTab !== 'ALCHEMY';
             });
-            items = [...normalItems, ...resourceItems];
         }
 
         // Search filter
         if (searchQuery.trim()) {
             const q = searchQuery.toLowerCase();
-            items = items.filter((item) => {
+            result = result.filter((item) => {
                 const data = ITEMS_DATABASE[item.id] as any;
                 return (
                     (data?.name || item.id).toLowerCase().includes(q) ||
@@ -144,12 +149,12 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ mode = 'FULL', o
             BOOTS: 6,
         };
 
-        return items.sort((a: any, b: any) => {
+        return result.sort((a: any, b: any) => {
             const dataA = ITEMS_DATABASE[a.id] as any;
             const dataB = ITEMS_DATABASE[b.id] as any;
             if (!dataA || !dataB) return 0;
 
-            if (sortBy === 'TYPE') {
+            if (sortType === 'TYPE') {
                 const orderA = subTabOrder[dataA.subTab] ?? 99;
                 const orderB = subTabOrder[dataB.subTab] ?? 99;
                 if (orderA !== orderB) {
@@ -160,14 +165,14 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ mode = 'FULL', o
                 return powerB - powerA;
             }
 
-            if (sortBy === 'POWER') {
+            if (sortType === 'POWER') {
                 const powerA = a.isResource ? 0 : calculateItemPower(dataA);
                 const powerB = b.isResource ? 0 : calculateItemPower(dataB);
                 return powerB - powerA;
             }
             return rarityOrder[dataB.rarity] - rarityOrder[dataA.rarity];
         });
-    }, [inventory, activeTab, sortBy, searchQuery, coal, steel_bars, runic_shards, ancient_compass, astral_crystal, void_sphere, golden_sprout, dragon_scale, lava_heart]);
+    }, [items, searchQuery, sortType, activeTab]);
 
     // ── Tab counts ────────────────────────────────────────────────────────────
     const tabCounts = useMemo(() => ({
