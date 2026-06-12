@@ -153,8 +153,8 @@ export const GfxMenuButton: React.FC<{
     disabled?: boolean;
 }> = ({ children, onClick, className, variant = 'bronze', style, disabled }) => {
     const filterMap = {
-        bronze: 'contrast(1.25) saturate(1.1) brightness(0.9) hue-rotate(5deg)', // Сочная бронза/золото
-        gold: 'saturate(1.1) brightness(1.15) hue-rotate(5deg)',
+        bronze: 'contrast(1.15) saturate(1.1) brightness(0.9)', // Сочная бронза/золото
+        gold: 'saturate(1.1) brightness(1.15)',
         red: 'hue-rotate(-55deg) saturate(1.8) brightness(0.8) contrast(1.2)', // Глубокий красный кристалл
     };
 

@@ -20,7 +20,10 @@ export const DailyTaskPanel = React.memo(() => {
     const vipLevel = useGameStore((state) => state.vipLevel);
     const vipEndTime = useGameStore((state) => state.vipEndTime);
     const isMobileFromStore = useGameStore((state) => state.isMobile);
+    const graphicsQuality = useGameStore((state) => state.graphicsQuality);
     const [isMobileLayout, setIsMobileLayout] = useState(isMobileFromStore);
+
+    const isLow = graphicsQuality === 'LOW';
 
     useEffect(() => {
         const checkLayout = () => {
@@ -146,7 +149,7 @@ export const DailyTaskPanel = React.memo(() => {
                     backgroundImage: `url(${AssetsMap.UI.PANEL_QUEST})`,
                     backgroundSize: '100% 100%',
                     backgroundRepeat: 'no-repeat',
-                    filter: 'contrast(1.25) saturate(1.15) brightness(0.9) hue-rotate(5deg)',
+                    filter: isLow ? 'none' : 'contrast(1.15) saturate(1.1) brightness(0.9)',
                     zIndex: 0,
                     pointerEvents: 'none',
                 }}

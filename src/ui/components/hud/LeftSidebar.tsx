@@ -24,6 +24,8 @@ const MENU_ITEMS: MenuItem[] = [
 
 export const LeftSidebar: React.FC<{ onOpenWindow: (n: string) => void }> = ({ onOpenWindow }) => {
     const activeScreen = useGameStore((state) => state.activeScreen);
+    const graphicsQuality = useGameStore((state) => state.graphicsQuality);
+    const isLow = graphicsQuality === 'LOW';
 
     return (
         <div
@@ -42,7 +44,7 @@ export const LeftSidebar: React.FC<{ onOpenWindow: (n: string) => void }> = ({ o
                     backgroundImage: `url(${AssetsMap.UI.SIDEBAR_LEFT})`,
                     backgroundSize: '100% 100%',
                     backgroundRepeat: 'no-repeat',
-                    filter: 'contrast(1.2) saturate(1.25) brightness(1.05) hue-rotate(5deg)',
+                    filter: isLow ? 'none' : 'contrast(1.1) saturate(1.15) brightness(1.05)',
                     zIndex: 0,
                     pointerEvents: 'none',
                 }}
