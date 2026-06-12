@@ -478,6 +478,14 @@ export const UnderDevelopmentModal: React.FC<{
                                 fontSize: '28px',
                                 cursor: 'pointer',
                                 transition: 'color 0.2s',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                width: '30px',
+                                height: '30px',
+                                boxSizing: 'content-box',
+                                padding: isMobile ? '24px' : '12px',
+                                margin: isMobile ? '-24px' : '-12px',
                             }}
                             onMouseEnter={(e) => (e.currentTarget.style.color = '#fff')}
                             onMouseLeave={(e) => (e.currentTarget.style.color = 'rgba(255,255,255,0.3)')}

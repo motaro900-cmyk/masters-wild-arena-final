@@ -1,6 +1,8 @@
 import React, { useRef } from 'react';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
+import { useGameStore } from '../../store/useGameStore';
+import { motion } from 'framer-motion';
 
 interface ModalWindowProps {
     title: string;
@@ -9,6 +11,7 @@ interface ModalWindowProps {
 }
 
 export const ModalWindow: React.FC<ModalWindowProps> = ({ title, onClose, children }) => {
+    const isMobile = useGameStore((state: any) => state.isMobile);
     const overlayRef = useRef<HTMLDivElement>(null);
     const windowRef = useRef<HTMLDivElement>(null);
 
@@ -48,12 +51,21 @@ export const ModalWindow: React.FC<ModalWindowProps> = ({ title, onClose, childr
                     <h2 className="text-[#facc15] font-black text-2xl tracking-widest uppercase drop-shadow-md">
                         {title}
                     </h2>
-                    <button
+                    <motion.div
+                        whileTap={{ scale: 0.9 }}
                         onClick={handleClose}
-                        className="w-10 h-10 bg-[#3a2818] hover:bg-[#dc2626] border-2 border-[#78350f] hover:border-white rounded-full flex items-center justify-center text-white font-black text-xl transition-colors active:scale-90"
+                        className="cursor-pointer flex items-center justify-center"
+                        style={{
+                            padding: isMobile ? '20px' : '8px',
+                            margin: isMobile ? '-20px' : '-8px',
+                        }}
                     >
-                        ✕
-                    </button>
+                        <div
+                            className="w-10 h-10 bg-[#3a2818] hover:bg-[#dc2626] border-2 border-[#78350f] hover:border-white rounded-full flex items-center justify-center text-white font-black text-xl transition-colors pointer-events-none"
+                        >
+                            ✕
+                        </div>
+                    </motion.div>
                 </div>
 
                 {/* Контент */}

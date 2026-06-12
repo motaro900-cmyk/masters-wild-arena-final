@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useGameStore } from '../../store/useGameStore';
 
 type DocType = 'privacy' | 'terms';
 
@@ -156,6 +157,7 @@ Masters of the Wild
 11.1. Apple Inc. не является спонсором и не имеет отношения к внутриигровым конкурсам и активностям. Apple is not a sponsor nor is involved in the activity in any manner.`;
 
 export const LegalModal: React.FC<LegalDocumentsProps> = ({ open, onClose }) => {
+    const isMobile = useGameStore((state: any) => state.isMobile);
     const content = open === 'privacy' ? PRIVACY_POLICY : TERMS_OF_SERVICE;
     const title = open === 'privacy' ? 'Политика конфиденциальности' : 'Пользовательское соглашение';
 
@@ -222,14 +224,14 @@ export const LegalModal: React.FC<LegalDocumentsProps> = ({ open, onClose }) => 
                                     background: 'rgba(255,255,255,0.07)',
                                     border: '1px solid rgba(255,255,255,0.1)',
                                     color: '#fff',
-                                    width: '36px',
-                                    height: '36px',
                                     borderRadius: '50%',
                                     cursor: 'pointer',
-                                    fontSize: '16px',
+                                    fontSize: isMobile ? '20px' : '16px',
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
+                                    width: isMobile ? '48px' : '36px',
+                                    height: isMobile ? '48px' : '36px',
                                 }}
                             >
                                 ✕

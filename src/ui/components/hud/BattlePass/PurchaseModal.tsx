@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { useGameStore } from '../../../../store/useGameStore';
 
 export const PurchaseModal: React.FC<{ onClose: () => void; onBuy: () => void }> = ({ onClose, onBuy }) => {
-    const { crystals } = useGameStore();
+    const { crystals, isMobile } = useGameStore();
     const price = 999;
     const hasEnough = crystals >= price;
 
@@ -56,6 +56,14 @@ export const PurchaseModal: React.FC<{ onClose: () => void; onBuy: () => void }>
                         transition: 'color 0.2s',
                         fontFamily: 'sans-serif',
                         lineHeight: 1,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        width: '30px',
+                        height: '30px',
+                        boxSizing: 'content-box',
+                        padding: isMobile ? '24px' : '12px',
+                        margin: isMobile ? '-24px' : '-12px',
                     }}
                     onMouseEnter={(e) => (e.currentTarget.style.color = '#ffd700')}
                     onMouseLeave={(e) => (e.currentTarget.style.color = '#c8a870')}

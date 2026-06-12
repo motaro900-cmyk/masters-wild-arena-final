@@ -43,6 +43,7 @@ export class PixiApp {
     private _uiLayer: PIXI.Container;
     private _debugLayer: PIXI.Container;
     private homeContainer: HTMLElement | null = null;
+    private storeUnsubscribe: (() => void) | null = null;
 
     private constructor() {
         this._backgroundLayer = new PIXI.Container();
@@ -65,7 +66,7 @@ export class PixiApp {
                 this.updateTickerState();
             });
 
-            useGameStore.subscribe(() => {
+            this.storeUnsubscribe = useGameStore.subscribe(() => {
                 this.updateTickerState();
             });
         }
@@ -76,7 +77,7 @@ export class PixiApp {
 
         const isHidden = typeof document !== 'undefined' && document.hidden;
         const activeScreen = useGameStore.getState().activeScreen;
-        const needsRendering = activeScreen === 'BATTLE' || activeScreen === 'SANCTUARY';
+        const needsRendering = activeScreen === 'BATTLE';
 
         if (isHidden || !needsRendering) {
             if (this.pixiApp.ticker.started) {
@@ -97,6 +98,15 @@ export class PixiApp {
     }
 
     public async destroy(): Promise<void> {
+        if (this.storeUnsubscribe) {
+            try {
+                this.storeUnsubscribe();
+            } catch (e) {
+                console.warn('Failed to unsubscribe useGameStore in PixiApp destroy:', e);
+            }
+            this.storeUnsubscribe = null;
+        }
+
         if (this.pixiApp) {
             console.log('[PixiApp] Destroying application...');
             this.updateLoops = [];

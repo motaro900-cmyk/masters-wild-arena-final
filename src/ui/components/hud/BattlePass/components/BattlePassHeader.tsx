@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { AssetsMap } from '../../../../../configs/AssetsMap';
 import { audioService } from '../../../../../services/AudioService';
 import { TabButton } from '../TabButton';
+import { useGameStore } from '../../../../../store/useGameStore';
 
 interface BattlePassHeaderProps {
     bpLevel: number;
@@ -35,6 +36,7 @@ export const BattlePassHeader: React.FC<BattlePassHeaderProps> = ({
     onBuyPremium,
     onClose,
 }) => {
+    const isMobile = useGameStore((state) => state.isMobile);
     const progress = (bpExp / maxExp) * 100;
 
     return (
@@ -316,19 +318,22 @@ export const BattlePassHeader: React.FC<BattlePassHeaderProps> = ({
                         audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
                     }}
                     style={{
-                        width: '45px',
-                        height: '45px',
+                        width: isMobile ? '50px' : '45px',
+                        height: isMobile ? '50px' : '45px',
                         background: 'linear-gradient(180deg, #8b1c1c 0%, #450a0a 100%)',
                         border: '2px solid #b8860b',
                         borderRadius: '8px',
                         color: '#ffffff',
-                        fontSize: '22px',
+                        fontSize: isMobile ? '26px' : '22px',
                         fontWeight: 900,
                         cursor: 'pointer',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         boxShadow: '0 4px 10px rgba(0,0,0,0.5)',
+                        boxSizing: 'content-box',
+                        padding: isMobile ? '16px' : '0px',
+                        margin: isMobile ? '-16px' : '0px',
                     }}
                 >
                     ×

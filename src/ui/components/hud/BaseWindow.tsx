@@ -61,9 +61,10 @@ export const BaseWindow: React.FC<BaseWindowProps> = ({
     height = 'auto',
     headerExtra,
 }) => {
-    const { uiTheme, language } = useGameStore((state: any) => ({
+    const { uiTheme, language, isMobile } = useGameStore((state: any) => ({
         uiTheme: state.uiTheme,
         language: state.language || 'RU',
+        isMobile: state.isMobile,
     }));
     const isLight = uiTheme === 'LIGHT';
 
@@ -228,8 +229,8 @@ export const BaseWindow: React.FC<BaseWindowProps> = ({
                                     width: '30px',
                                     height: '30px',
                                     boxSizing: 'content-box',
-                                    padding: '12px',
-                                    margin: '-12px',
+                                    padding: isMobile ? '24px' : '12px',
+                                    margin: isMobile ? '-24px' : '-12px',
                                 }}
                                 onMouseEnter={(e) => (e.currentTarget.style.opacity = '1')}
                                 onMouseLeave={(e) => (e.currentTarget.style.opacity = '0.8')}

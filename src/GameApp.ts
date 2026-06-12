@@ -200,7 +200,7 @@ export class GameApp {
             const app = this.pixiApp.getApp();
             if (!app || !app.ticker) return;
 
-            const staticScreens = ['MAIN_MENU', 'SHOP', 'HEROES', 'BATTLE_PASS', 'FORGE'];
+            const staticScreens = ['MAIN_MENU', 'SHOP', 'HEROES', 'BATTLE_PASS', 'FORGE', 'SANCTUARY', 'INTRO', 'CITY'];
 
             if (staticScreens.includes(activeScreen)) {
                 app.ticker.stop();
