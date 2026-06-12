@@ -375,8 +375,12 @@ export class SyncService {
                 const dbFriendIds = (data.friends || [])
                     .map((f: any) => (typeof f === 'object' ? f.id : f))
                     .filter(Boolean);
-                const resolvedFriends =
-                    dbFriendIds.length > 0 ? await resolveFriendProfiles(dbFriendIds) : [];
+                let resolvedFriends = [];
+                try {
+                    resolvedFriends = dbFriendIds.length > 0 ? await resolveFriendProfiles(dbFriendIds) : [];
+                } catch (friendErr) {
+                    console.error('[SyncService] Failed to resolve friend profiles, using empty list:', friendErr);
+                }
 
                 const mergeFriends = (parsed: any) => {
                     const oldFriends = parsed.friends || [];

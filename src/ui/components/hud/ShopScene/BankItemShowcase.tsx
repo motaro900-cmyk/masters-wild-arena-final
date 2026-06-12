@@ -183,7 +183,12 @@ export const BankItemShowcase: React.FC<BankItemShowcaseProps> = ({ item, rarity
                     <img
                         src={item.image}
                         onError={(e) => {
-                            e.currentTarget.src = '/assets/images/ui/icons/season_chest.webp';
+                            const currentSrc = e.currentTarget.src;
+                            if (currentSrc.endsWith('.webp')) {
+                                e.currentTarget.src = currentSrc.replace(/_mobile\.webp$/i, '.png').replace(/\.webp$/i, '.png');
+                            } else {
+                                e.currentTarget.src = '/assets/images/ui/icons/season_chest.webp';
+                            }
                         }}
                         style={{
                             width: '100%',

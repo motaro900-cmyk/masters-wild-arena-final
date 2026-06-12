@@ -66,13 +66,26 @@ export const initFirebaseProfile = async (
         const result = await syncService.loadPlayerData(userId);
         
         if (result === null) {
-            console.error('❌ Failed to load remote profile due to network/server error.');
-            setInitError(
-                'Не удалось загрузить данные вашего профиля из-за проблем с сетью. Пожалуйста, проверьте интернет-соединение и попробуйте снова.',
-            );
-            useGameStore.setState({ profileStatus: 'error', isSystemUpdate: true });
-            clearTimeout(timeoutId);
-            return null;
+            console.warn('⚠️ Failed to load remote profile. Falling back to local cache/offline mode.');
+            const localState = useGameStore.getState();
+            if (localState && (localState.lastSavedTimestamp ?? 0) > 0) {
+                console.log('💾 Restored from local cache, offline mode active.');
+                useGameStore.setState({
+                    isSystemUpdate: true,
+                });
+                return { userId, isNew: false, data: localState };
+            } else {
+                console.log('👶 No local state found. Initializing new player offline.');
+                useGameStore.getState().resetStore();
+                useGameStore.setState({
+                    name: state.vkUser ? state.vkUser.first_name || 'Мастер' : 'Мастер',
+                    onboardingCompleted: false,
+                    tutorialStep: 0,
+                    activeScreen: 'INTRO',
+                    isSystemUpdate: true,
+                });
+                return { userId, isNew: true, data: null };
+            }
         }
 
         let isAdminUser = false;
@@ -168,10 +181,25 @@ export const initFirebaseProfile = async (
         }
     } catch (loadErr: any) {
         console.error('❌ Failed to load remote profile:', loadErr);
-        setInitError(
-            'Не удалось загрузить данные вашего профиля. Пожалуйста, проверьте интернет-соединение и попробуйте снова.',
-        );
-        clearTimeout(timeoutId);
-        return null;
+        console.warn('⚠️ Exception during loading remote profile. Falling back to local cache/offline mode.');
+        const localState = useGameStore.getState();
+        if (localState && (localState.lastSavedTimestamp ?? 0) > 0) {
+            console.log('💾 Restored from local cache, offline mode active.');
+            useGameStore.setState({
+                isSystemUpdate: true,
+            });
+            return { userId, isNew: false, data: localState };
+        } else {
+            console.log('👶 No local state found. Initializing new player offline.');
+            useGameStore.getState().resetStore();
+            useGameStore.setState({
+                name: state.vkUser ? state.vkUser.first_name || 'Мастер' : 'Мастер',
+                onboardingCompleted: false,
+                tutorialStep: 0,
+                activeScreen: 'INTRO',
+                isSystemUpdate: true,
+            });
+            return { userId, isNew: true, data: null };
+        }
     }
 };

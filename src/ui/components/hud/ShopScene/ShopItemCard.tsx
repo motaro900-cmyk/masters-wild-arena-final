@@ -214,7 +214,14 @@ export const ShopItemCard: React.FC<ShopItemCardProps> = React.memo(({
                 ) : (
                     <img
                         src={resolveAssetPath(item.image)}
-                        onError={(e) => (e.currentTarget.src = AssetsMap.UI.ICON_DAILY_CHEST)}
+                        onError={(e) => {
+                            const currentSrc = e.currentTarget.src;
+                            if (currentSrc.endsWith('.webp')) {
+                                e.currentTarget.src = currentSrc.replace(/_mobile\.webp$/i, '.png').replace(/\.webp$/i, '.png');
+                            } else {
+                                e.currentTarget.src = AssetsMap.UI.ICON_DAILY_CHEST;
+                            }
+                        }}
                         style={{
                             width: isMobile ? '60px' : '80px',
                             height: isMobile ? '60px' : '80px',

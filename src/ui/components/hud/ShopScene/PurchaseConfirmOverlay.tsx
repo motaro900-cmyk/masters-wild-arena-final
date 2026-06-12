@@ -83,6 +83,12 @@ export const PurchaseConfirmOverlay: React.FC<PurchaseConfirmOverlayProps> = ({
                     ) : (
                         <img
                             src={item.image}
+                            onError={(e) => {
+                                const currentSrc = e.currentTarget.src;
+                                if (currentSrc.endsWith('.webp')) {
+                                    e.currentTarget.src = currentSrc.replace(/_mobile\.webp$/i, '.png').replace(/\.webp$/i, '.png');
+                                }
+                            }}
                             style={{
                                 width: '120px',
                                 height: '120px',

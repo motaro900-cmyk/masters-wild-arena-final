@@ -189,6 +189,12 @@ const GearSlot: React.FC<{
             {item ? (
                 <img
                     src={item.image || item.icon}
+                    onError={(e) => {
+                        const currentSrc = e.currentTarget.src;
+                        if (currentSrc.endsWith('.webp')) {
+                            e.currentTarget.src = currentSrc.replace(/_mobile\.webp$/i, '.png').replace(/\.webp$/i, '.png');
+                        }
+                    }}
                     alt={item.name}
                     style={{ width: '78%', height: '78%', objectFit: 'contain' }}
                 />

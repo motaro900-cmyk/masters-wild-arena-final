@@ -86,14 +86,27 @@ export class AssetLoader {
                     }
 
                     const origPath = manifest[index];
+                    // If the optimized path (usually WebP) failed, try to fallback to the PNG version
+                    let pngFallbackPath = origPath;
+                    if (origPath.endsWith('.webp')) {
+                        pngFallbackPath = origPath.replace(/_mobile\.webp$/i, '.png').replace(/\.webp$/i, '.png');
+                    }
+
                     try {
-                        await PIXI.Assets.load(origPath);
+                        if (pngFallbackPath !== assetPath) {
+                            await PIXI.Assets.load(pngFallbackPath);
+                        } else {
+                            throw new Error('Fallback path is identical to failed path');
+                        }
                     } catch (fallbackErr) {
-                        console.error(`[AssetLoader] Critical: Failed to load fallback asset: ${origPath}`, fallbackErr);
+                        console.error(`[AssetLoader] Critical: Failed to load fallback asset: ${origPath} (PNG fallback: ${pngFallbackPath})`, fallbackErr);
                         try {
                             // Assign a safe default white texture to prevent crashes on usage
                             PIXI.Assets.cache.set(assetPath, PIXI.Texture.WHITE);
                             PIXI.Assets.cache.set(origPath, PIXI.Texture.WHITE);
+                            if (pngFallbackPath !== origPath) {
+                                PIXI.Assets.cache.set(pngFallbackPath, PIXI.Texture.WHITE);
+                            }
                         } catch (cacheErr) {
                             // ignore cache errors
                         }
