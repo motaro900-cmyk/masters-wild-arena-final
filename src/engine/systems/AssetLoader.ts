@@ -63,10 +63,15 @@ export class AssetLoader {
         console.log(`[AssetLoader] Loading ${optimizedManifest.length} optimized assets...`);
         try {
             if (!(PIXI.Assets as any)._initialized) {
+                const isIOS =
+                    /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+                    (typeof navigator !== 'undefined' && navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+                console.log(`[AssetLoader] Initializing Pixi Assets. iOS detected: ${isIOS}. Setting preferences accordingly.`);
                 await PIXI.Assets.init({
                     preferences: {
-                        preferWorkers: true,
-                        preferCreateImageBitmap: true,
+                        preferWorkers: !isIOS,
+                        preferCreateImageBitmap: !isIOS,
                     },
                 });
             }
