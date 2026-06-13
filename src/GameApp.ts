@@ -93,7 +93,7 @@ export class GameApp {
                     this.pixiApp.setResolution(resType);
                 }
                 if (state.isPowerSaving !== prevState.isPowerSaving) {
-                    this.applyPerformanceSettings(state.isPowerSaving);
+                    this.applyPerformanceSettings(state.isPowerSaving, state.isMobile);
                 }
                 if (state.level !== prevState.level) {
                     this.loadItemSpritesForLevel(state.level);
@@ -104,7 +104,7 @@ export class GameApp {
             });
 
             await this.pixiApp.init(config, container);
-            this.applyPerformanceSettings(state.isPowerSaving);
+            this.applyPerformanceSettings(state.isPowerSaving, state.isMobile);
             this.handleScreenTicker(state.activeScreen);
             await this.loadAssets();
 
@@ -226,13 +226,17 @@ export class GameApp {
         await this.loadItemSpritesForLevel(currentLevel);
     }
 
-    private applyPerformanceSettings(isPowerSaving: boolean): void {
+    private applyPerformanceSettings(isPowerSaving: boolean, isMobile: boolean = false): void {
         try {
             const app = this.pixiApp.getApp();
             if (app && app.ticker) {
-                app.ticker.maxFPS = isPowerSaving ? 30 : 60;
+                // Hard cap: PixiJS never renders above 60 FPS regardless of monitor Hz.
+                // 180 FPS in PixiJS on mobile = guaranteed overheating.
+                // isPowerSaving drops the cap to 30 FPS on any device.
+                const cap = isPowerSaving ? 30 : 60;
+                app.ticker.maxFPS = cap;
                 console.log(
-                    `🔋 Power Saving: ${isPowerSaving ? 'ON (30 FPS)' : 'OFF (60 FPS)'} (maxFPS = ${app.ticker.maxFPS})`,
+                    `🔋 Performance: ${isMobile ? 'Mobile' : 'Desktop'}, Power Saving: ${isPowerSaving ? 'ON' : 'OFF'} → maxFPS = ${cap}`,
                 );
             }
         } catch {
