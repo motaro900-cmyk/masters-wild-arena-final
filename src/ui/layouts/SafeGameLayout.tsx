@@ -454,7 +454,7 @@ export const SafeGameLayout = ({ containerRef }: { containerRef: React.RefObject
 
                 {/* 2. HUD LAYER (LIQUID / ADAPTIVE) */}
                 <div
-                    className="hud-layer premium-saturated-panel"
+                    className="hud-layer"
                     style={{
                         position: 'absolute',
                         inset: 0,

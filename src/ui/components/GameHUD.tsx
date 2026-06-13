@@ -34,7 +34,6 @@ export const GameHUD: React.FC = () => {
     const vipLevel = useGameStore((state) => state.vipLevel);
     const vipEndTime = useGameStore((state) => state.vipEndTime);
     const isMobile = useGameStore((state) => state.isMobile);
-    const isPowerSaving = useGameStore((state) => state.isPowerSaving);
     const [activeWindow, setRawActiveWindow] = useState<string | null>(null);
     const [showAdmin, setShowAdmin] = useState(false);
     const [devModal, setDevModal] = useState({ isOpen: false, title: '' });
@@ -92,34 +91,42 @@ export const GameHUD: React.FC = () => {
 
     const [hudScale, setHudScale] = useState(1);
     const showFps = useGameStore((state) => state.showFps);
-    const [fpsValue, setFpsValue] = useState(0);
+    const [fpsValue, setFpsValue] = useState<number | null>(null);
 
+    // PixiJS Ticker-based FPS — shows actual game engine FPS, not browser refresh rate
     useEffect(() => {
         if (!showFps) return;
 
-        const updateFps = () => {
-            try {
-                const pixiApp = PixiApp.getInstance();
-                const app = pixiApp.getApp();
-                if (app && app.ticker) {
-                    if (app.ticker.started) {
-                        const fps = Math.round(app.ticker.FPS);
-                        setFpsValue(fps > 0 ? fps : (isPowerSaving ? 30 : 60));
-                    } else {
-                        setFpsValue(isPowerSaving ? 30 : 60);
-                    }
-                } else {
-                    setFpsValue(isPowerSaving ? 30 : 60);
-                }
-            } catch {
-                setFpsValue(isPowerSaving ? 30 : 60);
+        let frameCount = 0;
+        let elapsedMs = 0;
+
+        const tickerCallback = (ticker: any) => {
+            // ticker.deltaMS is milliseconds since last frame
+            elapsedMs += ticker.deltaMS;
+            frameCount++;
+            if (elapsedMs >= 500) {
+                const fps = Math.round((frameCount / elapsedMs) * 1000);
+                setFpsValue(fps);
+                frameCount = 0;
+                elapsedMs = 0;
             }
         };
 
-        updateFps();
-        const interval = setInterval(updateFps, 500);
-        return () => clearInterval(interval);
-    }, [showFps, isPowerSaving]);
+        let cleanup: (() => void) | null = null;
+        try {
+            const pixiApp = PixiApp.getInstance();
+            const app = pixiApp.getApp();
+            app.ticker.add(tickerCallback);
+            // If ticker is stopped (static screen), show 0 — engine is idle
+            if (!app.ticker.started) setFpsValue(0);
+            cleanup = () => app.ticker.remove(tickerCallback);
+        } catch {
+            // PixiApp not yet initialized — show nothing
+            setFpsValue(null);
+        }
+
+        return () => { if (cleanup) cleanup(); };
+    }, [showFps]);
 
     useEffect(() => {
         const handleResize = () => {
@@ -320,7 +327,7 @@ export const GameHUD: React.FC = () => {
                                         letterSpacing: '1px',
                                     }}
                                 >
-                                    FPS
+                                    {fpsValue === 0 ? 'IDLE' : 'FPS'}
                                 </span>
                                 <span
                                     style={{
@@ -329,11 +336,15 @@ export const GameHUD: React.FC = () => {
                                         fontFamily: 'monospace',
                                         minWidth: '30px',
                                         textAlign: 'center',
-                                        color: fpsValue < 25 ? '#ff4444' : fpsValue < 50 ? '#ffcc00' : '#44ff44',
+                                        color: fpsValue === null ? '#888'
+                                            : fpsValue === 0 ? '#aaa'
+                                            : fpsValue < 25 ? '#ff4444'
+                                            : fpsValue < 50 ? '#ffcc00'
+                                            : '#44ff44',
                                         transition: 'color 0.3s',
                                     }}
                                 >
-                                    {fpsValue}
+                                    {fpsValue === null ? '—' : fpsValue === 0 ? '—' : fpsValue}
                                 </span>
                             </div>
                         )}

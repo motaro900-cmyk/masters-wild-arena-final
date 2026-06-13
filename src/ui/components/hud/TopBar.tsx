@@ -20,10 +20,7 @@ export const TopBar: React.FC<TopBarProps> = ({ onOpenWindow, mode }) => {
     const vkUser = useGameStore((state) => state.vkUser);
     const name = useGameStore((state) => state.name);
     const frame = useGameStore((state) => state.frame);
-    const graphicsQuality = useGameStore((state) => state.graphicsQuality);
     const textShadow = { textShadow: '0 2px 4px rgba(0,0,0,1), 0 0 10px rgba(0,0,0,0.5)' };
-
-    const isLow = graphicsQuality === 'LOW';
 
     if (mode === 'profile_only') {
         return (
@@ -34,9 +31,6 @@ export const TopBar: React.FC<TopBarProps> = ({ onOpenWindow, mode }) => {
                 <img
                     src={AssetsMap.UI.PANEL_PROFILE}
                     className="w-full h-full object-contain"
-                    style={{
-                        filter: isLow ? 'none' : 'contrast(1.1) saturate(1.1) brightness(0.95)',
-                    }}
                     alt=""
                 />
 
@@ -92,9 +86,6 @@ export const TopBar: React.FC<TopBarProps> = ({ onOpenWindow, mode }) => {
                     <div
                         key={i}
                         className="relative w-[180px] h-[55px] flex items-center group transition-all hover:brightness-125"
-                        style={{
-                            filter: isLow ? 'none' : 'contrast(1.15) saturate(1.15)',
-                        }}
                     >
                         <img src={item.img} className="absolute inset-0 w-full h-full object-contain" alt="" />
 

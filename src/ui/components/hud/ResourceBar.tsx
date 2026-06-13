@@ -15,11 +15,8 @@ export const ResourceBar: React.FC<{ onOpenShop?: (tab: string) => void }> = ({ 
     const maxEnergy = useGameStore((s) => s.maxEnergy);
     const lastEnergyUpdate = useGameStore((s) => s.lastEnergyUpdate);
     const regenerateEnergy = useGameStore((s) => s.regenerateEnergy);
-    const graphicsQuality = useGameStore((s) => s.graphicsQuality);
     const [hoveredRes, setHoveredRes] = useState<string | null>(null);
     const [timeLeft, setTimeLeft] = useState<{ next: string; full: string } | null>(null);
-
-    const isLow = graphicsQuality === 'LOW';
 
     // Обновляем таймер каждую секунду
     useEffect(() => {
@@ -77,7 +74,6 @@ export const ResourceBar: React.FC<{ onOpenShop?: (tab: string) => void }> = ({ 
                         alignItems: 'center',
                         padding: '0 6px',
                         cursor: 'default',
-                        filter: isLow ? 'none' : 'contrast(1.15) saturate(1.15)',
                     }}
                 >
                     {/* Tooltip для энергии */}
