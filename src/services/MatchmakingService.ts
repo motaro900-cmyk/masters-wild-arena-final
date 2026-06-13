@@ -6,6 +6,7 @@ import { getRandomBotName } from '../data/botNames';
 import { getRankInfo } from '../configs/RankSystem';
 import { useGameStore } from '../store/useGameStore';
 import { TimeService } from '../utils/TimeService';
+import { getLevelMultiplier } from '../features/heroes/leveling/HeroLevelCalculator';
 
 const SEARCH_TIMEOUT_MS = 10000; // 10 секунд поиск реального игрока
 const ATTACK_COOLDOWN_MS = 60 * 60 * 1000; // 1 час — нельзя атаковать одного игрока
@@ -108,7 +109,7 @@ const generateOpponentEquipment = (
 
 export const buildStatsFromEquipment = (heroId: string, level: number, equipment: Record<string, string | null>, avgItemLevel: number = 1) => {
     const heroData = HEROES_DB.find((h) => h.id === heroId) || HEROES_DB[0];
-    const levelMult = 1 + (level - 1) * 0.05;
+    const levelMult = getLevelMultiplier(level);
     const total = {
         hp: Math.round(heroData.stats.stamina * 10 * levelMult),
         attack: Math.round(heroData.stats.strength * 2 * levelMult),
@@ -177,13 +178,7 @@ class MatchmakingServiceClass {
             const botChance = 0.90;
             const forceBot = isHoneymoon || Math.random() < botChance;
             if (forceBot) {
-                const bot = this.generateBot(myRating, myLevel, myStats, winStreak, lossStreak);
-                // Scale bot 5-10% weaker for easy wins in this tier
-                const weakMult = 0.90 + Math.random() * 0.05; // 0.90–0.95
-                bot.stats.hp      = Math.round(bot.stats.hp      * weakMult);
-                bot.stats.attack  = Math.round(bot.stats.attack  * weakMult);
-                bot.stats.defense = Math.round(bot.stats.defense * weakMult);
-                return bot;
+                return this.generateBot(myRating, myLevel, myStats, winStreak, lossStreak);
             }
             // 10% chance: try real player with 5s timeout
             const real = await this.searchRealPlayer(myUserId, myRating, myWinRate, myLevel, myStats, 5000);
@@ -482,13 +477,23 @@ class MatchmakingServiceClass {
         const randomHeroId = allowedHeroes[Math.floor(Math.random() * allowedHeroes.length)];
         const randomHero = HEROES_DB.find((h) => h.id === randomHeroId) || HEROES_DB[0];
 
-        // Масштабируем уровень в зависимости от уровня игрока и серии побед/поражений
+        // Масштабируем уровень в зависимости от уровня игрока и серии побед/поражений (честное масштабирование)
         let botLevel = myLevel;
-        if (winStreak >= 3) botLevel += 1;
-        if (winStreak >= 6) botLevel += 2;
-        if (lossStreak >= 2) botLevel -= 1;
-        if (lossStreak >= 4) botLevel -= 2;
-        botLevel = Math.max(1, botLevel + Math.floor(Math.random() * 3) - 1);
+        if (winStreak > 0) {
+            if (winStreak === 1) {
+                botLevel = myLevel + Math.floor(Math.random() * 2); // level +0 to +1
+            } else if (winStreak === 2) {
+                botLevel = myLevel + 1 + Math.floor(Math.random() * 2); // level +1 to +2
+            } else { // winStreak >= 3
+                botLevel = myLevel + 2 + Math.floor(Math.random() * 3); // level +2 to +4
+            }
+        } else if (lossStreak > 0) {
+            botLevel = Math.max(1, myLevel - (1 + Math.floor(lossStreak / 2)));
+        } else {
+            // Обычный подбор без серий
+            botLevel = Math.max(1, myLevel + Math.floor(Math.random() * 3) - 1); // level -1, +0, or +1
+        }
+        botLevel = Math.min(80, botLevel);
 
         // 3. Определяем желаемую редкость экипировки и максимальный уровень предметов для бота в зависимости от кубков
         let targetRarity = 'COMMON';
@@ -514,9 +519,8 @@ class MatchmakingServiceClass {
             maxItemLevel = 10;
         }
 
-        // Корректируем редкость и лимит уровня на основе серии побед/поражений
+        // Корректируем редкость и лимит уровня на основе серии побед/поражений (уровень botLevel уже рассчитан выше)
         if (winStreak >= 2) {
-            botLevel += 1;
             maxItemLevel = Math.min(10, maxItemLevel + 1);
             if (targetRarity === 'COMMON') targetRarity = 'RARE';
             else if (targetRarity === 'RARE') targetRarity = 'EPIC';
@@ -524,7 +528,6 @@ class MatchmakingServiceClass {
             else if (targetRarity === 'LEGENDARY') targetRarity = 'MYTHIC';
         }
         if (winStreak >= 3) {
-            botLevel += 1; // Дополнительно +1 к уровню
             maxItemLevel = Math.min(10, maxItemLevel + 1);
             if (targetRarity === 'COMMON') targetRarity = 'EPIC';
             else if (targetRarity === 'RARE') targetRarity = 'LEGENDARY';
@@ -533,7 +536,6 @@ class MatchmakingServiceClass {
         }
 
         if (lossStreak >= 2) {
-            botLevel = Math.max(1, botLevel - 1);
             maxItemLevel = Math.max(1, maxItemLevel - 1);
             if (targetRarity === 'MYTHIC') targetRarity = 'LEGENDARY';
             else if (targetRarity === 'LEGENDARY') targetRarity = 'EPIC';
@@ -541,7 +543,6 @@ class MatchmakingServiceClass {
             else if (targetRarity === 'RARE') targetRarity = 'COMMON';
         }
         if (lossStreak >= 4) {
-            botLevel = Math.max(1, botLevel - 1);
             maxItemLevel = Math.max(1, maxItemLevel - 1);
             if (targetRarity === 'MYTHIC') targetRarity = 'EPIC';
             else if (targetRarity === 'LEGENDARY') targetRarity = 'RARE';
@@ -595,68 +596,8 @@ class MatchmakingServiceClass {
         // Генерируем экипировку с учетом максимального уровня предметов
         const equipment = generateOpponentEquipment(botLevel, targetRarity, maxEquippedSlots, maxItemLevel);
 
-        // Рассчитываем множитель характеристик
-        const baseMult = 0.82 + Math.min(0.4, (myRating / 500) * 0.28);
-
-        let winStreakMod = 0;
-        if (winStreak > 0) {
-            if (winStreak === 1) winStreakMod = 0.02;
-            else if (winStreak === 2) winStreakMod = 0.05;
-            else if (winStreak === 3) winStreakMod = 0.1;
-            else if (winStreak === 4) winStreakMod = 0.15;
-            else winStreakMod = 0.2 + (winStreak - 5) * 0.04;
-            winStreakMod = Math.min(0.45, winStreakMod);
-        }
-
-        let lossStreakMod = 0;
-        if (lossStreak > 0) {
-            if (lossStreak === 1) lossStreakMod = -0.05;
-            else if (lossStreak === 2) lossStreakMod = -0.12;
-            else if (lossStreak === 3) lossStreakMod = -0.20;
-            else lossStreakMod = -0.25 - (lossStreak - 4) * 0.05;
-            lossStreakMod = Math.max(-0.40, lossStreakMod);
-        }
-
-        const variance = Math.random() * 0.08 - 0.04;
-        let statsMultiplier = baseMult + winStreakMod + lossStreakMod + variance;
-        statsMultiplier = Math.max(0.65, Math.min(1.75, statsMultiplier));
-
-        if (myRating < 30) {
-            statsMultiplier = 0.7;
-        }
-
-        // Рассчитываем характеристики бота на основе сгенерированного снаряжения и уровня
-        const rawStats = buildStatsFromEquipment(randomHero.id, botLevel, equipment, avgItemLevel);
-
-        const finalStats = {
-            hp: Math.round(rawStats.hp * statsMultiplier),
-            attack: Math.round(rawStats.attack * statsMultiplier),
-            defense: Math.round(rawStats.defense * statsMultiplier),
-            speed: rawStats.speed,
-            critChance: Math.min(75, Math.round(rawStats.critChance * statsMultiplier)),
-            evasion: Math.min(60, Math.round(rawStats.evasion * statsMultiplier)),
-        };
-
-        // Применяем ролевые коэффициенты для разнообразия геймплея
-        const role = randomHero.role;
-        if (role === 'TANK') {
-            finalStats.hp = Math.round(finalStats.hp * 1.2);
-            finalStats.defense = Math.round(finalStats.defense * 1.25);
-            finalStats.attack = Math.round(finalStats.attack * 0.85);
-        } else if (role === 'ASSASSIN') {
-            finalStats.hp = Math.round(finalStats.hp * 0.85);
-            finalStats.attack = Math.round(finalStats.attack * 1.15);
-            finalStats.speed = +(finalStats.speed * 1.08).toFixed(2);
-            finalStats.critChance = Math.min(75, finalStats.critChance + 5);
-            finalStats.evasion = Math.min(60, finalStats.evasion + 5);
-        } else if (role === 'MAGE') {
-            finalStats.attack = Math.round(finalStats.attack * 1.1);
-            finalStats.defense = Math.round(finalStats.defense * 0.9);
-        } else if (role === 'SUPPORT') {
-            finalStats.hp = Math.round(finalStats.hp * 1.05);
-            finalStats.defense = Math.round(finalStats.defense * 1.1);
-            finalStats.attack = Math.round(finalStats.attack * 0.9);
-        }
+        // Рассчитываем характеристики бота на основе сгенерированного снаряжения и уровня (честно, без искусственных множителей)
+        const finalStats = buildStatsFromEquipment(randomHero.id, botLevel, equipment, avgItemLevel);
 
         return {
             id: randomHero.id,
@@ -675,7 +616,7 @@ class MatchmakingServiceClass {
                 crit: finalStats.critChance,
                 evasion: finalStats.evasion,
                 critChance: finalStats.critChance,
-                avgItemLevel: rawStats.avgItemLevel,
+                avgItemLevel: finalStats.avgItemLevel,
             },
             winRate: Math.max(30, Math.min(75, Math.floor(48 + (botRating % 15) + winStreak * 2 - lossStreak * 2))),
             isBot: true,
