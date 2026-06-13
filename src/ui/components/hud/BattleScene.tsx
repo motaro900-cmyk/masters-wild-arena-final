@@ -388,10 +388,12 @@ export const BattleScene: React.FC = () => {
                     }
                 }
 
+                const containerWidth = containerRef.current ? containerRef.current.clientWidth : 1920;
+                const containerHeight = containerRef.current ? containerRef.current.clientHeight : 1080;
                 const isPlayerTarget = event.target === 'player';
-                // В ХИБРИДНОЙ АРХИТЕКТУРЕ: Игрок стоит на X = W * 0.25 (480px), Враг на X = W * 0.75 (1440px)
-                const x = isPlayerTarget ? 480 : 1440;
-                const y = 400; // Y-координата над головами бойцов
+                const calculatedX = isPlayerTarget ? containerWidth * 0.25 : containerWidth * 0.75;
+                const x = Math.max(150, Math.min(containerWidth - 150, calculatedX));
+                const y = containerHeight * 0.35;
 
                 // Извлекаем роли участников для кастомного оформления
                 const attackerSide = isPlayerTarget ? 'enemy' : 'player';
@@ -572,13 +574,15 @@ export const BattleScene: React.FC = () => {
                 const offsetX = (Math.random() - 0.5) * 80;
                 const offsetY = (Math.random() - 0.5) * 60;
 
+                const isLongText = text.length > 12;
+
                 const newDmg = {
                     id: Date.now() + Math.random(),
                     text,
                     x: x + offsetX,
                     y: y + offsetY - 50, // Slightly higher baseline
                     color,
-                    fontSize,
+                    fontSize: isLongText ? '36px' : fontSize,
                     initialScale,
                     animateScale,
                     type: event.type,
@@ -586,6 +590,8 @@ export const BattleScene: React.FC = () => {
                     textShadow,
                     animateX,
                     animateY,
+                    maxWidth: isLongText ? '350px' : undefined,
+                    textAlign: 'center',
                 };
 
                 // Ограничение: не больше 5 одновременных тегов на экране
@@ -621,6 +627,7 @@ export const BattleScene: React.FC = () => {
         run();
 
         return () => {
+            gsap.globalTimeline.clear();
             gsap.globalTimeline.timeScale(1);
             engine.destroy();
             (window as any).__BATTLE_ENGINE__ = null;
@@ -736,12 +743,12 @@ export const BattleScene: React.FC = () => {
                             initial={{
                                 opacity: 0,
                                 scale: dmg.initialScale,
-                                transform: `translate3d(${dmg.x}px, ${dmg.y}px, 0)`,
+                                transform: `translate3d(${dmg.x}px, ${dmg.y}px, 0) translate(-50%, -50%)`,
                             }}
                             animate={{
                                 opacity: [0, 1, 1, 0],
                                 scale: dmg.animateScale,
-                                transform: `translate3d(${dmg.x + animateX}px, ${dmg.y + animateY}px, 0)`,
+                                transform: `translate3d(${dmg.x + animateX}px, ${dmg.y + animateY}px, 0) translate(-50%, -50%)`,
                             }}
                             transition={{
                                 duration: 1.0 / timeScale,
@@ -766,6 +773,8 @@ export const BattleScene: React.FC = () => {
                                 zIndex: 1000,
                                 fontFamily: "'Cinzel', serif",
                                 willChange: 'transform, opacity',
+                                maxWidth: dmg.maxWidth || 'none',
+                                textAlign: (dmg.textAlign || 'center') as any,
                             }}
                         >
                             {dmg.text}

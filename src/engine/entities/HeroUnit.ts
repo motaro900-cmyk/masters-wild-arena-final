@@ -913,6 +913,10 @@ export class HeroUnit extends PIXI.Container implements IEffectTarget, IStatusEf
         return Animations.animateHitReaction(this, isCrit);
     }
 
+    public animateDefend(): Promise<void> {
+        return Animations.animateDefend(this);
+    }
+
     public animateDodge(isPlayer: boolean): Promise<void> {
         return Animations.animateDodge(this, isPlayer);
     }

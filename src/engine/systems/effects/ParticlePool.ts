@@ -88,4 +88,9 @@ export class ParticlePool {
         }
         this.pool = [];
     }
+
+    public clear(): void {
+        this.destroy();
+        ParticlePool.instance = null;
+    }
 }

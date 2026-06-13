@@ -411,6 +411,13 @@ class AudioService {
     }
 
     /**
+     * Воспроизведение звука смерти (падения) героя
+     */
+    public playDeathSFX() {
+        this.playSFX('/assets/audio/sfx/miss.mp3');
+    }
+
+    /**
      * Воспроизведение звука критического удара (с увеличенным объемом/эффектом)
      */
     public playCritSFX() {

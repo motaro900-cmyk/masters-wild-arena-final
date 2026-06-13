@@ -487,6 +487,7 @@ export function animateDeath(unit: HeroUnit, isPlayer: boolean): Promise<void> {
         const targetRotation = isFallbackDeath ? unit.rotation + (isPlayer ? -Math.PI / 2.5 : Math.PI / 2.5) : 0; // Already flat or fall pose, no extra rotation needed
 
         // Падение тела и растворение (Slower)
+        audioService.playDeathSFX();
         tl.to(unit, {
             rotation: targetRotation,
             alpha: 0,
@@ -508,6 +509,57 @@ export function animateDeath(unit: HeroUnit, isPlayer: boolean): Promise<void> {
                 0,
             );
         }
+    });
+}
+
+/**
+ * GSAP-анимация блока (defend stance + легкое проседание назад)
+ */
+export function animateDefend(unit: HeroUnit): Promise<void> {
+    const anyUnit = unit as any;
+    anyUnit.clearCurrentResolve();
+    return new Promise((resolve) => {
+        anyUnit.currentResolve = resolve;
+        const timeScale = useGameStore.getState().timeScale || 1;
+        const startX = unit.x;
+        const braceDist = 15; // Слегка прогибается назад при блоке
+        const dir = unit.x < 960 ? -1 : 1;
+
+        gsap.killTweensOf(unit);
+
+        const hasPoses = unit.posesTextures && unit.posesTextures.length > 0;
+
+        if (hasPoses) {
+            unit.setFrame(unit.defendFrameIdx); // Defend stance
+        }
+
+        const tl = gsap.timeline({
+            onComplete: () => {
+                unit.x = startX;
+                if (hasPoses) {
+                    unit.setFrame(unit.idleFrameIdx); // return to Idle
+                }
+                if (anyUnit.currentResolve === resolve) {
+                    anyUnit.currentResolve = null;
+                }
+                resolve();
+            },
+        });
+        tl.timeScale(timeScale);
+
+        // Bracing/blocking slide back (Subtle)
+        tl.to(unit, {
+            x: startX + braceDist * dir,
+            duration: 0.15,
+            ease: 'power1.out',
+        });
+
+        // Return to normal stance
+        tl.to(unit, {
+            x: startX,
+            duration: 0.3,
+            ease: 'power2.inOut',
+        });
     });
 }
 

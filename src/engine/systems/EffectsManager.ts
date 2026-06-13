@@ -60,13 +60,14 @@ export class EffectsManager {
     private timeScale: number = 1.0;
     public activeTrails: PIXI.Sprite[] = [];
     private effectCounter: number = 0;
+    private particlePool: ParticlePool;
 
     /**
      * Приватный конструктор (Singleton)
      */
     private constructor() {
         this.pixiApp = PixiApp.getInstance();
-        ParticlePool.getInstance(); // Auto-initializes the particle pool
+        this.particlePool = ParticlePool.getInstance(); // Auto-initializes the particle pool
     }
 
     /**
@@ -556,7 +557,7 @@ export class EffectsManager {
     public destroy(): void {
         try {
             this.stopAllEffects();
-            ParticlePool.getInstance().destroy();
+            this.particlePool.clear();
             if (import.meta.env.DEV) console.log('💥 EffectsManager destroyed');
         } catch (error) {
             console.error('❌ Destroy error:', error);

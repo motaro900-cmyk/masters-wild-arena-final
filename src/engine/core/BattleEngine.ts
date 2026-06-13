@@ -867,7 +867,7 @@ export class BattleEngine {
             this.addCombatLog(logMsg);
             this.onCombatEvent({ type: 'BLOCK', damage: blockedDamage, target: isPlayer ? 'enemy' : 'player' });
 
-            victim.animateHitReaction(false);
+            victim.animateDefend();
             EffectsManager.getInstance().blockEffect(victim);
             victim.playHitEffect();
 
@@ -880,7 +880,7 @@ export class BattleEngine {
                 if (nextHP <= 0) victim.animateDeath(true);
             }
 
-            await new Promise((r) => setTimeout(r, 400 / timeScale));
+            await new Promise((r) => setTimeout(r, 600 / timeScale));
             await attacker.animateLungeReturn(startX, startY);
             return;
         }
@@ -961,7 +961,7 @@ export class BattleEngine {
             if (nextHP <= 0) victim.animateDeath(true);
         }
 
-        await new Promise((r) => setTimeout(r, 400 / timeScale));
+        await new Promise((r) => setTimeout(r, 600 / timeScale));
         if (isShadowStep) {
             await attacker.animateTeleportOut();
             const originalFaceScaleX = attacker.parentDefaultScaleX;
