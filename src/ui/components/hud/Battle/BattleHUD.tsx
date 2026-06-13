@@ -112,6 +112,7 @@ const HpBar = React.memo<{
                         position: 'relative',
                         overflow: 'hidden',
                         minWidth: 0,
+                        transition: 'width 0.4s ease-out',
                     }}
                 >
                     {/* Top highlight sheen */}
@@ -149,6 +150,7 @@ const HpBar = React.memo<{
                             position: 'relative',
                             overflow: 'hidden',
                             minWidth: 0,
+                            transition: 'width 0.4s ease-out',
                         }}
                     >
                         {/* Top highlight sheen */}

@@ -125,7 +125,7 @@ export function criticalHit(target: IEffectTarget, intensity: number = 1.5): voi
         SoundManager.getInstance().playCrit();
 
         // Тряска
-        fx.screenShake(15 * intensity, 0.92, 400);
+        fx.screenShake(8, 0.95, 400);
 
         // Вспышка желтого
         const flashSprite = target.bodySprite || target;

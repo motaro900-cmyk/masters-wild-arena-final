@@ -448,26 +448,24 @@ export const BattleScene: React.FC = () => {
                         }
                         break;
                     case 'CRIT':
-                        text = `-${Math.round(event.damage)}!`;
+                        text = `-${Math.round(event.damage)}!!`;
+                        color = '#FF2222'; // Ярко-красный
                         if (attackerRole === 'TANK') {
-                            color = '#FF8C00'; // Огненно-рыжий крит танка
-                            fontSize = '96px';
+                            fontSize = '144px'; // 96 * 1.5
                             animateScale = 2.0;
-                            textShadow = '0 0 18px rgba(255, 140, 0, 0.9), 3px 3px 0px #000';
+                            textShadow = '0 0 18px rgba(255, 34, 34, 0.95), 3px 3px 0px #000';
                             animateY = -100; // Тяжелый крит висит ниже
                         } else if (attackerRole === 'ASSASSIN') {
-                            color = '#A78BFA'; // Насыщенный фиолетовый крит ассасина
                             fontStyle = 'italic';
-                            fontSize = '86px';
+                            fontSize = '129px'; // 86 * 1.5
                             animateScale = 1.8;
-                            textShadow = '0 0 15px rgba(167, 139, 250, 0.9), 3px 3px 0px #000';
+                            textShadow = '0 0 15px rgba(255, 34, 34, 0.95), 3px 3px 0px #000';
                             animateX = (Math.random() - 0.5) * 80;
                             animateY = -200; // Быстрый вылет вверх
                         } else {
-                            color = '#00E5FF'; // Кислотно-бирюзовый крит бойца
-                            fontSize = '80px';
+                            fontSize = '120px'; // 80 * 1.5
                             animateScale = 1.8;
-                            textShadow = '0 0 15px rgba(0, 229, 255, 0.9), 3px 3px 0px #000';
+                            textShadow = '0 0 15px rgba(255, 34, 34, 0.95), 3px 3px 0px #000';
                             animateY = -160;
                         }
 

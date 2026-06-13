@@ -1,4 +1,5 @@
 import * as PIXI from 'pixi.js';
+import { gsap } from 'gsap';
 import { HeroUnit } from '../entities/HeroUnit';
 import { EffectsManager } from '../systems/EffectsManager';
 import { AssetsMap } from '../../configs/AssetsMap';
@@ -226,9 +227,72 @@ export class BattleEngine {
             await this.enemy.loadHero(enemyId);
             await this.enemy.updateEquipment({});
 
-            this.player.position.set(W * 0.25, H * 0.82);
-            this.player.defaultX = this.player.x;
-            this.player.defaultY = this.player.y;
+            // 1. Determine particle types based on background file name
+            const lowerBg = randomBg.toLowerCase();
+            let particleType: 'snow' | 'fire' | 'dust' = 'dust';
+            if (lowerBg.includes('ice') || lowerBg.includes('snow') || lowerBg.includes('frost')) {
+                particleType = 'snow';
+            } else if (lowerBg.includes('fire') || lowerBg.includes('lava') || lowerBg.includes('volcano')) {
+                particleType = 'fire';
+            }
+
+            // Create background particles container & array
+            interface IArenaParticle {
+                graphics: PIXI.Graphics;
+                x: number;
+                y: number;
+                vx: number;
+                vy: number;
+                alpha: number;
+                scale: number;
+                parallax: number;
+            }
+            const arenaParticles: IArenaParticle[] = [];
+            const particleContainer = new PIXI.Container();
+            pixiApp.backgroundLayer.addChild(particleContainer);
+
+            // Generate 30 background particles
+            for (let i = 0; i < 30; i++) {
+                const g = new PIXI.Graphics();
+                let color = 0xffffff;
+                let radius = 2 + Math.random() * 3;
+                
+                if (particleType === 'snow') {
+                    color = 0xffffff;
+                    g.circle(0, 0, radius);
+                    g.fill({ color: 0xffffff, alpha: 0.8 });
+                } else if (particleType === 'fire') {
+                    color = Math.random() > 0.5 ? 0xff4500 : 0xffaa00;
+                    g.circle(0, 0, radius - 1);
+                    g.fill({ color, alpha: 0.9 });
+                } else {
+                    color = Math.random() > 0.5 ? 0xa0c080 : 0xe0d8c0; // greenish leaf / light dust
+                    g.ellipse(0, 0, radius + 2, radius);
+                    g.fill({ color, alpha: 0.6 });
+                }
+                
+                const px = Math.random() * W;
+                const py = Math.random() * H;
+                g.position.set(px, py);
+                particleContainer.addChild(g);
+                
+                arenaParticles.push({
+                    graphics: g,
+                    x: px,
+                    y: py,
+                    vx: (Math.random() - 0.5) * 1.5 + (particleType === 'snow' ? 0.5 : 0.2),
+                    vy: Math.random() * 2 + (particleType === 'snow' ? 1.5 : 0.8),
+                    alpha: 0.3 + Math.random() * 0.7,
+                    scale: 0.5 + Math.random() * 0.5,
+                    parallax: 0.3 + Math.random() * 0.7
+                });
+            }
+
+            // Spawn player outside screen (left: -200) and define default positions
+            const targetPlayerX = W * 0.25;
+            this.player.position.set(-200, H * 0.82);
+            this.player.defaultX = targetPlayerX;
+            this.player.defaultY = H * 0.82;
 
             const playerBaseScale = this.player.config?.baseScale || 1.0;
             this.player.parentDefaultScaleX = playerBaseScale;
@@ -237,6 +301,7 @@ export class BattleEngine {
             this.player.alpha = 1;
             this.player.visible = true;
 
+            // Spawn enemy outside screen (right: W + 200) and define default positions
             let enemyY = H * 0.82;
             let enemyBaseScale = this.enemy.config?.baseScale || 1.0;
             let enemyScaleX = -enemyBaseScale;
@@ -245,9 +310,12 @@ export class BattleEngine {
                 enemyY = H * 0.88;
                 enemyScaleX = enemyBaseScale;
             }
-            this.enemy.position.set(W * 0.75, enemyY);
-            this.enemy.defaultX = this.enemy.x;
-            this.enemy.defaultY = this.enemy.y;
+            
+            const targetEnemyX = W * 0.75;
+            this.enemy.position.set(W + 200, enemyY);
+            this.enemy.defaultX = targetEnemyX;
+            this.enemy.defaultY = enemyY;
+            
             this.enemy.parentDefaultScaleX = enemyScaleX;
             this.enemy.parentDefaultScaleY = enemyBaseScale;
             this.enemy.scale.set(enemyScaleX, enemyBaseScale);
@@ -256,6 +324,10 @@ export class BattleEngine {
 
             pixiApp.gameLayer.addChild(this.player, this.enemy);
             pixiApp.startRendering();
+
+            // GSAP entrance animations from outside the screen to target positions
+            gsap.to(this.player, { x: targetPlayerX, duration: 0.6, ease: 'power2.out' });
+            gsap.to(this.enemy, { x: targetEnemyX, duration: 0.6, ease: 'power2.out' });
 
             this.updateState({
                 playerHP: this.playerStats.hp,
@@ -276,13 +348,32 @@ export class BattleEngine {
 
                 if (this.player) this.player.update(delta);
                 if (this.enemy) this.enemy.update(delta);
+
+                // Update background particles
+                for (const p of arenaParticles) {
+                    p.x += p.vx * delta * p.parallax;
+                    p.y += p.vy * delta * p.parallax;
+
+                    // Wrap around boundaries
+                    if (p.y > H + 20) {
+                        p.y = -20;
+                        p.x = Math.random() * W;
+                    }
+                    if (p.x > W + 20) {
+                        p.x = -20;
+                    } else if (p.x < -20) {
+                        p.x = W + 20;
+                    }
+
+                    p.graphics.position.set(p.x, p.y);
+                }
             };
             pixiApp.addUpdateLoop(this.updateCallback);
 
             this.initTimeoutId = setTimeout(() => {
                 this.isCombatRunning = true;
                 this.runCombatLoop();
-            }, 400);
+            }, 800);
         } catch (error) {
             console.error('BattleEngine initialization failed:', error);
             this.isInitialized = false; // сброс флага чтобы разрешить повторную инициализацию
@@ -397,7 +488,7 @@ export class BattleEngine {
             }
 
             if (!this.isCombatRunning || this.state.playerHP <= 0 || this.state.enemyHP <= 0) break;
-            await new Promise((r) => setTimeout(r, 2200 / timeScale));
+            await new Promise((r) => setTimeout(r, 1000 / timeScale));
         }
 
         if (this.state.playerHP <= 0 || this.state.enemyHP <= 0) {
@@ -625,7 +716,7 @@ export class BattleEngine {
                 if (nextHP <= 0) victim.animateDeath(true);
             }
 
-            await new Promise((r) => setTimeout(r, 900 / timeScale));
+            await new Promise((r) => setTimeout(r, 600 / timeScale));
             await attacker.animateLungeReturn(startX, startY);
             return;
         }
@@ -789,7 +880,7 @@ export class BattleEngine {
                 if (nextHP <= 0) victim.animateDeath(true);
             }
 
-            await new Promise((r) => setTimeout(r, 650 / timeScale));
+            await new Promise((r) => setTimeout(r, 400 / timeScale));
             await attacker.animateLungeReturn(startX, startY);
             return;
         }
@@ -870,7 +961,7 @@ export class BattleEngine {
             if (nextHP <= 0) victim.animateDeath(true);
         }
 
-        await new Promise((r) => setTimeout(r, 650 / timeScale));
+        await new Promise((r) => setTimeout(r, 400 / timeScale));
         if (isShadowStep) {
             await attacker.animateTeleportOut();
             const originalFaceScaleX = attacker.parentDefaultScaleX;
