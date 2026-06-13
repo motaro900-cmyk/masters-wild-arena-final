@@ -110,7 +110,7 @@ const StatCompareRow: React.FC<StatCompareRowProps> = ({ label, playerVal, enemy
     );
 };
 
-import { ITEMS_DATABASE } from '../../../game/configs/ItemsConfig';
+import { ITEMS_DATABASE, calculateItemPower } from '../../../game/configs/ItemsConfig';
 import { AssetsMap } from '../../../configs/AssetsMap';
 
 const getRarityColor = (rarity: string) => {
@@ -375,6 +375,24 @@ export const PreBattleScreen: React.FC<PreBattleScreenProps> = ({
     const [isStarting, setIsStarting] = React.useState(false);
 
     const playerEq = heroEquipment[selectedHeroId] || {};
+
+    const playerGearPower = React.useMemo(() => {
+        let total = 0;
+        Object.values(playerEq).forEach((itemId: any) => {
+            if (!itemId) return;
+            let templateId = itemId;
+            if (!ITEMS_DATABASE[itemId]) {
+                const match = Object.keys(ITEMS_DATABASE)
+                    .filter((key) => itemId.startsWith(key + '_'))
+                    .sort((a, b) => b.length - a.length)[0];
+                templateId = match || itemId;
+            }
+            const item = (ITEMS_DATABASE as any)[templateId];
+            if (item) total += calculateItemPower(item);
+        });
+        return total;
+    }, [playerEq]);
+
     const enemyEq: Record<string, string | null> = React.useMemo(() => {
         return {
             HELMETS: 'h1',
@@ -499,6 +517,67 @@ export const PreBattleScreen: React.FC<PreBattleScreenProps> = ({
 
                         {/* Equipment rows below character */}
                         <CircularGearLayout equipment={playerEq} />
+
+                        {/* ОБЩАЯ МОЩЬ (PLAYER) */}
+                        <div
+                            style={{
+                                marginTop: '10px',
+                                background: 'rgba(10, 8, 5, 0.85)',
+                                border: '1.5px solid rgba(240, 192, 64, 0.35)',
+                                borderRadius: '12px',
+                                padding: '4px 16px',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                width: '180px',
+                                boxShadow: '0 4px 10px rgba(0,0,0,0.5)',
+                            }}
+                        >
+                            <span
+                                style={{
+                                    fontSize: '9px',
+                                    fontWeight: 900,
+                                    color: '#b5a695',
+                                    letterSpacing: '1px',
+                                    textTransform: 'uppercase',
+                                    fontFamily: "'Montserrat', sans-serif",
+                                    marginBottom: '2px',
+                                }}
+                            >
+                                ОБЩАЯ МОЩЬ
+                            </span>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                <span
+                                    style={{
+                                        fontSize: '20px',
+                                        fontWeight: 'bold',
+                                        color: '#fcd34d',
+                                        fontFamily: "'Russo One', sans-serif",
+                                    }}
+                                >
+                                    {playerGearPower}
+                                </span>
+                                {playerGearPower === 0 && (
+                                    <span
+                                        style={{
+                                            fontSize: '9px',
+                                            color: '#f97316',
+                                            fontWeight: 'bold',
+                                            fontFamily: "'Montserrat', sans-serif",
+                                            marginLeft: '4px',
+                                            whiteSpace: 'nowrap',
+                                        }}
+                                    >
+                                        Надень снаряжение!
+                                    </span>
+                                )}
+                                <img
+                                    src={AssetsMap.UI.ICON_POWER}
+                                    style={{ width: '18px', height: '18px', objectFit: 'contain' }}
+                                    alt="power"
+                                />
+                            </div>
+                        </div>
 
                         <div
                             style={{

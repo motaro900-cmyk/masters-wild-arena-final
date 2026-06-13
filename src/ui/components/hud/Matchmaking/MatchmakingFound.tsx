@@ -59,7 +59,7 @@ export const MatchmakingFound: React.FC<MatchmakingFoundProps> = ({
     onCancel,
     onStartFight,
 }) => {
-    const { heroEquipment, selectedHeroId, title, name, wins, totalBattles, isPremium } = useGameStore();
+    const { heroEquipment, selectedHeroId, title, name, wins, totalBattles, isPremium, winStreak } = useGameStore();
     const [isStarting, setIsStarting] = React.useState(false);
 
     // --- Мемоизированные вычисления ---
@@ -84,8 +84,8 @@ export const MatchmakingFound: React.FC<MatchmakingFoundProps> = ({
     const opponentPower = React.useMemo(() => calculateTotalPower(enemyEq), [enemyEq]);
 
     const winRewards = React.useMemo(
-        () => calculateWinRewards(level, isPremium, rating, opponent.rating),
-        [level, isPremium, rating, opponent.rating],
+        () => calculateWinRewards(level, isPremium, rating, opponent.rating, winStreak),
+        [level, isPremium, rating, opponent.rating, winStreak],
     );
 
     const playerWinRateStr = React.useMemo(() => {
@@ -275,6 +275,20 @@ export const MatchmakingFound: React.FC<MatchmakingFoundProps> = ({
                             >
                                 {playerPower}
                             </span>
+                            {playerPower === 0 && (
+                                <span
+                                    style={{
+                                        fontSize: '10px',
+                                        color: '#f97316',
+                                        fontWeight: 'bold',
+                                        fontFamily: "'Montserrat', sans-serif",
+                                        marginLeft: '4px',
+                                        whiteSpace: 'nowrap',
+                                    }}
+                                >
+                                    Надень снаряжение!
+                                </span>
+                            )}
                             <img
                                 src={AssetsMap.UI.ICON_POWER}
                                 style={{ width: '26px', height: '26px', objectFit: 'contain' }}
@@ -690,7 +704,7 @@ export const MatchmakingFound: React.FC<MatchmakingFoundProps> = ({
                                 />
                                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
                                     <span style={{ fontSize: '11px', fontWeight: 900, color: '#fff', lineHeight: '1' }}>
-                                        +{winRewards.trophies}
+                                        {winRewards.trophies}
                                     </span>
                                     <span
                                         style={{

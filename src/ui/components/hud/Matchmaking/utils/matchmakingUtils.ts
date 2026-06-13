@@ -28,8 +28,9 @@ export function calculateWinRewards(
     playerLevel: number,
     isPremium: boolean,
     playerRating: number,
-    opponentRating: number,
-): { goldRange: string; xp: number; trophies: number } {
+    _opponentRating: number,
+    winStreak?: number,
+): { goldRange: string; xp: number; trophies: string } {
     const pLevel = playerLevel || 1;
 
     let goldMin = 70;
@@ -66,19 +67,56 @@ export function calculateWinRewards(
     const xpBase = getXPReward(pLevel, true);
     const xpAmount = Math.round(xpBase * (isPremium ? 1.25 : 1.0));
 
-    const diff = (opponentRating || 0) - (playerRating || 0);
-    let trophies = 20;
-    if (diff >= 100) {
-        trophies = 30;
-    } else if (diff >= 0) {
-        trophies = 20;
+    let baseMin = 20;
+    let baseMax = 20;
+
+    if (playerRating < 1000) {
+        baseMin = 70;
+        baseMax = 100;
+    } else if (playerRating < 3000) {
+        baseMin = 40;
+        baseMax = 60;
+    } else if (playerRating < 4500) {
+        baseMin = 20;
+        baseMax = 35;
+    } else if (playerRating < 6000) {
+        baseMin = 12;
+        baseMax = 25;
+    } else if (playerRating < 7500) {
+        baseMin = 10;
+        baseMax = 20;
+    } else if (playerRating < 9000) {
+        baseMin = 10;
+        baseMax = 18;
     } else {
-        trophies = 10;
+        baseMin = 10;
+        baseMax = 15;
+    }
+
+    // Добавляем стрик-бонус за серию побед
+    const nextStreak = (winStreak || 0) + 1;
+    let streakBonus = 0;
+    if (nextStreak >= 10) {
+        streakBonus = 35;
+    } else if (nextStreak >= 5) {
+        streakBonus = 20;
+    } else if (nextStreak >= 3) {
+        streakBonus = 10;
+    }
+
+    const minTrophies = baseMin + streakBonus;
+    const maxTrophies = baseMax + streakBonus;
+
+    let trophiesStr = "";
+    if (minTrophies !== maxTrophies) {
+        trophiesStr = `+${minTrophies}-${maxTrophies} 🏆`;
+    } else {
+        trophiesStr = `+${minTrophies} 🏆`;
     }
 
     return {
         goldRange: `${goldMin}-${goldMax}`,
         xp: xpAmount,
-        trophies,
+        trophies: trophiesStr,
     };
 }
