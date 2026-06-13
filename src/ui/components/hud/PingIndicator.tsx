@@ -1,6 +1,11 @@
 import React from 'react';
+import { useGameStore } from '../../../store/useGameStore';
 
 export const PingIndicator: React.FC = () => {
+    const showPing = useGameStore((state) => state.showPing !== false);
+
+    if (!showPing) return null;
+
     const [ping, setPing] = React.useState<number>(24);
     const [status, setStatus] = React.useState<'good' | 'medium' | 'bad'>('good');
 
