@@ -39,6 +39,7 @@ const generateOpponentEquipment = (
     oppLevel: number,
     targetRarity: string = 'COMMON',
     maxEquippedSlots: number = 7,
+    maxItemLevel: number = 99,
 ): Record<string, string | null> => {
     const equip: Record<string, string | null> = {
         WEAPONS: null,
@@ -65,6 +66,7 @@ const generateOpponentEquipment = (
     }
 
     const raritiesOrder = ['MYTHIC', 'LEGENDARY', 'EPIC', 'RARE', 'COMMON'];
+    const allowedLevel = Math.min(oppLevel, maxItemLevel);
 
     slots.forEach((slot) => {
         if (!slotsToEquip.includes(slot)) {
@@ -76,7 +78,7 @@ const generateOpponentEquipment = (
 
         for (const rarity of searchList) {
             const candidates = Object.values(ITEMS_DATABASE).filter(
-                (item: any) => item.subTab === slot && item.requiredLevel <= oppLevel && item.rarity === rarity,
+                (item: any) => item.subTab === slot && item.requiredLevel <= allowedLevel && item.rarity === rarity,
             );
             if (candidates.length > 0) {
                 candidates.sort((a: any, b: any) => b.requiredLevel - a.requiredLevel);
@@ -88,7 +90,7 @@ const generateOpponentEquipment = (
 
         if (!chosen) {
             const candidates = Object.values(ITEMS_DATABASE).filter(
-                (item: any) => item.subTab === slot && item.requiredLevel <= oppLevel,
+                (item: any) => item.subTab === slot && item.requiredLevel <= allowedLevel,
             );
             if (candidates.length > 0) {
                 candidates.sort((a: any, b: any) => b.requiredLevel - a.requiredLevel);
@@ -414,6 +416,36 @@ class MatchmakingServiceClass {
         };
     }
 
+    private getAllowedBotHeroes(myRating: number): string[] {
+        const allowed = ['panda']; // Фэн Лун всегда доступен
+        if (myRating >= 400) allowed.push('raccoon');
+        if (myRating >= 1000) allowed.push('minotaur');
+        if (myRating >= 2000) allowed.push('tiger_warrior');
+        if (myRating >= 3000) allowed.push('lion_knight');
+
+        // Моделируем раннюю покупку персонажей (за золото/кристаллы)
+        // Если игрок прошел хотя бы 50% пути до разблокировки следующего героя,
+        // даем 15% шанс, что бот может использовать этого персонажа.
+        const nextHeroMap = [
+            { threshold: 400, id: 'raccoon' },
+            { threshold: 1000, id: 'minotaur' },
+            { threshold: 2000, id: 'tiger_warrior' },
+            { threshold: 3000, id: 'lion_knight' },
+        ];
+
+        for (const nextHero of nextHeroMap) {
+            if (myRating < nextHero.threshold && myRating >= nextHero.threshold * 0.5) {
+                if (Math.random() < 0.15) {
+                    if (!allowed.includes(nextHero.id)) {
+                        allowed.push(nextHero.id);
+                    }
+                }
+            }
+        }
+
+        return allowed;
+    }
+
     /**
      * Генерирует замаскированного бота — внешне неотличим от реального игрока.
      */
@@ -424,11 +456,31 @@ class MatchmakingServiceClass {
         winStreak = 0,
         lossStreak = 0,
     ): MatchOpponent {
-        const ratingVariance = Math.floor(Math.random() * 60) - 30; // Умеренная вариативность рейтинга бота
+        // 1. Определение рейтинга и вилки кубков противника на основе серии побед/поражений
+        let ratingVariance = 0;
+        
+        if (winStreak > 0) {
+            if (winStreak === 1) {
+                ratingVariance = Math.floor(Math.random() * 30); // [0, 30]
+            } else if (winStreak === 2) {
+                ratingVariance = Math.floor(Math.random() * 40) + 15; // [15, 55]
+            } else { // winStreak >= 3 (Босс-волна для проверки сил)
+                ratingVariance = Math.floor(Math.random() * 60) + 50; // [50, 110]
+            }
+        } else if (lossStreak > 0) {
+            ratingVariance = -Math.floor(Math.random() * 40) - 20 * lossStreak; // Ослабляем соперника при поражениях
+        } else {
+            // Обычный подбор без серий
+            ratingVariance = Math.floor(Math.random() * 40) - 20; // [-20, 20]
+        }
+
         const botRating = Math.max(0, myRating + ratingVariance);
         const rankInfo = getRankInfo(botRating);
 
-        const randomHero = HEROES_DB[Math.floor(Math.random() * HEROES_DB.length)] || HEROES_DB[0];
+        // 2. Подбор героя из разрешенного для этого рейтинга пула
+        const allowedHeroes = this.getAllowedBotHeroes(myRating);
+        const randomHeroId = allowedHeroes[Math.floor(Math.random() * allowedHeroes.length)];
+        const randomHero = HEROES_DB.find((h) => h.id === randomHeroId) || HEROES_DB[0];
 
         // Масштабируем уровень в зависимости от уровня игрока и серии побед/поражений
         let botLevel = myLevel;
@@ -438,31 +490,62 @@ class MatchmakingServiceClass {
         if (lossStreak >= 4) botLevel -= 2;
         botLevel = Math.max(1, botLevel + Math.floor(Math.random() * 3) - 1);
 
-        // Определяем желаемую редкость экипировки бота
+        // 3. Определяем желаемую редкость экипировки и максимальный уровень предметов для бота в зависимости от кубков
         let targetRarity = 'COMMON';
-        if (botRating < 100) {
+        let maxItemLevel = 1;
+
+        if (botRating < 300) {
             targetRarity = 'COMMON';
-        } else if (botRating < 250) {
-            targetRarity = 'RARE';
-        } else if (botRating < 450) {
-            targetRarity = 'EPIC';
-        } else if (botRating < 600) {
-            targetRarity = 'LEGENDARY';
+            maxItemLevel = 2;
+        } else if (botRating < 800) {
+            targetRarity = Math.random() < 0.4 ? 'COMMON' : 'RARE';
+            maxItemLevel = 4;
+        } else if (botRating < 1600) {
+            const r = Math.random();
+            targetRarity = r < 0.2 ? 'RARE' : r < 0.7 ? 'EPIC' : 'COMMON';
+            maxItemLevel = 6;
+        } else if (botRating < 2800) {
+            const r = Math.random();
+            targetRarity = r < 0.2 ? 'EPIC' : r < 0.8 ? 'LEGENDARY' : 'RARE';
+            maxItemLevel = 8;
         } else {
-            targetRarity = 'MYTHIC';
+            const r = Math.random();
+            targetRarity = r < 0.3 ? 'LEGENDARY' : 'MYTHIC';
+            maxItemLevel = 10;
         }
 
-        // Корректируем редкость на основе серии побед/поражений
-        if (winStreak >= 3) {
+        // Корректируем редкость и лимит уровня на основе серии побед/поражений
+        if (winStreak >= 2) {
+            botLevel += 1;
+            maxItemLevel = Math.min(10, maxItemLevel + 1);
             if (targetRarity === 'COMMON') targetRarity = 'RARE';
             else if (targetRarity === 'RARE') targetRarity = 'EPIC';
             else if (targetRarity === 'EPIC') targetRarity = 'LEGENDARY';
             else if (targetRarity === 'LEGENDARY') targetRarity = 'MYTHIC';
         }
+        if (winStreak >= 3) {
+            botLevel += 1; // Дополнительно +1 к уровню
+            maxItemLevel = Math.min(10, maxItemLevel + 1);
+            if (targetRarity === 'COMMON') targetRarity = 'EPIC';
+            else if (targetRarity === 'RARE') targetRarity = 'LEGENDARY';
+            else if (targetRarity === 'EPIC') targetRarity = 'MYTHIC';
+            else if (targetRarity === 'LEGENDARY') targetRarity = 'MYTHIC';
+        }
+
         if (lossStreak >= 2) {
+            botLevel = Math.max(1, botLevel - 1);
+            maxItemLevel = Math.max(1, maxItemLevel - 1);
             if (targetRarity === 'MYTHIC') targetRarity = 'LEGENDARY';
             else if (targetRarity === 'LEGENDARY') targetRarity = 'EPIC';
             else if (targetRarity === 'EPIC') targetRarity = 'RARE';
+            else if (targetRarity === 'RARE') targetRarity = 'COMMON';
+        }
+        if (lossStreak >= 4) {
+            botLevel = Math.max(1, botLevel - 1);
+            maxItemLevel = Math.max(1, maxItemLevel - 1);
+            if (targetRarity === 'MYTHIC') targetRarity = 'EPIC';
+            else if (targetRarity === 'LEGENDARY') targetRarity = 'RARE';
+            else if (targetRarity === 'EPIC') targetRarity = 'COMMON';
             else if (targetRarity === 'RARE') targetRarity = 'COMMON';
         }
 
@@ -470,6 +553,7 @@ class MatchmakingServiceClass {
         if (myRating < 30) {
             targetRarity = 'COMMON';
             botLevel = Math.min(botLevel, 1);
+            maxItemLevel = 1;
         }
 
         let avgItemLevel = 1;
@@ -487,7 +571,6 @@ class MatchmakingServiceClass {
         // Определяем максимальное число слотов снаряжения для бота в зависимости от рейтинга игрока
         let maxEquippedSlots = 7;
         if (myRating < 30) {
-            // Absolute beginner: bot equipment matches player equipment count exactly (if player is naked, bot is naked)
             maxEquippedSlots = playerEquippedCount;
         } else if (myRating < 100) {
             maxEquippedSlots = Math.min(7, playerEquippedCount + 1);
@@ -497,7 +580,20 @@ class MatchmakingServiceClass {
             maxEquippedSlots = Math.min(7, playerEquippedCount + 3);
         }
 
-        const equipment = generateOpponentEquipment(botLevel, targetRarity, maxEquippedSlots);
+        // Корректируем число слотов на основе серий побед/поражений
+        if (winStreak === 2) {
+            maxEquippedSlots = Math.min(7, maxEquippedSlots + 1);
+        } else if (winStreak >= 3) {
+            maxEquippedSlots = Math.min(7, maxEquippedSlots + 2);
+        }
+        if (lossStreak >= 2) {
+            maxEquippedSlots = Math.max(0, maxEquippedSlots - 1);
+        } else if (lossStreak >= 4) {
+            maxEquippedSlots = Math.max(0, maxEquippedSlots - 2);
+        }
+
+        // Генерируем экипировку с учетом максимального уровня предметов
+        const equipment = generateOpponentEquipment(botLevel, targetRarity, maxEquippedSlots, maxItemLevel);
 
         // Рассчитываем множитель характеристик
         const baseMult = 0.82 + Math.min(0.4, (myRating / 500) * 0.28);
@@ -514,11 +610,11 @@ class MatchmakingServiceClass {
 
         let lossStreakMod = 0;
         if (lossStreak > 0) {
-            if (lossStreak === 1) lossStreakMod = -0.02;
-            else if (lossStreak === 2) lossStreakMod = -0.08;
-            else if (lossStreak === 3) lossStreakMod = -0.15;
-            else lossStreakMod = -0.22 - (lossStreak - 4) * 0.04;
-            lossStreakMod = Math.max(-0.35, lossStreakMod);
+            if (lossStreak === 1) lossStreakMod = -0.05;
+            else if (lossStreak === 2) lossStreakMod = -0.12;
+            else if (lossStreak === 3) lossStreakMod = -0.20;
+            else lossStreakMod = -0.25 - (lossStreak - 4) * 0.05;
+            lossStreakMod = Math.max(-0.40, lossStreakMod);
         }
 
         const variance = Math.random() * 0.08 - 0.04;
