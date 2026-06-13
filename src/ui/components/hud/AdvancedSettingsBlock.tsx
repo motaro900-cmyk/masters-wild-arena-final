@@ -2,6 +2,7 @@ import React from 'react';
 import { useGameStore } from '../../../store/useGameStore';
 import { requestNotifications } from '../../../utils/VKBridge';
 import { settingsTranslations } from './SettingsLocalization';
+import { PixiApp } from '../../../engine/core/PixiApp';
 
 interface AdvancedSettingsBlockProps {
     isFullscreen: boolean;
@@ -42,6 +43,101 @@ export const AdvancedSettingsBlock: React.FC<AdvancedSettingsBlockProps> = ({
         border: 'rgba(240,192,64,0.15)',
         bgCard: 'rgba(255,255,255,0.02)',
     };
+
+    const [perfStats, setPerfStats] = React.useState<{
+        ramUsed: number | null;
+        ramLimit: number | null;
+        fps: number;
+        ping: number | null;
+    }>({
+        ramUsed: null,
+        ramLimit: null,
+        fps: 0,
+        ping: null,
+    });
+
+    React.useEffect(() => {
+        const updateStats = async () => {
+            // 1. FPS
+            let currentFps = 0;
+            try {
+                const app = PixiApp.getInstance().getApp();
+                if (app && app.ticker) {
+                    currentFps = Math.round(app.ticker.FPS);
+                }
+            } catch (e) {
+                // ignore
+            }
+
+            // 2. RAM (if supported)
+            let usedMem = null;
+            let limitMem = null;
+            const perfMem = (window.performance as any)?.memory;
+            if (perfMem) {
+                usedMem = perfMem.usedJSHeapSize;
+                limitMem = perfMem.jsHeapSizeLimit;
+            }
+
+            // 3. Ping
+            let currentPing = null;
+            const start = performance.now();
+            try {
+                await fetch(`/?t=${Date.now()}`, { method: 'HEAD', cache: 'no-store' });
+                currentPing = Math.round(performance.now() - start);
+            } catch (e) {
+                // ignore
+            }
+
+            setPerfStats({
+                ramUsed: usedMem,
+                ramLimit: limitMem,
+                fps: currentFps,
+                ping: currentPing,
+            });
+        };
+
+        updateStats();
+        const interval = setInterval(updateStats, 2000);
+        return () => clearInterval(interval);
+    }, []);
+
+    // GPU / CPU Cores / Memory detection
+    const cores = typeof navigator !== 'undefined' ? navigator.hardwareConcurrency : undefined;
+    const memoryGb = typeof navigator !== 'undefined' ? (navigator as any).deviceMemory : undefined;
+
+    let gpuTier = 'Tier 2';
+    if (cores && memoryGb) {
+        if (memoryGb >= 8 && cores >= 8) gpuTier = 'Tier 3 (High)';
+        else if (memoryGb >= 4 && cores >= 4) gpuTier = 'Tier 2 (Mid)';
+        else gpuTier = 'Tier 1 (Low)';
+    } else if (cores) {
+        if (cores >= 8) gpuTier = 'Tier 3 (High)';
+        else if (cores >= 4) gpuTier = 'Tier 2 (Mid)';
+        else gpuTier = 'Tier 1 (Low)';
+    }
+
+    const gpuDetail = [
+        cores ? `${cores} CPU` : null,
+        memoryGb ? `${memoryGb}GB RAM` : null
+    ].filter(Boolean).join(', ');
+
+    const perfTranslations = {
+        RU: {
+            title: '📊 ХАРАКТЕРИСТИКИ СИСТЕМЫ',
+            fps: 'Кадров/сек (FPS):',
+            ping: 'Пинг (Ping):',
+            ram: 'Использование ОЗУ:',
+            hardware: 'Железо / Уровень:',
+        },
+        EN: {
+            title: '📊 SYSTEM PERFORMANCE',
+            fps: 'FPS:',
+            ping: 'Ping:',
+            ram: 'RAM Usage:',
+            hardware: 'Hardware / Tier:',
+        }
+    };
+    const pt = perfTranslations[(language || 'RU') as 'RU' | 'EN'] || perfTranslations.RU;
 
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
@@ -317,6 +413,107 @@ export const AdvancedSettingsBlock: React.FC<AdvancedSettingsBlockProps> = ({
                 >
                     ⚙️ {t.autoTune}
                 </button>
+            </div>
+
+            {/* Панель производительности системы */}
+            <div
+                style={{
+                    marginTop: '5px',
+                    padding: '12px 14px',
+                    borderRadius: '12px',
+                    background: 'rgba(255, 255, 255, 0.01)',
+                    border: '1px solid rgba(255, 255, 255, 0.05)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '8px',
+                }}
+            >
+                <div
+                    style={{
+                        fontFamily: "'Cinzel', serif",
+                        fontSize: '11px',
+                        fontWeight: 800,
+                        color: colors.accent,
+                        opacity: 0.9,
+                        letterSpacing: '0.5px',
+                        borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
+                        paddingBottom: '6px',
+                        marginBottom: '2px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                    }}
+                >
+                    <span>📊</span>
+                    <span>{pt.title}</span>
+                </div>
+
+                {/* FPS */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', opacity: 0.7 }}>
+                        <span>📈</span>
+                        <span>{pt.fps}</span>
+                    </div>
+                    <span style={{ fontWeight: 800, color: perfStats.fps >= 50 ? '#4caf50' : perfStats.fps >= 30 ? '#ffeb3b' : '#f44336' }}>
+                        {perfStats.fps} FPS
+                    </span>
+                </div>
+
+                {/* Ping */}
+                {perfStats.ping !== null && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', opacity: 0.7 }}>
+                            <span>📡</span>
+                            <span>{pt.ping}</span>
+                        </div>
+                        <span style={{ fontWeight: 800, color: perfStats.ping < 100 ? '#4caf50' : perfStats.ping < 250 ? '#ffeb3b' : '#f44336' }}>
+                            {perfStats.ping} ms
+                        </span>
+                    </div>
+                )}
+
+                {/* RAM (Guarded, hide if unsupported) */}
+                {perfStats.ramUsed !== null && perfStats.ramLimit !== null && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '11px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', opacity: 0.7 }}>
+                                <span>💾</span>
+                                <span>{pt.ram}</span>
+                            </div>
+                            <span style={{ fontWeight: 800, color: '#e0e0e0' }}>
+                                {Math.round(perfStats.ramUsed / 1024 / 1024)} MB / {Math.round(perfStats.ramLimit / 1024 / 1024)} MB
+                            </span>
+                        </div>
+                        <div style={{ width: '100%', height: '4px', borderRadius: '2px', background: 'rgba(255,255,255,0.05)', overflow: 'hidden' }}>
+                            <div
+                                style={{
+                                    width: `${Math.min(100, Math.round((perfStats.ramUsed / perfStats.ramLimit) * 100))}%`,
+                                    height: '100%',
+                                    background: (perfStats.ramUsed / perfStats.ramLimit) > 0.8 ? '#f44336' : (perfStats.ramUsed / perfStats.ramLimit) > 0.5 ? '#ffeb3b' : colors.accent,
+                                    transition: 'width 0.5s ease',
+                                }}
+                            />
+                        </div>
+                    </div>
+                )}
+
+                {/* Hardware / GPU Tier */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', opacity: 0.7 }}>
+                        <span>⚡</span>
+                        <span>{pt.hardware}</span>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'end' }}>
+                        <span style={{ fontWeight: 800, color: gpuTier.includes('High') ? '#4caf50' : gpuTier.includes('Mid') ? '#ffeb3b' : '#f44336' }}>
+                            {gpuTier}
+                        </span>
+                        {gpuDetail && (
+                            <span style={{ fontSize: '9px', opacity: 0.5, marginTop: '2px' }}>
+                                ({gpuDetail})
+                            </span>
+                        )}
+                    </div>
+                </div>
             </div>
         </div>
     );
