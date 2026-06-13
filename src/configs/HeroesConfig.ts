@@ -55,7 +55,7 @@ export const HEROES_DB: IHeroConfig[] = [
         unlockType: 'free',
         unlockCost: 0,
         stats: { strength: 17, agility: 26, stamina: 16, intelligence: 12 },
-        baseScale: 0.9,
+        baseScale: 0.8,
         anchors: {
             feet: { x: 0.5, y: 0.95 },
             head: { x: 0.48, y: 0.22 },
@@ -78,7 +78,7 @@ export const HEROES_DB: IHeroConfig[] = [
         unlockGoldCost: 20000,
         requiredTrophies: 400,
         stats: { strength: 10, agility: 25, stamina: 19, intelligence: 12 },
-        baseScale: 0.8,
+        baseScale: 0.75,
         anchors: {
             feet: { x: 0.5, y: 0.95 },
             head: { x: 0.5, y: 0.2, scale: 0.8 },
@@ -101,7 +101,7 @@ export const HEROES_DB: IHeroConfig[] = [
         unlockGoldCost: 40000,
         requiredTrophies: 1000,
         stats: { strength: 18, agility: 5, stamina: 33, intelligence: 10 },
-        baseScale: 0.95,
+        baseScale: 0.87,
         anchors: {
             feet: { x: 0.5, y: 0.95 },
             head: { x: 0.5, y: 0.2 },
@@ -124,7 +124,7 @@ export const HEROES_DB: IHeroConfig[] = [
         unlockGoldCost: 60000,
         requiredTrophies: 2000,
         stats: { strength: 15, agility: 24, stamina: 17, intelligence: 10 },
-        baseScale: 0.85,
+        baseScale: 0.82,
         anchors: {
             feet: { x: 0.5, y: 0.95 },
             head: { x: 0.5, y: 0.2 },
@@ -147,7 +147,7 @@ export const HEROES_DB: IHeroConfig[] = [
         unlockGoldCost: 100000,
         requiredTrophies: 3000,
         stats: { strength: 23, agility: 10, stamina: 23, intelligence: 10 },
-        baseScale: 0.9,
+        baseScale: 0.75,
         anchors: {
             feet: { x: 0.5, y: 0.95 },
             head: { x: 0.5, y: 0.22 },
