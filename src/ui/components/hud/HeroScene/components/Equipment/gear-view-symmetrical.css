@@ -68,16 +68,16 @@
 
 /* === CONNECTOR PULSE — dot travels along the line === */
 @keyframes conn-pulse-left {
-    0%   { left: 0%;   opacity: 0; }
+    0%   { transform: translateX(0px);   opacity: 0; }
     10%  { opacity: 1; }
     90%  { opacity: 0.8; }
-    100% { left: 100%; opacity: 0; }
+    100% { transform: translateX(82px); opacity: 0; }
 }
 @keyframes conn-pulse-right {
-    0%   { right: 0%;   opacity: 0; }
+    0%   { transform: translateX(0px);   opacity: 0; }
     10%  { opacity: 1; }
     90%  { opacity: 0.8; }
-    100% { right: 100%; opacity: 0; }
+    100% { transform: translateX(-82px); opacity: 0; }
 }
 
 /* === SPOTLIGHT BREATHE — gentle ground light pulse === */
@@ -321,8 +321,8 @@
 .conn-boots     { top: 577px; }
 
 /* === Connector pulse dot (travels from slot → frame on left, frame → slot on right) === */
-.slot-connector-left::after,
-.slot-connector-right::after {
+.slot-connector-left.with-pulse::after,
+.slot-connector-right.with-pulse::after {
     content: '';
     position: absolute;
     top: -2px;
@@ -333,10 +333,12 @@
     box-shadow: 0 0 6px rgba(240,192,64,0.9), 0 0 12px rgba(240,192,64,0.4);
     pointer-events: none;
 }
-.slot-connector-left::after {
+.slot-connector-left.with-pulse::after {
+    left: -3px;
     animation: conn-pulse-left 3.5s ease-in-out infinite;
 }
-.slot-connector-right::after {
+.slot-connector-right.with-pulse::after {
+    right: -3px;
     animation: conn-pulse-right 3.5s ease-in-out infinite;
 }
 /* Stagger each connector's delay */

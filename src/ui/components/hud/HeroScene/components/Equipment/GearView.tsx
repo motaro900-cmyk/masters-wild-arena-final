@@ -243,15 +243,15 @@ export const GearView = ({
 
 
                     {/* ── Connector lines LEFT (slot right edge → frame left edge) ── */}
-                    <div className="slot-connector-left conn-helm" />
-                    <div className="slot-connector-left conn-shoulders" />
-                    <div className="slot-connector-left conn-armor" />
-                    <div className="slot-connector-left conn-pants" />
+                    <div className={`slot-connector-left conn-helm ${gfx.isUltra ? 'with-pulse' : ''}`} />
+                    <div className={`slot-connector-left conn-shoulders ${gfx.isUltra ? 'with-pulse' : ''}`} />
+                    <div className={`slot-connector-left conn-armor ${gfx.isUltra ? 'with-pulse' : ''}`} />
+                    <div className={`slot-connector-left conn-pants ${gfx.isUltra ? 'with-pulse' : ''}`} />
 
                     {/* ── Connector lines RIGHT (frame right edge → slot left edge) ── */}
-                    <div className="slot-connector-right conn-weapons" />
-                    <div className="slot-connector-right conn-shields" />
-                    <div className="slot-connector-right conn-boots" />
+                    <div className={`slot-connector-right conn-weapons ${gfx.isUltra ? 'with-pulse' : ''}`} />
+                    <div className={`slot-connector-right conn-shields ${gfx.isUltra ? 'with-pulse' : ''}`} />
+                    <div className={`slot-connector-right conn-boots ${gfx.isUltra ? 'with-pulse' : ''}`} />
 
                     {/* ── LEFT COLUMN SLOTS ── */}
                     <div className="equipment-slot-wrapper slot-helm">
