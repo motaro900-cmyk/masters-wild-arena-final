@@ -109,9 +109,9 @@ export function calculateWinRewards(
 
     let trophiesStr = "";
     if (minTrophies !== maxTrophies) {
-        trophiesStr = `+${minTrophies}-${maxTrophies} 🏆`;
+        trophiesStr = `+${minTrophies}-${maxTrophies}`;
     } else {
-        trophiesStr = `+${minTrophies} 🏆`;
+        trophiesStr = `+${minTrophies}`;
     }
 
     return {
