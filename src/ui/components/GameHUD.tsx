@@ -529,6 +529,7 @@ export const GameHUD: React.FC = () => {
                             padding: '12px 18px',
                             background: gfx.panelBg,
                             backdropFilter: gfx.backdropBlur,
+                            WebkitBackdropFilter: gfx.backdropBlur,
                             border: gfx.panelBorder,
                             borderRadius: '20px',
                             boxShadow: gfx.panelShadow,
