@@ -429,9 +429,9 @@ export const SafeGameLayout = ({ containerRef }: { containerRef: React.RefObject
                     pointerEvents: 'none',
                     filter:
                         graphicsQuality === 'ULTRA'
-                            ? 'contrast(1.15) saturate(1.25) brightness(1.02)'
+                            ? 'contrast(1.04) saturate(1.08) brightness(0.97)'
                             : graphicsQuality === 'MEDIUM'
-                              ? 'contrast(1.05) saturate(1.1) brightness(0.98)'
+                              ? 'contrast(1.02) saturate(1.03) brightness(0.99)'
                               : 'none',
                 }}
             >

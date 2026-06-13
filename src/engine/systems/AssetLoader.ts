@@ -1,5 +1,6 @@
 import * as PIXI from 'pixi.js';
 import { AssetsMap } from '../../configs/AssetsMap';
+import { useGameStore } from '../../store/useGameStore';
 
 /**
  * AssetLoader — Системный загрузчик ресурсов.
@@ -24,7 +25,9 @@ export class AssetLoader {
         if (manifest.length === 0) return;
 
         // [Anti-Grey] Умное разрешение путей (Smart Resolver)
-        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        const state = useGameStore.getState();
+        const isUltra = state.graphicsQuality === 'ULTRA';
+        const isMobile = !isUltra && /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
         const optimizedManifest = manifest.map((path) => {
             const normalized = path.replace(/\\/g, '/').toLowerCase();
