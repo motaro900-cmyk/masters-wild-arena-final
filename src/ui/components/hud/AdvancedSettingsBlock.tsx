@@ -28,6 +28,11 @@ export const AdvancedSettingsBlock: React.FC<AdvancedSettingsBlockProps> = ({
         glowEnabled,
         setGlowEnabled,
         language,
+        arenaBgQuality,
+        setArenaBgQuality,
+        showPing,
+        setShowPing,
+        autoTuneSettings,
     } = useGameStore();
 
     const t = settingsTranslations[(language || 'RU') as 'RU' | 'EN'] || settingsTranslations.RU;
@@ -166,6 +171,70 @@ export const AdvancedSettingsBlock: React.FC<AdvancedSettingsBlockProps> = ({
                     colors={colors}
                 />
 
+                {/* Показывать пинг */}
+                <ToggleItem
+                    label={t.showPing}
+                    icon="📡"
+                    active={showPing}
+                    onToggle={() => setShowPing(!showPing)}
+                    colors={colors}
+                />
+
+                {/* Качество фона арены (Высокое / Низкое) */}
+                <div
+                    style={{
+                        gridColumn: 'span 2',
+                        background: colors.bgCard,
+                        borderRadius: '12px',
+                        padding: '14px 18px',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        border: '1px solid rgba(255,255,255,0.05)',
+                    }}
+                >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <span style={{ fontSize: '16px' }}>🏟️</span>
+                        <span style={{ fontSize: '11px', fontWeight: 800, opacity: 0.7 }}>
+                            {t.arenaBgQuality}
+                        </span>
+                    </div>
+                    <div style={{ display: 'flex', background: 'rgba(0,0,0,0.3)', borderRadius: '8px', padding: '3px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                        <button
+                            onClick={() => setArenaBgQuality('LOW')}
+                            style={{
+                                padding: '6px 16px',
+                                borderRadius: '6px',
+                                background: arenaBgQuality === 'LOW' ? colors.accent : 'transparent',
+                                border: 'none',
+                                color: arenaBgQuality === 'LOW' ? '#000' : 'rgba(255,255,255,0.4)',
+                                fontSize: '10px',
+                                fontWeight: 900,
+                                cursor: 'pointer',
+                                transition: 'all 0.2s ease',
+                            }}
+                        >
+                            {t.low}
+                        </button>
+                        <button
+                            onClick={() => setArenaBgQuality('HIGH')}
+                            style={{
+                                padding: '6px 16px',
+                                borderRadius: '6px',
+                                background: arenaBgQuality === 'HIGH' ? colors.accent : 'transparent',
+                                border: 'none',
+                                color: arenaBgQuality === 'HIGH' ? '#000' : 'rgba(255,255,255,0.4)',
+                                fontSize: '10px',
+                                fontWeight: 900,
+                                cursor: 'pointer',
+                                transition: 'all 0.2s ease',
+                            }}
+                        >
+                            {t.high}
+                        </button>
+                    </div>
+                </div>
+
                 {/* Эффекты частиц (Высокое / Низкое) */}
                 <div
                     style={{
@@ -220,6 +289,34 @@ export const AdvancedSettingsBlock: React.FC<AdvancedSettingsBlockProps> = ({
                         </button>
                     </div>
                 </div>
+
+                {/* Автонастройка */}
+                <button
+                    onClick={() => {
+                        autoTuneSettings();
+                        useGameStore.getState().showAlert(language === 'RU' ? 'Оптимальные настройки успешно применены!' : 'Optimal settings applied successfully!');
+                    }}
+                    style={{
+                        gridColumn: 'span 2',
+                        padding: '14px',
+                        borderRadius: '12px',
+                        cursor: 'pointer',
+                        background: 'linear-gradient(90deg, rgba(240,192,64,0.1) 0%, rgba(240,192,64,0.2) 50%, rgba(240,192,64,0.1) 100%)',
+                        border: `1.5px dashed ${colors.accent}`,
+                        color: colors.accent,
+                        fontFamily: "'Cinzel', serif",
+                        fontSize: '12px',
+                        fontWeight: 900,
+                        letterSpacing: '1px',
+                        transition: 'all 0.3s ease',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '10px',
+                    }}
+                >
+                    ⚙️ {t.autoTune}
+                </button>
             </div>
         </div>
     );

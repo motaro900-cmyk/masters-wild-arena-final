@@ -61,10 +61,11 @@ export const BaseWindow: React.FC<BaseWindowProps> = ({
     height = 'auto',
     headerExtra,
 }) => {
-    const { uiTheme, language, isMobile } = useGameStore((state: any) => ({
+    const { uiTheme, language, isMobile, showPing } = useGameStore((state: any) => ({
         uiTheme: state.uiTheme,
         language: state.language || 'RU',
         isMobile: state.isMobile,
+        showPing: state.showPing !== false,
     }));
     const isLight = uiTheme === 'LIGHT';
 
@@ -204,7 +205,7 @@ export const BaseWindow: React.FC<BaseWindowProps> = ({
 
                         {/* Справа: доп. виджет (например, пинг) и кнопка закрытия */}
                         <div style={{ display: 'flex', alignItems: 'center', gap: '20px', zIndex: 16 }}>
-                            {title === 'НАСТРОЙКИ' && (
+                            {title === 'НАСТРОЙКИ' && showPing && (
                                 <div style={{ pointerEvents: 'auto' }}>
                                     <PingIndicator />
                                 </div>

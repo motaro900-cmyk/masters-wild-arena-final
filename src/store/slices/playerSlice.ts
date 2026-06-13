@@ -191,6 +191,8 @@ export const createPlayerSlice = (set: any, get: any) => {
     uiAnimations: true,
     particlesQuality: isMobileVal ? 'LOW' : 'HIGH',
     glowEnabled: !isMobileVal,
+    arenaBgQuality: isMobileVal ? 'LOW' : 'HIGH',
+    showPing: true,
     hasCustomSettings: false,
     pet: {
         id: 'baby_dragon',
@@ -698,6 +700,48 @@ export const createPlayerSlice = (set: any, get: any) => {
     setUiAnimations: (val: boolean) => set({ uiAnimations: val, hasCustomSettings: true }),
     setParticlesQuality: (val: 'LOW' | 'HIGH') => set({ particlesQuality: val, hasCustomSettings: true }),
     setGlowEnabled: (val: boolean) => set({ glowEnabled: val, hasCustomSettings: true }),
+    setArenaBgQuality: (val: 'LOW' | 'HIGH') => set({ arenaBgQuality: val, hasCustomSettings: true }),
+    setShowPing: (val: boolean) => set({ showPing: val, hasCustomSettings: true }),
+    autoTuneSettings: () => {
+        const isMobileVal = get().isMobile;
+        let autoGraphics = 'ULTRA';
+        let autoParticles: 'LOW' | 'HIGH' = 'HIGH';
+        let autoGlow = true;
+        const autoPowerSaving = isMobileVal;
+        const autoArenaBg = isMobileVal ? 'LOW' : 'HIGH';
+        const autoUiAnim = !isMobileVal;
+
+        if (isMobileVal) {
+            autoGraphics = 'LOW';
+            autoParticles = 'LOW';
+            autoGlow = false;
+        } else if (typeof navigator !== 'undefined') {
+            const memory = (navigator as any).deviceMemory || 4;
+            if (memory >= 8) {
+                autoGraphics = 'ULTRA';
+                autoParticles = 'HIGH';
+                autoGlow = true;
+            } else if (memory >= 4) {
+                autoGraphics = 'MEDIUM';
+                autoParticles = 'HIGH';
+                autoGlow = true;
+            } else {
+                autoGraphics = 'LOW';
+                autoParticles = 'LOW';
+                autoGlow = false;
+            }
+        }
+
+        set({
+            graphicsQuality: autoGraphics,
+            isPowerSaving: autoPowerSaving,
+            particlesQuality: autoParticles,
+            glowEnabled: autoGlow,
+            arenaBgQuality: autoArenaBg,
+            uiAnimations: autoUiAnim,
+            hasCustomSettings: true,
+        });
+    },
     setLevel: (val: number) => {
         set({ level: val, title: getPlayerTitle(val) });
         syncService.debouncedSync();

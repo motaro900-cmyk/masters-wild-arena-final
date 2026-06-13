@@ -36,6 +36,9 @@ export const settingsTranslations = {
         particleEffects: "ЭФФЕКТЫ ЧАСТИЦ В БОЮ",
         low: "НИЗКОЕ",
         high: "ВЫСОКОЕ",
+        arenaBgQuality: "КАЧЕСТВО ФОНА АРЕНЫ",
+        autoTune: "АВТОНАСТРОЙКА",
+        showPing: "ПОКАЗЫВАТЬ ПИНГ",
     },
     EN: {
         title: "SETTINGS",
@@ -72,5 +75,8 @@ export const settingsTranslations = {
         particleEffects: "BATTLE PARTICLE EFFECTS",
         low: "LOW",
         high: "HIGH",
+        arenaBgQuality: "ARENA BACKGROUND QUALITY",
+        autoTune: "AUTO-TUNING",
+        showPing: "SHOW PING",
     }
 };

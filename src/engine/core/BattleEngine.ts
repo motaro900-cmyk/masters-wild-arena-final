@@ -200,8 +200,9 @@ export class BattleEngine {
             await pixiApp.init({}, _container);
             pixiApp.clearAllLayers();
 
-            const isMobile = useGameStore.getState().isMobile;
-            const arenas = isMobile ? AssetsMap.BACKGROUNDS.BATTLE_ARENAS_MOBILE : AssetsMap.BACKGROUNDS.BATTLE_ARENAS;
+            const state = useGameStore.getState();
+            const arenaBgQuality = state.arenaBgQuality || (state.isMobile ? 'LOW' : 'HIGH');
+            const arenas = arenaBgQuality === 'LOW' ? AssetsMap.BACKGROUNDS.BATTLE_ARENAS_MOBILE : AssetsMap.BACKGROUNDS.BATTLE_ARENAS;
             const randomBg = arenas[Math.floor(Math.random() * arenas.length)];
             const bgTex = await PIXI.Assets.load(randomBg).catch(() => PIXI.Texture.WHITE);
             const background = new PIXI.Sprite(bgTex);
