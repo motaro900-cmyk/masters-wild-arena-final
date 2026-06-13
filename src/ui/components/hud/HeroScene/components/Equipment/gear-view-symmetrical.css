@@ -4,17 +4,14 @@
     0% {
         opacity: 0.55;
         transform: translate(-50%, -50%) scale(0.96);
-        filter: blur(15px) drop-shadow(0 0 12px var(--glow-color, rgba(240, 192, 64, 0.2)));
     }
     50% {
         opacity: 0.85;
         transform: translate(-50%, calc(-50% - 6px)) scale(1.04);
-        filter: blur(20px) drop-shadow(0 0 28px var(--glow-color, rgba(240, 192, 64, 0.45)));
     }
     100% {
         opacity: 0.55;
         transform: translate(-50%, -50%) scale(0.96);
-        filter: blur(15px) drop-shadow(0 0 12px var(--glow-color, rgba(240, 192, 64, 0.2)));
     }
 }
 
@@ -36,13 +33,13 @@
 
 @keyframes blueprint-pulse {
     0% {
-        filter: drop-shadow(0 0 4px rgba(240,192,64,0.25)) sepia(0.8) brightness(0.7) saturate(1.0);
+        opacity: 0.45;
     }
     50% {
-        filter: drop-shadow(0 0 12px rgba(240,192,64,0.6)) sepia(0.6) brightness(1.0) saturate(1.4);
+        opacity: 0.85;
     }
     100% {
-        filter: drop-shadow(0 0 4px rgba(240,192,64,0.25)) sepia(0.8) brightness(0.7) saturate(1.0);
+        opacity: 0.45;
     }
 }
 
@@ -114,6 +111,7 @@
     border-radius: 50%;
     pointer-events: none;
     z-index: 1;
+    filter: blur(18px) drop-shadow(0 0 20px var(--glow-color, rgba(240, 192, 64, 0.35)));
     animation: breathing-glow 5s ease-in-out infinite;
 }
 
@@ -454,6 +452,7 @@
 }
 
 .equipment-slot-circle.empty-slot img {
+    filter: sepia(0.8) brightness(0.8) saturate(1.1) drop-shadow(0 0 6px rgba(240,192,64,0.35));
     animation: blueprint-pulse 4s ease-in-out infinite;
 }
 

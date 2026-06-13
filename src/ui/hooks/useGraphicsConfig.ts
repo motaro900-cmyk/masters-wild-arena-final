@@ -71,7 +71,7 @@ export const useGraphicsConfig = (): GraphicsConfig => {
                 isLow: false,
                 isMedium: true,
                 isUltra: false,
-                backdropBlur: 'blur(8px)',
+                backdropBlur: 'blur(6px)',
                 panelBg: 'rgba(12, 9, 6, 0.82)',
                 panelShadow: '0 8px 30px rgba(0,0,0,0.55)',
                 panelBorder: '1px solid rgba(240,192,64,0.22)',
@@ -81,7 +81,7 @@ export const useGraphicsConfig = (): GraphicsConfig => {
                 showParticles: true,
                 decorOpacity: 0.85,
             };
-
+ 
         case 'ULTRA':
         default:
             return {
@@ -89,7 +89,7 @@ export const useGraphicsConfig = (): GraphicsConfig => {
                 isLow: false,
                 isMedium: false,
                 isUltra: true,
-                backdropBlur: 'blur(20px)',
+                backdropBlur: 'blur(12px)',
                 panelBg: 'rgba(6, 4, 2, 0.65)',
                 panelShadow:
                     '0 15px 50px rgba(0,0,0,0.8), 0 0 30px rgba(240,192,64,0.06), inset 0 1px 0 rgba(255,255,255,0.04)',
