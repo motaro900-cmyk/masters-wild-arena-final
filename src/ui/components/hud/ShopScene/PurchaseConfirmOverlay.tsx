@@ -18,6 +18,11 @@ export const PurchaseConfirmOverlay: React.FC<PurchaseConfirmOverlayProps> = ({
 }) => {
     const [isProcessing, setIsProcessing] = useState(false);
     const rarityColor = getRarityColor(item.rarity);
+    const [imageLoaded, setImageLoaded] = useState(false);
+
+    React.useEffect(() => {
+        setImageLoaded(false);
+    }, [item.id, item.image]);
 
     const handleConfirm = (currency: 'gold' | 'gem' | 'votes' | 'ad') => {
         if (isProcessing) return;
@@ -81,22 +86,27 @@ export const PurchaseConfirmOverlay: React.FC<PurchaseConfirmOverlayProps> = ({
                             }}
                         />
                     ) : (
-                        <img
-                            src={item.image}
-                            onError={(e) => {
-                                const currentSrc = e.currentTarget.src;
-                                if (currentSrc.endsWith('.webp')) {
-                                    e.currentTarget.src = currentSrc.replace(/_mobile\.webp$/i, '.png').replace(/\.webp$/i, '.png');
-                                }
-                            }}
-                            style={{
-                                width: '120px',
-                                height: '120px',
-                                objectFit: 'contain',
-                                filter: `drop-shadow(0 0 10px ${rarityColor})`,
-                            }}
-                            alt=""
-                        />
+                        <>
+                            {!imageLoaded && <div className="skeleton-placeholder" />}
+                            <img
+                                src={item.image}
+                                onLoad={() => setImageLoaded(true)}
+                                onError={(e) => {
+                                    const currentSrc = e.currentTarget.src;
+                                    if (currentSrc.endsWith('.webp')) {
+                                        e.currentTarget.src = currentSrc.replace(/_mobile\.webp$/i, '.png').replace(/\.webp$/i, '.png');
+                                    }
+                                }}
+                                className={`image-fade-in ${imageLoaded ? 'loaded' : ''}`}
+                                style={{
+                                    width: '120px',
+                                    height: '120px',
+                                    objectFit: 'contain',
+                                    filter: `drop-shadow(0 0 10px ${rarityColor})`,
+                                }}
+                                alt=""
+                            />
+                        </>
                     )}
                 </div>
                 <h3

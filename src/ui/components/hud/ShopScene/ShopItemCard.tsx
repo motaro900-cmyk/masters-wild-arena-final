@@ -45,6 +45,12 @@ export const ShopItemCard: React.FC<ShopItemCardProps> = React.memo(({
     const isLocked = item.requiredLevel !== undefined && (playerLevel || 1) < item.requiredLevel;
     const isStarterPack = item.id === 'starter_pack';
 
+    const [imageLoaded, setImageLoaded] = React.useState(false);
+
+    React.useEffect(() => {
+        setImageLoaded(false);
+    }, [item.id, item.image]);
+
     return (
         <motion.div
             onClick={onClick}
@@ -212,26 +218,31 @@ export const ShopItemCard: React.FC<ShopItemCardProps> = React.memo(({
                         }}
                     />
                 ) : (
-                    <img
-                        src={resolveAssetPath(item.image)}
-                        onError={(e) => {
-                            const currentSrc = e.currentTarget.src;
-                            if (currentSrc.endsWith('.webp')) {
-                                e.currentTarget.src = currentSrc.replace(/_mobile\.webp$/i, '.png').replace(/\.webp$/i, '.png');
-                            } else {
-                                e.currentTarget.src = AssetsMap.UI.ICON_DAILY_CHEST;
-                            }
-                        }}
-                        style={{
-                            width: isMobile ? '60px' : '80px',
-                            height: isMobile ? '60px' : '80px',
-                            objectFit: 'contain',
-                            filter: isLocked
-                                ? 'grayscale(1) brightness(0.4)'
-                                : `drop-shadow(0 2px 6px rgba(0,0,0,0.6)) drop-shadow(0 0 4px ${glow}66)`,
-                        }}
-                        alt=""
-                    />
+                    <>
+                        {!imageLoaded && <div className="skeleton-placeholder" />}
+                        <img
+                            src={resolveAssetPath(item.image)}
+                            onLoad={() => setImageLoaded(true)}
+                            onError={(e) => {
+                                const currentSrc = e.currentTarget.src;
+                                if (currentSrc.endsWith('.webp')) {
+                                    e.currentTarget.src = currentSrc.replace(/_mobile\.webp$/i, '.png').replace(/\.webp$/i, '.png');
+                                } else {
+                                    e.currentTarget.src = AssetsMap.UI.ICON_DAILY_CHEST;
+                                }
+                            }}
+                            className={`image-fade-in ${imageLoaded ? 'loaded' : ''}`}
+                            style={{
+                                width: isMobile ? '60px' : '80px',
+                                height: isMobile ? '60px' : '80px',
+                                objectFit: 'contain',
+                                filter: isLocked
+                                    ? 'grayscale(1) brightness(0.4)'
+                                    : `drop-shadow(0 2px 6px rgba(0,0,0,0.6)) drop-shadow(0 0 4px ${glow}66)`,
+                            }}
+                            alt=""
+                        />
+                    </>
                 )}
             </div>
 

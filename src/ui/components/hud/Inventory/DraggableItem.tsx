@@ -31,6 +31,12 @@ export const DraggableItem: React.FC<DraggableItemProps> = React.memo(({
         disabled: !!item.isResource,
     });
 
+    const [imageLoaded, setImageLoaded] = React.useState(false);
+
+    React.useEffect(() => {
+        setImageLoaded(false);
+    }, [item.instanceId, item.id, data.image]);
+
     return (
         <motion.div
             whileHover={{
@@ -108,18 +114,23 @@ export const DraggableItem: React.FC<DraggableItemProps> = React.memo(({
                     }}
                 />
             ) : (
-                <img
-                    src={data.image}
-                    style={{
-                        width: '70%',
-                        height: '70%',
-                        objectFit: 'contain',
-                        opacity: isEquippedOnOther ? 0.6 : 1,
-                        pointerEvents: 'none',
-                        zIndex: 1,
-                    }}
-                    alt=""
-                />
+                <>
+                    {!imageLoaded && <div className="skeleton-placeholder" />}
+                    <img
+                        src={data.image}
+                        onLoad={() => setImageLoaded(true)}
+                        className={`image-fade-in ${imageLoaded ? 'loaded' : ''}`}
+                        style={{
+                            width: '70%',
+                            height: '70%',
+                            objectFit: 'contain',
+                            opacity: isEquippedOnOther ? 0.6 : 1,
+                            pointerEvents: 'none',
+                            zIndex: 1,
+                        }}
+                        alt=""
+                    />
+                </>
             )}
 
             {isEquippedOnCurrent && (

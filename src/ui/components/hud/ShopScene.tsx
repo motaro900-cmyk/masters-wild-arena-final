@@ -41,6 +41,11 @@ export const ShopScene: React.FC = () => {
     } = useShopScene();
 
     const [isMobile, setIsMobile] = React.useState(isMobileFromStore);
+    const [selectedImageLoaded, setSelectedImageLoaded] = React.useState(false);
+
+    React.useEffect(() => {
+        setSelectedImageLoaded(false);
+    }, [selectedItem?.id, selectedItem?.image]);
 
     React.useEffect(() => {
         const checkLayout = () => {
@@ -476,25 +481,30 @@ export const ShopScene: React.FC = () => {
                                                         }}
                                                     />
                                                 ) : (
-                                                    <img
-                                                        src={selectedItem.image}
-                                                        onError={(e) =>
-                                                            (e.currentTarget.src = AssetsMap.UI.ICON_DAILY_CHEST)
-                                                        }
-                                                        style={{
-                                                            // Скины-персонажи рисуем крупнее и выравниваем по низу
-                                                            width: selectedItem.mainTab === 'SKINS'
-                                                                ? (isMobile ? '340px' : '320px')
-                                                                : (isMobile ? '300px' : '260px'),
-                                                            height: selectedItem.mainTab === 'SKINS'
-                                                                ? (isMobile ? '340px' : '320px')
-                                                                : (isMobile ? '300px' : '260px'),
-                                                            objectFit: 'contain',
-                                                            objectPosition: selectedItem.mainTab === 'SKINS' ? 'bottom center' : 'center',
-                                                            filter: `contrast(1.1) brightness(1.15) drop-shadow(0 0 25px ${getRarityColor(selectedItem.rarity)}cc)`,
-                                                        }}
-                                                        alt=""
-                                                    />
+                                                    <>
+                                                        {!selectedImageLoaded && <div className="skeleton-placeholder" />}
+                                                        <img
+                                                            src={selectedItem.image}
+                                                            onLoad={() => setSelectedImageLoaded(true)}
+                                                            onError={(e) =>
+                                                                (e.currentTarget.src = AssetsMap.UI.ICON_DAILY_CHEST)
+                                                            }
+                                                            className={`image-fade-in ${selectedImageLoaded ? 'loaded' : ''}`}
+                                                            style={{
+                                                                // Скины-персонажи рисуем крупнее и выравниваем по низу
+                                                                width: selectedItem.mainTab === 'SKINS'
+                                                                    ? (isMobile ? '340px' : '320px')
+                                                                    : (isMobile ? '300px' : '260px'),
+                                                                height: selectedItem.mainTab === 'SKINS'
+                                                                    ? (isMobile ? '340px' : '320px')
+                                                                    : (isMobile ? '300px' : '260px'),
+                                                                objectFit: 'contain',
+                                                                objectPosition: selectedItem.mainTab === 'SKINS' ? 'bottom center' : 'center',
+                                                                filter: `contrast(1.1) brightness(1.15) drop-shadow(0 0 25px ${getRarityColor(selectedItem.rarity)}cc)`,
+                                                            }}
+                                                            alt=""
+                                                        />
+                                                    </>
                                                 )}
                                             </div>
                                         </div>
