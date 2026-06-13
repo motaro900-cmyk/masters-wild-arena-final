@@ -38,6 +38,7 @@ export interface MatchOpponent {
 const generateOpponentEquipment = (
     oppLevel: number,
     targetRarity: string = 'COMMON',
+    maxEquippedSlots: number = 7,
 ): Record<string, string | null> => {
     const equip: Record<string, string | null> = {
         WEAPONS: null,
@@ -49,9 +50,26 @@ const generateOpponentEquipment = (
         BOOTS: null,
     };
     const slots = ['WEAPONS', 'HELMETS', 'ARMOR', 'SHIELDS', 'SHOULDERS', 'PANTS', 'BOOTS'];
+    
+    let slotsToEquip = [...slots];
+    if (maxEquippedSlots < slots.length) {
+        // Prioritize WEAPONS, then ARMOR, then other slots
+        const prioritySlots = ['WEAPONS', 'ARMOR'];
+        const otherSlots = slots.filter((s) => !prioritySlots.includes(s));
+        
+        const shuffledPriority = prioritySlots.sort(() => Math.random() - 0.5);
+        const shuffledOthers = otherSlots.sort(() => Math.random() - 0.5);
+        
+        const orderedSlots = [...shuffledPriority, ...shuffledOthers];
+        slotsToEquip = orderedSlots.slice(0, maxEquippedSlots);
+    }
+
     const raritiesOrder = ['MYTHIC', 'LEGENDARY', 'EPIC', 'RARE', 'COMMON'];
 
     slots.forEach((slot) => {
+        if (!slotsToEquip.includes(slot)) {
+            return;
+        }
         let chosen: any = null;
         const startIndex = raritiesOrder.indexOf(targetRarity);
         const searchList = startIndex !== -1 ? raritiesOrder.slice(startIndex) : raritiesOrder;
@@ -460,7 +478,26 @@ class MatchmakingServiceClass {
         else if (targetRarity === 'LEGENDARY') avgItemLevel = 8;
         else if (targetRarity === 'MYTHIC') avgItemLevel = 10;
 
-        const equipment = generateOpponentEquipment(botLevel, targetRarity);
+        // Count how many items the player has equipped on their selected hero
+        const storeState = useGameStore.getState();
+        const selectedHeroId = storeState.selectedHeroId || 'panda';
+        const playerEq = storeState.heroEquipment?.[selectedHeroId] || {};
+        const playerEquippedCount = Object.values(playerEq).filter(Boolean).length;
+
+        // Определяем максимальное число слотов снаряжения для бота в зависимости от рейтинга игрока
+        let maxEquippedSlots = 7;
+        if (myRating < 30) {
+            // Absolute beginner: bot equipment matches player equipment count exactly (if player is naked, bot is naked)
+            maxEquippedSlots = playerEquippedCount;
+        } else if (myRating < 100) {
+            maxEquippedSlots = Math.min(7, playerEquippedCount + 1);
+        } else if (myRating < 200) {
+            maxEquippedSlots = Math.min(7, playerEquippedCount + 2);
+        } else if (myRating < 300) {
+            maxEquippedSlots = Math.min(7, playerEquippedCount + 3);
+        }
+
+        const equipment = generateOpponentEquipment(botLevel, targetRarity, maxEquippedSlots);
 
         // Рассчитываем множитель характеристик
         const baseMult = 0.82 + Math.min(0.4, (myRating / 500) * 0.28);
