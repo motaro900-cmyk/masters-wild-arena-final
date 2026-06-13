@@ -106,6 +106,7 @@ export class BattleEngine {
     public totalDamageDealt: number = 0;
     public totalDamageTaken: number = 0;
     public totalTurnsPlayed: number = 0;
+    public maxSingleHitDamage: number = 0;
 
     public onStateChange: (state: BattleState) => void = () => {};
     public _onCombatEvent: (event: CombatEvent) => void = () => {};
@@ -153,6 +154,7 @@ export class BattleEngine {
             this.totalDamageDealt = 0;
             this.totalDamageTaken = 0;
             this.totalTurnsPlayed = 0;
+            this.maxSingleHitDamage = 0;
             this.isCombatEndChecked = false;
         }
         this.isInitialized = true;
@@ -161,6 +163,7 @@ export class BattleEngine {
             this.totalDamageDealt = 0;
             this.totalDamageTaken = 0;
             this.totalTurnsPlayed = 0;
+            this.maxSingleHitDamage = 0;
             this.localCombatLogs = [];
             this.isCombatEndChecked = false;
 
@@ -850,6 +853,9 @@ export class BattleEngine {
                 const nextE_HP = this.applyDamage('enemy', counterDamage);
                 this.onCombatEvent({ type: 'HIT', damage: counterDamage, target: 'enemy' });
                 this.totalDamageDealt += counterDamage;
+                if (counterDamage > this.maxSingleHitDamage) {
+                    this.maxSingleHitDamage = counterDamage;
+                }
                 if (nextE_HP <= 0) attacker.animateDeath(false);
             }
         }
@@ -861,7 +867,12 @@ export class BattleEngine {
         if (hasBlocked && !(isPlayer && isOneShot)) {
             audioService.playSFX('/assets/audio/sfx/block.mp3');
             const blockedDamage = Math.max(1, Math.ceil(finalDamage * 0.3));
-            if (isPlayer) this.totalDamageDealt += blockedDamage;
+            if (isPlayer) {
+                this.totalDamageDealt += blockedDamage;
+                if (blockedDamage > this.maxSingleHitDamage) {
+                    this.maxSingleHitDamage = blockedDamage;
+                }
+            }
             const logMsg = `[Раунд] ${isPlayer ? 'Враг' : 'Вы'} блокирует удар! Урон снижен до ${blockedDamage}.`;
             this.updateState({ log: logMsg });
             this.addCombatLog(logMsg);
@@ -888,6 +899,9 @@ export class BattleEngine {
         let logMsg: string;
         if (isPlayer) {
             this.totalDamageDealt += finalDamage;
+            if (finalDamage > this.maxSingleHitDamage) {
+                this.maxSingleHitDamage = finalDamage;
+            }
         } else {
             this.totalDamageTaken += finalDamage;
         }

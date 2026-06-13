@@ -388,6 +388,7 @@ export const BattleScene: React.FC = () => {
                                     speed: enemyData.baseStats.speed,
                                 },
                                 battleDurationSeconds: engineRef.current ? engineRef.current.battleTime / 60 : 0,
+                                maxSingleHitDamage: engineRef.current?.maxSingleHitDamage ?? 0,
                             });
 
                             setTimeout(() => setShowResult(true), 1500);

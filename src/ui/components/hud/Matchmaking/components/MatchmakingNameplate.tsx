@@ -36,7 +36,7 @@ const Nameplate: React.FC<{
     rankIcon: string;
     rankName: string;
     titleText: string;
-}> = ({ side, displayName, vipLevel, rating, level, titleLine, winRateStr, rankColor, rankIcon, rankName, titleText }) => {
+}> = ({ side, displayName, vipLevel, rating, titleLine, winRateStr, rankColor, rankIcon, rankName, titleText }) => {
     const isPlayer = side === 'player';
     const accentColor = isPlayer ? 'rgba(240, 192, 64, 0.55)' : 'rgba(239, 68, 68, 0.55)';
     const bgGradient = isPlayer
@@ -48,7 +48,6 @@ const Nameplate: React.FC<{
     const tabBorder = isPlayer ? 'rgba(240, 192, 64, 0.5)' : 'rgba(220, 38, 38, 0.5)';
     const bottomBg = isPlayer ? 'rgba(8, 12, 22, 0.95)' : 'rgba(20, 6, 6, 0.95)';
     const bottomBorder = isPlayer ? 'rgba(240, 192, 64, 0.35)' : 'rgba(239, 68, 68, 0.35)';
-    const shieldColor = isPlayer ? '#1d4ed8' : '#b91c1c';
     const posStyle: React.CSSProperties = isPlayer
         ? { top: '127px', left: 'calc(7% + 225px)' }
         : { top: '127px', right: 'calc(7% + 225px)' };
@@ -258,7 +257,7 @@ const Nameplate: React.FC<{
                 </div>
             </div>
 
-            {/* Bottom Bar: level shield + title */}
+            {/* Bottom Bar: title only */}
             <div
                 style={{
                     background: bottomBg,
@@ -269,44 +268,8 @@ const Nameplate: React.FC<{
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    gap: '8px',
                 }}
             >
-                {/* Level Shield SVG */}
-                <div
-                    style={{
-                        position: 'relative',
-                        width: '16px',
-                        height: '19px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                    }}
-                >
-                    <svg width="16" height="19" viewBox="0 0 18 22" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path
-                            d="M9 1L1 4V10C1 15.5 4.5 19.5 9 21C13.5 19.5 17 15.5 17 10V4L9 1Z"
-                            fill={shieldColor}
-                            stroke="#fbbf24"
-                            strokeWidth="1.2"
-                        />
-                    </svg>
-                    <span
-                        style={{
-                            position: 'absolute',
-                            fontFamily: "'Cinzel', serif",
-                            fontSize: '9px',
-                            fontWeight: 900,
-                            color: '#fff',
-                            top: '50%',
-                            transform: 'translateY(-50%)',
-                            textShadow: '0 1px 2px #000',
-                        }}
-                    >
-                        {level}
-                    </span>
-                </div>
-
                 <span
                     style={{
                         fontFamily: "'Montserrat', sans-serif",
@@ -352,7 +315,7 @@ export const MatchmakingNameplates: React.FC<MatchmakingNameplateProps> = ({
                 vipLevel={vipLevel}
                 rating={rating}
                 level={level}
-                titleLine={`Уровень ${level} • ${playerHeroName}`}
+                titleLine={`${playerHeroName} • Уровень ${level}`}
                 winRateStr={playerWinRateStr}
                 rankColor={pRank.color}
                 rankIcon={pRank.icon}
@@ -365,7 +328,7 @@ export const MatchmakingNameplates: React.FC<MatchmakingNameplateProps> = ({
                 vipLevel={opponentVipLevel ?? 0}
                 rating={opponentRating}
                 level={opponentLevel || 2}
-                titleLine={`Уровень ${opponentLevel || 2} • ${opponentHeroName}`}
+                titleLine={`${opponentHeroName} • Уровень ${opponentLevel || 2}`}
                 winRateStr={opponentWinRateStr}
                 rankColor={eRank.color}
                 rankIcon={eRank.icon}

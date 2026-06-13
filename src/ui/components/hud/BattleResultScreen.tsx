@@ -84,6 +84,7 @@ export interface BattleResultData {
         speed: number;
     };
     battleDurationSeconds?: number;
+    maxSingleHitDamage?: number;
 }
 
 interface BattleResultScreenProps {
@@ -242,6 +243,11 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
             value: Math.round(data.damageDealt),
         },
         {
+            icon: <span style={{ fontSize: '24px' }}>💥</span>,
+            label: 'Лучший удар',
+            value: `${Math.round(data.maxSingleHitDamage || 0)} ед.`,
+        },
+        {
             icon: <span style={{ fontSize: '24px' }}>❤️</span>,
             label: 'Получено урона',
             value: Math.round(damageTaken),
@@ -329,6 +335,22 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
                 pointerEvents: 'auto',
             }}
         >
+            <style>{`
+                @keyframes fadeInUp {
+                    from {
+                        opacity: 0;
+                        transform: translate3d(0, 25px, 0);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translate3d(0, 0, 0);
+                    }
+                }
+                .result-stat-item-animated {
+                    animation: fadeInUp 0.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+                    opacity: 0;
+                }
+            `}</style>
             {/* ДЕКОРАТИВНЫЕ ЛИНИИ */}
             <div
                 style={{
@@ -416,7 +438,7 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
                         {stats.map((stat, i) => (
                             <div
                                 key={i}
-                                className="result-stat-item"
+                                className="result-stat-item result-stat-item-animated"
                                 style={{
                                     display: 'flex',
                                     justifyContent: 'space-between',
@@ -425,6 +447,7 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
                                     background: 'rgba(0,0,0,0.3)',
                                     borderRadius: '12px',
                                     border: '1px solid rgba(255,255,255,0.05)',
+                                    animationDelay: `${i * 150}ms`,
                                 }}
                             >
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
