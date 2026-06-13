@@ -16,7 +16,6 @@ import { initFirebaseProfile } from './bootstrap/initFirebaseProfile';
 import { initSubscriptions } from './bootstrap/initSubscriptions';
 import { initGameSystems, setupReferralAndGifts } from './bootstrap/initGameSystems';
 
-import * as PIXI from 'pixi.js';
 import { AssetsMap } from './configs/AssetsMap';
 import { audioService } from './services/AudioService';
 import { ITEMS_DATABASE } from './game/configs/ItemsConfig';
@@ -32,8 +31,6 @@ if (import.meta.env.DEV) {
     (window as any).useGameStore = useGameStore;
 }
 
-// [Optimization] Immediate background preload to satisfy browser 'preload' check
-PIXI.Assets.backgroundLoad([AssetsMap.BACKGROUNDS.MAIN_MENU]);
 
 // [VK] Global Error Handler
 if (typeof window !== 'undefined') {
@@ -88,15 +85,17 @@ export const Root = () => {
                 refreshInterval = null;
             }
             
-            // Timeout after 15s
+            // Timeout: 30s for mobile, 15s for desktop
+            const isMobile = typeof navigator !== 'undefined' && /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            const timeoutMs = isMobile ? 30000 : 15000;
             const timeoutId = setTimeout(() => {
                 if (isAppLoading) {
-                    console.error('❌ Loading Timeout: App failed to initialize in 15s');
+                    console.error(`❌ Loading Timeout: App failed to initialize in ${timeoutMs / 1000}s`);
                     setInitError(
                         'Превышено время ожидания загрузки. Пожалуйста, проверьте интернет-соединение и попробуйте снова.',
                     );
                 }
-            }, 15000);
+            }, timeoutMs);
 
             let timeOffset = 0;
             try {

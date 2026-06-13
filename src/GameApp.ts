@@ -66,6 +66,11 @@ export class GameApp {
 
             const quality = state.graphicsQuality;
 
+            const isIOS =
+                typeof navigator !== 'undefined' &&
+                (/iPad|iPhone|iPod/.test(navigator.userAgent) ||
+                    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1));
+
             const config: IPixiAppConfig = {
                 width: 1920,
                 height: 1080,
@@ -77,7 +82,7 @@ export class GameApp {
                           : ResolutionType.LOW,
                 background: '#000000',
                 antialias: quality !== 'LOW',
-                powerPreference: 'high-performance',
+                powerPreference: isIOS ? 'default' : 'high-performance',
             };
 
             this.storeUnsubscribe = useGameStore.subscribe((state: any, prevState: any) => {
@@ -194,7 +199,8 @@ export class GameApp {
 
         Object.values(ITEMS_DATABASE).forEach((item: any) => {
             if (!item.image) return;
-            const lvl = item.requiredLevel || 1;
+            if (item.requiredLevel === undefined) return; // Skip items without a level (like skins/consumables) from preloading queue
+            const lvl = item.requiredLevel;
 
             // Check if level matches the newly unlocked ranges
             const isMatch = newRanges.some((range) => {
@@ -221,9 +227,11 @@ export class GameApp {
         const manifest = AssetLoader.createGameManifest();
         await this.assetLoader.loadAssets(manifest);
 
-        // Lazy load item sprites based on current player level
+        // Lazy load item sprites based on current player level (non-blocking)
         const currentLevel = useGameStore.getState().level || 1;
-        await this.loadItemSpritesForLevel(currentLevel);
+        this.loadItemSpritesForLevel(currentLevel).catch((err) => {
+            console.error('❌ Background item sprite preloading failed:', err);
+        });
     }
 
     private applyPerformanceSettings(isPowerSaving: boolean, isMobile: boolean = false): void {

@@ -134,6 +134,25 @@ export class PixiApp {
             if (!this.pixiApp) {
                 if (config) this.config = { ...this.config, ...config };
 
+                const isIOS =
+                    typeof navigator !== 'undefined' &&
+                    (/iPad|iPhone|iPod/.test(navigator.userAgent) ||
+                        (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1));
+
+                let preferWebGL1 = false;
+                if (typeof window !== 'undefined' && typeof document !== 'undefined') {
+                    try {
+                        const canvas = document.createElement('canvas');
+                        const gl2 = canvas.getContext('webgl2');
+                        if (!gl2) {
+                            preferWebGL1 = true;
+                            console.warn('⚠️ WebGL2 is not available. Will fallback to WebGL1.');
+                        }
+                    } catch (e) {
+                        preferWebGL1 = true;
+                    }
+                }
+
                 this.pixiApp = new PIXI.Application();
                 await this.pixiApp.init({
                     width: this.config.width,
@@ -150,11 +169,22 @@ export class PixiApp {
                     autoDensity: true,
                     // Предпочитаем WebGPU — более чёткий рендер без WebGL сглаживания.
                     // Браузер автоматически fallback-ится на WebGL если WebGPU недоступен.
-                    preference: 'webgpu',
+                    preference: preferWebGL1 ? 'webgl' : 'webgpu',
+                    webgl: preferWebGL1 ? { preferWebGLVersion: 1 as 1 | 2 } : undefined,
                     // Отключаем субпиксельное смещение спрайтов — устраняет "пиксельный шум"
                     // на краях спрайтов при нецелых координатах
                     roundPixels: true,
+                    powerPreference: isIOS ? undefined : (this.config.powerPreference === 'default' ? undefined : this.config.powerPreference as any),
                 });
+
+                // Configure aggressive Texture GC for mobile to save VRAM and avoid crashes
+                if (isIOS || (typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent))) {
+                    if (this.pixiApp.renderer && (this.pixiApp.renderer as any).textureGC) {
+                        (this.pixiApp.renderer as any).textureGC.maxIdle = 1000; // GC textures idle for ~16s
+                        (this.pixiApp.renderer as any).textureGC.checkCountMax = 300; // Check every 5s (300 frames)
+                        console.log('[PixiApp] Configured aggressive texture GC for mobile');
+                    }
+                }
 
                 (window as any).__PIXI_APP__ = this.pixiApp;
                 PixiApp.canvas = this.pixiApp.canvas;

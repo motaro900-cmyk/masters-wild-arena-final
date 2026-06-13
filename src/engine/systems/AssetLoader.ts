@@ -77,6 +77,8 @@ export class AssetLoader {
                         preferCreateImageBitmap: !isIOS,
                     },
                 });
+                // [Optimization] Immediate background preload after safe initialization
+                PIXI.Assets.backgroundLoad([AssetsMap.BACKGROUNDS.MAIN_MENU]);
             }
 
             // Load assets individually to prevent one failure from crashing the entire app

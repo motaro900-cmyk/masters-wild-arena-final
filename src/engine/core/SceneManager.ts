@@ -52,6 +52,17 @@ export class SceneManager {
                 this.currentScene.parent.removeChild(this.currentScene);
             }
             this.currentScene.destroy({ children: true, texture: false });
+
+            // Trigger manual texture GC to release VRAM immediately on scene change
+            try {
+                const app = pixi.getApp();
+                if (app && app.renderer && (app.renderer as any).textureGC) {
+                    (app.renderer as any).textureGC.run();
+                    console.log('[SceneManager] Triggered manual texture GC');
+                }
+            } catch (gcErr) {
+                console.warn('Failed to run manual texture GC:', gcErr);
+            }
         }
 
         // 3. Добавляем новую сцену в Game Layer
