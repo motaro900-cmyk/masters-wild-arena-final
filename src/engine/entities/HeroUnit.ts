@@ -249,9 +249,35 @@ export class HeroUnit extends PIXI.Container implements IEffectTarget, IStatusEf
         this.hitFrameIdx = 5;
         this.deathFrameIdx = 5; // fallback is hit frame if no death frame exists
 
+        const heroPrefix = `${this.config.id}_`;
+
+        // Prefix frame keys with the hero name/ID to prevent PixiJS cache conflicts
+        const originalFrames = { ...sheet.data.frames };
+        const originalTextures = { ...sheet.textures };
+
+        sheet.data.frames = {};
+        sheet.textures = {};
+
+        for (const key of Object.keys(originalFrames)) {
+            const prefixedKey = key.startsWith(heroPrefix) ? key : `${heroPrefix}${key}`;
+
+            sheet.data.frames[prefixedKey] = originalFrames[key];
+            sheet.textures[prefixedKey] = originalTextures[key];
+
+            // Re-cache with the prefixed key
+            if (originalTextures[key]) {
+                if (PIXI.Cache.has(key) && PIXI.Cache.get(key) === originalTextures[key]) {
+                    PIXI.Cache.remove(key);
+                }
+                PIXI.Cache.set(prefixedKey, originalTextures[key]);
+            }
+        }
+
         const frameKeys = Object.keys(sheet.data.frames);
+        const indexRegex = new RegExp(`^(?:${heroPrefix})?(\\d+)`);
+
         for (const key of frameKeys) {
-            const match = key.match(/^(\d+)/);
+            const match = key.match(indexRegex);
             if (match) {
                 const idx = parseInt(match[1], 10);
                 const texture = sheet.textures[key];
