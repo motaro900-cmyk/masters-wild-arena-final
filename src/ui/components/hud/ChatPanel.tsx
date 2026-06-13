@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../../../store/useGameStore';
 import { db } from '../../../utils/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { useGraphicsConfig } from '../../hooks/useGraphicsConfig';
 
 // Subcomponents
 import { ChatMessages } from './Chat/ChatMessages';
@@ -11,6 +12,7 @@ import { ChatInputArea } from './Chat/ChatInputArea';
 import { ChatContextMenu } from './Chat/ChatContextMenu';
 
 export const ChatPanel = React.memo(() => {
+    const gfx = useGraphicsConfig();
     const [isOpen, setIsOpen] = useState(true);
     const [inputText, setInputText] = useState('');
     const messages = useGameStore((state) => state.messages);
@@ -386,21 +388,34 @@ export const ChatPanel = React.memo(() => {
                 style={{
                     background:
                         activeChatTab === 'private' && privateRecipient
-                            ? 'linear-gradient(180deg, rgba(240, 192, 64, 0.05) 0%, rgba(10, 15, 20, 0.85) 100%)'
-                            : 'rgba(10, 15, 20, 0.75)',
-                    backdropFilter: 'blur(12px)',
+                            ? `linear-gradient(180deg, rgba(240, 192, 64, 0.05) 0%, ${gfx.panelBg} 100%)`
+                            : gfx.panelBg,
+                    backdropFilter: gfx.backdropBlur,
+                    WebkitBackdropFilter: gfx.backdropBlur,
                     width: '100%',
                     height: isOpen ? 300 : 160,
                     transition: 'height 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                     display: 'flex',
                     flexDirection: 'column',
-                    boxShadow: '0 15px 50px rgba(0,0,0,0.6), inset 0 0 20px rgba(0,0,0,0.4)',
-                    border: '1px solid rgba(240, 192, 64, 0.2)',
+                    boxShadow: gfx.panelShadow,
+                    border: gfx.panelBorder,
                     borderRadius: '0 16px 16px 16px',
                     position: 'relative',
                     overflow: 'hidden',
                 }}
             >
+                {/* ULTRA: vignette overlay for depth */}
+                {gfx.isUltra && (
+                    <div
+                        style={{
+                            position: 'absolute',
+                            inset: 0,
+                            background: gfx.vignetteOverlay,
+                            pointerEvents: 'none',
+                            zIndex: 0,
+                        }}
+                    />
+                )}
                 {/* Header info in private chats */}
                 <AnimatePresence>
                     {activeChatTab === 'private' && privateRecipient && (

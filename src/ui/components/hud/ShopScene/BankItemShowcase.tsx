@@ -1,5 +1,6 @@
 import React from 'react';
 import { ShopItem } from '../../../../configs/ShopConfig';
+import { AssetsMap } from '../../../../configs/AssetsMap';
 
 interface BankItemShowcaseProps {
     item: ShopItem;
@@ -34,6 +35,15 @@ const BankCoinParticle: React.FC<{ style: React.CSSProperties; symbol: string }>
 );
 
 export const BankItemShowcase: React.FC<BankItemShowcaseProps> = ({ item, rarityColor, isMobile = false }) => {
+    let resourceIcon = '';
+    if (item.subTab === 'GOLD') {
+        resourceIcon = AssetsMap.UI.ICON_GOLD_FULL;
+    } else if (item.subTab === 'GEMS') {
+        resourceIcon = AssetsMap.UI.ICON_ALMAZ_FULL;
+    } else if (item.subTab === 'ENERGY') {
+        resourceIcon = AssetsMap.UI.ICON_ENERGY_FULL;
+    }
+
     const particles = isMobile
         ? []
         : [
@@ -144,7 +154,20 @@ export const BankItemShowcase: React.FC<BankItemShowcaseProps> = ({ item, rarity
                         gap: '6px',
                     }}
                 >
-                    <span style={{ fontSize: isMobile ? '10px' : '12px' }}>{currencySymbol}</span>
+                    {resourceIcon ? (
+                        <img
+                            src={resourceIcon}
+                            style={{
+                                width: isMobile ? '16px' : '20px',
+                                height: isMobile ? '16px' : '20px',
+                                objectFit: 'contain',
+                                filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.5))',
+                            }}
+                            alt=""
+                        />
+                    ) : (
+                        <span style={{ fontSize: isMobile ? '10px' : '12px' }}>{currencySymbol}</span>
+                    )}
                     <span
                         style={{
                             fontSize: isMobile ? '8px' : '10px',
@@ -211,17 +234,40 @@ export const BankItemShowcase: React.FC<BankItemShowcaseProps> = ({ item, rarity
                         gap: '4px',
                     }}
                 >
-                    <span
+                    <div
                         style={{
-                            fontSize: isMobile ? '20px' : '22px',
-                            fontWeight: 900,
-                            fontFamily: "'Cinzel', 'Philosopher', serif",
-                            color: '#fff',
-                            textShadow: '0 0 10px ' + rarityColor + 'aa',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '8px',
                         }}
                     >
-                        +{item.amount?.toLocaleString()}
-                    </span>
+                        <span
+                            style={{
+                                fontSize: isMobile ? '20px' : '22px',
+                                fontWeight: 900,
+                                fontFamily: "'Cinzel', 'Philosopher', serif",
+                                color: '#fff',
+                                textShadow: '0 0 10px ' + rarityColor + 'aa',
+                                display: 'flex',
+                                alignItems: 'center',
+                            }}
+                        >
+                            +{item.amount?.toLocaleString()}
+                        </span>
+                        {resourceIcon && (
+                            <img
+                                src={resourceIcon}
+                                style={{
+                                    width: isMobile ? '24px' : '28px',
+                                    height: isMobile ? '24px' : '28px',
+                                    objectFit: 'contain',
+                                    filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.6))',
+                                }}
+                                alt=""
+                            />
+                        )}
+                    </div>
                     <span
                         style={{
                             fontSize: isMobile ? '8px' : '9px',

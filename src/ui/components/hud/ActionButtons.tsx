@@ -4,6 +4,7 @@ import { AssetsMap } from '../../../configs/AssetsMap';
 import { useGameStore } from '../../../store/useGameStore';
 import { getRankInfo } from '../../../configs/RankSystem';
 import { audioService } from '../../../services/AudioService';
+import { useGraphicsConfig } from '../../hooks/useGraphicsConfig';
 
 interface ActionButtonsProps {
     onStartBattle: () => void;
@@ -18,6 +19,7 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({ onStartBattle, onW
     const rating = useGameStore((state) => state.rating);
     const rank = getRankInfo(rating);
     const [energyError, setEnergyError] = useState(false);
+    const gfx = useGraphicsConfig();
 
     return (
         <div
@@ -40,8 +42,29 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({ onStartBattle, onW
                     backgroundSize: '100% 100%',
                     backgroundRepeat: 'no-repeat',
                     position: 'relative',
+                    filter: gfx.isUltra
+                        ? 'contrast(1.06) saturate(1.1) brightness(0.88)'
+                        : gfx.isMedium
+                          ? 'contrast(1.03) saturate(1.05) brightness(0.94)'
+                          : 'none',
                 }}
             >
+                {/* ULTRA: dark overlay ONLY on the top info bar, not buttons */}
+                {gfx.isUltra && (
+                    <div
+                        style={{
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            height: '48%',
+                            background: 'rgba(0, 0, 0, 0.20)',
+                            borderRadius: '12px 12px 0 0',
+                            pointerEvents: 'none',
+                            zIndex: 1,
+                        }}
+                    />
+                )}
                 {/* Clickable Rank Area (Top part only) */}
                 <div
                     onClick={() => {
@@ -79,7 +102,8 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({ onStartBattle, onW
                             width: '100%',
                             height: '100%',
                             objectFit: 'contain',
-                            filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))',
+                            filter: 'contrast(1.3) saturate(1.15) brightness(1.05) drop-shadow(0 1px 2px rgba(0,0,0,0.8))',
+                            imageRendering: 'crisp-edges',
                         }}
                         alt="trophy"
                     />
@@ -105,7 +129,8 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({ onStartBattle, onW
                             width: '100%',
                             height: '100%',
                             objectFit: 'contain',
-                            filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))',
+                            filter: 'contrast(1.3) saturate(1.15) brightness(1.05) drop-shadow(0 1px 2px rgba(0,0,0,0.8))',
+                            imageRendering: 'crisp-edges',
                         }}
                         alt="rank-icon"
                     />

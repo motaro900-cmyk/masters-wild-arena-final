@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useGameStore } from '../../../store/useGameStore';
 import { AssetsMap } from '../../../configs/AssetsMap';
+import { useGraphicsConfig } from '../../hooks/useGraphicsConfig';
 
 const RESOURCES = [
     { key: 'energy', label: 'Энергия', sprite: AssetsMap.UI.BAR_ENERGY, color: '#f0c040' },
@@ -9,6 +10,7 @@ const RESOURCES = [
 ];
 
 export const ResourceBar: React.FC<{ onOpenShop?: (tab: string) => void }> = ({ onOpenShop }) => {
+    const gfx = useGraphicsConfig();
     const gold = useGameStore((s) => s.gold);
     const crystals = useGameStore((s) => s.crystals);
     const energy = useGameStore((s) => s.energy);
@@ -63,13 +65,14 @@ export const ResourceBar: React.FC<{ onOpenShop?: (tab: string) => void }> = ({ 
                     key={res.key}
                     onMouseEnter={() => setHoveredRes(res.key)}
                     onMouseLeave={() => setHoveredRes(null)}
-                    style={{
+                style={{
                         position: 'relative',
                         width: 145,
                         height: 34,
                         backgroundImage: `url(${res.sprite})`,
                         backgroundSize: '100% 100%',
                         backgroundRepeat: 'no-repeat',
+                        filter: gfx.spriteFilter,
                         display: 'flex',
                         alignItems: 'center',
                         padding: '0 6px',

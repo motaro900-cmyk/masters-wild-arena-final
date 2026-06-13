@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { useGameStore } from '../../../store/useGameStore';
 import { AssetsMap } from '../../../configs/AssetsMap';
 import { audioService } from '../../../services/AudioService';
+import { useGraphicsConfig } from '../../hooks/useGraphicsConfig';
 
 interface MenuItem {
     id: string;
@@ -24,8 +25,7 @@ const MENU_ITEMS: MenuItem[] = [
 
 export const LeftSidebar: React.FC<{ onOpenWindow: (n: string) => void }> = ({ onOpenWindow }) => {
     const activeScreen = useGameStore((state) => state.activeScreen);
-    const graphicsQuality = useGameStore((state) => state.graphicsQuality);
-    const isLow = graphicsQuality === 'LOW';
+    const gfx = useGraphicsConfig();
 
     return (
         <div
@@ -44,7 +44,7 @@ export const LeftSidebar: React.FC<{ onOpenWindow: (n: string) => void }> = ({ o
                     backgroundImage: `url(${AssetsMap.UI.SIDEBAR_LEFT})`,
                     backgroundSize: '100% 100%',
                     backgroundRepeat: 'no-repeat',
-                    filter: isLow ? 'none' : 'contrast(1.1) saturate(1.15) brightness(1.05)',
+                    filter: gfx.spriteFilter,
                     zIndex: 0,
                     pointerEvents: 'none',
                 }}

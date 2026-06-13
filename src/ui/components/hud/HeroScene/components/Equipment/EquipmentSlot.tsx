@@ -64,53 +64,62 @@ export const EquipmentSlot = ({ id, itemId, activeDraggingId, onClick, setGlobal
             transition={isCompatible ? { duration: 1.2, repeat: Infinity, ease: 'easeInOut' } : {}}
             onClick={onClick}
             ref={setNodeRef}
-            style={{
-                width: '110px',
-                height: '110px',
+        style={{
+                width: '104px',
+                height: '104px',
                 background: isOver
-                    ? 'rgba(240, 192, 64, 0.18)'
-                    : 'radial-gradient(circle, rgba(32, 26, 21, 0.9) 0%, rgba(18, 14, 11, 0.96) 100%)',
-                borderRadius: '16px',
+                    ? 'rgba(240, 192, 64, 0.15)'
+                    : itemData
+                      ? `radial-gradient(circle at 50% 30%, rgba(40, 32, 24, 0.95) 0%, rgba(14, 10, 8, 0.98) 100%)`
+                      : 'radial-gradient(circle at 50% 30%, rgba(28, 22, 17, 0.92) 0%, rgba(12, 9, 7, 0.97) 100%)',
+                borderRadius: '12px',
                 border: isOver
-                    ? '2.5px solid #fffdf7'
+                    ? '2px solid #fffdf7'
                     : isCompatible
-                      ? '2.5px solid #f0c040'
-                      : '1px solid rgba(240, 192, 64, 0.28)',
+                      ? '2px solid #f0c040'
+                      : itemData
+                        ? `1.5px solid ${rarityColor}66`
+                        : '1.5px solid rgba(240, 192, 64, 0.22)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 position: 'relative',
                 transition: 'all 0.3s, opacity 0.3s',
                 boxShadow: itemData
-                    ? `0 8px 20px rgba(0,0,0,0.7), 0 0 15px ${rarityColor}33, inset 0 0 12px rgba(0,0,0,0.8)`
+                    ? `0 8px 24px rgba(0,0,0,0.8), 0 0 20px ${rarityColor}44, inset 0 0 16px rgba(0,0,0,0.85), inset 0 1px 0 rgba(255,255,255,0.04)`
                     : isCompatible
-                      ? '0 0 20px rgba(240,192,64,0.35), inset 0 0 10px rgba(0,0,0,0.8)'
-                      : '0 4px 10px rgba(0,0,0,0.5), inset 0 0 8px rgba(0,0,0,0.8)',
+                      ? '0 0 20px rgba(240,192,64,0.35), inset 0 0 12px rgba(0,0,0,0.85)'
+                      : '0 6px 14px rgba(0,0,0,0.6), inset 0 0 10px rgba(0,0,0,0.85), inset 0 1px 0 rgba(255,255,255,0.03)',
                 cursor: itemId ? 'pointer' : 'default',
                 opacity: activeDraggingId && !isCompatible ? 0.35 : 1.0,
             }}
         >
-            {/* Inner gold frame decoration */}
-            <div
-                style={{
+            {/* Outer corner accents */}
+            {['tl','tr','bl','br'].map((pos) => (
+                <div key={pos} style={{
                     position: 'absolute',
-                    inset: '3px',
-                    border: isCompatible
-                        ? '1.5px solid rgba(240, 192, 64, 0.45)'
-                        : '1px solid rgba(240, 192, 64, 0.12)',
-                    borderRadius: '13px',
+                    width: '10px', height: '10px',
+                    ...(pos === 'tl' ? { top: 3, left: 3 } : {}),
+                    ...(pos === 'tr' ? { top: 3, right: 3 } : {}),
+                    ...(pos === 'bl' ? { bottom: 3, left: 3 } : {}),
+                    ...(pos === 'br' ? { bottom: 3, right: 3 } : {}),
+                    borderTop: ['tl','tr'].includes(pos) ? `1.5px solid ${isCompatible ? '#f0c040' : 'rgba(240,192,64,0.4)'}` : 'none',
+                    borderBottom: ['bl','br'].includes(pos) ? `1.5px solid ${isCompatible ? '#f0c040' : 'rgba(240,192,64,0.4)'}` : 'none',
+                    borderLeft: ['tl','bl'].includes(pos) ? `1.5px solid ${isCompatible ? '#f0c040' : 'rgba(240,192,64,0.4)'}` : 'none',
+                    borderRight: ['tr','br'].includes(pos) ? `1.5px solid ${isCompatible ? '#f0c040' : 'rgba(240,192,64,0.4)'}` : 'none',
                     pointerEvents: 'none',
-                    zIndex: 1,
-                }}
-            />
+                    zIndex: 3,
+                }} />
+            ))}
 
             {itemData ? (
                 itemData.spriteClass ? (
-                    <div className={itemData.spriteClass} style={{ width: '90px', height: '90px', zIndex: 2, borderRadius: '12px' }} />
+                    <div className={itemData.spriteClass} style={{ width: '72px', height: '72px', zIndex: 2, borderRadius: '12px' }} />
                 ) : (
                     <img
                         src={resolveAssetPath(itemData.image)}
-                        style={{ width: '92%', height: '92%', objectFit: 'cover', zIndex: 2, borderRadius: '12px' }}
+                        style={{ width: '68%', height: '68%', objectFit: 'contain', zIndex: 2,
+                            filter: `drop-shadow(0 2px 6px rgba(0,0,0,0.8)) drop-shadow(0 0 8px ${rarityColor}55)` }}
                         alt=""
                     />
                 )

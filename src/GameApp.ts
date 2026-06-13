@@ -252,20 +252,14 @@ export class GameApp {
         }
     }
 
-    private handleScreenTicker(activeScreen: string): void {
+    private handleScreenTicker(_activeScreen: string): void {
         try {
             const app = this.pixiApp.getApp();
             if (!app || !app.ticker) return;
 
-            const staticScreens = ['MAIN_MENU', 'SHOP', 'HEROES', 'BATTLE_PASS', 'FORGE', 'SANCTUARY', 'INTRO', 'CITY'];
-
-            if (staticScreens.includes(activeScreen)) {
-                app.ticker.stop();
-                console.log(`⏸️ Static screen detected: ${activeScreen}. Stopped Pixi Ticker.`);
-            } else {
-                app.ticker.start();
-                console.log(`▶️ Animated screen detected: ${activeScreen}. Started Pixi Ticker.`);
-            }
+            // Always keep the PixiJS ticker running to allow smooth transitions, background animations, particles,
+            // and continuous, responsive FPS counter updates (e.g. capped at 30/60 FPS based on power saving mode).
+            app.ticker.start();
         } catch {
             console.warn('⚠️ Could not handle screen ticker yet (engine not ready)');
         }

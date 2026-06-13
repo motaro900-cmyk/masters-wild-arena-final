@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { ITEMS_DATABASE, calculateItemPower } from '../../../../../../game/configs/ItemsConfig';
 import { useGameStore } from '../../../../../../store/useGameStore';
@@ -13,6 +13,7 @@ import { SKINS_DB } from '../../../../../../configs/SkinsConfig';
 import { CornerDecoration, stoneBrickPattern } from './decorations';
 import { EquipmentSlot } from './EquipmentSlot';
 import { HeroStatsPanel } from './HeroStatsPanel';
+import { useGraphicsConfig } from '../../../../../hooks/useGraphicsConfig';
 import './gear-view-symmetrical.css';
 
 export const GearView = ({
@@ -55,6 +56,23 @@ export const GearView = ({
         critDamage: 1.5,
     };
     const baseStats = stats?.base || currentStats;
+    const gfx = useGraphicsConfig();
+
+    // Memoised particles — random positions fixed on mount, not re-randomised on re-render
+    const particles = useMemo(() => [
+        { id: 0,  left: '28%', bottom: '160px', dur: '5.2s', delay: '0.0s', drift:  '18px' },
+        { id: 1,  left: '35%', bottom: '165px', dur: '6.8s', delay: '1.3s', drift: '-12px' },
+        { id: 2,  left: '42%', bottom: '158px', dur: '4.9s', delay: '0.7s', drift:  '22px' },
+        { id: 3,  left: '50%', bottom: '162px', dur: '7.1s', delay: '2.1s', drift:  '-8px' },
+        { id: 4,  left: '57%', bottom: '170px', dur: '5.5s', delay: '0.4s', drift:  '15px' },
+        { id: 5,  left: '63%', bottom: '155px', dur: '6.2s', delay: '1.8s', drift: '-20px' },
+        { id: 6,  left: '70%', bottom: '163px', dur: '4.7s', delay: '0.9s', drift:  '10px' },
+        { id: 7,  left: '33%', bottom: '168px', dur: '8.0s', delay: '3.0s', drift: '-16px' },
+        { id: 8,  left: '46%', bottom: '157px', dur: '5.8s', delay: '1.5s', drift:  '25px' },
+        { id: 9,  left: '54%', bottom: '172px', dur: '6.4s', delay: '2.6s', drift:  '-9px' },
+        { id: 10, left: '38%', bottom: '161px', dur: '7.3s', delay: '0.2s', drift:  '13px' },
+        { id: 11, left: '61%', bottom: '166px', dur: '5.0s', delay: '1.1s', drift: '-24px' },
+    ], []);
 
     const diffs: any = { hp: 0, attack: 0, defense: 0 };
     const [localSelectedId, setLocalSelectedId] = useState<string | null>(null);
@@ -62,7 +80,7 @@ export const GearView = ({
     const [showHpTooltip, setShowHpTooltip] = useState(false);
     const [showAttackTooltip, setShowAttackTooltip] = useState(false);
     const [showDefenseTooltip, setShowDefenseTooltip] = useState(false);
-    const [showEvasionTooltip, setShowEvasionTooltip] = useState(false);
+    const [showSpeedTooltip, setShowSpeedTooltip] = useState(false);
     const [showCritTooltip, setShowCritTooltip] = useState(false);
 
     const { inventory: rawInventory } = useGameStore();
@@ -177,20 +195,71 @@ export const GearView = ({
                     <CornerDecoration />
 
 
-                    {/* Circular Gold Aura Ring behind Panda */}
-                    <div className="mockup-bg-circle" />
-                    <div className="mockup-bg-circle-inner" />
-                    <div className="mockup-bg-circle-orbital" />
+                    {/* ── Atmospheric inner fog (MEDIUM+) ── */}
+                    {!gfx.isLow && <div className="frame-atmosphere" />}
 
-                    {/* Symmetrical Slots arranged absolutely around the hero */}
+                    {/* ── Ground spotlight (MEDIUM+) ── */}
+                    {!gfx.isLow && <div className="character-spotlight" />}
+
+                    {/* ── Rim light on character silhouette (ULTRA) ── */}
+                    {gfx.isUltra && <div className="character-rimlight" />}
+
+                    {/* ── Scan line sweep (ULTRA) ── */}
+                    {gfx.isUltra && <div className="frame-scan-line" />}
+
+                    {/* ── Floating particles (ULTRA only) ── */}
+                    {gfx.showParticles && gfx.isUltra && particles.map((p) => (
+                        <div
+                            key={p.id}
+                            className="gear-particle"
+                            style={{
+                                left: p.left,
+                                bottom: p.bottom,
+                                '--dur': p.dur,
+                                '--delay': p.delay,
+                                '--drift': p.drift,
+                            } as React.CSSProperties}
+                        />
+                    ))}
+
+                    {/* ── Rectangular ornate frame around character ── */}
+                    <div className="character-frame-rect">
+                        {/* Corner L-bars */}
+                        <div className="frame-corner frame-corner-tl" />
+                        <div className="frame-corner frame-corner-tr" />
+                        <div className="frame-corner frame-corner-bl" />
+                        <div className="frame-corner frame-corner-br" />
+                        {/* Corner diamonds */}
+                        <div className="frame-corner-diamond frame-corner-diamond-tl" />
+                        <div className="frame-corner-diamond frame-corner-diamond-tr" />
+                        <div className="frame-corner-diamond frame-corner-diamond-bl" />
+                        <div className="frame-corner-diamond frame-corner-diamond-br" />
+                        {/* Mid-edge gems */}
+                        <div className="frame-side-gem frame-side-gem-left" />
+                        <div className="frame-side-gem frame-side-gem-right" />
+                        <div className="frame-side-gem frame-side-gem-top" />
+                        <div className="frame-side-gem frame-side-gem-bottom" />
+                    </div>
+
+
+                    {/* ── Connector lines LEFT (slot right edge → frame left edge) ── */}
+                    <div className="slot-connector-left conn-helm" />
+                    <div className="slot-connector-left conn-shoulders" />
+                    <div className="slot-connector-left conn-armor" />
+                    <div className="slot-connector-left conn-pants" />
+
+                    {/* ── Connector lines RIGHT (frame right edge → slot left edge) ── */}
+                    <div className="slot-connector-right conn-weapons" />
+                    <div className="slot-connector-right conn-shields" />
+                    <div className="slot-connector-right conn-boots" />
+
+                    {/* ── LEFT COLUMN SLOTS ── */}
                     <div className="equipment-slot-wrapper slot-helm">
                         <EquipmentSlot
                             id="HELMETS"
                             itemId={equippedIds.HELMETS}
                             activeDraggingId={activeDraggingId}
-                            onClick={() => {
-                                if (equippedIds.HELMETS) handleUnequip(equippedIds.HELMETS);
-                            }}
+                            onClick={() => { if (equippedIds.HELMETS) handleUnequip(equippedIds.HELMETS); }}
                             setGlobalHoveredItem={setGlobalHoveredItem}
                         />
                         <div className="slot-wrapper-label">ШЛЕМ</div>
@@ -200,9 +269,7 @@ export const GearView = ({
                             id="SHOULDERS"
                             itemId={equippedIds.SHOULDERS}
                             activeDraggingId={activeDraggingId}
-                            onClick={() => {
-                                if (equippedIds.SHOULDERS) handleUnequip(equippedIds.SHOULDERS);
-                            }}
+                            onClick={() => { if (equippedIds.SHOULDERS) handleUnequip(equippedIds.SHOULDERS); }}
                             setGlobalHoveredItem={setGlobalHoveredItem}
                         />
                         <div className="slot-wrapper-label">ПЛЕЧИ</div>
@@ -212,9 +279,7 @@ export const GearView = ({
                             id="ARMOR"
                             itemId={equippedIds.ARMOR}
                             activeDraggingId={activeDraggingId}
-                            onClick={() => {
-                                if (equippedIds.ARMOR) handleUnequip(equippedIds.ARMOR);
-                            }}
+                            onClick={() => { if (equippedIds.ARMOR) handleUnequip(equippedIds.ARMOR); }}
                             setGlobalHoveredItem={setGlobalHoveredItem}
                         />
                         <div className="slot-wrapper-label">ДОСПЕХ</div>
@@ -224,21 +289,19 @@ export const GearView = ({
                             id="PANTS"
                             itemId={equippedIds.PANTS}
                             activeDraggingId={activeDraggingId}
-                            onClick={() => {
-                                if (equippedIds.PANTS) handleUnequip(equippedIds.PANTS);
-                            }}
+                            onClick={() => { if (equippedIds.PANTS) handleUnequip(equippedIds.PANTS); }}
                             setGlobalHoveredItem={setGlobalHoveredItem}
                         />
                         <div className="slot-wrapper-label">ПОНОЖИ</div>
                     </div>
+
+                    {/* ── RIGHT COLUMN SLOTS ── */}
                     <div className="equipment-slot-wrapper slot-weapons">
                         <EquipmentSlot
                             id="WEAPONS"
                             itemId={equippedIds.WEAPONS}
                             activeDraggingId={activeDraggingId}
-                            onClick={() => {
-                                if (equippedIds.WEAPONS) handleUnequip(equippedIds.WEAPONS);
-                            }}
+                            onClick={() => { if (equippedIds.WEAPONS) handleUnequip(equippedIds.WEAPONS); }}
                             setGlobalHoveredItem={setGlobalHoveredItem}
                         />
                         <div className="slot-wrapper-label">ОРУЖИЕ</div>
@@ -248,9 +311,7 @@ export const GearView = ({
                             id="SHIELDS"
                             itemId={equippedIds.SHIELDS}
                             activeDraggingId={activeDraggingId}
-                            onClick={() => {
-                                if (equippedIds.SHIELDS) handleUnequip(equippedIds.SHIELDS);
-                            }}
+                            onClick={() => { if (equippedIds.SHIELDS) handleUnequip(equippedIds.SHIELDS); }}
                             setGlobalHoveredItem={setGlobalHoveredItem}
                         />
                         <div className="slot-wrapper-label">ЩИТ</div>
@@ -260,9 +321,7 @@ export const GearView = ({
                             id="BOOTS"
                             itemId={equippedIds.BOOTS}
                             activeDraggingId={activeDraggingId}
-                            onClick={() => {
-                                if (equippedIds.BOOTS) handleUnequip(equippedIds.BOOTS);
-                            }}
+                            onClick={() => { if (equippedIds.BOOTS) handleUnequip(equippedIds.BOOTS); }}
                             setGlobalHoveredItem={setGlobalHoveredItem}
                         />
                         <div className="slot-wrapper-label">САПОГИ</div>
@@ -282,7 +341,7 @@ export const GearView = ({
                         style={{
                             position: 'absolute',
                             top: '255px',
-                            left: 'calc(50% + 45px)',
+                            left: '50%',
                             transform: 'translateX(-50%)',
                             width: '940px',
                             height: '450px',
@@ -301,7 +360,7 @@ export const GearView = ({
                         style={{
                             position: 'absolute',
                             top: '330px',
-                            left: 'calc(50% + 45px)',
+                            left: '50%',
                             transform: 'translate(-50%, -50%) scale(1.05)',
                             zIndex: 3,
                             display: 'flex',
@@ -505,11 +564,11 @@ export const GearView = ({
 
                         <div
                             className="mockup-stat-item"
-                            onMouseEnter={() => setShowEvasionTooltip(true)}
-                            onMouseLeave={() => setShowEvasionTooltip(false)}
+                            onMouseEnter={() => setShowSpeedTooltip(true)}
+                            onMouseLeave={() => setShowSpeedTooltip(false)}
                             style={{ position: 'relative' }}
                         >
-                            {showEvasionTooltip && (
+                            {showSpeedTooltip && (
                                 <div
                                     style={{
                                         position: 'absolute',
@@ -530,20 +589,20 @@ export const GearView = ({
                                     }}
                                 >
                                     <div style={{ color: '#22c55e', fontWeight: 900, marginBottom: '5px', letterSpacing: '1px' }}>
-                                        ПОКАЗАТЕЛЬ ЛОВКОСТИ
+                                        СКОРОСТЬ ПЕРСОНАЖА
                                     </div>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '3px' }}>
                                         <span>Базовая:</span>
-                                        <span>{Math.round(baseStats.evasion ?? 0)}%</span>
+                                        <span>{(baseStats.speed ?? 0).toFixed(2)}</span>
                                     </div>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', color: '#10b981' }}>
                                         <span>Бонус экипировки:</span>
-                                        <span>+{Math.round((currentStats.evasion ?? 0) - (baseStats.evasion ?? 0))}%</span>
+                                        <span>+{Math.max(0, (currentStats.speed ?? 0) - (baseStats.speed ?? 0)).toFixed(2)}</span>
                                     </div>
                                 </div>
                             )}
-                            <div className="mockup-stat-label">КРИТ. ШАНС</div>
-                            <div className="mockup-stat-value evasion" style={{ color: '#22c55e' }}>🌪️ {Math.round(currentStats.evasion ?? 0)}%</div>
+                            <div className="mockup-stat-label">СКОРОСТЬ</div>
+                            <div className="mockup-stat-value speed" style={{ color: '#22c55e' }}>💨 {(currentStats.speed ?? 0).toFixed(2)}</div>
                         </div>
 
                         <div
@@ -577,16 +636,16 @@ export const GearView = ({
                                     </div>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '3px' }}>
                                         <span>Базовый:</span>
-                                        <span>{Math.round(baseStats.critChance)}%</span>
+                                        <span>{Math.round(baseStats.critChance ?? 0)}%</span>
                                     </div>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', color: '#10b981' }}>
                                         <span>Бонус экипировки:</span>
-                                        <span>+{Math.round(currentStats.critChance - baseStats.critChance)}%</span>
+                                        <span>+{Math.round((currentStats.critChance ?? 0) - (baseStats.critChance ?? 0))}%</span>
                                     </div>
                                 </div>
                             )}
-                            <div className="mockup-stat-label">КРИТ. УРОН</div>
-                            <div className="mockup-stat-value crit" style={{ color: '#a855f7' }}>💥 {Math.round(currentStats.critChance)}%</div>
+                            <div className="mockup-stat-label">КРИТ. ШАНС</div>
+                            <div className="mockup-stat-value crit" style={{ color: '#a855f7' }}>💥 {Math.round(currentStats.critChance ?? 0)}%</div>
                         </div>
                     </div>
 

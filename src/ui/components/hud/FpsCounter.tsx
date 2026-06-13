@@ -1,5 +1,4 @@
 import React, { useEffect, useRef } from 'react';
-import { PixiApp } from '../../../engine/core/PixiApp';
 
 export const FpsCounter: React.FC = () => {
     const containerRef = useRef<HTMLDivElement>(null);
@@ -7,29 +6,30 @@ export const FpsCounter: React.FC = () => {
 
     useEffect(() => {
         let animationId: number;
-        const pixiApp = PixiApp.getInstance();
+        let lastTime = performance.now();
+        let frameCount = 0;
         let lastUpdate = 0;
 
         const update = (timestamp: number) => {
-            // Ограничиваем обновление DOM до 2 раз в секунду (каждые 500мс) для производительности
+            frameCount++;
+
+            // Update display every 500ms
             if (timestamp - lastUpdate >= 500) {
-                try {
-                    const app = pixiApp.getApp();
-                    if (app && app.ticker) {
-                        const fps = Math.round(app.ticker.FPS);
-                        if (fpsValRef.current) {
-                            fpsValRef.current.innerText = fps.toString();
-                        }
-                        if (containerRef.current) {
-                            const color = fps < 25 ? '#ff4444' : fps < 50 ? '#ffcc00' : '#44ff44';
-                            containerRef.current.style.color = color;
-                        }
-                    }
-                } catch {
-                    // Engine not ready yet
-                }
+                const elapsed = timestamp - lastTime;
+                const fps = elapsed > 0 ? Math.round((frameCount * 1000) / elapsed) : 0;
+                frameCount = 0;
+                lastTime = timestamp;
                 lastUpdate = timestamp;
+
+                if (fpsValRef.current) {
+                    fpsValRef.current.innerText = fps.toString();
+                }
+                if (containerRef.current) {
+                    const color = fps < 25 ? '#ff4444' : fps < 50 ? '#ffcc00' : '#44ff44';
+                    containerRef.current.style.color = color;
+                }
             }
+
             animationId = requestAnimationFrame(update);
         };
 

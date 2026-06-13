@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useGameStore } from '../../store/useGameStore';
 import { AssetsMap } from '../../configs/AssetsMap';
-import { PixiApp } from '../../engine/core/PixiApp';
 
 // HUD Components
 import { BattlePassBar } from './hud/BattlePassBar';
@@ -23,6 +22,7 @@ import { LevelUpOverlay } from './hud/LevelUpOverlay';
 import { PlayerInspectModal } from './hud/PlayerInspectModal';
 import bridge from '@vkontakte/vk-bridge';
 import { safeGetItem, safeSetItem } from '../../utils/SafeStorage';
+import { useGraphicsConfig } from '../hooks/useGraphicsConfig';
 
 const AdminPanel = React.lazy(() => import('./hud/AdminPanel').then((m) => ({ default: m.AdminPanel })));
 
@@ -39,6 +39,7 @@ export const GameHUD: React.FC = () => {
     const [devModal, setDevModal] = useState({ isOpen: false, title: '' });
     const goToShop = useGameStore((state) => state.goToShop);
     const [prevScreen, setPrevScreen] = useState(activeScreen);
+    const gfx = useGraphicsConfig();
 
     const activeWindowRef = useRef<string | null>(null);
     useEffect(() => {
@@ -92,40 +93,37 @@ export const GameHUD: React.FC = () => {
     const [hudScale, setHudScale] = useState(1);
     const showFps = useGameStore((state) => state.showFps);
     const [fpsValue, setFpsValue] = useState<number | null>(null);
+    const fpsAnimFrameRef = useRef<number>(0);
+    const fpsFrameCountRef = useRef<number>(0);
+    const fpsLastTimeRef = useRef<number>(0);
+    const fpsLastUpdateRef = useRef<number>(0);
 
-    // PixiJS Ticker-based FPS — shows actual game engine FPS, not browser refresh rate
+    // requestAnimationFrame-based FPS — always shows real rendering rate (including power saving cap)
     useEffect(() => {
-        if (!showFps) return;
-
-        let frameCount = 0;
-        let elapsedMs = 0;
-
-        const tickerCallback = (ticker: any) => {
-            // ticker.deltaMS is milliseconds since last frame
-            elapsedMs += ticker.deltaMS;
-            frameCount++;
-            if (elapsedMs >= 500) {
-                const fps = Math.round((frameCount / elapsedMs) * 1000);
-                setFpsValue(fps);
-                frameCount = 0;
-                elapsedMs = 0;
-            }
-        };
-
-        let cleanup: (() => void) | null = null;
-        try {
-            const pixiApp = PixiApp.getInstance();
-            const app = pixiApp.getApp();
-            app.ticker.add(tickerCallback);
-            // If ticker is stopped (static screen), show 0 — engine is idle
-            if (!app.ticker.started) setFpsValue(0);
-            cleanup = () => app.ticker.remove(tickerCallback);
-        } catch {
-            // PixiApp not yet initialized — show nothing
+        if (!showFps) {
             setFpsValue(null);
+            return;
         }
 
-        return () => { if (cleanup) cleanup(); };
+        fpsLastTimeRef.current = performance.now();
+        fpsFrameCountRef.current = 0;
+        fpsLastUpdateRef.current = 0;
+
+        const tick = (timestamp: number) => {
+            fpsFrameCountRef.current++;
+            if (timestamp - fpsLastUpdateRef.current >= 500) {
+                const elapsed = timestamp - fpsLastTimeRef.current;
+                const fps = elapsed > 0 ? Math.round((fpsFrameCountRef.current * 1000) / elapsed) : 0;
+                fpsFrameCountRef.current = 0;
+                fpsLastTimeRef.current = timestamp;
+                fpsLastUpdateRef.current = timestamp;
+                setFpsValue(fps);
+            }
+            fpsAnimFrameRef.current = requestAnimationFrame(tick);
+        };
+
+        fpsAnimFrameRef.current = requestAnimationFrame(tick);
+        return () => cancelAnimationFrame(fpsAnimFrameRef.current);
     }, [showFps]);
 
     useEffect(() => {
@@ -327,7 +325,7 @@ export const GameHUD: React.FC = () => {
                                         letterSpacing: '1px',
                                     }}
                                 >
-                                    {fpsValue === 0 ? 'IDLE' : 'FPS'}
+                                    FPS
                                 </span>
                                 <span
                                     style={{
@@ -337,14 +335,13 @@ export const GameHUD: React.FC = () => {
                                         minWidth: '30px',
                                         textAlign: 'center',
                                         color: fpsValue === null ? '#888'
-                                            : fpsValue === 0 ? '#aaa'
                                             : fpsValue < 25 ? '#ff4444'
                                             : fpsValue < 50 ? '#ffcc00'
                                             : '#44ff44',
                                         transition: 'color 0.3s',
                                     }}
                                 >
-                                    {fpsValue === null ? '—' : fpsValue === 0 ? '—' : fpsValue}
+                                    {fpsValue === null ? '—' : fpsValue}
                                 </span>
                             </div>
                         )}
@@ -530,11 +527,12 @@ export const GameHUD: React.FC = () => {
                             alignItems: 'center',
                             gap: 16,
                             padding: '12px 18px',
-                            background: 'rgba(15, 10, 5, 0.75)',
-                            backdropFilter: 'blur(12px)',
-                            border: '1px solid rgba(240, 192, 64, 0.25)',
+                            background: gfx.panelBg,
+                            backdropFilter: gfx.backdropBlur,
+                            border: gfx.panelBorder,
                             borderRadius: '20px',
-                            boxShadow: '0 10px 30px rgba(0,0,0,0.7)',
+                            boxShadow: gfx.panelShadow,
+                            filter: gfx.isUltra ? 'contrast(1.04) saturate(1.06) brightness(0.96)' : undefined,
                             ...(isMobile ? { transform: `scale(${hudScale})`, transformOrigin: 'bottom right' } : {}),
                         }}
                     >

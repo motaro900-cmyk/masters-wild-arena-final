@@ -232,11 +232,27 @@ export class BattleEngine {
 
             // 1. Determine particle types based on background file name
             const lowerBg = randomBg.toLowerCase();
-            let particleType: 'snow' | 'fire' | 'dust' = 'dust';
-            if (lowerBg.includes('ice') || lowerBg.includes('snow') || lowerBg.includes('frost')) {
+            let particleType: 'frost' | 'rain' | 'lava' | 'snow' | 'leaves' | 'sandstorm' | 'dust' = 'dust';
+            if (lowerBg.includes('bg_1')) {
+                particleType = 'frost';
+            } else if (lowerBg.includes('bg_2')) {
+                particleType = 'rain';
+            } else if (lowerBg.includes('bg_3')) {
+                particleType = 'lava';
+            } else if (lowerBg.includes('bg_4')) {
                 particleType = 'snow';
-            } else if (lowerBg.includes('fire') || lowerBg.includes('lava') || lowerBg.includes('volcano')) {
-                particleType = 'fire';
+            } else if (lowerBg.includes('bg_5')) {
+                particleType = 'leaves';
+            } else if (lowerBg.includes('bg_6')) {
+                particleType = 'sandstorm';
+            }
+
+            const q = state.graphicsQuality;
+            let maxParticles = 0;
+            if (q === 'MEDIUM') {
+                maxParticles = 25;
+            } else if (q === 'ULTRA') {
+                maxParticles = 75;
             }
 
             // Create background particles container & array
@@ -249,45 +265,161 @@ export class BattleEngine {
                 alpha: number;
                 scale: number;
                 parallax: number;
+                type: string;
+                amplitude?: number;
+                phaseSpeed?: number;
+                phase?: number;
+                rotSpeed?: number;
+                pulseSpeed?: number;
+                baseAlpha?: number;
+                baseVy?: number;
             }
             const arenaParticles: IArenaParticle[] = [];
             const particleContainer = new PIXI.Container();
             pixiApp.backgroundLayer.addChild(particleContainer);
 
-            // Generate 30 background particles
-            for (let i = 0; i < 30; i++) {
+            // Generate background particles based on quality
+            for (let i = 0; i < maxParticles; i++) {
                 const g = new PIXI.Graphics();
                 let color = 0xffffff;
-                let radius = 2 + Math.random() * 3;
+                let scale = 0.5 + Math.random() * 0.5;
+                let parallax = 0.3 + Math.random() * 0.7;
+                let alpha = 0.3 + Math.random() * 0.7;
+                let vx = 0;
+                let vy = 0;
                 
-                if (particleType === 'snow') {
-                    color = 0xffffff;
-                    g.circle(0, 0, radius);
-                    g.fill({ color: 0xffffff, alpha: 0.8 });
-                } else if (particleType === 'fire') {
-                    color = Math.random() > 0.5 ? 0xff4500 : 0xffaa00;
-                    g.circle(0, 0, radius - 1);
-                    g.fill({ color, alpha: 0.9 });
-                } else {
-                    color = Math.random() > 0.5 ? 0xa0c080 : 0xe0d8c0; // greenish leaf / light dust
-                    g.ellipse(0, 0, radius + 2, radius);
-                    g.fill({ color, alpha: 0.6 });
-                }
-                
+                // Custom parameters
+                let amplitude = 0;
+                let phaseSpeed = 0;
+                let phase = Math.random() * Math.PI * 2;
+                let rotSpeed = 0;
+                let pulseSpeed = 0;
+                let baseAlpha = alpha;
+                let baseVy = 0;
+
                 const px = Math.random() * W;
                 const py = Math.random() * H;
+
+                if (particleType === 'frost') {
+                    // Ice Cave: Glowing cyan/blue/white diamonds
+                    color = Math.random() > 0.6 ? 0xafeeee : (Math.random() > 0.3 ? 0x00ffff : 0xffffff);
+                    const size = 3 + Math.random() * 4;
+                    g.poly([
+                        0, -size,
+                        size / 2, 0,
+                        0, size,
+                        -size / 2, 0
+                    ]);
+                    g.fill({ color, alpha: 0.8 });
+                    
+                    vx = (Math.random() - 0.5) * 0.8;
+                    vy = -Math.random() * 0.8 - 0.2; // float slowly up
+                    pulseSpeed = 0.02 + Math.random() * 0.03;
+                    baseAlpha = 0.4 + Math.random() * 0.6;
+                    alpha = baseAlpha;
+                } 
+                else if (particleType === 'rain') {
+                    // Rain: Slanted light blue/grey translucent lines
+                    color = 0xd2e5ff;
+                    const rWidth = 1 + Math.random() * 1.5;
+                    const rHeight = 12 + Math.random() * 12;
+                    g.rect(-rWidth/2, -rHeight/2, rWidth, rHeight);
+                    g.rotation = 0.15; // slanted fall
+                    g.fill({ color, alpha: 0.3 + Math.random() * 0.4 });
+                    
+                    vx = 2 + Math.random() * 1.5; 
+                    vy = 18 + Math.random() * 10;
+                    alpha = 0.3 + Math.random() * 0.45;
+                }
+                else if (particleType === 'lava') {
+                    // Fire/lava embers rising
+                    color = Math.random() > 0.6 ? 0xff4500 : (Math.random() > 0.3 ? 0xff8c00 : 0xffd700);
+                    const radius = 2 + Math.random() * 3.5;
+                    g.circle(0, 0, radius);
+                    g.fill({ color, alpha: 0.75 + Math.random() * 0.25 });
+                    
+                    vx = (Math.random() - 0.5) * 1.2;
+                    vy = -Math.random() * 2.2 - 0.8;
+                    amplitude = 0.5 + Math.random() * 1.5;
+                    phaseSpeed = 0.02 + Math.random() * 0.04;
+                    baseVy = vy;
+                    alpha = 0.6 + Math.random() * 0.4;
+                }
+                else if (particleType === 'snow') {
+                    // Snowy ruins: white fluffy snow circles
+                    color = 0xffffff;
+                    const radius = 1.5 + Math.random() * 3.5;
+                    g.circle(0, 0, radius);
+                    g.fill({ color: 0xffffff, alpha: 0.7 + Math.random() * 0.3 });
+                    
+                    vx = (Math.random() - 0.3) * 0.8 + 0.4;
+                    vy = Math.random() * 1.5 + 1.0;
+                    amplitude = 0.8 + Math.random() * 1.5;
+                    phaseSpeed = 0.01 + Math.random() * 0.02;
+                    baseVy = vy;
+                    alpha = 0.4 + Math.random() * 0.6;
+                }
+                else if (particleType === 'leaves') {
+                    // Stone ruins: fluttering greenish/orange leaves
+                    const leafColors = [0x556b2f, 0x8b4513, 0xcd853f, 0x228b22, 0xd2b48c];
+                    color = leafColors[Math.floor(Math.random() * leafColors.length)];
+                    const lw = 5 + Math.random() * 5;
+                    const lh = 3 + Math.random() * 3;
+                    g.ellipse(0, 0, lw, lh);
+                    g.fill({ color, alpha: 0.6 + Math.random() * 0.3 });
+                    
+                    vx = (Math.random() - 0.5) * 1.5 - 0.5;
+                    vy = Math.random() * 1.2 + 0.8;
+                    rotSpeed = (Math.random() - 0.5) * 0.06;
+                    amplitude = 1.0 + Math.random() * 2.0;
+                    phaseSpeed = 0.015 + Math.random() * 0.025;
+                    baseVy = vy;
+                    alpha = 0.5 + Math.random() * 0.5;
+                }
+                else if (particleType === 'sandstorm') {
+                    // Desert canyon: fast blowing horizontal sand lines
+                    color = Math.random() > 0.5 ? 0xdfb175 : 0xc29d66;
+                    const sw = 6 + Math.random() * 14;
+                    const sh = 1 + Math.random() * 1.5;
+                    g.rect(-sw/2, -sh/2, sw, sh);
+                    g.fill({ color, alpha: 0.25 + Math.random() * 0.35 });
+                    
+                    vx = -12 - Math.random() * 10;
+                    vy = 0.5 + Math.random() * 1.2;
+                    alpha = 0.3 + Math.random() * 0.4;
+                }
+                else {
+                    // General fallback dust
+                    color = Math.random() > 0.5 ? 0xa0c080 : 0xe0d8c0;
+                    const radius = 2 + Math.random() * 3;
+                    g.ellipse(0, 0, radius + 1.5, radius);
+                    g.fill({ color, alpha: 0.5 });
+                    
+                    vx = (Math.random() - 0.5) * 1.0;
+                    vy = Math.random() * 1.2 + 0.5;
+                    alpha = 0.3 + Math.random() * 0.5;
+                }
+
                 g.position.set(px, py);
                 particleContainer.addChild(g);
-                
+
                 arenaParticles.push({
                     graphics: g,
                     x: px,
                     y: py,
-                    vx: (Math.random() - 0.5) * 1.5 + (particleType === 'snow' ? 0.5 : 0.2),
-                    vy: Math.random() * 2 + (particleType === 'snow' ? 1.5 : 0.8),
-                    alpha: 0.3 + Math.random() * 0.7,
-                    scale: 0.5 + Math.random() * 0.5,
-                    parallax: 0.3 + Math.random() * 0.7
+                    vx,
+                    vy,
+                    alpha,
+                    scale,
+                    parallax,
+                    type: particleType,
+                    amplitude,
+                    phaseSpeed,
+                    phase,
+                    rotSpeed,
+                    pulseSpeed,
+                    baseAlpha,
+                    baseVy
                 });
             }
 
@@ -352,23 +484,111 @@ export class BattleEngine {
                 if (this.player) this.player.update(delta);
                 if (this.enemy) this.enemy.update(delta);
 
-                // Update background particles
-                for (const p of arenaParticles) {
-                    p.x += p.vx * delta * p.parallax;
-                    p.y += p.vy * delta * p.parallax;
+                // Update background particles (only if maxParticles > 0)
+                if (maxParticles > 0) {
+                    const d = Math.min(delta, 3.0);
+                    for (const p of arenaParticles) {
+                        p.phase = (p.phase || 0) + (p.phaseSpeed || 0) * d;
+                        
+                        // Apply movement based on type
+                        if (p.type === 'frost') {
+                            p.x += p.vx * d * p.parallax;
+                            p.y += p.vy * d * p.parallax;
+                            
+                            // Alpha pulse
+                            if (p.pulseSpeed && p.baseAlpha) {
+                                p.alpha = p.baseAlpha + Math.sin(p.phase) * 0.35;
+                                p.graphics.alpha = Math.max(0.1, Math.min(1.0, p.alpha));
+                            }
+                            
+                            // Boundary check (going up)
+                            if (p.y < -20) {
+                                p.y = H + 20;
+                                p.x = Math.random() * W;
+                                p.phase = Math.random() * Math.PI * 2;
+                            }
+                        }
+                        else if (p.type === 'rain') {
+                            p.x += p.vx * d * p.parallax;
+                            p.y += p.vy * d * p.parallax;
+                            
+                            // Boundary check (going down/right)
+                            if (p.y > H + 20) {
+                                p.y = -40;
+                                p.x = Math.random() * (W * 0.8);
+                            }
+                        }
+                        else if (p.type === 'lava') {
+                            const horizontalDrift = Math.sin(p.phase) * (p.amplitude || 0);
+                            p.x += (p.vx + horizontalDrift) * d * p.parallax;
+                            p.y += p.vy * d * p.parallax;
+                            
+                            const verticalProgress = Math.max(0, Math.min(1, p.y / H));
+                            p.graphics.alpha = p.alpha * (0.3 + 0.7 * verticalProgress);
+                            
+                            // Boundary check (going up)
+                            if (p.y < -20) {
+                                p.y = H + 20;
+                                p.x = Math.random() * W;
+                                p.phase = Math.random() * Math.PI * 2;
+                            }
+                        }
+                        else if (p.type === 'snow') {
+                            const drift = Math.sin(p.phase) * (p.amplitude || 0);
+                            p.x += (p.vx + drift) * d * p.parallax;
+                            p.y += p.vy * d * p.parallax;
+                            
+                            if (p.y > H + 20) {
+                                p.y = -20;
+                                p.x = Math.random() * W;
+                                p.phase = Math.random() * Math.PI * 2;
+                            }
+                        }
+                        else if (p.type === 'leaves') {
+                            const flutter = Math.sin(p.phase) * (p.amplitude || 0);
+                            p.x += (p.vx + flutter) * d * p.parallax;
+                            p.y += p.vy * d * p.parallax;
+                            
+                            if (p.rotSpeed) {
+                                p.graphics.rotation += p.rotSpeed * d;
+                            }
+                            
+                            if (p.y > H + 20) {
+                                p.y = -20;
+                                p.x = Math.random() * W;
+                                p.phase = Math.random() * Math.PI * 2;
+                            }
+                        }
+                        else if (p.type === 'sandstorm') {
+                            p.x += p.vx * d * p.parallax;
+                            p.y += p.vy * d * p.parallax;
+                            
+                            if (p.x < -40) {
+                                p.x = W + 40;
+                                p.y = Math.random() * H;
+                            }
+                        }
+                        else {
+                            p.x += p.vx * d * p.parallax;
+                            p.y += p.vy * d * p.parallax;
+                            
+                            if (p.y > H + 20) {
+                                p.y = -20;
+                                p.x = Math.random() * W;
+                            }
+                        }
+                        
+                        // Wrap horizontal bounds for non-sandstorm/rain
+                        if (p.type !== 'sandstorm' && p.type !== 'rain') {
+                            if (p.x > W + 20) {
+                                p.x = -20;
+                            } else if (p.x < -20) {
+                                p.x = W + 20;
+                            }
+                        }
 
-                    // Wrap around boundaries
-                    if (p.y > H + 20) {
-                        p.y = -20;
-                        p.x = Math.random() * W;
+                        p.graphics.position.set(p.x, p.y);
                     }
-                    if (p.x > W + 20) {
-                        p.x = -20;
-                    } else if (p.x < -20) {
-                        p.x = W + 20;
-                    }
-
-                    p.graphics.position.set(p.x, p.y);
                 }
             };
             pixiApp.addUpdateLoop(this.updateCallback);
