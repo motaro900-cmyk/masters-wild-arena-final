@@ -204,9 +204,15 @@ export class PixiApp {
         canvas.style.top = '0';
         canvas.style.left = '0';
         canvas.style.zIndex = '1';
-        // Фильтр убран с canvas — весь визуальный профиль
-        // задаётся через .premium-saturated-panel на контейнере.
-        // Так не дублируем насыщенность и избегаем offscreen blur.
+        
+        // [Architect]: Apply filter only to PixiJS canvas if graphics quality is not LOW
+        // to prevent saturation/brightness adjustments from bleeding into React HUD siblings.
+        const quality = useGameStore.getState().graphicsQuality;
+        if (quality !== 'LOW') {
+            canvas.style.filter = 'contrast(1.1) saturate(1.08) brightness(0.97)';
+        } else {
+            canvas.style.filter = 'none';
+        }
     }
 
     public returnToHomeContainer(): void {
@@ -303,6 +309,11 @@ export class PixiApp {
         // Temporarily resize to force PixiJS to reallocate canvas buffers at new resolution, then restore 1920x1080
         this.pixiApp.renderer.resize(1919, 1079);
         this.pixiApp.renderer.resize(1920, 1080);
+
+        // Update canvas filter styles immediately
+        if (this.pixiApp.canvas) {
+            this.applyCanvasStyles(this.pixiApp.canvas);
+        }
     }
 
     public static getView(): HTMLCanvasElement | null {

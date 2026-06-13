@@ -430,7 +430,7 @@ export const SafeGameLayout = ({ containerRef }: { containerRef: React.RefObject
             >
                 {/* 1. GAME LAYER (PIXI + SCALED CONTENT) */}
                 <div
-                    className="game-container premium-saturated-panel"
+                    className="game-container"
                     style={{
                         width: '100%',
                         height: '100%',
