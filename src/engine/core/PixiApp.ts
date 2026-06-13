@@ -205,14 +205,9 @@ export class PixiApp {
         canvas.style.left = '0';
         canvas.style.zIndex = '1';
         
-        // [Architect]: Apply filter only to PixiJS canvas if graphics quality is not LOW
-        // to prevent saturation/brightness adjustments from bleeding into React HUD siblings.
-        const quality = useGameStore.getState().graphicsQuality;
-        if (quality !== 'LOW') {
-            canvas.style.filter = 'contrast(1.1) saturate(1.08) brightness(0.97)';
-        } else {
-            canvas.style.filter = 'none';
-        }
+        // [Architect]: Filter is now applied to the root wrapper in SafeGameLayout.tsx,
+        // so we keep canvas filter clean to avoid double filtering.
+        canvas.style.filter = 'none';
     }
 
     public returnToHomeContainer(): void {

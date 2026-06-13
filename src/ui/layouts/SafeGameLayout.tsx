@@ -20,12 +20,13 @@ export const SafeGameLayout = ({ containerRef }: { containerRef: React.RefObject
         typeof window !== 'undefined' &&
         (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
 
-    const { setShowFps, isBanned, banReason, banUntil, sessionConflict } = useGameStore((state) => ({
+    const { setShowFps, isBanned, banReason, banUntil, sessionConflict, graphicsQuality } = useGameStore((state) => ({
         setShowFps: state.setShowFps,
         isBanned: state.isBanned,
         banReason: state.banReason,
         banUntil: state.banUntil,
         sessionConflict: state.sessionConflict,
+        graphicsQuality: state.graphicsQuality,
     }));
 
     React.useEffect(() => {
@@ -426,6 +427,12 @@ export const SafeGameLayout = ({ containerRef }: { containerRef: React.RefObject
                     flexShrink: 0,
                     overflow: 'hidden',
                     pointerEvents: 'none',
+                    filter:
+                        graphicsQuality === 'ULTRA'
+                            ? 'contrast(1.15) saturate(1.25) brightness(1.02)'
+                            : graphicsQuality === 'MEDIUM'
+                              ? 'contrast(1.05) saturate(1.1) brightness(0.98)'
+                              : 'none',
                 }}
             >
                 {/* 1. GAME LAYER (PIXI + SCALED CONTENT) */}
