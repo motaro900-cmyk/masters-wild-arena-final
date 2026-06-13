@@ -14,7 +14,7 @@ export const createHeroSlice = (set: any, get: any) => {
         heroGalleryId: 'panda',
         ownedHeroes: ['panda'],
         heroes: {
-            panda: { level: 1, exp: 0, strength: 52, agility: 20, stamina: 32 },
+            panda: { level: 1, exp: 0, strength: 16, agility: 19, stamina: 21 },
             wolf_knight: { level: 1, exp: 0, strength: 65, agility: 25, stamina: 45 },
             shadow_dancer: { level: 1, exp: 0, strength: 16, agility: 28, stamina: 14 },
             crystal_guardian: { level: 1, exp: 0, strength: 14, agility: 10, stamina: 30 },

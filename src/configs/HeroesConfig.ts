@@ -54,7 +54,7 @@ export const HEROES_DB: IHeroConfig[] = [
         role: 'WARRIOR',
         unlockType: 'free',
         unlockCost: 0,
-        stats: { strength: 17, agility: 26, stamina: 16, intelligence: 12 },
+        stats: { strength: 16, agility: 19, stamina: 21, intelligence: 10 },
         baseScale: 0.8,
         anchors: {
             feet: { x: 0.5, y: 0.95 },
@@ -77,7 +77,7 @@ export const HEROES_DB: IHeroConfig[] = [
         unlockCost: 800,
         unlockGoldCost: 20000,
         requiredTrophies: 400,
-        stats: { strength: 10, agility: 25, stamina: 19, intelligence: 12 },
+        stats: { strength: 22, agility: 23, stamina: 11, intelligence: 10 },
         baseScale: 0.75,
         anchors: {
             feet: { x: 0.5, y: 0.95 },
@@ -100,7 +100,7 @@ export const HEROES_DB: IHeroConfig[] = [
         unlockCost: 1500,
         unlockGoldCost: 40000,
         requiredTrophies: 1000,
-        stats: { strength: 18, agility: 5, stamina: 33, intelligence: 10 },
+        stats: { strength: 14, agility: 8, stamina: 34, intelligence: 10 },
         baseScale: 0.87,
         anchors: {
             feet: { x: 0.5, y: 0.95 },
@@ -123,7 +123,7 @@ export const HEROES_DB: IHeroConfig[] = [
         unlockCost: 2000,
         unlockGoldCost: 60000,
         requiredTrophies: 2000,
-        stats: { strength: 15, agility: 24, stamina: 17, intelligence: 10 },
+        stats: { strength: 20, agility: 25, stamina: 11, intelligence: 10 },
         baseScale: 0.82,
         anchors: {
             feet: { x: 0.5, y: 0.95 },
@@ -146,7 +146,7 @@ export const HEROES_DB: IHeroConfig[] = [
         unlockCost: 3500,
         unlockGoldCost: 100000,
         requiredTrophies: 3000,
-        stats: { strength: 23, agility: 10, stamina: 23, intelligence: 10 },
+        stats: { strength: 18, agility: 16, stamina: 22, intelligence: 10 },
         baseScale: 0.75,
         anchors: {
             feet: { x: 0.5, y: 0.95 },

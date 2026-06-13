@@ -355,7 +355,7 @@ const store = create<GameStoreState>()(
                     console.log('🔄 Migrating store to v30: Adding hero level/exp...');
                     if (!persistedState.heroes) {
                         persistedState.heroes = {
-                            panda: { level: 1, exp: 0, strength: 52, agility: 20, stamina: 32 },
+                            panda: { level: 1, exp: 0, strength: 16, agility: 19, stamina: 21 },
                             wolf_knight: { level: 1, exp: 0, strength: 65, agility: 25, stamina: 45 },
                         };
                     } else {
@@ -363,7 +363,7 @@ const store = create<GameStoreState>()(
                             persistedState.heroes.panda.level = persistedState.heroes.panda.level || 1;
                             persistedState.heroes.panda.exp = persistedState.heroes.panda.exp || 0;
                         } else {
-                            persistedState.heroes.panda = { level: 1, exp: 0, strength: 52, agility: 20, stamina: 32 };
+                             persistedState.heroes.panda = { level: 1, exp: 0, strength: 16, agility: 19, stamina: 21 };
                         }
                         if (persistedState.heroes.wolf_knight) {
                             persistedState.heroes.wolf_knight.level = persistedState.heroes.wolf_knight.level || 1;
