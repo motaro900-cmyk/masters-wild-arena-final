@@ -29,7 +29,7 @@ const StatCompareRow: React.FC<StatCompareRowProps> = ({ label, playerVal, enemy
                     fontFamily: 'Russo One, sans-serif',
                 }}
             >
-                {Math.round(playerVal).toLocaleString()}
+                {label === 'СКОРОСТЬ' ? playerVal.toFixed(1) : Math.round(playerVal).toLocaleString()}
             </div>
 
             {/* Шкала игрока */}
@@ -104,7 +104,7 @@ const StatCompareRow: React.FC<StatCompareRowProps> = ({ label, playerVal, enemy
                     fontFamily: 'Russo One, sans-serif',
                 }}
             >
-                {Math.round(enemyVal).toLocaleString()}
+                {label === 'СКОРОСТЬ' ? enemyVal.toFixed(1) : Math.round(enemyVal).toLocaleString()}
             </div>
         </div>
     );
@@ -756,8 +756,8 @@ export const PreBattleScreen: React.FC<PreBattleScreenProps> = ({
                     <StatCompareRow label="ЗАЩИТА" playerVal={playerStats.defense} enemyVal={enemyStats.defense} />
                     <StatCompareRow
                         label="СКОРОСТЬ"
-                        playerVal={Math.round(playerStats.speed)}
-                        enemyVal={Math.round(enemyStats.speed)}
+                        playerVal={playerStats.speed}
+                        enemyVal={enemyStats.speed}
                     />
                 </div>
 

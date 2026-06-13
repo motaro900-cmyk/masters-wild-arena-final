@@ -552,10 +552,10 @@ export const MatchmakingFound: React.FC<MatchmakingFoundProps> = ({
                             icon={<span style={{ fontSize: '18px' }}>🛡️</span>}
                         />
                         <LocalStatRow
-                            label="ЛОВКОСТЬ"
-                            pVal={playerStats.evasion ?? 0}
-                            eVal={opponent.stats.evasion ?? 0}
-                            icon={<span style={{ fontSize: '18px' }}>🌪️</span>}
+                            label="СКОРОСТЬ"
+                            pVal={playerStats.speed ?? 1}
+                            eVal={opponent.stats.speed ?? 1}
+                            icon={<span style={{ fontSize: '18px' }}>💨</span>}
                         />
                         <LocalStatRow
                             label="КРИТ. ШАНС"

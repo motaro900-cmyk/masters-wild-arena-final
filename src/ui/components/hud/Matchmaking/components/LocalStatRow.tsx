@@ -25,7 +25,7 @@ export const LocalStatRow: React.FC<LocalStatRowProps> = ({ label, pVal, eVal, i
                     fontFamily: "'Montserrat', sans-serif",
                 }}
             >
-                {Math.round(pVal)}
+                {label === 'СКОРОСТЬ' ? pVal.toFixed(1) : label === 'КРИТ. ШАНС' ? `${Math.round(pVal)}%` : Math.round(pVal)}
             </div>
 
             {/* Left Fill (Player) - flowing from right to left */}
@@ -111,7 +111,7 @@ export const LocalStatRow: React.FC<LocalStatRowProps> = ({ label, pVal, eVal, i
                     fontFamily: "'Montserrat', sans-serif",
                 }}
             >
-                {Math.round(eVal)}
+                {label === 'СКОРОСТЬ' ? eVal.toFixed(1) : label === 'КРИТ. ШАНС' ? `${Math.round(eVal)}%` : Math.round(eVal)}
             </div>
         </div>
     );
