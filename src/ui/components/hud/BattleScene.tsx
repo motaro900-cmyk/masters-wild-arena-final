@@ -191,6 +191,40 @@ export const BattleScene: React.FC = () => {
     useEffect(() => {
         if (!containerRef.current) return;
 
+        let originalTo: any = null;
+        let originalFrom: any = null;
+        let originalFromTo: any = null;
+        let originalTimeline: any = null;
+        const activeTweens: any[] = [];
+
+        if (battleStarted) {
+            originalTo = gsap.to;
+            originalFrom = gsap.from;
+            originalFromTo = gsap.fromTo;
+            originalTimeline = gsap.timeline;
+
+            (gsap as any).to = function(...args: any[]) {
+                const tween = originalTo.apply(this, args as any);
+                activeTweens.push(tween);
+                return tween;
+            };
+            (gsap as any).from = function(...args: any[]) {
+                const tween = originalFrom.apply(this, args as any);
+                activeTweens.push(tween);
+                return tween;
+            };
+            (gsap as any).fromTo = function(...args: any[]) {
+                const tween = originalFromTo.apply(this, args as any);
+                activeTweens.push(tween);
+                return tween;
+            };
+            (gsap as any).timeline = function(...args: any[]) {
+                const tl = originalTimeline.apply(this, args as any);
+                activeTweens.push(tl);
+                return tl;
+            };
+        }
+
         const playerStats = getCalculatedStats(selectedHeroId)?.total;
         const isPve = battleMode === 'PVE';
         const enemyStats = {
@@ -627,7 +661,20 @@ export const BattleScene: React.FC = () => {
         run();
 
         return () => {
-            gsap.globalTimeline.clear();
+            if (battleStarted) {
+                if (originalTo) (gsap as any).to = originalTo;
+                if (originalFrom) (gsap as any).from = originalFrom;
+                if (originalFromTo) (gsap as any).fromTo = originalFromTo;
+                if (originalTimeline) (gsap as any).timeline = originalTimeline;
+
+                activeTweens.forEach((t) => {
+                    try {
+                        if (t && typeof t.kill === 'function') {
+                            t.kill();
+                        }
+                    } catch (e) {}
+                });
+            }
             gsap.globalTimeline.timeScale(1);
             engine.destroy();
             (window as any).__BATTLE_ENGINE__ = null;

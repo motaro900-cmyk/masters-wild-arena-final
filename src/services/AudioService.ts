@@ -414,7 +414,7 @@ class AudioService {
      * Воспроизведение звука смерти (падения) героя
      */
     public playDeathSFX() {
-        this.playSFX('/assets/audio/sfx/miss.mp3');
+        this.playSFX('/assets/audio/sfx/impact_crit.mp3');
     }
 
     /**
