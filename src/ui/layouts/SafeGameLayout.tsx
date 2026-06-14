@@ -88,6 +88,17 @@ export const SafeGameLayout = ({ containerRef }: { containerRef: React.RefObject
         };
     }, [setShowFps]);
 
+    React.useEffect(() => {
+        if (graphicsQuality === 'LOW') {
+            document.body.classList.add('graphics-low');
+        } else {
+            document.body.classList.remove('graphics-low');
+        }
+        return () => {
+            document.body.classList.remove('graphics-low');
+        };
+    }, [graphicsQuality]);
+
     const isMobile = useGameStore((state) => state.isMobile);
 
     return (

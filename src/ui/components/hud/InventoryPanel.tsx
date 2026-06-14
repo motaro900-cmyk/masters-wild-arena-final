@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useGameStore } from '../../../store/useGameStore';
 import { ITEMS_DATABASE, calculateItemPower } from '../../../game/configs/ItemsConfig';
@@ -51,6 +51,23 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ mode = 'FULL', o
         window.addEventListener('resize', checkLayout);
         return () => window.removeEventListener('resize', checkLayout);
     }, []);
+
+    const containerRef = useRef<HTMLDivElement>(null);
+    const [scrollTop, setScrollTop] = useState(0);
+    const [clientHeight, setClientHeight] = useState(600);
+
+    const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+        setScrollTop(e.currentTarget.scrollTop);
+        setClientHeight(e.currentTarget.clientHeight);
+    };
+
+    useEffect(() => {
+        setScrollTop(0);
+        if (containerRef.current) {
+            containerRef.current.scrollTop = 0;
+            setClientHeight(containerRef.current.clientHeight);
+        }
+    }, [activeTab, searchQuery]);
 
     const TABS = ['ALL', 'EQUIPMENT', 'POTIONS', 'RESOURCES'] as const;
 
@@ -242,6 +259,36 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ mode = 'FULL', o
     const bagFill = inventory.length / MAX_SLOTS;
     const bagColor = bagFill > 0.9 ? '#ef4444' : bagFill > 0.75 ? '#f59e0b' : '#4ade80';
 
+    const cols = mode === 'FULL' ? 5 : 3;
+    const rowHeight = mode === 'FULL' ? 125 : 100;
+    const gapHeight = mode === 'FULL' ? 14 : 10;
+    const rowSpacing = rowHeight + gapHeight;
+
+    const totalItems = useMemo(() => {
+        const itemsList = filteredItems.map((item, index) => ({ type: 'ITEM', item, index }));
+        const emptyCount = Math.max(0, (mode === 'FULL' ? 20 : 9) - filteredItems.length);
+        const emptyList = Array.from({ length: emptyCount }).map((_, index) => ({ type: 'EMPTY', index }));
+        return [...itemsList, ...emptyList];
+    }, [filteredItems, mode]);
+
+    const rows = useMemo(() => {
+        const result: typeof totalItems[] = [];
+        for (let i = 0; i < totalItems.length; i += cols) {
+            result.push(totalItems.slice(i, i + cols));
+        }
+        return result;
+    }, [totalItems, cols]);
+
+    const startIndex = Math.max(0, Math.floor(scrollTop / rowSpacing) - 5);
+    const endIndex = Math.min(rows.length - 1, Math.ceil((scrollTop + clientHeight) / rowSpacing) - 1 + 5);
+
+    const topSpacerHeight = startIndex * rowSpacing;
+    const bottomSpacerHeight = Math.max(0, (rows.length - 1 - endIndex) * rowSpacing);
+
+    const visibleRows = useMemo(() => {
+        return rows.slice(startIndex, endIndex + 1);
+    }, [rows, startIndex, endIndex]);
+
     // ─── Render ───────────────────────────────────────────────────────────────
     return (
         <div
@@ -416,6 +463,8 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ mode = 'FULL', o
 
             {/* ══ СЕТКА ПРЕДМЕТОВ ═════════════════════════════════════════════ */}
             <motion.div
+                ref={containerRef}
+                onScroll={handleScroll}
                 drag={isMobile ? "x" : undefined}
                 dragConstraints={{ left: 0, right: 0 }}
                 dragElastic={0.15}
@@ -439,106 +488,123 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ mode = 'FULL', o
                     borderRadius: '16px', border: '1.5px solid rgba(240,192,64,0.3)',
                     padding: mode === 'FULL' ? '20px' : '12px',
                     overflowY: 'auto',
-                    display: 'grid',
-                    gridTemplateColumns: mode === 'FULL' ? 'repeat(5,1fr)' : 'repeat(3,1fr)',
-                    gridAutoRows: mode === 'FULL' ? '125px' : '100px',
-                    gap: mode === 'FULL' ? '14px' : '10px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: gapHeight + 'px',
                     boxShadow: 'inset 0 0 24px rgba(0,0,0,0.95), 0 4px 15px rgba(0,0,0,0.5)',
-                    alignContent: 'start',
                     touchAction: isMobile ? 'pan-y' : 'auto',
                 }}
                 className="leaderboard-scroll"
             >
-                {filteredItems.map((item: any, i: number) => {
-                    const data = ITEMS_DATABASE[item.id] as any;
-                    if (!data) return null;
+                <div style={{ height: topSpacerHeight, flexShrink: 0 }} />
+                {visibleRows.map((row, rowIndex) => (
+                    <div
+                        key={startIndex + rowIndex}
+                        style={{
+                            display: 'grid',
+                            gridTemplateColumns: mode === 'FULL' ? 'repeat(5,1fr)' : 'repeat(3,1fr)',
+                            gap: gapHeight + 'px',
+                            height: rowHeight + 'px',
+                            width: '100%',
+                            flexShrink: 0,
+                        }}
+                    >
+                        {row.map((element) => {
+                            if (element.type === 'ITEM') {
+                                const { item, index: i } = element;
+                                const data = ITEMS_DATABASE[item.id] as any;
+                                if (!data) return null;
 
-                    const equippedHeroId = getHeroByItemId(item.instanceId || item.id);
-                    const isEquippedOnCurrent = String(equippedHeroId) === String(selectedHeroId || 'panda');
-                    const isEquippedOnOther = equippedHeroId && !isEquippedOnCurrent;
-                    const rarity = RARITY_COLORS[String(data?.rarity || 'COMMON')];
-                    const instanceId = item.instanceId || item.id;
-                    const isSelected = selectedItems.has(instanceId);
+                                const equippedHeroId = getHeroByItemId(item.instanceId || item.id);
+                                const isEquippedOnCurrent = String(equippedHeroId) === String(selectedHeroId || 'panda');
+                                const isEquippedOnOther = equippedHeroId && !isEquippedOnCurrent;
+                                const rarity = RARITY_COLORS[String(data?.rarity || 'COMMON')];
+                                const instanceId = item.instanceId || item.id;
+                                const isSelected = selectedItems.has(instanceId);
 
-                    return (
-                        <div
-                            key={instanceId + i}
-                            style={{ position: 'relative', width: '100%', height: '100%', boxSizing: 'border-box' }}
-                            onClick={(e) => {
-                                if (e.shiftKey && !item.isResource) {
-                                    toggleSelectItem(instanceId, e);
-                                }
-                            }}
-                        >
-                            <DraggableItem
-                                item={item}
-                                data={data}
-                                rarity={rarity}
-                                isEquippedOnCurrent={isEquippedOnCurrent}
-                                isEquippedOnOther={!!isEquippedOnOther}
-                                equippedHeroId={equippedHeroId}
-                                onItemClick={async (id: string) => {
-                                    if (isProcessing) return;
-                                    setIsProcessing(true);
-                                    if (id === 'season_chest') { handleOpenChest(); setIsProcessing(false); return; }
-                                    const executeEquip = async () => {
-                                        if (onItemClick) await onItemClick(id);
-                                        setTimeout(() => setIsProcessing(false), 500);
-                                    };
-                                    if (isEquippedOnOther) {
-                                        setConfirmData({
-                                            isOpen: true, title: 'ПЕРЕДАЧА ВЕЩИ',
-                                            message: `Предмет надет на ${HEROES_DB.find((h) => h.id === equippedHeroId)?.name || equippedHeroId}. Передать текущему герою?`,
-                                            variant: 'normal', onConfirm: executeEquip,
-                                        });
-                                        setIsProcessing(false);
-                                    } else {
-                                        await executeEquip();
-                                    }
-                                }}
-                                setGlobalHoveredItem={(id: string | null, x: number, y: number) => {
-                                    setHoveredItem(id ? { id, x, y } : null);
-                                    propSetGlobalHoveredItem?.(id, x, y);
-                                }}
-                            />
-                            {/* Рамка выделения (Shift) */}
-                            {isSelected && (
-                                <div style={{
-                                    position: 'absolute', inset: 0, borderRadius: '8px',
-                                    border: '2px solid #c084fc',
-                                    boxShadow: '0 0 12px rgba(192,132,252,0.5)',
-                                    pointerEvents: 'none', zIndex: 15,
-                                }} />
-                            )}
-                            {/* Галочка выделения */}
-                            {isSelected && (
-                                <div style={{
-                                    position: 'absolute', top: '2px', left: '2px',
-                                    width: '16px', height: '16px', borderRadius: '4px',
-                                    background: '#c084fc', display: 'flex', alignItems: 'center',
-                                    justifyContent: 'center', fontSize: '9px', color: '#fff',
-                                    fontWeight: 900, zIndex: 16, pointerEvents: 'none',
-                                }}>✓</div>
-                            )}
-                        </div>
-                    );
-                })}
-
-                {/* Пустые слоты */}
-                {Array.from({ length: Math.max(0, (mode === 'FULL' ? 20 : 9) - filteredItems.length) }).map((_, i) => (
-                    <div key={'empty-' + i} style={{
-                        background: 'radial-gradient(circle, rgba(28, 22, 18, 0.4) 0%, rgba(18, 14, 11, 0.6) 100%)',
-                        borderRadius: '8px',
-                        border: '1.5px solid rgba(240, 192, 64, 0.08)',
-                        boxShadow: 'inset 0 0 10px rgba(0,0,0,0.85)',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    }}>
-                        <div style={{
-                            width: '8px', height: '8px', borderRadius: '50%',
-                            background: 'rgba(240,192,64,0.04)',
-                        }} />
+                                return (
+                                    <div
+                                        key={instanceId + i}
+                                        style={{ position: 'relative', width: '100%', height: '100%', boxSizing: 'border-box' }}
+                                        onClick={(e) => {
+                                            if (e.shiftKey && !item.isResource) {
+                                                toggleSelectItem(instanceId, e);
+                                            }
+                                        }}
+                                    >
+                                        <DraggableItem
+                                            item={item}
+                                            data={data}
+                                            rarity={rarity}
+                                            isEquippedOnCurrent={isEquippedOnCurrent}
+                                            isEquippedOnOther={!!isEquippedOnOther}
+                                            equippedHeroId={equippedHeroId}
+                                            onItemClick={async (id: string) => {
+                                                if (isProcessing) return;
+                                                setIsProcessing(true);
+                                                if (id === 'season_chest') { handleOpenChest(); setIsProcessing(false); return; }
+                                                const executeEquip = async () => {
+                                                    if (onItemClick) await onItemClick(id);
+                                                    setTimeout(() => setIsProcessing(false), 500);
+                                                };
+                                                if (isEquippedOnOther) {
+                                                    setConfirmData({
+                                                        isOpen: true, title: 'ПЕРЕДАЧА ВЕЩИ',
+                                                        message: `Предмет надет на ${HEROES_DB.find((h) => h.id === equippedHeroId)?.name || equippedHeroId}. Передать текущему герою?`,
+                                                        variant: 'normal', onConfirm: executeEquip,
+                                                    });
+                                                    setIsProcessing(false);
+                                                } else {
+                                                    await executeEquip();
+                                                }
+                                            }}
+                                            setGlobalHoveredItem={(id: string | null, x: number, y: number) => {
+                                                setHoveredItem(id ? { id, x, y } : null);
+                                                propSetGlobalHoveredItem?.(id, x, y);
+                                            }}
+                                        />
+                                        {/* Рамка выделения (Shift) */}
+                                        {isSelected && (
+                                            <div style={{
+                                                position: 'absolute', inset: 0, borderRadius: '8px',
+                                                border: '2px solid #c084fc',
+                                                boxShadow: '0 0 12px rgba(192,132,252,0.5)',
+                                                pointerEvents: 'none', zIndex: 15,
+                                            }} />
+                                        )}
+                                        {/* Галочка выделения */}
+                                        {isSelected && (
+                                            <div style={{
+                                                position: 'absolute', top: '2px', left: '2px',
+                                                width: '16px', height: '16px', borderRadius: '4px',
+                                                background: '#c084fc', display: 'flex', alignItems: 'center',
+                                                justifyContent: 'center', fontSize: '9px', color: '#fff',
+                                                fontWeight: 900, zIndex: 16, pointerEvents: 'none',
+                                            }}>✓</div>
+                                        )}
+                                    </div>
+                                );
+                            } else {
+                                const { index: i } = element;
+                                return (
+                                    <div key={'empty-' + i} style={{
+                                        background: 'radial-gradient(circle, rgba(28, 22, 18, 0.4) 0%, rgba(18, 14, 11, 0.6) 100%)',
+                                        borderRadius: '8px',
+                                        border: '1.5px solid rgba(240, 192, 64, 0.08)',
+                                        boxShadow: 'inset 0 0 10px rgba(0,0,0,0.85)',
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    }}>
+                                        <div style={{
+                                            width: '8px', height: '8px', borderRadius: '50%',
+                                            background: 'rgba(240,192,64,0.04)',
+                                        }} />
+                                    </div>
+                                );
+                            }
+                        })}
                     </div>
                 ))}
+                <div style={{ height: bottomSpacerHeight, flexShrink: 0 }} />
             </motion.div>
 
             {/* Context menu removed */}

@@ -45,6 +45,7 @@ export class SyncService {
     private activeUnsubscribes: (() => void)[] = [];
     private syncDisabled: boolean = false;
     private warnedNonVK: boolean = false;
+    private isDirty: boolean = true;
 
     // ─── Helpers ───────────────────────────────────────────────────────────────
 
@@ -74,6 +75,11 @@ export class SyncService {
     // ─── Lifecycle ─────────────────────────────────────────────────────────────
 
     private constructor() {
+        // Subscribe to Zustand store updates
+        useGameStore.subscribe(() => {
+            this.isDirty = true;
+        });
+
         if (typeof window !== 'undefined' && !SyncService.eventListenersAdded) {
             SyncService.eventListenersAdded = true;
             const flushSync = () => {
@@ -141,6 +147,10 @@ export class SyncService {
     }
 
     private async performSync(): Promise<void> {
+        if (!this.isDirty) {
+            return;
+        }
+
         const userId = this.getCurrentUserId();
         if (!userId.startsWith('VK-')) {
             if (!this.warnedNonVK) {
@@ -245,6 +255,35 @@ export class SyncService {
                 referredBy: state.referredBy || null,
             };
 
+            const prunedFullState = { ...fullState } as any;
+
+            // Trim battleLog arrays (battleLog, battleLogs, combatLogs) to last 10 entries
+            for (const logKey of ['battleLog', 'battleLogs', 'combatLogs']) {
+                const rawLog = state[logKey] || prunedFullState[logKey];
+                if (rawLog && Array.isArray(rawLog)) {
+                    prunedFullState[logKey] = rawLog.slice(-10);
+                }
+            }
+
+            // Remove temporary UI states (activeScreen, isLoading, alerts)
+            delete prunedFullState.activeScreen;
+            delete prunedFullState.isLoading;
+            delete prunedFullState.alerts;
+            delete prunedFullState.alert;
+            delete prunedFullState.activeAlert;
+
+            // Trim friends cache if more than 50 records
+            if (prunedFullState.friends && Array.isArray(prunedFullState.friends)) {
+                if (prunedFullState.friends.length > 50) {
+                    prunedFullState.friends = prunedFullState.friends.slice(0, 50);
+                }
+            }
+            if (prunedFullState.friendProfiles && Array.isArray(prunedFullState.friendProfiles)) {
+                if (prunedFullState.friendProfiles.length > 50) {
+                    prunedFullState.friendProfiles = prunedFullState.friendProfiles.slice(0, 50);
+                }
+            }
+
             const isLocalhost =
                 typeof window !== 'undefined' &&
                 (window.location.hostname === 'localhost' ||
@@ -286,7 +325,7 @@ export class SyncService {
                 equipment: equipmentSlice,
                 inventory: state.inventory || [],
                 friends: (state.friends || []).map((f: any) => (typeof f === 'object' ? f.id : f)).filter(Boolean),
-                fullStateJSON: JSON.stringify(fullState),
+                fullStateJSON: JSON.stringify(prunedFullState),
                 isTestPlayer: isLocalhost || !!state.isDeveloper || !!state.isAdmin,
                 isDeveloper: isLocalhost || !!state.isDeveloper || !!state.isAdmin,
                 vipLevel: state.vipLevel || 0,
@@ -312,19 +351,21 @@ export class SyncService {
             };
 
             await setDoc(playerRef, syncData, { merge: true });
+            this.isDirty = false;
         } catch (error) {
             console.error('[SyncService] Sync failed:', error);
             throw error;
         }
     }
 
-    public debouncedSync(delay = 2000): void {
+    public debouncedSync(delay = 10000): void {
+        const actualDelay = Math.max(10000, delay);
         if (this.syncDisabled) return;
         if (this.syncTimeout) clearTimeout(this.syncTimeout);
         this.syncTimeout = setTimeout(() => {
             this.syncPlayerData();
             this.syncTimeout = null;
-        }, delay);
+        }, actualDelay);
     }
 
     public disableSync(): void {
@@ -337,8 +378,9 @@ export class SyncService {
 
     public startAutoSync(intervalMs = 60000): void {
         if (this.syncInterval) return;
+        const actualInterval = Math.max(10000, intervalMs);
         this.syncPlayerData();
-        this.syncInterval = setInterval(() => this.syncPlayerData(), intervalMs);
+        this.syncInterval = setInterval(() => this.syncPlayerData(), actualInterval);
     }
 
     public stopAutoSync(): void {

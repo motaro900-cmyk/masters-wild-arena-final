@@ -501,6 +501,12 @@
     backdrop-filter: blur(4px);
 }
 
+.graphics-low .slot-wrapper-label {
+    backdrop-filter: none !important;
+    background: rgba(8, 5, 2, 0.95) !important;
+}
+
+
 /* Left column labels: positioned to the RIGHT, centered vertically, in the gap before frame */
 .slot-helm .slot-wrapper-label,
 .slot-shoulders .slot-wrapper-label,
