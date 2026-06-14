@@ -1,6 +1,7 @@
 import * as PIXI from 'pixi.js';
 import { AssetsMap } from '../../configs/AssetsMap';
 import { useGameStore } from '../../store/useGameStore';
+import { resolveAssetPath } from '../../utils/assetPath';
 
 /**
  * AssetLoader — Системный загрузчик ресурсов.
@@ -236,6 +237,93 @@ export class AssetLoader {
             PIXI.Assets.backgroundLoad(optimizedList);
         } catch (err) {
             console.warn('[AssetLoader] Failed to start background preload:', err);
+        }
+    }
+
+    /**
+     * Предзагрузка боевых ассетов (изображения арен, героев и монстров) через кэш браузера.
+     * Это предотвращает зависания WebGL/PixiJS и гарантирует мгновенную загрузку из кэша при старте боя.
+     */
+    public preloadBattleAssets(): void {
+        try {
+            const state = useGameStore.getState();
+            const isUltra = state.graphicsQuality === 'ULTRA';
+            const isMobile = !isUltra && /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+            const preloadList: string[] = [];
+
+            // 1. Арены
+            if (isMobile) {
+                if (AssetsMap.BACKGROUNDS.BATTLE_ARENAS_MOBILE) {
+                    preloadList.push(...AssetsMap.BACKGROUNDS.BATTLE_ARENAS_MOBILE);
+                }
+            } else {
+                if (AssetsMap.BACKGROUNDS.BATTLE_ARENAS) {
+                    preloadList.push(...AssetsMap.BACKGROUNDS.BATTLE_ARENAS);
+                }
+            }
+
+            // 2. Изображения спрайтшитов героев и обликов
+            preloadList.push(
+                resolveAssetPath('/assets/characters/panda/panda_poses.png.png'),
+                resolveAssetPath('/assets/characters/panda/panda_frost_poses.png'),
+                resolveAssetPath('/assets/characters/raccoon/raccoon_poses.png.png'),
+                resolveAssetPath('/assets/characters/minotaur/minotaur_poses.png.png'),
+                resolveAssetPath('/assets/characters/tiger_warrior/tiger_warrior_poses.png.png'),
+                resolveAssetPath('/assets/characters/lion_knight/lion_knight_poses.png.png')
+            );
+
+            // 3. Мобы и боссы
+            preloadList.push(
+                resolveAssetPath('/assets/characters/ancients/ancient_wolf.webp'),
+                resolveAssetPath('/assets/characters/ancients/ancient_golem.webp'),
+                resolveAssetPath('/assets/characters/ancients/ancient_panther.webp'),
+                resolveAssetPath('/assets/characters/ancients/ancient_treant.png'),
+                resolveAssetPath('/assets/characters/ancients/ancient_spider.webp'),
+                resolveAssetPath('/assets/characters/ancients/ancient_griffin.png')
+            );
+
+            // Оптимизируем пути ассетов так же, как в loadAssets
+            const optimizedList = preloadList.map((path) => {
+                if (!path) return '';
+                const normalized = path.replace(/\\/g, '/').toLowerCase();
+                const isHeroOrSkin = normalized.includes('characters/') && !normalized.includes('characters/ancients/');
+                const isBoss = normalized.includes('ancient_treant') || normalized.includes('ancient_griffin');
+                const shouldKeepPng = isHeroOrSkin || isBoss;
+
+                let newPath = path;
+                if (!shouldKeepPng) {
+                    newPath = path.replace(/\.(png|jpg|jpeg)$/i, '.webp');
+                }
+
+                if (
+                    isMobile &&
+                    (newPath.includes('backgrounds') ||
+                        newPath.includes('Shop.webp') ||
+                        newPath.includes('Shoping.webp') ||
+                        newPath.includes('Shop.png') ||
+                        newPath.includes('Shoping.png') ||
+                        newPath.includes('images/items/') ||
+                        newPath.includes('characters/') ||
+                        newPath.includes('avatars/') ||
+                        newPath.includes('frames/'))
+                ) {
+                    if (newPath.endsWith('.webp')) {
+                        newPath = newPath.replace('.webp', '_mobile.webp');
+                    } else if (newPath.endsWith('.png') || newPath.endsWith('.jpg') || newPath.endsWith('.jpeg')) {
+                        newPath = newPath.replace(/\.(png|jpg|jpeg)$/i, '_mobile.webp');
+                    }
+                }
+                return newPath;
+            }).filter(Boolean);
+
+            console.log(`[AssetLoader] Starting native browser preloading for ${optimizedList.length} combat assets...`);
+            optimizedList.forEach((src) => {
+                const img = new Image();
+                img.src = src;
+            });
+        } catch (err) {
+            console.warn('[AssetLoader] Failed to start background battle preload:', err);
         }
     }
 }

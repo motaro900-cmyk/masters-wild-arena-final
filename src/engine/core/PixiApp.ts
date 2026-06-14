@@ -164,6 +164,15 @@ export class PixiApp {
                     }
                 }
 
+                const isMobile = useGameStore.getState().isMobile || (typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent));
+                const resolution = isMobile
+                    ? 1
+                    : this.config.resolution === ResolutionType.HIGH
+                        ? Math.min(window.devicePixelRatio || 1, 3)
+                        : this.config.resolution === ResolutionType.MEDIUM
+                          ? Math.min(window.devicePixelRatio || 1, 2)
+                          : 1;
+
                 this.pixiApp = new PIXI.Application();
                 await this.pixiApp.init({
                     width: this.config.width,
@@ -171,12 +180,7 @@ export class PixiApp {
                     backgroundColor: 0x000000,
                     backgroundAlpha: 0, // Transparent — let CSS background show through
                     antialias: this.config.antialias,
-                    resolution:
-                        this.config.resolution === ResolutionType.HIGH
-                            ? Math.min(window.devicePixelRatio || 1, 3)
-                            : this.config.resolution === ResolutionType.MEDIUM
-                              ? Math.min(window.devicePixelRatio || 1, 2)
-                              : 1,
+                    resolution,
                     autoDensity: true,
                     // Предпочитаем WebGPU — более чёткий рендер без WebGL сглаживания.
                     // Браузер автоматически fallback-ится на WebGL если WebGPU недоступен.
@@ -187,6 +191,27 @@ export class PixiApp {
                     roundPixels: true,
                     powerPreference: isIOS ? undefined : (this.config.powerPreference === 'default' ? undefined : this.config.powerPreference as any),
                 });
+
+                // Override mapPositionToPoint to handle 90-degree clockwise CSS rotation in portrait mode on mobile
+                if ((this.pixiApp.renderer as any).events) {
+                    const events = (this.pixiApp.renderer as any).events;
+                    const originalMapPositionToPoint = events.mapPositionToPoint;
+                    events.mapPositionToPoint = (point: any, x: number, y: number) => {
+                        const canvas = this.pixiApp?.canvas;
+                        if (!canvas) return originalMapPositionToPoint.call(events, point, x, y);
+
+                        const isPortraitMobile = useGameStore.getState().isMobile && window.innerWidth < window.innerHeight;
+                        if (isPortraitMobile) {
+                            const rect = canvas.getBoundingClientRect();
+                            const nx = rect.width > 0 ? (x - rect.left) / rect.width : 0;
+                            const ny = rect.height > 0 ? (y - rect.top) / rect.height : 0;
+                            point.x = ny * 1920;
+                            point.y = (1 - nx) * 1080;
+                            return point;
+                        }
+                        return originalMapPositionToPoint.call(events, point, x, y);
+                    };
+                }
 
                 // Configure aggressive Texture GC for mobile to save VRAM and avoid crashes
                 if (isIOS || (typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent))) {
@@ -338,8 +363,10 @@ export class PixiApp {
     public setResolution(type: ResolutionType): void {
         if (!this.pixiApp) return;
         this.config.resolution = type;
-        const resolution =
-            type === ResolutionType.HIGH
+        const isMobile = useGameStore.getState().isMobile || (typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent));
+        const resolution = isMobile
+            ? 1
+            : type === ResolutionType.HIGH
                 ? Math.min(window.devicePixelRatio || 1, 3)
                 : type === ResolutionType.MEDIUM
                   ? Math.min(window.devicePixelRatio || 1, 2)

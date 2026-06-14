@@ -6,6 +6,7 @@ import { addToFavorites, joinGroup, openExternalUrl } from '../../../utils/VKBri
 import { audioService } from '../../../services/AudioService';
 import { AdvancedSettingsBlock } from './AdvancedSettingsBlock';
 import { settingsTranslations } from './SettingsLocalization';
+import { LegalModal } from '../LegalDocuments';
 
 interface SettingsWindowProps {
     onClose: () => void;
@@ -34,6 +35,7 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
     const [confirmWipeProgress, setConfirmWipeProgress] = React.useState(false);
     const [isFullscreen, setIsFullscreen] = React.useState(!!document.fullscreenElement);
     const [copied, setCopied] = React.useState(false);
+    const [openDoc, setOpenDoc] = React.useState<'privacy' | 'terms' | null>(null);
     const [trackProgress, setTrackProgress] = React.useState(25);
 
     const t = settingsTranslations[(language || 'RU') as 'RU' | 'EN'] || settingsTranslations.RU;
@@ -809,7 +811,7 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
                     <span
                         onClick={(e) => {
                             e.stopPropagation();
-                            openExternalUrl('https://vk.com/dev/privacy');
+                            setOpenDoc('privacy');
                         }}
                         style={{ cursor: 'pointer' }}
                     >
@@ -818,7 +820,7 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
                     <span
                         onClick={(e) => {
                             e.stopPropagation();
-                            openExternalUrl('https://dev.vk.com/ru/user-agreement');
+                            setOpenDoc('terms');
                         }}
                         style={{ cursor: 'pointer' }}
                     >
@@ -826,6 +828,7 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
                     </span>
                 </div>
             </div>
+            <LegalModal open={openDoc} onClose={() => setOpenDoc(null)} />
         </div>
     );
 };

@@ -5,6 +5,7 @@ import { AssetsMap } from '../../../configs/AssetsMap';
 import { useGameStore } from '../../../store/useGameStore';
 import { syncService, SyncService } from '../../../services/SyncService';
 import { openExternalUrl } from '../../../utils/VKBridge';
+import { LegalModal } from '../LegalDocuments';
 
 interface IntroScreenProps {
     onComplete: () => void;
@@ -17,6 +18,7 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
     const [isChecking, setIsChecking] = useState(false);
     const [error, setError] = useState('');
     const [legalAccepted, setLegalAccepted] = useState(false);
+    const [openDoc, setOpenDoc] = useState<'privacy' | 'terms' | null>(null);
     const [isTransitioning, setIsTransitioning] = useState(false);
     const isMobile = useGameStore((state) => state.isMobile);
     const backgroundSrc = isMobile ? AssetsMap.BACKGROUNDS.MAIN_MENU_MOBILE : AssetsMap.BACKGROUNDS.MAIN_MENU;
@@ -275,7 +277,7 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
                                         textTransform: 'uppercase',
                                     }}
                                 >
-                                    История Создания
+                                    Легенда о Диких Земелях
                                 </div>
                                 <h1
                                     style={{
@@ -295,20 +297,11 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
                                         textAlign: 'justify',
                                     }}
                                 >
-                                    Перед тобой не просто игра, а результат месяцев бессонных ночей, творческих поисков
-                                    и искренней страсти к разработке. Мир{' '}
-                                    <strong style={{ color: '#ffd700' }}>"Masters of the Wild"</strong> был рожден в
-                                    уникальном тандеме человеческого воображения и современных технологий. <br />
+                                    Перед тобой простираются Дикие Земли — древний мир, где гармония природы и сила тотемов веками оберегали жизнь от тьмы. Но пришел час испытаний: Скверна проникает в некогда священные леса, оскверняя разум диких зверей и разрушая древние алтари. <br />
                                     <br />
-                                    Вся разработка легла на плечи одного человека, но я был бы не честен, если бы не
-                                    упомянул своего верного <strong style={{ color: '#ffd700' }}>ИИ-агента</strong>. Мы
-                                    стали неразлучным дуэтом: я задавал вектор, продумывал баланс и вкладывал душу, а
-                                    мой электронный напарник помогал оживлять этот код, превращая сложные идеи в
-                                    работающую реальность. <br />
+                                    Мастера Дикой Природы должны объединиться, чтобы противостоять этой угрозе. Тебе предстоит пробудить силу древних тотемов, призвать могучих чемпионов и повести их на Арену, чтобы доказать право называться истинным Хранителем Диких Земель. <br />
                                     <br />
-                                    Вместе мы прошли путь, который обычно преодолевают целые студии. Это был настоящий
-                                    вызов, требующий предельной концентрации, но именно это сделало игру такой, какая
-                                    она есть — личной, детальной и созданной специально для тебя.
+                                    Собери свою волю в кулак, выбери верную тактику снаряжения и впиши свое имя в летопись побед Арены!
                                 </p>
                             </motion.div>
                         )}
@@ -678,14 +671,14 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
                                     <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.65)', lineHeight: 1.5, textAlign: 'left' }}>
                                         Я прочитал(а) и принимаю{' '}
                                         <span
-                                            onClick={(e) => { e.stopPropagation(); openExternalUrl('https://dev.vk.com/ru/user-agreement'); }}
+                                            onClick={(e) => { e.stopPropagation(); setOpenDoc('terms'); }}
                                             style={{ color: '#f0c040', textDecoration: 'underline', cursor: 'pointer' }}
                                         >
                                             Пользовательское соглашение
                                         </span>
                                         {' '}и{' '}
                                         <span
-                                            onClick={(e) => { e.stopPropagation(); openExternalUrl('https://dev.vk.com/ru/privacy-policy'); }}
+                                            onClick={(e) => { e.stopPropagation(); setOpenDoc('privacy'); }}
                                             style={{ color: '#f0c040', textDecoration: 'underline', cursor: 'pointer' }}
                                         >
                                             Политику конфиденциальности
@@ -744,6 +737,7 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
                     </div>
                 </div>
             </div>
+            <LegalModal open={openDoc} onClose={() => setOpenDoc(null)} />
         </div>
     );
 };

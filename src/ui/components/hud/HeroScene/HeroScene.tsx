@@ -26,18 +26,54 @@ import { ResourceBar } from '../ResourceBar';
 
 const getScaleAndOffset = () => {
     const wrapper = document.querySelector('.game-scale-wrapper');
-    if (!wrapper) return { scale: 1, left: 0, top: 0 };
+    if (!wrapper) return { scale: 1, left: 0, top: 0, isRotated: false, rect: null as any };
     const rect = wrapper.getBoundingClientRect();
+    const isPortraitMobile = useGameStore.getState().isMobile && window.innerWidth < window.innerHeight;
+    if (isPortraitMobile) {
+        return {
+            scale: rect.height / 1920,
+            left: rect.left,
+            top: rect.top,
+            isRotated: true,
+            rect,
+        };
+    }
     return {
         scale: rect.width / 1920,
         left: rect.left,
         top: rect.top,
+        isRotated: false,
+        rect,
     };
 };
 
 const scaleRect = (element: HTMLElement) => {
     const rect = element.getBoundingClientRect();
-    const { scale, left, top } = getScaleAndOffset();
+    const info = getScaleAndOffset();
+    if (info.isRotated && info.rect) {
+        const nx_left = info.rect.width > 0 ? (rect.left - info.rect.left) / info.rect.width : 0;
+        const ny_top = info.rect.height > 0 ? (rect.top - info.rect.top) / info.rect.height : 0;
+        const nx_right = info.rect.width > 0 ? (rect.right - info.rect.left) / info.rect.width : 0;
+        const ny_bottom = info.rect.height > 0 ? (rect.bottom - info.rect.top) / info.rect.height : 0;
+
+        const localLeft = ny_top * 1920;
+        const localTop = (1 - nx_right) * 1080;
+        const localRight = ny_bottom * 1920;
+        const localBottom = (1 - nx_left) * 1080;
+
+        return {
+            x: localLeft,
+            y: localTop,
+            left: localLeft,
+            top: localTop,
+            right: localRight,
+            bottom: localBottom,
+            width: localRight - localLeft,
+            height: localBottom - localTop,
+        };
+    }
+
+    const { scale, left, top } = info;
     return {
         x: (rect.left - left) / scale,
         y: (rect.top - top) / scale,
@@ -303,9 +339,28 @@ export const HeroScene: React.FC = () => {
                                         unequipItem={unequipItem}
                                         addFloatingText={addFloatingText}
                                         heroAction={heroAction}
-                                        setGlobalHoveredItem={(id: string | null, x: number, y: number) =>
-                                            setGlobalHoveredItem(id ? { id, x, y } : null)
-                                        }
+                                         setGlobalHoveredItem={(id: string | null, clientX: number, clientY: number) => {
+                                             if (!id) {
+                                                 setGlobalHoveredItem(null);
+                                                 return;
+                                             }
+                                             const info = getScaleAndOffset();
+                                             if (info.isRotated && info.rect) {
+                                                 const nx = info.rect.width > 0 ? (clientX - info.left) / info.rect.width : 0;
+                                                 const ny = info.rect.height > 0 ? (clientY - info.top) / info.rect.height : 0;
+                                                 setGlobalHoveredItem({
+                                                     id,
+                                                     x: ny * 1920,
+                                                     y: (1 - nx) * 1080,
+                                                 });
+                                             } else {
+                                                 setGlobalHoveredItem({
+                                                     id,
+                                                     x: (clientX - info.left) / info.scale,
+                                                     y: (clientY - info.top) / info.scale,
+                                                 });
+                                             }
+                                         }}
                                         setDevModal={setDevModal}
                                     />
                                 ) : activeTab === 'TALENTS' ? (

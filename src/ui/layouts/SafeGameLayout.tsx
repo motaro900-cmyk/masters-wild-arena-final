@@ -39,8 +39,16 @@ export const SafeGameLayout = ({ containerRef }: { containerRef: React.RefObject
             const portrait = sw < sh;
             setIsPortrait(portrait);
 
-            // Use width-based scale on mobile (portrait) or standard fit-scale on landscape (PC)
-            const s = portrait ? sw / gw : Math.min(sw / gw, sh / gh);
+            const isMobileDevice = useGameStore.getState().isMobile || (typeof navigator !== 'undefined' && /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent));
+
+            // If we are on mobile in portrait mode, we rotate by 90 degrees,
+            // so we scale relative to sw/gh and sh/gw
+            const s = (portrait && isMobileDevice)
+                ? Math.min(sw / gh, sh / gw)
+                : portrait
+                  ? sw / gw
+                  : Math.min(sw / gw, sh / gh);
+
             setScale(s);
 
             // [Mobile Fix]: Force scroll to top to hide address bar
@@ -433,7 +441,7 @@ export const SafeGameLayout = ({ containerRef }: { containerRef: React.RefObject
                     position: 'absolute',
                     top: '50%',
                     left: '50%',
-                    transform: `translate(-50%, -50%) scale(${scale})`,
+                    transform: `translate(-50%, -50%) rotate(${isPortrait && isMobile ? 90 : 0}deg) scale(${scale})`,
                     transformOrigin: 'center center',
                     flexShrink: 0,
                     overflow: 'hidden',

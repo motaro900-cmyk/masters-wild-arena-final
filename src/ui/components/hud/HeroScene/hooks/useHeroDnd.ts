@@ -1,15 +1,28 @@
 import { useState } from 'react';
 import { useSensor, useSensors, PointerSensor, closestCenter } from '@dnd-kit/core';
 import { ITEMS_DATABASE } from '../../../../../game/configs/ItemsConfig';
+import { useGameStore } from '../../../../../store/useGameStore';
 
 const getScaleAndOffset = () => {
     const wrapper = document.querySelector('.game-scale-wrapper');
-    if (!wrapper) return { scale: 1, left: 0, top: 0 };
+    if (!wrapper) return { scale: 1, left: 0, top: 0, isRotated: false, rect: null as any };
     const rect = wrapper.getBoundingClientRect();
+    const isPortraitMobile = useGameStore.getState().isMobile && window.innerWidth < window.innerHeight;
+    if (isPortraitMobile) {
+        return {
+            scale: rect.height / 1920,
+            left: rect.left,
+            top: rect.top,
+            isRotated: true,
+            rect,
+        };
+    }
     return {
         scale: rect.width / 1920,
         left: rect.left,
         top: rect.top,
+        isRotated: false,
+        rect,
     };
 };
 
@@ -21,18 +34,42 @@ export class ScaledPointerSensor extends PointerSensor {
         const originalAdd = self.listeners.add.bind(self.listeners);
         self.listeners.add = (eventName: string, handler: (...args: any[]) => void, options: any) => {
             const wrappedHandler = (event: any) => {
-                const { scale, left, top } = getScaleAndOffset();
+                const info = getScaleAndOffset();
                 const scaledEvent = new Proxy(event, {
                     get(target, prop) {
-                        if (prop === 'clientX') return (target.clientX - left) / scale;
-                        if (prop === 'clientY') return (target.clientY - top) / scale;
+                        if (prop === 'clientX') {
+                            if (info.isRotated && info.rect) {
+                                const ny = info.rect.height > 0 ? (target.clientY - info.top) / info.rect.height : 0;
+                                return ny * 1920;
+                            }
+                            return (target.clientX - info.left) / info.scale;
+                        }
+                        if (prop === 'clientY') {
+                            if (info.isRotated && info.rect) {
+                                const nx = info.rect.width > 0 ? (target.clientX - info.left) / info.rect.width : 0;
+                                return (1 - nx) * 1080;
+                            }
+                            return (target.clientY - info.top) / info.scale;
+                        }
                         if (prop === 'touches') {
                             return Array.from(target.touches || []).map(
                                 (touch: any) =>
                                     new Proxy(touch, {
                                         get(t, p) {
-                                            if (p === 'clientX') return (t.clientX - left) / scale;
-                                            if (p === 'clientY') return (t.clientY - top) / scale;
+                                            if (p === 'clientX') {
+                                                if (info.isRotated && info.rect) {
+                                                    const ny = info.rect.height > 0 ? (t.clientY - info.top) / info.rect.height : 0;
+                                                    return ny * 1920;
+                                                }
+                                                return (t.clientX - info.left) / info.scale;
+                                            }
+                                            if (p === 'clientY') {
+                                                if (info.isRotated && info.rect) {
+                                                    const nx = info.rect.width > 0 ? (t.clientX - info.left) / info.rect.width : 0;
+                                                    return (1 - nx) * 1080;
+                                                }
+                                                return (t.clientY - info.top) / info.scale;
+                                            }
                                             return Reflect.get(t, p);
                                         },
                                     }),
@@ -43,8 +80,20 @@ export class ScaledPointerSensor extends PointerSensor {
                                 (touch: any) =>
                                     new Proxy(touch, {
                                         get(t, p) {
-                                            if (p === 'clientX') return (t.clientX - left) / scale;
-                                            if (p === 'clientY') return (t.clientY - top) / scale;
+                                            if (p === 'clientX') {
+                                                if (info.isRotated && info.rect) {
+                                                    const ny = info.rect.height > 0 ? (t.clientY - info.top) / info.rect.height : 0;
+                                                    return ny * 1920;
+                                                }
+                                                return (t.clientX - info.left) / info.scale;
+                                            }
+                                            if (p === 'clientY') {
+                                                if (info.isRotated && info.rect) {
+                                                    const nx = info.rect.width > 0 ? (t.clientX - info.left) / info.rect.width : 0;
+                                                    return (1 - nx) * 1080;
+                                                }
+                                                return (t.clientY - info.top) / info.scale;
+                                            }
                                             return Reflect.get(t, p);
                                         },
                                     }),

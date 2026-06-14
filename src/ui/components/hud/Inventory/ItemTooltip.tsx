@@ -56,20 +56,42 @@ export const ItemTooltip: React.FC<ItemTooltipProps> = ({ item }) => {
     const rarity = RARITY_COLORS[data.rarity || 'COMMON'] || RARITY_COLORS.COMMON;
     const tooltipWidth = 420;
 
-    // Bounds calculations
-    const left =
-        item.x + tooltipWidth + 25 > window.innerWidth ? Math.max(10, item.x - tooltipWidth - 25) : item.x + 25;
+    const wrapper = document.querySelector('.game-scale-wrapper');
+    const rect = wrapper ? wrapper.getBoundingClientRect() : null;
+    const isPortraitMobile = useGameStore.getState().isMobile && window.innerWidth < window.innerHeight;
 
-    const top = Math.max(10, Math.min(window.innerHeight - 420, item.y - 120));
+    let localX = item.x;
+    let localY = item.y;
+
+    if (rect) {
+        if (isPortraitMobile) {
+            const nx = rect.width > 0 ? (item.x - rect.left) / rect.width : 0;
+            const ny = rect.height > 0 ? (item.y - rect.top) / rect.height : 0;
+            localX = ny * 1920;
+            localY = (1 - nx) * 1080;
+        } else {
+            const scale = rect.width / 1920;
+            localX = (item.x - rect.left) / scale;
+            localY = (item.y - rect.top) / scale;
+        }
+    }
+
+    const leftAbsolute = localX + tooltipWidth + 25 > 1920 ? Math.max(10, localX - tooltipWidth - 25) : localX + 25;
+    const topAbsolute = Math.max(10, Math.min(1080 - 420, localY - 120));
+
+    const leftFixed = item.x + tooltipWidth + 25 > window.innerWidth ? Math.max(10, item.x - tooltipWidth - 25) : item.x + 25;
+    const topFixed = Math.max(10, Math.min(window.innerHeight - 420, item.y - 120));
+
+    const portalTarget = wrapper || document.body;
 
     return createPortal(
         <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             style={{
-                position: 'fixed',
-                left: `${left}px`,
-                top: `${top}px`,
+                position: portalTarget === document.body ? 'fixed' : 'absolute',
+                left: portalTarget === document.body ? `${leftFixed}px` : `${leftAbsolute}px`,
+                top: portalTarget === document.body ? `${topFixed}px` : `${topAbsolute}px`,
                 zIndex: 2000000,
                 width: `${tooltipWidth}px`,
                 background: 'rgba(15, 10, 5, 0.98)',
@@ -201,6 +223,6 @@ export const ItemTooltip: React.FC<ItemTooltipProps> = ({ item }) => {
                 )}
             </div>
         </motion.div>,
-        document.body,
+        portalTarget,
     );
 };

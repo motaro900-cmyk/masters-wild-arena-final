@@ -22,6 +22,35 @@ export const ItemTooltipPortal: React.FC<ItemTooltipPortalProps> = ({ hoveredIte
     const itemData = ITEMS_DATABASE[templateId] as any;
     const rarityColor = (rarityColors as any)[itemData.rarity] || '#fff';
 
+    const wrapper = document.querySelector('.game-scale-wrapper');
+    const rect = wrapper ? wrapper.getBoundingClientRect() : null;
+    const isPortraitMobile = useGameStore.getState().isMobile && window.innerWidth < window.innerHeight;
+
+    let localX = hoveredItem.x;
+    let localY = hoveredItem.y;
+
+    if (rect) {
+        if (isPortraitMobile) {
+            const nx = rect.width > 0 ? (hoveredItem.x - rect.left) / rect.width : 0;
+            const ny = rect.height > 0 ? (hoveredItem.y - rect.top) / rect.height : 0;
+            localX = ny * 1920;
+            localY = (1 - nx) * 1080;
+        } else {
+            const scale = rect.width / 1920;
+            localX = (hoveredItem.x - rect.left) / scale;
+            localY = (hoveredItem.y - rect.top) / scale;
+        }
+    }
+
+    const tooltipWidth = 460;
+    const leftAbsolute = localX + tooltipWidth + 20 > 1920 ? localX - tooltipWidth - 20 : localX + 20;
+    const topAbsolute = Math.max(10, Math.min(1080 - 450, localY - 100));
+
+    const leftFixed = hoveredItem.x + tooltipWidth + 20 > window.innerWidth ? hoveredItem.x - tooltipWidth - 20 : hoveredItem.x + 20;
+    const topFixed = Math.max(10, Math.min(window.innerHeight - 450, hoveredItem.y - 100));
+
+    const portalTarget = wrapper || document.body;
+
     return createPortal(
         <AnimatePresence>
             <motion.div
@@ -29,9 +58,9 @@ export const ItemTooltipPortal: React.FC<ItemTooltipPortalProps> = ({ hoveredIte
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.9 }}
                 style={{
-                    position: 'fixed',
-                    left: hoveredItem.x + 480 > window.innerWidth ? hoveredItem.x - 480 : hoveredItem.x + 20,
-                    top: Math.max(10, Math.min(window.innerHeight - 450, hoveredItem.y - 100)),
+                    position: portalTarget === document.body ? 'fixed' : 'absolute',
+                    left: portalTarget === document.body ? leftFixed : leftAbsolute,
+                    top: portalTarget === document.body ? topFixed : topAbsolute,
                     zIndex: 2000000,
                     pointerEvents: 'none',
                 }}
@@ -205,6 +234,6 @@ export const ItemTooltipPortal: React.FC<ItemTooltipPortalProps> = ({ hoveredIte
                 </div>
             </motion.div>
         </AnimatePresence>,
-        document.body,
+        portalTarget,
     );
 };

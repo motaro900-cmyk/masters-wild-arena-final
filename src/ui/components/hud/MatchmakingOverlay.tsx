@@ -92,6 +92,16 @@ export const MatchmakingOverlay: React.FC<MatchmakingOverlayProps> = ({ onFound,
 
         let isCancelled = false;
 
+        // Trigger background pre-caching of battle assets
+        import('../../../engine/systems/AssetLoader')
+            .then(({ AssetLoader }) => {
+                if (isCancelled) return;
+                AssetLoader.getInstance().preloadBattleAssets();
+            })
+            .catch((err) => {
+                console.error('❌ Failed to trigger battle asset preloading:', err);
+            });
+
         const interval = setInterval(() => {
             setSeconds((s) => {
                 const nextSec = s + 1;

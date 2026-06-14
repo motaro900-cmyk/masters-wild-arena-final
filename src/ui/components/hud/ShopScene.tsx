@@ -65,49 +65,9 @@ export const ShopScene: React.FC = () => {
     const equippedPower = equippedItem ? calculateItemPower(equippedItem) : 0;
     const powerDiff = itemPower - equippedPower;
 
-    const ITEMS_PER_PAGE = isMobile ? 4 : 7;
+    const ITEMS_PER_PAGE = 5;
     const [currentPage, setCurrentPage] = React.useState(0);
     const [direction, setDirection] = React.useState(0);
-
-    const shopContainerRef = React.useRef<HTMLDivElement>(null);
-    const [shopScrollTop, setShopScrollTop] = React.useState(0);
-    const [shopClientHeight, setShopClientHeight] = React.useState(210);
-
-    const handleShopScroll = (e: React.UIEvent<HTMLDivElement>) => {
-        setShopScrollTop(e.currentTarget.scrollTop);
-        setShopClientHeight(e.currentTarget.clientHeight);
-    };
-
-    React.useEffect(() => {
-        setShopScrollTop(0);
-        if (shopContainerRef.current) {
-            shopContainerRef.current.scrollTop = 0;
-            setShopClientHeight(shopContainerRef.current.clientHeight);
-        }
-    }, [activeMainTab, activeSubTab]);
-
-    const cols = isMobile ? 3 : 5;
-    const rowHeight = isMobile ? 150 : 175;
-    const gapHeight = 12;
-    const rowSpacing = rowHeight + gapHeight;
-
-    const rows = React.useMemo(() => {
-        const result: ShopItem[][] = [];
-        for (let i = 0; i < filteredItems.length; i += cols) {
-            result.push(filteredItems.slice(i, i + cols));
-        }
-        return result;
-    }, [filteredItems, cols]);
-
-    const startIndex = Math.max(0, Math.floor(shopScrollTop / rowSpacing) - 5);
-    const endIndex = Math.min(rows.length - 1, Math.ceil((shopScrollTop + shopClientHeight) / rowSpacing) - 1 + 5);
-
-    const topSpacerHeight = startIndex * rowSpacing;
-    const bottomSpacerHeight = Math.max(0, (rows.length - 1 - endIndex) * rowSpacing);
-
-    const visibleRows = React.useMemo(() => {
-        return rows.slice(startIndex, endIndex + 1);
-    }, [rows, startIndex, endIndex]);
 
     React.useEffect(() => {
         const timer = setTimeout(() => {
@@ -609,8 +569,85 @@ export const ShopScene: React.FC = () => {
                         </div>
                     )}
 
-                    {/* BOTTOM SHELF (VERTICALLY SCROLLABLE & VIRTUALIZED GRID OF ITEMS) */}
+                    {/* BOTTOM SHELF (PAGINATED GRID OF ITEMS) */}
                     {(() => {
+                        if (isMobile) {
+                            return (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', width: '100%' }}>
+                                    <div
+                                        style={{
+                                            display: 'flex',
+                                            justifyContent: 'space-between',
+                                            alignItems: 'center',
+                                            padding: '8px 16px',
+                                            background:
+                                                'linear-gradient(90deg, rgba(30, 20, 15, 0.85) 0%, rgba(15, 10, 10, 0.6) 50%, rgba(30, 20, 15, 0.85) 100%)',
+                                            border: '1px solid rgba(240, 192, 64, 0.25)',
+                                            borderRadius: '8px',
+                                            fontSize: '13px',
+                                            fontFamily: "'Cinzel', serif",
+                                            fontWeight: 800,
+                                            textTransform: 'uppercase',
+                                            textShadow: '0 2px 4px rgba(0,0,0,1)',
+                                            boxShadow: '0 4px 15px rgba(0,0,0,0.4), inset 0 1px 2px rgba(255,255,255,0.05)',
+                                            backdropFilter: 'blur(4px)',
+                                        }}
+                                    >
+                                        <span style={{ color: '#f0c040', letterSpacing: '1px' }}>
+                                            КАТАЛОГ ТОВАРОВ{' '}
+                                            {(activeMainTab === 'ARSENAL' || activeMainTab === 'ALCHEMY') && (
+                                                <span
+                                                    style={{
+                                                        color: '#ffcc00',
+                                                        marginLeft: '15px',
+                                                        textShadow: '0 0 10px rgba(255,204,0,0.4), 0 2px 4px rgba(0,0,0,1)',
+                                                    }}
+                                                >
+                                                    ★ АКЦИИ И СКИДКИ
+                                                </span>
+                                            )}
+                                        </span>
+                                        <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: '11px', letterSpacing: '0.5px' }}>
+                                            ПРОВЕДИТЕ ПАЛЬЦЕМ ◀ ▶
+                                        </span>
+                                    </div>
+                                    <div
+                                        style={{
+                                            width: '100%',
+                                            height: '155px',
+                                            background: 'rgba(10,8,8,0.7)',
+                                            border: '1.5px solid rgba(240,192,64,0.2)',
+                                            borderRadius: '12px',
+                                            padding: '6px 12px',
+                                            display: 'flex',
+                                            gap: '16px',
+                                            alignItems: 'center',
+                                            justifyContent: 'flex-start',
+                                            overflowX: 'auto',
+                                            WebkitOverflowScrolling: 'touch',
+                                        }}
+                                        className="leaderboard-scroll"
+                                    >
+                                        {filteredItems.map((item: ShopItem) => (
+                                            <ShopItemCard
+                                                key={item.id}
+                                                item={item}
+                                                isSelected={selectedItem?.id === item.id}
+                                                playerLevel={playerLevel}
+                                                discount={shopDiscounts?.[item.id]}
+                                                onClick={() => handleItemClick(item)}
+                                                isMobile={isMobile}
+                                            />
+                                        ))}
+                                    </div>
+                                </div>
+                            );
+                        }
+
+                        const totalPages = Math.ceil(filteredItems.length / 5);
+                        const startIndex = currentPage * 5;
+                        const paginatedItems = filteredItems.slice(startIndex, startIndex + 5);
+
                         return (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', width: '100%' }}>
                                 <div
@@ -646,69 +683,237 @@ export const ShopScene: React.FC = () => {
                                             </span>
                                         )}
                                     </span>
+                                    <span style={{ color: 'rgba(255,255,255,0.6)', letterSpacing: '0.5px' }}>
+                                        СТРАНИЦА {currentPage + 1} ИЗ {totalPages || 1}
+                                    </span>
                                 </div>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '15px', width: '100%' }}>
+                                    {/* LEFT ARROW */}
+                                    {totalPages > 1 && (
+                                        <motion.button
+                                            whileHover={
+                                                currentPage !== 0
+                                                    ? {
+                                                          scale: 1.1,
+                                                          borderColor: '#f0c040',
+                                                          boxShadow: '0 0 15px rgba(240,192,64,0.5)',
+                                                      }
+                                                    : {}
+                                            }
+                                            whileTap={currentPage !== 0 ? { scale: 0.95 } : {}}
+                                            onClick={() => {
+                                                setDirection(-1);
+                                                setCurrentPage((prev) => Math.max(0, prev - 1));
+                                            }}
+                                            disabled={currentPage === 0}
+                                            style={{
+                                                background:
+                                                    currentPage === 0
+                                                        ? 'rgba(255,255,255,0.01)'
+                                                        : 'linear-gradient(180deg, rgba(45,35,25,0.8) 0%, rgba(20,15,10,0.95) 100%)',
+                                                border:
+                                                    currentPage === 0
+                                                        ? '1.5px solid rgba(255,255,255,0.05)'
+                                                        : '2px solid rgba(240, 192, 64, 0.5)',
+                                                borderRadius: '50%',
+                                                width: '48px',
+                                                height: '48px',
+                                                minWidth: 'unset',
+                                                minHeight: 'unset',
+                                                color: currentPage === 0 ? 'rgba(255,255,255,0.15)' : '#f0c040',
+                                                fontSize: '20px',
+                                                cursor: currentPage === 0 ? 'default' : 'pointer',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                boxShadow:
+                                                    currentPage === 0
+                                                        ? 'none'
+                                                        : '0 4px 10px rgba(0,0,0,0.5), 0 0 10px rgba(240,192,64,0.2)',
+                                                transition: 'all 0.2s',
+                                                flexShrink: 0,
+                                            }}
+                                        >
+                                            <svg
+                                                width="16"
+                                                height="16"
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                strokeWidth="3"
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                style={{ display: 'block', transform: 'translateX(-1px)' }}
+                                            >
+                                                <polyline points="15 18 9 12 15 6" />
+                                            </svg>
+                                        </motion.button>
+                                    )}
+
                                     {/* ITEMS CONTAINER */}
                                     <div
-                                        ref={shopContainerRef}
-                                        onScroll={handleShopScroll}
                                         style={{
                                             flex: 1,
-                                            height: isMobile ? '155px' : '210px',
+                                            height: '210px',
                                             background: 'rgba(10,8,8,0.7)',
-                                            border: isMobile ? '1.5px solid rgba(240,192,64,0.2)' : '1px solid rgba(240,192,64,0.1)',
+                                            border: '1px solid rgba(240,192,64,0.1)',
                                             borderRadius: '12px',
                                             padding: '12px 20px',
-                                            overflowY: 'auto',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            minWidth: 0,
+                                            overflow: 'hidden',
                                             position: 'relative',
                                         }}
-                                        className="leaderboard-scroll"
                                     >
-                                        {filteredItems.length === 0 ? (
-                                            <div
+                                        <AnimatePresence initial={false} custom={direction} mode="wait">
+                                            <motion.div
+                                                key={currentPage}
+                                                custom={direction}
+                                                variants={{
+                                                    initial: (direction: number) => ({
+                                                        x: direction > 0 ? 100 : -100,
+                                                        opacity: 0,
+                                                    }),
+                                                    animate: {
+                                                        x: 0,
+                                                        opacity: 1,
+                                                    },
+                                                    exit: (direction: number) => ({
+                                                        x: direction > 0 ? -100 : 100,
+                                                        opacity: 0,
+                                                    }),
+                                                }}
+                                                initial="initial"
+                                                animate="animate"
+                                                exit="exit"
+                                                transition={{ type: 'spring', stiffness: 350, damping: 32 }}
                                                 style={{
                                                     display: 'flex',
-                                                    height: '100%',
+                                                    gap: '12px',
                                                     alignItems: 'center',
                                                     justifyContent: 'center',
-                                                    color: 'rgba(255,255,255,0.4)',
+                                                    width: '100%',
+                                                    height: '100%',
                                                 }}
                                             >
-                                                Нет доступных товаров в этой категории.
-                                            </div>
-                                        ) : (
-                                            <div style={{ display: 'flex', flexDirection: 'column', gap: gapHeight + 'px', width: '100%' }}>
-                                                <div style={{ height: topSpacerHeight, flexShrink: 0 }} />
-                                                {visibleRows.map((row, rowIndex) => (
-                                                    <div
-                                                        key={startIndex + rowIndex}
-                                                        style={{
-                                                            display: 'grid',
-                                                            gridTemplateColumns: `repeat(${cols}, 1fr)`,
-                                                            gap: gapHeight + 'px',
-                                                            height: rowHeight + 'px',
-                                                            width: '100%',
-                                                            flexShrink: 0,
-                                                        }}
-                                                    >
-                                                        {row.map((item: ShopItem) => (
-                                                            <ShopItemCard
-                                                                key={item.id}
-                                                                item={item}
-                                                                isSelected={selectedItem?.id === item.id}
-                                                                playerLevel={playerLevel}
-                                                                discount={shopDiscounts?.[item.id]}
-                                                                onClick={() => handleItemClick(item)}
-                                                                isMobile={isMobile}
-                                                            />
-                                                        ))}
-                                                    </div>
+                                                {paginatedItems.map((item: ShopItem) => (
+                                                    <ShopItemCard
+                                                        key={item.id}
+                                                        item={item}
+                                                        isSelected={selectedItem?.id === item.id}
+                                                        playerLevel={playerLevel}
+                                                        discount={shopDiscounts?.[item.id]}
+                                                        onClick={() => handleItemClick(item)}
+                                                        isMobile={isMobile}
+                                                    />
                                                 ))}
-                                                <div style={{ height: bottomSpacerHeight, flexShrink: 0 }} />
-                                            </div>
-                                        )}
+                                            </motion.div>
+                                        </AnimatePresence>
                                     </div>
+
+                                    {/* RIGHT ARROW */}
+                                    {totalPages > 1 && (
+                                        <motion.button
+                                            whileHover={
+                                                currentPage !== totalPages - 1
+                                                    ? {
+                                                          scale: 1.1,
+                                                          borderColor: '#f0c040',
+                                                          boxShadow: '0 0 15px rgba(240,192,64,0.5)',
+                                                      }
+                                                    : {}
+                                            }
+                                            whileTap={currentPage !== totalPages - 1 ? { scale: 0.95 } : {}}
+                                            onClick={() => {
+                                                setDirection(1);
+                                                setCurrentPage((prev) => Math.min(totalPages - 1, prev + 1));
+                                            }}
+                                            disabled={currentPage === totalPages - 1}
+                                            style={{
+                                                background:
+                                                    currentPage === totalPages - 1
+                                                        ? 'rgba(255,255,255,0.01)'
+                                                        : 'linear-gradient(180deg, rgba(45,35,25,0.8) 0%, rgba(20,15,10,0.95) 100%)',
+                                                border:
+                                                    currentPage === totalPages - 1
+                                                        ? '1.5px solid rgba(255,255,255,0.05)'
+                                                        : '2px solid rgba(240, 192, 64, 0.5)',
+                                                borderRadius: '50%',
+                                                width: '48px',
+                                                height: '48px',
+                                                minWidth: 'unset',
+                                                minHeight: 'unset',
+                                                color:
+                                                    currentPage === totalPages - 1
+                                                        ? 'rgba(255,255,255,0.15)'
+                                                        : '#f0c040',
+                                                fontSize: '20px',
+                                                cursor: currentPage === totalPages - 1 ? 'default' : 'pointer',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                boxShadow:
+                                                    currentPage === totalPages - 1
+                                                        ? 'none'
+                                                        : '0 4px 10px rgba(0,0,0,0.5), 0 0 10px rgba(240,192,64,0.2)',
+                                                transition: 'all 0.2s',
+                                                flexShrink: 0,
+                                            }}
+                                        >
+                                            <svg
+                                                width="16"
+                                                height="16"
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                strokeWidth="3"
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                style={{ display: 'block', transform: 'translateX(1px)' }}
+                                            >
+                                                <polyline points="9 18 15 12 9 6" />
+                                            </svg>
+                                        </motion.button>
+                                    )}
                                 </div>
+
+                                {/* PAGE DOTS */}
+                                {totalPages > 1 && (
+                                    <div
+                                        style={{
+                                            display: 'flex',
+                                            justifyContent: 'center',
+                                            gap: '6px',
+                                            marginTop: '2px',
+                                        }}
+                                    >
+                                        {Array.from({ length: totalPages }).map((_, idx) => (
+                                            <button
+                                                key={idx}
+                                                onClick={() => {
+                                                    setDirection(idx > currentPage ? 1 : -1);
+                                                    setCurrentPage(idx);
+                                                }}
+                                                style={{
+                                                    width: '8px',
+                                                    height: '8px',
+                                                    minWidth: 'auto',
+                                                    minHeight: 'auto',
+                                                    borderRadius: '50%',
+                                                    border: 'none',
+                                                    cursor: 'pointer',
+                                                    padding: 0,
+                                                    backgroundColor:
+                                                        idx === currentPage ? '#f0c040' : 'rgba(255,255,255,0.2)',
+                                                    transition: 'all 0.2s',
+                                                    boxShadow: idx === currentPage ? '0 0 8px #f0c040' : 'none',
+                                                }}
+                                            />
+                                        ))}
+                                    </div>
+                                )}
                             </div>
                         );
                     })()}
