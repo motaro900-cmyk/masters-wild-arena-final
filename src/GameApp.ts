@@ -7,6 +7,7 @@ export class GameApp {
     private pixiApp: PixiApp;
     private assetLoader: AssetLoader;
     private storeUnsubscribe?: () => void;
+    private fpsIntervalId?: any;
 
     constructor() {
         this.pixiApp = PixiApp.getInstance();
@@ -176,6 +177,49 @@ export class GameApp {
             })();
 
             console.log('✅ Game Engine Ready!');
+
+            // Auto-degradation FPS monitor setup
+            let fpsSamples: number[] = [];
+            this.fpsIntervalId = setInterval(() => {
+                try {
+                    const app = this.pixiApp.getApp();
+                    if (!app || !app.ticker || !app.ticker.started) {
+                        fpsSamples = [];
+                        return;
+                    }
+
+                    fpsSamples.push(app.ticker.FPS);
+
+                    if (fpsSamples.length >= 5) {
+                        const avgFps = fpsSamples.reduce((a, b) => a + b, 0) / fpsSamples.length;
+                        fpsSamples = [];
+
+                        const state = useGameStore.getState();
+                        if (!state.hasCustomSettings && avgFps < 24) {
+                            const currentQuality = state.graphicsQuality;
+                            let nextQuality: string | null = null;
+                            if (currentQuality === 'ULTRA') {
+                                nextQuality = 'MEDIUM';
+                            } else if (currentQuality === 'MEDIUM') {
+                                nextQuality = 'LOW';
+                            }
+
+                            if (nextQuality) {
+                                console.log(`📉 Auto-degrading graphics quality from ${currentQuality} to ${nextQuality} due to low average FPS: ${avgFps.toFixed(1)}`);
+                                useGameStore.setState({ graphicsQuality: nextQuality });
+
+                                const lang = state.language || 'RU';
+                                const msg = lang === 'RU'
+                                    ? 'Качество графики снижено для стабильной работы'
+                                    : 'Graphics quality lowered for stable performance';
+                                state.showAlert(msg);
+                            }
+                        }
+                    }
+                } catch (err) {
+                    console.warn('Error in FPS auto-degradation monitor:', err);
+                }
+            }, 1000);
         } catch (error) {
             console.error('❌ Engine Initialization Error:', error);
             throw error;
@@ -232,6 +276,13 @@ export class GameApp {
         this.loadItemSpritesForLevel(currentLevel).catch((err) => {
             console.error('❌ Background item sprite preloading failed:', err);
         });
+
+        // Background preload next-scene textures and arena assets
+        try {
+            this.assetLoader.startBackgroundPreload();
+        } catch (err) {
+            console.error('❌ Background general asset preloading failed:', err);
+        }
     }
 
     private applyPerformanceSettings(isPowerSaving: boolean, isMobile: boolean = false): void {
@@ -266,6 +317,10 @@ export class GameApp {
     }
 
     public destroy(): void {
+        if (this.fpsIntervalId) {
+            clearInterval(this.fpsIntervalId);
+            this.fpsIntervalId = undefined;
+        }
         this.storeUnsubscribe?.();
         this.pixiApp.destroy();
     }

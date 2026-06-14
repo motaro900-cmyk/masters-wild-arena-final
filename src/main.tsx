@@ -85,14 +85,21 @@ export const Root = () => {
                 refreshInterval = null;
             }
             
-            // Timeout: 30s for mobile, 15s for desktop
+            // Timeout: 90s for mobile, 60s for desktop
             const isMobile = typeof navigator !== 'undefined' && /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-            const timeoutMs = isMobile ? 30000 : 15000;
+            const timeoutMs = isMobile ? 90000 : 60000;
+
+            const currentStepRef = { current: 'Инициализация...' };
+            const setStepText = (text: string) => {
+                currentStepRef.current = text;
+                setLoadingText(text);
+            };
+
             const timeoutId = setTimeout(() => {
                 if (isAppLoading) {
-                    console.error(`❌ Loading Timeout: App failed to initialize in ${timeoutMs / 1000}s`);
+                    console.error(`❌ Loading Timeout: App failed to initialize in ${timeoutMs / 1000}s. Last step: ${currentStepRef.current}`);
                     setInitError(
-                        'Превышено время ожидания загрузки. Пожалуйста, проверьте интернет-соединение и попробуйте снова.',
+                        `Превышено время ожидания загрузки (последнее действие: ${currentStepRef.current}). Пожалуйста, проверьте интернет-соединение и попробуйте снова.`,
                     );
                 }
             }, timeoutMs);
@@ -100,7 +107,7 @@ export const Root = () => {
             let timeOffset = 0;
             try {
                 console.log('🏁 Root: Initializing App...');
-                setLoadingText('Калибровка времени...');
+                setStepText('Калибровка времени...');
                 try {
                     const start = Date.now();
                     const response = await fetch(window.location.origin + window.location.pathname, {
@@ -121,12 +128,12 @@ export const Root = () => {
                 }
 
                 // 1. VK Bridge initialization
-                setLoadingText('Подключение к VK Bridge...');
+                setStepText('Подключение к VK Bridge...');
                 await initVKProfile();
 
                 // 2. Firebase Profile initialization
-                setLoadingText('Загрузка профиля игрока...');
-                const profileRes = await initFirebaseProfile(timeoutId, setInitError, setNotInVk, setLoadingText);
+                setStepText('Загрузка профиля игрока...');
+                const profileRes = await initFirebaseProfile(timeoutId, setInitError, setNotInVk, setStepText);
                 if (!profileRes) {
                     return; // Stopped early due to error/not-in-vk
                 }
@@ -202,7 +209,7 @@ export const Root = () => {
                 initGameSystems(timeOffset);
 
                 // 4. Pixi engine
-                setLoadingText('Инициализация графического ядра Pixi...');
+                setStepText('Инициализация графического ядра Pixi...');
                 console.log('🎮 Starting GameEngine...');
                 const game = new GameApp();
                 await game.init(containerRef.current!);

@@ -1,4 +1,4 @@
-import { useState, memo } from 'react';
+import { useState, useEffect, memo } from 'react';
 import { motion } from 'framer-motion';
 import { rarityColors } from '../../../constants/roleIcons';
 import { ROLE_ICONS } from '../../../constants/roleIcons';
@@ -21,6 +21,7 @@ interface HeroCardProps {
 
 export const HeroCard = memo(function HeroCard({ hero, isOwned, isActive, isSelected, activeSkin, onClick }: HeroCardProps) {
     const [isHovered, setIsHovered] = useState(false);
+    const [imageLoaded, setImageLoaded] = useState(false);
 
     const rating = useGameStore((state) => state.rating);
     const crystals = useGameStore((state) => state.crystals);
@@ -42,6 +43,10 @@ export const HeroCard = memo(function HeroCard({ hero, isOwned, isActive, isSele
     const activeRarity = !isDefaultSkin ? activeSkin.rarity : hero.rarity;
     const activeName = !isDefaultSkin ? activeSkin.name : hero.name;
     const activeSkinImage = activeSkin ? activeSkin.image : hero.image;
+
+    useEffect(() => {
+        setImageLoaded(false);
+    }, [activeSkinImage]);
 
     const color = rarityColors[activeRarity] || '#fff';
     const glow = RARITY_GLOWS[activeRarity] || 'rgba(0,0,0,0)';
@@ -146,8 +151,24 @@ export const HeroCard = memo(function HeroCard({ hero, isOwned, isActive, isSele
                     }}
                 />
 
+                {!imageLoaded && (
+                    <div
+                        className="skeleton-placeholder"
+                        style={{
+                            width: '120px',
+                            height: '180px',
+                            bottom: '10%',
+                            left: '50%',
+                            transform: 'translateX(-50%)',
+                            position: 'absolute',
+                            borderRadius: '16px',
+                            zIndex: 1,
+                        }}
+                    />
+                )}
                 <img
                     src={resolveAssetPath(activeSkinImage)}
+                    onLoad={() => setImageLoaded(true)}
                     style={{
                         height: '90%',
                         width: 'auto',
@@ -156,7 +177,8 @@ export const HeroCard = memo(function HeroCard({ hero, isOwned, isActive, isSele
                         userSelect: 'none',
                         filter: isOwned ? 'none' : 'brightness(0.2) grayscale(1.0)',
                         transform: isHovered ? 'scale(1.04) translateY(-2px)' : 'scale(1) translateY(0)',
-                        transition: 'transform 0.25s cubic-bezier(0.25, 0.8, 0.25, 1), filter 0.25s',
+                        transition: 'transform 0.25s cubic-bezier(0.25, 0.8, 0.25, 1), filter 0.25s, opacity 0.2s ease-in-out',
+                        opacity: imageLoaded ? 1 : 0,
                     }}
                     alt={activeName}
                     draggable={false}

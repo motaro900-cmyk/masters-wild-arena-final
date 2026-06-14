@@ -1,25 +1,32 @@
 import React from 'react';
 
 /**
- * Обертка для React.lazy, которая автоматически перезагружает страницу
- * при сбое загрузки чанка (например, после деплоя новой версии на Vercel).
+ * lazyWithRetry - обертка над React.lazy, которая автоматически
+ * перезагружает страницу один раз при возникновении ошибки загрузки чанка
+ * (например, при обновлении билда на Vercel).
  */
 export function lazyWithRetry<T extends React.ComponentType<any>>(
-    componentImport: () => Promise<{ default: T }>,
+    importFn: () => Promise<{ default: T }>
 ): React.LazyExoticComponent<T> {
     return React.lazy(async () => {
+        const hasRetriedKey = `lazy-retry-${importFn.toString().replace(/[^a-zA-Z0-9]/g, '')}`;
+        
         try {
-            const result = await componentImport();
-            sessionStorage.removeItem('chunk-failed-reloaded');
+            const result = await importFn();
+            sessionStorage.removeItem(hasRetriedKey);
             return result;
         } catch (error) {
-            console.error('Dynamic import failed, attempting page reload...', error);
-            const hasReloaded = sessionStorage.getItem('chunk-failed-reloaded');
-            if (!hasReloaded) {
-                sessionStorage.setItem('chunk-failed-reloaded', 'true');
+            const hasRetried = sessionStorage.getItem(hasRetriedKey);
+            
+            if (!hasRetried) {
+                sessionStorage.setItem(hasRetriedKey, 'true');
+                console.warn('⚠️ Chunk loading failed. Retrying page load...', error);
                 window.location.reload();
-                return new Promise(() => {}); // Ждем перезагрузки страницы
+                // Возвращаем бесконечный промис, чтобы предотвратить дальнейший рендер сломанного состояния во время перезагрузки
+                return new Promise<{ default: T }>(() => {});
             }
+            
+            console.error('❌ Chunk loading failed after retry:', error);
             throw error;
         }
     });

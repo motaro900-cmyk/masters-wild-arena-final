@@ -145,4 +145,97 @@ export class AssetLoader {
             AssetsMap.UI.PANEL_QUEST,
         ];
     }
+
+    /**
+     * Запускает фоновую предзагрузку тяжелых ресурсов (арены, фоны экранов, атласы персонажей).
+     * Выполняется неблокирующим образом через PIXI.Assets.backgroundLoad.
+     */
+    public startBackgroundPreload(): void {
+        try {
+            const state = useGameStore.getState();
+            const isUltra = state.graphicsQuality === 'ULTRA';
+            const isMobile = !isUltra && /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+            const preloadList: string[] = [];
+
+            // 1. Добавляем фоны экранов в зависимости от устройства
+            if (isMobile) {
+                preloadList.push(
+                    AssetsMap.BACKGROUNDS.CITY_HUB_MOBILE,
+                    AssetsMap.BACKGROUNDS.FORGE_MOBILE,
+                    AssetsMap.BACKGROUNDS.HEROES_HALL_MOBILE,
+                    AssetsMap.BACKGROUNDS.RANKED_LOBBY_MOBILE,
+                    AssetsMap.BACKGROUNDS.BATTLE_PASS_MOBILE,
+                    AssetsMap.BACKGROUNDS.SANCTUARY_MOBILE,
+                    AssetsMap.BACKGROUNDS.GACHA_MOBILE,
+                );
+                if (AssetsMap.BACKGROUNDS.BATTLE_ARENAS_MOBILE) {
+                    preloadList.push(...AssetsMap.BACKGROUNDS.BATTLE_ARENAS_MOBILE);
+                }
+            } else {
+                preloadList.push(
+                    AssetsMap.BACKGROUNDS.CITY_HUB,
+                    AssetsMap.BACKGROUNDS.FORGE,
+                    AssetsMap.BACKGROUNDS.HEROES_HALL,
+                    AssetsMap.BACKGROUNDS.RANKED_LOBBY,
+                    AssetsMap.BACKGROUNDS.BATTLE_PASS,
+                    AssetsMap.BACKGROUNDS.SANCTUARY,
+                    AssetsMap.BACKGROUNDS.GACHA,
+                );
+                if (AssetsMap.BACKGROUNDS.BATTLE_ARENAS) {
+                    preloadList.push(...AssetsMap.BACKGROUNDS.BATTLE_ARENAS);
+                }
+            }
+
+            // Добавляем общие фоны
+            preloadList.push(AssetsMap.BACKGROUNDS.SHOP, AssetsMap.BACKGROUNDS.SHOP_NAV_BG);
+
+            // 2. Персонажи и аватары
+            preloadList.push(
+                AssetsMap.CHARACTERS.PANDA_AVATAR,
+                AssetsMap.CHARACTERS.MINOTAUR_AVATAR,
+                AssetsMap.CHARACTERS.TIGER_WARRIOR_AVATAR,
+                AssetsMap.CHARACTERS.LION_KNIGHT_AVATAR,
+            );
+
+            // Оптимизируем пути ассетов так же, как в loadAssets
+            const optimizedList = preloadList.map((path) => {
+                if (!path) return '';
+                const normalized = path.replace(/\\/g, '/').toLowerCase();
+                const isHeroOrSkin = normalized.includes('characters/') && !normalized.includes('characters/ancients/');
+                const isBoss = normalized.includes('ancient_treant') || normalized.includes('ancient_griffin');
+                const shouldKeepPng = isHeroOrSkin || isBoss;
+
+                let newPath = path;
+                if (!shouldKeepPng) {
+                    newPath = path.replace(/\.(png|jpg|jpeg)$/i, '.webp');
+                }
+
+                if (
+                    isMobile &&
+                    (newPath.includes('backgrounds') ||
+                        newPath.includes('Shop.webp') ||
+                        newPath.includes('Shoping.webp') ||
+                        newPath.includes('Shop.png') ||
+                        newPath.includes('Shoping.png') ||
+                        newPath.includes('images/items/') ||
+                        newPath.includes('characters/') ||
+                        newPath.includes('avatars/') ||
+                        newPath.includes('frames/'))
+                ) {
+                    if (newPath.endsWith('.webp')) {
+                        newPath = newPath.replace('.webp', '_mobile.webp');
+                    } else if (newPath.endsWith('.png') || newPath.endsWith('.jpg') || newPath.endsWith('.jpeg')) {
+                        newPath = newPath.replace(/\.(png|jpg|jpeg)$/i, '_mobile.webp');
+                    }
+                }
+                return newPath;
+            }).filter(Boolean);
+
+            console.log(`[AssetLoader] Background preloading queue initiated for ${optimizedList.length} assets.`);
+            PIXI.Assets.backgroundLoad(optimizedList);
+        } catch (err) {
+            console.warn('[AssetLoader] Failed to start background preload:', err);
+        }
+    }
 }

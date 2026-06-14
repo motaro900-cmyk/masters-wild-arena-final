@@ -107,6 +107,14 @@ export class PixiApp {
             this.storeUnsubscribe = null;
         }
 
+        if (PixiApp.canvas) {
+            try {
+                PixiApp.canvas.removeEventListener('webglcontextlost', this.handleWebGLContextLost);
+            } catch (e) {
+                console.warn('Failed to remove webglcontextlost listener:', e);
+            }
+        }
+
         if (this.pixiApp) {
             console.log('[PixiApp] Destroying application...');
             this.updateLoops = [];
@@ -121,6 +129,9 @@ export class PixiApp {
 
     public async init(config?: IPixiAppConfig, container?: HTMLElement): Promise<void> {
         try {
+            if (container) {
+                this.homeContainer = container;
+            }
             // [Fix]: Если приложение уже есть, но контейнер сменился, переносим канвас
             if (this.pixiApp && container) {
                 const canvas = this.pixiApp.canvas;
@@ -188,6 +199,10 @@ export class PixiApp {
 
                 (window as any).__PIXI_APP__ = this.pixiApp;
                 PixiApp.canvas = this.pixiApp.canvas;
+
+                if (PixiApp.canvas) {
+                    PixiApp.canvas.addEventListener('webglcontextlost', this.handleWebGLContextLost);
+                }
 
                 this.pixiApp.ticker.add((ticker: PIXI.Ticker) => this.update(ticker));
             }
@@ -415,4 +430,118 @@ export class PixiApp {
             instance.destroy();
         }
     }
+
+    private handleWebGLContextLost = async (event: Event) => {
+        event.preventDefault();
+        console.warn('⚠️ WebGL context lost detected! Attempting recovery...');
+
+        // 1. Show full-screen dark blurred glassmorphic overlay
+        const overlay = document.createElement('div');
+        overlay.id = 'webgl-context-lost-overlay';
+        Object.assign(overlay.style, {
+            position: 'fixed',
+            top: '0',
+            left: '0',
+            width: '100%',
+            height: '100%',
+            backgroundColor: 'rgba(10, 10, 12, 0.85)',
+            backdropFilter: 'blur(10px)',
+            webkitBackdropFilter: 'blur(10px)',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
+            zIndex: '999999',
+            color: '#ffffff',
+            fontFamily: "'Outfit', sans-serif",
+            opacity: '0',
+            transition: 'opacity 0.3s ease',
+        });
+
+        // Add spinner
+        const spinner = document.createElement('div');
+        Object.assign(spinner.style, {
+            width: '50px',
+            height: '50px',
+            borderRadius: '50%',
+            border: '3px solid rgba(255, 255, 255, 0.1)',
+            borderTopColor: '#ffe082',
+            animation: 'spin-recover 1s linear infinite',
+            marginBottom: '20px',
+        });
+        
+        // CSS animation style
+        const styleSheet = document.createElement("style");
+        styleSheet.id = 'webgl-recovery-style';
+        styleSheet.innerText = `
+            @keyframes spin-recover {
+                to { transform: rotate(360deg); }
+            }
+        `;
+        document.head.appendChild(styleSheet);
+
+        const text = document.createElement('div');
+        const activeScreenText = useGameStore.getState().language === 'EN' ? 'Restarting graphics...' : 'Перезапуск графики...';
+        text.innerText = activeScreenText;
+        Object.assign(text.style, {
+            fontSize: '18px',
+            fontWeight: '600',
+            letterSpacing: '0.08em',
+            textShadow: '0 0 10px rgba(255, 224, 130, 0.3)',
+        });
+
+        overlay.appendChild(spinner);
+        overlay.appendChild(text);
+        document.body.appendChild(overlay);
+
+        // Fade in
+        requestAnimationFrame(() => {
+            overlay.style.opacity = '1';
+        });
+
+        // 2. Wait 1 second (1000ms)
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+
+        try {
+            const container = this.homeContainer;
+            const savedConfig = { ...this.config };
+
+            // 3. Destroy old instance
+            await this.destroy();
+
+            // 4. Create new instance and initialize it
+            const newApp = PixiApp.getInstance();
+            if (container) {
+                await newApp.init(savedConfig, container);
+            } else {
+                console.warn('[PixiApp] No container found to reinitialize PixiApp');
+            }
+
+            // 5. Reload active screen
+            const activeScreen = useGameStore.getState().activeScreen;
+            if (activeScreen === 'BATTLE') {
+                // Toggle activeScreen: CITY -> BATTLE
+                useGameStore.setState({ activeScreen: 'CITY' });
+                setTimeout(() => {
+                    useGameStore.setState({ activeScreen: 'BATTLE' });
+                }, 100);
+            } else {
+                // Switch scene to MainScreen via SceneManager
+                const [{ SceneManager }, { MainScreen }] = await Promise.all([
+                    import('./SceneManager'),
+                    import('../../ui/screens/MainScreen')
+                ]);
+                SceneManager.getInstance().switchScene(new MainScreen());
+            }
+        } catch (err) {
+            console.error('Failed to recover PixiApp after context loss:', err);
+        } finally {
+            // Remove overlay with fadeout
+            overlay.style.opacity = '0';
+            setTimeout(() => {
+                overlay.remove();
+                styleSheet.remove();
+            }, 300);
+        }
+    };
 }

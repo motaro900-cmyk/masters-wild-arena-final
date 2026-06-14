@@ -1,71 +1,23 @@
 import React from 'react';
 import { useGameStore } from '../../../store/useGameStore';
 import { ITEMS_DATABASE } from '../../../game/configs/ItemsConfig';
+import { lazyWithRetry } from '../../../utils/LazyWithRetry';
 
 // Window Components
-const FriendsWindow = React.lazy(() => import('./FriendsWindow'));
-const MailWindow = React.lazy(() => import('./MailWindow'));
-const SettingsWindow = React.lazy(() => import('./SettingsWindow'));
-const ProfileCustomizeWindow = React.lazy(() => import('./ProfileCustomizeWindow'));
-const DailyGiftWindow = React.lazy(() => import('./DailyGiftWindow'));
-const RankingWindow = React.lazy(() => import('./RankingWindow'));
-const ClanWindow = React.lazy(() => import('./ClanWindow'));
-const RanksListWindow = React.lazy(() => import('./RanksListWindow'));
-const InventoryPanel = React.lazy(() => import('./InventoryPanel'));
-const VIPWindow = React.lazy(() => import('./VIPWindow'));
-const BestiaryWindow = React.lazy(() => import('./BestiaryWindow'));
-const ServerTime = React.lazy(() => import('./ServerTime').then(m => ({ default: m.ServerTime })));
+const FriendsWindow = lazyWithRetry(() => import('./FriendsWindow'));
+const MailWindow = lazyWithRetry(() => import('./MailWindow'));
+const SettingsWindow = lazyWithRetry(() => import('./SettingsWindow'));
+const ProfileCustomizeWindow = lazyWithRetry(() => import('./ProfileCustomizeWindow'));
+const DailyGiftWindow = lazyWithRetry(() => import('./DailyGiftWindow'));
+const RankingWindow = lazyWithRetry(() => import('./RankingWindow'));
+const ClanWindow = lazyWithRetry(() => import('./ClanWindow'));
+const RanksListWindow = lazyWithRetry(() => import('./RanksListWindow'));
+const InventoryPanel = lazyWithRetry(() => import('./InventoryPanel'));
+const VIPWindow = lazyWithRetry(() => import('./VIPWindow'));
+const BestiaryWindow = lazyWithRetry(() => import('./BestiaryWindow'));
+const ServerTime = lazyWithRetry(() => import('./ServerTime').then(m => ({ default: m.ServerTime })));
 import { BaseWindow } from './BaseWindow';
-
-export const WindowLoadingSpinner: React.FC = () => {
-    return (
-        <div
-            style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                width: '100vw',
-                height: '100vh',
-                position: 'fixed',
-                top: 0,
-                left: 0,
-                zIndex: 9999,
-                color: '#f5d37a',
-                fontFamily: "'Cinzel', 'Philosopher', serif",
-                gap: '15px',
-                pointerEvents: 'none',
-            }}
-        >
-            <div
-                style={{
-                    width: '50px',
-                    height: '50px',
-                    border: '5px solid rgba(245, 211, 122, 0.1)',
-                    borderTop: '5px solid #f5d37a',
-                    borderRadius: '50%',
-                    animation: 'window-spin 1s linear infinite',
-                }}
-            />
-            <style>{`
-                @keyframes window-spin {
-                    0% { transform: rotate(0deg); }
-                    100% { transform: rotate(360deg); }
-                }
-            `}</style>
-            <div
-                style={{
-                    fontSize: '20px',
-                    fontWeight: 'bold',
-                    letterSpacing: '1px',
-                    textShadow: '0 2px 4px rgba(0, 0, 0, 0.8)',
-                }}
-            >
-                Загрузка...
-            </div>
-        </div>
-    );
-};
+import { WindowLoadingSpinner } from './WindowLoadingSpinner';
 
 interface WindowManagerProps {
     activeWindow: string | null;

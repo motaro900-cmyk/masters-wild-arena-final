@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useGameStore } from '../../store/useGameStore';
 import { AssetsMap } from '../../configs/AssetsMap';
+import { lazyWithRetry } from '../../utils/LazyWithRetry';
 
 // HUD Components
 import { BattlePassBar } from './hud/BattlePassBar';
@@ -13,8 +14,8 @@ import { DailyGiftBanner } from './hud/DailyGiftBanner';
 import { ProfileHub } from './hud/ProfileHub';
 
 // Dialogs & Windows
-const WindowManager = React.lazy(() => import('./hud/WindowManager'));
-import { WindowLoadingSpinner } from './hud/WindowManager';
+const WindowManager = lazyWithRetry(() => import('./hud/WindowManager'));
+import { WindowLoadingSpinner } from './hud/WindowLoadingSpinner';
 import { AlertDialog, ConfirmDialog } from './hud/GlobalDialogs';
 import { UnderDevelopmentModal } from './hud/SharedUI';
 import { MatchmakingOverlay } from './hud/MatchmakingOverlay';
@@ -24,7 +25,7 @@ import bridge from '@vkontakte/vk-bridge';
 import { safeGetItem, safeSetItem } from '../../utils/SafeStorage';
 import { useGraphicsConfig } from '../hooks/useGraphicsConfig';
 
-const AdminPanel = React.lazy(() => import('./hud/AdminPanel').then((m) => ({ default: m.AdminPanel })));
+const AdminPanel = lazyWithRetry(() => import('./hud/AdminPanel').then((m) => ({ default: m.AdminPanel })));
 
 export const GameHUD: React.FC = () => {
     const activeScreen = useGameStore((state) => state.activeScreen);

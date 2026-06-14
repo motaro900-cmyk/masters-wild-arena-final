@@ -98,6 +98,7 @@ export class BattleEngine {
 
     public playerStats: ICombatStats | null = null;
     public enemyStats: ICombatStats | null = null;
+    private currentArenaBgUrl: string | null = null;
 
     public isCombatRunning: boolean = false;
     public isInitialized: boolean = false;
@@ -209,6 +210,7 @@ export class BattleEngine {
             const arenaBgQuality = isUltra ? 'HIGH' : (state.arenaBgQuality || (state.isMobile ? 'LOW' : 'HIGH'));
             const arenas = arenaBgQuality === 'LOW' ? AssetsMap.BACKGROUNDS.BATTLE_ARENAS_MOBILE : AssetsMap.BACKGROUNDS.BATTLE_ARENAS;
             const randomBg = arenas[Math.floor(Math.random() * arenas.length)];
+            this.currentArenaBgUrl = randomBg;
             const bgTex = await PIXI.Assets.load(randomBg).catch(() => PIXI.Texture.WHITE);
             const background = new PIXI.Sprite(bgTex);
 
@@ -1394,6 +1396,15 @@ export class BattleEngine {
             this.enemy.resetToIdle();
         }
         this.updateStatusesState();
+
+        if (this.currentArenaBgUrl) {
+            try {
+                PIXI.Assets.unload(this.currentArenaBgUrl);
+            } catch (err) {
+                console.warn('Failed to unload arena background:', err);
+            }
+            this.currentArenaBgUrl = null;
+        }
 
         pixiApp.clearAllLayers();
         pixiApp.returnToHomeContainer();

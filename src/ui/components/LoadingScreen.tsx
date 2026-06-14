@@ -11,6 +11,21 @@ interface LoadingScreenProps {
  * и текстом текущего шага инициализации.
  */
 export const LoadingScreen: React.FC<LoadingScreenProps> = ({ isLoading, loadingText }) => {
+    const [showSlowWarning, setShowSlowWarning] = React.useState(false);
+
+    React.useEffect(() => {
+        if (!isLoading) {
+            setShowSlowWarning(false);
+            return;
+        }
+
+        const timer = setTimeout(() => {
+            setShowSlowWarning(true);
+        }, 15000);
+
+        return () => clearTimeout(timer);
+    }, [isLoading]);
+
     return (
         <AnimatePresence>
             {isLoading && (
@@ -100,6 +115,31 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({ isLoading, loading
                         >
                             {loadingText}
                         </div>
+
+                        {/* Предупреждение о медленном соединении */}
+                        <AnimatePresence>
+                            {showSlowWarning && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 0.8, y: 0 }}
+                                    exit={{ opacity: 0, y: 10 }}
+                                    transition={{ duration: 0.5 }}
+                                    style={{
+                                        marginTop: '20px',
+                                        fontSize: '12px',
+                                        color: '#ffe082',
+                                        letterSpacing: '0.08em',
+                                        textAlign: 'center',
+                                        maxWidth: '320px',
+                                        lineHeight: '1.5',
+                                        fontFamily: "'Outfit', sans-serif",
+                                        textShadow: '0 0 8px rgba(255, 224, 130, 0.2)',
+                                    }}
+                                >
+                                    Обнаружено медленное соединение. Загрузка ресурсов продолжается, пожалуйста подождите...
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
                     </div>
 
                     <style>{`
