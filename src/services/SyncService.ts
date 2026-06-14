@@ -75,10 +75,14 @@ export class SyncService {
     // ─── Lifecycle ─────────────────────────────────────────────────────────────
 
     private constructor() {
-        // Subscribe to Zustand store updates
-        useGameStore.subscribe(() => {
-            this.isDirty = true;
-        });
+        // Subscribe to Zustand store updates after module initialization completes
+        setTimeout(() => {
+            if (typeof useGameStore !== 'undefined' && useGameStore.subscribe) {
+                useGameStore.subscribe(() => {
+                    this.isDirty = true;
+                });
+            }
+        }, 0);
 
         if (typeof window !== 'undefined' && !SyncService.eventListenersAdded) {
             SyncService.eventListenersAdded = true;
