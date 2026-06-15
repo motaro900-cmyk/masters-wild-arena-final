@@ -273,7 +273,8 @@ export const GameHUD: React.FC = () => {
                     className="absolute top-[20px] left-1/2 -translate-x-1/2 hud-interactive"
                     style={{
                         zIndex: 100,
-                        ...(isMobile ? { transform: `scale(${hudScale})`, transformOrigin: 'top center' } : {}),
+                        transform: `scale(${hudScale})`,
+                        transformOrigin: 'top center',
                     }}
                 >
                     <BattlePassBar />
@@ -291,7 +292,8 @@ export const GameHUD: React.FC = () => {
                         className="tutorial-resource-bar absolute top-[20px] right-[25px] hud-interactive flex flex-col items-end gap-1"
                         style={{
                             zIndex: 10000,
-                            ...(isMobile ? { transform: `scale(${hudScale})`, transformOrigin: 'top right' } : {}),
+                            transform: `scale(${hudScale})`,
+                            transformOrigin: 'top right',
                         }}
                     >
                         <ResourceBar
@@ -453,7 +455,7 @@ export const GameHUD: React.FC = () => {
 
                     <div
                         className="tutorial-battle-btn absolute bottom-[30px] left-1/2 -translate-x-1/2 hud-interactive"
-                        style={isMobile ? { transform: `scale(${hudScale})`, transformOrigin: 'bottom center' } : {}}
+                        style={{ transform: `scale(${hudScale})`, transformOrigin: 'bottom center' }}
                     >
                         <ActionButtons
                             onStartBattle={() => setActiveWindow('RANKED_LOBBY')}
@@ -465,7 +467,7 @@ export const GameHUD: React.FC = () => {
                     {/* STANDALONE CITY BUTTON */}
                     <div
                         className="absolute bottom-[10px] left-[calc(50%+400px)] hud-interactive"
-                        style={isMobile ? { transform: `scale(${hudScale})`, transformOrigin: 'bottom center' } : {}}
+                        style={{ transform: `scale(${hudScale})`, transformOrigin: 'bottom center' }}
                     >
                         <button
                             onClick={() => useGameStore.getState().goToCity()}
@@ -535,7 +537,8 @@ export const GameHUD: React.FC = () => {
                             borderRadius: '20px',
                             boxShadow: gfx.panelShadow,
                             filter: gfx.isUltra ? 'contrast(1.04) saturate(1.06) brightness(0.96)' : undefined,
-                            ...(isMobile ? { transform: `scale(${hudScale})`, transformOrigin: 'bottom right' } : {}),
+                            transform: `scale(${hudScale})`,
+                            transformOrigin: 'bottom right',
                         }}
                     >
                         {[
