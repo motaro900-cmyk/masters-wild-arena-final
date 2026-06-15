@@ -152,10 +152,20 @@ export const createQuestSlice = (set: any, get: any) => ({
                 const lastResetDateTs = data.lastResetDate;
 
                 let shouldReset = false;
-                if (!lastResetDateTs) {
+                let lastResetDate: Date | null = null;
+                if (lastResetDateTs) {
+                    if (typeof lastResetDateTs.toDate === 'function') {
+                        lastResetDate = lastResetDateTs.toDate();
+                    } else if (lastResetDateTs instanceof Date) {
+                        lastResetDate = lastResetDateTs;
+                    } else if (typeof lastResetDateTs === 'number' || typeof lastResetDateTs === 'string') {
+                        lastResetDate = new Date(lastResetDateTs);
+                    }
+                }
+
+                if (!lastResetDate || isNaN(lastResetDate.getTime())) {
                     shouldReset = true;
                 } else {
-                    const lastResetDate = lastResetDateTs.toDate();
                     const MSK_OFFSET = 3 * 60 * 60 * 1000;
                     const lastMSK = lastResetDate.getTime() + MSK_OFFSET;
                     const serverMSK = serverDate.getTime() + MSK_OFFSET;
@@ -187,6 +197,14 @@ export const createQuestSlice = (set: any, get: any) => ({
                         bpDailyQuests: selectedBp,
                         lastDailyRefresh: serverDate.getTime(),
                         dailyAdWatchesCount: 0,
+                    });
+                } else {
+                    console.log('[questSlice] dailyQuests up to date in Firebase — loading from Firebase');
+                    set({
+                        dailyQuests: data.dailyQuests || [],
+                        bpDailyQuests: data.bpDailyQuests || [],
+                        lastDailyRefresh: data.lastDailyRefresh || serverDate.getTime(),
+                        dailyAdWatchesCount: data.dailyAdWatchesCount || 0,
                     });
                 }
             });

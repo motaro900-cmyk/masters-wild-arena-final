@@ -566,8 +566,8 @@ export const BattleHUD = React.memo<BattleHUDProps>(({
                         <div
                             style={{
                                 position: 'absolute',
-                                bottom: '-6px', // Lowered from 8px to align exactly over the lower-left empty circle
-                                left: '8px', // Shifted left from 112px to cover the frame's badge holder circle
+                                bottom: '-6px', // Lowered from 8px to align exactly over the lower-right empty circle
+                                left: '112px', // Restored to 112px to align with the frame's badge holder circle on the lower-right
                                 width: '40px',
                                 height: '40px',
                                 zIndex: 30,
@@ -583,8 +583,8 @@ export const BattleHUD = React.memo<BattleHUDProps>(({
                                     top: '50%',
                                     left: '50%',
                                     transform: 'translate(-50%, -50%)',
-                                    width: '28px',
-                                    height: '28px',
+                                    width: '32px',
+                                    height: '32px',
                                     borderRadius: '50%',
                                     background: '#1a1008',
                                 }}
@@ -1021,8 +1021,8 @@ export const BattleHUD = React.memo<BattleHUDProps>(({
                                     top: '50%',
                                     left: '50%',
                                     transform: 'translate(-50%, -50%)',
-                                    width: '28px',
-                                    height: '28px',
+                                    width: '32px',
+                                    height: '32px',
                                     borderRadius: '50%',
                                     background: '#1a1008',
                                 }}

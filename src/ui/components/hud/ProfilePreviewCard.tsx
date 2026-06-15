@@ -142,9 +142,22 @@ export const ProfilePreviewCard: React.FC<ProfilePreviewCardProps> = ({
                         justifyContent: 'center',
                     }}
                 >
+                    {/* Filled circle background to ensure level text stands out and is filled inside */}
+                    <div
+                        style={{
+                            position: 'absolute',
+                            top: '50%',
+                            left: '50%',
+                            transform: 'translate(-50%, -50%)',
+                            width: '32px',
+                            height: '32px',
+                            borderRadius: '50%',
+                            background: '#1a1008',
+                        }}
+                    />
                     <img
                         src={AssetsMap.UI.LVL_BADGE}
-                        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain' }}
+                        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', zIndex: 2 }}
                         alt="lvl-bg"
                     />
                     <span
@@ -155,7 +168,7 @@ export const ProfilePreviewCard: React.FC<ProfilePreviewCardProps> = ({
                             fontWeight: 900,
                             color: '#fff',
                             textShadow: '0 2px 4px rgba(0,0,0,1)',
-                            zIndex: 1,
+                            zIndex: 3,
                             marginTop: '-1px',
                         }}
                     >
