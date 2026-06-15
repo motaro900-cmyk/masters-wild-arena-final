@@ -591,6 +591,13 @@ export class SyncService {
                                 ? data.lastWheelSpinTimeServer.toMillis()
                                 : data.lastWheelSpinTimeServer.seconds * 1000;
                         }
+                        // Merge top-level dailyQuests from Firebase if fullStateJSON has empty array
+                        if ((!processedData.dailyQuests || processedData.dailyQuests.length === 0) && data.dailyQuests?.length > 0) {
+                            processedData.dailyQuests = data.dailyQuests;
+                        }
+                        if ((!processedData.weeklyQuests || processedData.weeklyQuests.length === 0) && data.weeklyQuests?.length > 0) {
+                            processedData.weeklyQuests = data.weeklyQuests;
+                        }
                     } catch (e) {
                         console.error('[SyncService] Failed to parse fullStateJSON:', e);
                     }

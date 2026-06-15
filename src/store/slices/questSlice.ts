@@ -88,6 +88,14 @@ export const createQuestSlice = (set: any, get: any) => ({
                     shouldReset = Math.floor(serverMSK / DAY_MS) > Math.floor(lastMSK / DAY_MS);
                 }
 
+                // Force reset if quests are empty even though lastResetDate is today
+                // (happens when fullStateJSON had empty dailyQuests saved)
+                const existingQuests = data.dailyQuests;
+                if (!shouldReset && (!existingQuests || existingQuests.length === 0)) {
+                    console.log('[questSlice] dailyQuests empty in Firebase — forcing reset');
+                    shouldReset = true;
+                }
+
                 if (shouldReset) {
                     const shuffled = [...QUESTS_POOL].sort(() => 0.5 - Math.random());
                     const selected = shuffled.slice(0, 4).map((q) => ({

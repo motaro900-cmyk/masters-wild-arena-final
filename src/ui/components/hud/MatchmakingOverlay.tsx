@@ -54,6 +54,7 @@ export const MatchmakingOverlay: React.FC<MatchmakingOverlayProps> = ({ onFound,
     const [opponent, setOpponent] = useState<{
         id: string;
         name: string;
+        avatar?: string;
         rating: number;
         heroImage: string;
         rankIcon: string;
@@ -136,6 +137,7 @@ export const MatchmakingOverlay: React.FC<MatchmakingOverlayProps> = ({ onFound,
             setOpponent({
                 id: found.id,
                 name: found.name,
+                avatar: found.avatar || '',
                 rating: found.rating,
                 heroImage: found.heroImage,
                 rankIcon: found.rankIcon,

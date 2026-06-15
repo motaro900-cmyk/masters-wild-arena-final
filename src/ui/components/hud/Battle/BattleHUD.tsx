@@ -379,12 +379,16 @@ export const BattleHUD = React.memo<BattleHUDProps>(({
     // Enemy Avatar
     const enemyAvatar = useMemo(() => {
         if (battleMode === 'PVE') {
-            // PVE mobs image path is usually raw character sprite. Make sure it uses that.
+            // PVE mobs image path is usually raw character sprite
             return enemyData.image || '/assets/images/avatars/wolf.webp';
         }
-        // PVP enemy hero avatar
+        // PVP: use opponent's real VK/in-game avatar if available
+        if (activeRankedOpponent?.avatar) {
+            return activeRankedOpponent.avatar;
+        }
+        // Fallback to hero sprite
         return enemyData.image || '/assets/images/avatars/wolf.webp';
-    }, [battleMode, enemyData]);
+    }, [battleMode, enemyData, activeRankedOpponent]);
 
     return (
         <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 100 }}>

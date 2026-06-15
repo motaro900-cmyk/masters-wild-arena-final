@@ -14,6 +14,7 @@ const ATTACK_COOLDOWN_MS = 60 * 60 * 1000; // 1 час — нельзя атак
 export interface MatchOpponent {
     id: string;
     name: string;
+    avatar?: string; // real VK photo or in-game avatar URL
     rating: number;
     level: number;
     heroId: string;
@@ -378,6 +379,7 @@ class MatchmakingServiceClass {
         return {
             id: heroId,
             name: snapshot.name || snapshot.имя || 'Игрок',
+            avatar: snapshot.avatar || snapshot.фото || snapshot.photo || snapshot.photo_200 || '',
             rating,
             level,
             heroId,

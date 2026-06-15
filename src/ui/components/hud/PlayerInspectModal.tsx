@@ -172,6 +172,7 @@ export const PlayerInspectModal: React.FC = () => {
         const oppObj = {
             id: selectedHeroId,
             name: name,
+            avatar: avatar,   // real VK photo or in-game avatar
             rating: rating,
             level: level,
             heroId: selectedHeroId,
