@@ -125,22 +125,32 @@ export const Root = () => {
                 // Define early calibration and auth helper tasks
                 const calibrateTime = async () => {
                     try {
+                        // HEAD requests are blocked by VK's CORS policy for mini apps
+                        // Use a lightweight GET to our own /api/verify-sign which returns Date header
                         const start = Date.now();
-                        const response = await fetch(window.location.origin + window.location.pathname, {
-                            method: 'HEAD',
-                            cache: 'no-cache',
-                        });
-                        const serverDateStr = response.headers.get('date');
+                        let serverDateStr: string | null = null;
+                        try {
+                            const response = await fetch('/api/verify-sign', {
+                                method: 'GET',
+                                cache: 'no-cache',
+                                signal: AbortSignal.timeout(3000),
+                            });
+                            serverDateStr = response.headers.get('date');
+                        } catch {
+                            // Silently ignore — will fallback to local clock
+                        }
                         if (serverDateStr) {
                             const serverTime = new Date(serverDateStr).getTime();
                             const latency = (Date.now() - start) / 2;
                             timeOffset = serverTime + latency - Date.now();
-                            console.log('🕒 Secure server time offset calibrated (ms):', timeOffset);
+                            console.log('🕒 Server time offset calibrated (ms):', timeOffset);
                             const { TimeService } = await import('./utils/TimeService');
                             TimeService.setOffset(timeOffset);
+                        } else {
+                            console.log('🕒 Using local device clock (server time unavailable)');
                         }
                     } catch (timeError) {
-                        console.warn('Failed to fetch server time offset, using local device clock:', timeError);
+                        // Silently ignore — timeOffset stays 0 (local clock)
                     }
                 };
 
