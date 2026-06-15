@@ -86,6 +86,7 @@ const SideMenuItem: React.FC<{
             display: 'flex',
             alignItems: 'center',
             paddingLeft: 145,
+            paddingTop: 5,
             background: isActive
                 ? 'linear-gradient(90deg, rgba(240,192,64,0.1) 0%, rgba(240,192,64,0) 100%)'
                 : 'transparent',
