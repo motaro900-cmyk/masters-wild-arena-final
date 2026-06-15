@@ -292,32 +292,32 @@ export const DailyTaskPanel = React.memo(() => {
                                                 marginTop: '8px',
                                             }}
                                         >
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                                                 <img
                                                     src={AssetsMap.UI.ICON_GOLD_FULL}
-                                                    style={{ width: 18, height: 18, objectFit: 'contain' }}
+                                                    style={{ width: 23, height: 23, objectFit: 'contain' }}
                                                     alt=""
                                                 />
-                                                <span style={{ fontSize: '13px', fontWeight: 900, color: '#3d260f' }}>
+                                                <span style={{ fontSize: '14px', fontWeight: 900, color: '#3d260f' }}>
                                                     {qData.rewardGold}
                                                 </span>
                                             </div>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                                                 <img
                                                     src={AssetsMap.UI.ICON_ALMAZ_FULL}
-                                                    style={{ width: 16, height: 16, objectFit: 'contain' }}
+                                                    style={{ width: 20, height: 20, objectFit: 'contain' }}
                                                     alt=""
                                                 />
-                                                <span style={{ fontSize: '13px', fontWeight: 900, color: '#3d260f' }}>
+                                                <span style={{ fontSize: '14px', fontWeight: 900, color: '#3d260f' }}>
                                                     {qData.rewardGems}
                                                 </span>
                                             </div>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                                                 <img
                                                     src={AssetsMap.UI.ICON_XP}
                                                     style={{
-                                                        width: 30,
-                                                        height: 30,
+                                                        width: 35,
+                                                        height: 35,
                                                         objectFit: 'contain',
                                                         filter: 'grayscale(1) brightness(1.2) contrast(1.1) drop-shadow(0 0 2px rgba(255,255,255,0.3))',
                                                         marginLeft: '-3px',
@@ -325,7 +325,7 @@ export const DailyTaskPanel = React.memo(() => {
                                                     }}
                                                     alt=""
                                                 />
-                                                <span style={{ fontSize: '13px', fontWeight: 900, color: '#3d260f' }}>
+                                                <span style={{ fontSize: '14px', fontWeight: 900, color: '#3d260f' }}>
                                                     {qData.rewardExp}
                                                 </span>
                                             </div>
