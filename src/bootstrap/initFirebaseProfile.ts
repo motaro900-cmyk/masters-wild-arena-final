@@ -161,12 +161,29 @@ export const initFirebaseProfile = async (
                 }
 
                 // Auto-correct default name 'Мастер' using actual VK user profile if available
+                let needSync = false;
                 if ((!stateToRestore.name || stateToRestore.name === 'Мастер') && state.vkUser) {
                     const realVkName = state.vkUser.firstName || state.vkUser.first_name;
                     if (realVkName && realVkName !== 'Мастер') {
                         console.log('🔄 Autocorrecting default "Мастер" name to VK name:', realVkName);
                         stateToRestore.name = realVkName;
+                        needSync = true;
                     }
+                }
+
+                // Auto-correct default avatar if we have VK user photo and current is default/missing/sprite
+                if ((!stateToRestore.avatar || stateToRestore.avatar === 'none' || stateToRestore.avatar === '' || stateToRestore.avatar.startsWith('sprite:')) && state.vkUser) {
+                    const realVkPhoto = state.vkUser.photo200 || state.vkUser.photo;
+                    if (realVkPhoto) {
+                        console.log('🔄 Autocorrecting empty/sprite avatar to VK photo:', realVkPhoto);
+                        stateToRestore.avatar = realVkPhoto;
+                        needSync = true;
+                    }
+                }
+
+                // Preserve vkUser in the restored state
+                if (state.vkUser) {
+                    stateToRestore.vkUser = state.vkUser;
                 }
 
                 // Проверяем флаг isNewPlayer
@@ -187,6 +204,11 @@ export const initFirebaseProfile = async (
                     isDeveloper: finalAdminStatus,
                     isSystemUpdate: true,
                 });
+
+                if (needSync) {
+                    console.log('💾 Syncing corrected profile data to Firebase...');
+                    syncService.syncPlayerData();
+                }
             }
             return { userId, isNew: false, data: fbProfile };
         }

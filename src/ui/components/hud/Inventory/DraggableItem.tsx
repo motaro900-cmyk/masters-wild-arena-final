@@ -33,6 +33,33 @@ export const DraggableItem: React.FC<DraggableItemProps> = React.memo(({
 
     const [imageLoaded, setImageLoaded] = React.useState(false);
 
+    const touchStartRef = React.useRef({ x: 0, y: 0, time: 0 });
+
+    const handleTouchStart = (e: React.TouchEvent) => {
+        const touch = e.touches[0];
+        touchStartRef.current = {
+            x: touch.clientX,
+            y: touch.clientY,
+            time: Date.now(),
+        };
+    };
+
+    const handleTouchEnd = (e: React.TouchEvent) => {
+        const touch = e.changedTouches[0];
+        const dx = touch.clientX - touchStartRef.current.x;
+        const dy = touch.clientY - touchStartRef.current.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        const duration = Date.now() - touchStartRef.current.time;
+
+        if (dist < 15 && duration < 250) {
+            e.preventDefault();
+            e.stopPropagation();
+            if (!item.isResource) {
+                onItemClick(item.instanceId || item.id);
+            }
+        }
+    };
+
     React.useEffect(() => {
         setImageLoaded(false);
     }, [item.instanceId, item.id, data.image]);
@@ -93,6 +120,8 @@ export const DraggableItem: React.FC<DraggableItemProps> = React.memo(({
                     ref={setNodeRef}
                     {...listeners}
                     {...attributes}
+                    onTouchStart={handleTouchStart}
+                    onTouchEnd={handleTouchEnd}
                     onClick={(e) => {
                         e.stopPropagation();
                         if (!isDragging && !item.isResource && !e.shiftKey) {

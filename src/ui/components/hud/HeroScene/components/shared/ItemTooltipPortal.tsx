@@ -23,24 +23,9 @@ export const ItemTooltipPortal: React.FC<ItemTooltipPortalProps> = ({ hoveredIte
     const rarityColor = (rarityColors as any)[itemData.rarity] || '#fff';
 
     const wrapper = document.querySelector('.game-scale-wrapper');
-    const rect = wrapper ? wrapper.getBoundingClientRect() : null;
-    const isPortraitMobile = useGameStore.getState().isMobile && window.innerWidth < window.innerHeight;
 
-    let localX = hoveredItem.x;
-    let localY = hoveredItem.y;
-
-    if (rect) {
-        if (isPortraitMobile) {
-            const nx = rect.width > 0 ? (hoveredItem.x - rect.left) / rect.width : 0;
-            const ny = rect.height > 0 ? (hoveredItem.y - rect.top) / rect.height : 0;
-            localX = ny * 1920;
-            localY = (1 - nx) * 1080;
-        } else {
-            const scale = rect.width / 1920;
-            localX = (hoveredItem.x - rect.left) / scale;
-            localY = (hoveredItem.y - rect.top) / scale;
-        }
-    }
+    const localX = hoveredItem.x;
+    const localY = hoveredItem.y;
 
     const tooltipWidth = 460;
     const leftAbsolute = Math.max(10, localX + tooltipWidth + 20 > 1920 ? localX - tooltipWidth - 20 : localX + 20);

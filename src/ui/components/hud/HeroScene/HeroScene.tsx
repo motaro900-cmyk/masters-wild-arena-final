@@ -4,6 +4,8 @@ import { DndContext } from '@dnd-kit/core';
 
 import { useGameStore } from '../../../../store/useGameStore';
 import { HEROES_DB } from '../../../../configs/HeroesConfig';
+import { audioService } from '../../../../services/AudioService';
+import { AssetsMap } from '../../../../configs/AssetsMap';
 
 import { SceneTab } from './types';
 import { rarityColors } from './constants/roleIcons';
@@ -231,7 +233,14 @@ export const HeroScene: React.FC = () => {
                             <motion.button
                                 whileHover={{ x: -3, scale: 1.1 }}
                                 whileTap={{ scale: 0.9 }}
-                                onClick={goToMainMenu}
+                                onTap={() => {
+                                    audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
+                                    goToMainMenu();
+                                }}
+                                onClick={() => {
+                                    audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
+                                    goToMainMenu();
+                                }}
                                 style={{
                                     background: 'rgba(240,192,64,0.1)',
                                     border: '1px solid rgba(240,192,64,0.3)',
@@ -243,6 +252,7 @@ export const HeroScene: React.FC = () => {
                                     justifyContent: 'center',
                                     cursor: 'pointer',
                                     flexShrink: 0,
+                                    touchAction: 'manipulation',
                                 }}
                             >
                                 <svg width="18" height="18" viewBox="0 0 16 16" fill="none">

@@ -31,10 +31,29 @@ export default async function handler(req, res) {
     }
 
     try {
-        const body = req.body;
+        let body = req.body;
+        if (typeof body === 'string') {
+            try {
+                body = JSON.parse(body);
+            } catch (e) {
+                console.warn('[beacon-sync] Failed to parse req.body string:', e);
+                return res.status(400).json({ error: 'Invalid JSON body string' });
+            }
+        } else if (Buffer.isBuffer(body)) {
+            try {
+                body = JSON.parse(body.toString('utf-8'));
+            } catch (e) {
+                console.warn('[beacon-sync] Failed to parse req.body buffer:', e);
+                return res.status(400).json({ error: 'Invalid JSON body buffer' });
+            }
+        }
+
+        if (!body) {
+            return res.status(400).json({ error: 'Missing request body' });
+        }
 
         // Validate required fields
-        const userId = body && body.userId;
+        const userId = body.userId;
         if (!userId || !userId.startsWith('VK-')) {
             return res.status(400).json({ error: 'Invalid or missing userId' });
         }
@@ -71,7 +90,7 @@ export default async function handler(req, res) {
         }
 
         // Firebase Firestore REST API — PATCH with updateMask for merge semantics
-        const docPath = encodeURIComponent(`${USERS_COLLECTION}/${userId}`);
+        const docPath = `${encodeURIComponent(USERS_COLLECTION)}/${encodeURIComponent(userId)}`;
         const updateMask = Object.keys(fields).map(f => `updateMask.fieldPaths=${encodeURIComponent(f)}`).join('&');
         const url = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents/${docPath}?${updateMask}&key=${FIREBASE_WEB_API_KEY}`;
 

@@ -125,7 +125,7 @@ export const useHeroDnd = (
     const sensors = useSensors(
         useSensor(ScaledPointerSensor, {
             activationConstraint: {
-                distance: 5,
+                distance: 15,
             },
         }),
     );
