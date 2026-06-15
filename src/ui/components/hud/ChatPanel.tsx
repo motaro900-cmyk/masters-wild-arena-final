@@ -351,18 +351,23 @@ export const ChatPanel = React.memo(() => {
                         onClick={() => setActiveChatTab(tab.id as any)}
                         style={{
                             padding: '6px 16px',
-                            fontSize: '11px',
-                            fontWeight: 800,
-                            color: activeChatTab === tab.id ? '#f0c040' : 'rgba(255,255,255,0.4)',
+                            fontSize: '13px',
+                            fontWeight: 900,
+                            fontFamily: "'Philosopher', 'Cinzel', serif",
+                            color: activeChatTab === tab.id ? '#ffd700' : '#e2c59b',
+                            textShadow: activeChatTab === tab.id ? '0 1.5px 0 rgba(0,0,0,0.9), 0 0 4px rgba(255,215,0,0.3)' : '0 1px 1.5px rgba(0,0,0,0.9)',
                             cursor: 'pointer',
                             transition: 'all 0.2s',
                             borderRadius: '8px 8px 0 0',
                             letterSpacing: '1px',
-                            background: activeChatTab === tab.id ? 'rgba(240, 192, 64, 0.1)' : 'rgba(0,0,0,0.2)',
-                            borderBottom: activeChatTab === tab.id ? '2px solid #f0c040' : '2px solid transparent',
+                            background: activeChatTab === tab.id ? 'rgba(255, 215, 0, 0.1)' : 'rgba(0,0,0,0.25)',
+                            border: activeChatTab === tab.id ? '1.5px solid #ffd700' : '1.5px solid transparent',
+                            borderBottom: activeChatTab === tab.id ? '1.5px solid #14100c' : '1.5px solid transparent',
                             display: 'flex',
                             alignItems: 'center',
                             gap: '6px',
+                            zIndex: activeChatTab === tab.id ? 10 : 1,
+                            transform: activeChatTab === tab.id ? 'translateY(1.5px)' : 'none',
                         }}
                     >
                         {tab.label}

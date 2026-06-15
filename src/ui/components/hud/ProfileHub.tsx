@@ -1,12 +1,26 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useGameStore } from '../../../store/useGameStore';
+import { useShallow } from 'zustand/react/shallow';
 import { AssetsMap } from '../../../configs/AssetsMap';
 import { audioService } from '../../../services/AudioService';
 import '../../styles/profile-hub.css';
 import { getAvatarFrameStyle, getAvatarFramePath, getAvatarImageStyle } from '../../../configs/ProfileCustomization';
 export const ProfileHub: React.FC = () => {
-    const { level, vipLevel, exp, vkUser, title, name, avatar, frame, glowEnabled, uiAnimations } = useGameStore();
+    const { level, vipLevel, exp, vkUser, title, name, avatar, frame, glowEnabled, uiAnimations } = useGameStore(
+        useShallow((state) => ({
+            level: state.level,
+            vipLevel: state.vipLevel,
+            exp: state.exp,
+            vkUser: state.vkUser,
+            title: state.title,
+            name: state.name,
+            avatar: state.avatar,
+            frame: state.frame,
+            glowEnabled: state.glowEnabled,
+            uiAnimations: state.uiAnimations,
+        }))
+    );
     const activeFrameStyle = getAvatarFrameStyle(frame);
 
     const getBadgeColor = (lvl: number) => {
@@ -225,7 +239,7 @@ export const ProfileHub: React.FC = () => {
                                 fontFamily: "'Cinzel', serif",
                                 fontSize: '14px',
                                 fontWeight: 500,
-                                color: '#a0a0a0',
+                                color: '#ffd700',
                                 textShadow: '0 1px 2px rgba(0,0,0,1)',
                                 letterSpacing: '1px',
                                 marginTop: '1px',

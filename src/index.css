@@ -611,7 +611,8 @@ canvas {
    - saturate(1.08) — небольшой пуш, не доминируют тёплые тона
    - brightness(0.97) — чуть приглушено, экран не пересвечен */
 .premium-saturated-panel {
-    filter: contrast(1.1) saturate(1.08) brightness(0.97);
+    /* CSS filter has been removed to prevent GPU compositor flickering on Android. 
+       Equivalent filters are now applied directly inside the PixiJS stage context. */
 }
 
 /* GPU compositing layer для game-scale-wrapper */
@@ -714,4 +715,58 @@ canvas {
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
 }
+
+@keyframes pulseStatus {
+    0% { opacity: 0.4; }
+    50% { opacity: 1; }
+    100% { opacity: 0.4; }
+}
+
+/* Icon buttons с hitbox expansion (базовый для ПК / Desktop) */
+.mobile-hit-area {
+  position: absolute;
+  inset: -6px; /* Небольшое расширение зоны клика на ПК */
+  cursor: pointer;
+  z-index: 1;
+}
+
+/* Mobile touch targets — только для телефонов */
+@media (max-width: 768px) {
+  /* Увеличенное расширение для мобильных touch-таргетов */
+  .mobile-hit-area {
+    inset: -20px;
+  }
+  
+  /* Navigation tabs */
+  .nav-tab-mobile {
+    min-height: 80px !important;
+  }
+  
+  /* Primary action buttons */  
+  .action-btn-mobile {
+    min-height: 120px !important;
+  }
+}
+
+/* Pixel-perfect rendering for all UI sprites and panels */
+img, 
+div[style*="background-image"],
+button[style*="background-image"] {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+}
+
+/* Улучшение рендеринга и контрастности всех текстов */
+body, button, span, div, h1, h2, h3, h4, h5, h6 {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Эффект жесткой выдавливающей тени для шрифтов на темном фоне */
+.font-header, .font-ui, .shadow-dark-ui {
+  text-shadow: 0 2px 0 rgba(0,0,0,0.95), 0 0 5px rgba(0,0,0,0.65);
+}
+
+
 

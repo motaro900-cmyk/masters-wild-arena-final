@@ -149,7 +149,7 @@ export const DailyTaskPanel = React.memo(() => {
                     backgroundImage: `url(${AssetsMap.UI.PANEL_QUEST})`,
                     backgroundSize: '100% 100%',
                     backgroundRepeat: 'no-repeat',
-                    filter: isLow ? 'none' : 'contrast(1.15) saturate(1.1) brightness(0.9)',
+                    filter: isLow ? 'none' : 'contrast(1.2) saturate(1.2) brightness(1.02)',
                     zIndex: 0,
                     pointerEvents: 'none',
                 }}
@@ -173,9 +173,10 @@ export const DailyTaskPanel = React.memo(() => {
                         fontFamily: "'Cinzel', serif",
                         fontSize: 18,
                         fontWeight: 900,
-                        color: '#3d2a10',
+                        color: '#3a220b',
                         textAlign: 'center',
                         letterSpacing: '1.5px',
+                        textShadow: '0 1px 0px rgba(255,255,255,0.5)',
                     }}
                 >
                     ЕЖЕДНЕВНЫЕ ЗАДАНИЯ
@@ -243,12 +244,12 @@ export const DailyTaskPanel = React.memo(() => {
                                             >
                                                 <div
                                                     style={{
-                                                        color: '#3d2a10',
-                                                        fontWeight: 900,
+                                                        color: '#36200a',
+                                                        fontWeight: 950,
                                                         fontSize: '15px',
                                                         textTransform: 'uppercase',
                                                         fontFamily: "'Montserrat', sans-serif",
-                                                        textShadow: '0.5px 0.5px 0px rgba(255,255,255,0.2)',
+                                                        textShadow: '0 1px 0px rgba(255,255,255,0.8)',
                                                     }}
                                                 >
                                                     {qData.title}
@@ -258,10 +259,11 @@ export const DailyTaskPanel = React.memo(() => {
                                                         display: 'flex',
                                                         alignItems: 'center',
                                                         gap: '6px',
-                                                        color: isComplete ? '#208040' : '#7a5828',
-                                                        fontWeight: 900,
+                                                        color: isComplete ? '#1a6a34' : '#36200a',
+                                                        fontWeight: 950,
                                                         fontSize: '14px',
                                                         fontFamily: "'Montserrat', sans-serif",
+                                                        textShadow: '0 1px 0px rgba(255,255,255,0.8)',
                                                     }}
                                                 >
                                                     {dq.progress}/{qData.target} {isComplete && '✓'}
@@ -269,13 +271,13 @@ export const DailyTaskPanel = React.memo(() => {
                                             </div>
                                             <div
                                                 style={{
-                                                    color: '#5a4020',
-                                                    fontSize: '11px',
-                                                    fontWeight: 700,
+                                                    color: '#4e381f',
+                                                    fontSize: '11.5px',
+                                                    fontWeight: 800,
                                                     marginTop: '2px',
                                                     fontFamily: "'Montserrat', sans-serif",
                                                     lineHeight: '1.25',
-                                                    textShadow: '0.3px 0.3px 0px rgba(255,255,255,0.3)',
+                                                    textShadow: '0 1px 0px rgba(255,255,255,0.6)',
                                                 }}
                                             >
                                                 {qData.description}
@@ -296,7 +298,7 @@ export const DailyTaskPanel = React.memo(() => {
                                                     style={{ width: 18, height: 18, objectFit: 'contain' }}
                                                     alt=""
                                                 />
-                                                <span style={{ fontSize: '13px', fontWeight: 900, color: '#3d2a10' }}>
+                                                <span style={{ fontSize: '13px', fontWeight: 900, color: '#3d260f' }}>
                                                     {qData.rewardGold}
                                                 </span>
                                             </div>
@@ -306,7 +308,7 @@ export const DailyTaskPanel = React.memo(() => {
                                                     style={{ width: 16, height: 16, objectFit: 'contain' }}
                                                     alt=""
                                                 />
-                                                <span style={{ fontSize: '13px', fontWeight: 900, color: '#3d2a10' }}>
+                                                <span style={{ fontSize: '13px', fontWeight: 900, color: '#3d260f' }}>
                                                     {qData.rewardGems}
                                                 </span>
                                             </div>
@@ -317,13 +319,13 @@ export const DailyTaskPanel = React.memo(() => {
                                                         width: 30,
                                                         height: 30,
                                                         objectFit: 'contain',
-                                                        filter: 'brightness(1.2) contrast(1.1) drop-shadow(0 0 3px rgba(0,180,255,0.4))',
+                                                        filter: 'grayscale(1) brightness(1.2) contrast(1.1) drop-shadow(0 0 2px rgba(255,255,255,0.3))',
                                                         marginLeft: '-3px',
                                                         marginRight: '-3px',
                                                     }}
                                                     alt=""
                                                 />
-                                                <span style={{ fontSize: '13px', fontWeight: 900, color: '#3d2a10' }}>
+                                                <span style={{ fontSize: '13px', fontWeight: 900, color: '#3d260f' }}>
                                                     {qData.rewardExp}
                                                 </span>
                                             </div>
