@@ -3,6 +3,8 @@ import { audioService } from '../../services/AudioService';
 import { AssetsMap } from '../../configs/AssetsMap';
 import { BATTLE_PASS_REWARDS } from '../../ui/components/hud/BattlePass/BattlePassShared';
 import { syncService } from '../../services/SyncService';
+import { doc, runTransaction, Timestamp } from 'firebase/firestore';
+import { db, USERS_COLLECTION } from '../../utils/firebase';
 
 export const WEEKLY_QUESTS_POOL = [
     {
@@ -64,8 +66,6 @@ export const createQuestSlice = (set: any, get: any) => ({
         }
         isRefreshingDaily = true;
         lastDailyRefreshAttempt = now;
-        const { db, USERS_COLLECTION } = await import('../../utils/firebase');
-        const { doc, runTransaction, serverTimestamp } = await import('firebase/firestore');
         const { SyncService } = await import('../../services/SyncService');
         const { TimeService } = await import('../../utils/TimeService');
         const { useGameStore } = await import('../useGameStore');
@@ -134,9 +134,9 @@ export const createQuestSlice = (set: any, get: any) => ({
                         dailyQuests: selected,
                         bpDailyQuests: selectedBp,
                         dailyAdWatchesCount: 0,
-                        lastResetDate: serverTimestamp(),
+                        lastResetDate: Timestamp.fromDate(serverDate),
                         lastDailyRefresh: serverDate.getTime(),
-                    }, { merge: true });
+                    });
 
                     set({
                         dailyQuests: selected,
@@ -178,7 +178,7 @@ export const createQuestSlice = (set: any, get: any) => ({
                         dailyQuests: selected,
                         bpDailyQuests: selectedBp,
                         dailyAdWatchesCount: 0,
-                        lastResetDate: serverTimestamp(),
+                        lastResetDate: Timestamp.fromDate(serverDate),
                         lastDailyRefresh: serverDate.getTime(),
                     });
 
