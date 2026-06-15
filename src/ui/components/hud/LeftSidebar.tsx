@@ -44,7 +44,7 @@ export const LeftSidebar: React.FC<{ onOpenWindow: (n: string) => void }> = ({ o
                     backgroundImage: `url(${AssetsMap.UI.SIDEBAR_LEFT})`,
                     backgroundSize: '100% 100%',
                     backgroundRepeat: 'no-repeat',
-                    filter: gfx.spriteFilter,
+                    filter: `${gfx.spriteFilter} hue-rotate(15deg) brightness(1.15) saturate(1.15)`,
                     zIndex: 0,
                     pointerEvents: 'none',
                 }}
