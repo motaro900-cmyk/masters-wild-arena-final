@@ -132,11 +132,11 @@ export const GameHUD: React.FC = () => {
             const width = window.innerWidth;
 
             if (isMobile) {
-                setHudScale(1);
+                setHudScale(1.04);
             } else if (width < 1280) {
-                setHudScale(Math.max(0.5, width / 1280));
+                setHudScale(Math.max(0.5, (width / 1280) * 1.04));
             } else {
-                setHudScale(1);
+                setHudScale(1.04);
             }
         };
         handleResize();
