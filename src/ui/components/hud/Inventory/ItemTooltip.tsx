@@ -10,10 +10,10 @@ interface ItemTooltipProps {
     item: { id: string; x: number; y: number };
 }
 
-const StatRow = ({ label, value, icon, color }: { label: string; value: string; icon: string; color: string }) => (
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '15px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <span style={{ fontSize: '18px' }}>{icon}</span>
+const StatRow = ({ label, value, icon, color, isMobile }: { label: string; value: string; icon: string; color: string; isMobile: boolean }) => (
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: isMobile ? '13px' : '15px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '6px' : '10px' }}>
+            <span style={{ fontSize: isMobile ? '14px' : '18px' }}>{icon}</span>
             <span style={{ color: 'rgba(255,255,255,0.6)', fontWeight: 700 }}>{label}</span>
         </div>
         <span style={{ color: color, fontWeight: 900 }}>{value}</span>
@@ -68,7 +68,9 @@ export const ItemTooltip: React.FC<ItemTooltipProps> = ({ item }) => {
     }
 
     const rarity = RARITY_COLORS[data.rarity || 'COMMON'] || RARITY_COLORS.COMMON;
-    const tooltipWidth = 420;
+
+    const isMobile = useGameStore.getState().isMobile || (typeof window !== 'undefined' && window.innerWidth < 1024);
+    const tooltipWidth = isMobile ? 290 : 420;
 
     const wrapper = document.querySelector('.game-scale-wrapper');
     const rect = wrapper ? wrapper.getBoundingClientRect() : null;
@@ -110,21 +112,21 @@ export const ItemTooltip: React.FC<ItemTooltipProps> = ({ item }) => {
                 width: `${tooltipWidth}px`,
                 background: 'rgba(15, 10, 5, 0.98)',
                 backdropFilter: 'blur(15px)',
-                borderRadius: '16px',
+                borderRadius: isMobile ? '12px' : '16px',
                 border: `2.5px solid ${rarity.border}`,
                 boxShadow: `0 15px 45px rgba(0,0,0,0.85), 0 0 25px ${rarity.glow}aa`,
-                padding: '28px',
+                padding: isMobile ? '16px' : '28px',
                 pointerEvents: 'none',
                 display: 'flex',
                 flexDirection: 'column',
-                gap: '16px',
+                gap: isMobile ? '10px' : '16px',
             }}
         >
             <div style={{ borderBottom: `1px solid ${rarity.border}44`, paddingBottom: '12px' }}>
                 <div
                     style={{
                         color: rarity.color,
-                        fontSize: '12px',
+                        fontSize: isMobile ? '10px' : '12px',
                         fontWeight: 900,
                         letterSpacing: '3px',
                         fontFamily: "'Cinzel', serif",
@@ -138,7 +140,7 @@ export const ItemTooltip: React.FC<ItemTooltipProps> = ({ item }) => {
                 <div
                     style={{
                         color: '#fff',
-                        fontSize: '24px',
+                        fontSize: isMobile ? '18px' : '24px',
                         fontWeight: 900,
                         fontFamily: "'Cinzel', serif",
                         textTransform: 'uppercase',
@@ -157,6 +159,7 @@ export const ItemTooltip: React.FC<ItemTooltipProps> = ({ item }) => {
                             value={`+${Math.round(data.attackBonus * mult)}`}
                             icon="⚔️"
                             color="#f97316"
+                            isMobile={isMobile}
                         />
                     )}
                     {data.defenseBonus && (
@@ -165,6 +168,7 @@ export const ItemTooltip: React.FC<ItemTooltipProps> = ({ item }) => {
                             value={`+${Math.round(data.defenseBonus * mult)}`}
                             icon="🛡️"
                             color="#3b82f6"
+                            isMobile={isMobile}
                         />
                     )}
                     {data.hpBonus && (
@@ -173,6 +177,7 @@ export const ItemTooltip: React.FC<ItemTooltipProps> = ({ item }) => {
                             value={`+${Math.round(data.hpBonus * mult)}`}
                             icon="❤️"
                             color="#ef4444"
+                            isMobile={isMobile}
                         />
                     )}
                     {(data.critChance || data.critBonus) && (
@@ -181,6 +186,7 @@ export const ItemTooltip: React.FC<ItemTooltipProps> = ({ item }) => {
                             value={`+${Math.round((data.critChance || data.critBonus) * 100 * mult)}%`}
                             icon="🎯"
                             color="#a855f7"
+                            isMobile={isMobile}
                         />
                     )}
                     {(data.attackSpeed || data.speedBonus) && (
@@ -189,6 +195,7 @@ export const ItemTooltip: React.FC<ItemTooltipProps> = ({ item }) => {
                             value={`+${((data.attackSpeed || data.speedBonus) * mult).toFixed(1)}`}
                             icon="⚡"
                             color="#fcd34d"
+                            isMobile={isMobile}
                         />
                     )}
                 </div>
@@ -198,7 +205,7 @@ export const ItemTooltip: React.FC<ItemTooltipProps> = ({ item }) => {
                 <div
                     style={{
                         color: 'rgba(255,255,255,0.75)',
-                        fontSize: '14px',
+                        fontSize: isMobile ? '12px' : '14px',
                         lineHeight: '1.5',
                         fontStyle: 'italic',
                         borderTop: isResource ? 'none' : '1px solid rgba(255,255,255,0.1)',
@@ -212,19 +219,19 @@ export const ItemTooltip: React.FC<ItemTooltipProps> = ({ item }) => {
 
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '8px' }}>
                 {isResource ? (
-                    <div style={{ color: '#4ade80', fontSize: '13px', fontWeight: 900 }}>
+                    <div style={{ color: '#4ade80', fontSize: isMobile ? '11px' : '13px', fontWeight: 900 }}>
                         КОЛИЧЕСТВО: {resourceAmount}
                     </div>
                 ) : (
                     <>
-                        <div style={{ color: '#f0c040', fontSize: '13px', fontWeight: 900 }}>
+                        <div style={{ color: '#f0c040', fontSize: isMobile ? '11px' : '13px', fontWeight: 900 }}>
                             МОЩЬ: {Math.round(calculateItemPower(data) * mult)}
                         </div>
                         {data.priceGold && (
                             <div
                                 style={{
                                     color: 'rgba(255,255,255,0.5)',
-                                    fontSize: '13px',
+                                    fontSize: isMobile ? '11px' : '13px',
                                     display: 'flex',
                                     alignItems: 'center',
                                     gap: '6px',
@@ -237,6 +244,6 @@ export const ItemTooltip: React.FC<ItemTooltipProps> = ({ item }) => {
                 )}
             </div>
         </motion.div>,
-        portalTarget,
+        portalTarget
     );
 };
