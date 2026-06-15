@@ -77,7 +77,7 @@ export const initFirebaseProfile = async (
             } else {
                 console.log('👶 No local state found. Initializing new player offline.');
                 useGameStore.getState().resetStore();
-                const fallbackName1 = state.vkUser?.first_name || `Игрок_${userId.slice(-4)}`;
+                const fallbackName1 = state.vkUser?.firstName || state.vkUser?.first_name || `Игрок_${userId.slice(-4)}`;
                 useGameStore.setState({
                     name: fallbackName1,
                     onboardingCompleted: false,
@@ -112,7 +112,7 @@ export const initFirebaseProfile = async (
         if (result.isNew) {
             console.log('👶 No remote profile found in Firestore. Resetting store for new player.');
             useGameStore.getState().resetStore();
-            const fallbackName2 = state.vkUser?.first_name || `Игрок_${userId.slice(-4)}`;
+            const fallbackName2 = state.vkUser?.firstName || state.vkUser?.first_name || `Игрок_${userId.slice(-4)}`;
             useGameStore.setState({
                 name: fallbackName2,
                 onboardingCompleted: false,
@@ -160,6 +160,15 @@ export const initFirebaseProfile = async (
                     stateToRestore.isBanned = true;
                 }
 
+                // Auto-correct default name 'Мастер' using actual VK user profile if available
+                if ((!stateToRestore.name || stateToRestore.name === 'Мастер') && state.vkUser) {
+                    const realVkName = state.vkUser.firstName || state.vkUser.first_name;
+                    if (realVkName && realVkName !== 'Мастер') {
+                        console.log('🔄 Autocorrecting default "Мастер" name to VK name:', realVkName);
+                        stateToRestore.name = realVkName;
+                    }
+                }
+
                 // Проверяем флаг isNewPlayer
                 const isNewPlayer = fbProfile.isNewPlayer === true;
                 if (isNewPlayer) {
@@ -194,7 +203,7 @@ export const initFirebaseProfile = async (
         } else {
             console.log('👶 No local state found. Initializing new player offline.');
             useGameStore.getState().resetStore();
-            const fallbackName3 = state.vkUser?.first_name || `Игрок_${userId.slice(-4)}`;
+            const fallbackName3 = state.vkUser?.firstName || state.vkUser?.first_name || `Игрок_${userId.slice(-4)}`;
             useGameStore.setState({
                 name: fallbackName3,
                 onboardingCompleted: false,

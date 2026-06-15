@@ -786,23 +786,26 @@ const LeaderItem: React.FC<{ player: LeaderboardEntry; onClick: () => void }> = 
                 >
                     <span>{player.name}</span>
                     {player.vipLevel !== undefined && player.vipLevel > 0 && (
-                        <span
+                        <div
                             style={{
-                                background: 'linear-gradient(180deg, #ef4444 0%, #991b1b 100%)',
-                                border: '1px solid #f87171',
-                                borderRadius: '4px',
+                                backgroundImage: `url(${resolveAssetPath(AssetsMap.UI.VIP_PLAQUE)})`,
+                                backgroundSize: '100% 100%',
+                                backgroundPosition: 'center',
+                                width: '45px',
+                                height: '18px',
                                 color: '#fff',
                                 fontWeight: 900,
                                 fontFamily: "'Cinzel', 'Philosopher', serif",
                                 fontSize: '9px',
-                                padding: '1px 6px',
-                                letterSpacing: '0.5px',
-                                boxShadow: '0 0 5px rgba(239, 68, 68, 0.4)',
-                                lineHeight: '1',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                textShadow: '0 1px 3px rgba(0,0,0,0.8)',
+                                flexShrink: 0,
                             }}
                         >
                             VIP
-                        </span>
+                        </div>
                     )}
                     {player.isMe && <span style={{ fontSize: '12px', opacity: 0.7 }}>(ВЫ)</span>}
                 </div>
