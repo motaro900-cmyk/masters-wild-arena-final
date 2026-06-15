@@ -227,7 +227,7 @@ export const createPlayerSlice = (set: any, get: any) => {
     },
     addCrystals: (amount: number) => set((state: any) => ({ crystals: state.crystals + amount })),
     spendDiamonds: (amount: number) => set((state: any) => ({ crystals: Math.max(0, state.crystals - amount) })),
-    addEnergy: (amount: number) => set((state: any) => ({ energy: state.energy + amount })),
+    addEnergy: (amount: number) => set((state: any) => ({ energy: Math.min(state.energy + amount, state.maxEnergy || 50) })),
     consumeEnergy: (amount: number) => {
         const s = get();
         if (s.hasInfiniteEnergy) return true;

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useGameStore } from '../../../store/useGameStore';
+import { useShallow } from 'zustand/react/shallow';
 import { audioService } from '../../../services/AudioService';
 import { AssetsMap } from '../../../configs/AssetsMap';
 import { resolveAssetPath } from '../../../utils/assetPath';
@@ -35,7 +36,22 @@ export const ProfileCustomizeWindow: React.FC<ProfileCustomizeWindowProps> = () 
         setTitle,
         setAvatar,
         claimedRewards,
-    } = useGameStore();
+    } = useGameStore(
+        useShallow((state) => ({
+            level: state.level,
+            vipLevel: state.vipLevel,
+            trophies: state.trophies,
+            title: state.title,
+            frame: state.frame,
+            name: state.name,
+            avatar: state.avatar,
+            vkUser: state.vkUser,
+            setFrame: state.setFrame,
+            setTitle: state.setTitle,
+            setAvatar: state.setAvatar,
+            claimedRewards: state.claimedRewards,
+        }))
+    );
 
     // Tab state: 'AVATARS' | 'FRAMES' | 'TITLES'
     const [activeTab, setActiveTab] = useState<'AVATARS' | 'FRAMES' | 'TITLES'>('AVATARS');

@@ -291,7 +291,7 @@ export const BestiaryWindow: React.FC = () => {
                         fontWeight: 900,
                     }}
                 >
-                    {pet.name}
+                    {pet?.name && pet.name !== 'undefined' && pet.name !== 'null' ? pet.name : 'Дракоша'}
                 </h2>
                 <div
                     style={{
@@ -463,7 +463,7 @@ export const BestiaryWindow: React.FC = () => {
                                 ДАР ОТ ПИТОМЦА! 🐉
                             </h3>
                             <p style={{ color: '#d1a873', fontSize: '15px', margin: '0 0 10px 0', lineHeight: 1.5 }}>
-                                Ваш дракон <b>{pet.name}</b> вернулся из ежедневного путешествия по Великому Лесу и
+                                Ваш дракон <b>{pet?.name && pet.name !== 'undefined' && pet.name !== 'null' ? pet.name : 'Дракоша'}</b> вернулся из ежедневного путешествия по Великому Лесу и
                                 принес вам добычу!
                             </p>
 

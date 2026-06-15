@@ -46,29 +46,82 @@ export const createQuestSlice = (set: any, get: any) => ({
     lastWeeklyQuestReset: 0,
 
     // --- ЭКШЕНЫ КВЕСТОВ ---
-    refreshDailyQuests: () => {
-        // 1. Ежедневные задания на главном экране (для золота/алмазов/опыта аккаунта)
-        const shuffled = [...QUESTS_POOL].sort(() => 0.5 - Math.random());
-        const selected = shuffled.slice(0, 4).map((q) => ({
-            questId: q.id,
-            progress: 0,
-            isClaimed: false,
-        }));
+    refreshDailyQuests: async () => {
+        const { db, USERS_COLLECTION } = await import('../../utils/firebase');
+        const { doc, updateDoc, getDoc, runTransaction, serverTimestamp } = await import('firebase/firestore');
+        const { SyncService } = await import('../../services/SyncService');
+        const { TimeService } = await import('../../utils/TimeService');
+        const { useGameStore } = await import('../useGameStore');
 
-        // 2. Ежедневные задания БП (для опыта БП)
-        const shuffledBp = [...BP_DAILY_QUESTS_POOL].sort(() => 0.5 - Math.random());
-        const selectedBp = shuffledBp.slice(0, 4).map((q) => ({
-            questId: q.id,
-            progress: 0,
-            isClaimed: false,
-        }));
+        const state = useGameStore.getState();
+        const userId = SyncService.getPrefixedUserId(state.vkUser, state.playerId);
+        const playerRef = doc(db, USERS_COLLECTION, userId);
 
-        set({
-            dailyQuests: selected,
-            bpDailyQuests: selectedBp,
-            lastDailyRefresh: Date.now(),
-            dailyAdWatchesCount: 0,
-        });
+        let serverDate: Date;
+        try {
+            await updateDoc(playerRef, { tempServerTime: serverTimestamp() });
+            const snap = await getDoc(playerRef);
+            const ts = snap.data()?.tempServerTime;
+            serverDate = ts ? ts.toDate() : new Date(TimeService.now());
+        } catch (e) {
+            console.warn('[questSlice] Failed to fetch serverTimestamp, falling back to calibrated local time', e);
+            serverDate = new Date(TimeService.now());
+        }
+
+        try {
+            await runTransaction(db, async (transaction) => {
+                const docSnap = await transaction.get(playerRef);
+                if (!docSnap.exists()) return;
+
+                const data = docSnap.data();
+                const lastResetDateTs = data.lastResetDate;
+
+                let shouldReset = false;
+                if (!lastResetDateTs) {
+                    shouldReset = true;
+                } else {
+                    const lastResetDate = lastResetDateTs.toDate();
+                    const MSK_OFFSET = 3 * 60 * 60 * 1000;
+                    const lastMSK = lastResetDate.getTime() + MSK_OFFSET;
+                    const serverMSK = serverDate.getTime() + MSK_OFFSET;
+                    const DAY_MS = 24 * 60 * 60 * 1000;
+                    shouldReset = Math.floor(serverMSK / DAY_MS) > Math.floor(lastMSK / DAY_MS);
+                }
+
+                if (shouldReset) {
+                    const shuffled = [...QUESTS_POOL].sort(() => 0.5 - Math.random());
+                    const selected = shuffled.slice(0, 4).map((q) => ({
+                        questId: q.id,
+                        progress: 0,
+                        isClaimed: false,
+                    }));
+
+                    const shuffledBp = [...BP_DAILY_QUESTS_POOL].sort(() => 0.5 - Math.random());
+                    const selectedBp = shuffledBp.slice(0, 4).map((q) => ({
+                        questId: q.id,
+                        progress: 0,
+                        isClaimed: false,
+                    }));
+
+                    transaction.update(playerRef, {
+                        dailyQuests: selected,
+                        bpDailyQuests: selectedBp,
+                        dailyAdWatchesCount: 0,
+                        lastResetDate: serverTimestamp(),
+                        lastDailyRefresh: serverDate.getTime(),
+                    });
+
+                    set({
+                        dailyQuests: selected,
+                        bpDailyQuests: selectedBp,
+                        lastDailyRefresh: serverDate.getTime(),
+                        dailyAdWatchesCount: 0,
+                    });
+                }
+            });
+        } catch (err) {
+            console.error('[questSlice] Transaction refreshDailyQuests failed:', err);
+        }
     },
 
     updateQuestProgress: (type: string, amount: number) => {

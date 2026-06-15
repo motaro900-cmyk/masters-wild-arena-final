@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../../../store/useGameStore';
 import { ITEMS_DATABASE } from '../../../game/configs/ItemsConfig';
@@ -63,30 +63,34 @@ export const ForgeScreen: React.FC = () => {
     });
 
     // Фильтруем инвентарь по категории для предвыбора первого предмета
-    const filteredInventory = inventory.filter((item: any) => {
-        const data = ITEMS_DATABASE[item.id] as any;
-        if (!data) return false;
-        const subTab = data.subTab || data.type || '';
-        if (activeCategory === 'ALL')
-            return ['WEAPONS', 'HELMETS', 'ARMOR', 'SHIELDS', 'SHOULDERS', 'PANTS', 'BOOTS'].includes(subTab);
-        return subTab === activeCategory;
-    });
+    const filteredInventory = useMemo(() => {
+        return inventory.filter((item: any) => {
+            const data = ITEMS_DATABASE[item.id] as any;
+            if (!data) return false;
+            const subTab = data.subTab || data.type || '';
+            if (activeCategory === 'ALL')
+                return ['WEAPONS', 'HELMETS', 'ARMOR', 'SHIELDS', 'SHOULDERS', 'PANTS', 'BOOTS'].includes(subTab);
+            return subTab === activeCategory;
+        });
+    }, [inventory, activeCategory]);
 
     // Сортировка инвентаря
-    const sortedInventory = [...filteredInventory].sort((a: any, b: any) => {
-        const dataA = ITEMS_DATABASE[a.id] as any;
-        const dataB = ITEMS_DATABASE[b.id] as any;
-        if (!dataA || !dataB) return 0;
+    const sortedInventory = useMemo(() => {
+        return [...filteredInventory].sort((a: any, b: any) => {
+            const dataA = ITEMS_DATABASE[a.id] as any;
+            const dataB = ITEMS_DATABASE[b.id] as any;
+            if (!dataA || !dataB) return 0;
 
-        if (sortBy === 'LEVEL') {
-            return (b.level || 1) - (a.level || 1);
-        }
-        const weightA =
-            dataA.rarity === 'LEGENDARY' ? 4 : dataA.rarity === 'EPIC' ? 3 : dataA.rarity === 'RARE' ? 2 : 1;
-        const weightB =
-            dataB.rarity === 'LEGENDARY' ? 4 : dataB.rarity === 'EPIC' ? 3 : dataB.rarity === 'RARE' ? 2 : 1;
-        return weightB - weightA;
-    });
+            if (sortBy === 'LEVEL') {
+                return (b.level || 1) - (a.level || 1);
+            }
+            const weightA =
+                dataA.rarity === 'LEGENDARY' ? 4 : dataA.rarity === 'EPIC' ? 3 : dataA.rarity === 'RARE' ? 2 : 1;
+            const weightB =
+                dataB.rarity === 'LEGENDARY' ? 4 : dataB.rarity === 'EPIC' ? 3 : dataB.rarity === 'RARE' ? 2 : 1;
+            return weightB - weightA;
+        });
+    }, [filteredInventory, sortBy]);
 
     // При первой загрузке выбираем первый предмет из отсортированного списка
     useEffect(() => {

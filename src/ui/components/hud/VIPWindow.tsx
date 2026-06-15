@@ -98,7 +98,10 @@ const ChatIcon = () => (
 );
 
 export const VIPWindow: React.FC<VIPWindowProps> = () => {
-    const { vipLevel, isPremium, vipEndTime, isMobile } = useGameStore();
+    const vipLevel = useGameStore(state => state.vipLevel);
+const isPremium = useGameStore(state => state.isPremium);
+const vipEndTime = useGameStore(state => state.vipEndTime);
+const isMobile = useGameStore(state => state.isMobile);
 
     // Вычисляем оставшиеся дни на основе vipEndTime из стора
     const getDaysLeft = React.useCallback((endTime: number) => {

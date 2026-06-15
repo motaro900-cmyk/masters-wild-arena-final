@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useGameStore } from '../../../store/useGameStore';
+import { useShallow } from 'zustand/react/shallow';
 import { AvatarFrame } from './SharedUI';
 import { EquippedHeroView } from '../EquippedHeroView';
 import { AssetsMap } from '../../../configs/AssetsMap';
@@ -16,7 +17,19 @@ interface PlayerProfileProps {
  * Теперь использует динамическую систему сокетов для отображения экипировки.
  */
 export const PlayerProfile: React.FC<PlayerProfileProps> = ({ onOpenProfile }) => {
-    const store = useGameStore();
+    const store = useGameStore(
+        useShallow((state) => ({
+            selectedHeroId: state.selectedHeroId,
+            avatar: state.avatar,
+            frame: state.frame,
+            title: state.title,
+            trophies: state.trophies,
+            level: state.level,
+            exp: state.exp,
+            vkUser: state.vkUser,
+            name: state.name,
+        }))
+    );
     const selectedHeroId = store.selectedHeroId || 'panda_warrior';
     const avatar = store.avatar || 'панда.png';
     const frame = store.frame || 'harvest_wheat_frame.webp';

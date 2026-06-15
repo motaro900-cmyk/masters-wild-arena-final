@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useGameStore } from '../../../../store/useGameStore';
+import { useShallow } from 'zustand/react/shallow';
 import { AssetsMap } from '../../../../configs/AssetsMap';
 import { LocalStatRow } from './components/LocalStatRow';
 import { CircularGearLayout } from './components/CircularGearLayout';
@@ -59,7 +60,18 @@ export const MatchmakingFound: React.FC<MatchmakingFoundProps> = ({
     onCancel,
     onStartFight,
 }) => {
-    const { heroEquipment, selectedHeroId, title, name, wins, totalBattles, isPremium, winStreak } = useGameStore();
+    const { heroEquipment, selectedHeroId, title, name, wins, totalBattles, isPremium, winStreak } = useGameStore(
+        useShallow((state) => ({
+            heroEquipment: state.heroEquipment,
+            selectedHeroId: state.selectedHeroId,
+            title: state.title,
+            name: state.name,
+            wins: state.wins,
+            totalBattles: state.totalBattles,
+            isPremium: state.isPremium,
+            winStreak: state.winStreak,
+        }))
+    );
     const [isStarting, setIsStarting] = React.useState(false);
 
     // --- Мемоизированные вычисления ---

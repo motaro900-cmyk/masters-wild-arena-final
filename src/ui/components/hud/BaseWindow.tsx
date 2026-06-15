@@ -210,37 +210,46 @@ export const BaseWindow: React.FC<BaseWindowProps> = ({
                                     <PingIndicator />
                                 </div>
                             )}
-                            <motion.button
-                                whileHover={{ scale: 1.1 }}
-                                whileTap={{ scale: 0.9 }}
-                                onClick={() => {
-                                    audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
-                                    onClose();
-                                }}
-                                style={{
-                                    background: 'none',
-                                    border: 'none',
-                                    cursor: 'pointer',
-                                    color: theme.titleColor,
-                                    opacity: 0.8,
-                                    transition: 'opacity 0.2s',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    width: '30px',
-                                    height: '30px',
-                                    boxSizing: 'content-box',
-                                    padding: isMobile ? '24px' : '12px',
-                                    margin: isMobile ? '-24px' : '-12px',
-                                }}
-                                onMouseEnter={(e) => (e.currentTarget.style.opacity = '1')}
-                                onMouseLeave={(e) => (e.currentTarget.style.opacity = '0.8')}
-                            >
-                                <X
-                                    size={30}
-                                    style={{ filter: isLight ? 'none' : 'drop-shadow(0 0 4px rgba(251,191,36,0.3))' }}
+                            <div style={{ position: 'relative', display: 'inline-flex' }}>
+                                <div
+                                    className="mobile-hit-area"
+                                    onClick={() => {
+                                        audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
+                                        onClose();
+                                    }}
                                 />
-                            </motion.button>
+                                <motion.button
+                                    whileHover={{ scale: 1.1 }}
+                                    whileTap={{ scale: 0.9 }}
+                                    onClick={() => {
+                                        audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
+                                        onClose();
+                                    }}
+                                    style={{
+                                        background: 'none',
+                                        border: 'none',
+                                        cursor: 'pointer',
+                                        color: theme.titleColor,
+                                        opacity: 0.8,
+                                        transition: 'opacity 0.2s',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        width: '30px',
+                                        height: '30px',
+                                        boxSizing: 'content-box',
+                                        padding: isMobile ? '24px' : '12px',
+                                        margin: isMobile ? '-24px' : '-12px',
+                                    }}
+                                    onMouseEnter={(e) => (e.currentTarget.style.opacity = '1')}
+                                    onMouseLeave={(e) => (e.currentTarget.style.opacity = '0.8')}
+                                >
+                                    <X
+                                        size={30}
+                                        style={{ filter: isLight ? 'none' : 'drop-shadow(0 0 4px rgba(251,191,36,0.3))' }}
+                                    />
+                                </motion.button>
+                            </div>
                         </div>
                     </div>
 

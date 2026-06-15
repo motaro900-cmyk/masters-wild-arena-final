@@ -17,6 +17,7 @@ interface ActionButtonsProps {
  */
 export const ActionButtons: React.FC<ActionButtonsProps> = ({ onStartBattle, onWarmup, onOpenRanks }) => {
     const rating = useGameStore((state) => state.rating);
+    const isMobile = useGameStore((state) => state.isMobile);
     const rank = getRankInfo(rating);
     const [energyError, setEnergyError] = useState(false);
     const gfx = useGraphicsConfig();
@@ -43,9 +44,9 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({ onStartBattle, onW
                     backgroundRepeat: 'no-repeat',
                     position: 'relative',
                     filter: gfx.isUltra
-                        ? 'contrast(1.06) saturate(1.1) brightness(0.88)'
+                        ? 'contrast(1.08) saturate(1.15) brightness(1.02)'
                         : gfx.isMedium
-                          ? 'contrast(1.03) saturate(1.05) brightness(0.94)'
+                          ? 'contrast(1.04) saturate(1.08) brightness(1.01)'
                           : 'none',
                 }}
             >
@@ -198,6 +199,7 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({ onStartBattle, onW
                 >
                     {/* ЛЕВАЯ КНОПКА (Синяя) */}
                     <motion.button
+                        className={isMobile ? "action-btn-mobile" : ""}
                         whileTap={{ scale: 0.92 }}
                         onClick={(e) => {
                             e.stopPropagation();
@@ -226,7 +228,16 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({ onStartBattle, onW
                         onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
                     >
                         <div style={{ position: 'relative' }}>
-                            <div style={{ fontSize: '16px', fontWeight: 900 }}>РАЗМИНКА</div>
+                            <div
+                                style={{
+                                    fontSize: '16px',
+                                    fontWeight: 950,
+                                    color: '#ffffff',
+                                    textShadow: '0 2px 0 rgba(0,0,0,0.95), 0 0 6px rgba(0,0,0,0.85)',
+                                }}
+                            >
+                                РАЗМИНКА
+                            </div>
 
                             <div
                                 style={{
@@ -262,6 +273,7 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({ onStartBattle, onW
 
                     {/* ПРАВАЯ КНОПКА (Красная) */}
                     <motion.button
+                        className={isMobile ? "action-btn-mobile" : ""}
                         whileTap={{ scale: 0.92 }}
                         onClick={(e) => {
                             e.stopPropagation();
@@ -304,7 +316,16 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({ onStartBattle, onW
                         ) : (
                             <>
                                 <div style={{ position: 'relative' }}>
-                                    <div style={{ fontSize: '22px', fontWeight: 950 }}>РЕЙТИНГОВЫЙ БОЙ</div>
+                                    <div
+                                        style={{
+                                            fontSize: '22px',
+                                            fontWeight: 950,
+                                            color: '#ffffff',
+                                            textShadow: '0 2px 0 rgba(0,0,0,0.95), 0 0 8px rgba(0,0,0,0.85)',
+                                        }}
+                                    >
+                                        РЕЙТИНГОВЫЙ БОЙ
+                                    </div>
 
                                     <div
                                         style={{

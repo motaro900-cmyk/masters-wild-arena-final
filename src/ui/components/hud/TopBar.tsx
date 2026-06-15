@@ -20,7 +20,7 @@ export const TopBar: React.FC<TopBarProps> = ({ onOpenWindow, mode }) => {
     const vkUser = useGameStore((state) => state.vkUser);
     const name = useGameStore((state) => state.name);
     const frame = useGameStore((state) => state.frame);
-    const textShadow = { textShadow: '0 2px 4px rgba(0,0,0,1), 0 0 10px rgba(0,0,0,0.5)' };
+    const textShadow = { textShadow: '1px 1.5px 0px #000, -1px -1px 0px #000, 0 2px 6px rgba(0,0,0,0.9)' };
 
     if (mode === 'profile_only') {
         return (
@@ -100,8 +100,11 @@ export const TopBar: React.FC<TopBarProps> = ({ onOpenWindow, mode }) => {
                         </div>
 
                         {/* Хитбокс для кнопки + */}
-                        <div className="absolute right-0 w-12 h-12 cursor-pointer z-20 flex items-center justify-center hover:scale-110 transition-transform">
-                            <div className="w-6 h-6 bg-green-500/0 rounded-full" />
+                        <div style={{ position: 'relative' }}>
+                            <div className="mobile-hit-area" />
+                            <div className="absolute right-0 w-12 h-12 cursor-pointer z-20 flex items-center justify-center hover:scale-110 transition-transform">
+                                <div className="w-6 h-6 bg-green-500/0 rounded-full" />
+                            </div>
                         </div>
                     </div>
                 ))}

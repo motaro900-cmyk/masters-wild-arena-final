@@ -104,7 +104,6 @@ export default defineConfig({
     },
   },
   esbuild: {
-    // [Lead Architect]: Мы оставляем логи для отладки у игроков в продакшене.
-    drop: [], 
+    drop: ['console', 'debugger'],
   },
 });

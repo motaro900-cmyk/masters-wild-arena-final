@@ -54,13 +54,7 @@ export const PingIndicator: React.FC = () => {
                 transition: 'all 0.3s ease',
             }}
         >
-            <style>{`
-                @keyframes pulseStatus {
-                    0% { opacity: 0.4; }
-                    50% { opacity: 1; }
-                    100% { opacity: 0.4; }
-                }
-            `}</style>
+            {/* keyframes pulseStatus объявлены в index.css — инлайн <style> не нужен */}
             <span style={{ fontSize: '7px', animation: 'pulseStatus 1.8s infinite' }}>●</span>
             <span>{ping === 999 ? 'OFFLINE' : `ONLINE • ${ping}ms`}</span>
         </div>

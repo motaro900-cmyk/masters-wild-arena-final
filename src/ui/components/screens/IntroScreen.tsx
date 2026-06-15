@@ -4,7 +4,6 @@ import { audioService } from '../../../services/AudioService';
 import { AssetsMap } from '../../../configs/AssetsMap';
 import { useGameStore } from '../../../store/useGameStore';
 import { syncService, SyncService } from '../../../services/SyncService';
-import { openExternalUrl } from '../../../utils/VKBridge';
 import { LegalModal } from '../LegalDocuments';
 
 interface IntroScreenProps {

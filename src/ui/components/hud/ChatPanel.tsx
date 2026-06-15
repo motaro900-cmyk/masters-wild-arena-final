@@ -295,106 +295,97 @@ export const ChatPanel = React.memo(() => {
                 addEmoji={addEmoji}
             />
 
-            {/* UNIFIED PANEL HEADER BAR */}
+            {/* Toggle chat state */}
+            <div
+                onClick={() => setIsOpen(!isOpen)}
+                style={{
+                    position: 'absolute',
+                    top: 18,
+                    right: 10,
+                    padding: '4px 15px',
+                    background: 'rgba(15, 10, 5, 0.9)',
+                    border: '1px solid rgba(240, 192, 64, 0.4)',
+                    borderBottom: 'none',
+                    borderRadius: '8px 8px 0 0',
+                    cursor: 'pointer',
+                    fontFamily: "'Cinzel', serif",
+                    fontSize: 11,
+                    fontWeight: 800,
+                    color: '#f0c040',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 8,
+                    boxShadow: '0 -4px 10px rgba(0,0,0,0.5)',
+                    zIndex: 110,
+                }}
+            >
+                <span>ЧАТ</span>
+                <span
+                    style={{
+                        fontSize: 8,
+                        transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                        transition: 'transform 0.3s',
+                    }}
+                >
+                    ▲
+                </span>
+            </div>
+
+            {/* CHAT TABS */}
             <div
                 style={{
                     display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'flex-end',
-                    background: 'rgba(12, 9, 6, 0.95)', // Solid dark matching the chat panel
-                    backdropFilter: gfx.backdropBlur,
-                    WebkitBackdropFilter: gfx.backdropBlur,
-                    border: gfx.panelBorder,
-                    borderBottom: 'none',
-                    borderRadius: '16px 16px 0 0',
-                    padding: '8px 12px 0 12px',
-                    width: '100%',
-                    position: 'relative',
-                    zIndex: 2,
-                    boxShadow: '0 -4px 15px rgba(0,0,0,0.5)',
+                    gap: '4px',
+                    padding: '0 5px',
+                    transform: 'translateY(12px)',
                 }}
             >
-                {/* CHAT TABS */}
-                <div style={{ display: 'flex', gap: '4px' }}>
-                    {[
-                        { id: 'all', label: 'ОБЩИЙ' },
-                        { id: 'clan', label: 'КЛАН' },
-                        { id: 'private', label: 'ЛС' },
-                        { id: 'system', label: 'СИСТЕМА' },
-                    ].map((tab) => (
-                        <div
-                            key={tab.id}
-                            onClick={() => setActiveChatTab(tab.id as any)}
-                            style={{
-                                padding: '6px 16px',
-                                fontSize: '13px',
-                                fontWeight: 750,
-                                fontFamily: "'Philosopher', 'Cinzel', serif",
-                                color: activeChatTab === tab.id ? '#ffd700' : '#e2c59b',
-                                textShadow: activeChatTab === tab.id ? '0 1px 1.5px rgba(0,0,0,0.9)' : '0 1px 1px rgba(0,0,0,0.7)',
-                                cursor: 'pointer',
-                                transition: 'all 0.2s',
-                                borderRadius: '8px 8px 0 0',
-                                letterSpacing: '1px',
-                                background: activeChatTab === tab.id ? 'rgba(240, 192, 64, 0.12)' : 'rgba(0,0,0,0.2)',
-                                border: activeChatTab === tab.id ? '1.5px solid #ffd700' : '1.5px solid transparent',
-                                borderBottom: activeChatTab === tab.id ? '1.5px solid #14100c' : '1.5px solid transparent',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '6px',
-                                zIndex: activeChatTab === tab.id ? 10 : 1,
-                                transform: activeChatTab === tab.id ? 'translateY(1.5px)' : 'none',
-                            }}
-                        >
-                            {tab.label}
-                            {tab.id === 'private' && privateRecipient && (
-                                <span
-                                    style={{
-                                        fontSize: '9px',
-                                        background: '#f0c040',
-                                        color: '#000',
-                                        padding: '1px 5px',
-                                        borderRadius: '4px',
-                                    }}
-                                >
-                                    1
-                                </span>
-                            )}
-                        </div>
-                    ))}
-                </div>
-
-                {/* Toggle chat state (ЧАТ button) */}
-                <div
-                    onClick={() => setIsOpen(!isOpen)}
-                    style={{
-                        padding: '6px 15px',
-                        background: 'rgba(240, 192, 64, 0.12)',
-                        border: '1.5px solid rgba(240, 192, 64, 0.4)',
-                        borderBottom: '1.5px solid #14100c',
-                        borderRadius: '8px 8px 0 0',
-                        cursor: 'pointer',
-                        fontFamily: "'Cinzel', serif",
-                        fontSize: 12,
-                        fontWeight: 900,
-                        color: '#ffd700',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 8,
-                        transform: 'translateY(1.5px)',
-                    }}
-                >
-                    <span>ЧАТ</span>
-                    <span
+                {[
+                    { id: 'all', label: 'ОБЩИЙ' },
+                    { id: 'clan', label: 'КЛАН' },
+                    { id: 'private', label: 'ЛС' },
+                    { id: 'system', label: 'СИСТЕМА' },
+                ].map((tab) => (
+                    <div
+                        key={tab.id}
+                        onClick={() => setActiveChatTab(tab.id as any)}
                         style={{
-                            fontSize: 8,
-                            transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-                            transition: 'transform 0.3s',
+                            padding: '6px 16px',
+                            fontSize: '13px',
+                            fontWeight: 750,
+                            fontFamily: "'Philosopher', 'Cinzel', serif",
+                            color: activeChatTab === tab.id ? '#ffd700' : '#c5b49f',
+                            textShadow: activeChatTab === tab.id ? '0 1px 1.5px rgba(0,0,0,0.9)' : '0 1px 1px rgba(0,0,0,0.7)',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s',
+                            borderRadius: '8px 8px 0 0',
+                            letterSpacing: '1px',
+                            background: activeChatTab === tab.id ? 'rgba(240, 192, 64, 0.12)' : 'rgba(0,0,0,0.2)',
+                            border: activeChatTab === tab.id ? '1.5px solid #ffd700' : '1.5px solid transparent',
+                            borderBottom: activeChatTab === tab.id ? '1.5px solid #14100c' : '1.5px solid transparent',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            zIndex: activeChatTab === tab.id ? 10 : 1,
+                            transform: activeChatTab === tab.id ? 'translateY(1.5px)' : 'none',
                         }}
                     >
-                        ▲
-                    </span>
-                </div>
+                        {tab.label}
+                        {tab.id === 'private' && privateRecipient && (
+                            <span
+                                style={{
+                                    fontSize: '9px',
+                                    background: '#f0c040',
+                                    color: '#000',
+                                    padding: '1px 5px',
+                                    borderRadius: '4px',
+                                }}
+                            >
+                                1
+                            </span>
+                        )}
+                    </div>
+                ))}
             </div>
 
             {/* Chat Body */}
@@ -413,8 +404,7 @@ export const ChatPanel = React.memo(() => {
                     flexDirection: 'column',
                     boxShadow: gfx.panelShadow,
                     border: gfx.panelBorder,
-                    borderTop: 'none',
-                    borderRadius: '0 0 16px 16px',
+                    borderRadius: '0 16px 16px 16px',
                     position: 'relative',
                     overflow: 'hidden',
                 }}

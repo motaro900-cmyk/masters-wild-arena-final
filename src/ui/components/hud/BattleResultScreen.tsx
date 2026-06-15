@@ -223,6 +223,7 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
         }
 
         return () => {
+            tl.kill();
             if (titleTween) {
                 titleTween.kill();
             }

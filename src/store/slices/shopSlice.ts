@@ -330,9 +330,14 @@ export const createShopSlice = (set: any, get: any) => ({
                         console.warn('[Shop] Daily energy purchase limit reached');
                         return false;
                     }
+                    const maxEnergy = state.maxEnergy || 50;
+                    const newEnergy = Math.min(
+                        state.energy + amount,
+                        maxEnergy
+                    );
                     set({
                         [newBalanceKey]: balance - price,
-                        energy: state.energy + amount,
+                        energy: newEnergy,
                         dailyEnergyPurchasesCount: dailyPurchases + 1,
                     });
                 }

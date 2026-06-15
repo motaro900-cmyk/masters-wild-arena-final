@@ -6,7 +6,7 @@ import { AssetsMap } from '../../../configs/AssetsMap';
 import { resolveAssetPath } from '../../../utils/assetPath';
 
 export const RanksListWindow: React.FC = () => {
-    const { rating: playerTrophies } = useGameStore();
+    const playerTrophies = useGameStore(state => state.rating);
     const currentRank = getRankInfo(playerTrophies);
 
     return (

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useGameStore } from '../../../../store/useGameStore';
 import { syncService, SyncService } from '../../../../services/SyncService';
 import { getVkFriendsWhoPlay, isVkMiniApp } from '../../../../utils/VKBridge';
@@ -34,7 +34,10 @@ export const useFriendsWindow = () => {
     const playersPerPage = 7;
 
     const totalPages = Math.ceil(worldPlayers.length / playersPerPage);
-    const paginatedWorldPlayers = worldPlayers.slice((currentPage - 1) * playersPerPage, currentPage * playersPerPage);
+    const paginatedWorldPlayers = useMemo(
+        () => worldPlayers.slice((currentPage - 1) * playersPerPage, currentPage * playersPerPage),
+        [worldPlayers, currentPage, playersPerPage],
+    );
 
     const fetchWorldPlayers = useCallback(async () => {
         setIsLoadingWorld(true);
@@ -142,11 +145,16 @@ export const useFriendsWindow = () => {
         inputBg: isLight ? 'rgba(0,0,0,0.05)' : 'rgba(0,0,0,0.3)',
     };
 
-    const filteredFriends = (activeTab === 'REQUESTS' ? friendRequests : friends).filter((f: any) => {
-        const matchesSearch = f.name.toLowerCase().includes(searchQuery.toLowerCase()) || f.id.includes(searchQuery);
-        if (activeTab === 'ONLINE') return matchesSearch && f.online;
-        return matchesSearch;
-    });
+    const filteredFriends = useMemo(
+        () =>
+            (activeTab === 'REQUESTS' ? friendRequests : friends).filter((f: any) => {
+                const matchesSearch =
+                    f.name.toLowerCase().includes(searchQuery.toLowerCase()) || f.id.includes(searchQuery);
+                if (activeTab === 'ONLINE') return matchesSearch && f.online;
+                return matchesSearch;
+            }),
+        [activeTab, friends, friendRequests, searchQuery],
+    );
 
     const handleSendFriendRequest = async (targetPlayerId: string) => {
         const state = useGameStore.getState();

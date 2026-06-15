@@ -452,7 +452,7 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
                                           ? '0 0 8px rgba(240, 192, 64, 0.4)'
                                           : '0 1px 2px rgba(0,0,0,0.5)',
                                     letterSpacing: '0.5px',
-                                    fontFamily: "'Cinzel', serif",
+                                    fontFamily: "'Philosopher', 'Inter', sans-serif",
                                     cursor: msg.type !== 'system' ? 'pointer' : 'default',
                                     padding: '2px 4px',
                                     borderRadius: '4px',
@@ -472,7 +472,8 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
                                     color: msg.author === 'Motaro' ? '#fff' : '#e8d8a8',
                                     textShadow: '0 1px 2px rgba(0,0,0,0.8)',
                                     wordBreak: 'break-word',
-                                    fontWeight: msg.author === 'Motaro' ? 500 : 400,
+                                    fontWeight: msg.author === 'Motaro' ? 700 : 500,
+                                    fontFamily: "'Philosopher', 'Inter', sans-serif",
                                 }}
                             >
                                 {formatMessageText(msg.text)}

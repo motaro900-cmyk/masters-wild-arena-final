@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../../../store/useGameStore';
+import { useShallow } from 'zustand/react/shallow';
 import { ClanEmblemIcon } from '../GameIcons';
 import { ClanMember, ClanData, CurrencyIcon, TabButton, EMBLEMS, ActionButton, ShopItem } from './Clan/ClanShared';
 import { ClanBrowseTab } from './Clan/ClanBrowseTab';
@@ -23,7 +24,22 @@ export const ClanWindow: React.FC = () => {
         addGold,
         clanCoins,
         addClanCoins,
-    } = useGameStore();
+    } = useGameStore(
+        useShallow((state) => ({
+            clanId: state.clanId,
+            clanData: state.clanData,
+            joinClan: state.joinClan,
+            leaveClan: state.leaveClan,
+            uiTheme: state.uiTheme,
+            rating: state.rating,
+            vkUser: state.vkUser,
+            avatar: state.avatar,
+            gold: state.gold,
+            addGold: state.addGold,
+            clanCoins: state.clanCoins,
+            addClanCoins: state.addClanCoins,
+        }))
+    );
 
     const isLight = uiTheme === 'LIGHT';
 

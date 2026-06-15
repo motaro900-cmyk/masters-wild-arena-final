@@ -265,9 +265,13 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ mode = 'FULL', o
     const rowSpacing = rowHeight + gapHeight;
 
     const totalItems = useMemo(() => {
-        const itemsList = filteredItems.map((item, index) => ({ type: 'ITEM', item, index }));
+        type GridElement =
+            | { type: 'ITEM'; item: any; index: number }
+            | { type: 'EMPTY'; index: number };
+
+        const itemsList: GridElement[] = filteredItems.map((item, index) => ({ type: 'ITEM' as const, item, index }));
         const emptyCount = Math.max(0, (mode === 'FULL' ? 20 : 9) - filteredItems.length);
-        const emptyList = Array.from({ length: emptyCount }).map((_, index) => ({ type: 'EMPTY', index }));
+        const emptyList: GridElement[] = Array.from({ length: emptyCount }).map((_, index) => ({ type: 'EMPTY' as const, index }));
         return [...itemsList, ...emptyList];
     }, [filteredItems, mode]);
 
@@ -314,6 +318,7 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ mode = 'FULL', o
                         return (
                             <button
                                 key={tab.id}
+                                className={isMobile ? "nav-tab-mobile" : ""}
                                 onClick={() => setActiveTab(tab.id as any)}
                                 style={{
                                     flex: 1, padding: '11px 4px', borderRadius: '6px',

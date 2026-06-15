@@ -30,7 +30,7 @@ export const MatchmakingSearching: React.FC<MatchmakingSearchingProps> = ({
     searchRange,
     onCancel,
 }) => {
-    const { frame } = useGameStore();
+    const frame = useGameStore(state => state.frame);
     const activeFrameStyle = getAvatarFrameStyle(frame);
 
     return (

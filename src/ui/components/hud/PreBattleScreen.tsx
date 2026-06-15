@@ -373,6 +373,15 @@ export const PreBattleScreen: React.FC<PreBattleScreenProps> = ({
     const { rating, heroEquipment, selectedHeroId } = useGameStore();
     const playerRank = getRankInfo(rating);
     const [isStarting, setIsStarting] = React.useState(false);
+    const startTimeoutRef = React.useRef<any>(null);
+
+    React.useEffect(() => {
+        return () => {
+            if (startTimeoutRef.current) {
+                clearTimeout(startTimeoutRef.current);
+            }
+        };
+    }, []);
 
     const playerEq = heroEquipment[selectedHeroId] || {};
 
@@ -807,14 +816,12 @@ export const PreBattleScreen: React.FC<PreBattleScreenProps> = ({
                 >
                     <button
                         onClick={onCancel}
-                        disabled={isStarting}
+                        disabled={false}
                         onMouseEnter={(e) => {
-                            if (isStarting) return;
                             e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
                             e.currentTarget.style.transform = 'scale(1.05)';
                         }}
                         onMouseLeave={(e) => {
-                            if (isStarting) return;
                             e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
                             e.currentTarget.style.transform = 'scale(1)';
                         }}
@@ -826,10 +833,10 @@ export const PreBattleScreen: React.FC<PreBattleScreenProps> = ({
                             color: '#fef3c7',
                             fontSize: '15px',
                             fontWeight: 'bold',
-                            cursor: isStarting ? 'not-allowed' : 'pointer',
+                            cursor: 'pointer',
                             transition: 'all 0.2s',
                             fontFamily: "'Cinzel', serif",
-                            opacity: isStarting ? 0.5 : 1,
+                            opacity: 1,
                         }}
                     >
                         НАЗАД
@@ -837,8 +844,24 @@ export const PreBattleScreen: React.FC<PreBattleScreenProps> = ({
                     <button
                         onClick={() => {
                             if (isStarting) return;
+                            const state = useGameStore.getState();
+                            if (state.energy < 10 && battleMode !== 'WARMUP') {
+                                state.showAlert('Недостаточно энергии');
+                                return;
+                            }
                             setIsStarting(true);
-                            onStart();
+                            if (startTimeoutRef.current) clearTimeout(startTimeoutRef.current);
+                            startTimeoutRef.current = setTimeout(() => {
+                                setIsStarting(false);
+                                state.showAlert('Ошибка загрузки боя. Попробуйте еще раз.');
+                            }, 8000);
+                            try {
+                                onStart();
+                            } catch (err) {
+                                setIsStarting(false);
+                                if (startTimeoutRef.current) clearTimeout(startTimeoutRef.current);
+                                state.showAlert('Не удалось начать бой');
+                            }
                         }}
                         disabled={isStarting}
                         onMouseEnter={(e) => {

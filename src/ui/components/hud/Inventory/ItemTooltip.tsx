@@ -2,6 +2,7 @@ import React from 'react';
 import { createPortal } from 'react-dom';
 import { motion } from 'framer-motion';
 import { useGameStore } from '../../../../store/useGameStore';
+import { useShallow } from 'zustand/react/shallow';
 import { ITEMS_DATABASE, calculateItemPower } from '../../../../game/configs/ItemsConfig';
 import { RARITY_COLORS, rarityTranslation } from '../../../../configs/RarityConfig';
 
@@ -20,7 +21,20 @@ const StatRow = ({ label, value, icon, color }: { label: string; value: string; 
 );
 
 export const ItemTooltip: React.FC<ItemTooltipProps> = ({ item }) => {
-    const store = useGameStore();
+    const store = useGameStore(
+        useShallow((state) => ({
+            inventory: state.inventory,
+            coal: state.coal,
+            steel_bars: state.steel_bars,
+            runic_shards: state.runic_shards,
+            ancient_compass: state.ancient_compass,
+            astral_crystal: state.astral_crystal,
+            void_sphere: state.void_sphere,
+            golden_sprout: state.golden_sprout,
+            dragon_scale: state.dragon_scale,
+            lava_heart: state.lava_heart,
+        }))
+    );
     const invItem = store.inventory.find((i: any) => (i.instanceId || i.id) === item.id);
     const currentLevel = invItem?.level || 1;
 

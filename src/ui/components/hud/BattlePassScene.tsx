@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../../../store/useGameStore';
+import { useShallow } from 'zustand/react/shallow';
 import { AssetsMap } from '../../../configs/AssetsMap';
 import { audioService } from '../../../services/AudioService';
 import { QuestSection } from './BattlePass/QuestSection';
@@ -30,7 +31,24 @@ export const BattlePassScene: React.FC<{ onClose: () => void }> = ({ onClose }) 
         showBpLevelUpOverlay,
         hideBpLevelUpOverlay,
         isMobile,
-    } = useGameStore();
+    } = useGameStore(
+        useShallow((state) => ({
+            bpLevel: state.bpLevel,
+            bpExp: state.bpExp,
+            isPremium: state.isPremium,
+            claimReward: state.claimReward,
+            claimedRewards: state.claimedRewards,
+            setPremium: state.setPremium,
+            buyBpLevel: state.buyBpLevel,
+            setEquippedWeapon: state.setEquippedWeapon,
+            equipSkin: state.equipSkin,
+            claimBpDailyQuestReward: state.claimBpDailyQuestReward,
+            claimWeeklyQuestReward: state.claimWeeklyQuestReward,
+            showBpLevelUpOverlay: state.showBpLevelUpOverlay,
+            hideBpLevelUpOverlay: state.hideBpLevelUpOverlay,
+            isMobile: state.isMobile,
+        }))
+    );
 
     const [activeTab, setActiveTab] = useState<'REWARDS' | 'QUESTS'>('REWARDS');
     const [currentPage, setCurrentPage] = useState(Math.min(2, Math.max(0, Math.floor((bpLevel - 1) / 5))));

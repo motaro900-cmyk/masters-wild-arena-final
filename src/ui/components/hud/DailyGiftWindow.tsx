@@ -64,7 +64,10 @@ const WHEEL_REWARDS: WheelReward[] = [
 ];
 
 export const DailyGiftWindow: React.FC<DailyGiftWindowProps> = ({ onClose }) => {
-    const { addGold, addCrystals, addEnergy, setCanClaimDailyGift } = useGameStore();
+    const addGold = useGameStore(state => state.addGold);
+const addCrystals = useGameStore(state => state.addCrystals);
+const addEnergy = useGameStore(state => state.addEnergy);
+const setCanClaimDailyGift = useGameStore(state => state.setCanClaimDailyGift);
 
     // Tab control
     const [activeTab, setActiveTab] = useState<'CALENDAR' | 'WHEEL'>('CALENDAR');

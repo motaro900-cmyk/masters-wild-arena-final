@@ -308,6 +308,11 @@ export class GameApp {
             const app = this.pixiApp.getApp();
             if (!app || !app.ticker) return;
 
+            // If the document is hidden, do not start the ticker to respect background execution rules
+            if (typeof document !== 'undefined' && document.hidden) {
+                return;
+            }
+
             // Always keep the PixiJS ticker running to allow smooth transitions, background animations, particles,
             // and continuous, responsive FPS counter updates (e.g. capped at 30/60 FPS based on power saving mode).
             app.ticker.start();

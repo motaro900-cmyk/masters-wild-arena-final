@@ -27,10 +27,11 @@ export const formatTime = (ms: number): string => {
 };
 
 // Russian declension helper for pet name: "Дракоша" -> "Дракошу"
-export const declinePetName = (name: string) => {
-    if (name === 'Дракоша') return 'Дракошу';
-    if (name.endsWith('а')) return name.slice(0, -1) + 'у';
-    return name;
+export const declinePetName = (name: string | null | undefined) => {
+    const safeName = !name || String(name) === 'undefined' || String(name) === 'null' ? 'Дракоша' : name;
+    if (safeName === 'Дракоша') return 'Дракошу';
+    if (safeName.endsWith('а')) return safeName.slice(0, -1) + 'у';
+    return safeName;
 };
 
 export const useBestiary = () => {

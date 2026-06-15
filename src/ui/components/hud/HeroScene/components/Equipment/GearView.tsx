@@ -83,7 +83,7 @@ export const GearView = ({
     const [showSpeedTooltip, setShowSpeedTooltip] = useState(false);
     const [showCritTooltip, setShowCritTooltip] = useState(false);
 
-    const { inventory: rawInventory } = useGameStore();
+    const rawInventory = useGameStore(state => state.inventory);
     const inventory = rawInventory || [];
 
     const gearPower = Object.values(equippedIds).reduce((acc: number, itemId: any) => {

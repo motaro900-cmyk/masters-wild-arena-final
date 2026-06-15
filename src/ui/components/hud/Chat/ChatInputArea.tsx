@@ -44,13 +44,13 @@ export const ChatInputArea: React.FC<ChatInputAreaProps> = ({
                     style={{
                         flex: 1,
                         height: 42,
-                        background: 'rgba(0,0,0,0.6)',
-                        border: '1px solid rgba(240, 192, 64, 0.3)',
+                        background: 'rgba(0,0,0,0.7)',
+                        border: '1.5px solid rgba(240, 192, 64, 0.45)',
                         borderRadius: '10px',
                         display: 'flex',
                         alignItems: 'center',
                         padding: '0 12px',
-                        boxShadow: 'inset 0 2px 10px rgba(0,0,0,0.5)',
+                        boxShadow: 'inset 0 3px 12px rgba(0,0,0,0.85), 0 0 8px rgba(240, 192, 64, 0.05)',
                         transition: 'all 0.3s',
                     }}
                 >

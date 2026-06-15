@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../../../store/useGameStore';
+import { useShallow } from 'zustand/react/shallow';
 import { MOBS_DB } from '../../../configs/MobsConfig';
 import { AssetsMap } from '../../../configs/AssetsMap';
 import { getHeroConfig } from '../../../configs/HeroesConfig';
@@ -53,7 +54,23 @@ export const AncientsSanctuaryScreen: React.FC = () => {
         selectedHeroId,
         getCalculatedStats,
         isMobile,
-    } = useGameStore();
+    } = useGameStore(
+        useShallow((state) => ({
+            pveStage: state.pveStage,
+            startPveBattle: state.startPveBattle,
+            winStreak: state.winStreak,
+            energy: state.energy,
+            maxEnergy: state.maxEnergy,
+            maxPveStage: state.maxPveStage,
+            watchAdForReward: state.watchAdForReward,
+            dailyAdWatchesCount: state.dailyAdWatchesCount,
+            setScreen: state.setScreen,
+            goToShop: state.goToShop,
+            selectedHeroId: state.selectedHeroId,
+            getCalculatedStats: state.getCalculatedStats,
+            isMobile: state.isMobile,
+        }))
+    );
 
     const [adLoading, setAdLoading] = useState(false);
     const [actionMessage, setActionMessage] = useState<string | null>(null);

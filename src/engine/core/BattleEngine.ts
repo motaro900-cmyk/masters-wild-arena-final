@@ -99,6 +99,8 @@ export class BattleEngine {
     public playerStats: ICombatStats | null = null;
     public enemyStats: ICombatStats | null = null;
     private currentArenaBgUrl: string | null = null;
+    private activeRafIds: number[] = [];
+    private tweensCancelled: boolean = false;
 
     public isCombatRunning: boolean = false;
     public isInitialized: boolean = false;
@@ -167,6 +169,8 @@ export class BattleEngine {
             this.maxSingleHitDamage = 0;
             this.localCombatLogs = [];
             this.isCombatEndChecked = false;
+            this.tweensCancelled = false;
+            this.activeRafIds = [];
 
             const pCrit = Number(playerStats?.critChance) || 10;
             const pDodge = Number(playerStats?.evasion ?? playerStats?.dodge) || 5;
@@ -728,6 +732,7 @@ export class BattleEngine {
         this.isCombatEndChecked = true;
 
         this.isCombatRunning = false;
+        this.cancelTweens();
         const isWin = this.state.playerHP > 0;
 
         if (this.player) this.player.resetToIdle();
@@ -845,14 +850,26 @@ export class BattleEngine {
                     const startVals: Record<string, number> = {};
                     for (const k in props) startVals[k] = obj[k];
                     const start = performance.now();
+                    let id: number;
                     const tick = (now: number) => {
+                        if (this.tweensCancelled) {
+                            resolve();
+                            return;
+                        }
                         const t = Math.min(1, (now - start) / durationMs);
                         const ease = easeIn ? t * t : 1 - Math.pow(1 - t, 2);
                         for (const k in props) obj[k] = startVals[k] + (props[k] - startVals[k]) * ease;
-                        if (t < 1) requestAnimationFrame(tick);
-                        else resolve();
+                        if (t < 1) {
+                            this.activeRafIds = this.activeRafIds.filter(x => x !== id);
+                            id = requestAnimationFrame(tick);
+                            this.activeRafIds.push(id);
+                        } else {
+                            this.activeRafIds = this.activeRafIds.filter(x => x !== id);
+                            resolve();
+                        }
                     };
-                    requestAnimationFrame(tick);
+                    id = requestAnimationFrame(tick);
+                    this.activeRafIds.push(id);
                 });
             };
 
@@ -1370,7 +1387,16 @@ export class BattleEngine {
         this.onStateChange(this.state);
     }
 
+    public cancelTweens(): void {
+        this.tweensCancelled = true;
+        this.activeRafIds.forEach((id) => {
+            cancelAnimationFrame(id);
+        });
+        this.activeRafIds = [];
+    }
+
     public destroy() {
+        this.cancelTweens();
         if (this.initTimeoutId) {
             clearTimeout(this.initTimeoutId);
             this.initTimeoutId = null;

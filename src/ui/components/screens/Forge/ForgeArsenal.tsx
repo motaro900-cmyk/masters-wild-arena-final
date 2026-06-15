@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { ITEMS_DATABASE, calculateItemPower } from '../../../../game/configs/ItemsConfig';
 import { audioService } from '../../../../services/AudioService';
@@ -29,32 +29,36 @@ export const ForgeArsenal: React.FC<ForgeArsenalProps> = ({
     onReforge,
 }) => {
     // Фильтруем инвентарь по категории
-    const filteredInventory = inventory.filter((item: any) => {
-        const data = ITEMS_DATABASE[item.id] as any;
-        if (!data) return false;
-        const subTab = data.subTab || data.type || '';
-        if (activeCategory === 'ALL')
-            return ['WEAPONS', 'HELMETS', 'ARMOR', 'SHIELDS', 'SHOULDERS', 'PANTS', 'BOOTS'].includes(subTab);
-        return subTab === activeCategory;
-    });
+    const filteredInventory = useMemo(() => {
+        return inventory.filter((item: any) => {
+            const data = ITEMS_DATABASE[item.id] as any;
+            if (!data) return false;
+            const subTab = data.subTab || data.type || '';
+            if (activeCategory === 'ALL')
+                return ['WEAPONS', 'HELMETS', 'ARMOR', 'SHIELDS', 'SHOULDERS', 'PANTS', 'BOOTS'].includes(subTab);
+            return subTab === activeCategory;
+        });
+    }, [inventory, activeCategory]);
 
     // Сортировка инвентаря
-    const sortedInventory = [...filteredInventory].sort((a: any, b: any) => {
-        const dataA = ITEMS_DATABASE[a.id] as any;
-        const dataB = ITEMS_DATABASE[b.id] as any;
-        if (!dataA || !dataB) return 0;
+    const sortedInventory = useMemo(() => {
+        return [...filteredInventory].sort((a: any, b: any) => {
+            const dataA = ITEMS_DATABASE[a.id] as any;
+            const dataB = ITEMS_DATABASE[b.id] as any;
+            if (!dataA || !dataB) return 0;
 
-        if (sortBy === 'LEVEL') {
-            return (b.level || 1) - (a.level || 1);
-        }
-        if (sortBy === 'POWER') {
-            return calculateItemPower(dataB) - calculateItemPower(dataA);
-        }
-        const rarityWeights: Record<string, number> = { MYTHIC: 5, LEGENDARY: 4, EPIC: 3, RARE: 2, COMMON: 1 };
-        const weightA = rarityWeights[dataA.rarity] || 0;
-        const weightB = rarityWeights[dataB.rarity] || 0;
-        return weightB - weightA;
-    });
+            if (sortBy === 'LEVEL') {
+                return (b.level || 1) - (a.level || 1);
+            }
+            if (sortBy === 'POWER') {
+                return calculateItemPower(dataB) - calculateItemPower(dataA);
+            }
+            const rarityWeights: Record<string, number> = { MYTHIC: 5, LEGENDARY: 4, EPIC: 3, RARE: 2, COMMON: 1 };
+            const weightA = rarityWeights[dataA.rarity] || 0;
+            const weightB = rarityWeights[dataB.rarity] || 0;
+            return weightB - weightA;
+        });
+    }, [filteredInventory, sortBy]);
 
     return (
         <div style={styles.arsenalPanel}>

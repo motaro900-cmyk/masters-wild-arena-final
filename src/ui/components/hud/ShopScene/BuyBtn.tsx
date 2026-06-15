@@ -1,6 +1,7 @@
 import React from 'react';
 import { ShopItem } from '../../../../configs/ShopConfig';
 import { useGameStore } from '../../../../store/useGameStore';
+import { useShallow } from 'zustand/react/shallow';
 import { audioService } from '../../../../services/AudioService';
 import { AssetsMap } from '../../../../configs/AssetsMap';
 
@@ -17,7 +18,17 @@ interface BuyBtnProps {
 }
 
 export const BuyBtn: React.FC<BuyBtnProps> = ({ item, onTrigger, discount = 0 }) => {
-    const { ownedSkins, equippedSkins, equipSkin, unequipSkin, inventory, heroEquipment, level } = useGameStore();
+    const { ownedSkins, equippedSkins, equipSkin, unequipSkin, inventory, heroEquipment, level } = useGameStore(
+        useShallow((state) => ({
+            ownedSkins: state.ownedSkins,
+            equippedSkins: state.equippedSkins,
+            equipSkin: state.equipSkin,
+            unequipSkin: state.unequipSkin,
+            inventory: state.inventory,
+            heroEquipment: state.heroEquipment,
+            level: state.level,
+        }))
+    );
 
     const isSkinOwned = item.mainTab === 'SKINS' && (ownedSkins || []).includes(String(item.id));
     let skinHeroId = '';

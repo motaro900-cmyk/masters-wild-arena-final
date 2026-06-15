@@ -1,12 +1,22 @@
 import { motion } from 'framer-motion';
 import { useGameStore } from '../../../../../../store/useGameStore';
+import { useShallow } from 'zustand/react/shallow';
 import { audioService } from '../../../../../../services/AudioService';
 import { AssetsMap } from '../../../../../../configs/AssetsMap';
 import { resolveAssetPath } from '../../../../../../utils/assetPath';
 import { getRankInfo } from '../../../../../../configs/RankSystem';
 
 export const PurchaseModal = ({ hero, onClose, rarityColors }: any) => {
-    const { gold, crystals, rating, unlockHero, spendGold, spendDiamonds } = useGameStore();
+    const { gold, crystals, rating, unlockHero, spendGold, spendDiamonds } = useGameStore(
+        useShallow((state) => ({
+            gold: state.gold,
+            crystals: state.crystals,
+            rating: state.rating,
+            unlockHero: state.unlockHero,
+            spendGold: state.spendGold,
+            spendDiamonds: state.spendDiamonds,
+        }))
+    );
     const color = rarityColors[hero.rarity];
 
     const priceDiamonds = hero.unlockCost || 0;

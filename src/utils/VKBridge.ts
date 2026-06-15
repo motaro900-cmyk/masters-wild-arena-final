@@ -28,6 +28,9 @@ export const isVkMiniApp = (): boolean => {
 };
 
 export const initVK = async (): Promise<boolean> => {
+    if (typeof window !== 'undefined' && (window as any).vkBridgeInitialized) {
+        return true;
+    }
     if (!bridge) return false;
 
     if (!isVkMiniApp()) {
@@ -296,6 +299,27 @@ export const joinGroup = async (groupId: number = 238197449): Promise<boolean> =
     }
 };
 
+let _cachedToken: string | null = null;
+let _tokenScope: string | null = null;
+
+const getToken = async (scope: string): Promise<string | null> => {
+    if (_cachedToken && _tokenScope === scope) {
+        return _cachedToken;
+    }
+    try {
+        const appId = Number(import.meta.env.VITE_VK_APP_ID || '52446645');
+        const result = await bridge.send('VKWebAppGetAuthToken', {
+            app_id: appId,
+            scope,
+        });
+        _cachedToken = result.access_token;
+        _tokenScope = scope;
+        return _cachedToken;
+    } catch {
+        return null;
+    }
+};
+
 /**
  * Проверяет, состоит ли пользователь в группе
  */
@@ -304,11 +328,8 @@ export const isGroupMember = async (groupId: number = 238197449): Promise<boolea
     try {
         let token = '';
         try {
-            const authResult = await bridge.send('VKWebAppGetAuthToken', {
-                app_id: Number(import.meta.env.VITE_VK_APP_ID || '52446645'),
-                scope: 'groups',
-            });
-            token = authResult.access_token || '';
+            const cachedToken = await getToken('groups');
+            token = cachedToken || '';
         } catch (tokenError) {
             console.warn('VKWebAppGetAuthToken failed, attempting call anyway:', tokenError);
         }
@@ -339,11 +360,8 @@ export const getVkFriendsWhoPlay = async (): Promise<number[]> => {
     try {
         let token = '';
         try {
-            const authResult = await bridge.send('VKWebAppGetAuthToken', {
-                app_id: Number(import.meta.env.VITE_VK_APP_ID || '52446645'),
-                scope: 'friends',
-            });
-            token = authResult.access_token || '';
+            const cachedToken = await getToken('friends');
+            token = cachedToken || '';
         } catch (tokenError) {
             console.warn('VKWebAppGetAuthToken for friends failed:', tokenError);
             return [];

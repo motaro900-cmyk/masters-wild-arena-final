@@ -22,7 +22,10 @@ interface LeaderboardEntry {
 // Список лидеров формируется динамически в компоненте
 
 export const RankingWindow: React.FC = () => {
-    const { rating, vkUser, avatar: playerAvatar, name: playerName } = useGameStore();
+    const rating = useGameStore(state => state.rating);
+const vkUser = useGameStore(state => state.vkUser);
+const playerAvatar = useGameStore(state => state.avatar);
+const playerName = useGameStore(state => state.name);
     const [activeTab, setActiveTab] = React.useState<'GLOBAL' | 'CLAN' | 'FRIENDS'>('GLOBAL');
 
     const [showRewards, setShowRewards] = React.useState(false);

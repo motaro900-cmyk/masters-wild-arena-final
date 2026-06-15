@@ -4,6 +4,7 @@ import { GlowFilter } from 'pixi-filters';
 import { PixiApp } from '../../core/PixiApp';
 import { EffectsManager } from '../EffectsManager';
 import { useGameStore } from '../../../store/useGameStore';
+import { ParticlePool } from './ParticlePool';
 
 /**
  * Эффект удара молнии с неба
@@ -107,7 +108,8 @@ export function spawnFireballProjectile(
             onUpdate: () => {
                 if (fireball.destroyed) return;
 
-                const particle = new PIXI.Graphics();
+                const particle = ParticlePool.getInstance().acquire();
+                if (!particle) return;
                 const radius = 4 + Math.random() * 4;
                 particle.beginPath();
                 particle.circle(0, 0, radius);
@@ -122,7 +124,7 @@ export function spawnFireballProjectile(
                     onComplete: () => {
                         if (particle && !particle.destroyed) {
                             gsap.killTweensOf(particle);
-                            particle.destroy();
+                            ParticlePool.getInstance().release(particle);
                         }
                     },
                 });
@@ -153,7 +155,8 @@ export function spawnExplosion(x: number, y: number): void {
         EffectsManager.getInstance().screenShake(4, 0.95, 200);
 
         for (let i = 0; i < 12; i++) {
-            const particle = new PIXI.Graphics();
+            const particle = ParticlePool.getInstance().acquire();
+            if (!particle) continue;
             const radius = 6 + Math.random() * 6;
             particle.beginPath();
             particle.circle(0, 0, radius);
@@ -173,7 +176,7 @@ export function spawnExplosion(x: number, y: number): void {
                 onComplete: () => {
                     if (particle && !particle.destroyed) {
                         gsap.killTweensOf(particle);
-                        particle.destroy();
+                        ParticlePool.getInstance().release(particle);
                     }
                 },
             });

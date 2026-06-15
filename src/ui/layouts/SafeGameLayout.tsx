@@ -432,7 +432,6 @@ export const SafeGameLayout = ({ containerRef }: { containerRef: React.RefObject
                 )}
             </AnimatePresence>
 
-            {/* Unified 1920x1080 Scaled Container */}
             <div
                 className="game-scale-wrapper"
                 style={{
@@ -447,10 +446,10 @@ export const SafeGameLayout = ({ containerRef }: { containerRef: React.RefObject
                     overflow: 'hidden',
                     pointerEvents: 'none',
                     filter:
-                        graphicsQuality === 'ULTRA'
-                            ? 'contrast(1.04) saturate(1.08) brightness(0.97)'
-                            : graphicsQuality === 'MEDIUM'
-                              ? 'contrast(1.02) saturate(1.03) brightness(0.99)'
+                        !isMobile && graphicsQuality === 'ULTRA'
+                            ? 'contrast(1.08) saturate(1.15) brightness(1.02)'
+                            : !isMobile && graphicsQuality === 'MEDIUM'
+                              ? 'contrast(1.04) saturate(1.06) brightness(1.01)'
                               : 'none',
                 }}
             >

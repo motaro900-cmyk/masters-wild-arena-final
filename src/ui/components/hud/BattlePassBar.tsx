@@ -6,7 +6,10 @@ import { AssetsMap } from '../../../configs/AssetsMap';
  * BattlePassBar (v5.1) — Растянутая по высоте версия.
  */
 export const BattlePassBar: React.FC = () => {
-    const { bpLevel, bpExp, setScreen, graphicsQuality } = useGameStore();
+    const bpLevel = useGameStore(state => state.bpLevel);
+const bpExp = useGameStore(state => state.bpExp);
+const setScreen = useGameStore(state => state.setScreen);
+const graphicsQuality = useGameStore(state => state.graphicsQuality);
     const maxExp = 1000;
     const progress = Math.min(100, Math.max(0, (bpExp / maxExp) * 100));
 
@@ -63,7 +66,7 @@ export const BattlePassBar: React.FC = () => {
                         backgroundImage: `url(${AssetsMap.UI.ICON_BEAST_PASS})`,
                         backgroundSize: '100% 100%',
                         backgroundRepeat: 'no-repeat',
-                        filter: isLow ? 'none' : 'contrast(1.1) saturate(1.1) brightness(0.95)',
+                        filter: isLow ? 'none' : 'contrast(1.2) saturate(1.2) brightness(1.02)',
                         zIndex: 0,
                     }}
                 />

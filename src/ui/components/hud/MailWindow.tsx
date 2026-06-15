@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../../../store/useGameStore';
 import { AssetsMap } from '../../../configs/AssetsMap';
@@ -115,10 +115,11 @@ export const MailWindow: React.FC<MailWindowProps> = () => {
 
     const getUnreadCount = (tab: string) => mails.filter((m: any) => m.tab === tab && !m.isRead).length;
 
-    const filteredMails =
-        activeTab === 'ARCHIVE'
+    const filteredMails = useMemo(() => {
+        return activeTab === 'ARCHIVE'
             ? mails.filter((m: any) => m.tab === 'ARCHIVE')
             : mails.filter((m: any) => m.tab === activeTab);
+    }, [activeTab, mails]);
 
     const handleSendFeedback = () => {
         if (!feedbackText.trim()) return;

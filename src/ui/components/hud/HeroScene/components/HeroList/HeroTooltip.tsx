@@ -23,7 +23,8 @@ export const TooltipStat = ({ label, value, color, icon }: any) => (
 );
 
 export const HeroTooltip = ({ hero, mousePos, rarityColors }: any) => {
-    const { ownedHeroes, graphicsQuality } = useGameStore();
+    const ownedHeroes = useGameStore(state => state.ownedHeroes);
+const graphicsQuality = useGameStore(state => state.graphicsQuality);
     const isLowGraphics = graphicsQuality === 'LOW';
     const isOwned = ownedHeroes.includes(hero.id);
     const color = rarityColors[hero.rarity];

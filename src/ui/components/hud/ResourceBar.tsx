@@ -283,7 +283,7 @@ export const ResourceBar: React.FC<{ onOpenShop?: (tab: string) => void }> = ({ 
                                 fontSize: 16,
                                 fontWeight: 900,
                                 color: res.color,
-                                textShadow: '0 2px 4px rgba(0,0,0,1)',
+                                textShadow: '1px 1.5px 0px #000, -1px -1px 0px #000, 0 2px 6px rgba(0,0,0,0.85)',
                                 letterSpacing: '0.2px',
                             }}
                         >
@@ -292,19 +292,22 @@ export const ResourceBar: React.FC<{ onOpenShop?: (tab: string) => void }> = ({ 
                         </span>
                     </div>
 
-                    <button
-                        onClick={() => onOpenShop?.(res.key === 'gems' ? 'GEMS' : res.key.toUpperCase())}
-                        style={{
-                            position: 'absolute',
-                            right: 4,
-                            width: 24,
-                            height: 24,
-                            backgroundColor: 'transparent',
-                            border: 'none',
-                            cursor: 'pointer',
-                            zIndex: 5,
-                        }}
-                    />
+                    <div style={{ position: 'absolute', right: 4, width: 24, height: 24, zIndex: 5 }}>
+                        <div
+                            className="mobile-hit-area"
+                            onClick={() => onOpenShop?.(res.key === 'gems' ? 'GEMS' : res.key.toUpperCase())}
+                        />
+                        <button
+                            onClick={() => onOpenShop?.(res.key === 'gems' ? 'GEMS' : res.key.toUpperCase())}
+                            style={{
+                                width: '100%',
+                                height: '100%',
+                                backgroundColor: 'transparent',
+                                border: 'none',
+                                cursor: 'pointer',
+                            }}
+                        />
+                    </div>
                 </div>
             ))}
         </div>

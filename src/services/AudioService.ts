@@ -1,6 +1,7 @@
 import { Howl, Howler } from 'howler';
 import bridge from '@vkontakte/vk-bridge';
 import { AssetsMap } from '../configs/AssetsMap';
+import { PixiApp } from '../engine/core/PixiApp';
 
 /**
  * AudioService - Централизованное управление музыкой и звуками.
@@ -31,10 +32,20 @@ class AudioService {
             // 1. Стандартный браузерный Visibility API
             document.addEventListener('visibilitychange', () => {
                 if (document.hidden) {
-                    console.log('🤫 App hidden - Muting audio');
+                    console.log('🤫 App hidden - Muting audio & stopping ticker');
                     safeMute(true);
+                    try {
+                        PixiApp.getInstance().getApp()?.ticker.stop();
+                    } catch (err) {
+                        console.warn('Could not stop PIXI ticker on visibilitychange:', err);
+                    }
                 } else {
-                    console.log('🔊 App visible - Unmuting audio');
+                    console.log('🔊 App visible - Unmuting audio & starting ticker');
+                    try {
+                        PixiApp.getInstance().getApp()?.ticker.start();
+                    } catch (err) {
+                        console.warn('Could not start PIXI ticker on visibilitychange:', err);
+                    }
                     import('../store/useGameStore')
                         .then(({ useGameStore }) => {
                             const isMuted = useGameStore.getState().isMuted;
@@ -56,10 +67,20 @@ class AudioService {
                     const { type } = event.detail;
 
                     if (type === 'VKWebAppViewHide') {
-                        console.log('🤫 VK Bridge: VKWebAppViewHide - Muting audio');
+                        console.log('🤫 VK Bridge: VKWebAppViewHide - Muting audio & stopping ticker');
                         safeMute(true);
+                        try {
+                            PixiApp.getInstance().getApp()?.ticker.stop();
+                        } catch (err) {
+                            console.warn('Could not stop PIXI ticker on VKWebAppViewHide:', err);
+                        }
                     } else if (type === 'VKWebAppViewRestore') {
-                        console.log('🔊 VK Bridge: VKWebAppViewRestore - Unmuting audio');
+                        console.log('🔊 VK Bridge: VKWebAppViewRestore - Unmuting audio & starting ticker');
+                        try {
+                            PixiApp.getInstance().getApp()?.ticker.start();
+                        } catch (err) {
+                            console.warn('Could not start PIXI ticker on VKWebAppViewRestore:', err);
+                        }
                         import('../store/useGameStore')
                             .then(({ useGameStore }) => {
                                 const isMuted = useGameStore.getState().isMuted;

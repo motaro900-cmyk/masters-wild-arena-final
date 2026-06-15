@@ -5,7 +5,6 @@ import { db, USERS_COLLECTION } from '../utils/firebase';
 import {
     doc,
     setDoc,
-    getDoc,
     deleteDoc,
     getDocs,
     collection,
@@ -125,27 +124,41 @@ export async function resolveFriendProfiles(friendIds: string[]): Promise<any[]>
         const sanitizedIds = friendIds
             .map((id: any) => (typeof id === 'object' ? id.id : id))
             .filter(Boolean);
-        const results = await Promise.all(
-            sanitizedIds.map(async (id) => {
-                const docRef = doc(db, USERS_COLLECTION, id);
-                const docSnap = await getDoc(docRef);
-                if (!docSnap.exists()) return null;
+
+        const chunks: string[][] = [];
+        for (let i = 0; i < sanitizedIds.length; i += 10) {
+            chunks.push(sanitizedIds.slice(i, i + 10));
+        }
+
+        const querySnapshots = await Promise.all(
+            chunks.map(chunk =>
+                getDocs(query(
+                    collection(db, USERS_COLLECTION),
+                    where('__name__', 'in', chunk)
+                ))
+            )
+        );
+
+        const profiles: any[] = [];
+        for (const snap of querySnapshots) {
+            snap.forEach(docSnap => {
                 const data = docSnap.data();
                 const wasOnlineVal = data.wasOnline || data.былВСети;
                 const lastSeenTime = wasOnlineVal?.toMillis
                     ? wasOnlineVal.toMillis()
                     : wasOnlineVal || 0;
-                return {
+
+                profiles.push({
                     id: docSnap.id,
-                    name: data.name || data.имя || 'Мастер',
+                    name: data.name || data.имя || `Игрок_${docSnap.id.slice(-4)}`,
                     avatar: data.avatar || data.фото || 'avatar_1.png',
                     level: data.level || data.уровень || 1,
                     online: Date.now() - lastSeenTime < 5 * 60 * 1000,
                     lastSeen: lastSeenTime,
-                };
-            }),
-        );
-        return results.filter(Boolean) as any[];
+                });
+            });
+        }
+        return profiles;
     } catch (error) {
         console.error('[SocialService] Failed to resolve friend profiles:', error);
         return [];

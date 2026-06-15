@@ -66,8 +66,11 @@ export class PixiApp {
                 this.updateTickerState();
             });
 
-            this.storeUnsubscribe = useGameStore.subscribe(() => {
+            this.storeUnsubscribe = useGameStore.subscribe((state: any, prevState: any) => {
                 this.updateTickerState();
+                if (state && prevState && state.graphicsQuality !== prevState.graphicsQuality) {
+                    this.applyQualityFilter(state.graphicsQuality);
+                }
             });
         }
     }
@@ -258,6 +261,7 @@ export class PixiApp {
                 }
 
                 this.pixiApp.ticker.start();
+                this.applyQualityFilter(useGameStore.getState().graphicsQuality || 'LOW');
                 this.updateTickerState();
             }
         } catch (error) {
@@ -344,6 +348,36 @@ export class PixiApp {
         this.screenShakeDamping = damping;
     }
 
+    public applyQualityFilter(quality: string): void {
+        if (!this.pixiApp) return;
+
+        const normalizedQuality = (quality || 'LOW').toUpperCase();
+        if (normalizedQuality === 'LOW' || normalizedQuality === 'HIGH') {
+            this.pixiApp.stage.filters = [];
+            return;
+        }
+
+        const filter = new PIXI.ColorMatrixFilter();
+        
+        switch (normalizedQuality) {
+            case 'ULTRA':
+                filter.contrast(0.04, false);
+                filter.saturate(0.08, false);
+                filter.brightness(0.97, false);
+                break;
+            case 'MEDIUM':
+                filter.contrast(0.02, false);
+                filter.saturate(0.03, false);
+                filter.brightness(0.99, false);
+                break;
+            default:
+                this.pixiApp.stage.filters = [];
+                return;
+        }
+
+        this.pixiApp.stage.filters = [filter];
+    }
+
     // ─── НОВЫЕ МЕТОДЫ УПРАВЛЕНИЯ РЕНДЕРИНГОМ ───
     public stopRendering(): void {
         if (this.pixiApp) this.pixiApp.stop();
@@ -413,13 +447,85 @@ export class PixiApp {
     }
 
     public clearBattleLayers(): void {
+        const textureUsage = new Map<string, number>();
+        
+        const countSpriteTextures = (container: PIXI.Container) => {
+            if (container instanceof PIXI.Sprite && container.texture) {
+                const cacheIds: string[] = (container.texture as any).textureCacheIds || [];
+                cacheIds.forEach((id: string) => {
+                    textureUsage.set(id, (textureUsage.get(id) || 0) + 1);
+                });
+            }
+            if (container.children) {
+                container.children.forEach(countSpriteTextures);
+            }
+        };
+
+        [this.gameLayer, this.effectsLayer, this.uiLayer, this.debugLayer].forEach(countSpriteTextures);
+
+        const destroyWithCheck = (container: PIXI.Container) => {
+            if (container.children && container.children.length > 0) {
+                const childrenCopy = [...container.children];
+                childrenCopy.forEach(destroyWithCheck);
+            }
+
+            if (container instanceof PIXI.Sprite && container.texture) {
+                let shouldDestroyTex = false;
+                const cacheIds: string[] = (container.texture as any).textureCacheIds || [];
+
+                const isHeroOrUI = cacheIds.some((id: string) => 
+                    id.includes('poses') || 
+                    id.includes('background') || 
+                    id.includes('ui/') || 
+                    id.includes('hud/') || 
+                    id.includes('avatar')
+                );
+
+                if (!isHeroOrUI) {
+                    const isDynamic = cacheIds.some((id: string) => 
+                        id.includes('weapons') || 
+                        id.includes('items') || 
+                        id.includes('effects') || 
+                        id.includes('particles') ||
+                        id.includes('combat') ||
+                        id.includes('smoke') ||
+                        id.includes('spark') ||
+                        id.includes('dust') ||
+                        id.includes('monster') ||
+                        id.includes('enemy')
+                    );
+
+                    if (isDynamic) {
+                        const maxRefs = Math.max(...cacheIds.map((id: string) => textureUsage.get(id) || 0));
+                        if (maxRefs <= 1) {
+                            shouldDestroyTex = true;
+                        }
+                    }
+                }
+
+                cacheIds.forEach((id: string) => {
+                    const count = textureUsage.get(id) || 0;
+                    if (count > 0) {
+                        textureUsage.set(id, count - 1);
+                    }
+                });
+
+                if (!container.destroyed) {
+                    container.destroy({ children: true, texture: shouldDestroyTex });
+                }
+            } else {
+                if (!container.destroyed) {
+                    container.destroy({ children: true, texture: false });
+                }
+            }
+        };
+
         [this.gameLayer, this.effectsLayer, this.uiLayer, this.debugLayer].forEach((l) => {
             l.removeChildren().forEach((child) => {
-                if (!child.destroyed) {
-                    child.destroy({ children: true, texture: false });
-                }
+                destroyWithCheck(child);
             });
         });
+
         this.updateLoops = [];
 
         // Выгружаем специфичные для боя ассеты из кэша PIXI
@@ -432,13 +538,85 @@ export class PixiApp {
 
     /** Полная очистка всех слоёв включая фон (используется только при переинициализации) */
     public clearAllLayers(): void {
+        const textureUsage = new Map<string, number>();
+        
+        const countSpriteTextures = (container: PIXI.Container) => {
+            if (container instanceof PIXI.Sprite && container.texture) {
+                const cacheIds: string[] = (container.texture as any).textureCacheIds || [];
+                cacheIds.forEach((id: string) => {
+                    textureUsage.set(id, (textureUsage.get(id) || 0) + 1);
+                });
+            }
+            if (container.children) {
+                container.children.forEach(countSpriteTextures);
+            }
+        };
+
+        [this.backgroundLayer, this.gameLayer, this.effectsLayer, this.uiLayer, this.debugLayer].forEach(countSpriteTextures);
+
+        const destroyWithCheck = (container: PIXI.Container) => {
+            if (container.children && container.children.length > 0) {
+                const childrenCopy = [...container.children];
+                childrenCopy.forEach(destroyWithCheck);
+            }
+
+            if (container instanceof PIXI.Sprite && container.texture) {
+                let shouldDestroyTex = false;
+                const cacheIds: string[] = (container.texture as any).textureCacheIds || [];
+
+                const isHeroOrUI = cacheIds.some((id: string) => 
+                    id.includes('poses') || 
+                    id.includes('background') || 
+                    id.includes('ui/') || 
+                    id.includes('hud/') || 
+                    id.includes('avatar')
+                );
+
+                if (!isHeroOrUI) {
+                    const isDynamic = cacheIds.some((id: string) => 
+                        id.includes('weapons') || 
+                        id.includes('items') || 
+                        id.includes('effects') || 
+                        id.includes('particles') ||
+                        id.includes('combat') ||
+                        id.includes('smoke') ||
+                        id.includes('spark') ||
+                        id.includes('dust') ||
+                        id.includes('monster') ||
+                        id.includes('enemy')
+                    );
+
+                    if (isDynamic) {
+                        const maxRefs = Math.max(...cacheIds.map((id: string) => textureUsage.get(id) || 0));
+                        if (maxRefs <= 1) {
+                            shouldDestroyTex = true;
+                        }
+                    }
+                }
+
+                cacheIds.forEach((id: string) => {
+                    const count = textureUsage.get(id) || 0;
+                    if (count > 0) {
+                        textureUsage.set(id, count - 1);
+                    }
+                });
+
+                if (!container.destroyed) {
+                    container.destroy({ children: true, texture: shouldDestroyTex });
+                }
+            } else {
+                if (!container.destroyed) {
+                    container.destroy({ children: true, texture: false });
+                }
+            }
+        };
+
         [this.backgroundLayer, this.gameLayer, this.effectsLayer, this.uiLayer, this.debugLayer].forEach((l) => {
             l.removeChildren().forEach((child) => {
-                if (!child.destroyed) {
-                    child.destroy({ children: true, texture: false });
-                }
+                destroyWithCheck(child);
             });
         });
+
         this.updateLoops = [];
 
         // Force rendering a blank/cleared frame to immediately update canvas

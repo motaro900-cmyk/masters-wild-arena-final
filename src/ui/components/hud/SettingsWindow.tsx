@@ -1,8 +1,9 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useGameStore } from '../../../store/useGameStore';
+import { useShallow } from 'zustand/react/shallow';
 import { AssetsMap } from '../../../configs/AssetsMap';
-import { addToFavorites, joinGroup, openExternalUrl } from '../../../utils/VKBridge';
+import { addToFavorites, joinGroup } from '../../../utils/VKBridge';
 import { audioService } from '../../../services/AudioService';
 import { AdvancedSettingsBlock } from './AdvancedSettingsBlock';
 import { settingsTranslations } from './SettingsLocalization';
@@ -29,7 +30,24 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
         setLanguage,
         isAdmin,
         isMobile,
-    } = useGameStore();
+    } = useGameStore(
+        useShallow((state) => ({
+            musicVolume: state.musicVolume,
+            setMusicVolume: state.setMusicVolume,
+            soundVolume: state.soundVolume,
+            setSoundVolume: state.setSoundVolume,
+            isMuted: state.isMuted,
+            setIsMuted: state.setIsMuted,
+            playerId: state.playerId,
+            claimedSocialRewards: state.claimedSocialRewards,
+            claimGroupReward: state.claimGroupReward,
+            claimFavoriteReward: state.claimFavoriteReward,
+            language: state.language,
+            setLanguage: state.setLanguage,
+            isAdmin: state.isAdmin,
+            isMobile: state.isMobile,
+        }))
+    );
 
     const [confirmWipeChat, setConfirmWipeChat] = React.useState(false);
     const [confirmWipeProgress, setConfirmWipeProgress] = React.useState(false);

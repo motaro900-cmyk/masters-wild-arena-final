@@ -444,7 +444,15 @@ export class SyncService {
 
                 if (data.полноеСостояниеJSON) {
                     try {
-                        const parsed = JSON.parse(data.полноеСостояниеJSON);
+                        const parsed = await new Promise<any>((resolve, reject) => {
+                            setTimeout(() => {
+                                try {
+                                    resolve(JSON.parse(data.полноеСостояниеJSON));
+                                } catch (e) {
+                                    reject(e);
+                                }
+                            }, 0);
+                        });
                         mergeFriends(parsed);
                         processedData = {
                             ...parsed,
@@ -477,7 +485,15 @@ export class SyncService {
 
                 if (!processedData && data.fullStateJSON) {
                     try {
-                        const parsed = JSON.parse(data.fullStateJSON);
+                        const parsed = await new Promise<any>((resolve, reject) => {
+                            setTimeout(() => {
+                                try {
+                                    resolve(JSON.parse(data.fullStateJSON));
+                                } catch (e) {
+                                    reject(e);
+                                }
+                            }, 0);
+                        });
                         mergeFriends(parsed);
                         processedData = {
                             ...parsed,

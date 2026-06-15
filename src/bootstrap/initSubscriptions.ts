@@ -123,7 +123,15 @@ export const initSubscriptions = async (
                     lastAppliedAdminVersion = dbAdminVersion;
                 }
 
-                const parsed = JSON.parse(fullStateStr);
+                const parsed = await new Promise<any>((resolve, reject) => {
+                    setTimeout(() => {
+                        try {
+                            resolve(JSON.parse(fullStateStr));
+                        } catch (e) {
+                            reject(e);
+                        }
+                    }, 0);
+                });
                 const currentState = useGameStore.getState();
                 let hasChanges = false;
                 const updatePayload: any = {};

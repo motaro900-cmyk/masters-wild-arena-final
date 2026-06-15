@@ -33,7 +33,7 @@ export class StatusEffectController {
         const animTime = this.unit.animTime || 0;
 
         // 1. Stun wobble oscillation
-        if (this.isStunned && this.unit.bodyContainer) {
+        if (this.isStunned && this.unit.bodyContainer && !this.unit.bodyContainer.destroyed) {
             // rotation is managed by GSAP stunTween, do not override here to avoid flickering conflict
             this.unit.bodyContainer.y = Math.sin(animTime * 3) * 6;
         }
@@ -181,7 +181,7 @@ export class StatusEffectController {
     }
 
     public updateTints() {
-        if (!this.unit.bodySprite) return;
+        if (!this.unit.bodySprite || this.unit.bodySprite.destroyed) return;
         if (this.isFrozen) {
             this.unit.bodySprite.tint = 0x88ccff;
         } else if (this.isBurning) {
@@ -246,8 +246,9 @@ export class StatusEffectController {
             repeat: -1,
             ease: 'none',
             onUpdate: () => {
-                if (!this.stunEffectContainer) return;
+                if (!this.stunEffectContainer || this.stunEffectContainer.destroyed) return;
                 stars.forEach((star, index) => {
+                    if (star.destroyed) return;
                     const offset = (index * Math.PI * 2) / 3;
                     const a = animObj.angle + offset;
                     star.x = Math.cos(a) * 45;
@@ -274,7 +275,7 @@ export class StatusEffectController {
             this.stunTween.kill();
             this.stunTween = null;
         }
-        if (this.unit.bodyContainer) {
+        if (this.unit.bodyContainer && !this.unit.bodyContainer.destroyed) {
             this.unit.bodyContainer.rotation = 0;
             this.unit.bodyContainer.y = 0;
         }
@@ -284,7 +285,9 @@ export class StatusEffectController {
                 tween.kill();
             }
             gsap.killTweensOf(this.stunEffectContainer);
-            this.unit.removeChild(this.stunEffectContainer);
+            if (!this.unit.destroyed) {
+                this.unit.removeChild(this.stunEffectContainer);
+            }
             this.stunEffectContainer.destroy({ children: true });
             this.stunEffectContainer = null;
         }
@@ -329,7 +332,9 @@ export class StatusEffectController {
                 gsap.killTweensOf(child);
                 gsap.killTweensOf(child.scale);
             });
-            this.unit.removeChild(this.burnEffectContainer);
+            if (!this.unit.destroyed) {
+                this.unit.removeChild(this.burnEffectContainer);
+            }
             this.burnEffectContainer.destroy({ children: true });
             this.burnEffectContainer = null;
         }
@@ -436,7 +441,9 @@ export class StatusEffectController {
                 gsap.killTweensOf(child);
                 gsap.killTweensOf(child.scale);
             });
-            this.unit.removeChild(this.freezeEffectContainer);
+            if (!this.unit.destroyed) {
+                this.unit.removeChild(this.freezeEffectContainer);
+            }
             this.freezeEffectContainer.destroy({ children: true });
             this.freezeEffectContainer = null;
         }
@@ -460,7 +467,9 @@ export class StatusEffectController {
                 gsap.killTweensOf(child);
                 gsap.killTweensOf(child.scale);
             });
-            this.unit.removeChild(this.poisonEffectContainer);
+            if (!this.unit.destroyed) {
+                this.unit.removeChild(this.poisonEffectContainer);
+            }
             this.poisonEffectContainer.destroy({ children: true });
             this.poisonEffectContainer = null;
         }

@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../../../store/useGameStore';
+import { useShallow } from 'zustand/react/shallow';
 import { requestNotifications } from '../../../utils/VKBridge';
 import { settingsTranslations } from './SettingsLocalization';
 
@@ -101,7 +102,30 @@ export const AdvancedSettingsBlock: React.FC<AdvancedSettingsBlockProps> = ({
         showPing,
         setShowPing,
         autoTuneSettings,
-    } = useGameStore();
+    } = useGameStore(
+        useShallow((state) => ({
+            graphicsQuality: state.graphicsQuality,
+            setGraphicsQuality: state.setGraphicsQuality,
+            showFps: state.showFps,
+            setShowFps: state.setShowFps,
+            isPowerSaving: state.isPowerSaving,
+            setIsPowerSaving: state.setIsPowerSaving,
+            notificationsEnabled: state.notificationsEnabled,
+            setNotificationsEnabled: state.setNotificationsEnabled,
+            uiAnimations: state.uiAnimations,
+            setUiAnimations: state.setUiAnimations,
+            particlesQuality: state.particlesQuality,
+            setParticlesQuality: state.setParticlesQuality,
+            glowEnabled: state.glowEnabled,
+            setGlowEnabled: state.setGlowEnabled,
+            language: state.language,
+            arenaBgQuality: state.arenaBgQuality,
+            setArenaBgQuality: state.setArenaBgQuality,
+            showPing: state.showPing,
+            setShowPing: state.setShowPing,
+            autoTuneSettings: state.autoTuneSettings,
+        }))
+    );
 
     const t = settingsTranslations[(language || 'RU') as 'RU' | 'EN'] || settingsTranslations.RU;
 

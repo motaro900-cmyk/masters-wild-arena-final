@@ -16,13 +16,19 @@ export const AdminSpectatorModal: React.FC<AdminSpectatorModalProps> = ({ player
     useEffect(() => {
         if (!playerId) return;
 
-        const unsubscribe = onSnapshot(doc(db, USERS_COLLECTION, playerId), (docSnap) => {
-            if (docSnap.exists()) {
-                setPlayerState(docSnap.data());
-            } else {
-                setPlayerState(null);
+        const unsubscribe = onSnapshot(
+            doc(db, USERS_COLLECTION, playerId),
+            (docSnap) => {
+                if (docSnap.exists()) {
+                    setPlayerState(docSnap.data());
+                } else {
+                    setPlayerState(null);
+                }
+            },
+            (error) => {
+                console.error('[AdminSpectator] onSnapshot error:', error);
             }
-        });
+        );
 
         return () => unsubscribe();
     }, [playerId]);

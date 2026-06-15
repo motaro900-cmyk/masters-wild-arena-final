@@ -3,7 +3,8 @@ import { motion } from 'framer-motion';
 import { useGameStore } from '../../../../store/useGameStore';
 
 export const PurchaseModal: React.FC<{ onClose: () => void; onBuy: () => void }> = ({ onClose, onBuy }) => {
-    const { crystals, isMobile } = useGameStore();
+    const crystals = useGameStore(state => state.crystals);
+const isMobile = useGameStore(state => state.isMobile);
     const price = 999;
     const hasEnough = crystals >= price;
 

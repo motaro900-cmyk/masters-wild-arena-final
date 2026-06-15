@@ -77,8 +77,9 @@ export const initFirebaseProfile = async (
             } else {
                 console.log('👶 No local state found. Initializing new player offline.');
                 useGameStore.getState().resetStore();
+                const fallbackName1 = state.vkUser?.first_name || `Игрок_${userId.slice(-4)}`;
                 useGameStore.setState({
-                    name: state.vkUser ? state.vkUser.first_name || 'Мастер' : 'Мастер',
+                    name: fallbackName1,
                     onboardingCompleted: false,
                     tutorialStep: 0,
                     activeScreen: 'INTRO',
@@ -111,8 +112,9 @@ export const initFirebaseProfile = async (
         if (result.isNew) {
             console.log('👶 No remote profile found in Firestore. Resetting store for new player.');
             useGameStore.getState().resetStore();
+            const fallbackName2 = state.vkUser?.first_name || `Игрок_${userId.slice(-4)}`;
             useGameStore.setState({
-                name: 'Мастер',
+                name: fallbackName2,
                 onboardingCompleted: false,
                 tutorialStep: 0,
                 activeScreen: 'INTRO',
@@ -192,8 +194,9 @@ export const initFirebaseProfile = async (
         } else {
             console.log('👶 No local state found. Initializing new player offline.');
             useGameStore.getState().resetStore();
+            const fallbackName3 = state.vkUser?.first_name || `Игрок_${userId.slice(-4)}`;
             useGameStore.setState({
-                name: state.vkUser ? state.vkUser.first_name || 'Мастер' : 'Мастер',
+                name: fallbackName3,
                 onboardingCompleted: false,
                 tutorialStep: 0,
                 activeScreen: 'INTRO',

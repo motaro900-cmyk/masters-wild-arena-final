@@ -12,6 +12,7 @@ interface SubTabBtnProps {
 export const SubTabBtn: React.FC<SubTabBtnProps> = ({ label, isActive, onClick, isMobile = false }) => {
     return (
         <button
+            className={isMobile ? "nav-tab-mobile" : ""}
             onClick={() => {
                 audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
                 onClick();

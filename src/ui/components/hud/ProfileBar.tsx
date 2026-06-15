@@ -88,10 +88,8 @@ export const ProfileBar: React.FC<ProfileBarProps> = ({ onOpenProfile }) => {
                     className="text-[24px] font-bold leading-none mb-1.5"
                     style={{
                         fontFamily: "'Cinzel Decorative', 'Cinzel', serif",
-                        background: 'linear-gradient(to bottom, #ffffff 20%, #ffe082 60%, #c8952a 100%)',
-                        WebkitBackgroundClip: 'text',
-                        WebkitTextFillColor: 'transparent',
-                        filter: 'drop-shadow(0 2px 5px rgba(0,0,0,1))',
+                        color: '#ffffff',
+                        textShadow: '0 2px 0 rgba(0,0,0,0.95), 0 0 6px rgba(0,0,0,0.6)',
                     }}
                 >
                     {playerName}

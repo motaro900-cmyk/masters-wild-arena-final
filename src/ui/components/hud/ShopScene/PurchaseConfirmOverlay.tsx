@@ -7,7 +7,7 @@ interface PurchaseConfirmOverlayProps {
     item: ShopItem;
     dailyAdWatchesCount: number;
     onCancel: () => void;
-    onConfirm: (currency: 'gold' | 'gem' | 'votes' | 'ad') => void;
+    onConfirm: (currency: 'gold' | 'gem' | 'votes' | 'ad') => void | Promise<void>;
 }
 
 export const PurchaseConfirmOverlay: React.FC<PurchaseConfirmOverlayProps> = ({
@@ -24,10 +24,14 @@ export const PurchaseConfirmOverlay: React.FC<PurchaseConfirmOverlayProps> = ({
         setImageLoaded(false);
     }, [item.id, item.image]);
 
-    const handleConfirm = (currency: 'gold' | 'gem' | 'votes' | 'ad') => {
+    const handleConfirm = async (currency: 'gold' | 'gem' | 'votes' | 'ad') => {
         if (isProcessing) return;
         setIsProcessing(true);
-        onConfirm(currency);
+        try {
+            await onConfirm(currency);
+        } finally {
+            setIsProcessing(false);
+        }
     };
     return (
         <motion.div
