@@ -34,6 +34,11 @@ export const WEEKLY_QUESTS_POOL = [
     },
 ];
 
+// Mutex to prevent refreshDailyQuests from running in parallel or looping
+let isRefreshingDaily = false;
+let lastDailyRefreshAttempt = 0;
+const DAILY_REFRESH_COOLDOWN_MS = 30_000; // 30 seconds minimum between attempts
+
 export const createQuestSlice = (set: any, get: any) => ({
     // --- СОСТОЯНИЕ КВЕСТОВ И БОЕВОГО ПРОПУСКА ---
     bpLevel: 1,
@@ -47,6 +52,18 @@ export const createQuestSlice = (set: any, get: any) => ({
 
     // --- ЭКШЕНЫ КВЕСТОВ ---
     refreshDailyQuests: async () => {
+        // Guard: prevent concurrent calls and rapid re-triggering (infinite loop)
+        if (isRefreshingDaily) {
+            console.log('[questSlice] refreshDailyQuests already running, skipping');
+            return;
+        }
+        const now = Date.now();
+        if (now - lastDailyRefreshAttempt < DAILY_REFRESH_COOLDOWN_MS) {
+            console.log('[questSlice] refreshDailyQuests called too soon, skipping (cooldown)');
+            return;
+        }
+        isRefreshingDaily = true;
+        lastDailyRefreshAttempt = now;
         const { db, USERS_COLLECTION } = await import('../../utils/firebase');
         const { doc, updateDoc, getDoc, runTransaction, serverTimestamp } = await import('firebase/firestore');
         const { SyncService } = await import('../../services/SyncService');
@@ -129,6 +146,9 @@ export const createQuestSlice = (set: any, get: any) => ({
             });
         } catch (err) {
             console.error('[questSlice] Transaction refreshDailyQuests failed:', err);
+        } finally {
+            // Always release mutex so future calls can proceed
+            isRefreshingDaily = false;
         }
     },
 
