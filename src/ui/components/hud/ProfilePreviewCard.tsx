@@ -262,7 +262,7 @@ export const ProfilePreviewCard: React.FC<ProfilePreviewCardProps> = ({
                             filter:
                                 vipLevel > 0
                                     ? 'drop-shadow(0 2px 6px rgba(240, 192, 64, 0.6))'
-                                    : 'grayscale(1) opacity(0.5)',
+                                    : 'grayscale(1) brightness(0.95) contrast(1.1) opacity(0.85)',
                         }}
                         alt="vip badge"
                     />
