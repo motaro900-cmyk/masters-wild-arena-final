@@ -70,6 +70,7 @@ export const ProfileHub: React.FC = () => {
                     backgroundColor: 'transparent',
                     boxShadow: 'none',
                     border: 'none',
+                    filter: 'brightness(1.08) saturate(1.08)',
                     willChange: 'transform, opacity',
                     WebkitBackfaceVisibility: 'hidden',
                     backfaceVisibility: 'hidden',
@@ -186,7 +187,7 @@ export const ProfileHub: React.FC = () => {
                                     ? 'drop-shadow(0 0 8px rgba(240, 192, 64, 0.6))'
                                     : isHoveredVIP
                                       ? 'grayscale(0) opacity(1) drop-shadow(0 0 8px rgba(240, 192, 64, 0.5))'
-                                      : 'grayscale(1) opacity(0.5) contrast(0.8)',
+                                      : 'grayscale(1) brightness(0.95) contrast(1.1) opacity(0.85)',
                             transform: 'translate3d(0, 0, 0)',
                         }}
                         alt="vip"
