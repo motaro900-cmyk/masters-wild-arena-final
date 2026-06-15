@@ -295,7 +295,7 @@ export const DailyTaskPanel = React.memo(() => {
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                                                 <img
                                                     src={AssetsMap.UI.ICON_GOLD_FULL}
-                                                    style={{ width: 23, height: 23, objectFit: 'contain' }}
+                                                    style={{ width: 30, height: 30, objectFit: 'contain' }}
                                                     alt=""
                                                 />
                                                 <span style={{ fontSize: '14px', fontWeight: 900, color: '#3d260f' }}>
@@ -305,7 +305,7 @@ export const DailyTaskPanel = React.memo(() => {
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                                                 <img
                                                     src={AssetsMap.UI.ICON_ALMAZ_FULL}
-                                                    style={{ width: 20, height: 20, objectFit: 'contain' }}
+                                                    style={{ width: 28, height: 28, objectFit: 'contain' }}
                                                     alt=""
                                                 />
                                                 <span style={{ fontSize: '14px', fontWeight: 900, color: '#3d260f' }}>
@@ -316,8 +316,8 @@ export const DailyTaskPanel = React.memo(() => {
                                                 <img
                                                     src={AssetsMap.UI.ICON_XP}
                                                     style={{
-                                                        width: 35,
-                                                        height: 35,
+                                                        width: 44,
+                                                        height: 44,
                                                         objectFit: 'contain',
                                                         filter: 'grayscale(1) brightness(1.2) contrast(1.1) drop-shadow(0 0 2px rgba(255,255,255,0.3))',
                                                         marginLeft: '-3px',
