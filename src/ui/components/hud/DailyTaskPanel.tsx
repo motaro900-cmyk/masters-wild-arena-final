@@ -149,7 +149,7 @@ export const DailyTaskPanel = React.memo(() => {
                     backgroundImage: `url(${AssetsMap.UI.PANEL_QUEST})`,
                     backgroundSize: '100% 100%',
                     backgroundRepeat: 'no-repeat',
-                    filter: isLow ? 'none' : 'contrast(1.2) saturate(1.2) brightness(1.02)',
+                    filter: isLow ? 'none' : 'contrast(1.1) saturate(1.1) brightness(1.0)',
                     zIndex: 0,
                     pointerEvents: 'none',
                 }}
