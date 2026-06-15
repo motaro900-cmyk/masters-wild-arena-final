@@ -316,11 +316,12 @@ export const DailyTaskPanel = React.memo(() => {
                                                 <img
                                                     src={AssetsMap.UI.ICON_XP}
                                                     style={{
-                                                        width: 58,
-                                                        height: 58,
+                                                        width: 26,
+                                                        height: 26,
                                                         objectFit: 'contain',
                                                         filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.4))',
-                                                        margin: '-14px -10px -14px -10px',
+                                                        transform: 'scale(1.9)',
+                                                        transformOrigin: 'center',
                                                     }}
                                                     alt=""
                                                 />
