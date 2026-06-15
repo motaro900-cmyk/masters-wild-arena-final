@@ -6,10 +6,20 @@ import { getRankInfo } from '../../../configs/RankSystem';
 import { getHeroConfig } from '../../../configs/HeroesConfig';
 import { AvatarFrame } from './SharedUI';
 import { syncService, SyncService } from '../../../services/SyncService';
-import { buildStatsFromEquipment } from '../../../services/MatchmakingService';
+import { buildStatsFromEquipment, calculateCombatPower } from '../../../services/MatchmakingService';
+import { ITEMS_DATABASE } from '../../../game/configs/ItemsConfig';
 import { audioService } from '../../../services/AudioService';
 import { AssetsMap } from '../../../configs/AssetsMap';
 import { resolveAvatarPath } from '../../../configs/ProfileCustomization';
+
+const getTemplateId = (id: string) => {
+    if (!id) return '';
+    if (ITEMS_DATABASE[id]) return id;
+    const match = Object.keys(ITEMS_DATABASE)
+        .filter((key) => id.startsWith(key + '_'))
+        .sort((a, b) => b.length - a.length)[0];
+    return match || id;
+};
 
 export const PlayerInspectModal: React.FC = () => {
     const inspectPlayerId = useGameStore((state) => state.inspectPlayerId);
@@ -23,6 +33,7 @@ export const PlayerInspectModal: React.FC = () => {
     const [loading, setLoading] = React.useState(false);
     const [playerData, setPlayerData] = React.useState<any | null>(null);
     const [error, setError] = React.useState<string | null>(null);
+    const [activeTab, setActiveTab] = React.useState<'info' | 'gear'>('info');
 
     const activeInspectVal = inspectPlayerId || inspectPlayerName;
 
@@ -32,6 +43,7 @@ export const PlayerInspectModal: React.FC = () => {
             setError(null);
             return;
         }
+        setActiveTab('info');
 
         const fetchPlayer = async () => {
             setLoading(true);
@@ -209,13 +221,200 @@ export const PlayerInspectModal: React.FC = () => {
         }
     };
 
+    const handleWriteMail = () => {
+        if (!playerData) return;
+        audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
+        useGameStore.setState({
+            activeMailRecipientId: playerData.id,
+            inspectPlayerId: null,
+            inspectPlayerName: null,
+        });
+        if ((window as any).setActiveHUDWindow) {
+            (window as any).setActiveHUDWindow('MAIL');
+        }
+    };
+
+    const gold = playerData ? (playerData.gold !== undefined ? playerData.gold : playerData.золото !== undefined ? playerData.золото : 0) : 0;
+    const crystals = playerData ? (playerData.crystals !== undefined ? playerData.crystals : playerData.кристаллы !== undefined ? playerData.кристаллы : 0) : 0;
+
+    const rarityColors: Record<string, string> = {
+        COMMON: '#9ca3af',
+        UNCOMMON: '#4ade80',
+        RARE: '#3b82f6',
+        EPIC: '#a855f7',
+        MYTHIC: '#ec4899',
+        LEGENDARY: '#eab308',
+    };
+
+    const RARITY_RU: Record<string, string> = {
+        COMMON: 'Обычный',
+        UNCOMMON: 'Необычный',
+        RARE: 'Редкий',
+        EPIC: 'Эпический',
+        MYTHIC: 'Мифический',
+        LEGENDARY: 'Легендарный',
+    };
+
+    const renderGearCard = (slotKey: string, slotLabel: string) => {
+        if (!playerData) return null;
+        const itemId = playerData.equipment?.[slotKey] || playerData.снаряжение?.[slotKey] || null;
+
+        let itemData = null;
+        if (itemId) {
+            const resolvedId = getTemplateId(String(itemId));
+            itemData = ITEMS_DATABASE[resolvedId] as any;
+        }
+
+        const rarityColor = itemData ? rarityColors[itemData.rarity] || '#f0c040' : '#444';
+
+        const getPlaceholderIcon = () => {
+            switch (slotKey) {
+                case 'HELMETS': return AssetsMap.UI.BLUEPRINT_HELMET;
+                case 'SHOULDERS': return AssetsMap.UI.BLUEPRINT_SHOULDERS;
+                case 'ARMOR': return AssetsMap.UI.BLUEPRINT_ARMOR;
+                case 'PANTS': return AssetsMap.UI.BLUEPRINT_PANTS;
+                case 'WEAPONS': return AssetsMap.UI.BLUEPRINT_WEAPON;
+                case 'SHIELDS': return AssetsMap.UI.BLUEPRINT_SHIELD;
+                case 'BOOTS': return AssetsMap.UI.BLUEPRINT_BOOTS;
+                default: return '';
+            }
+        };
+
+        return (
+            <div style={{
+                background: 'rgba(255,255,255,0.02)',
+                border: `1.5px solid ${itemData ? rarityColor + '33' : 'rgba(255,255,255,0.05)'}`,
+                borderRadius: '12px',
+                padding: '10px 12px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                boxShadow: itemData ? `0 4px 12px rgba(0,0,0,0.5), inset 0 0 10px ${rarityColor}11` : 'none',
+            }}>
+                <div style={{
+                    width: '48px',
+                    height: '48px',
+                    borderRadius: '8px',
+                    background: itemData
+                        ? `radial-gradient(circle at 50% 30%, rgba(40, 32, 24, 0.95) 0%, rgba(14, 10, 8, 0.98) 100%)`
+                        : 'radial-gradient(circle at 50% 30%, rgba(28, 22, 17, 0.92) 0%, rgba(12, 9, 7, 0.97) 100%)',
+                    border: `1.5px solid ${itemData ? rarityColor : 'rgba(240,192,64,0.15)'}`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    position: 'relative',
+                    flexShrink: 0,
+                    boxShadow: itemData ? `0 0 10px ${rarityColor}33` : 'none',
+                }}>
+                    {itemData ? (
+                        itemData.spriteClass ? (
+                            <div className={itemData.spriteClass} style={{ width: '36px', height: '36px', borderRadius: '6px' }} />
+                        ) : (
+                            <img
+                                src={resolveAssetPath(itemData.image)}
+                                style={{ width: '70%', height: '70%', objectFit: 'contain' }}
+                                alt=""
+                            />
+                        )
+                    ) : (
+                        <img
+                            src={getPlaceholderIcon()}
+                            style={{
+                                width: '50%',
+                                height: '50%',
+                                objectFit: 'contain',
+                                filter: 'sepia(0.9) brightness(0.8) opacity(0.4)',
+                            }}
+                            alt=""
+                        />
+                    )}
+                </div>
+
+                <div style={{ textAlign: 'left', flex: 1, overflow: 'hidden' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2px' }}>
+                        <span style={{ fontSize: '9px', color: 'rgba(255,255,255,0.4)', fontWeight: 800 }}>{slotLabel}</span>
+                        {itemData && (
+                            <span style={{ fontSize: '8px', color: rarityColor, fontWeight: 900, textTransform: 'uppercase' }}>
+                                {RARITY_RU[itemData.rarity] || itemData.rarity}
+                            </span>
+                        )}
+                    </div>
+                    <div style={{
+                        fontSize: '12px',
+                        fontWeight: 800,
+                        color: itemData ? '#fff' : 'rgba(255,255,255,0.3)',
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                    }}>
+                        {itemData ? itemData.name : 'Пусто'}
+                    </div>
+                    {itemData && (
+                        <div style={{ fontSize: '9px', color: '#4ade80', fontWeight: 700, marginTop: '2px' }}>
+                            {[
+                                itemData.hpBonus && `+${itemData.hpBonus} HP`,
+                                itemData.attackBonus && `+${itemData.attackBonus} ATK`,
+                                itemData.defenseBonus && `+${itemData.defenseBonus} DEF`,
+                                (itemData.critBonus || itemData.critChance) && `+${Math.round((itemData.critBonus || itemData.critChance) <= 1 ? (itemData.critBonus || itemData.critChance) * 100 : (itemData.critBonus || itemData.critChance))}% CRIT`,
+                            ].filter(Boolean).join(' • ')}
+                        </div>
+                    )}
+                </div>
+            </div>
+        );
+    };
+
+    const renderPowerCard = () => {
+        const computedStats = buildStatsFromEquipment(selectedHeroId, level, playerData?.equipment || playerData?.снаряжение || {});
+        const power = calculateCombatPower(computedStats);
+
+        return (
+            <div style={{
+                background: 'linear-gradient(135deg, rgba(240,192,64,0.06) 0%, rgba(168,128,32,0.15) 100%)',
+                border: '1.5px solid #f0c040',
+                borderRadius: '12px',
+                padding: '10px 12px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                boxShadow: '0 4px 12px rgba(240,192,64,0.15), inset 0 0 15px rgba(240,192,64,0.1)',
+            }}>
+                <div style={{
+                    width: '48px',
+                    height: '48px',
+                    borderRadius: '8px',
+                    background: 'radial-gradient(circle, rgba(240,192,64,0.2) 0%, rgba(0,0,0,0.5) 100%)',
+                    border: '1.5px solid #f0c040',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                    boxShadow: '0 0 8px rgba(240,192,64,0.3)',
+                }}>
+                    <img
+                        src={resolveAssetPath(AssetsMap.UI.ICON_POWER)}
+                        style={{ width: '60%', height: '60%', objectFit: 'contain' }}
+                        alt="power"
+                    />
+                </div>
+
+                <div style={{ textAlign: 'left' }}>
+                    <div style={{ fontSize: '9px', color: '#f0c040', fontWeight: 800 }}>БОЕВАЯ МОЩЬ</div>
+                    <div style={{ fontSize: '18px', fontWeight: 900, color: '#fff', fontFamily: "'Cinzel', serif", textShadow: '0 2px 4px rgba(0,0,0,0.6)' }}>
+                        {power.toLocaleString()}
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
     return (
         <div
             style={{
                 position: 'fixed',
                 inset: 0,
-                background: 'rgba(0,0,0,0.85)',
-                backdropFilter: 'blur(10px)',
+                background: 'rgba(0,0,0,0.55)',
+                backdropFilter: 'blur(8px)',
                 zIndex: 100000,
                 display: 'flex',
                 alignItems: 'center',
@@ -230,7 +429,7 @@ export const PlayerInspectModal: React.FC = () => {
                 exit={{ scale: 0.92, opacity: 0, y: 15 }}
                 onClick={(e) => e.stopPropagation()}
                 style={{
-                    width: '460px',
+                    width: '680px',
                     background: 'radial-gradient(circle at center, #231c15 0%, #120e0a 100%)',
                     border: '2px solid #f0c040',
                     borderRadius: '24px',
@@ -305,203 +504,371 @@ export const PlayerInspectModal: React.FC = () => {
                         <div style={{ color: '#c8a870', fontSize: '13px', fontWeight: 700, marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '1px' }}>
                             {title}
                         </div>
-                        <div style={{ color: '#f0c040', fontSize: '14px', fontWeight: 800, marginBottom: '20px' }}>
+                        <div style={{ color: '#fcd34d', fontSize: '14px', fontWeight: 800, marginBottom: '10px' }}>
                             Уровень аккаунта: {level}
                         </div>
 
-                        {/* ЛЮБИМЫЙ ПЕРСОНАЖ */}
-                        <div
-                            style={{
-                                width: '100%',
-                                background: 'rgba(0,0,0,0.35)',
-                                borderRadius: '16px',
-                                border: '1px solid rgba(240,192,64,0.15)',
-                                padding: '15px',
-                                marginBottom: '20px',
+                        {/* РЕСУРСЫ (ЗОЛОТО И АЛМАЗЫ) */}
+                        <div style={{ display: 'flex', gap: '15px', marginBottom: '20px' }}>
+                            <div style={{
                                 display: 'flex',
                                 alignItems: 'center',
-                                gap: '15px',
-                            }}
-                        >
-                            <img
-                                src={resolveAssetPath(heroConfig.image)}
-                                style={{
-                                    width: '72px',
-                                    height: '72px',
-                                    objectFit: 'contain',
-                                    filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.6))',
-                                }}
-                                alt={heroConfig.name}
-                            />
-                            <div style={{ textAlign: 'left' }}>
-                                <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                                    Любимый Персонаж
-                                </div>
-                                <div style={{ color: '#fff', fontSize: '18px', fontWeight: 800, fontFamily: "'Cinzel', serif" }}>
-                                    {heroConfig.name}
-                                </div>
-                                <div style={{ color: '#c8a870', fontSize: '12px', opacity: 0.8 }}>
-                                    {heroConfig.title} • {heroConfig.role === 'TANK' ? 'Танк' : heroConfig.role === 'ASSASSIN' ? 'Убийца' : heroConfig.role === 'MAGE' ? 'Маг' : heroConfig.role === 'SUPPORT' ? 'Поддержка' : 'Боец'}
-                                </div>
+                                gap: '6px',
+                                background: 'rgba(0,0,0,0.3)',
+                                border: '1px solid rgba(240,192,64,0.15)',
+                                borderRadius: '12px',
+                                padding: '6px 14px',
+                                boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.6)',
+                            }}>
+                                <img
+                                    src={resolveAssetPath(AssetsMap.UI.ICON_GOLD_FULL)}
+                                    style={{ width: '20px', height: '20px', objectFit: 'contain' }}
+                                    alt="gold"
+                                />
+                                <span style={{ color: '#fff', fontSize: '14px', fontWeight: 900, fontFamily: "'Outfit', sans-serif" }}>
+                                    {gold.toLocaleString()}
+                                </span>
+                            </div>
+                            <div style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '6px',
+                                background: 'rgba(0,0,0,0.3)',
+                                border: '1px solid rgba(240,192,64,0.15)',
+                                borderRadius: '12px',
+                                padding: '6px 14px',
+                                boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.6)',
+                            }}>
+                                <img
+                                    src={resolveAssetPath(AssetsMap.UI.ICON_ALMAZ_FULL)}
+                                    style={{ width: '20px', height: '20px', objectFit: 'contain' }}
+                                    alt="diamonds"
+                                />
+                                <span style={{ color: '#fff', fontSize: '14px', fontWeight: 900, fontFamily: "'Outfit', sans-serif" }}>
+                                    {crystals.toLocaleString()}
+                                </span>
                             </div>
                         </div>
 
-                        {/* СТАТИСТИКА */}
-                        <div
-                            style={{
+                        {/* НАВИГАЦИЯ ВКЛАДОК */}
+                        <div style={{
+                            display: 'flex',
+                            width: '100%',
+                            background: 'rgba(0,0,0,0.45)',
+                            borderRadius: '12px',
+                            border: '1.5px solid rgba(240,192,64,0.15)',
+                            padding: '3px',
+                            marginBottom: '20px',
+                            gap: '4px',
+                        }}>
+                            <button
+                                onClick={() => {
+                                    audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
+                                    setActiveTab('info');
+                                }}
+                                style={{
+                                    flex: 1,
+                                    padding: '10px 0',
+                                    background: activeTab === 'info' ? 'linear-gradient(180deg, #f0c040 0%, #a88020 100%)' : 'transparent',
+                                    border: 'none',
+                                    borderRadius: '9px',
+                                    color: activeTab === 'info' ? '#000' : '#b5a695',
+                                    fontWeight: activeTab === 'info' ? 900 : 700,
+                                    fontSize: '13px',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.2s',
+                                    fontFamily: "'Cinzel', serif",
+                                    letterSpacing: '1px',
+                                }}
+                            >
+                                ОБЩАЯ ИНФО
+                            </button>
+                            <button
+                                onClick={() => {
+                                    audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
+                                    setActiveTab('gear');
+                                }}
+                                style={{
+                                    flex: 1,
+                                    padding: '10px 0',
+                                    background: activeTab === 'gear' ? 'linear-gradient(180deg, #f0c040 0%, #a88020 100%)' : 'transparent',
+                                    border: 'none',
+                                    borderRadius: '9px',
+                                    color: activeTab === 'gear' ? '#000' : '#b5a695',
+                                    fontWeight: activeTab === 'gear' ? 900 : 700,
+                                    fontSize: '13px',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.2s',
+                                    fontFamily: "'Cinzel', serif",
+                                    letterSpacing: '1px',
+                                }}
+                            >
+                                ЭКИПИРОВКА
+                            </button>
+                        </div>
+
+                        {/* СОДЕРЖИМОЕ ВКЛАДОК */}
+                        {activeTab === 'info' ? (
+                            <>
+                                {/* ЛЮБИМЫЙ ПЕРСОНАЖ */}
+                                <div
+                                    style={{
+                                        width: '100%',
+                                        background: 'rgba(0,0,0,0.35)',
+                                        borderRadius: '16px',
+                                        border: '1px solid rgba(240,192,64,0.15)',
+                                        padding: '15px',
+                                        marginBottom: '20px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '15px',
+                                    }}
+                                >
+                                    <img
+                                        src={resolveAssetPath(heroConfig.image)}
+                                        style={{
+                                            width: '72px',
+                                            height: '72px',
+                                            objectFit: 'contain',
+                                            filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.6))',
+                                        }}
+                                        alt={heroConfig.name}
+                                    />
+                                    <div style={{ textAlign: 'left' }}>
+                                        <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                                            Любимый Персонаж
+                                        </div>
+                                        <div style={{ color: '#fff', fontSize: '18px', fontWeight: 800, fontFamily: "'Cinzel', serif" }}>
+                                            {heroConfig.name}
+                                        </div>
+                                        <div style={{ color: '#c8a870', fontSize: '12px', opacity: 0.8 }}>
+                                            {heroConfig.title} • {heroConfig.role === 'TANK' ? 'Танк' : heroConfig.role === 'ASSASSIN' ? 'Убийца' : heroConfig.role === 'MAGE' ? 'Маг' : heroConfig.role === 'SUPPORT' ? 'Поддержка' : 'Боец'}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* СТАТИСТИКА */}
+                                <div
+                                    style={{
+                                        width: '100%',
+                                        display: 'grid',
+                                        gridTemplateColumns: '1fr 1fr',
+                                        gap: '12px',
+                                        marginBottom: '25px',
+                                    }}
+                                >
+                                    {/* РАНГ */}
+                                    <div
+                                        style={{
+                                            background: 'rgba(255,255,255,0.02)',
+                                            border: '1px solid rgba(240,192,64,0.1)',
+                                            borderRadius: '12px',
+                                            padding: '10px',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '10px',
+                                        }}
+                                    >
+                                        <img src={rankInfo.icon} style={{ width: '32px', height: '32px', objectFit: 'contain' }} alt="" />
+                                        <div style={{ textAlign: 'left' }}>
+                                            <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.4)' }}>РАНГ</div>
+                                            <div style={{ fontSize: '12px', fontWeight: 800, color: rankInfo.color }}>
+                                                {rankInfo.name}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* РЕЙТИНГ */}
+                                    <div
+                                        style={{
+                                            background: 'rgba(255,255,255,0.02)',
+                                            border: '1px solid rgba(240,192,64,0.1)',
+                                            borderRadius: '12px',
+                                            padding: '10px',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '10px',
+                                        }}
+                                    >
+                                        <img src={resolveAssetPath(AssetsMap.UI.TROPHY_PREMIUM)} style={{ width: '32px', height: '32px', objectFit: 'contain' }} alt="trophy" />
+                                        <div style={{ textAlign: 'left' }}>
+                                            <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.4)' }}>РЕЙТИНГ</div>
+                                            <div style={{ fontSize: '14px', fontWeight: 900, color: '#fff' }}>{rating}</div>
+                                        </div>
+                                    </div>
+
+                                    {/* ВСЕГО БОЕВ */}
+                                    <div
+                                        style={{
+                                            background: 'rgba(255,255,255,0.02)',
+                                            border: '1px solid rgba(240,192,64,0.1)',
+                                            borderRadius: '12px',
+                                            padding: '10px',
+                                            textAlign: 'left',
+                                        }}
+                                    >
+                                        <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.4)' }}>ВСЕГО БОЕВ</div>
+                                        <div style={{ fontSize: '16px', fontWeight: 900, color: '#fff' }}>{totalBattles}</div>
+                                    </div>
+
+                                    {/* ДОЛЯ ПОБЕД */}
+                                    <div
+                                        style={{
+                                            background: 'rgba(255,255,255,0.02)',
+                                            border: '1px solid rgba(240,192,64,0.1)',
+                                            borderRadius: '12px',
+                                            padding: '10px',
+                                            textAlign: 'left',
+                                        }}
+                                    >
+                                        <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.4)' }}>ПРОЦЕНТ ПОБЕД</div>
+                                        <div style={{ fontSize: '16px', fontWeight: 900, color: '#4ade80' }}>{winRate}%</div>
+                                    </div>
+                                </div>
+                            </>
+                        ) : (
+                            <div style={{
                                 width: '100%',
                                 display: 'grid',
                                 gridTemplateColumns: '1fr 1fr',
-                                gap: '12px',
+                                gap: '10px',
                                 marginBottom: '25px',
-                            }}
-                        >
-                            {/* РАНГ (слева) */}
-                            <div
-                                style={{
-                                    background: 'rgba(255,255,255,0.02)',
-                                    border: '1px solid rgba(240,192,64,0.1)',
-                                    borderRadius: '12px',
-                                    padding: '10px',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '10px',
-                                }}
-                            >
-                                <img src={rankInfo.icon} style={{ width: '32px', height: '32px', objectFit: 'contain' }} alt="" />
-                                <div style={{ textAlign: 'left' }}>
-                                    <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.4)' }}>РАНГ</div>
-                                    <div style={{ fontSize: '12px', fontWeight: 800, color: rankInfo.color }}>
-                                        {rankInfo.name}
-                                    </div>
-                                </div>
+                                maxHeight: '312px',
+                                overflowY: 'auto',
+                                paddingRight: '4px',
+                            }}>
+                                {renderGearCard('HELMETS', 'ШЛЕМ')}
+                                {renderGearCard('SHOULDERS', 'ПЛЕЧИ')}
+                                {renderGearCard('ARMOR', 'ДОСПЕХ')}
+                                {renderGearCard('PANTS', 'ПОНОЖИ')}
+                                {renderGearCard('WEAPONS', 'ОРУЖИЕ')}
+                                {renderGearCard('SHIELDS', 'ЩИТ')}
+                                {renderGearCard('BOOTS', 'САПОГИ')}
+                                {renderPowerCard()}
                             </div>
-
-                            {/* РЕЙТИНГ (справа) */}
-                            <div
-                                style={{
-                                    background: 'rgba(255,255,255,0.02)',
-                                    border: '1px solid rgba(240,192,64,0.1)',
-                                    borderRadius: '12px',
-                                    padding: '10px',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '10px',
-                                }}
-                            >
-                                <img src={resolveAssetPath(AssetsMap.UI.TROPHY_PREMIUM)} style={{ width: '32px', height: '32px', objectFit: 'contain' }} alt="trophy" />
-                                <div style={{ textAlign: 'left' }}>
-                                    <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.4)' }}>РЕЙТИНГ</div>
-                                    <div style={{ fontSize: '14px', fontWeight: 900, color: '#fff' }}>{rating}</div>
-                                </div>
-                            </div>
-
-                            {/* ВСЕГО БОЕВ */}
-                            <div
-                                style={{
-                                    background: 'rgba(255,255,255,0.02)',
-                                    border: '1px solid rgba(240,192,64,0.1)',
-                                    borderRadius: '12px',
-                                    padding: '10px',
-                                    textAlign: 'left',
-                                }}
-                            >
-                                <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.4)' }}>ВСЕГО БОЕВ</div>
-                                <div style={{ fontSize: '16px', fontWeight: 900, color: '#fff' }}>{totalBattles}</div>
-                            </div>
-
-                            {/* ДОЛЯ ПОБЕД */}
-                            <div
-                                style={{
-                                    background: 'rgba(255,255,255,0.02)',
-                                    border: '1px solid rgba(240,192,64,0.1)',
-                                    borderRadius: '12px',
-                                    padding: '10px',
-                                    textAlign: 'left',
-                                }}
-                            >
-                                <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.4)' }}>ПРОЦЕНТ ПОБЕД</div>
-                                <div style={{ fontSize: '16px', fontWeight: 900, color: '#4ade80' }}>{winRate}%</div>
-                            </div>
-                        </div>
+                        )}
 
                         {/* КНОПКИ ДЕЙСТВИЙ */}
-                        <div style={{ display: 'flex', gap: '12px', width: '100%' }}>
-                            {!isMe && (
+                        {isMe ? (
+                            <div style={{ display: 'flex', width: '100%' }}>
                                 <button
-                                    onClick={handleAddFriend}
-                                    disabled={isAlreadyFriend}
+                                    onClick={handleClose}
                                     style={{
-                                        flex: 1.2,
+                                        width: '100%',
                                         padding: '14px',
-                                        background: isAlreadyFriend ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.08)',
-                                        border: `1px solid ${isAlreadyFriend ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.2)'}`,
+                                        background: 'rgba(255,255,255,0.05)',
+                                        border: '1.5px solid rgba(255,255,255,0.15)',
                                         borderRadius: '12px',
-                                        color: isAlreadyFriend ? 'rgba(255,255,255,0.3)' : '#fff',
-                                        fontSize: '13px',
+                                        color: '#fff',
+                                        fontSize: '14px',
                                         fontWeight: 800,
-                                        cursor: isAlreadyFriend ? 'default' : 'pointer',
-                                        transition: 'all 0.15s',
-                                    }}
-                                    onMouseEnter={(e) => {
-                                        if (!isAlreadyFriend) e.currentTarget.style.background = 'rgba(255,255,255,0.15)';
-                                    }}
-                                    onMouseLeave={(e) => {
-                                        if (!isAlreadyFriend) e.currentTarget.style.background = 'rgba(255,255,255,0.08)';
-                                    }}
-                                >
-                                    {isAlreadyFriend ? 'УЖЕ В ДРУЗЬЯХ' : 'В ДРУЗЬЯ'}
-                                </button>
-                            )}
-
-                            {!isMe && (
-                                <button
-                                    onClick={handleChallenge}
-                                    style={{
-                                        flex: 1.5,
-                                        padding: '14px',
-                                        background: 'linear-gradient(180deg, #f0c040 0%, #a88020 100%)',
-                                        border: 'none',
-                                        borderRadius: '12px',
-                                        color: '#000',
-                                        fontSize: '13px',
-                                        fontWeight: 900,
                                         cursor: 'pointer',
-                                        boxShadow: '0 4px 12px rgba(240, 192, 64, 0.25)',
-                                        transition: 'all 0.15s',
+                                        transition: 'all 0.2s',
                                     }}
-                                    onMouseEnter={(e) => (e.currentTarget.style.filter = 'brightness(1.15)')}
-                                    onMouseLeave={(e) => (e.currentTarget.style.filter = 'brightness(1)')}
+                                    onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.1)')}
+                                    onMouseLeave={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.05)')}
                                 >
-                                    ВЫЗВАТЬ НА БОЙ
+                                    ЗАКРЫТЬ
                                 </button>
-                            )}
-
-                            <button
-                                type="button"
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    e.preventDefault();
-                                    handleClose();
-                                }}
-                                style={{
-                                    flex: isMe ? 1 : 0.8,
-                                    padding: '14px',
-                                    background: 'rgba(255,255,255,0.05)',
-                                    border: '1px solid rgba(255,255,255,0.1)',
-                                    borderRadius: '12px',
-                                    color: 'rgba(255,255,255,0.7)',
-                                    fontSize: '13px',
-                                    fontWeight: 700,
-                                    cursor: 'pointer',
-                                    transition: 'all 0.15s',
-                                }}
-                                onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.1)')}
-                                onMouseLeave={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.05)')}
-                            >
-                                ЗАКРЫТЬ
-                            </button>
-                        </div>
+                            </div>
+                        ) : (
+                            <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
+                                <div style={{ display: 'flex', gap: '10px', width: '100%', marginBottom: '10px' }}>
+                                    <button
+                                        onClick={handleAddFriend}
+                                        disabled={isAlreadyFriend}
+                                        style={{
+                                            flex: 1,
+                                            padding: '12px',
+                                            background: isAlreadyFriend ? 'rgba(255,255,255,0.03)' : 'rgba(255,255,255,0.07)',
+                                            border: `1.5px solid ${isAlreadyFriend ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.2)'}`,
+                                            borderRadius: '12px',
+                                            color: isAlreadyFriend ? 'rgba(255,255,255,0.3)' : '#fff',
+                                            fontSize: '13px',
+                                            fontWeight: 800,
+                                            cursor: isAlreadyFriend ? 'default' : 'pointer',
+                                            transition: 'all 0.2s',
+                                        }}
+                                        onMouseEnter={(e) => {
+                                            if (!isAlreadyFriend) e.currentTarget.style.background = 'rgba(255,255,255,0.12)';
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            if (!isAlreadyFriend) e.currentTarget.style.background = 'rgba(255,255,255,0.07)';
+                                        }}
+                                    >
+                                        {isAlreadyFriend ? 'УЖЕ В ДРУЗЬЯХ' : 'В ДРУЗЬЯ'}
+                                    </button>
+                                    <button
+                                        onClick={handleWriteMail}
+                                        style={{
+                                            flex: 1,
+                                            padding: '12px',
+                                            background: 'rgba(255,255,255,0.07)',
+                                            border: '1.5px solid rgba(255,255,255,0.2)',
+                                            borderRadius: '12px',
+                                            color: '#fff',
+                                            fontSize: '13px',
+                                            fontWeight: 800,
+                                            cursor: 'pointer',
+                                            transition: 'all 0.2s',
+                                        }}
+                                        onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.12)')}
+                                        onMouseLeave={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.07)')}
+                                    >
+                                        НАПИСАТЬ
+                                    </button>
+                                </div>
+                                <div style={{ display: 'flex', gap: '10px', width: '100%' }}>
+                                    <button
+                                        onClick={handleChallenge}
+                                        style={{
+                                            flex: 1.8,
+                                            padding: '14px',
+                                            background: 'linear-gradient(180deg, #f0c040 0%, #a88020 100%)',
+                                            border: '1.5px solid #ffe880',
+                                            borderRadius: '12px',
+                                            color: '#000',
+                                            fontSize: '14px',
+                                            fontWeight: 900,
+                                            cursor: 'pointer',
+                                            boxShadow: '0 4px 15px rgba(240, 192, 64, 0.35)',
+                                            transition: 'all 0.2s',
+                                            fontFamily: "'Cinzel', serif",
+                                            letterSpacing: '1px',
+                                        }}
+                                        onMouseEnter={(e) => (e.currentTarget.style.filter = 'brightness(1.15)')}
+                                        onMouseLeave={(e) => (e.currentTarget.style.filter = 'brightness(1)')}
+                                    >
+                                        ВЫЗВАТЬ НА БОЙ
+                                    </button>
+                                    <button
+                                        onClick={handleClose}
+                                        style={{
+                                            flex: 1,
+                                            padding: '14px',
+                                            background: 'rgba(255,255,255,0.04)',
+                                            border: '1.5px solid rgba(255,255,255,0.1)',
+                                            borderRadius: '12px',
+                                            color: 'rgba(255,255,255,0.6)',
+                                            fontSize: '14px',
+                                            fontWeight: 700,
+                                            cursor: 'pointer',
+                                            transition: 'all 0.2s',
+                                        }}
+                                        onMouseEnter={(e) => {
+                                            e.currentTarget.style.background = 'rgba(255,255,255,0.08)';
+                                            e.currentTarget.style.color = '#fff';
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            e.currentTarget.style.background = 'rgba(255,255,255,0.04)';
+                                            e.currentTarget.style.color = 'rgba(255,255,255,0.6)';
+                                        }}
+                                    >
+                                        ЗАКРЫТЬ
+                                    </button>
+                                </div>
+                            </div>
+                        )}
                     </>
                 )}
             </motion.div>

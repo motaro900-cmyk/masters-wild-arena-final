@@ -51,6 +51,37 @@ export const MailWindow: React.FC<MailWindowProps> = () => {
     const [writeSubject, setWriteSubject] = useState('');
     const [writeBody, setWriteBody] = useState('');
 
+    const activeMailRecipientId = useGameStore((state: any) => state.activeMailRecipientId);
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const dropdownRef = React.useRef<HTMLDivElement>(null);
+
+    // Auto-populate recipient from inspect modal
+    useEffect(() => {
+        if (activeMailRecipientId) {
+            setView('WRITE');
+            const isFriend = (friends || []).some((f: any) => f.id === activeMailRecipientId);
+            if (isFriend) {
+                setRecipientId(activeMailRecipientId);
+                setManualRecipientId('');
+            } else {
+                setRecipientId('custom');
+                setManualRecipientId(activeMailRecipientId);
+            }
+            useGameStore.setState({ activeMailRecipientId: null });
+        }
+    }, [activeMailRecipientId, friends]);
+
+    // Close dropdown on click outside
+    useEffect(() => {
+        const handleClickOutside = (e: MouseEvent) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+                setIsDropdownOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
     const handleSendPersonalMail = async () => {
         const target = recipientId === 'custom' || !recipientId ? manualRecipientId.trim() : recipientId;
         if (!target) {
@@ -662,33 +693,115 @@ export const MailWindow: React.FC<MailWindowProps> = () => {
                                     КОМУ:
                                 </label>
                                 {friends && friends.length > 0 ? (
-                                    <select
-                                        value={recipientId}
-                                        onChange={(e) => {
-                                            setRecipientId(e.target.value);
-                                            if (e.target.value !== 'custom') {
-                                                setManualRecipientId('');
-                                            }
-                                        }}
-                                        style={{
-                                            padding: '12px',
-                                            background: colors.input,
-                                            border: `1px solid ${colors.border}`,
-                                            borderRadius: '8px',
-                                            color: '#fff',
-                                            fontSize: '14px',
-                                            outline: 'none',
-                                            cursor: 'pointer',
-                                        }}
-                                    >
-                                        <option value="" disabled>-- Выберите друга --</option>
-                                        {friends.map((f: any) => (
-                                            <option key={f.id} value={f.id}>
-                                                {f.name || f.username || f.id} ({f.id})
-                                            </option>
-                                        ))}
-                                        <option value="custom">Указать ID вручную...</option>
-                                    </select>
+                                    <div ref={dropdownRef} style={{ position: 'relative', width: '100%' }}>
+                                        <div
+                                            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                                            style={{
+                                                padding: '12px 16px',
+                                                background: colors.input,
+                                                border: `1px solid ${colors.border}`,
+                                                borderRadius: '8px',
+                                                color: '#fff',
+                                                fontSize: '14px',
+                                                cursor: 'pointer',
+                                                display: 'flex',
+                                                justifyContent: 'space-between',
+                                                alignItems: 'center',
+                                                userSelect: 'none',
+                                                boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.5)',
+                                            }}
+                                        >
+                                            <span>
+                                                {recipientId === 'custom'
+                                                    ? 'Указать ID вручную...'
+                                                    : recipientId
+                                                    ? ((friends || []).find((f: any) => f.id === recipientId)?.name ||
+                                                       (friends || []).find((f: any) => f.id === recipientId)?.username ||
+                                                       recipientId) + ` (${recipientId})`
+                                                    : '-- Выберите друга --'}
+                                            </span>
+                                            <span style={{
+                                                fontSize: '10px',
+                                                color: colors.accent,
+                                                transform: isDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                                                transition: 'transform 0.2s',
+                                            }}>
+                                                ▼
+                                            </span>
+                                        </div>
+
+                                        {isDropdownOpen && (
+                                            <div style={{
+                                                position: 'absolute',
+                                                top: 'calc(100% + 4px)',
+                                                left: 0,
+                                                width: '100%',
+                                                maxHeight: '220px',
+                                                overflowY: 'auto',
+                                                background: 'rgba(25, 20, 15, 0.98)',
+                                                border: `1.5px solid ${colors.border}`,
+                                                borderRadius: '8px',
+                                                boxShadow: '0 8px 24px rgba(0,0,0,0.85), 0 0 15px rgba(240,192,64,0.1)',
+                                                zIndex: 9999,
+                                            }}>
+                                                {friends.map((f: any) => (
+                                                    <div
+                                                        key={f.id}
+                                                        onClick={() => {
+                                                            setRecipientId(f.id);
+                                                            setManualRecipientId('');
+                                                            setIsDropdownOpen(false);
+                                                        }}
+                                                        onMouseEnter={(e) => {
+                                                            e.currentTarget.style.background = 'rgba(240,192,64,0.15)';
+                                                            e.currentTarget.style.color = colors.accent;
+                                                        }}
+                                                        onMouseLeave={(e) => {
+                                                            e.currentTarget.style.background = 'transparent';
+                                                            e.currentTarget.style.color = '#fff';
+                                                        }}
+                                                        style={{
+                                                            padding: '10px 16px',
+                                                            color: '#fff',
+                                                            fontSize: '13px',
+                                                            cursor: 'pointer',
+                                                            borderBottom: '1px solid rgba(255,255,255,0.03)',
+                                                            transition: 'all 0.15s',
+                                                            textAlign: 'left',
+                                                        }}
+                                                    >
+                                                        {f.name || f.username || f.id} ({f.id})
+                                                    </div>
+                                                ))}
+
+                                                <div
+                                                    onClick={() => {
+                                                        setRecipientId('custom');
+                                                        setIsDropdownOpen(false);
+                                                    }}
+                                                    onMouseEnter={(e) => {
+                                                        e.currentTarget.style.background = 'rgba(240,192,64,0.15)';
+                                                        e.currentTarget.style.color = colors.accent;
+                                                    }}
+                                                    onMouseLeave={(e) => {
+                                                        e.currentTarget.style.background = 'transparent';
+                                                        e.currentTarget.style.color = '#ffd700';
+                                                    }}
+                                                    style={{
+                                                        padding: '10px 16px',
+                                                        color: '#ffd700',
+                                                        fontSize: '13px',
+                                                        fontWeight: 'bold',
+                                                        cursor: 'pointer',
+                                                        transition: 'all 0.15s',
+                                                        textAlign: 'left',
+                                                    }}
+                                                >
+                                                    Указать ID вручную...
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
                                 ) : (
                                     <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)', fontStyle: 'italic' }}>
                                         Список друзей пуст. Вы можете ввести ID игрока вручную ниже.

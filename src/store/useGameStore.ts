@@ -35,6 +35,7 @@ type GameStoreState = {
     setShowSummonOverlay?: (show: boolean) => void;
     inspectPlayerId?: string | null;
     inspectPlayerName?: string | null;
+    activeMailRecipientId?: string | null;
     setInspectPlayerId?: (id: string | null) => void;
     setInspectPlayerName?: (name: string | null) => void;
     pvpCooldowns?: Record<string, number>;
