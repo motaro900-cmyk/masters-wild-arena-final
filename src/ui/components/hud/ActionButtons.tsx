@@ -114,7 +114,7 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({ onStartBattle, onW
                 <div
                     style={{
                         position: 'absolute',
-                        top: '7%',
+                        top: 'calc(7% + 3px)',
                         right: 'calc(4% + 10px)',
                         width: '52px',
                         height: '52px',
