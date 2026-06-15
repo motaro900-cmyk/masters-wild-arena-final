@@ -226,12 +226,12 @@ export const DailyTaskPanel = React.memo(() => {
                                     <div
                                         key={`quest-item-${dq.questId}-${index}`}
                                         style={{
-                                            padding: '0',
+                                            padding: '6px 0 0 0',
                                             position: 'relative',
                                             height: '78px',
                                             display: 'flex',
                                             flexDirection: 'column',
-                                            justifyContent: 'center',
+                                            justifyContent: 'flex-start',
                                         }}
                                     >
                                         <div style={{ display: 'flex', flexDirection: 'column', marginBottom: '5px' }}>
@@ -289,7 +289,7 @@ export const DailyTaskPanel = React.memo(() => {
                                                 display: 'flex',
                                                 alignItems: 'center',
                                                 gap: isMobileLayout ? '10px' : '15px',
-                                                marginTop: '8px',
+                                                marginTop: '3px',
                                             }}
                                         >
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -316,12 +316,11 @@ export const DailyTaskPanel = React.memo(() => {
                                                 <img
                                                     src={AssetsMap.UI.ICON_XP}
                                                     style={{
-                                                        width: 44,
-                                                        height: 44,
+                                                        width: 58,
+                                                        height: 58,
                                                         objectFit: 'contain',
                                                         filter: 'grayscale(1) brightness(1.2) contrast(1.1) drop-shadow(0 0 2px rgba(255,255,255,0.3))',
-                                                        marginLeft: '-3px',
-                                                        marginRight: '-3px',
+                                                        margin: '-14px -10px -14px -10px',
                                                     }}
                                                     alt=""
                                                 />
