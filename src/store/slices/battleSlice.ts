@@ -190,7 +190,6 @@ export const createBattleSlice = (set: any, get: any) => ({
             const activeHeroId = get().selectedHeroId || 'panda';
             get().addHeroExp(activeHeroId, xpReward);
             get().addExp(xpReward); // Опыт аккаунта для прокачки уровня игрока
-            get().addBpExp(100);
 
             let coalGained = 0,
                 steelGained = 0,
@@ -282,7 +281,6 @@ export const createBattleSlice = (set: any, get: any) => ({
 
             syncService.logPlayerAction(`Победа в бою (Этап PvE: ${pveStage})`);
         } else {
-            get().addBpExp(20);
 
             set((state: any) => ({
                 winStreak: 0,

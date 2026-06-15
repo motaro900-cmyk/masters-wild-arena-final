@@ -19,10 +19,11 @@ export const LocalStatRow: React.FC<LocalStatRowProps> = ({ label, pVal, eVal, i
                 style={{
                     width: '40px',
                     textAlign: 'right',
-                    color: '#22c55e',
-                    fontSize: '15px',
-                    fontWeight: 'bold',
+                    color: '#4ade80',
+                    fontSize: '16px',
+                    fontWeight: 900,
                     fontFamily: "'Montserrat', sans-serif",
+                    textShadow: '0 1px 3px rgba(0,0,0,0.8)',
                 }}
             >
                 {label === 'СКОРОСТЬ' ? pVal.toFixed(1) : label === 'КРИТ. ШАНС' ? `${Math.round(pVal)}%` : Math.round(pVal)}
@@ -44,9 +45,9 @@ export const LocalStatRow: React.FC<LocalStatRowProps> = ({ label, pVal, eVal, i
                     style={{
                         width: `${pPct}%`,
                         height: '100%',
-                        background: '#10b981',
+                        background: '#34d399',
                         borderRadius: '3px',
-                        boxShadow: '0 0 6px rgba(16,185,129,0.3)',
+                        boxShadow: '0 0 8px rgba(52,211,153,0.4)',
                     }}
                 />
             </div>
@@ -67,13 +68,13 @@ export const LocalStatRow: React.FC<LocalStatRowProps> = ({ label, pVal, eVal, i
                 </div>
                 <div
                     style={{
-                        color: '#b5a695',
+                        color: '#ffd700',
                         fontSize: '11px',
-                        fontWeight: 900,
+                        fontWeight: 950,
                         fontFamily: "'Cinzel', serif",
                         letterSpacing: '1px',
                         textTransform: 'uppercase',
-                        textShadow: '0 1px 2px rgba(0,0,0,0.8)',
+                        textShadow: '0 1.5px 3px rgba(0,0,0,0.95)',
                     }}
                 >
                     {label}
@@ -94,9 +95,9 @@ export const LocalStatRow: React.FC<LocalStatRowProps> = ({ label, pVal, eVal, i
                     style={{
                         width: `${ePct}%`,
                         height: '100%',
-                        background: '#ef4444',
+                        background: '#f87171',
                         borderRadius: '3px',
-                        boxShadow: '0 0 6px rgba(239,68,68,0.3)',
+                        boxShadow: '0 0 8px rgba(248,113,113,0.4)',
                     }}
                 />
             </div>
@@ -106,10 +107,11 @@ export const LocalStatRow: React.FC<LocalStatRowProps> = ({ label, pVal, eVal, i
                 style={{
                     width: '40px',
                     textAlign: 'left',
-                    color: '#ef4444',
-                    fontSize: '15px',
-                    fontWeight: 'bold',
+                    color: '#f87171',
+                    fontSize: '16px',
+                    fontWeight: 900,
                     fontFamily: "'Montserrat', sans-serif",
+                    textShadow: '0 1px 3px rgba(0,0,0,0.8)',
                 }}
             >
                 {label === 'СКОРОСТЬ' ? eVal.toFixed(1) : label === 'КРИТ. ШАНС' ? `${Math.round(eVal)}%` : Math.round(eVal)}

@@ -182,6 +182,7 @@ const store = create<GameStoreState>()(
                 dailyQuests: state.dailyQuests,
                 bpDailyQuests: state.bpDailyQuests,
                 weeklyQuests: state.weeklyQuests,
+                friendNotes: state.friendNotes,
                 lastDailyRefresh: state.lastDailyRefresh,
                 lastWeeklyQuestReset: state.lastWeeklyQuestReset,
                 trophies: state.trophies,

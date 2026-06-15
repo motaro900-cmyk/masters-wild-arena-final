@@ -43,7 +43,6 @@ interface MatchmakingFoundProps {
     forecast: number;
     shouldFlipEnemy: (src: string) => boolean;
     renderStatRow: (label: string, pVal: number, eVal: number, maxVal: number) => React.ReactNode;
-    onCancel: () => void;
     onStartFight: () => void;
 }
 
@@ -58,7 +57,6 @@ export const MatchmakingFound: React.FC<MatchmakingFoundProps> = ({
     playerStats,
     forecast,
     shouldFlipEnemy,
-    onCancel,
     onStartFight,
 }) => {
     const { heroEquipment, selectedHeroId, title, name, wins, totalBattles, isPremium, winStreak } = useGameStore(
@@ -691,7 +689,7 @@ export const MatchmakingFound: React.FC<MatchmakingFoundProps> = ({
                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                 <img
                                     src={AssetsMap.UI.ICON_XP}
-                                    style={{ width: '28px', height: '28px', objectFit: 'contain', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))' }}
+                                    style={{ width: '58px', height: '58px', margin: '0 -15px', objectFit: 'contain', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))' }}
                                     alt="xp"
                                 />
                                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
@@ -774,42 +772,11 @@ export const MatchmakingFound: React.FC<MatchmakingFoundProps> = ({
                             boxShadow: isStarting ? 'none' : '0 8px 16px rgba(245, 158, 11, 0.4)',
                             fontFamily: "'Cinzel', serif",
                             letterSpacing: '1.5px',
-                            marginBottom: '8px',
+                            marginBottom: '0px',
                             opacity: isStarting ? 0.7 : 1,
                         }}
                     >
                         {isStarting ? 'ЗАГРУЗКА...' : 'НАЧАТЬ БОЙ'}
-                    </button>
-
-                    {/* Кнопка НАЗАД */}
-                    <button
-                        onClick={onCancel}
-                        disabled={isStarting}
-                        onMouseEnter={(e) => {
-                            if (isStarting) return;
-                            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
-                        }}
-                        onMouseLeave={(e) => {
-                            if (isStarting) return;
-                            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.04)';
-                        }}
-                        style={{
-                            width: '40%',
-                            padding: '6px 0',
-                            background: 'rgba(255, 255, 255, 0.04)',
-                            border: '1px solid rgba(255, 255, 255, 0.15)',
-                            borderRadius: '6px',
-                            color: '#b5a695',
-                            fontSize: '11px',
-                            fontWeight: 'bold',
-                            cursor: isStarting ? 'not-allowed' : 'pointer',
-                            transition: 'all 0.2s',
-                            fontFamily: "'Cinzel', serif",
-                            letterSpacing: '1px',
-                            opacity: isStarting ? 0.5 : 1,
-                        }}
-                    >
-                        НАЗАД
                     </button>
                 </div>
             </motion.div>

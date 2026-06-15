@@ -305,7 +305,6 @@ export const MatchmakingOverlay: React.FC<MatchmakingOverlayProps> = ({ onFound,
                             forecast={forecast}
                             shouldFlipEnemy={shouldFlipEnemy}
                             renderStatRow={renderStatRow}
-                            onCancel={onCancel}
                             onStartFight={() => onFoundRef.current({ ...opponent, ...opponentMeta })}
                         />
                     )

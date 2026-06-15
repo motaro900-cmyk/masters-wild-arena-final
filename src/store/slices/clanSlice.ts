@@ -6,12 +6,20 @@ export const createClanSlice = (set: any, get: any) => ({
     // --- СОСТОЯНИЕ КЛАНОВ И ДРУЗЕЙ ---
     friends: [] as any[],
     friendRequests: [] as any[],
+    friendNotes: {} as Record<string, string>,
     clanId: null as string | null,
     clanData: null as any,
     clanCoins: 0,
 
     // --- ЭКШЕНЫ КЛАНОВ И ДРУЗЕЙ ---
     setFriendRequests: (requests: any[]) => set({ friendRequests: requests }),
+    setFriendNote: (friendId: string, note: string) => {
+        set((state: any) => {
+            const newNotes = { ...(state.friendNotes || {}), [friendId]: note };
+            return { friendNotes: newNotes };
+        });
+        syncService.debouncedSync();
+    },
 
     removeFriend: async (id: string) => {
         const state = get();

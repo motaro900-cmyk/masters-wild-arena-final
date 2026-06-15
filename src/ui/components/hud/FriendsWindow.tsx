@@ -34,6 +34,7 @@ export const FriendsWindow: React.FC<FriendsWindowProps> = () => {
         friends,
         friendRequests,
         claimedSocialRewards,
+        friendNotes,
 
         removeFriend,
         acceptFriendRequest,
@@ -42,6 +43,7 @@ export const FriendsWindow: React.FC<FriendsWindowProps> = () => {
         collectAllGifts,
         claimGroupReward,
         claimFavoriteReward,
+        setFriendNote,
         handleSearch,
         handleSendFriendRequest,
     } = useFriendsWindow();
@@ -315,6 +317,8 @@ export const FriendsWindow: React.FC<FriendsWindowProps> = () => {
                                 declineFriendRequest={declineFriendRequest}
                                 sendGift={sendGift}
                                 removeFriend={removeFriend}
+                                friendNote={friendNotes?.[f.id] || ''}
+                                setFriendNote={setFriendNote}
                             />
                         ))}
 

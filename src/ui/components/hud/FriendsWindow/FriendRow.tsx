@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { sendGameRequest } from '../../../../utils/VKBridge';
 import { useGameStore } from '../../../../store/useGameStore';
@@ -13,6 +13,8 @@ interface FriendRowProps {
     declineFriendRequest: (id: string) => void;
     sendGift: (id: string) => void;
     removeFriend: (id: string) => void;
+    friendNote?: string;
+    setFriendNote?: (friendId: string, note: string) => void;
 }
 
 export const FriendRow: React.FC<FriendRowProps> = ({
@@ -24,7 +26,104 @@ export const FriendRow: React.FC<FriendRowProps> = ({
     declineFriendRequest,
     sendGift,
     removeFriend,
+    friendNote,
+    setFriendNote,
 }) => {
+    const [isSending, setIsSending] = useState(false);
+
+    // Formatter for timestamp/date to human-readable Russian
+    const formatLastSeen = (lastSeenVal: any): string => {
+        if (!lastSeenVal) return 'НЕДАВНО';
+        let date: Date;
+        try {
+            if (typeof lastSeenVal === 'number') {
+                date = new Date(lastSeenVal);
+            } else if (typeof lastSeenVal === 'string') {
+                if (/^\d+$/.test(lastSeenVal)) {
+                    date = new Date(Number(lastSeenVal));
+                } else {
+                    date = new Date(lastSeenVal);
+                }
+            } else if (lastSeenVal && typeof lastSeenVal.toMillis === 'function') {
+                date = new Date(lastSeenVal.toMillis());
+            } else if (lastSeenVal && typeof lastSeenVal.seconds === 'number') {
+                date = new Date(lastSeenVal.seconds * 1000);
+            } else {
+                date = new Date(lastSeenVal);
+            }
+            if (isNaN(date.getTime())) {
+                return 'НЕДАВНО';
+            }
+        } catch (e) {
+            return 'НЕДАВНО';
+        }
+
+        const now = new Date();
+        const diffMs = now.getTime() - date.getTime();
+        const diffMins = Math.floor(diffMs / 60000);
+
+        if (diffMins < 1) return 'ТОЛЬКО ЧТО';
+        if (diffMins < 60) return `${diffMins} МИН. НАЗАД`;
+
+        const pad = (n: number) => n.toString().padStart(2, '0');
+        const hh = pad(date.getHours());
+        const mm = pad(date.getMinutes());
+
+        const isToday = now.getDate() === date.getDate() &&
+                        now.getMonth() === date.getMonth() &&
+                        now.getFullYear() === date.getFullYear();
+
+        const yesterday = new Date(now);
+        yesterday.setDate(now.getDate() - 1);
+        const isYesterday = yesterday.getDate() === date.getDate() &&
+                            yesterday.getMonth() === date.getMonth() &&
+                            yesterday.getFullYear() === date.getFullYear();
+
+        if (isToday) {
+            return `СЕГОДНЯ В ${hh}:${mm}`;
+        }
+        if (isYesterday) {
+            return `ВЧЕРА В ${hh}:${mm}`;
+        }
+
+        const dd = pad(date.getDate());
+        const mon = pad(date.getMonth() + 1);
+        const yyyy = date.getFullYear();
+        return `${dd}.${mon}.${yyyy} В ${hh}:${mm}`;
+    };
+
+    const handleSendGift = async (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (friend.giftSent || isSending) return;
+
+        setIsSending(true);
+        try {
+            let success = true;
+            if (friend.id.toLowerCase().startsWith('vk-') || friend.vkId) {
+                // Returns true if sent successfully, false if cancelled
+                success = await sendGameRequest(
+                    friend.vkId || friend.id.toLowerCase().replace('vk-', ''),
+                    'Я отправил тебе подарок в Masters of the Wild! Заходи скорее!',
+                );
+            }
+
+            if (success) {
+                sendGift(friend.id);
+                useGameStore.getState().showAlert('Подарок успешно отправлен! 🎁');
+            } else {
+                useGameStore.getState().showAlert('Отправка подарка отменена.');
+            }
+        } catch (err) {
+            console.error('[FriendRow] Failed to send gift:', err);
+            useGameStore.getState().showAlert('Не удалось отправить подарок.');
+        } finally {
+            setIsSending(false);
+        }
+    };
+
+    const displayName = friend.name ? friend.name.split(' ')[0] : 'Мастер';
+    const displayedNameLabel = friendNote ? `${friendNote} (${displayName})` : displayName;
+
     return (
         <div
             onClick={() => {
@@ -43,6 +142,12 @@ export const FriendRow: React.FC<FriendRowProps> = ({
                 cursor: 'pointer',
             }}
         >
+            <style>{`
+                @keyframes spin {
+                    to { transform: rotate(360deg); }
+                }
+            `}</style>
+            
             <div style={{ position: 'relative' }}>
                 <div
                     style={{
@@ -92,9 +197,35 @@ export const FriendRow: React.FC<FriendRowProps> = ({
                             fontSize: 15,
                             fontWeight: 700,
                             color: isLight ? '#5d4037' : '#fff',
+                            display: 'flex',
+                            alignItems: 'center',
                         }}
                     >
-                        {friend.name ? friend.name.split(' ')[0] : 'Мастер'}
+                        {displayedNameLabel}
+                        {setFriendNote && (
+                            <span
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    const newNote = prompt(`Введите заметку/прозвище для ${displayName}:`, friendNote || '');
+                                    if (newNote !== null) {
+                                        setFriendNote(friend.id, newNote.trim());
+                                    }
+                                }}
+                                style={{
+                                    cursor: 'pointer',
+                                    opacity: 0.5,
+                                    fontSize: 11,
+                                    marginLeft: 6,
+                                    transition: '0.2s',
+                                    userSelect: 'none',
+                                }}
+                                title="Редактировать заметку"
+                                onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
+                                onMouseLeave={(e) => e.currentTarget.style.opacity = '0.5'}
+                            >
+                                ✏️
+                            </span>
+                        )}
                     </span>
                     <span
                         style={{
@@ -123,7 +254,7 @@ export const FriendRow: React.FC<FriendRowProps> = ({
                     {friend.online ? (
                         <span style={{ color: '#22c55e' }}>● В СЕТИ</span>
                     ) : (
-                        <span>БЫЛ(А) {friend.lastSeen || 'НЕДАВНО'}</span>
+                        <span>БЫЛ(А) {formatLastSeen(friend.lastSeen || friend.былВСети)}</span>
                     )}
                     • ID: {friend.id}
                 </div>
@@ -172,32 +303,46 @@ export const FriendRow: React.FC<FriendRowProps> = ({
                 ) : (
                     <>
                         <motion.button
-                            whileHover={{ scale: 1.1 }}
-                            whileTap={{ scale: 0.92 }}
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                sendGift(friend.id);
-                                // Если это пользователь ВК, отправляем ему еще и сообщение в ЛС
-                                if (friend.id.toLowerCase().startsWith('vk-') || friend.vkId) {
-                                    sendGameRequest(
-                                        friend.vkId || friend.id.toLowerCase().replace('vk-', ''),
-                                        'Я отправил тебе подарок в Masters of the Wild! Заходи скорее!',
-                                    );
-                                }
-                            }}
+                            whileHover={friend.giftSent || isSending ? {} : { scale: 1.1 }}
+                            whileTap={friend.giftSent || isSending ? {} : { scale: 0.92 }}
+                            onClick={handleSendGift}
+                            disabled={friend.giftSent || isSending}
                             style={{
                                 width: 42,
                                 height: 42,
                                 background: friend.giftSent ? 'rgba(255,255,255,0.05)' : 'rgba(240,192,64,0.1)',
                                 border: `1px solid ${friend.giftSent ? colors.border : colors.accent}`,
                                 borderRadius: 12,
-                                cursor: friend.giftSent ? 'default' : 'pointer',
-                                fontSize: 20,
-                                color: friend.giftSent ? 'rgba(255,255,255,0.2)' : colors.accent,
+                                cursor: friend.giftSent || isSending ? 'default' : 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
                                 opacity: friend.giftSent ? 0.5 : 1,
                             }}
                         >
-                            🎁
+                            {isSending ? (
+                                <div 
+                                    style={{ 
+                                        width: '16px', 
+                                        height: '16px', 
+                                        border: '2px solid rgba(255,255,255,0.3)', 
+                                        borderTopColor: colors.accent, 
+                                        borderRadius: '50%', 
+                                        animation: 'spin 1s linear infinite' 
+                                    }} 
+                                />
+                            ) : (
+                                <img
+                                    src="/assets/images/ui/daily_gift_v2.webp"
+                                    style={{
+                                        width: '28px',
+                                        height: '28px',
+                                        objectFit: 'contain',
+                                        filter: friend.giftSent ? 'grayscale(100%) brightness(0.6)' : 'none',
+                                    }}
+                                    alt="gift"
+                                />
+                            )}
                         </motion.button>
                         <motion.button
                             whileHover={{ scale: 1.1 }}

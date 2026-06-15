@@ -128,8 +128,10 @@ export class SyncService {
                             heroEquipment: state.heroEquipment,
                             heroes: state.heroes,
                             dailyQuests: state.dailyQuests,
+                            bpDailyQuests: state.bpDailyQuests,
                             weeklyQuests: state.weeklyQuests,
                             lastDailyRefresh: state.lastDailyRefresh,
+                            friendNotes: state.friendNotes,
                         }),
                         wasOnline: new Date().toISOString(),
                     };
@@ -272,6 +274,7 @@ export class SyncService {
                 title: state.title,
                 bpLevel: state.bpLevel,
                 bpExp: state.bpExp,
+                friendNotes: state.friendNotes || {},
                 trophies: state.trophies,
                 wins: state.wins,
                 totalBattles: state.totalBattles,
@@ -318,6 +321,7 @@ export class SyncService {
                 loginStreak: state.loginStreak || 0,
                 activeBuffs: state.activeBuffs || {},
                 dailyQuests: state.dailyQuests,
+                bpDailyQuests: state.bpDailyQuests,
                 weeklyQuests: state.weeklyQuests,
                 lastDailyRefresh: state.lastDailyRefresh,
                 lastWeeklyRefresh: state.lastWeeklyRefresh,
@@ -591,9 +595,11 @@ export class SyncService {
                                 ? data.lastWheelSpinTimeServer.toMillis()
                                 : data.lastWheelSpinTimeServer.seconds * 1000;
                         }
-                        // Merge top-level dailyQuests from Firebase if fullStateJSON has empty array
                         if ((!processedData.dailyQuests || processedData.dailyQuests.length === 0) && data.dailyQuests?.length > 0) {
                             processedData.dailyQuests = data.dailyQuests;
+                        }
+                        if ((!processedData.bpDailyQuests || processedData.bpDailyQuests.length === 0) && data.bpDailyQuests?.length > 0) {
+                            processedData.bpDailyQuests = data.bpDailyQuests;
                         }
                         if ((!processedData.weeklyQuests || processedData.weeklyQuests.length === 0) && data.weeklyQuests?.length > 0) {
                             processedData.weeklyQuests = data.weeklyQuests;

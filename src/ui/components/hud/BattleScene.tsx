@@ -326,9 +326,6 @@ export const BattleScene: React.FC = () => {
                                 const activeHeroId = store.selectedHeroId || 'panda';
                                 store.addHeroExp(activeHeroId, xp);
                                 store.addExp(xp); // Опыт аккаунта для прокачки уровня игрока
-                                if (!isWarmup) {
-                                    store.addBpExp(isVictory ? 100 : 20); // Battle Pass опыт
-                                }
                                 store.addCombatLog(
                                     `Бой завершен: ${isVictory ? 'Победа' : 'Поражение'}. Получено +${gold} золота, +${xp} опыта героя.`,
                                 );

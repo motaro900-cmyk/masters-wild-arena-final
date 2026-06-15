@@ -2,8 +2,6 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { useGameStore } from '../../../../store/useGameStore';
 import { getAvatarFrameStyle, getAvatarFramePath, getAvatarImageStyle } from '../../../../configs/ProfileCustomization';
-import { AssetsMap } from '../../../../configs/AssetsMap';
-import { resolveAssetPath } from '../../../../utils/assetPath';
 
 interface MatchmakingSearchingProps {
     playerAvatarSrc: string;
@@ -49,11 +47,11 @@ export const MatchmakingSearching: React.FC<MatchmakingSearchingProps> = ({
                 height: '580px',
                 position: 'relative',
                 zIndex: 1,
-                background: 'linear-gradient(135deg, rgba(26, 17, 8, 0.75) 0%, rgba(10, 5, 2, 0.9) 100%)',
+                background: 'linear-gradient(135deg, rgba(26, 17, 8, 0.82) 0%, rgba(10, 5, 2, 0.95) 100%)',
                 backdropFilter: 'blur(20px)',
-                border: 'none',
+                border: '2px solid rgba(251, 191, 36, 0.35)',
                 borderRadius: '32px',
-                boxShadow: '0 30px 80px rgba(0, 0, 0, 0.95), inset 0 0 25px rgba(255, 255, 255, 0.04)',
+                boxShadow: '0 30px 80px rgba(0, 0, 0, 0.95), 0 0 40px rgba(251, 191, 36, 0.1), inset 0 0 25px rgba(255, 255, 255, 0.04)',
                 padding: '40px',
             }}
         >
@@ -125,6 +123,7 @@ export const MatchmakingSearching: React.FC<MatchmakingSearchingProps> = ({
                         }}
                     >
                         <img
+                            key="searching-avatar-img"
                             src={playerAvatarSrc}
                             style={getAvatarImageStyle(playerAvatarSrc || '')}
                             alt="Player Avatar"
@@ -164,6 +163,7 @@ export const MatchmakingSearching: React.FC<MatchmakingSearchingProps> = ({
 
                     {/* Золотая рамка поверх аватара */}
                     <img
+                        key="searching-frame-img"
                         src={getAvatarFramePath(frame)}
                         style={{
                             position: 'absolute',
@@ -178,6 +178,7 @@ export const MatchmakingSearching: React.FC<MatchmakingSearchingProps> = ({
 
                     {/* Иконка Ранга снизу справа */}
                     <img
+                        key="searching-rank-img"
                         src={playerRank.icon}
                         style={{
                             position: 'absolute',
@@ -209,7 +210,7 @@ export const MatchmakingSearching: React.FC<MatchmakingSearchingProps> = ({
                             fontSize: '28px',
                             fontWeight: 900,
                             letterSpacing: '3px',
-                            textShadow: '0 2px 10px rgba(0, 0, 0, 0.8)',
+                            textShadow: '0 2px 12px rgba(0, 0, 0, 0.95), 0 0 8px rgba(255, 255, 255, 0.1)',
                         }}
                     >
                         {playerName}
@@ -241,33 +242,34 @@ export const MatchmakingSearching: React.FC<MatchmakingSearchingProps> = ({
                     style={{
                         color: '#fef3c7',
                         fontFamily: "'Montserrat', sans-serif",
-                        fontSize: '15px',
+                        fontSize: '16px',
                         fontWeight: 700,
                         marginBottom: '8px',
-                        opacity: 0.9,
-                        textShadow: '0 1px 3px rgba(0,0,0,0.8)',
+                        opacity: 0.95,
+                        letterSpacing: '1px',
+                        textShadow: '0 2px 4px rgba(0,0,0,0.9)',
                     }}
                 >
                     {playerHero.name} • Уровень {level}
                 </div>
                 <div
                     style={{
-                        color: '#e2e8f0',
-                        fontFamily: "'Montserrat', sans-serif",
-                        fontSize: '19px',
-                        fontWeight: 700,
+                        color: '#ffd700',
+                        fontFamily: "'Cinzel', serif",
+                        fontSize: '20px',
+                        fontWeight: 900,
                         marginBottom: '24px',
-                        opacity: 0.95,
                         display: 'flex',
                         alignItems: 'center',
                         gap: '8px',
                         textShadow: '0 2px 6px rgba(0,0,0,0.95)',
                     }}
                 >
-                    <span style={{ color: '#fbbf24', textShadow: '0 0 8px rgba(251, 191, 36, 0.5)', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
                         {rating}
                         <img
-                            src={resolveAssetPath(AssetsMap.UI.TROPHY_PREMIUM)}
+                            key="searching-trophy-rating"
+                            src="/assets/images/ui/trophy_premium.webp"
                             style={{ width: '24px', height: '24px', objectFit: 'contain', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))' }}
                             alt="trophy"
                         />
@@ -287,7 +289,7 @@ export const MatchmakingSearching: React.FC<MatchmakingSearchingProps> = ({
                         display: 'flex',
                         alignItems: 'center',
                         gap: '10px',
-                        textShadow: '0 0 12px rgba(251, 191, 36, 0.4)',
+                        textShadow: '0 2px 8px rgba(0,0,0,0.9), 0 0 15px rgba(251, 191, 36, 0.6)',
                     }}
                 >
                     ПОИСК СОПЕРНИКА
@@ -319,30 +321,30 @@ export const MatchmakingSearching: React.FC<MatchmakingSearchingProps> = ({
                         display: 'flex',
                         flexDirection: 'column',
                         alignItems: 'center',
-                        gap: '10px',
-                        background: 'rgba(12, 6, 2, 0.92)',
+                        gap: '12px',
+                        background: 'linear-gradient(180deg, rgba(20, 10, 5, 0.95) 0%, rgba(10, 5, 2, 0.98) 100%)',
                         padding: '18px 36px',
                         borderRadius: '16px',
-                        border: '2px solid rgba(251, 191, 36, 0.4)',
+                        border: '2px solid #b8860b',
                         marginBottom: '30px',
-                        boxShadow: '0 10px 30px rgba(0,0,0,0.7), inset 0 0 20px rgba(251, 191, 36, 0.05)',
+                        boxShadow: '0 10px 30px rgba(0,0,0,0.85), inset 0 0 15px rgba(184, 134, 11, 0.15)',
                     }}
                 >
                     <div
                         style={{
-                            color: '#e2e8f0',
+                            color: '#c8a870',
                             fontSize: '15px',
-                            fontWeight: 700,
+                            fontWeight: 900,
                             fontFamily: "'Cinzel', serif",
-                            letterSpacing: '1px',
-                            textShadow: '0 2px 4px rgba(0,0,0,0.8)',
+                            letterSpacing: '1.5px',
+                            textShadow: '0 2px 4px rgba(0,0,0,0.9)',
                             display: 'flex',
                             alignItems: 'center',
-                            gap: '8px',
+                            gap: '10px',
                         }}
                     >
                         ВРЕМЯ В ОЧЕРЕДИ:{' '}
-                        <span style={{ color: '#fbbf24', fontSize: '22px', fontWeight: 900, textShadow: '0 0 10px rgba(251, 191, 36, 0.4)' }}>
+                        <span style={{ color: '#ffd700', fontSize: '24px', fontWeight: 950, textShadow: '0 0 12px rgba(255, 215, 0, 0.5), 0 2px 4px rgba(0,0,0,0.9)' }}>
                             {Math.floor(seconds / 60)
                                 .toString()
                                 .padStart(2, '0')}
@@ -351,25 +353,26 @@ export const MatchmakingSearching: React.FC<MatchmakingSearchingProps> = ({
                     </div>
                     <div
                         style={{
-                            color: '#fef3c7',
+                            color: '#c8a870',
                             fontSize: '15px',
-                            fontWeight: 700,
+                            fontWeight: 900,
                             fontFamily: "'Cinzel', serif",
-                            letterSpacing: '1px',
-                            textShadow: '0 2px 4px rgba(0,0,0,0.8)',
+                            letterSpacing: '1.5px',
+                            textShadow: '0 2px 4px rgba(0,0,0,0.9)',
                             display: 'flex',
                             alignItems: 'center',
-                            gap: '8px',
+                            gap: '10px',
                         }}
                     >
                         ДИАПАЗОН КУБКОВ:{' '}
-                        <span style={{ color: '#fbbf24', fontWeight: 900 }}>
+                        <span style={{ color: '#ffd700', fontWeight: 950, fontSize: '24px', textShadow: '0 0 12px rgba(255, 215, 0, 0.5), 0 2px 4px rgba(0,0,0,0.9)' }}>
                             <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', verticalAlign: 'middle' }}>
-                                <span style={{ fontSize: '22px', textShadow: '0 0 10px rgba(251, 191, 36, 0.4)' }}>
+                                <span>
                                     {Math.max(0, rating - searchRange)} - {rating + searchRange}
                                 </span>
                                 <img
-                                    src={resolveAssetPath(AssetsMap.UI.TROPHY_PREMIUM)}
+                                    key="searching-trophy-range"
+                                    src="/assets/images/ui/trophy_premium.webp"
                                     style={{ width: '24px', height: '24px', objectFit: 'contain', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))' }}
                                     alt="trophy"
                                 />
@@ -380,22 +383,29 @@ export const MatchmakingSearching: React.FC<MatchmakingSearchingProps> = ({
 
                 {/* Кнопка отмены */}
                 <motion.button
-                    whileHover={{ scale: 1.05, background: 'rgba(239, 68, 68, 0.2)' }}
+                    whileHover={{ 
+                        scale: 1.05, 
+                        background: 'linear-gradient(180deg, #8b0000 0%, #4a0000 100%)', 
+                        borderColor: '#ffd700', 
+                        boxShadow: '0 0 20px rgba(255, 215, 0, 0.3), 0 8px 25px rgba(139, 0, 0, 0.5)' 
+                    }}
                     whileTap={{ scale: 0.95 }}
                     onClick={onCancel}
                     style={{
                         padding: '14px 44px',
-                        background: 'rgba(255, 255, 255, 0.03)',
-                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                        background: 'linear-gradient(180deg, #660000 0%, #330000 100%)',
+                        border: '2px solid #8b0000',
                         borderRadius: '12px',
-                        color: '#94a3b8',
+                        color: '#ffd700',
                         fontFamily: "'Cinzel', serif",
-                        fontSize: '16px',
-                        fontWeight: 900,
+                        fontSize: '15px',
+                        fontWeight: 950,
                         cursor: 'pointer',
                         textTransform: 'uppercase',
-                        letterSpacing: '2px',
+                        letterSpacing: '2.5px',
                         transition: 'all 0.2s',
+                        boxShadow: '0 6px 16px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.1)',
+                        textShadow: '0 2px 4px rgba(0,0,0,0.9)',
                     }}
                 >
                     ОТМЕНИТЬ ПОИСК

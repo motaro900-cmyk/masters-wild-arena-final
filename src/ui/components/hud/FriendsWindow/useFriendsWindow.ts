@@ -15,6 +15,8 @@ export const useFriendsWindow = () => {
     const claimedSocialRewards = useGameStore((state) => state.claimedSocialRewards);
     const claimGroupReward = useGameStore((state) => state.claimGroupReward);
     const claimFavoriteReward = useGameStore((state) => state.claimFavoriteReward);
+    const friendNotes = useGameStore((state) => state.friendNotes);
+    const setFriendNote = useGameStore((state) => state.setFriendNote);
     const playerId = useGameStore((state) => state.playerId);
     const name = useGameStore((state) => state.name);
     const avatar = useGameStore((state) => state.avatar);
@@ -190,6 +192,7 @@ export const useFriendsWindow = () => {
         friends,
         friendRequests,
         claimedSocialRewards,
+        friendNotes,
 
         // Actions
         removeFriend,
@@ -199,6 +202,7 @@ export const useFriendsWindow = () => {
         collectAllGifts,
         claimGroupReward,
         claimFavoriteReward,
+        setFriendNote,
         handleSearch,
         handleSendFriendRequest,
     };
