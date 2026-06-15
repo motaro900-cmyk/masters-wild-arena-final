@@ -319,7 +319,7 @@ export const DailyTaskPanel = React.memo(() => {
                                                         width: 58,
                                                         height: 58,
                                                         objectFit: 'contain',
-                                                        filter: 'grayscale(1) brightness(1.2) contrast(1.1) drop-shadow(0 0 2px rgba(255,255,255,0.3))',
+                                                        filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.4))',
                                                         margin: '-14px -10px -14px -10px',
                                                     }}
                                                     alt=""
