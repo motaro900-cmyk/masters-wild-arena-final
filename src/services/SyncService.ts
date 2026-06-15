@@ -86,18 +86,82 @@ export class SyncService {
 
         if (typeof window !== 'undefined' && !SyncService.eventListenersAdded) {
             SyncService.eventListenersAdded = true;
-            const flushSync = () => {
+
+            // Build sync payload synchronously and fire via sendBeacon/fetch keepalive
+            // This is the ONLY reliable way to save data on page close in VK Mini Apps
+            // (VK blocks beforeunload/unload events per Permissions Policy)
+            const beaconFlush = () => {
                 if (this.syncDisabled) return;
+                // Clear any pending debounced sync (we're about to send immediately)
                 if (this.syncTimeout) {
                     clearTimeout(this.syncTimeout);
                     this.syncTimeout = null;
-                    this.syncPlayerData().catch(() => {});
+                }
+                try {
+                    const state = useGameStore.getState();
+                    const userId = this.getCurrentUserId();
+                    if (!userId.startsWith('VK-')) return;
+
+                    // Build minimal critical payload synchronously
+                    const criticalPayload = {
+                        userId,
+                        energy: state.energy,
+                        gold: state.gold,
+                        crystals: state.crystals,
+                        rating: state.rating,
+                        wins: state.wins,
+                        totalBattles: state.totalBattles,
+                        trophies: state.trophies,
+                        fullStateJSON: JSON.stringify({
+                            lastSavedTimestamp: Date.now(),
+                            energy: state.energy,
+                            gold: state.gold,
+                            crystals: state.crystals,
+                            rating: state.rating,
+                            wins: state.wins,
+                            totalBattles: state.totalBattles,
+                            trophies: state.trophies,
+                            level: state.level,
+                            exp: state.exp,
+                            name: state.name,
+                            inventory: state.inventory,
+                            heroEquipment: state.heroEquipment,
+                            heroes: state.heroes,
+                            dailyQuests: state.dailyQuests,
+                            weeklyQuests: state.weeklyQuests,
+                            lastDailyRefresh: state.lastDailyRefresh,
+                        }),
+                        wasOnline: new Date().toISOString(),
+                    };
+
+                    // Try sendBeacon first (most reliable for page-close)
+                    const blob = new Blob([JSON.stringify(criticalPayload)], { type: 'application/json' });
+                    const beaconSent = navigator.sendBeacon?.('/api/beacon-sync', blob);
+                    if (!beaconSent) {
+                        // Fallback: keepalive fetch (also works after page is hidden)
+                        fetch('/api/beacon-sync', {
+                            method: 'POST',
+                            body: JSON.stringify(criticalPayload),
+                            headers: { 'Content-Type': 'application/json' },
+                            keepalive: true,
+                        }).catch(() => {});
+                    }
+                } catch (e) {
+                    // Best-effort — ignore errors on page close
                 }
             };
-            window.addEventListener('beforeunload', flushSync);
-            window.addEventListener('pagehide', flushSync);
+
+            // pagehide is more reliable than beforeunload in modern browsers and VK
+            window.addEventListener('pagehide', beaconFlush);
+            // visibilitychange hidden catches tab switches and VK app suspend
             window.addEventListener('visibilitychange', () => {
-                if (document.visibilityState === 'hidden') flushSync();
+                if (document.visibilityState === 'hidden') {
+                    beaconFlush();
+                    // Also attempt normal async sync (may succeed if just tab-switching)
+                    if (!this.syncDisabled) {
+                        this.syncPlayerData().catch(() => {});
+                    }
+                }
             });
         }
     }
@@ -182,8 +246,12 @@ export class SyncService {
             const selectedHeroId = state.selectedHeroId || 'panda';
             const activeHeroLevel = state.heroes?.[selectedHeroId]?.level || 1;
 
+            const syncTimestamp = Date.now();
+            // Also update the store's lastSavedTimestamp so local cache matches
+            useGameStore.setState({ lastSavedTimestamp: syncTimestamp, isSystemUpdate: true });
+
             const fullState = {
-                lastSavedTimestamp: state.lastSavedTimestamp || 0,
+                lastSavedTimestamp: syncTimestamp,
                 level: state.level,
                 vipLevel: state.vipLevel,
                 vipExp: state.vipExp,
@@ -362,14 +430,24 @@ export class SyncService {
         }
     }
 
-    public debouncedSync(delay = 10000): void {
-        const actualDelay = Math.max(10000, delay);
+    public debouncedSync(delay = 3000): void {
+        const actualDelay = Math.max(3000, delay);
         if (this.syncDisabled) return;
         if (this.syncTimeout) clearTimeout(this.syncTimeout);
         this.syncTimeout = setTimeout(() => {
             this.syncPlayerData();
             this.syncTimeout = null;
         }, actualDelay);
+    }
+
+    /** Immediate (non-debounced) sync — use after critical events like battle end */
+    public immediateSync(): void {
+        if (this.syncDisabled) return;
+        if (this.syncTimeout) {
+            clearTimeout(this.syncTimeout);
+            this.syncTimeout = null;
+        }
+        this.syncPlayerData().catch(() => {});
     }
 
     public disableSync(): void {

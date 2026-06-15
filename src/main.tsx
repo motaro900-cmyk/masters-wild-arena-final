@@ -387,6 +387,26 @@ export const Root = () => {
                             return Math.floor(nowMSK / DAY_MS) > Math.floor(lastMSK / DAY_MS);
                         };
 
+                        // === БАГ #3 FIX: Immediately check and refresh quests on login ===
+                        // Don't wait for the 60s polling — check right away after profile loads
+                        {
+                            const stateAfterLoad = useGameStore.getState();
+                            const hasEmptyDailyQuests = !stateAfterLoad.dailyQuests || stateAfterLoad.dailyQuests.length === 0;
+                            const dayChangedSinceLastRefresh = isNewDayMSK(stateAfterLoad.lastDailyRefresh || 0);
+                            if (hasEmptyDailyQuests || dayChangedSinceLastRefresh) {
+                                console.log(`🔄 Login check: refreshing daily quests (empty=${hasEmptyDailyQuests}, newDay=${dayChangedSinceLastRefresh})`);
+                                stateAfterLoad.refreshDailyQuests?.();
+                            }
+                            const lastWeeklyReset = stateAfterLoad.lastWeeklyQuestReset || 0;
+                            const msInWeek = 7 * 24 * 60 * 60 * 1000;
+                            const hasEmptyWeeklyQuests = !stateAfterLoad.weeklyQuests || stateAfterLoad.weeklyQuests.length === 0;
+                            if (hasEmptyWeeklyQuests || (Date.now() + timeOffset - lastWeeklyReset >= msInWeek)) {
+                                console.log(`🔄 Login check: refreshing weekly quests`);
+                                stateAfterLoad.refreshWeeklyQuests?.();
+                            }
+                            stateAfterLoad.checkPetDailyReward?.();
+                        }
+
                         refreshInterval = setInterval(() => {
                             const currentState = useGameStore.getState();
                             if (isNewDayMSK(currentState.lastDailyRefresh)) {
