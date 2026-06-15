@@ -65,25 +65,26 @@ export const createQuestSlice = (set: any, get: any) => ({
         isRefreshingDaily = true;
         lastDailyRefreshAttempt = now;
         const { db, USERS_COLLECTION } = await import('../../utils/firebase');
-        const { doc, updateDoc, getDoc, runTransaction, serverTimestamp } = await import('firebase/firestore');
+        const { doc, runTransaction, serverTimestamp } = await import('firebase/firestore');
         const { SyncService } = await import('../../services/SyncService');
         const { TimeService } = await import('../../utils/TimeService');
         const { useGameStore } = await import('../useGameStore');
 
         const state = useGameStore.getState();
         const userId = SyncService.getPrefixedUserId(state.vkUser, state.playerId);
+
+        // Block guest/unidentified users — quest refresh only for VK users
+        if (!userId.startsWith('VK-')) {
+            console.log('[questSlice] Skipping refreshDailyQuests for non-VK user:', userId);
+            isRefreshingDaily = false;
+            return;
+        }
+
         const playerRef = doc(db, USERS_COLLECTION, userId);
 
-        let serverDate: Date;
-        try {
-            await updateDoc(playerRef, { tempServerTime: serverTimestamp() });
-            const snap = await getDoc(playerRef);
-            const ts = snap.data()?.tempServerTime;
-            serverDate = ts ? ts.toDate() : new Date(TimeService.now());
-        } catch (e) {
-            console.warn('[questSlice] Failed to fetch serverTimestamp, falling back to calibrated local time', e);
-            serverDate = new Date(TimeService.now());
-        }
+        // Use TimeService.now() — already calibrated to server time via /api/verify-sign
+        // No need to do an extra Firestore write just to get server time
+        const serverDate = new Date(TimeService.now());
 
         try {
             await runTransaction(db, async (transaction) => {

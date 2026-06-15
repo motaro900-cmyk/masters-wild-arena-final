@@ -125,31 +125,31 @@ export const Root = () => {
                 // Define early calibration and auth helper tasks
                 const calibrateTime = async () => {
                     try {
-                        // HEAD requests are blocked by VK's CORS policy for mini apps
-                        // Use a lightweight GET to our own /api/verify-sign which returns Date header
                         const start = Date.now();
-                        let serverDateStr: string | null = null;
                         try {
-                            const response = await fetch('/api/verify-sign', {
+                            // /api/time is a minimal endpoint that just returns { serverTime: ms }
+                            // No VK params needed — unlike /api/verify-sign which expects vk_* params
+                            const response = await fetch('/api/time', {
                                 method: 'GET',
                                 cache: 'no-cache',
                                 signal: AbortSignal.timeout(3000),
                             });
-                            serverDateStr = response.headers.get('date');
+                            if (response.ok) {
+                                const data = await response.json();
+                                if (data.serverTime) {
+                                    const latency = (Date.now() - start) / 2;
+                                    timeOffset = data.serverTime + latency - Date.now();
+                                    console.log('🕒 Server time offset calibrated (ms):', timeOffset);
+                                    const { TimeService } = await import('./utils/TimeService');
+                                    TimeService.setOffset(timeOffset);
+                                    return;
+                                }
+                            }
                         } catch {
                             // Silently ignore — will fallback to local clock
                         }
-                        if (serverDateStr) {
-                            const serverTime = new Date(serverDateStr).getTime();
-                            const latency = (Date.now() - start) / 2;
-                            timeOffset = serverTime + latency - Date.now();
-                            console.log('🕒 Server time offset calibrated (ms):', timeOffset);
-                            const { TimeService } = await import('./utils/TimeService');
-                            TimeService.setOffset(timeOffset);
-                        } else {
-                            console.log('🕒 Using local device clock (server time unavailable)');
-                        }
-                    } catch (timeError) {
+                        console.log('🕒 Using local device clock (server time unavailable)');
+                    } catch {
                         // Silently ignore — timeOffset stays 0 (local clock)
                     }
                 };
