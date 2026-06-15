@@ -40,7 +40,6 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ mode = 'FULL', o
     const [sortBy, setSortBy] = useState<'TYPE' | 'POWER' | 'RARITY'>('TYPE');
     const [searchQuery, setSearchQuery] = useState('');
     const [hoveredItem, setHoveredItem] = useState<{ id: string; x: number; y: number } | null>(null);
-    const [isProcessing, setIsProcessing] = useState(false);
     const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
     const [isMobile, setIsMobile] = useState(false);
     useEffect(() => {
@@ -545,12 +544,9 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ mode = 'FULL', o
                                             isEquippedOnOther={!!isEquippedOnOther}
                                             equippedHeroId={equippedHeroId}
                                             onItemClick={async (id: string) => {
-                                                if (isProcessing) return;
-                                                setIsProcessing(true);
-                                                if (id === 'season_chest') { handleOpenChest(); setIsProcessing(false); return; }
+                                                if (id === 'season_chest') { handleOpenChest(); return; }
                                                 const executeEquip = async () => {
                                                     if (onItemClick) await onItemClick(id);
-                                                    setTimeout(() => setIsProcessing(false), 500);
                                                 };
                                                 if (isEquippedOnOther) {
                                                     setConfirmData({
@@ -558,7 +554,6 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ mode = 'FULL', o
                                                         message: `Предмет надет на ${HEROES_DB.find((h) => h.id === equippedHeroId)?.name || equippedHeroId}. Передать текущему герою?`,
                                                         variant: 'normal', onConfirm: executeEquip,
                                                     });
-                                                    setIsProcessing(false);
                                                 } else {
                                                     await executeEquip();
                                                 }

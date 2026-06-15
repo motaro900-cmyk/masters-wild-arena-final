@@ -43,7 +43,7 @@ export const ItemTooltipPortal: React.FC<ItemTooltipPortalProps> = ({ hoveredIte
     }
 
     const tooltipWidth = 460;
-    const leftAbsolute = localX + tooltipWidth + 20 > 1920 ? localX - tooltipWidth - 20 : localX + 20;
+    const leftAbsolute = Math.max(10, localX + tooltipWidth + 20 > 1920 ? localX - tooltipWidth - 20 : localX + 20);
     const topAbsolute = Math.max(10, Math.min(1080 - 450, localY - 100));
 
     const leftFixed = hoveredItem.x + tooltipWidth + 20 > window.innerWidth ? hoveredItem.x - tooltipWidth - 20 : hoveredItem.x + 20;

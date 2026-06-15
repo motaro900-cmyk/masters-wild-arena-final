@@ -782,6 +782,10 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
                 {/* В ЛОББИ */}
                 <button
                     onClick={() => onContinue()}
+                    onTouchEnd={(e) => {
+                        e.preventDefault();
+                        onContinue();
+                    }}
                     style={{
                         padding: '12px 48px',
                         background: isVictory

@@ -93,6 +93,12 @@ export const DraggableItem: React.FC<DraggableItemProps> = React.memo(({
                     ref={setNodeRef}
                     {...listeners}
                     {...attributes}
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        if (!isDragging && !item.isResource && !e.shiftKey) {
+                            onItemClick(item.instanceId || item.id);
+                        }
+                    }}
                     style={{
                         position: 'absolute',
                         inset: 0,
