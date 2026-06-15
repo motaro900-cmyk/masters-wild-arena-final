@@ -287,6 +287,7 @@ export const GameHUD: React.FC = () => {
                 activeScreen !== 'SHOP' &&
                 activeScreen !== 'FORGE' &&
                 activeScreen !== 'SANCTUARY' &&
+                activeWindow !== 'RANKED_LOBBY' &&
                 !showSummonOverlay && (
                     <div
                         className="tutorial-resource-bar absolute top-[20px] right-[25px] hud-interactive flex flex-col items-end gap-1"

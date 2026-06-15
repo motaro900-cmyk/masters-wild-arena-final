@@ -1,0 +1,932 @@
+﻿import React from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { AssetsMap } from '../../../configs/AssetsMap';
+import { ResourceBar } from './ResourceBar';
+import '../../styles/shop-scene.css';
+
+import { ShopItem } from '../../../configs/ShopConfig';
+import { useGameStore } from '../../../store/useGameStore';
+import { ITEMS_DATABASE, calculateItemPower } from '../../../game/configs/ItemsConfig';
+
+import { useShopScene } from './ShopScene/useShopScene';
+import { SubTabBtn } from './ShopScene/SubTabBtn';
+import { BankItemShowcase } from './ShopScene/BankItemShowcase';
+import { ShopItemCard } from './ShopScene/ShopItemCard';
+import { SidebarBtn } from './ShopScene/SidebarBtn';
+import { PurchaseConfirmOverlay } from './ShopScene/PurchaseConfirmOverlay';
+import { ShopDetailPanel } from './ShopScene/ShopDetailPanel';
+
+import { getSubTabs, getRarityColor } from './ShopScene/shopHelpers';
+
+export const ShopScene: React.FC = () => {
+    const {
+        activeMainTab,
+        setActiveMainTab,
+        activeSubTab,
+        setActiveSubTab,
+        selectedItem,
+        setSelectedItem,
+        showConfirm,
+        setShowConfirm,
+        toastMessage,
+        filteredItems,
+        isMobile: isMobileFromStore,
+        dailyAdWatchesCount,
+        playerLevel,
+        shopDiscounts,
+        exitShop,
+        handleItemClick,
+        handleBuyTrigger,
+        confirmPurchase,
+    } = useShopScene();
+
+    const [isMobile, setIsMobile] = React.useState(isMobileFromStore);
+    const [selectedImageLoaded, setSelectedImageLoaded] = React.useState(false);
+
+    React.useEffect(() => {
+        setSelectedImageLoaded(false);
+    }, [selectedItem?.id, selectedItem?.image]);
+
+    React.useEffect(() => {
+        const checkLayout = () => {
+            const isSmallScreen = typeof window !== 'undefined' && window.innerWidth < 1024;
+            setIsMobile(isMobileFromStore || isSmallScreen);
+        };
+        checkLayout();
+        window.addEventListener('resize', checkLayout);
+        return () => window.removeEventListener('resize', checkLayout);
+    }, [isMobileFromStore]);
+
+    const equippedItems = useGameStore((state: any) => state.heroEquipment?.[state.selectedHeroId || 'panda'] || {});
+
+    const itemPower = selectedItem ? calculateItemPower(selectedItem) : 0;
+    const equippedItemId = selectedItem ? equippedItems?.[selectedItem.subTab] : null;
+    const equippedItem = equippedItemId ? ITEMS_DATABASE[equippedItemId] : null;
+    const equippedPower = equippedItem ? calculateItemPower(equippedItem) : 0;
+    const powerDiff = itemPower - equippedPower;
+
+    const ITEMS_PER_PAGE = isMobile ? 4 : 7;
+    const [currentPage, setCurrentPage] = React.useState(0);
+    const [direction, setDirection] = React.useState(0);
+
+    React.useEffect(() => {
+        const timer = setTimeout(() => {
+            setCurrentPage(0);
+        }, 0);
+        return () => clearTimeout(timer);
+    }, [activeMainTab, activeSubTab]);
+
+    React.useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') {
+                exitShop();
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [exitShop]);
+
+    const getSectionTitle = (main: string) => {
+        switch (main) {
+            case 'ARSENAL':
+                return '╨Ь╨Р╨У╨Р╨Ч╨Ш╨Э';
+            case 'ALCHEMY':
+                return '╨Р╨Ы╨е╨Ш╨Ь╨Ш╨п';
+            case 'SKINS':
+                return '╨Ю╨С╨Ы╨Ш╨Ъ╨Ш';
+            case 'BANK':
+                return '╨С╨Р╨Э╨Ъ';
+            default:
+                return '╨Ь╨Р╨У╨Р╨Ч╨Ш╨Э';
+        }
+    };
+
+    return (
+        <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            style={{
+                width: isMobile ? '100%' : '1920px',
+                height: isMobile ? '100%' : '1080px',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                backgroundImage:
+                    'url("' +
+                    (isMobile
+                        ? AssetsMap.BACKGROUNDS.SHOP.replace('.webp', '_mobile.webp')
+                        : AssetsMap.BACKGROUNDS.SHOP) +
+                    '")',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundColor: 'rgba(10, 5, 5, 0.45)',
+                backgroundBlendMode: 'multiply',
+                boxShadow: 'inset 0 0 100px rgba(0,0,0,0.85), inset 0 0 200px rgba(0,0,0,0.7)',
+                display: 'flex',
+                flexDirection: 'column',
+                overflow: 'hidden',
+                pointerEvents: 'auto',
+            }}
+        >
+            {/* HEADER BAR */}
+            <div
+                style={{
+                    position: 'relative',
+                    zIndex: 10000,
+                    width: '100%',
+                    height: isMobile ? '60px' : '110px',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    padding: isMobile ? '0 20px' : '0 80px',
+                    pointerEvents: 'none',
+                    borderBottom: '1px solid rgba(240, 192, 64, 0.1)',
+                    background: 'linear-gradient(180deg, rgba(0,0,0,0.8) 0%, transparent 100%)',
+                }}
+            >
+                <div style={{ display: 'flex', alignItems: 'center', pointerEvents: 'auto' }}>
+                    <button
+                        onClick={exitShop}
+                        style={{
+                            background: 'rgba(240, 192, 64, 0.1)',
+                            border: '1px solid rgba(240, 192, 64, 0.3)',
+                            borderRadius: '12px',
+                            width: isMobile ? '44px' : '54px',
+                            height: isMobile ? '44px' : '54px',
+                            color: '#f0c040',
+                            fontSize: isMobile ? '16px' : '22px',
+                            cursor: 'pointer',
+                            marginRight: isMobile ? '12px' : '20px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            transition: 'all 0.2s',
+                            boxShadow: '0 0 10px rgba(240,192,64,0.1)',
+                        }}
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.background = 'rgba(240, 192, 64, 0.2)';
+                            e.currentTarget.style.borderColor = '#f0c040';
+                            e.currentTarget.style.color = '#fff';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.background = 'rgba(240, 192, 64, 0.1)';
+                            e.currentTarget.style.borderColor = 'rgba(240, 192, 64, 0.3)';
+                            e.currentTarget.style.color = '#f0c040';
+                        }}
+                    >
+                        тЧА
+                    </button>
+                    <h2
+                        style={{
+                            margin: 0,
+                            fontFamily: "'Cinzel', 'Philosopher', serif",
+                            color: '#f0c040',
+                            fontSize: isMobile ? '20px' : '40px',
+                            textShadow: '0 0 20px #000, 0 4px 15px #000',
+                            letterSpacing: '4px',
+                            whiteSpace: 'nowrap',
+                            textTransform: 'uppercase',
+                            lineHeight: '1',
+                        }}
+                    >
+                        {getSectionTitle(activeMainTab)}
+                    </h2>
+                </div>
+
+                <ResourceBar
+                    onOpenShop={(tab: string) => {
+                        if (tab === 'ENERGY') {
+                            setActiveMainTab('BANK');
+                            setActiveSubTab('ENERGY');
+                        } else {
+                            setActiveMainTab('BANK');
+                        }
+                    }}
+                />
+            </div>
+
+            {/* MAIN CONTENT SPLIT ROW */}
+            <div
+                style={{
+                    display: 'flex',
+                    flex: 1,
+                    padding: isMobile ? '10px 15px 5px 15px' : '20px 80px 10px 80px',
+                    gap: isMobile ? '15px' : '40px',
+                    maxHeight: isMobile ? 'calc(100% - 120px)' : 'calc(100% - 230px)',
+                    minWidth: 0,
+                    overflow: 'hidden',
+                }}
+            >
+                {/* LEFT SIDEBAR (CATEGORY SELECTION) */}
+                <div
+                    style={{
+                        width: isMobile ? '180px' : '320px',
+                        background: 'rgba(10,8,8,0.85)',
+                        borderRadius: '12px',
+                        border: '2px solid rgba(240, 192, 64, 0.15)',
+                        padding: isMobile ? '8px' : '20px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'flex-start',
+                        boxShadow: '0 10px 30px rgba(0,0,0,0.8)',
+                    }}
+                >
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                        <SidebarBtn
+                            active={activeMainTab === 'ARSENAL'}
+                            onClick={() => setActiveMainTab('ARSENAL')}
+                            label="╨н╨Ъ╨Ш╨Я╨Ш╨а╨Ю╨Т╨Ъ╨Р"
+                            image={AssetsMap.UI.TAB_ARSENAL}
+                            isMobile={isMobile}
+                        />
+{/* <SidebarBtn
+                            active={activeMainTab === 'ALCHEMY'}
+                            onClick={() => setActiveMainTab('ALCHEMY')}
+                            label="╨Р╨Ы╨е╨Ш╨Ь╨Ш╨п"
+                            image={AssetsMap.UI.TAB_ALCHEMY}
+                            isMobile={isMobile}
+                        /> */}
+                        <SidebarBtn
+                            active={activeMainTab === 'SKINS'}
+                            onClick={() => setActiveMainTab('SKINS')}
+                            label="╨Ю╨С╨Ы╨Ш╨Ъ╨Ш"
+                            image={AssetsMap.UI.TAB_SKINS}
+                            isMobile={isMobile}
+                        />
+                        <SidebarBtn
+                            active={activeMainTab === 'BANK'}
+                            onClick={() => setActiveMainTab('BANK')}
+                            label="╨С╨Р╨Э╨Ъ"
+                            image={AssetsMap.UI.TAB_BANK}
+                            isMobile={isMobile}
+                        />
+                    </div>
+                </div>
+
+                {/* RIGHT ACTIONABLE AREA */}
+                <div
+                    style={{
+                        flex: 1,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '20px',
+                        minWidth: 0,
+                        overflow: 'hidden',
+                        paddingRight: '12px',
+                        boxSizing: 'border-box',
+                    }}
+                >
+                    {/* SUB-TABS (╨Ю╨а╨г╨Ц╨Ш╨Х, ╨й╨Ш╨в╨л, etc) */}
+                    <div
+                        style={{
+                            display: 'flex',
+                            gap: isMobile ? '8px' : '15px',
+                            borderBottom: 'none',
+                            paddingBottom: isMobile ? '6px' : '10px',
+                            alignItems: 'center',
+                            overflowX: 'auto',
+                            whiteSpace: 'nowrap',
+                        }}
+                    >
+                        {getSubTabs(activeMainTab).map((tab) => (
+                            <SubTabBtn
+                                key={tab.id}
+                                label={tab.label}
+                                isActive={activeSubTab === tab.id}
+                                onClick={() => setActiveSubTab(tab.id)}
+                                isMobile={isMobile}
+                            />
+                        ))}
+                    </div>
+
+                    {/* MAIN MIDDLE ROW (PEDESTAL & INSPECTION CARD) */}
+                    {selectedItem ? (
+                        <div
+                            style={{
+                                flex: 1,
+                                display: 'flex',
+                                gap: isMobile ? '15px' : '30px',
+                                alignItems: 'stretch',
+                                minWidth: 0,
+                            }}
+                        >
+                            {/* CENTRAL SHOWCASE PEDESTAL */}
+                            <motion.div
+                                drag={isMobile ? "x" : undefined}
+                                dragConstraints={{ left: 0, right: 0 }}
+                                dragElastic={0.2}
+                                onDragEnd={(_, info) => {
+                                    if (!isMobile) return;
+                                    const swipeThreshold = 50;
+                                    const selectedIndex = filteredItems.findIndex(i => i.id === selectedItem?.id);
+                                    if (selectedIndex === -1) return;
+
+                                    if (info.offset.x < -swipeThreshold) {
+                                        // Swipe Left -> Next Item
+                                        if (selectedIndex < filteredItems.length - 1) {
+                                            const nextItem = filteredItems[selectedIndex + 1];
+                                            handleItemClick(nextItem);
+                                            const nextItemPage = Math.floor((selectedIndex + 1) / ITEMS_PER_PAGE);
+                                            if (nextItemPage !== currentPage) {
+                                                setDirection(1);
+                                                setCurrentPage(nextItemPage);
+                                            }
+                                        }
+                                    } else if (info.offset.x > swipeThreshold) {
+                                        // Swipe Right -> Previous Item
+                                        if (selectedIndex > 0) {
+                                            const prevItem = filteredItems[selectedIndex - 1];
+                                            handleItemClick(prevItem);
+                                            const prevItemPage = Math.floor((selectedIndex - 1) / ITEMS_PER_PAGE);
+                                            if (prevItemPage !== currentPage) {
+                                                setDirection(-1);
+                                                setCurrentPage(prevItemPage);
+                                            }
+                                        }
+                                    }
+                                }}
+                                style={{
+                                    flex: 1.4,
+                                    background: 'rgba(15,12,12,0.6)',
+                                    border: '1px solid rgba(240,192,64,0.1)',
+                                    borderRadius: '16px',
+                                    padding: isMobile ? '10px 15px' : '25px',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'center',
+                                    justifyContent: 'space-between',
+                                    position: 'relative',
+                                    overflow: 'hidden',
+                                    touchAction: isMobile ? 'pan-y' : 'auto',
+                                }}
+                            >
+                                {/* Decorative Vignette */}
+                                <div
+                                    style={{
+                                        position: 'absolute',
+                                        inset: 0,
+                                        background:
+                                            'radial-gradient(circle at center, transparent 30%, rgba(0,0,0,0.7) 100%)',
+                                        pointerEvents: 'none',
+                                    }}
+                                />
+
+                                {/* MIDDLE ROW: FLOATING PEDESTAL & ITEM */}
+                                {selectedItem.mainTab === 'BANK' ? (
+                                    <BankItemShowcase
+                                        item={selectedItem}
+                                        rarityColor={getRarityColor(selectedItem.rarity)}
+                                        isMobile={isMobile}
+                                    />
+                                ) : (
+                                    <div
+                                        style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            width: '100%',
+                                            position: 'relative',
+                                            flex: 1,
+                                            marginTop: isMobile ? '-10px' : '-15px',
+                                        }}
+                                    >
+                                        <div
+                                            style={{
+                                                position: 'relative',
+                                                width: isMobile ? '360px' : '380px',
+                                                height: isMobile ? '320px' : '340px',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                            }}
+                                        >
+                                            {/* Radial soft glow behind item */}
+                                            <div
+                                                style={{
+                                                    position: 'absolute',
+                                                    width: isMobile ? '320px' : '320px',
+                                                    height: isMobile ? '320px' : '320px',
+                                                    borderRadius: '50%',
+                                                    background:
+                                                        'radial-gradient(circle, ' +
+                                                        getRarityColor(selectedItem.rarity) +
+                                                        '22 0%, transparent 70%)',
+                                                    animation: 'pulse-glow 4s infinite ease-in-out',
+                                                }}
+                                            />
+
+                                            {/* Pedestal Platform Slab */}
+                                            <div
+                                                style={{
+                                                    position: 'absolute',
+                                                    bottom: isMobile ? '-12px' : '-15px',
+                                                    width: isMobile ? '340px' : '340px',
+                                                    height: isMobile ? '70px' : '76px',
+                                                    borderRadius: '50%',
+                                                    background:
+                                                        'linear-gradient(180deg, rgba(35,30,30,0.96) 0%, rgba(10,5,5,0.98) 100%)',
+                                                    border:
+                                                        (isMobile ? '1px solid ' : '2px solid ') +
+                                                        getRarityColor(selectedItem.rarity) +
+                                                        '88',
+                                                    boxShadow: isMobile
+                                                        ? '0 4px 10px rgba(0,0,0,0.8), 0 0 10px ' +
+                                                          getRarityColor(selectedItem.rarity) +
+                                                          '33'
+                                                        : '0 8px 25px rgba(0,0,0,0.8), 0 0 15px ' +
+                                                          getRarityColor(selectedItem.rarity) +
+                                                          '33, inset 0 2px 4px rgba(255,255,255,0.15)',
+                                                    transform: 'rotateX(65deg)',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                }}
+                                            >
+                                                {/* Inner spinning element */}
+                                                <div
+                                                    style={{
+                                                        width: isMobile ? '280px' : '280px',
+                                                        height: isMobile ? '280px' : '280px',
+                                                        borderRadius: '50%',
+                                                        border: `1.5px dashed ${getRarityColor(selectedItem.rarity)}77`,
+                                                        boxShadow: `inset 0 0 15px ${getRarityColor(selectedItem.rarity)}22`,
+                                                        animation: 'spin-slow-reverse 12s infinite linear',
+                                                    }}
+                                                />
+                                            </div>
+
+                                            {/* Floating Item Avatar (Large) */}
+                                            <div
+                                                style={{
+                                                    zIndex: 5,
+                                                    // ╨Ф╨╗╤П ╤Б╨║╨╕╨╜╨╛╨▓-╨┐╨╡╤А╤Б╨╛╨╜╨░╨╢╨╡╨╣ тАФ ╨▒╨╡╨╖ ╨╗╨╡╨▓╨╕╤В╨░╤Ж╨╕╨╕, ╤Б╤В╨░╨▓╨╕╨╝ ╨╜╨░ ╨┐╤М╨╡╨┤╨╡╤Б╤В╨░╨╗
+                                                    animation: selectedItem.mainTab === 'SKINS' ? undefined : 'float-item 4s infinite ease-in-out',
+                                                    display: 'flex',
+                                                    alignItems: 'flex-end',
+                                                    justifyContent: 'center',
+                                                    // ╨Ф╨╗╤П ╤Б╨║╨╕╨╜╨╛╨▓ ╨╛╨┐╤Г╤Б╨║╨░╨╡╨╝ ╨┐╨╡╤А╤Б╨╛╨╜╨░╨╢╨░ ╨║ ╨┐╤М╨╡╨┤╨╡╤Б╤В╨░╨╗╤Г
+                                                    marginBottom: selectedItem.mainTab === 'SKINS'
+                                                        ? (isMobile ? '10px' : '14px')
+                                                        : (isMobile ? '35px' : '45px'),
+                                                }}
+                                            >
+                                                {selectedItem.spriteClass ? (
+                                                    <div
+                                                        className={selectedItem.spriteClass}
+                                                        style={{
+                                                            width: isMobile ? '300px' : '260px',
+                                                            height: isMobile ? '300px' : '260px',
+                                                            filter: `contrast(1.2) brightness(1.2) drop-shadow(0 0 20px ${getRarityColor(selectedItem.rarity)}cc)`,
+                                                        }}
+                                                    />
+                                                ) : (
+                                                    <>
+                                                        {!selectedImageLoaded && <div className="skeleton-placeholder" />}
+                                                        <img
+                                                            src={selectedItem.image}
+                                                            onLoad={() => setSelectedImageLoaded(true)}
+                                                            onError={(e) =>
+                                                                (e.currentTarget.src = AssetsMap.UI.ICON_DAILY_CHEST)
+                                                            }
+                                                            className={`image-fade-in ${selectedImageLoaded ? 'loaded' : ''}`}
+                                                            style={{
+                                                                // ╨б╨║╨╕╨╜╤Л-╨┐╨╡╤А╤Б╨╛╨╜╨░╨╢╨╕ ╤А╨╕╤Б╤Г╨╡╨╝ ╨║╤А╤Г╨┐╨╜╨╡╨╡ ╨╕ ╨▓╤Л╤А╨░╨▓╨╜╨╕╨▓╨░╨╡╨╝ ╨┐╨╛ ╨╜╨╕╨╖╤Г
+                                                                width: selectedItem.mainTab === 'SKINS'
+                                                                    ? (isMobile ? '340px' : '320px')
+                                                                    : (isMobile ? '300px' : '260px'),
+                                                                height: selectedItem.mainTab === 'SKINS'
+                                                                    ? (isMobile ? '340px' : '320px')
+                                                                    : (isMobile ? '300px' : '260px'),
+                                                                objectFit: 'contain',
+                                                                objectPosition: selectedItem.mainTab === 'SKINS' ? 'bottom center' : 'center',
+                                                                filter: `contrast(1.1) brightness(1.15) drop-shadow(0 0 25px ${getRarityColor(selectedItem.rarity)}cc)`,
+                                                            }}
+                                                            alt=""
+                                                        />
+                                                    </>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Dot Indicators for Bottom Shelf items (usually 6) - Hidden on mobile to prevent layout clutter */}
+                                {!isMobile && (
+                                    <div style={{ display: 'flex', gap: '8px', zIndex: 10, margin: '5px 0' }}>
+                                        {filteredItems.map((item: ShopItem) => (
+                                            <button
+                                                key={item.id}
+                                                onClick={() => setSelectedItem(item)}
+                                                style={{
+                                                    width: '10px',
+                                                    height: '10px',
+                                                    minWidth: 'auto',
+                                                    minHeight: 'auto',
+                                                    borderRadius: '50%',
+                                                    backgroundColor:
+                                                        selectedItem.id === item.id
+                                                            ? '#f0c040'
+                                                            : 'rgba(255,255,255,0.2)',
+                                                    border: 'none',
+                                                    cursor: 'pointer',
+                                                    padding: 0,
+                                                    boxShadow:
+                                                        selectedItem.id === item.id
+                                                            ? '0 0 8px #f0c040, 0 0 3px #f0c040'
+                                                            : 'none',
+                                                    transition: 'all 0.2s',
+                                                }}
+                                            />
+                                        ))}
+                                    </div>
+                                )}
+                            </motion.div>
+
+                            {/* RIGHT SIDE DETAILED INSPECTION CARD */}
+                            <ShopDetailPanel
+                                selectedItem={selectedItem}
+                                playerLevel={playerLevel}
+                                shopDiscounts={shopDiscounts}
+                                itemPower={itemPower}
+                                equippedItem={equippedItem}
+                                powerDiff={powerDiff}
+                                handleBuyTrigger={handleBuyTrigger}
+                                isMobile={isMobile}
+                            />
+                        </div>
+                    ) : (
+                        <div
+                            style={{
+                                flex: 1,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                color: 'rgba(255,255,255,0.4)',
+                            }}
+                        >
+                            ╨Э╨╡╤В ╨┤╨╛╤Б╤В╤Г╨┐╨╜╤Л╤Е ╤В╨╛╨▓╨░╤А╨╛╨▓ ╨▓ ╤Н╤В╨╛╨╣ ╨║╨░╤В╨╡╨│╨╛╤А╨╕╨╕.
+                        </div>
+                    )}
+
+                    {/* BOTTOM SHELF (PAGINATED GRID OF ITEMS) */}
+                    {(() => {
+                        const totalPages = Math.ceil(filteredItems.length / ITEMS_PER_PAGE);
+                        const startIndex = currentPage * ITEMS_PER_PAGE;
+                        const paginatedItems = filteredItems.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+
+                        return (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', width: '100%' }}>
+                                <div
+                                    style={{
+                                        display: 'flex',
+                                        justifyContent: 'space-between',
+                                        alignItems: 'center',
+                                        padding: '8px 16px',
+                                        background:
+                                            'linear-gradient(90deg, rgba(30, 20, 15, 0.85) 0%, rgba(15, 10, 10, 0.6) 50%, rgba(30, 20, 15, 0.85) 100%)',
+                                        border: '1px solid rgba(240, 192, 64, 0.25)',
+                                        borderRadius: '8px',
+                                        fontSize: '13px',
+                                        fontFamily: "'Cinzel', serif",
+                                        fontWeight: 800,
+                                        textTransform: 'uppercase',
+                                        textShadow: '0 2px 4px rgba(0,0,0,1)',
+                                        boxShadow: '0 4px 15px rgba(0,0,0,0.4), inset 0 1px 2px rgba(255,255,255,0.05)',
+                                        backdropFilter: 'blur(4px)',
+                                    }}
+                                >
+                                    <span style={{ color: '#f0c040', letterSpacing: '1px' }}>
+                                        ╨Ъ╨Р╨в╨Р╨Ы╨Ю╨У ╨в╨Ю╨Т╨Р╨а╨Ю╨Т{' '}
+                                        {(activeMainTab === 'ARSENAL' || activeMainTab === 'ALCHEMY') && (
+                                            <span
+                                                style={{
+                                                    color: '#ffcc00',
+                                                    marginLeft: '15px',
+                                                    textShadow: '0 0 10px rgba(255,204,0,0.4), 0 2px 4px rgba(0,0,0,1)',
+                                                }}
+                                            >
+                                                тШЕ ╨Р╨Ъ╨ж╨Ш╨Ш ╨Ш ╨б╨Ъ╨Ш╨Ф╨Ъ╨Ш ╨Ф╨Э╨п ╨Я╨Ю╨Ъ╨Р╨Ч╨Р╨Э╨л ╨Я╨Х╨а╨Т╨л╨Ь╨Ш
+                                            </span>
+                                        )}
+                                    </span>
+                                    <span style={{ color: 'rgba(255,255,255,0.6)', letterSpacing: '0.5px' }}>
+                                        ╨б╨в╨а╨Р╨Э╨Ш╨ж╨Р {currentPage + 1} ╨Ш╨Ч {totalPages || 1}
+                                    </span>
+                                </div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '15px', width: '100%' }}>
+                                    {/* LEFT ARROW */}
+                                    {totalPages > 1 && !isMobile && (
+                                        <motion.button
+                                            whileHover={
+                                                currentPage !== 0
+                                                    ? {
+                                                          scale: 1.1,
+                                                          borderColor: '#f0c040',
+                                                          boxShadow: '0 0 15px rgba(240,192,64,0.5)',
+                                                      }
+                                                    : {}
+                                            }
+                                            whileTap={currentPage !== 0 ? { scale: 0.95 } : {}}
+                                            onClick={() => {
+                                                setDirection(-1);
+                                                setCurrentPage((prev) => Math.max(0, prev - 1));
+                                            }}
+                                            disabled={currentPage === 0}
+                                            style={{
+                                                background:
+                                                    currentPage === 0
+                                                        ? 'rgba(255,255,255,0.01)'
+                                                        : 'linear-gradient(180deg, rgba(45,35,25,0.8) 0%, rgba(20,15,10,0.95) 100%)',
+                                                border:
+                                                    currentPage === 0
+                                                        ? '1.5px solid rgba(255,255,255,0.05)'
+                                                        : '2px solid rgba(240, 192, 64, 0.5)',
+                                                borderRadius: '50%',
+                                                width: isMobile ? '32px' : '48px',
+                                                height: isMobile ? '32px' : '48px',
+                                                minWidth: 'unset',
+                                                minHeight: 'unset',
+                                                color: currentPage === 0 ? 'rgba(255,255,255,0.15)' : '#f0c040',
+                                                fontSize: isMobile ? '14px' : '20px',
+                                                cursor: currentPage === 0 ? 'default' : 'pointer',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                boxShadow:
+                                                    currentPage === 0
+                                                        ? 'none'
+                                                        : '0 4px 10px rgba(0,0,0,0.5), 0 0 10px rgba(240,192,64,0.2)',
+                                                transition: 'all 0.2s',
+                                                flexShrink: 0,
+                                            }}
+                                        >
+                                            <svg
+                                                width="16"
+                                                height="16"
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                strokeWidth="3"
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                style={{ display: 'block', transform: 'translateX(-1px)' }}
+                                            >
+                                                <polyline points="15 18 9 12 15 6" />
+                                            </svg>
+                                        </motion.button>
+                                    )}
+
+                                    {/* ITEMS CONTAINER */}
+                                    <div
+                                        style={{
+                                            flex: 1,
+                                            height: isMobile ? '155px' : '210px',
+                                            background: 'rgba(10,8,8,0.7)',
+                                            border: isMobile ? '1.5px solid rgba(240,192,64,0.2)' : '1px solid rgba(240,192,64,0.1)',
+                                            borderRadius: '12px',
+                                            padding: isMobile ? '6px 12px' : '12px 20px',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            minWidth: 0,
+                                            overflow: 'hidden',
+                                            position: 'relative',
+                                        }}
+                                    >
+                                        <AnimatePresence initial={false} custom={direction} mode="wait">
+                                            <motion.div
+                                                key={currentPage}
+                                                custom={direction}
+                                                variants={{
+                                                    initial: (direction: number) => ({
+                                                        x: direction > 0 ? 100 : -100,
+                                                        opacity: 0,
+                                                    }),
+                                                    animate: {
+                                                        x: 0,
+                                                        opacity: 1,
+                                                    },
+                                                    exit: (direction: number) => ({
+                                                        x: direction > 0 ? -100 : 100,
+                                                        opacity: 0,
+                                                    }),
+                                                }}
+                                                initial="initial"
+                                                animate="animate"
+                                                exit="exit"
+                                                transition={{ type: 'spring', stiffness: 350, damping: 32 }}
+                                                drag={isMobile ? "x" : undefined}
+                                                dragConstraints={{ left: 0, right: 0 }}
+                                                dragElastic={0.2}
+                                                onDragEnd={(_, info) => {
+                                                    if (!isMobile) return;
+                                                    const swipeThreshold = 50;
+                                                    if (info.offset.x < -swipeThreshold) {
+                                                        if (currentPage < totalPages - 1) {
+                                                            setDirection(1);
+                                                            setCurrentPage((prev) => prev + 1);
+                                                        }
+                                                    } else if (info.offset.x > swipeThreshold) {
+                                                        if (currentPage > 0) {
+                                                            setDirection(-1);
+                                                            setCurrentPage((prev) => prev - 1);
+                                                        }
+                                                    }
+                                                }}
+                                                style={{
+                                                    display: 'flex',
+                                                    gap: isMobile ? '16px' : '12px',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    width: '100%',
+                                                    height: '100%',
+                                                    touchAction: isMobile ? 'pan-y' : 'auto',
+                                                }}
+                                            >
+                                                {paginatedItems.map((item: ShopItem) => (
+                                                    <ShopItemCard
+                                                        key={item.id}
+                                                        item={item}
+                                                        isSelected={selectedItem?.id === item.id}
+                                                        playerLevel={playerLevel}
+                                                        discount={shopDiscounts?.[item.id]}
+                                                        onClick={() => handleItemClick(item)}
+                                                        isMobile={isMobile}
+                                                    />
+                                                ))}
+                                            </motion.div>
+                                        </AnimatePresence>
+                                    </div>
+
+                                    {/* RIGHT ARROW */}
+                                    {totalPages > 1 && !isMobile && (
+                                        <motion.button
+                                            whileHover={
+                                                currentPage !== totalPages - 1
+                                                    ? {
+                                                          scale: 1.1,
+                                                          borderColor: '#f0c040',
+                                                          boxShadow: '0 0 15px rgba(240,192,64,0.5)',
+                                                      }
+                                                    : {}
+                                            }
+                                            whileTap={currentPage !== totalPages - 1 ? { scale: 0.95 } : {}}
+                                            onClick={() => {
+                                                setDirection(1);
+                                                setCurrentPage((prev) => Math.min(totalPages - 1, prev + 1));
+                                            }}
+                                            disabled={currentPage === totalPages - 1}
+                                            style={{
+                                                background:
+                                                    currentPage === totalPages - 1
+                                                        ? 'rgba(255,255,255,0.01)'
+                                                        : 'linear-gradient(180deg, rgba(45,35,25,0.8) 0%, rgba(20,15,10,0.95) 100%)',
+                                                border:
+                                                    currentPage === totalPages - 1
+                                                        ? '1.5px solid rgba(255,255,255,0.05)'
+                                                        : '2px solid rgba(240, 192, 64, 0.5)',
+                                                borderRadius: '50%',
+                                                width: isMobile ? '32px' : '48px',
+                                                height: isMobile ? '32px' : '48px',
+                                                minWidth: 'unset',
+                                                minHeight: 'unset',
+                                                color:
+                                                    currentPage === totalPages - 1
+                                                        ? 'rgba(255,255,255,0.15)'
+                                                        : '#f0c040',
+                                                fontSize: isMobile ? '14px' : '20px',
+                                                cursor: currentPage === totalPages - 1 ? 'default' : 'pointer',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                boxShadow:
+                                                    currentPage === totalPages - 1
+                                                        ? 'none'
+                                                        : '0 4px 10px rgba(0,0,0,0.5), 0 0 10px rgba(240,192,64,0.2)',
+                                                transition: 'all 0.2s',
+                                                flexShrink: 0,
+                                            }}
+                                        >
+                                            <svg
+                                                width="16"
+                                                height="16"
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                strokeWidth="3"
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                style={{ display: 'block', transform: 'translateX(1px)' }}
+                                            >
+                                                <polyline points="9 18 15 12 9 6" />
+                                            </svg>
+                                        </motion.button>
+                                    )}
+                                </div>
+
+                                {/* PAGE DOTS */}
+                                {totalPages > 1 && (
+                                    <div
+                                        style={{
+                                            display: 'flex',
+                                            justifyContent: 'center',
+                                            gap: '6px',
+                                            marginTop: '2px',
+                                        }}
+                                    >
+                                        {Array.from({ length: totalPages }).map((_, idx) => (
+                                            <button
+                                                key={idx}
+                                                onClick={() => {
+                                                    setDirection(idx > currentPage ? 1 : -1);
+                                                    setCurrentPage(idx);
+                                                }}
+                                                style={{
+                                                    width: '8px',
+                                                    height: '8px',
+                                                    minWidth: 'auto',
+                                                    minHeight: 'auto',
+                                                    borderRadius: '50%',
+                                                    border: 'none',
+                                                    cursor: 'pointer',
+                                                    padding: 0,
+                                                    backgroundColor:
+                                                        idx === currentPage ? '#f0c040' : 'rgba(255,255,255,0.2)',
+                                                    transition: 'all 0.2s',
+                                                    boxShadow: idx === currentPage ? '0 0 8px #f0c040' : 'none',
+                                                }}
+                                            />
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        );
+                    })()}
+                </div>
+            </div>
+
+            {/* BOTTOM BAR WITH REFRESH TIMER & FOOTER BANNERS */}
+            <div
+                style={{
+                    height: isMobile ? '40px' : '80px',
+                    borderTop: '1px solid rgba(240, 192, 64, 0.1)',
+                    background: 'rgba(5,5,5,0.9)',
+                    padding: isMobile ? '0 20px' : '0 80px',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    zIndex: 10,
+                }}
+            >
+                {/* Countdown timer & Manual Refresh Button */}
+                <div style={{ color: '#8a7a6a', fontSize: '12px', fontStyle: 'italic' }}>
+                    тЬж ╨Т╤Б╨╡ ╨┐╤А╨╡╨┤╨╝╨╡╤В╤Л ╨┤╨╛╤Б╤В╤Г╨┐╨╜╤Л ╨▓ ╨┐╨╛╨╗╨╜╨╛╨╝ ╨╛╨▒╤К╤С╨╝╨╡
+                </div>
+            </div>
+
+            {/* CONFIRMATION OVERLAYS */}
+            <AnimatePresence>
+                {showConfirm && selectedItem && (
+                    <PurchaseConfirmOverlay
+                        item={selectedItem}
+                        dailyAdWatchesCount={dailyAdWatchesCount || 0}
+                        onCancel={() => setShowConfirm(false)}
+                        onConfirm={confirmPurchase}
+                    />
+                )}
+            </AnimatePresence>
+
+            {/* TOAST MESSAGE */}
+            <AnimatePresence>
+                {toastMessage && (
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.9 }}
+                        style={{
+                            position: 'absolute',
+                            top: '50%',
+                            left: '50%',
+                            transform: 'translate(-50%, -50%)',
+                            background: 'rgba(10,20,40,0.95)',
+                            border: '1px solid #f59e0b',
+                            borderRadius: '12px',
+                            padding: '12px 24px',
+                            color: '#ffffff',
+                            fontSize: '16px',
+                            fontWeight: 700,
+                            zIndex: 9999,
+                            pointerEvents: 'none',
+                            boxShadow: '0 0 20px rgba(245,158,11,0.4)',
+                            fontFamily: "'Cinzel', 'Philosopher', serif",
+                            whiteSpace: 'nowrap',
+                        }}
+                    >
+                        {toastMessage}
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </motion.div>
+    );
+};

@@ -254,21 +254,21 @@ export const MatchmakingSearching: React.FC<MatchmakingSearchingProps> = ({
                     style={{
                         color: '#e2e8f0',
                         fontFamily: "'Montserrat', sans-serif",
-                        fontSize: '16px',
+                        fontSize: '19px',
                         fontWeight: 700,
                         marginBottom: '24px',
-                        opacity: 0.9,
+                        opacity: 0.95,
                         display: 'flex',
                         alignItems: 'center',
-                        gap: '6px',
-                        textShadow: '0 2px 4px rgba(0,0,0,0.8)',
+                        gap: '8px',
+                        textShadow: '0 2px 6px rgba(0,0,0,0.95)',
                     }}
                 >
-                    <span style={{ color: '#fbbf24', textShadow: '0 0 8px rgba(251, 191, 36, 0.4)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                    <span style={{ color: '#fbbf24', textShadow: '0 0 8px rgba(251, 191, 36, 0.5)', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
                         {rating}
                         <img
                             src={resolveAssetPath(AssetsMap.UI.TROPHY_PREMIUM)}
-                            style={{ width: '18px', height: '18px', objectFit: 'contain' }}
+                            style={{ width: '24px', height: '24px', objectFit: 'contain', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))' }}
                             alt="trophy"
                         />
                     </span>{' '}
@@ -319,25 +319,30 @@ export const MatchmakingSearching: React.FC<MatchmakingSearchingProps> = ({
                         display: 'flex',
                         flexDirection: 'column',
                         alignItems: 'center',
-                        gap: '6px',
-                        background: 'rgba(0, 0, 0, 0.45)',
-                        padding: '14px 28px',
+                        gap: '10px',
+                        background: 'rgba(12, 6, 2, 0.92)',
+                        padding: '18px 36px',
                         borderRadius: '16px',
-                        border: '1px solid rgba(251, 191, 36, 0.25)',
+                        border: '2px solid rgba(251, 191, 36, 0.4)',
                         marginBottom: '30px',
-                        boxShadow: '0 4px 15px rgba(0,0,0,0.3)',
+                        boxShadow: '0 10px 30px rgba(0,0,0,0.7), inset 0 0 20px rgba(251, 191, 36, 0.05)',
                     }}
                 >
                     <div
                         style={{
                             color: '#e2e8f0',
-                            fontSize: '14px',
+                            fontSize: '15px',
                             fontWeight: 700,
-                            fontFamily: "'Montserrat', sans-serif",
+                            fontFamily: "'Cinzel', serif",
+                            letterSpacing: '1px',
+                            textShadow: '0 2px 4px rgba(0,0,0,0.8)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
                         }}
                     >
                         ВРЕМЯ В ОЧЕРЕДИ:{' '}
-                        <span style={{ color: '#fbbf24', fontSize: '18px', fontWeight: 900 }}>
+                        <span style={{ color: '#fbbf24', fontSize: '22px', fontWeight: 900, textShadow: '0 0 10px rgba(251, 191, 36, 0.4)' }}>
                             {Math.floor(seconds / 60)
                                 .toString()
                                 .padStart(2, '0')}
@@ -347,18 +352,25 @@ export const MatchmakingSearching: React.FC<MatchmakingSearchingProps> = ({
                     <div
                         style={{
                             color: '#fef3c7',
-                            fontSize: '13px',
+                            fontSize: '15px',
                             fontWeight: 700,
-                            fontFamily: "'Montserrat', sans-serif",
+                            fontFamily: "'Cinzel', serif",
+                            letterSpacing: '1px',
+                            textShadow: '0 2px 4px rgba(0,0,0,0.8)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
                         }}
                     >
                         ДИАПАЗОН КУБКОВ:{' '}
                         <span style={{ color: '#fbbf24', fontWeight: 900 }}>
-                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', verticalAlign: 'bottom' }}>
-                                {Math.max(0, rating - searchRange)} - {rating + searchRange}
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', verticalAlign: 'middle' }}>
+                                <span style={{ fontSize: '22px', textShadow: '0 0 10px rgba(251, 191, 36, 0.4)' }}>
+                                    {Math.max(0, rating - searchRange)} - {rating + searchRange}
+                                </span>
                                 <img
                                     src={resolveAssetPath(AssetsMap.UI.TROPHY_PREMIUM)}
-                                    style={{ width: '16px', height: '16px', objectFit: 'contain' }}
+                                    style={{ width: '24px', height: '24px', objectFit: 'contain', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))' }}
                                     alt="trophy"
                                 />
                             </span>

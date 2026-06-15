@@ -54,25 +54,26 @@ export const LocalStatRow: React.FC<LocalStatRowProps> = ({ label, pVal, eVal, i
             {/* Icon + Stat Label in Center */}
             <div
                 style={{
-                    width: '90px',
+                    width: '120px',
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    gap: '1px',
+                    gap: '4px',
                 }}
             >
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '16px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '24px' }}>
                     {icon}
                 </div>
                 <div
                     style={{
                         color: '#b5a695',
-                        fontSize: '8px',
+                        fontSize: '11px',
                         fontWeight: 900,
                         fontFamily: "'Cinzel', serif",
-                        letterSpacing: '0.5px',
+                        letterSpacing: '1px',
                         textTransform: 'uppercase',
+                        textShadow: '0 1px 2px rgba(0,0,0,0.8)',
                     }}
                 >
                     {label}

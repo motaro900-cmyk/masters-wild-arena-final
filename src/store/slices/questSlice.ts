@@ -73,23 +73,80 @@ export const createQuestSlice = (set: any, get: any) => ({
         const state = useGameStore.getState();
         const userId = SyncService.getPrefixedUserId(state.vkUser, state.playerId);
 
-        // Block guest/unidentified users — quest refresh only for VK users
+        const serverDate = new Date(TimeService.now());
+
+        const isNewDayMSK = (lastTs: number) => {
+            const MSK_OFFSET = 3 * 60 * 60 * 1000;
+            const lastMSK = lastTs + MSK_OFFSET;
+            const serverMSK = serverDate.getTime() + MSK_OFFSET;
+            const DAY_MS = 24 * 60 * 60 * 1000;
+            return Math.floor(serverMSK / DAY_MS) > Math.floor(lastMSK / DAY_MS);
+        };
+
+        const generateQuestsLocally = () => {
+            const shuffled = [...QUESTS_POOL].sort(() => 0.5 - Math.random());
+            const selected = shuffled.slice(0, 4).map((q) => ({
+                questId: q.id,
+                progress: 0,
+                isClaimed: false,
+            }));
+
+            const shuffledBp = [...BP_DAILY_QUESTS_POOL].sort(() => 0.5 - Math.random());
+            const selectedBp = shuffledBp.slice(0, 4).map((q) => ({
+                questId: q.id,
+                progress: 0,
+                isClaimed: false,
+            }));
+
+            return { selected, selectedBp };
+        };
+
+        // If not a VK user, run local-only refresh and update state (which persists to localStorage)
         if (!userId.startsWith('VK-')) {
-            console.log('[questSlice] Skipping refreshDailyQuests for non-VK user:', userId);
+            console.log('[questSlice] Local-only refresh for non-VK/Guest/Developer user:', userId);
+            const lastDailyRefresh = state.lastDailyRefresh || 0;
+            const existingQuests = state.dailyQuests || [];
+
+            if (existingQuests.length === 0 || isNewDayMSK(lastDailyRefresh)) {
+                const { selected, selectedBp } = generateQuestsLocally();
+                set({
+                    dailyQuests: selected,
+                    bpDailyQuests: selectedBp,
+                    lastDailyRefresh: serverDate.getTime(),
+                    dailyAdWatchesCount: 0,
+                });
+                console.log('[questSlice] Quests generated locally for Guest/Developer user');
+            }
             isRefreshingDaily = false;
             return;
         }
 
         const playerRef = doc(db, USERS_COLLECTION, userId);
 
-        // Use TimeService.now() — already calibrated to server time via /api/verify-sign
-        // No need to do an extra Firestore write just to get server time
-        const serverDate = new Date(TimeService.now());
-
         try {
             await runTransaction(db, async (transaction) => {
                 const docSnap = await transaction.get(playerRef);
-                if (!docSnap.exists()) return;
+
+                // If document does not exist yet (brand new player), initialize quests in both database and state
+                if (!docSnap.exists()) {
+                    const { selected, selectedBp } = generateQuestsLocally();
+                    transaction.set(playerRef, {
+                        dailyQuests: selected,
+                        bpDailyQuests: selectedBp,
+                        dailyAdWatchesCount: 0,
+                        lastResetDate: serverTimestamp(),
+                        lastDailyRefresh: serverDate.getTime(),
+                    }, { merge: true });
+
+                    set({
+                        dailyQuests: selected,
+                        bpDailyQuests: selectedBp,
+                        lastDailyRefresh: serverDate.getTime(),
+                        dailyAdWatchesCount: 0,
+                    });
+                    console.log('[questSlice] Brand new player — initialized quests in Firestore & state');
+                    return;
+                }
 
                 const data = docSnap.data();
                 const lastResetDateTs = data.lastResetDate;
@@ -115,19 +172,7 @@ export const createQuestSlice = (set: any, get: any) => ({
                 }
 
                 if (shouldReset) {
-                    const shuffled = [...QUESTS_POOL].sort(() => 0.5 - Math.random());
-                    const selected = shuffled.slice(0, 4).map((q) => ({
-                        questId: q.id,
-                        progress: 0,
-                        isClaimed: false,
-                    }));
-
-                    const shuffledBp = [...BP_DAILY_QUESTS_POOL].sort(() => 0.5 - Math.random());
-                    const selectedBp = shuffledBp.slice(0, 4).map((q) => ({
-                        questId: q.id,
-                        progress: 0,
-                        isClaimed: false,
-                    }));
+                    const { selected, selectedBp } = generateQuestsLocally();
 
                     transaction.update(playerRef, {
                         dailyQuests: selected,

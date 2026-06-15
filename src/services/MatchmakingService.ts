@@ -7,6 +7,7 @@ import { getRankInfo } from '../configs/RankSystem';
 import { useGameStore } from '../store/useGameStore';
 import { TimeService } from '../utils/TimeService';
 import { getLevelMultiplier } from '../features/heroes/leveling/HeroLevelCalculator';
+import { AVATARS, AVATAR_FRAMES, TITLES } from '../configs/ProfileCustomization';
 
 const SEARCH_TIMEOUT_MS = 10000; // 10 секунд поиск реального игрока
 const ATTACK_COOLDOWN_MS = 60 * 60 * 1000; // 1 час — нельзя атаковать одного игрока
@@ -15,6 +16,8 @@ export interface MatchOpponent {
     id: string;
     name: string;
     avatar?: string; // real VK photo or in-game avatar URL
+    avatarFrame?: string;
+    title?: string;
     rating: number;
     level: number;
     heroId: string;
@@ -380,6 +383,8 @@ class MatchmakingServiceClass {
             id: heroId,
             name: snapshot.name || snapshot.имя || 'Игрок',
             avatar: snapshot.avatar || snapshot.фото || snapshot.photo || snapshot.photo_200 || '',
+            avatarFrame: snapshot.frame || 'none',
+            title: snapshot.title || 'Странник',
             rating,
             level,
             heroId,
@@ -601,9 +606,28 @@ class MatchmakingServiceClass {
         // Рассчитываем характеристики бота на основе сгенерированного снаряжения и уровня (честно, без искусственных множителей)
         const finalStats = buildStatsFromEquipment(randomHero.id, botLevel, equipment, avgItemLevel);
 
+        // Случайный аватар из доступных в игре
+        const randomAvatarObj = AVATARS[Math.floor(Math.random() * AVATARS.length)];
+        const avatar = randomAvatarObj.path;
+
+        // Случайная рамка (исключая разработчика, с 30% шансом на отсутствие рамки)
+        const allowedFrames = AVATAR_FRAMES.filter(f => f.id !== 'storm_lightning_frame.webp');
+        const randomFrameObj = Math.random() < 0.3
+            ? (AVATAR_FRAMES.find(f => f.id === 'none') || AVATAR_FRAMES[0])
+            : allowedFrames[Math.floor(Math.random() * allowedFrames.length)];
+        const avatarFrame = randomFrameObj.id;
+
+        // Случайный титул (исключая разработчика)
+        const allowedTitles = TITLES.filter(t => t.name !== 'Разработчик');
+        const randomTitleObj = allowedTitles[Math.floor(Math.random() * allowedTitles.length)];
+        const title = randomTitleObj.name;
+
         return {
             id: randomHero.id,
             name: getRandomBotName(), // Реалистичное русское имя
+            avatar,
+            avatarFrame,
+            title,
             rating: botRating,
             level: botLevel,
             heroId: randomHero.id,

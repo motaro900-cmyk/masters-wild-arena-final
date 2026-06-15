@@ -580,12 +580,13 @@ export const BattleHUD = React.memo<BattleHUDProps>(({
                             <div
                                 style={{
                                     position: 'absolute',
-                                    width: '26px',
-                                    height: '26px',
+                                    top: '50%',
+                                    left: '50%',
+                                    transform: 'translate(-50%, -50%)',
+                                    width: '28px',
+                                    height: '28px',
                                     borderRadius: '50%',
                                     background: '#1a1008',
-                                    border: '1.5px solid #d97706',
-                                    boxShadow: '0 0 8px rgba(217,119,6,0.3)',
                                 }}
                             />
                             <img
@@ -965,9 +966,30 @@ export const BattleHUD = React.memo<BattleHUDProps>(({
                             />
                         </motion.div>
 
+                        {/* Glow for enemy frame */}
+                        {(() => {
+                            const enemyFrame = activeRankedOpponent?.avatarFrame || 'none';
+                            const frameStyle = getAvatarFrameStyle(enemyFrame);
+                            if (frameStyle.glowClass) {
+                                return (
+                                    <div
+                                        className={frameStyle.glowClass}
+                                        style={{
+                                            position: 'absolute',
+                                            inset: '24px',
+                                            borderRadius: '50%',
+                                            zIndex: 5,
+                                            pointerEvents: 'none',
+                                        }}
+                                    />
+                                );
+                            }
+                            return null;
+                        })()}
+
                         {/* Round Frame */}
                         <img
-                            src={AssetsMap.UI.AVATAR_FRAME_NEW}
+                            src={getAvatarFramePath(activeRankedOpponent?.avatarFrame || 'none')}
                             style={{
                                 position: 'absolute',
                                 inset: 0,
@@ -996,12 +1018,13 @@ export const BattleHUD = React.memo<BattleHUDProps>(({
                             <div
                                 style={{
                                     position: 'absolute',
-                                    width: '26px',
-                                    height: '26px',
+                                    top: '50%',
+                                    left: '50%',
+                                    transform: 'translate(-50%, -50%)',
+                                    width: '28px',
+                                    height: '28px',
                                     borderRadius: '50%',
                                     background: '#1a1008',
-                                    border: '1.5px solid #d97706',
-                                    boxShadow: '0 0 8px rgba(217,119,6,0.3)',
                                 }}
                             />
                             <img

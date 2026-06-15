@@ -21,6 +21,7 @@ interface MatchmakingNameplateProps {
     opponentVipLevel?: number;
     opponentWinRateStr: string;
     opponentHeroName?: string; // Имя персонажа противника
+    opponentTitle?: string;
 }
 
 /** Плашка (nameplate) одного из бойцов: заголовок "ВЫ" / "ВРАГ", ник, кубки, ранг, винрейт, уровень. */
@@ -303,6 +304,7 @@ export const MatchmakingNameplates: React.FC<MatchmakingNameplateProps> = ({
     opponentVipLevel,
     opponentWinRateStr,
     opponentHeroName = 'Пантера',
+    opponentTitle,
 }) => {
     const pRank = getRankInfo(rating);
     const eRank = getRankInfo(opponentRating);
@@ -333,7 +335,7 @@ export const MatchmakingNameplates: React.FC<MatchmakingNameplateProps> = ({
                 rankColor={eRank.color}
                 rankIcon={eRank.icon}
                 rankName={eRank.name}
-                titleText={eRank.name}
+                titleText={opponentTitle || eRank.name}
             />
         </>
     );

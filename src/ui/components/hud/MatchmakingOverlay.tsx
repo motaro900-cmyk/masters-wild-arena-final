@@ -55,6 +55,8 @@ export const MatchmakingOverlay: React.FC<MatchmakingOverlayProps> = ({ onFound,
         id: string;
         name: string;
         avatar?: string;
+        avatarFrame?: string;
+        title?: string;
         rating: number;
         heroImage: string;
         rankIcon: string;
@@ -138,6 +140,8 @@ export const MatchmakingOverlay: React.FC<MatchmakingOverlayProps> = ({ onFound,
                 id: found.id,
                 name: found.name,
                 avatar: found.avatar || '',
+                avatarFrame: found.avatarFrame || 'none',
+                title: found.title || '',
                 rating: found.rating,
                 heroImage: found.heroImage,
                 rankIcon: found.rankIcon,

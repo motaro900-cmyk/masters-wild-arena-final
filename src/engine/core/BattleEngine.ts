@@ -254,11 +254,11 @@ export class BattleEngine {
             }
 
             const q = state.graphicsQuality;
-            let maxParticles = 0;
+            let maxParticles = 15; // default for 'LOW'
             if (q === 'MEDIUM') {
-                maxParticles = 25;
+                maxParticles = 35;
             } else if (q === 'ULTRA') {
-                maxParticles = 75;
+                maxParticles = 80;
             }
 
             // Create background particles container & array

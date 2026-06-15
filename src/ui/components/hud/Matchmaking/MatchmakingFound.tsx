@@ -22,6 +22,7 @@ interface MatchmakingFoundProps {
         winRate?: number;
         vipLevel?: number;
         heroId?: string;
+        title?: string;
         stats: {
             hp: number;
             attack: number;
@@ -141,6 +142,7 @@ export const MatchmakingFound: React.FC<MatchmakingFoundProps> = ({
                 opponentVipLevel={opponent.vipLevel}
                 opponentWinRateStr={opponentWinRateStr}
                 opponentHeroName={getHeroConfig(opponent.heroId || opponent.id || 'panther')?.name || 'Пантера'}
+                opponentTitle={opponent.title}
             />
 
             {/* СЕТКА VS: ЛЕВАЯ ПОЛОВИНА (ИГРОК) */}
@@ -549,31 +551,31 @@ export const MatchmakingFound: React.FC<MatchmakingFoundProps> = ({
                             label="ЗДОРОВЬЕ"
                             pVal={playerStats.hp}
                             eVal={opponent.stats.hp}
-                            icon={<span style={{ fontSize: '18px' }}>❤️</span>}
+                            icon={<span style={{ fontSize: '22px', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))' }}>❤️</span>}
                         />
                         <LocalStatRow
                             label="АТАКА"
                             pVal={playerStats.attack}
                             eVal={opponent.stats.attack}
-                            icon={<span style={{ fontSize: '18px' }}>⚔️</span>}
+                            icon={<span style={{ fontSize: '22px', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))' }}>⚔️</span>}
                         />
                         <LocalStatRow
                             label="ЗАЩИТА"
                             pVal={playerStats.defense}
                             eVal={opponent.stats.defense}
-                            icon={<span style={{ fontSize: '18px' }}>🛡️</span>}
+                            icon={<span style={{ fontSize: '22px', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))' }}>🛡️</span>}
                         />
                         <LocalStatRow
                             label="СКОРОСТЬ"
                             pVal={playerStats.speed ?? 1}
                             eVal={opponent.stats.speed ?? 1}
-                            icon={<span style={{ fontSize: '18px' }}>💨</span>}
+                            icon={<span style={{ fontSize: '22px', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))' }}>💨</span>}
                         />
                         <LocalStatRow
                             label="КРИТ. ШАНС"
                             pVal={playerStats.critChance ?? 5}
                             eVal={opponent.stats.critChance ?? 5}
-                            icon={<span style={{ fontSize: '18px' }}>💥</span>}
+                            icon={<span style={{ fontSize: '22px', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))' }}>💥</span>}
                         />
                     </div>
 
@@ -648,35 +650,37 @@ export const MatchmakingFound: React.FC<MatchmakingFoundProps> = ({
                     >
                         <span
                             style={{
-                                fontSize: '10px',
+                                fontSize: '13px',
                                 fontWeight: 900,
                                 color: '#b5a695',
                                 textTransform: 'uppercase',
-                                letterSpacing: '1px',
-                                marginBottom: '8px',
+                                letterSpacing: '2px',
+                                marginBottom: '12px',
+                                textShadow: '0 2px 4px rgba(0,0,0,0.8)',
                             }}
                         >
                             НАГРАДА ЗА ПОБЕДУ
                         </span>
 
                         <div style={{ display: 'flex', justifyContent: 'space-around', width: '100%' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                 <img
                                     src={AssetsMap.UI.ICON_GOLD_FULL}
-                                    style={{ width: '18px', height: '18px', objectFit: 'contain' }}
+                                    style={{ width: '28px', height: '28px', objectFit: 'contain', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))' }}
                                     alt="gold"
                                 />
                                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-                                    <span style={{ fontSize: '11px', fontWeight: 900, color: '#fff', lineHeight: '1' }}>
+                                    <span style={{ fontSize: '17px', fontWeight: 900, color: '#fff', lineHeight: '1.1', fontFamily: "'Outfit', sans-serif" }}>
                                         {winRewards.goldRange}
                                     </span>
                                     <span
                                         style={{
-                                            fontSize: '7px',
+                                            fontSize: '11px',
                                             fontWeight: 900,
                                             color: '#fbbf24',
                                             textTransform: 'uppercase',
-                                            marginTop: '1px',
+                                            marginTop: '2px',
+                                            textShadow: '0 1px 2px rgba(0,0,0,0.8)',
                                         }}
                                     >
                                         золото
@@ -684,23 +688,24 @@ export const MatchmakingFound: React.FC<MatchmakingFoundProps> = ({
                                 </div>
                             </div>
 
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                 <img
                                     src={AssetsMap.UI.ICON_XP}
-                                    style={{ width: '18px', height: '18px', objectFit: 'contain' }}
+                                    style={{ width: '28px', height: '28px', objectFit: 'contain', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))' }}
                                     alt="xp"
                                 />
                                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-                                    <span style={{ fontSize: '11px', fontWeight: 900, color: '#fff', lineHeight: '1' }}>
+                                    <span style={{ fontSize: '17px', fontWeight: 900, color: '#fff', lineHeight: '1.1', fontFamily: "'Outfit', sans-serif" }}>
                                         {winRewards.xp}
                                     </span>
                                     <span
                                         style={{
-                                            fontSize: '7px',
+                                            fontSize: '11px',
                                             fontWeight: 900,
                                             color: '#fbbf24',
                                             textTransform: 'uppercase',
-                                            marginTop: '1px',
+                                            marginTop: '2px',
+                                            textShadow: '0 1px 2px rgba(0,0,0,0.8)',
                                         }}
                                     >
                                         опыт
@@ -708,23 +713,24 @@ export const MatchmakingFound: React.FC<MatchmakingFoundProps> = ({
                                 </div>
                             </div>
 
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                 <img
                                     src={AssetsMap.UI.TROPHY_PREMIUM}
-                                    style={{ width: '18px', height: '18px', objectFit: 'contain' }}
+                                    style={{ width: '28px', height: '28px', objectFit: 'contain', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))' }}
                                     alt="trophy"
                                 />
                                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-                                    <span style={{ fontSize: '11px', fontWeight: 900, color: '#fff', lineHeight: '1' }}>
+                                    <span style={{ fontSize: '17px', fontWeight: 900, color: '#fff', lineHeight: '1.1', fontFamily: "'Outfit', sans-serif" }}>
                                         {winRewards.trophies}
                                     </span>
                                     <span
                                         style={{
-                                            fontSize: '7px',
+                                            fontSize: '11px',
                                             fontWeight: 900,
                                             color: '#fbbf24',
                                             textTransform: 'uppercase',
-                                            marginTop: '1px',
+                                            marginTop: '2px',
+                                            textShadow: '0 1px 2px rgba(0,0,0,0.8)',
                                         }}
                                     >
                                         кубки
