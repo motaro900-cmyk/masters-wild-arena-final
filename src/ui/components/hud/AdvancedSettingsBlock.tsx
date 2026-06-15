@@ -10,17 +10,21 @@ interface AdvancedSettingsBlockProps {
 }
 
 // Utility to get GPU renderer name
+let cachedGPUInfo: string | null | undefined = undefined;
+
 const getGPUInfo = (): string | null => {
+    if (cachedGPUInfo !== undefined) return cachedGPUInfo;
     if (typeof document === 'undefined') return null;
     try {
         const canvas = document.createElement('canvas');
         const gl = (canvas.getContext('webgl') || canvas.getContext('experimental-webgl')) as WebGLRenderingContext | null;
         if (gl) {
             const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+            let clean: string | null = null;
             if (debugInfo) {
                 const renderer = gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
                 if (renderer) {
-                    let clean = renderer;
+                    clean = renderer;
                     const match = renderer.match(/ANGLE \(([^,]+), ([^,]+) Direct3D/);
                     if (match && match[2]) {
                         clean = match[2];
@@ -31,13 +35,17 @@ const getGPUInfo = (): string | null => {
                             .replace(/\s*\([^)]*\)/g, '')
                             .trim();
                     }
-                    return clean;
                 }
             }
+            // Manually lose the WebGL context to free memory immediately
+            gl.getExtension('WEBGL_lose_context')?.loseContext();
+            cachedGPUInfo = clean;
+            return clean;
         }
     } catch (e) {
         // ignore
     }
+    cachedGPUInfo = null;
     return null;
 };
 
