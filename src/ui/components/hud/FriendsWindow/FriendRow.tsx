@@ -3,6 +3,8 @@ import { motion } from 'framer-motion';
 import { sendGameRequest } from '../../../../utils/VKBridge';
 import { useGameStore } from '../../../../store/useGameStore';
 import { resolveAvatarPath } from '../../../../configs/ProfileCustomization';
+import { resolveAssetPath } from '../../../../utils/assetPath';
+import { AssetsMap } from '../../../../configs/AssetsMap';
 
 interface FriendRowProps {
     friend: any;
@@ -333,7 +335,7 @@ export const FriendRow: React.FC<FriendRowProps> = ({
                                 />
                             ) : (
                                 <img
-                                    src="/assets/images/ui/daily_gift_v2.webp"
+                                    src={resolveAssetPath(AssetsMap.UI.ICON_GIFT)}
                                     style={{
                                         width: '28px',
                                         height: '28px',

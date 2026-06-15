@@ -128,7 +128,7 @@ export const createPlayerSlice = (set: any, get: any) => {
         return Math.floor(
             attack * 12 +
             effectiveEHP * 0.08 +
-            critChance * 800 +
+            critChance * 8 +
             speed * 200
         );
     })(),

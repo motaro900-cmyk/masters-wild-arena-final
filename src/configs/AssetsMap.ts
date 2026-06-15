@@ -58,7 +58,7 @@ const rawAssetsMap = {
         ICON_FRIENDS: '/assets/images/ui/friends_icon.webp',
         ICON_MAIL: '/assets/images/ui/mail_icon.webp',
         ICON_SETTINGS: '/assets/images/ui/settings_icon.webp',
-        ICON_GIFT: '/assets/images/ui/daily_gift_v2.webp',
+        ICON_GIFT: '/assets/images/ui/daily_gift_v3.jpg',
         ICON_BEAST_PASS: '/assets/images/ui/battle_pass_full.webp',
 
         // Магазин / Звери

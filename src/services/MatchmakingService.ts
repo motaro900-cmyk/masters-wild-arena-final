@@ -154,7 +154,7 @@ export const calculateCombatPower = (
     const divisor = 200 + (avgItemLevel - 1) * 25;
     const defMitigation = defense / (defense + divisor);
     const effectiveEHP = hp / Math.max(0.01, 1 - defMitigation);
-    return Math.floor(attack * 12 + effectiveEHP * 0.08 + critChance * 800 + speed * 200);
+    return Math.floor(attack * 12 + effectiveEHP * 0.08 + critChance * 8 + speed * 200);
 };
 
 class MatchmakingServiceClass {

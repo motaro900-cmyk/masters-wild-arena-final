@@ -263,7 +263,7 @@ export const createInventorySlice = (set: any, get: any) => ({
                 combatPower: Math.floor(
                     newStats.attack * 12 +
                     effectiveEHP * 0.08 +
-                    (newStats.critChance || 0) * 800 +
+                    (newStats.critChance || 0) * 8 +
                     (newStats.speed || 1) * 200
                 ),
             });
@@ -313,7 +313,7 @@ export const createInventorySlice = (set: any, get: any) => ({
                 combatPower: Math.floor(
                     newStatsAfterUnequip.attack * 12 +
                     effectiveEHP * 0.08 +
-                    (newStatsAfterUnequip.critChance || 0) * 800 +
+                    (newStatsAfterUnequip.critChance || 0) * 8 +
                     (newStatsAfterUnequip.speed || 1) * 200
                 ),
             });

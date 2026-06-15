@@ -99,6 +99,8 @@ export const PlayerInspectModal: React.FC = () => {
     let vipLevel = 0;
     let isVipActive = false;
 
+    let heroLevel = 1;
+
     if (playerData) {
         name = playerData.name || playerData.имя || 'Мастер';
         avatar = resolveAvatarPath(playerData.avatar || playerData.фото);
@@ -111,6 +113,7 @@ export const PlayerInspectModal: React.FC = () => {
         wins = playerData.wins || 0;
         totalBattles = playerData.totalBattles || 0;
         selectedHeroId = playerData.hero || 'panda';
+        heroLevel = level;
 
         if (playerData.fullStateJSON) {
             try {
@@ -123,6 +126,10 @@ export const PlayerInspectModal: React.FC = () => {
                 
                 if (parsed.avatar) {
                     avatar = resolveAvatarPath(parsed.avatar);
+                }
+
+                if (parsed.heroes && parsed.heroes[selectedHeroId]) {
+                    heroLevel = parsed.heroes[selectedHeroId].level || heroLevel;
                 }
             } catch (e) {
                 console.error('[PlayerInspectModal] Failed to parse fullStateJSON', e);
@@ -179,14 +186,14 @@ export const PlayerInspectModal: React.FC = () => {
         audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
 
         const store = useGameStore.getState();
-        const computedStats = buildStatsFromEquipment(selectedHeroId, level, playerData.equipment || {});
+        const computedStats = buildStatsFromEquipment(selectedHeroId, heroLevel, playerData.equipment || {});
 
         const oppObj = {
             id: selectedHeroId,
             name: name,
             avatar: avatar,   // real VK photo or in-game avatar
             rating: rating,
-            level: level,
+            level: heroLevel,
             heroId: selectedHeroId,
             heroImage: heroConfig.image,
             rankIcon: getRankInfo(rating).icon,
@@ -365,7 +372,7 @@ export const PlayerInspectModal: React.FC = () => {
     };
 
     const renderPowerCard = () => {
-        const computedStats = buildStatsFromEquipment(selectedHeroId, level, playerData?.equipment || playerData?.снаряжение || {});
+        const computedStats = buildStatsFromEquipment(selectedHeroId, heroLevel, playerData?.equipment || playerData?.снаряжение || {});
         const power = calculateCombatPower(computedStats);
 
         return (
@@ -408,6 +415,61 @@ export const PlayerInspectModal: React.FC = () => {
         );
     };
 
+    const renderStatsSummaryCard = () => {
+        let totalHp = 0;
+        let totalAtk = 0;
+        let totalDef = 0;
+        let totalCrit = 0;
+
+        const eq = playerData?.equipment || playerData?.снаряжение || {};
+        Object.values(eq).forEach((itemId) => {
+            if (!itemId) return;
+            const resolvedId = getTemplateId(String(itemId));
+            const item = ITEMS_DATABASE[resolvedId] as any;
+            if (!item) return;
+            if (item.hpBonus) totalHp += item.hpBonus;
+            if (item.attackBonus) totalAtk += item.attackBonus;
+            if (item.defenseBonus) totalDef += item.defenseBonus;
+            const rawCrit = item.critBonus || 0;
+            if (rawCrit) {
+                totalCrit += rawCrit <= 1 ? rawCrit * 100 : rawCrit;
+            }
+        });
+
+        return (
+            <div style={{
+                background: 'rgba(255,255,255,0.02)',
+                border: '1.5px solid rgba(240,192,64,0.15)',
+                borderRadius: '12px',
+                padding: '10px 12px',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                textAlign: 'left',
+                gap: '4px',
+                boxShadow: 'inset 0 0 10px rgba(0,0,0,0.3)',
+            }}>
+                <div style={{ fontSize: '9px', color: '#f0c040', fontWeight: 800, textTransform: 'uppercase', marginBottom: '2px' }}>
+                    БОНУСЫ ЭКИПИРОВКИ
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                    <div style={{ fontSize: '10px', color: totalHp > 0 ? '#4ade80' : 'rgba(255,255,255,0.2)', fontWeight: 700 }}>
+                        HP: {totalHp > 0 ? `+${totalHp}` : '0'}
+                    </div>
+                    <div style={{ fontSize: '10px', color: totalAtk > 0 ? '#4ade80' : 'rgba(255,255,255,0.2)', fontWeight: 700 }}>
+                        ATK: {totalAtk > 0 ? `+${totalAtk}` : '0'}
+                    </div>
+                    <div style={{ fontSize: '10px', color: totalDef > 0 ? '#4ade80' : 'rgba(255,255,255,0.2)', fontWeight: 700 }}>
+                        DEF: {totalDef > 0 ? `+${totalDef}` : '0'}
+                    </div>
+                    <div style={{ fontSize: '10px', color: totalCrit > 0 ? '#4ade80' : 'rgba(255,255,255,0.2)', fontWeight: 700 }}>
+                        CRIT: {totalCrit > 0 ? `+${Math.round(totalCrit)}%` : '0%'}
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
     return (
         <div
             style={{
@@ -441,6 +503,29 @@ export const PlayerInspectModal: React.FC = () => {
                     position: 'relative',
                 }}
             >
+                {/* Close Button */}
+                <button
+                    onClick={handleClose}
+                    style={{
+                        position: 'absolute',
+                        top: '18px',
+                        right: '18px',
+                        background: 'none',
+                        border: 'none',
+                        color: 'rgba(255,255,255,0.4)',
+                        fontSize: '28px',
+                        fontWeight: 300,
+                        cursor: 'pointer',
+                        lineHeight: 1,
+                        transition: 'color 0.2s',
+                        zIndex: 10,
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.color = '#fff')}
+                    onMouseLeave={(e) => (e.currentTarget.style.color = 'rgba(255,255,255,0.4)')}
+                >
+                    &times;
+                </button>
+
                 {loading ? (
                     <div style={{ padding: '80px 0', color: '#f0c040', fontWeight: 800, fontFamily: "'Cinzel', serif" }}>
                         ЗАГРУЗКА ДАННЫХ...
@@ -448,19 +533,6 @@ export const PlayerInspectModal: React.FC = () => {
                 ) : error ? (
                     <div style={{ padding: '60px 0' }}>
                         <div style={{ color: '#ff4444', fontWeight: 800, marginBottom: '20px' }}>{error}</div>
-                        <button
-                            onClick={handleClose}
-                            style={{
-                                padding: '10px 25px',
-                                background: 'rgba(255,255,255,0.05)',
-                                border: '1px solid rgba(255,255,255,0.2)',
-                                borderRadius: '8px',
-                                color: '#fff',
-                                cursor: 'pointer',
-                            }}
-                        >
-                            ЗАКРЫТЬ
-                        </button>
                     </div>
                 ) : !playerData ? (
                     <div style={{ color: '#fff', opacity: 0.6 }}>Нет данных для отображения</div>
@@ -639,7 +711,7 @@ export const PlayerInspectModal: React.FC = () => {
                                             Любимый Персонаж
                                         </div>
                                         <div style={{ color: '#fff', fontSize: '18px', fontWeight: 800, fontFamily: "'Cinzel', serif" }}>
-                                            {heroConfig.name}
+                                            {heroConfig.name} <span style={{ color: '#fcd34d', fontSize: '14px', fontWeight: 700 }}>• Ур. {heroLevel}</span>
                                         </div>
                                         <div style={{ color: '#c8a870', fontSize: '12px', opacity: 0.8 }}>
                                             {heroConfig.title} • {heroConfig.role === 'TANK' ? 'Танк' : heroConfig.role === 'ASSASSIN' ? 'Убийца' : heroConfig.role === 'MAGE' ? 'Маг' : heroConfig.role === 'SUPPORT' ? 'Поддержка' : 'Боец'}
@@ -729,144 +801,144 @@ export const PlayerInspectModal: React.FC = () => {
                         ) : (
                             <div style={{
                                 width: '100%',
-                                display: 'grid',
-                                gridTemplateColumns: '1fr 1fr',
-                                gap: '10px',
+                                display: 'flex',
+                                gap: '20px',
                                 marginBottom: '25px',
-                                maxHeight: '312px',
-                                overflowY: 'auto',
-                                paddingRight: '4px',
+                                height: '320px',
                             }}>
-                                {renderGearCard('HELMETS', 'ШЛЕМ')}
-                                {renderGearCard('SHOULDERS', 'ПЛЕЧИ')}
-                                {renderGearCard('ARMOR', 'ДОСПЕХ')}
-                                {renderGearCard('PANTS', 'ПОНОЖИ')}
-                                {renderGearCard('WEAPONS', 'ОРУЖИЕ')}
-                                {renderGearCard('SHIELDS', 'ЩИТ')}
-                                {renderGearCard('BOOTS', 'САПОГИ')}
-                                {renderPowerCard()}
+                                {/* LEFT COLUMN: Hero Preview & Combat Power */}
+                                <div style={{
+                                    width: '210px',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    gap: '12px',
+                                    flexShrink: 0,
+                                }}>
+                                    {/* Hero Card */}
+                                    <div style={{
+                                        flex: 1,
+                                        background: 'rgba(0,0,0,0.3)',
+                                        border: '1.5px solid rgba(240,192,64,0.15)',
+                                        borderRadius: '16px',
+                                        padding: '12px',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        position: 'relative',
+                                        boxShadow: 'inset 0 0 20px rgba(0,0,0,0.6)',
+                                    }}>
+                                        <img
+                                            src={resolveAssetPath(heroConfig.image)}
+                                            style={{
+                                                height: '140px',
+                                                objectFit: 'contain',
+                                                filter: 'drop-shadow(0 6px 12px rgba(0,0,0,0.85))',
+                                                marginBottom: '8px',
+                                            }}
+                                            alt={heroConfig.name}
+                                        />
+                                        <div style={{ color: '#fff', fontSize: '15px', fontWeight: 800, fontFamily: "'Cinzel', serif", textAlign: 'center' }}>
+                                            {heroConfig.name}
+                                        </div>
+                                        <div style={{ color: '#c8a870', fontSize: '11px', fontWeight: 700, textAlign: 'center', marginTop: '2px' }}>
+                                            Ур. {heroLevel} • {heroConfig.role === 'TANK' ? 'Танк' : heroConfig.role === 'ASSASSIN' ? 'Убийца' : heroConfig.role === 'MAGE' ? 'Маг' : heroConfig.role === 'SUPPORT' ? 'Поддержка' : 'Боец'}
+                                        </div>
+                                    </div>
+                                    
+                                    {/* Combat Power */}
+                                    {renderPowerCard()}
+                                </div>
+
+                                {/* RIGHT COLUMN: 2x4 Grid of Gear Slots + Stats Summary */}
+                                <div style={{
+                                    flex: 1,
+                                    display: 'grid',
+                                    gridTemplateColumns: '1fr 1fr',
+                                    gap: '8px',
+                                    overflowY: 'auto',
+                                    paddingRight: '4px',
+                                }}>
+                                    {renderGearCard('HELMETS', 'ШЛЕМ')}
+                                    {renderGearCard('SHOULDERS', 'ПЛЕЧИ')}
+                                    {renderGearCard('ARMOR', 'ДОСПЕХ')}
+                                    {renderGearCard('PANTS', 'ПОНОЖИ')}
+                                    {renderGearCard('WEAPONS', 'ОРУЖИЕ')}
+                                    {renderGearCard('SHIELDS', 'ЩИТ')}
+                                    {renderGearCard('BOOTS', 'САПОГИ')}
+                                    {renderStatsSummaryCard()}
+                                </div>
                             </div>
                         )}
 
                         {/* КНОПКИ ДЕЙСТВИЙ */}
-                        {isMe ? (
-                            <div style={{ display: 'flex', width: '100%' }}>
+                        {!isMe && (
+                            <div style={{ display: 'flex', gap: '12px', width: '100%', marginTop: '10px' }}>
                                 <button
-                                    onClick={handleClose}
+                                    onClick={handleAddFriend}
+                                    disabled={isAlreadyFriend}
                                     style={{
-                                        width: '100%',
-                                        padding: '14px',
-                                        background: 'rgba(255,255,255,0.05)',
-                                        border: '1.5px solid rgba(255,255,255,0.15)',
+                                        flex: 1,
+                                        height: '46px',
+                                        background: isAlreadyFriend ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.06)',
+                                        border: `1.5px solid ${isAlreadyFriend ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.2)'}`,
+                                        borderRadius: '12px',
+                                        color: isAlreadyFriend ? 'rgba(255,255,255,0.35)' : '#fff',
+                                        fontSize: '13px',
+                                        fontWeight: 800,
+                                        cursor: isAlreadyFriend ? 'default' : 'pointer',
+                                        transition: 'all 0.2s',
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        if (!isAlreadyFriend) e.currentTarget.style.background = 'rgba(255,255,255,0.12)';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        if (!isAlreadyFriend) e.currentTarget.style.background = 'rgba(255,255,255,0.06)';
+                                    }}
+                                >
+                                    {isAlreadyFriend ? 'УЖЕ В ДРУЗЬЯХ' : 'В ДРУЗЬЯ'}
+                                </button>
+                                <button
+                                    onClick={handleWriteMail}
+                                    style={{
+                                        flex: 1,
+                                        height: '46px',
+                                        background: 'rgba(255,255,255,0.06)',
+                                        border: '1.5px solid rgba(255,255,255,0.2)',
                                         borderRadius: '12px',
                                         color: '#fff',
-                                        fontSize: '14px',
+                                        fontSize: '13px',
                                         fontWeight: 800,
                                         cursor: 'pointer',
                                         transition: 'all 0.2s',
                                     }}
-                                    onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.1)')}
-                                    onMouseLeave={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.05)')}
+                                    onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.12)')}
+                                    onMouseLeave={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.06)')}
                                 >
-                                    ЗАКРЫТЬ
+                                    НАПИСАТЬ
                                 </button>
-                            </div>
-                        ) : (
-                            <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
-                                <div style={{ display: 'flex', gap: '10px', width: '100%', marginBottom: '10px' }}>
-                                    <button
-                                        onClick={handleAddFriend}
-                                        disabled={isAlreadyFriend}
-                                        style={{
-                                            flex: 1,
-                                            padding: '12px',
-                                            background: isAlreadyFriend ? 'rgba(255,255,255,0.03)' : 'rgba(255,255,255,0.07)',
-                                            border: `1.5px solid ${isAlreadyFriend ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.2)'}`,
-                                            borderRadius: '12px',
-                                            color: isAlreadyFriend ? 'rgba(255,255,255,0.3)' : '#fff',
-                                            fontSize: '13px',
-                                            fontWeight: 800,
-                                            cursor: isAlreadyFriend ? 'default' : 'pointer',
-                                            transition: 'all 0.2s',
-                                        }}
-                                        onMouseEnter={(e) => {
-                                            if (!isAlreadyFriend) e.currentTarget.style.background = 'rgba(255,255,255,0.12)';
-                                        }}
-                                        onMouseLeave={(e) => {
-                                            if (!isAlreadyFriend) e.currentTarget.style.background = 'rgba(255,255,255,0.07)';
-                                        }}
-                                    >
-                                        {isAlreadyFriend ? 'УЖЕ В ДРУЗЬЯХ' : 'В ДРУЗЬЯ'}
-                                    </button>
-                                    <button
-                                        onClick={handleWriteMail}
-                                        style={{
-                                            flex: 1,
-                                            padding: '12px',
-                                            background: 'rgba(255,255,255,0.07)',
-                                            border: '1.5px solid rgba(255,255,255,0.2)',
-                                            borderRadius: '12px',
-                                            color: '#fff',
-                                            fontSize: '13px',
-                                            fontWeight: 800,
-                                            cursor: 'pointer',
-                                            transition: 'all 0.2s',
-                                        }}
-                                        onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.12)')}
-                                        onMouseLeave={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.07)')}
-                                    >
-                                        НАПИСАТЬ
-                                    </button>
-                                </div>
-                                <div style={{ display: 'flex', gap: '10px', width: '100%' }}>
-                                    <button
-                                        onClick={handleChallenge}
-                                        style={{
-                                            flex: 1.8,
-                                            padding: '14px',
-                                            background: 'linear-gradient(180deg, #f0c040 0%, #a88020 100%)',
-                                            border: '1.5px solid #ffe880',
-                                            borderRadius: '12px',
-                                            color: '#000',
-                                            fontSize: '14px',
-                                            fontWeight: 900,
-                                            cursor: 'pointer',
-                                            boxShadow: '0 4px 15px rgba(240, 192, 64, 0.35)',
-                                            transition: 'all 0.2s',
-                                            fontFamily: "'Cinzel', serif",
-                                            letterSpacing: '1px',
-                                        }}
-                                        onMouseEnter={(e) => (e.currentTarget.style.filter = 'brightness(1.15)')}
-                                        onMouseLeave={(e) => (e.currentTarget.style.filter = 'brightness(1)')}
-                                    >
-                                        ВЫЗВАТЬ НА БОЙ
-                                    </button>
-                                    <button
-                                        onClick={handleClose}
-                                        style={{
-                                            flex: 1,
-                                            padding: '14px',
-                                            background: 'rgba(255,255,255,0.04)',
-                                            border: '1.5px solid rgba(255,255,255,0.1)',
-                                            borderRadius: '12px',
-                                            color: 'rgba(255,255,255,0.6)',
-                                            fontSize: '14px',
-                                            fontWeight: 700,
-                                            cursor: 'pointer',
-                                            transition: 'all 0.2s',
-                                        }}
-                                        onMouseEnter={(e) => {
-                                            e.currentTarget.style.background = 'rgba(255,255,255,0.08)';
-                                            e.currentTarget.style.color = '#fff';
-                                        }}
-                                        onMouseLeave={(e) => {
-                                            e.currentTarget.style.background = 'rgba(255,255,255,0.04)';
-                                            e.currentTarget.style.color = 'rgba(255,255,255,0.6)';
-                                        }}
-                                    >
-                                        ЗАКРЫТЬ
-                                    </button>
-                                </div>
+                                <button
+                                    onClick={handleChallenge}
+                                    style={{
+                                        flex: 1.4,
+                                        height: '46px',
+                                        background: 'linear-gradient(180deg, #f0c040 0%, #a88020 100%)',
+                                        border: '1.5px solid #ffe880',
+                                        borderRadius: '12px',
+                                        color: '#000',
+                                        fontSize: '13px',
+                                        fontWeight: 900,
+                                        cursor: 'pointer',
+                                        boxShadow: '0 4px 15px rgba(240, 192, 64, 0.3)',
+                                        transition: 'all 0.2s',
+                                        fontFamily: "'Cinzel', serif",
+                                        letterSpacing: '0.5px',
+                                    }}
+                                    onMouseEnter={(e) => (e.currentTarget.style.filter = 'brightness(1.15)')}
+                                    onMouseLeave={(e) => (e.currentTarget.style.filter = 'brightness(1)')}
+                                >
+                                    ВЫЗВАТЬ НА БОЙ
+                                </button>
                             </div>
                         )}
                     </>
