@@ -140,6 +140,7 @@ export const PlayerInspectModal: React.FC = () => {
     const winRate = totalBattles > 0 ? Math.round((wins / totalBattles) * 100) : 0;
     const heroConfig = getHeroConfig(selectedHeroId);
     const rankInfo = getRankInfo(rating);
+    const computedStats = buildStatsFromEquipment(selectedHeroId, heroLevel, playerData?.equipment || playerData?.снаряжение || {});
 
     // Проверяем, не сам ли это игрок
     const isMe = playerData && (
@@ -186,7 +187,6 @@ export const PlayerInspectModal: React.FC = () => {
         audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
 
         const store = useGameStore.getState();
-        const computedStats = buildStatsFromEquipment(selectedHeroId, heroLevel, playerData.equipment || {});
 
         const oppObj = {
             id: selectedHeroId,
@@ -292,15 +292,17 @@ export const PlayerInspectModal: React.FC = () => {
                 background: 'rgba(255,255,255,0.02)',
                 border: `1.5px solid ${itemData ? rarityColor + '33' : 'rgba(255,255,255,0.05)'}`,
                 borderRadius: '12px',
-                padding: '10px 12px',
+                padding: '8px 12px',
+                height: '81px',
+                boxSizing: 'border-box',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '12px',
                 boxShadow: itemData ? `0 4px 12px rgba(0,0,0,0.5), inset 0 0 10px ${rarityColor}11` : 'none',
             }}>
                 <div style={{
-                    width: '48px',
-                    height: '48px',
+                    width: '42px',
+                    height: '42px',
                     borderRadius: '8px',
                     background: itemData
                         ? `radial-gradient(circle at 50% 30%, rgba(40, 32, 24, 0.95) 0%, rgba(14, 10, 8, 0.98) 100%)`
@@ -372,23 +374,27 @@ export const PlayerInspectModal: React.FC = () => {
     };
 
     const renderPowerCard = () => {
-        const computedStats = buildStatsFromEquipment(selectedHeroId, heroLevel, playerData?.equipment || playerData?.снаряжение || {});
-        const power = calculateCombatPower(computedStats);
+        const baseStats = buildStatsFromEquipment(selectedHeroId, heroLevel, {});
+        const basePower = calculateCombatPower(baseStats);
+        const totalPower = calculateCombatPower(computedStats);
+        const gearPower = totalPower - basePower;
 
         return (
             <div style={{
                 background: 'linear-gradient(135deg, rgba(240,192,64,0.06) 0%, rgba(168,128,32,0.15) 100%)',
                 border: '1.5px solid #f0c040',
                 borderRadius: '12px',
-                padding: '10px 12px',
+                padding: '6px 12px',
+                height: '94px',
+                boxSizing: 'border-box',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '12px',
                 boxShadow: '0 4px 12px rgba(240,192,64,0.15), inset 0 0 15px rgba(240,192,64,0.1)',
             }}>
                 <div style={{
-                    width: '48px',
-                    height: '48px',
+                    width: '40px',
+                    height: '40px',
                     borderRadius: '8px',
                     background: 'radial-gradient(circle, rgba(240,192,64,0.2) 0%, rgba(0,0,0,0.5) 100%)',
                     border: '1.5px solid #f0c040',
@@ -405,10 +411,13 @@ export const PlayerInspectModal: React.FC = () => {
                     />
                 </div>
 
-                <div style={{ textAlign: 'left' }}>
+                <div style={{ textAlign: 'left', flex: 1 }}>
                     <div style={{ fontSize: '9px', color: '#f0c040', fontWeight: 800 }}>БОЕВАЯ МОЩЬ</div>
-                    <div style={{ fontSize: '18px', fontWeight: 900, color: '#fff', fontFamily: "'Cinzel', serif", textShadow: '0 2px 4px rgba(0,0,0,0.6)' }}>
-                        {power.toLocaleString()}
+                    <div style={{ fontSize: '18px', fontWeight: 900, color: '#fff', fontFamily: "'Cinzel', serif", textShadow: '0 2px 4px rgba(0,0,0,0.6)', lineHeight: '1.1' }}>
+                        {totalPower.toLocaleString()}
+                    </div>
+                    <div style={{ fontSize: '8px', color: 'rgba(255,255,255,0.45)', fontWeight: 700, marginTop: '2px', whiteSpace: 'nowrap' }}>
+                        Герой: {basePower.toLocaleString()} | Снаряж: +{gearPower.toLocaleString()}
                     </div>
                 </div>
             </div>
@@ -441,18 +450,20 @@ export const PlayerInspectModal: React.FC = () => {
                 background: 'rgba(255,255,255,0.02)',
                 border: '1.5px solid rgba(240,192,64,0.15)',
                 borderRadius: '12px',
-                padding: '10px 12px',
+                padding: '8px 12px',
+                height: '81px',
+                boxSizing: 'border-box',
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'center',
                 textAlign: 'left',
-                gap: '4px',
+                gap: '2px',
                 boxShadow: 'inset 0 0 10px rgba(0,0,0,0.3)',
             }}>
-                <div style={{ fontSize: '9px', color: '#f0c040', fontWeight: 800, textTransform: 'uppercase', marginBottom: '2px' }}>
+                <div style={{ fontSize: '8.5px', color: '#f0c040', fontWeight: 800, textTransform: 'uppercase', marginBottom: '1px' }}>
                     БОНУСЫ ЭКИПИРОВКИ
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1px 8px' }}>
                     <div style={{ fontSize: '10px', color: totalHp > 0 ? '#4ade80' : 'rgba(255,255,255,0.2)', fontWeight: 700 }}>
                         HP: {totalHp > 0 ? `+${totalHp}` : '0'}
                     </div>
@@ -491,7 +502,7 @@ export const PlayerInspectModal: React.FC = () => {
                 exit={{ scale: 0.92, opacity: 0, y: 15 }}
                 onClick={(e) => e.stopPropagation()}
                 style={{
-                    width: '680px',
+                    width: '820px',
                     background: 'radial-gradient(circle at center, #231c15 0%, #120e0a 100%)',
                     border: '2px solid #f0c040',
                     borderRadius: '24px',
@@ -503,6 +514,24 @@ export const PlayerInspectModal: React.FC = () => {
                     position: 'relative',
                 }}
             >
+                <style>{`
+                    .inspect-scrollbar::-webkit-scrollbar {
+                        width: 6px;
+                        height: 6px;
+                    }
+                    .inspect-scrollbar::-webkit-scrollbar-track {
+                        background: rgba(0, 0, 0, 0.2);
+                        border-radius: 3px;
+                    }
+                    .inspect-scrollbar::-webkit-scrollbar-thumb {
+                        background: #f0c040;
+                        border-radius: 3px;
+                    }
+                    .inspect-scrollbar::-webkit-scrollbar-thumb:hover {
+                        background: #ffe880;
+                    }
+                `}</style>
+
                 {/* Close Button */}
                 <button
                     onClick={handleClose}
@@ -626,12 +655,13 @@ export const PlayerInspectModal: React.FC = () => {
                         <div style={{
                             display: 'flex',
                             width: '100%',
-                            background: 'rgba(0,0,0,0.45)',
-                            borderRadius: '12px',
-                            border: '1.5px solid rgba(240,192,64,0.15)',
-                            padding: '3px',
+                            background: 'rgba(20, 15, 10, 0.65)',
+                            borderRadius: '16px',
+                            border: '1.5px solid rgba(240, 192, 64, 0.25)',
+                            padding: '4px',
                             marginBottom: '20px',
-                            gap: '4px',
+                            gap: '8px',
+                            boxShadow: 'inset 0 2px 10px rgba(0, 0, 0, 0.8), 0 4px 15px rgba(0, 0, 0, 0.5)',
                         }}>
                             <button
                                 onClick={() => {
@@ -640,20 +670,42 @@ export const PlayerInspectModal: React.FC = () => {
                                 }}
                                 style={{
                                     flex: 1,
-                                    padding: '10px 0',
-                                    background: activeTab === 'info' ? 'linear-gradient(180deg, #f0c040 0%, #a88020 100%)' : 'transparent',
-                                    border: 'none',
-                                    borderRadius: '9px',
-                                    color: activeTab === 'info' ? '#000' : '#b5a695',
-                                    fontWeight: activeTab === 'info' ? 900 : 700,
+                                    padding: '12px 0',
+                                    background: activeTab === 'info'
+                                        ? 'linear-gradient(180deg, #ffe880 0%, #f0c040 40%, #b08010 100%)'
+                                        : 'rgba(255,255,255,0.02)',
+                                    border: `1.5px solid ${activeTab === 'info' ? '#ffe880' : 'rgba(240, 192, 64, 0.1)'}`,
+                                    borderRadius: '12px',
+                                    color: activeTab === 'info' ? '#000' : 'rgba(255, 255, 255, 0.6)',
+                                    fontWeight: 900,
                                     fontSize: '13px',
                                     cursor: 'pointer',
-                                    transition: 'all 0.2s',
+                                    transition: 'all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)',
                                     fontFamily: "'Cinzel', serif",
-                                    letterSpacing: '1px',
+                                    letterSpacing: '1.5px',
+                                    boxShadow: activeTab === 'info'
+                                        ? '0 0 15px rgba(240, 192, 64, 0.45), inset 0 1px 2px rgba(255,255,255,0.4)'
+                                        : 'none',
+                                    textShadow: activeTab === 'info' ? '0 1px 1px rgba(255,255,255,0.5)' : 'none',
+                                }}
+                                onMouseEnter={(e) => {
+                                    if (activeTab !== 'info') {
+                                        e.currentTarget.style.background = 'rgba(255, 255, 255, 0.07)';
+                                        e.currentTarget.style.color = '#fff';
+                                        e.currentTarget.style.borderColor = 'rgba(240, 192, 64, 0.35)';
+                                        e.currentTarget.style.boxShadow = '0 0 10px rgba(240, 192, 64, 0.15)';
+                                    }
+                                }}
+                                onMouseLeave={(e) => {
+                                    if (activeTab !== 'info') {
+                                        e.currentTarget.style.background = 'rgba(255,255,255,0.02)';
+                                        e.currentTarget.style.color = 'rgba(255, 255, 255, 0.6)';
+                                        e.currentTarget.style.borderColor = 'rgba(240, 192, 64, 0.1)';
+                                        e.currentTarget.style.boxShadow = 'none';
+                                    }
                                 }}
                             >
-                                ОБЩАЯ ИНФО
+                                📊 ОБЩАЯ ИНФО
                             </button>
                             <button
                                 onClick={() => {
@@ -662,26 +714,48 @@ export const PlayerInspectModal: React.FC = () => {
                                 }}
                                 style={{
                                     flex: 1,
-                                    padding: '10px 0',
-                                    background: activeTab === 'gear' ? 'linear-gradient(180deg, #f0c040 0%, #a88020 100%)' : 'transparent',
-                                    border: 'none',
-                                    borderRadius: '9px',
-                                    color: activeTab === 'gear' ? '#000' : '#b5a695',
-                                    fontWeight: activeTab === 'gear' ? 900 : 700,
+                                    padding: '12px 0',
+                                    background: activeTab === 'gear'
+                                        ? 'linear-gradient(180deg, #ffe880 0%, #f0c040 40%, #b08010 100%)'
+                                        : 'rgba(255,255,255,0.02)',
+                                    border: `1.5px solid ${activeTab === 'gear' ? '#ffe880' : 'rgba(240, 192, 64, 0.1)'}`,
+                                    borderRadius: '12px',
+                                    color: activeTab === 'gear' ? '#000' : 'rgba(255, 255, 255, 0.6)',
+                                    fontWeight: 900,
                                     fontSize: '13px',
                                     cursor: 'pointer',
-                                    transition: 'all 0.2s',
+                                    transition: 'all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)',
                                     fontFamily: "'Cinzel', serif",
-                                    letterSpacing: '1px',
+                                    letterSpacing: '1.5px',
+                                    boxShadow: activeTab === 'gear'
+                                        ? '0 0 15px rgba(240, 192, 64, 0.45), inset 0 1px 2px rgba(255,255,255,0.4)'
+                                        : 'none',
+                                    textShadow: activeTab === 'gear' ? '0 1px 1px rgba(255,255,255,0.5)' : 'none',
+                                }}
+                                onMouseEnter={(e) => {
+                                    if (activeTab !== 'gear') {
+                                        e.currentTarget.style.background = 'rgba(255, 255, 255, 0.07)';
+                                        e.currentTarget.style.color = '#fff';
+                                        e.currentTarget.style.borderColor = 'rgba(240, 192, 64, 0.35)';
+                                        e.currentTarget.style.boxShadow = '0 0 10px rgba(240, 192, 64, 0.15)';
+                                    }
+                                }}
+                                onMouseLeave={(e) => {
+                                    if (activeTab !== 'gear') {
+                                        e.currentTarget.style.background = 'rgba(255,255,255,0.02)';
+                                        e.currentTarget.style.color = 'rgba(255, 255, 255, 0.6)';
+                                        e.currentTarget.style.borderColor = 'rgba(240, 192, 64, 0.1)';
+                                        e.currentTarget.style.boxShadow = 'none';
+                                    }
                                 }}
                             >
-                                ЭКИПИРОВКА
+                                🛡️ ЭКИПИРОВКА
                             </button>
                         </div>
 
                         {/* СОДЕРЖИМОЕ ВКЛАДОК */}
                         {activeTab === 'info' ? (
-                            <>
+                            <div style={{ width: '100%', height: '350px', overflow: 'hidden' }}>
                                 {/* ЛЮБИМЫЙ ПЕРСОНАЖ */}
                                 <div
                                     style={{
@@ -689,8 +763,8 @@ export const PlayerInspectModal: React.FC = () => {
                                         background: 'rgba(0,0,0,0.35)',
                                         borderRadius: '16px',
                                         border: '1px solid rgba(240,192,64,0.15)',
-                                        padding: '15px',
-                                        marginBottom: '20px',
+                                        padding: '12px 15px',
+                                        marginBottom: '10px',
                                         display: 'flex',
                                         alignItems: 'center',
                                         gap: '15px',
@@ -719,14 +793,70 @@ export const PlayerInspectModal: React.FC = () => {
                                     </div>
                                 </div>
 
+                                {/* ХАРАКТЕРИСТИКИ */}
+                                <div
+                                    style={{
+                                        width: '100%',
+                                        background: 'rgba(0,0,0,0.25)',
+                                        border: '1px solid rgba(240,192,64,0.1)',
+                                        borderRadius: '16px',
+                                        padding: '10px 15px',
+                                        marginBottom: '10px',
+                                        boxShadow: 'inset 0 0 15px rgba(0,0,0,0.4)',
+                                    }}
+                                >
+                                    <div style={{
+                                        fontSize: '11px',
+                                        color: '#f0c040',
+                                        fontWeight: 800,
+                                        textTransform: 'uppercase',
+                                        marginBottom: '8px',
+                                        fontFamily: "'Cinzel', serif",
+                                        letterSpacing: '1px',
+                                        textAlign: 'left'
+                                    }}>
+                                        Характеристики Героя
+                                    </div>
+                                    <div style={{
+                                        display: 'grid',
+                                        gridTemplateColumns: '1fr 1fr',
+                                        gap: '5px 25px',
+                                    }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                            <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', fontWeight: 700 }}>ЗДОРОВЬЕ (HP)</span>
+                                            <span style={{ fontSize: '12px', color: '#fff', fontWeight: 800 }}>{computedStats.hp}</span>
+                                        </div>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                            <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', fontWeight: 700 }}>АТАКА (ATK)</span>
+                                            <span style={{ fontSize: '12px', color: '#fff', fontWeight: 800 }}>{computedStats.attack}</span>
+                                        </div>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                            <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', fontWeight: 700 }}>ЗАЩИТА (DEF)</span>
+                                            <span style={{ fontSize: '12px', color: '#fff', fontWeight: 800 }}>{computedStats.defense}</span>
+                                        </div>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                            <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', fontWeight: 700 }}>СКОРОСТЬ (SPD)</span>
+                                            <span style={{ fontSize: '12px', color: '#fff', fontWeight: 800 }}>{computedStats.speed.toFixed(2)}</span>
+                                        </div>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                            <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', fontWeight: 700 }}>КРИТ (CRIT)</span>
+                                            <span style={{ fontSize: '12px', color: '#fff', fontWeight: 800 }}>{Math.round(computedStats.critChance)}%</span>
+                                        </div>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                            <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', fontWeight: 700 }}>УКЛОНЕНИЕ (EVA)</span>
+                                            <span style={{ fontSize: '12px', color: '#fff', fontWeight: 800 }}>{Math.round(computedStats.evasion)}%</span>
+                                        </div>
+                                    </div>
+                                </div>
+
                                 {/* СТАТИСТИКА */}
                                 <div
                                     style={{
                                         width: '100%',
                                         display: 'grid',
                                         gridTemplateColumns: '1fr 1fr',
-                                        gap: '12px',
-                                        marginBottom: '25px',
+                                        gap: '8px',
+                                        marginBottom: '5px',
                                     }}
                                 >
                                     {/* РАНГ */}
@@ -735,7 +865,7 @@ export const PlayerInspectModal: React.FC = () => {
                                             background: 'rgba(255,255,255,0.02)',
                                             border: '1px solid rgba(240,192,64,0.1)',
                                             borderRadius: '12px',
-                                            padding: '10px',
+                                            padding: '8px 10px',
                                             display: 'flex',
                                             alignItems: 'center',
                                             gap: '10px',
@@ -756,7 +886,7 @@ export const PlayerInspectModal: React.FC = () => {
                                             background: 'rgba(255,255,255,0.02)',
                                             border: '1px solid rgba(240,192,64,0.1)',
                                             borderRadius: '12px',
-                                            padding: '10px',
+                                            padding: '8px 10px',
                                             display: 'flex',
                                             alignItems: 'center',
                                             gap: '10px',
@@ -775,7 +905,7 @@ export const PlayerInspectModal: React.FC = () => {
                                             background: 'rgba(255,255,255,0.02)',
                                             border: '1px solid rgba(240,192,64,0.1)',
                                             borderRadius: '12px',
-                                            padding: '10px',
+                                            padding: '8px 10px',
                                             textAlign: 'left',
                                         }}
                                     >
@@ -789,7 +919,7 @@ export const PlayerInspectModal: React.FC = () => {
                                             background: 'rgba(255,255,255,0.02)',
                                             border: '1px solid rgba(240,192,64,0.1)',
                                             borderRadius: '12px',
-                                            padding: '10px',
+                                            padding: '8px 10px',
                                             textAlign: 'left',
                                         }}
                                     >
@@ -797,30 +927,30 @@ export const PlayerInspectModal: React.FC = () => {
                                         <div style={{ fontSize: '16px', fontWeight: 900, color: '#4ade80' }}>{winRate}%</div>
                                     </div>
                                 </div>
-                            </>
+                            </div>
                         ) : (
                             <div style={{
                                 width: '100%',
                                 display: 'flex',
                                 gap: '20px',
-                                marginBottom: '25px',
-                                height: '320px',
+                                marginBottom: '20px',
+                                height: '350px',
                             }}>
                                 {/* LEFT COLUMN: Hero Preview & Combat Power */}
                                 <div style={{
-                                    width: '210px',
+                                    width: '220px',
                                     display: 'flex',
                                     flexDirection: 'column',
-                                    gap: '12px',
+                                    gap: '10px',
                                     flexShrink: 0,
                                 }}>
                                     {/* Hero Card */}
                                     <div style={{
-                                        flex: 1,
+                                        height: '246px',
                                         background: 'rgba(0,0,0,0.3)',
                                         border: '1.5px solid rgba(240,192,64,0.15)',
                                         borderRadius: '16px',
-                                        padding: '12px',
+                                        padding: '10px',
                                         display: 'flex',
                                         flexDirection: 'column',
                                         alignItems: 'center',
@@ -831,10 +961,10 @@ export const PlayerInspectModal: React.FC = () => {
                                         <img
                                             src={resolveAssetPath(heroConfig.image)}
                                             style={{
-                                                height: '140px',
+                                                height: '130px',
                                                 objectFit: 'contain',
                                                 filter: 'drop-shadow(0 6px 12px rgba(0,0,0,0.85))',
-                                                marginBottom: '8px',
+                                                marginBottom: '6px',
                                             }}
                                             alt={heroConfig.name}
                                         />
@@ -851,14 +981,16 @@ export const PlayerInspectModal: React.FC = () => {
                                 </div>
 
                                 {/* RIGHT COLUMN: 2x4 Grid of Gear Slots + Stats Summary */}
-                                <div style={{
-                                    flex: 1,
-                                    display: 'grid',
-                                    gridTemplateColumns: '1fr 1fr',
-                                    gap: '8px',
-                                    overflowY: 'auto',
-                                    paddingRight: '4px',
-                                }}>
+                                <div 
+                                    style={{
+                                        flex: 1,
+                                        display: 'grid',
+                                        gridTemplateColumns: '1fr 1fr',
+                                        gap: '8px',
+                                        height: '350px',
+                                        overflow: 'hidden',
+                                    }}
+                                >
                                     {renderGearCard('HELMETS', 'ШЛЕМ')}
                                     {renderGearCard('SHOULDERS', 'ПЛЕЧИ')}
                                     {renderGearCard('ARMOR', 'ДОСПЕХ')}

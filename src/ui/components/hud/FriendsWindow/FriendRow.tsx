@@ -335,7 +335,7 @@ export const FriendRow: React.FC<FriendRowProps> = ({
                                 />
                             ) : (
                                 <img
-                                    src={resolveAssetPath(AssetsMap.UI.ICON_GIFT)}
+                                    src={resolveAssetPath(AssetsMap.UI.ICON_FRIEND_GIFT)}
                                     style={{
                                         width: '28px',
                                         height: '28px',
