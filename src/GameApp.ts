@@ -2,12 +2,20 @@ import { PixiApp, ResolutionType, IPixiAppConfig } from './engine/core/PixiApp';
 import { AssetLoader } from './engine/systems/AssetLoader';
 import { EffectsManager } from './engine/systems/EffectsManager';
 import { useGameStore } from './store/useGameStore';
+import { sendPerformanceReport } from './services/TelemetryService';
 
 export class GameApp {
     private pixiApp: PixiApp;
     private assetLoader: AssetLoader;
     private storeUnsubscribe?: () => void;
     private fpsIntervalId?: any;
+
+    private performanceSamples: number[] = [];
+    private performanceStartTime: number = Date.now();
+    private performanceReportSent = false;
+    private performanceWatchdogChecked = false;
+    private stressTestSamples: number[] = [];
+    private isStressTestDone = false;
 
     constructor() {
         this.pixiApp = PixiApp.getInstance();
@@ -98,7 +106,7 @@ export class GameApp {
                               : ResolutionType.LOW;
                     this.pixiApp.setResolution(resType);
                 }
-                if (state.isPowerSaving !== prevState.isPowerSaving) {
+                if (state.isPowerSaving !== prevState.isPowerSaving || state.fpsCap !== prevState.fpsCap) {
                     this.applyPerformanceSettings(state.isPowerSaving, state.isMobile);
                 }
                 if (state.level !== prevState.level) {
@@ -180,6 +188,15 @@ export class GameApp {
 
             // Auto-degradation FPS monitor setup
             let fpsSamples: number[] = [];
+            this.performanceStartTime = Date.now();
+            this.performanceSamples = [];
+            this.stressTestSamples = [];
+            this.performanceReportSent = false;
+            this.performanceWatchdogChecked = false;
+
+            const isStressTestTested = localStorage.getItem('firstLaunchStressTested') === 'true';
+            this.isStressTestDone = isStressTestTested;
+
             this.fpsIntervalId = setInterval(() => {
                 try {
                     const app = this.pixiApp.getApp();
@@ -188,8 +205,105 @@ export class GameApp {
                         return;
                     }
 
-                    fpsSamples.push(app.ticker.FPS);
+                    const currentFps = app.ticker.FPS;
+                    fpsSamples.push(currentFps);
+                    this.performanceSamples.push(currentFps);
 
+                    // 1. Stress test in first 10 seconds of first launch
+                    if (!this.isStressTestDone) {
+                        this.stressTestSamples.push(currentFps);
+                        if (this.stressTestSamples.length >= 10) {
+                            this.isStressTestDone = true;
+                            localStorage.setItem('firstLaunchStressTested', 'true');
+                            
+                            const avgStressFps = this.stressTestSamples.reduce((a, b) => a + b, 0) / this.stressTestSamples.length;
+                            let autoGraphics = 'MEDIUM';
+                            let autoParticles: 'LOW' | 'HIGH' = 'HIGH';
+                            let autoGlow = true;
+                            let autoArenaBg: 'LOW' | 'HIGH' = 'HIGH';
+
+                            if (avgStressFps > 55) {
+                                autoGraphics = 'ULTRA';
+                                autoParticles = 'HIGH';
+                                autoGlow = true;
+                                autoArenaBg = 'HIGH';
+                            } else if (avgStressFps >= 35) {
+                                autoGraphics = 'MEDIUM';
+                                autoParticles = 'HIGH';
+                                autoGlow = true;
+                                autoArenaBg = 'HIGH';
+                            } else {
+                                autoGraphics = 'LOW';
+                                autoParticles = 'LOW';
+                                autoGlow = false;
+                                autoArenaBg = 'LOW';
+                            }
+
+                            console.log(`📊 First Launch Stress Test Result: Avg FPS: ${avgStressFps.toFixed(1)} -> Setting quality to ${autoGraphics}`);
+                            useGameStore.setState({
+                                graphicsQuality: autoGraphics,
+                                particlesQuality: autoParticles,
+                                glowEnabled: autoGlow,
+                                arenaBgQuality: autoArenaBg
+                            });
+                        }
+                    }
+
+                    // 2. Sentry performance report after 45 seconds
+                    const secondsElapsed = Math.floor((Date.now() - this.performanceStartTime) / 1000);
+                    if (secondsElapsed >= 45 && !this.performanceReportSent) {
+                        this.performanceReportSent = true;
+                        
+                        const avgFPS = Math.round(this.performanceSamples.reduce((a, b) => a + b, 0) / this.performanceSamples.length);
+                        const minFPS = Math.round(Math.min(...this.performanceSamples));
+                        
+                        // Count frame drops (FPS < 40 in our case)
+                        const frameDrops = this.performanceSamples.filter(fps => fps < 40).length;
+                        
+                        // Check memory pressure
+                        let memoryPressure = false;
+                        let memoryUsedMb = 0;
+                        const perfMem = (window.performance as any)?.memory;
+                        if (perfMem) {
+                            memoryUsedMb = Math.round(perfMem.usedJSHeapSize / 1024 / 1024);
+                            memoryPressure = (perfMem.usedJSHeapSize / perfMem.jsHeapSizeLimit) > 0.8;
+                        }
+
+                        sendPerformanceReport({
+                            avgFPS,
+                            minFPS,
+                            frameDrops,
+                            memoryPressure,
+                            memoryUsedMb
+                        });
+                    }
+
+                    // 3. Performance Watchdog at 60 seconds
+                    if (secondsElapsed >= 60 && !this.performanceWatchdogChecked) {
+                        this.performanceWatchdogChecked = true;
+                        
+                        const avgWatchdogFps = this.performanceSamples.reduce((a, b) => a + b, 0) / this.performanceSamples.length;
+                        const state = useGameStore.getState();
+
+                        if (!state.hasCustomSettings && avgWatchdogFps < 25) {
+                            console.warn(`⚠️ Performance Watchdog: Avg FPS ${avgWatchdogFps.toFixed(1)} < 25 over first 60s. Forcing LOW quality.`);
+                            
+                            useGameStore.setState({
+                                graphicsQuality: 'LOW',
+                                particlesQuality: 'LOW',
+                                glowEnabled: false,
+                                arenaBgQuality: 'LOW'
+                            });
+
+                            const lang = state.language || 'RU';
+                            const msg = lang === 'RU'
+                                ? 'Производительность вашего устройства оказалась ниже ожидаемой. Настройки графики оптимизированы для плавности.'
+                                : 'Your device performance is lower than expected. Graphics settings optimized for smoothness.';
+                            state.showAlert(msg);
+                        }
+                    }
+
+                    // 4. Continuous auto-degradation checks (every 5 seconds)
                     if (fpsSamples.length >= 5) {
                         const avgFps = fpsSamples.reduce((a, b) => a + b, 0) / fpsSamples.length;
                         fpsSamples = [];
@@ -289,13 +403,13 @@ export class GameApp {
         try {
             const app = this.pixiApp.getApp();
             if (app && app.ticker) {
-                // Hard cap: PixiJS never renders above 60 FPS regardless of monitor Hz.
-                // 180 FPS in PixiJS on mobile = guaranteed overheating.
-                // isPowerSaving drops the cap to 30 FPS on any device.
-                const cap = isPowerSaving ? 30 : 60;
+                const storeState = useGameStore.getState();
+                const storeCap = storeState.fpsCap || 60;
+                // isPowerSaving forces cap to 30, otherwise use user's fpsCap setting
+                const cap = isPowerSaving ? Math.min(30, storeCap) : storeCap;
                 app.ticker.maxFPS = cap;
                 console.log(
-                    `🔋 Performance: ${isMobile ? 'Mobile' : 'Desktop'}, Power Saving: ${isPowerSaving ? 'ON' : 'OFF'} → maxFPS = ${cap}`,
+                    `🔋 Performance: ${isMobile ? 'Mobile' : 'Desktop'}, Power Saving: ${isPowerSaving ? 'ON' : 'OFF'}, Target Cap: ${storeCap} → maxFPS = ${cap}`,
                 );
             }
         } catch {

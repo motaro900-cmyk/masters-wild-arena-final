@@ -4,6 +4,8 @@ import { useGameStore } from '../../../store/useGameStore';
 import { useShallow } from 'zustand/react/shallow';
 import { requestNotifications } from '../../../utils/VKBridge';
 import { settingsTranslations } from './SettingsLocalization';
+import { getDeviceProfile, DeviceProfile } from '../../../services/TelemetryService';
+import { AppConfig } from '../../../configs/AppConfig';
 
 interface AdvancedSettingsBlockProps {
     isFullscreen: boolean;
@@ -102,6 +104,11 @@ export const AdvancedSettingsBlock: React.FC<AdvancedSettingsBlockProps> = ({
         showPing,
         setShowPing,
         autoTuneSettings,
+        rendererPreference,
+        setRendererPreference,
+        fpsCap,
+        setFpsCap,
+        hasCustomSettings,
     } = useGameStore(
         useShallow((state) => ({
             graphicsQuality: state.graphicsQuality,
@@ -124,8 +131,19 @@ export const AdvancedSettingsBlock: React.FC<AdvancedSettingsBlockProps> = ({
             showPing: state.showPing,
             setShowPing: state.setShowPing,
             autoTuneSettings: state.autoTuneSettings,
+            rendererPreference: state.rendererPreference || 'auto',
+            setRendererPreference: state.setRendererPreference,
+            fpsCap: state.fpsCap || 60,
+            setFpsCap: state.setFpsCap,
+            hasCustomSettings: state.hasCustomSettings,
         }))
     );
+
+    const [profile, setProfile] = React.useState<DeviceProfile | null>(null);
+
+    React.useEffect(() => {
+        getDeviceProfile().then(setProfile);
+    }, []);
 
     const t = settingsTranslations[(language || 'RU') as 'RU' | 'EN'] || settingsTranslations.RU;
 
@@ -483,6 +501,15 @@ export const AdvancedSettingsBlock: React.FC<AdvancedSettingsBlockProps> = ({
                                 onToggle={() => setShowPing(!showPing)}
                                 colors={colors}
                             />
+
+                            {/* Автоподстройка качества */}
+                            <ToggleItem
+                                label={language === 'RU' ? 'Автоподстройка графики' : 'Auto-adjust graphics'}
+                                icon="🤖"
+                                active={!hasCustomSettings}
+                                onToggle={() => useGameStore.setState({ hasCustomSettings: !hasCustomSettings })}
+                                colors={colors}
+                            />
                         </div>
 
                         {/* Качество фона арены (Высокое / Низкое) */}
@@ -593,6 +620,98 @@ export const AdvancedSettingsBlock: React.FC<AdvancedSettingsBlockProps> = ({
                             </div>
                         </div>
 
+                        {/* Выбор рендерера */}
+                        <div
+                            style={{
+                                background: colors.bgCard,
+                                borderRadius: '12px',
+                                padding: '14px 18px',
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                                border: '1px solid rgba(255,255,255,0.05)',
+                            }}
+                        >
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                <span style={{ fontSize: '16px' }}>⚙️</span>
+                                <span style={{ fontSize: '11px', fontWeight: 800, opacity: 0.7 }}>
+                                    {language === 'RU' ? 'Графический рендерер' : 'Graphics Renderer'}
+                                </span>
+                            </div>
+                            <div style={{ display: 'flex', background: 'rgba(0,0,0,0.3)', borderRadius: '8px', padding: '3px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                {([
+                                    { id: 'auto', label: language === 'RU' ? 'Авто' : 'Auto' },
+                                    { id: 'webgl', label: 'WebGL' },
+                                    { id: 'webgpu', label: 'WebGPU' }
+                                ] as const).map((r) => (
+                                    <button
+                                        key={r.id}
+                                        onClick={() => {
+                                            setRendererPreference(r.id);
+                                            const msg = language === 'RU'
+                                                ? 'Настройки рендера применятся после перезапуска игры.'
+                                                : 'Renderer settings will apply after restarting the game.';
+                                            useGameStore.getState().showAlert(msg);
+                                        }}
+                                        style={{
+                                            padding: '6px 12px',
+                                            borderRadius: '6px',
+                                            background: rendererPreference === r.id ? colors.accent : 'transparent',
+                                            border: 'none',
+                                            color: rendererPreference === r.id ? '#000' : 'rgba(255,255,255,0.4)',
+                                            fontSize: '9px',
+                                            fontWeight: 900,
+                                            cursor: 'pointer',
+                                            transition: 'all 0.2s ease',
+                                        }}
+                                    >
+                                        {r.label}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Лимит FPS */}
+                        <div
+                            style={{
+                                background: colors.bgCard,
+                                borderRadius: '12px',
+                                padding: '14px 18px',
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                                border: '1px solid rgba(255,255,255,0.05)',
+                            }}
+                        >
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                <span style={{ fontSize: '16px' }}>⚡</span>
+                                <span style={{ fontSize: '11px', fontWeight: 800, opacity: 0.7 }}>
+                                    {language === 'RU' ? 'Лимит частоты кадров (FPS)' : 'Frame Rate Limit (FPS)'}
+                                </span>
+                            </div>
+                            <div style={{ display: 'flex', background: 'rgba(0,0,0,0.3)', borderRadius: '8px', padding: '3px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                {([30, 60, 120] as const).map((cap) => (
+                                    <button
+                                        key={cap}
+                                        onClick={() => setFpsCap(cap)}
+                                        style={{
+                                            padding: '6px 16px',
+                                            borderRadius: '6px',
+                                            background: fpsCap === cap ? colors.accent : 'transparent',
+                                            border: 'none',
+                                            color: fpsCap === cap ? '#000' : 'rgba(255,255,255,0.4)',
+                                            fontSize: '10px',
+                                            fontWeight: 900,
+                                            cursor: 'pointer',
+                                            transition: 'all 0.2s ease',
+                                        }}
+                                    >
+                                        {cap}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
                         {/* Автонастройка */}
                         <button
                             onClick={() => {
@@ -649,91 +768,103 @@ export const AdvancedSettingsBlock: React.FC<AdvancedSettingsBlockProps> = ({
                         marginBottom: '4px',
                         display: 'flex',
                         alignItems: 'center',
-                        gap: '8px',
+                        justifyContent: 'space-between',
                     }}
                 >
-                    <span>📊</span>
-                    <span>{pt.title}</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span>📋</span>
+                        <span>{language === 'RU' ? 'ДИАГНОСТИКА УСТРОЙСТВА' : 'DEVICE DIAGNOSTICS'}</span>
+                    </div>
+                    <span style={{ fontSize: '9px', opacity: 0.5 }}>v{AppConfig.VERSION}</span>
                 </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px 20px' }}>
+                    {/* Device model */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px', gridColumn: 'span 2' }}>
+                        <span style={{ opacity: 0.6 }}>📱 {language === 'RU' ? 'Устройство:' : 'Device:'}</span>
+                        <span style={{ fontWeight: 800, color: '#e0e0e0' }}>
+                            {profile?.device || 'Unknown'}
+                        </span>
+                    </div>
+
+                    {/* OS */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px', gridColumn: 'span 2' }}>
+                        <span style={{ opacity: 0.6 }}>💻 {language === 'RU' ? 'Операционная система:' : 'OS:'}</span>
+                        <span style={{ fontWeight: 800, color: '#b0b0b0' }}>
+                            {profile?.os || 'Unknown'}
+                        </span>
+                    </div>
+
+                    {/* Browser */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px', gridColumn: 'span 2' }}>
+                        <span style={{ opacity: 0.6 }}>🌐 {language === 'RU' ? 'Браузер:' : 'Browser:'}</span>
+                        <span style={{ fontWeight: 800, color: '#b0b0b0' }}>
+                            {profile?.browser || 'Unknown'}
+                        </span>
+                    </div>
+
+                    {/* GPU */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px', gridColumn: 'span 2' }}>
+                        <span style={{ opacity: 0.6 }}>🎮 {language === 'RU' ? 'Видеочип (GPU):' : 'GPU:'}</span>
+                        <span style={{ fontWeight: 800, color: '#b0b0b0', textAlign: 'right', fontSize: '10px', maxWidth: '300px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={profile?.gpuRenderer || ''}>
+                            {profile?.gpuRenderer || 'Unknown'}
+                        </span>
+                    </div>
+
+                    {/* Renderer */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px' }}>
+                        <span style={{ opacity: 0.6 }}>⚙️ {language === 'RU' ? 'Рендерер:' : 'Renderer:'}</span>
+                        <span style={{ fontWeight: 800, color: colors.accent }}>
+                            {profile?.renderer && profile.renderer !== 'unknown' ? profile.renderer.toUpperCase() : 'WebGL2'}
+                        </span>
+                    </div>
+
+                    {/* Refresh Rate */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px' }}>
+                        <span style={{ opacity: 0.6 }}>🔄 {language === 'RU' ? 'Экран:' : 'Screen:'}</span>
+                        <span style={{ fontWeight: 800, color: '#e0e0e0' }}>
+                            {profile?.refreshRate || 60}Hz
+                        </span>
+                    </div>
+
                     {/* FPS */}
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px' }}>
-                        <span style={{ opacity: 0.6, display: 'flex', alignItems: 'center', gap: '6px' }}>📈 {pt.fps}</span>
+                        <span style={{ opacity: 0.6 }}>📈 {pt.fps}</span>
                         <span style={{ fontWeight: 800, color: perfStats.fps >= 50 ? '#4caf50' : perfStats.fps >= 30 ? '#ffeb3b' : perfStats.fps > 0 ? '#f44336' : '#9e9e9e' }}>
                             {perfStats.fps > 0 ? `${perfStats.fps} FPS` : '...'}
                         </span>
                     </div>
 
-                    {/* Power saving / FPS cap indicator */}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px' }}>
-                        <span style={{ opacity: 0.6, display: 'flex', alignItems: 'center', gap: '6px' }}>🔋 {language === 'RU' ? 'Лимит FPS:' : 'FPS Cap:'}</span>
-                        <span style={{ fontWeight: 800, color: isPowerSaving ? '#ffeb3b' : '#4caf50' }}>
-                            {isPowerSaving ? '30 FPS' : '60 FPS'}
-                        </span>
-                    </div>
-
                     {/* Ping */}
-                    {perfStats.ping !== null && (
+                    {perfStats.ping !== null ? (
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px' }}>
-                            <span style={{ opacity: 0.6, display: 'flex', alignItems: 'center', gap: '6px' }}>📡 {pt.ping}</span>
+                            <span style={{ opacity: 0.6 }}>📡 {pt.ping}</span>
                             <span style={{ fontWeight: 800, color: perfStats.ping < 100 ? '#4caf50' : perfStats.ping < 250 ? '#ffeb3b' : '#f44336' }}>
                                 {perfStats.ping} ms
+                            </span>
+                        </div>
+                    ) : (
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px' }}>
+                            <span style={{ opacity: 0.6 }}>🔋 {language === 'RU' ? 'Качество:' : 'Quality:'}</span>
+                            <span style={{ fontWeight: 800, color: graphicsQuality === 'ULTRA' ? '#4caf50' : graphicsQuality === 'MEDIUM' ? '#ffeb3b' : '#f44336' }}>
+                                {graphicsQuality}
                             </span>
                         </div>
                     )}
 
                     {/* CPU Cores */}
-                    {cores && (
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px' }}>
-                            <span style={{ opacity: 0.6, display: 'flex', alignItems: 'center', gap: '6px' }}>⚙️ {pt.cpu}</span>
-                            <span style={{ fontWeight: 800, color: '#e0e0e0' }}>
-                                {cores} {language === 'RU' ? 'ядер' : 'Cores'}
-                            </span>
-                        </div>
-                    )}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px' }}>
+                        <span style={{ opacity: 0.6 }}>🔲 {language === 'RU' ? 'Ядра CPU:' : 'CPU Cores:'}</span>
+                        <span style={{ fontWeight: 800, color: '#e0e0e0' }}>
+                            {profile?.cpuCores || 'Unknown'}
+                        </span>
+                    </div>
 
                     {/* System RAM */}
-                    {memoryGb && (
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px' }}>
-                            <span style={{ opacity: 0.6, display: 'flex', alignItems: 'center', gap: '6px' }}>💾 {pt.ramSys}</span>
-                            <span style={{ fontWeight: 800, color: '#e0e0e0' }}>
-                                ~{memoryGb} GB
-                            </span>
-                        </div>
-                    )}
-
-                    {/* OS / Browser */}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px', gridColumn: 'span 2' }}>
-                        <span style={{ opacity: 0.6, display: 'flex', alignItems: 'center', gap: '6px' }}>💻 {pt.os}</span>
-                        <span style={{ fontWeight: 800, color: '#b0b0b0', textAlign: 'right' }}>
-                            {getOSAndBrowser()}
-                        </span>
-                    </div>
-
-                    {/* Graphics Quality */}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px', gridColumn: 'span 2' }}>
-                        <span style={{ opacity: 0.6, display: 'flex', alignItems: 'center', gap: '6px' }}>🎨 {language === 'RU' ? 'Качество графики:' : 'Graphics Quality:'}</span>
-                        <span style={{ fontWeight: 800, color: graphicsQuality === 'ULTRA' ? '#4caf50' : graphicsQuality === 'MEDIUM' ? '#ffeb3b' : '#f44336' }}>
-                            {graphicsQuality === 'ULTRA' ? (language === 'RU' ? 'УЛЬТРА' : 'ULTRA') : graphicsQuality === 'MEDIUM' ? (language === 'RU' ? 'СРЕДНЕЕ' : 'MEDIUM') : (language === 'RU' ? 'НИЗКОЕ' : 'LOW')}
-                        </span>
-                    </div>
-
-                    {/* GPU Details */}
-                    {getGPUInfo() && (
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px', gridColumn: 'span 2' }}>
-                            <span style={{ opacity: 0.6, display: 'flex', alignItems: 'center', gap: '6px' }}>🎮 {pt.gpu}</span>
-                            <span style={{ fontWeight: 800, color: '#b0b0b0', textAlign: 'right', fontSize: '10px', maxWidth: '300px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={getGPUInfo() || ''}>
-                                {getGPUInfo()}
-                            </span>
-                        </div>
-                    )}
-
-                    {/* Device Tier */}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px', gridColumn: 'span 2' }}>
-                        <span style={{ opacity: 0.6, display: 'flex', alignItems: 'center', gap: '6px' }}>⚡ {pt.hardware}</span>
-                        <span style={{ fontWeight: 800, color: gpuTier.includes('High') ? '#4caf50' : gpuTier.includes('Mid') ? '#ffeb3b' : '#f44336' }}>
-                            {gpuTier}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px' }}>
+                        <span style={{ opacity: 0.6 }}>💾 {language === 'RU' ? 'Память ОЗУ:' : 'System RAM:'}</span>
+                        <span style={{ fontWeight: 800, color: '#e0e0e0' }}>
+                            {profile?.memory || 'Unknown'}
                         </span>
                     </div>
                 </div>
@@ -742,7 +873,7 @@ export const AdvancedSettingsBlock: React.FC<AdvancedSettingsBlockProps> = ({
                 {perfStats.ramUsed !== null && perfStats.ramLimit !== null && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontSize: '11px', marginTop: '4px', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '8px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <span style={{ opacity: 0.6, display: 'flex', alignItems: 'center', gap: '6px' }}>🔲 {pt.ramHeap}</span>
+                            <span style={{ opacity: 0.6 }}>📦 {language === 'RU' ? 'Куча JS:' : 'JS Heap:'}</span>
                             <span style={{ fontWeight: 800, color: '#e0e0e0' }}>
                                 {Math.round(perfStats.ramUsed / 1024 / 1024)} MB / {Math.round(perfStats.ramLimit / 1024 / 1024)} MB
                             </span>
@@ -759,6 +890,80 @@ export const AdvancedSettingsBlock: React.FC<AdvancedSettingsBlockProps> = ({
                         </div>
                     </div>
                 )}
+
+                {/* Copy Report Button */}
+                <button
+                    onClick={async () => {
+                        try {
+                            const ramHeap = perfStats.ramUsed !== null ? `${Math.round(perfStats.ramUsed / 1024 / 1024)} MB` : 'Unknown';
+                            const ramLimit = perfStats.ramLimit !== null ? `${Math.round(perfStats.ramLimit / 1024 / 1024)} MB` : 'Unknown';
+                            const prof = profile || await getDeviceProfile();
+                            const reportText = [
+                                `=== Masters of the Wild Diagnostics ===`,
+                                `Version: ${prof.gameVersion} (Build: ${prof.buildHash})`,
+                                `Platform: ${prof.platform}`,
+                                `Device: ${prof.device}`,
+                                `OS: ${prof.os}`,
+                                `Browser: ${prof.browser}`,
+                                `GPU Vendor: ${prof.gpuVendor}`,
+                                `GPU Renderer: ${prof.gpuRenderer}`,
+                                `Renderer API: ${prof.renderer || 'unknown'} (WebGL: ${prof.webglVersion})`,
+                                `Max Texture Size: ${prof.maxTextureSize}`,
+                                `Shader Precision: ${prof.shaderPrecision}`,
+                                `Refresh Rate: ${prof.refreshRate}Hz`,
+                                `Screen: ${prof.screen}`,
+                                `Average FPS: ${perfStats.fps > 0 ? perfStats.fps : 'Unknown'}`,
+                                `Graphics Quality: ${graphicsQuality} (Auto-tune: ${!hasCustomSettings ? 'ON' : 'OFF'})`,
+                                `UI Animations: ${useGameStore.getState().uiAnimations ? 'ON' : 'OFF'}`,
+                                `Particles Quality: ${useGameStore.getState().particlesQuality}`,
+                                `Glow Aura: ${useGameStore.getState().glowEnabled ? 'ON' : 'OFF'}`,
+                                `Arena Background: ${useGameStore.getState().arenaBgQuality}`,
+                                `Memory (JS Heap): ${ramHeap} / ${ramLimit}`,
+                                `System RAM Estimate: ${prof.memory}`,
+                                `CPU Cores: ${prof.cpuCores}`,
+                                `VK WebView: ${prof.vkWebView ? 'Yes' : 'No'}`,
+                                `Touch Device: ${prof.touchDevice ? 'Yes' : 'No'}`,
+                                `Date: ${new Date().toISOString()}`,
+                                `======================================`
+                            ].join('\n');
+
+                            await navigator.clipboard.writeText(reportText);
+                            const alertMsg = language === 'RU'
+                                ? 'Диагностический отчёт скопирован в буфер обмена!'
+                                : 'Diagnostic report copied to clipboard!';
+                            useGameStore.getState().showAlert(alertMsg);
+                        } catch (err) {
+                            console.error('Failed to copy report:', err);
+                        }
+                    }}
+                    style={{
+                        marginTop: '4px',
+                        padding: '10px',
+                        borderRadius: '8px',
+                        background: 'rgba(255,255,255,0.03)',
+                        border: '1.5px solid rgba(240,192,64,0.3)',
+                        color: colors.accent,
+                        fontFamily: "'Cinzel', serif",
+                        fontSize: '10px',
+                        fontWeight: 900,
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '6px',
+                        transition: 'all 0.2s ease',
+                    }}
+                    onMouseEnter={(e) => {
+                        e.currentTarget.style.background = 'rgba(240,192,64,0.08)';
+                        e.currentTarget.style.borderColor = colors.accent;
+                    }}
+                    onMouseLeave={(e) => {
+                        e.currentTarget.style.background = 'rgba(255,255,255,0.03)';
+                        e.currentTarget.style.borderColor = 'rgba(240,192,64,0.3)';
+                    }}
+                >
+                    📋 {language === 'RU' ? 'СКОПИРОВАТЬ ОТЧЁТ' : 'COPY REPORT'}
+                </button>
             </div>
         </div>
     );

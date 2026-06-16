@@ -5,6 +5,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { AssetsMap } from '../../../configs/AssetsMap';
 import { addToFavorites, joinGroup } from '../../../utils/VKBridge';
 import { audioService } from '../../../services/AudioService';
+import { AppConfig } from '../../../configs/AppConfig';
 import { AdvancedSettingsBlock } from './AdvancedSettingsBlock';
 import { settingsTranslations } from './SettingsLocalization';
 import { LegalModal } from '../LegalDocuments';
@@ -816,7 +817,7 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
                     cursor: 'pointer',
                 }}
             >
-                VERSION v1.1.0 • MASTERS OF THE WILD • 2026
+                VERSION v{AppConfig.VERSION} • MASTERS OF THE WILD • 2026
                 <div
                     style={{
                         marginTop: '5px',

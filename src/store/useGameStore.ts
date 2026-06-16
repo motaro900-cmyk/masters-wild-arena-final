@@ -157,7 +157,7 @@ const store = create<GameStoreState>()(
         {
             name: 'game-storage',
             storage: createJSONStorage(() => getStorage()),
-            version: 33, // v33: Add newbieWins
+            version: 34, // v34: Add rendererPreference and fpsCap
 
             partialize: (state: any) => ({
                 level: state.level,
@@ -208,6 +208,8 @@ const store = create<GameStoreState>()(
                 maxPveStage: state.maxPveStage,
                 isPowerSaving: state.isPowerSaving,
                 hasCustomSettings: state.hasCustomSettings,
+                rendererPreference: state.rendererPreference,
+                fpsCap: state.fpsCap,
                 isMuted: state.isMuted,
                 winStreak: state.winStreak,
                 lossStreak: state.lossStreak,
@@ -407,6 +409,12 @@ const store = create<GameStoreState>()(
                 if (version < 33) {
                     console.log('🔄 Migrating store to v33: Adding newbieWins...');
                     persistedState.newbieWins = 0;
+                }
+
+                if (version < 34) {
+                    console.log('🔄 Migrating store to v34: Adding rendererPreference and fpsCap...');
+                    persistedState.rendererPreference = 'auto';
+                    persistedState.fpsCap = 60;
                 }
 
                 return persistedState;

@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "gpuRules": [
+    {
+      "match": "xclipse",
+      "disable": ["webgpu"],
+      "reason": "Android WebView rendering issues"
+    },
+    {
+      "match": "mali-g68",
+      "disable": ["webgpu"],
+      "reason": "Unstable WebGPU drivers"
+    },
+    {
+      "match": "mali-g78",
+      "disable": ["webgpu"],
+      "reason": "Unstable WebGPU drivers"
+    },
+    {
+      "match": "mali-g57",
+      "disable": ["webgpu"],
+      "reason": "Unstable WebGPU drivers"
+    }
+  ]
+}

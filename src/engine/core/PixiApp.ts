@@ -3,6 +3,27 @@ import { gsap } from 'gsap';
 import { PixiPlugin } from 'gsap/PixiPlugin';
 import { AppConfig } from '@/configs/AppConfig';
 import { useGameStore } from '../../store/useGameStore';
+import {
+    fetchCompatibilityRules,
+    checkWebGPUDisabled,
+    getNextRetryVersion
+} from '../../configs/GraphicsCompatibility';
+import {
+    getDeviceProfile,
+    updateActiveRenderer
+} from '../../services/TelemetryService';
+
+function isVersionLessThan(v1: string, v2: string): boolean {
+    const parts1 = v1.split('.').map(p => parseInt(p, 10));
+    const parts2 = v2.split('.').map(p => parseInt(p, 10));
+    for (let i = 0; i < Math.max(parts1.length, parts2.length); i++) {
+        const p1 = parts1[i] || 0;
+        const p2 = parts2[i] || 0;
+        if (p1 < p2) return true;
+        if (p1 > p2) return false;
+    }
+    return false;
+}
 
 gsap.registerPlugin(PixiPlugin);
 PixiPlugin.convertToPixi = (_object: any, _prop: string, value: string | number) => {
@@ -176,23 +197,101 @@ export class PixiApp {
                           ? Math.min(window.devicePixelRatio || 1, 2)
                           : 1;
 
+                // Load compatibility rules dynamically
+                await fetchCompatibilityRules();
+
+                const state = useGameStore.getState();
+                const rendererPref = state.rendererPreference || 'auto';
+                
+                let forceWebGL = false;
+                const forceUntil = localStorage.getItem('forceWebGLUntilVersion');
+                if (forceUntil) {
+                    if (isVersionLessThan(AppConfig.VERSION, forceUntil)) {
+                        forceWebGL = true;
+                        console.log(`[PixiApp] WebGPU is blocked via forceWebGLUntilVersion (${forceUntil} > current ${AppConfig.VERSION})`);
+                    } else {
+                        localStorage.removeItem('forceWebGLUntilVersion');
+                        console.log(`[PixiApp] forceWebGLUntilVersion (${forceUntil}) expired (current ${AppConfig.VERSION}). Retrying WebGPU.`);
+                    }
+                }
+
+                const profile = await getDeviceProfile();
+                const compatCheck = checkWebGPUDisabled(profile.gpuRenderer);
+                if (compatCheck.disabled) {
+                    console.log(`[PixiApp] WebGPU disabled for blacklisted GPU: ${profile.gpuRenderer}. Reason: ${compatCheck.reason}`);
+                }
+
+                let preference: 'webgl' | 'webgpu' = 'webgl';
+                if (rendererPref === 'webgpu') {
+                    preference = 'webgpu';
+                } else if (rendererPref === 'webgl') {
+                    preference = 'webgl';
+                } else {
+                    // 'auto' mode
+                    if (forceWebGL || compatCheck.disabled) {
+                        preference = 'webgl';
+                    } else {
+                        // Default: WebGL on mobile, WebGPU on desktop
+                        preference = isMobile ? 'webgl' : (preferWebGL1 ? 'webgl' : 'webgpu');
+                    }
+                }
+
+                console.log(`[PixiApp] Selected renderer preference: ${preference} (User pref: ${rendererPref})`);
+
                 this.pixiApp = new PIXI.Application();
-                await this.pixiApp.init({
-                    width: this.config.width,
-                    height: this.config.height,
-                    backgroundColor: 0x000000,
-                    backgroundAlpha: 0, // Transparent — let CSS background show through
-                    antialias: this.config.antialias,
-                    resolution,
-                    autoDensity: true,
-                    // На мобильных устройствах принудительно используем webgl из-за нестабильности WebGPU в WebView (вызывает мерцание текстур)
-                    preference: isMobile ? 'webgl' : (preferWebGL1 ? 'webgl' : 'webgpu'),
-                    webgl: preferWebGL1 ? { preferWebGLVersion: 1 as 1 | 2 } : undefined,
-                    // Отключаем субпиксельное смещение спрайтов — устраняет "пиксельный шум"
-                    // на краях спрайтов при нецелых координатах
-                    roundPixels: true,
-                    powerPreference: isIOS ? undefined : (this.config.powerPreference === 'default' ? undefined : this.config.powerPreference as any),
-                });
+                
+                try {
+                    await this.pixiApp.init({
+                        width: this.config.width,
+                        height: this.config.height,
+                        backgroundColor: 0x000000,
+                        backgroundAlpha: 0, // Transparent — let CSS background show through
+                        antialias: this.config.antialias,
+                        resolution,
+                        autoDensity: true,
+                        preference,
+                        webgl: preferWebGL1 ? { preferWebGLVersion: 1 as 1 | 2 } : undefined,
+                        roundPixels: true,
+                        powerPreference: isIOS ? undefined : (this.config.powerPreference === 'default' ? undefined : this.config.powerPreference as any),
+                    });
+                } catch (initError) {
+                    if (preference === 'webgpu') {
+                        console.error('❌ WebGPU PixiApp initialization failed, falling back to WebGL:', initError);
+                        
+                        // Report crash to Sentry
+                        import('@sentry/react').then((Sentry) => {
+                            Sentry.captureException(initError, {
+                                tags: {
+                                    webgpu_crash: 'true',
+                                    gpu_renderer: profile.gpuRenderer
+                                }
+                            });
+                        });
+
+                        // Set forceWebGL until next minor/major version
+                        const nextVersion = getNextRetryVersion(AppConfig.VERSION);
+                        localStorage.setItem('forceWebGLUntilVersion', nextVersion);
+                        console.log(`[PixiApp] Saved forceWebGLUntilVersion: ${nextVersion} to localStorage.`);
+
+                        // Retry with webgl
+                        preference = 'webgl';
+                        await this.pixiApp.init({
+                            width: this.config.width,
+                            height: this.config.height,
+                            backgroundColor: 0x000000,
+                            backgroundAlpha: 0,
+                            antialias: this.config.antialias,
+                            resolution,
+                            autoDensity: true,
+                            preference,
+                            webgl: preferWebGL1 ? { preferWebGLVersion: 1 as 1 | 2 } : undefined,
+                            roundPixels: true,
+                            powerPreference: isIOS ? undefined : (this.config.powerPreference === 'default' ? undefined : this.config.powerPreference as any),
+                        });
+                    } else {
+                        throw initError;
+                    }
+                }
 
                 // Override mapPositionToPoint to handle 90-degree clockwise CSS rotation in portrait mode on mobile
                 if ((this.pixiApp.renderer as any).events) {
@@ -231,9 +330,7 @@ export class PixiApp {
                 try {
                     const actualRenderer = this.pixiApp.renderer.name || 'unknown';
                     console.log(`[PixiApp] Active renderer: ${actualRenderer}`);
-                    import('@sentry/react').then((Sentry) => {
-                        Sentry.setTag('selected_renderer', actualRenderer);
-                    });
+                    updateActiveRenderer(actualRenderer);
                 } catch (e) {
                     console.warn('Failed to tag selected_renderer in Sentry:', e);
                 }

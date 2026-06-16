@@ -194,6 +194,8 @@ export const createPlayerSlice = (set: any, get: any) => {
     arenaBgQuality: isMobileVal ? 'LOW' : 'HIGH',
     showPing: true,
     hasCustomSettings: false,
+    rendererPreference: 'auto',
+    fpsCap: 60,
     pet: {
         id: 'baby_dragon',
         name: 'Дракоша',
@@ -702,6 +704,8 @@ export const createPlayerSlice = (set: any, get: any) => {
     setGlowEnabled: (val: boolean) => set({ glowEnabled: val, hasCustomSettings: true }),
     setArenaBgQuality: (val: 'LOW' | 'HIGH') => set({ arenaBgQuality: val, hasCustomSettings: true }),
     setShowPing: (val: boolean) => set({ showPing: val, hasCustomSettings: true }),
+    setRendererPreference: (val: 'auto' | 'webgl' | 'webgpu') => set({ rendererPreference: val, hasCustomSettings: true }),
+    setFpsCap: (val: number) => set({ fpsCap: val, hasCustomSettings: true }),
     autoTuneSettings: () => {
         const isMobileVal = get().isMobile;
         let autoGraphics = 'ULTRA';
@@ -739,6 +743,8 @@ export const createPlayerSlice = (set: any, get: any) => {
             glowEnabled: autoGlow,
             arenaBgQuality: autoArenaBg,
             uiAnimations: autoUiAnim,
+            rendererPreference: 'auto',
+            fpsCap: autoPowerSaving ? 30 : 60,
             hasCustomSettings: true,
         });
     },
