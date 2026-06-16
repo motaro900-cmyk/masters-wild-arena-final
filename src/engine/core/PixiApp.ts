@@ -227,6 +227,17 @@ export class PixiApp {
                 (window as any).__PIXI_APP__ = this.pixiApp;
                 PixiApp.canvas = this.pixiApp.canvas;
 
+                // Log renderer type to Sentry tags for graphics telemetry
+                try {
+                    const actualRenderer = this.pixiApp.renderer.name || 'unknown';
+                    console.log(`[PixiApp] Active renderer: ${actualRenderer}`);
+                    import('@sentry/react').then((Sentry) => {
+                        Sentry.setTag('selected_renderer', actualRenderer);
+                    });
+                } catch (e) {
+                    console.warn('Failed to tag selected_renderer in Sentry:', e);
+                }
+
                 if (PixiApp.canvas) {
                     PixiApp.canvas.addEventListener('webglcontextlost', this.handleWebGLContextLost);
                 }

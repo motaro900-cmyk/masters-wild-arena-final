@@ -14,7 +14,7 @@ try {
   }
   fs.writeFileSync(
     path.join(publicDir, 'version.json'),
-    JSON.stringify({ buildTime, version: '1.1.3' }, null, 2),
+    JSON.stringify({ buildTime, version: '1.1.4' }, null, 2),
     'utf-8'
   );
 } catch (e) {
