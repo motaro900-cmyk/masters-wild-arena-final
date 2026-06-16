@@ -185,9 +185,8 @@ export class PixiApp {
                     antialias: this.config.antialias,
                     resolution,
                     autoDensity: true,
-                    // Предпочитаем WebGPU — более чёткий рендер без WebGL сглаживания.
-                    // Браузер автоматически fallback-ится на WebGL если WebGPU недоступен.
-                    preference: preferWebGL1 ? 'webgl' : 'webgpu',
+                    // На мобильных устройствах принудительно используем webgl из-за нестабильности WebGPU в WebView (вызывает мерцание текстур)
+                    preference: isMobile ? 'webgl' : (preferWebGL1 ? 'webgl' : 'webgpu'),
                     webgl: preferWebGL1 ? { preferWebGLVersion: 1 as 1 | 2 } : undefined,
                     // Отключаем субпиксельное смещение спрайтов — устраняет "пиксельный шум"
                     // на краях спрайтов при нецелых координатах
