@@ -114,7 +114,7 @@ export const initFirebaseProfile = async (
         }
 
         const userVkId = state.vkUser?.id || state.vkUser?.uid;
-        const isHardcodedAdmin = userVkId && Number(userVkId) === 212359386;
+        const isHardcodedAdmin = (userVkId && Number(userVkId) === 212359386) || state.playerId === 'MW-UMW2N0RWZ';
         const finalAdminStatus = isAdminUser || isLocalhost || isHardcodedAdmin;
 
         if (result.isNew) {

@@ -528,7 +528,21 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
                                     color: '#fff',
                                 }}
                             >
-                                {playerId}
+                                {isAdmin ? (
+                                    <span
+                                        style={{
+                                            color: '#f0c040',
+                                            textShadow: '0 0 8px rgba(240,192,64,0.6)',
+                                            fontFamily: 'Outfit, sans-serif',
+                                            fontWeight: 900,
+                                            letterSpacing: '0.5px',
+                                        }}
+                                    >
+                                        РАЗРАБОТЧИК
+                                    </span>
+                                ) : (
+                                    playerId
+                                )}
                             </div>
                         </div>
                         <motion.button

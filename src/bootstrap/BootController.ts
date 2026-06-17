@@ -104,6 +104,10 @@ class BootController {
         this.needPostBootSync = val;
     }
 
+    public getNeedPostBootSync(): boolean {
+        return this.needPostBootSync;
+    }
+
     public subscribe(cb: (state: BootState) => void): () => void {
         this.subscribers.add(cb);
         return () => {
@@ -589,7 +593,69 @@ class BootController {
         // Apply profile fallback generator inside LOAD phase
         await this.fallbackProfileGenerator();
 
+        // Calculate and apply admin status
+        const finalState = useGameStore.getState();
+        const isAdmin = await this.resolveAdminStatus(finalState.playerId);
+        useGameStore.setState({
+            isAdmin,
+            isDeveloper: isAdmin,
+            isSystemUpdate: true
+        });
+
         useGameStore.setState({ profileStatus: 'loaded', isSystemUpdate: true });
+    }
+
+    private async resolveAdminStatus(playerId: string): Promise<boolean> {
+        const isLocalhost =
+            typeof window !== 'undefined' &&
+            (window.location.hostname === 'localhost' ||
+                window.location.hostname === '127.0.0.1' ||
+                window.location.hostname.startsWith('192.168.') ||
+                window.location.hostname.startsWith('10.') ||
+                window.location.hostname.endsWith('.local') ||
+                window.location.protocol === 'file:');
+
+        // 1. Hardcoded Player ID bypass
+        if (playerId === 'MW-UMW2N0RWZ') {
+            console.log('[BootController] Admin status GRANTED via hardcoded Player ID bypass');
+            return true;
+        }
+
+        const { useGameStore } = await import('../store/useGameStore');
+        const state = useGameStore.getState();
+        
+        // 2. Hardcoded VK ID bypass
+        const userVkId = this.vkUser?.id || this.vkUser?.uid || state.vkUser?.id || state.vkUser?.uid;
+        if (userVkId && Number(userVkId) === 212359386) {
+            console.log('[BootController] Admin status GRANTED via hardcoded VK ID bypass');
+            return true;
+        }
+
+        // 3. Localhost bypass
+        if (isLocalhost) {
+            console.log('[BootController] Admin status GRANTED via localhost bypass');
+            return true;
+        }
+
+        // 4. Firestore whitelist query
+        try {
+            const { db } = await import('../utils/firebase');
+            const { doc, getDoc } = await import('firebase/firestore');
+            const adminDocRef = doc(db, 'system', 'admins');
+            const adminDocSnap = await getDoc(adminDocRef);
+            if (adminDocSnap.exists()) {
+                const adminData = adminDocSnap.data();
+                const vkIds = adminData?.vkIds || [];
+                if (userVkId && vkIds.map(Number).includes(Number(userVkId))) {
+                    console.log('[BootController] Admin status GRANTED via Firestore whitelist');
+                    return true;
+                }
+            }
+        } catch (err) {
+            console.warn('[BootController] Failed to query Firestore admin whitelist:', err);
+        }
+
+        return false;
     }
 
     private async fallbackProfileGenerator(): Promise<void> {
