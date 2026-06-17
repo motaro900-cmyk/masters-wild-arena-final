@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { RealPlayer, inputStyle, smallBtnStyle, applyBtn, mapRawPlayerToRealPlayer } from '../AdminShared';
+import { RealPlayer, mapRawPlayerToRealPlayer } from '../AdminShared';
 import { syncService } from '../../../../../services/SyncService';
 import { useGameStore } from '../../../../../store/useGameStore';
 
@@ -96,10 +96,15 @@ export const ServerPlayersList: React.FC<ServerPlayersListProps> = ({
         hasInfiniteEnergy: localPlayerHasInfiniteEnergy || false,
     };
 
+    // VK numeric ID to detect duplicate self-entries stored as "VK-XXXXXXX"
+    const localVkIdNum = localVkUser ? Number(localVkUser.id) : -1;
+
     const activeList = searchQuery.trim() ? searchResults : realPlayers;
 
     const filteredBase = activeList.filter((p) => {
-        if (p.id === localPlayerId) return false; // self is prepended manually
+        // Exclude self by game ID OR by VK numeric ID (prevents duplicate "VK-XXXXXXX" entry)
+        if (p.id === localPlayerId) return false;
+        if (localVkIdNum > 0 && p.vkId === localVkIdNum) return false;
 
         const matchesSearch =
             p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -133,216 +138,251 @@ export const ServerPlayersList: React.FC<ServerPlayersListProps> = ({
     const finalPlayers = showSelf ? [selfPlayer, ...filteredBase] : filteredBase;
 
     return (
-        <div
-            className="h-[400px] lg:h-full"
-            style={{
-                background: '#0a0a0a',
-                border: '1px solid #222',
-                borderRadius: '10px',
+        <div style={{
+            background: '#0a0a0a',
+            border: '1px solid #1e1e1e',
+            borderRadius: '14px',
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'hidden',
+            height: '100%',
+        }}>
+            {/* ── Search header ── */}
+            <div style={{
+                padding: '14px',
+                borderBottom: '1px solid #161616',
+                background: 'linear-gradient(180deg, #111 0%, #0c0c0c 100%)',
                 display: 'flex',
                 flexDirection: 'column',
-            }}
-        >
-            {/* Строка поиска + кнопка обновления */}
-            <div style={{ padding: '10px', borderBottom: '1px solid #222' }}>
-                <div style={{ display: 'flex', gap: '5px', marginBottom: '10px' }}>
+                gap: '10px',
+            }}>
+
+                {/* Search input row */}
+                <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                    <span style={{
+                        position: 'absolute',
+                        left: '13px',
+                        fontSize: '15px',
+                        color: searchQuery ? '#ff4d4d' : '#444',
+                        pointerEvents: 'none',
+                        transition: 'color 0.2s',
+                        lineHeight: 1,
+                    }}>🔍</span>
                     <input
                         type="text"
-                        placeholder="Поиск по Имени/ID/VK..."
-                        style={{ ...inputStyle, flex: 1 }}
+                        placeholder="Поиск по имени, ID, VK..."
+                        style={{
+                            width: '100%',
+                            padding: '12px 44px 12px 38px',
+                            background: '#141414',
+                            border: `1.5px solid ${searchQuery ? 'rgba(255,77,77,0.45)' : '#252525'}`,
+                            borderRadius: '10px',
+                            color: '#fff',
+                            fontSize: '13px',
+                            outline: 'none',
+                            boxSizing: 'border-box',
+                            transition: 'border-color 0.2s',
+                            fontFamily: 'inherit',
+                        }}
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                     />
-                    <button onClick={onRefresh} style={{ ...applyBtn, padding: '0 10px' }} disabled={isLoadingPlayers || isSearching}>
-                        {isLoadingPlayers || isSearching ? '...' : '🔄'}
-                    </button>
+                    {/* Clear or Refresh icon */}
+                    {searchQuery ? (
+                        <button
+                            onClick={() => setSearchQuery('')}
+                            style={{
+                                position: 'absolute', right: '10px',
+                                background: 'none', border: 'none',
+                                color: '#555', cursor: 'pointer',
+                                fontSize: '16px', lineHeight: 1, padding: '4px',
+                            }}
+                        >✕</button>
+                    ) : (
+                        <button
+                            onClick={onRefresh}
+                            disabled={isLoadingPlayers || isSearching}
+                            title="Обновить список"
+                            style={{
+                                position: 'absolute', right: '10px',
+                                background: 'none', border: 'none',
+                                color: isLoadingPlayers ? '#2a2a2a' : '#444',
+                                cursor: isLoadingPlayers ? 'not-allowed' : 'pointer',
+                                fontSize: '15px', lineHeight: 1, padding: '4px',
+                                transition: 'color 0.2s',
+                            }}
+                        >
+                            {isLoadingPlayers || isSearching ? '⏳' : '🔄'}
+                        </button>
+                    )}
                 </div>
 
-                {/* Фильтр по статусу */}
-                <div style={{ display: 'flex', gap: '5px' }}>
-                    <button
-                        onClick={() => setFilterStatus('ALL')}
-                        style={{
-                            ...smallBtnStyle,
-                            flex: 1,
-                            background: filterStatus === 'ALL' ? '#222' : '#111',
-                            color: filterStatus === 'ALL' ? '#fff' : '#666',
-                        }}
-                    >
-                        Все
-                    </button>
-                    <button
-                        onClick={() => setFilterStatus('ONLINE')}
-                        style={{
-                            ...smallBtnStyle,
-                            flex: 1,
-                            background: filterStatus === 'ONLINE' ? '#1b4332' : '#111',
-                            color: filterStatus === 'ONLINE' ? '#fff' : '#666',
-                        }}
-                    >
-                        Online
-                    </button>
-                    <button
-                        onClick={() => setFilterStatus('BANNED')}
-                        style={{
-                            ...smallBtnStyle,
-                            flex: 1,
-                            background: filterStatus === 'BANNED' ? '#431b1b' : '#111',
-                            color: filterStatus === 'BANNED' ? '#fff' : '#666',
-                        }}
-                    >
-                        Banned
-                    </button>
+                {/* Status pills */}
+                <div style={{ display: 'flex', gap: '6px' }}>
+                    {(['ALL', 'ONLINE', 'BANNED'] as const).map((s) => {
+                        const label = s === 'ALL' ? 'Все' : s === 'ONLINE' ? '🟢 Online' : '🔴 Banned';
+                        const active = filterStatus === s;
+                        const activeBg = s === 'ONLINE' ? '#0f2d1e' : s === 'BANNED' ? '#2d0f0f' : '#1e1e1e';
+                        const activeBorder = s === 'ONLINE' ? '#4dff4d' : s === 'BANNED' ? '#ff4d4d' : '#555';
+                        const activeColor = s === 'ONLINE' ? '#4dff4d' : s === 'BANNED' ? '#ff6b6b' : '#fff';
+                        return (
+                            <button
+                                key={s}
+                                onClick={() => setFilterStatus(s)}
+                                style={{
+                                    flex: 1,
+                                    padding: '8px 0',
+                                    borderRadius: '8px',
+                                    border: `1px solid ${active ? activeBorder : '#1e1e1e'}`,
+                                    background: active ? activeBg : '#111',
+                                    color: active ? activeColor : '#444',
+                                    fontSize: '11px',
+                                    fontWeight: active ? 700 : 400,
+                                    cursor: 'pointer',
+                                    transition: 'all 0.15s',
+                                }}
+                            >
+                                {label}
+                            </button>
+                        );
+                    })}
                 </div>
 
-                {/* Фильтр по типу аккаунта */}
-                <div
-                    style={{
-                        fontSize: '9px',
-                        color: '#555',
-                        marginTop: '10px',
-                        marginBottom: '4px',
-                        textTransform: 'uppercase',
-                        fontWeight: 'bold',
-                        letterSpacing: '0.5px',
-                    }}
-                >
-                    Тип аккаунтов
+                {/* Account type label */}
+                <div style={{
+                    fontSize: '9px', color: '#383838',
+                    letterSpacing: '1px', fontWeight: 700,
+                    textTransform: 'uppercase',
+                }}>
+                    Тип аккаунта
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '4px' }}>
-                    <button
-                        onClick={() => setFilterType('VK_REAL')}
-                        style={{
-                            ...smallBtnStyle,
-                            padding: '6px 2px',
-                            fontSize: '10px',
-                            background: filterType === 'VK_REAL' ? '#1b4332' : '#111',
-                            borderColor: filterType === 'VK_REAL' ? '#4dff4d' : '#222',
-                            color: filterType === 'VK_REAL' ? '#4dff4d' : '#888',
-                        }}
-                    >
-                        👥 ВК Игроки
-                    </button>
-                    <button
-                        onClick={() => setFilterType('VK_TEST')}
-                        style={{
-                            ...smallBtnStyle,
-                            padding: '6px 2px',
-                            fontSize: '10px',
-                            background: filterType === 'VK_TEST' ? '#1d4ed8' : '#111',
-                            borderColor: filterType === 'VK_TEST' ? '#3b82f6' : '#222',
-                            color: filterType === 'VK_TEST' ? '#60a5fa' : '#888',
-                        }}
-                    >
-                        🧪 Тест ВК
-                    </button>
-                    <button
-                        onClick={() => setFilterType('GUEST')}
-                        style={{
-                            ...smallBtnStyle,
-                            padding: '6px 2px',
-                            fontSize: '10px',
-                            background: filterType === 'GUEST' ? '#451a03' : '#111',
-                            borderColor: filterType === 'GUEST' ? '#f97316' : '#222',
-                            color: filterType === 'GUEST' ? '#fdba74' : '#888',
-                        }}
-                    >
-                        🤖 Гости
-                    </button>
-                    <button
-                        onClick={() => setFilterType('ALL')}
-                        style={{
-                            ...smallBtnStyle,
-                            padding: '6px 2px',
-                            fontSize: '10px',
-                            background: filterType === 'ALL' ? '#222' : '#111',
-                            borderColor: filterType === 'ALL' ? '#444' : '#222',
-                            color: filterType === 'ALL' ? '#fff' : '#888',
-                        }}
-                    >
-                        🌐 Все типы
-                    </button>
+
+                {/* Account type grid */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '5px' }}>
+                    {([
+                        { key: 'VK_REAL', label: '👥 ВК Игроки', aColor: '#4dff4d', aBg: '#0f2d1e', aBorder: '#4dff4d' },
+                        { key: 'VK_TEST', label: '🧪 Тест ВК',   aColor: '#60a5fa', aBg: '#0f1d3a', aBorder: '#3b82f6' },
+                        { key: 'GUEST',   label: '🤖 Гости',      aColor: '#fdba74', aBg: '#2a1005', aBorder: '#f97316' },
+                        { key: 'ALL',     label: '🌐 Все типы',   aColor: '#fff',    aBg: '#1e1e1e', aBorder: '#555' },
+                    ] as const).map(({ key, label, aColor, aBg, aBorder }) => {
+                        const active = filterType === key;
+                        return (
+                            <button
+                                key={key}
+                                onClick={() => setFilterType(key as any)}
+                                style={{
+                                    padding: '7px 4px',
+                                    borderRadius: '8px',
+                                    border: `1px solid ${active ? aBorder : '#1c1c1c'}`,
+                                    background: active ? aBg : '#0d0d0d',
+                                    color: active ? aColor : '#3a3a3a',
+                                    fontSize: '10px',
+                                    fontWeight: active ? 700 : 400,
+                                    cursor: 'pointer',
+                                    transition: 'all 0.15s',
+                                    textAlign: 'center',
+                                }}
+                            >
+                                {label}
+                            </button>
+                        );
+                    })}
                 </div>
             </div>
 
-            {/* Прокручиваемый список игроков */}
+            {/* ── Player list ── */}
             <div style={{ flex: 1, overflowY: 'auto' }}>
                 {isSearching && (
-                    <div style={{ padding: '20px', textAlign: 'center', color: '#666', fontSize: '12px' }}>
-                        Идет поиск в базе данных... ⏳
+                    <div style={{ padding: '24px', textAlign: 'center', color: '#333', fontSize: '12px' }}>
+                        Поиск в базе данных... ⏳
                     </div>
                 )}
                 {!isSearching && finalPlayers.length === 0 && (
-                    <div style={{ padding: '20px', textAlign: 'center', color: '#666', fontSize: '12px' }}>
-                        Ничего не найдено
+                    <div style={{ padding: '24px', textAlign: 'center', color: '#2a2a2a', fontSize: '12px' }}>
+                        Никого не найдено
                     </div>
                 )}
                 {!isSearching && finalPlayers.map((p) => {
                     const isSelf = p.id === localPlayerId;
+                    const isSelected = selectedPlayerId === p.id;
                     return (
                         <div
                             key={p.id}
                             onClick={() => onSelectPlayer(p.id)}
                             style={{
-                                padding: '12px',
-                                borderBottom: '1px solid #111',
+                                padding: '11px 14px',
+                                borderBottom: '1px solid #0d0d0d',
                                 cursor: 'pointer',
-                                background: selectedPlayerId === p.id ? '#1a1a1a' : 'transparent',
+                                background: isSelected
+                                    ? 'rgba(255,77,77,0.07)'
+                                    : isSelf
+                                      ? 'rgba(240,192,64,0.04)'
+                                      : 'transparent',
                                 display: 'flex',
                                 gap: '10px',
                                 alignItems: 'center',
-                                borderLeft: isSelf ? '3px solid #f0c040' : 'none',
+                                borderLeft: isSelected
+                                    ? '3px solid #ff4d4d'
+                                    : isSelf
+                                      ? '3px solid #f0c040'
+                                      : '3px solid transparent',
+                                transition: 'background 0.15s',
                             }}
                         >
-                            <div
-                                style={{
-                                    width: '8px',
-                                    height: '8px',
-                                    borderRadius: '50%',
-                                    background:
-                                        p.status === 'ONLINE' ? '#4dff4d' : p.status === 'BATTLE' ? '#3b82f6' : '#777',
-                                }}
-                            />
+                            {/* Status dot */}
+                            <div style={{
+                                width: '7px', height: '7px',
+                                borderRadius: '50%', flexShrink: 0,
+                                background:
+                                    p.status === 'ONLINE' ? '#4dff4d'
+                                    : p.status === 'BATTLE' ? '#3b82f6'
+                                    : '#1e1e1e',
+                                boxShadow: p.status === 'ONLINE' ? '0 0 5px #4dff4d88' : 'none',
+                            }} />
+
+                            {/* Avatar */}
                             <img
                                 src={p.photo}
                                 style={{
-                                    width: '32px',
-                                    height: '32px',
-                                    borderRadius: '50%',
-                                    border: `1px solid ${isSelf ? '#f0c040' : '#444'}`,
+                                    width: '36px', height: '36px',
+                                    borderRadius: '50%', flexShrink: 0,
+                                    border: `2px solid ${isSelf ? '#f0c040' : isSelected ? '#ff4d4d' : '#1e1e1e'}`,
+                                    objectFit: 'cover',
                                 }}
                                 alt=""
                             />
-                            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '3px' }}>
-                                <div style={{ fontSize: '14px', fontWeight: 'bold', color: isSelf ? '#f0c040' : '#ffffff' }}>
-                                    {p.name} {isSelf && <span style={{ fontSize: '9px', fontWeight: 'normal', opacity: 0.65 }}>(Вы)</span>}
+
+                            {/* Info */}
+                            <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                                <div style={{
+                                    fontSize: '13px', fontWeight: 700,
+                                    color: isSelf ? '#f0c040' : '#e8e8e8',
+                                    whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                                }}>
+                                    {p.name}
+                                    {isSelf && <span style={{ fontSize: '9px', fontWeight: 400, opacity: 0.5, marginLeft: '6px' }}>(Вы)</span>}
                                 </div>
-                                <div style={{ fontSize: '11px', color: '#aaaaaa', fontFamily: 'monospace' }}>ID: {p.id}</div>
-                                <div
-                                    style={{
-                                        fontSize: '10px',
-                                        color: p.status === 'ONLINE' || p.status === 'BATTLE' ? '#4dff4d' : '#888888',
-                                    }}
-                                >
-                                    {p.status === 'ONLINE'
-                                        ? 'В сети'
-                                        : p.status === 'BATTLE'
-                                          ? 'В бою ⚔️'
-                                          : p.status === 'BANNED'
-                                            ? 'Забанен'
-                                            : `Был(а) в сети: ${p.lastSeenTime}`}
+                                <div style={{ fontSize: '9px', color: '#3a3a3a', fontFamily: 'monospace', letterSpacing: '0.3px' }}>
+                                    {p.id}
+                                </div>
+                                <div style={{
+                                    fontSize: '10px',
+                                    color: p.status === 'ONLINE' ? '#4dff4d' : p.status === 'BATTLE' ? '#60a5fa' : '#333',
+                                }}>
+                                    {p.status === 'ONLINE' ? 'В сети'
+                                        : p.status === 'BATTLE' ? 'В бою ⚔️'
+                                        : p.status === 'BANNED' ? '🚫 Забанен'
+                                        : `Был(а): ${p.lastSeenTime}`}
                                 </div>
                             </div>
+
+                            {/* Report badge */}
                             {p.reports > 0 && (
-                                <div
-                                    style={{
-                                        background: '#ff4d4d',
-                                        color: '#fff',
-                                        fontSize: '8px',
-                                        padding: '1px 4px',
-                                        borderRadius: '3px',
-                                    }}
-                                >
+                                <div style={{
+                                    background: '#ff4d4d', color: '#fff',
+                                    fontSize: '9px', fontWeight: 900,
+                                    padding: '2px 6px', borderRadius: '10px', flexShrink: 0,
+                                }}>
                                     {p.reports}!
                                 </div>
                             )}
