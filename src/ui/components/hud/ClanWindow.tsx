@@ -265,7 +265,7 @@ export const ClanWindow: React.FC = () => {
             motto: motto || 'Мы — мастера дикой природы!',
             level: 1,
             membersCount: 1,
-            maxMembers: 50,
+            maxMembers: 10,
             totalTrophies: rating,
             emblem: emblem,
             minTrophies: 0,
