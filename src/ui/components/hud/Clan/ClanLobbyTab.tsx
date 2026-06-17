@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ClanData, ClanMember, CurrencyIcon, StatBlock, PerkItem } from './ClanShared';
+import { ClanData, ClanMember, StatBlock } from './ClanShared';
 import { ClanEmblemIcon } from '../../GameIcons';
+import { useGameStore } from '../../../../store/useGameStore';
 
 interface ClanLobbyTabProps {
     colors: any;
@@ -12,7 +13,6 @@ interface ClanLobbyTabProps {
     clanLevelData: { level: number; xp: number; maxXp: number };
     members: ClanMember[];
     rating: number;
-    onDonate: () => void;
     onEditClan: () => void;
     onLeave: () => void;
 }
@@ -26,12 +26,45 @@ export const ClanLobbyTab: React.FC<ClanLobbyTabProps> = ({
     clanLevelData,
     members,
     rating,
-    onDonate,
     onEditClan,
     onLeave,
 }) => {
     const [clanMOTD, setClanMOTD] = useState('Внимание, Мастера! Завтра в 20:00 стартует Клановая Осада.');
     const [isEditingMOTD, setIsEditingMOTD] = useState(false);
+
+    // Чат клана
+    const name = useGameStore((state) => state.name);
+    const vkUser = useGameStore((state) => state.vkUser);
+    const clanMessages = useGameStore((state) => state.clanMessages) || [];
+    const addMessage = useGameStore((state) => state.addMessage);
+
+    const currentUserName = name && name !== 'Мастер' 
+        ? name 
+        : (vkUser?.firstName ? `${vkUser.firstName} ${vkUser.lastName}` : 'Воин');
+    
+    const playerMember = members.find((m) => m.name === currentUserName);
+    const playerRole = playerMember ? playerMember.role : 'MEMBER';
+    const isLeaderOrOfficer = playerRole === 'LEADER' || playerRole === 'OFFICER';
+    const onlineCount = members.filter(m => m.isOnline).length;
+
+    const [newMessageText, setNewMessageText] = useState('');
+
+    const handleSendMessage = () => {
+        if (!newMessageText.trim()) return;
+        addMessage(newMessageText.trim(), currentUserName, 'clan');
+        setNewMessageText('');
+    };
+
+    const formatTime = (ts: any) => {
+        if (!ts) return '';
+        if (typeof ts === 'string') return ts;
+        try {
+            const date = new Date(ts);
+            return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        } catch (e) {
+            return '';
+        }
+    };
 
     return (
         <motion.div
@@ -41,6 +74,16 @@ export const ClanLobbyTab: React.FC<ClanLobbyTabProps> = ({
             exit={{ opacity: 0, scale: 0.98 }}
             style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '20px' }}
         >
+            <style>{`
+                input[type=number]::-webkit-outer-spin-button,
+                input[type=number]::-webkit-inner-spin-button {
+                    -webkit-appearance: none;
+                    margin: 0;
+                }
+                input[type=number] {
+                    -moz-appearance: textfield;
+                }
+            `}</style>
             <div
                 style={{
                     display: 'flex',
@@ -97,13 +140,15 @@ export const ClanLobbyTab: React.FC<ClanLobbyTabProps> = ({
                     <div
                         style={{
                             background: 'rgba(255,255,255,0.1)',
-                            height: '10px',
-                            borderRadius: '5px',
+                            height: '18px',
+                            borderRadius: '9px',
                             marginTop: '10px',
                             position: 'relative',
                             overflow: 'hidden',
                             width: '250px',
-                            border: '1px solid rgba(255,255,255,0.1)',
+                            border: '1px solid rgba(255,255,255,0.15)',
+                            display: 'flex',
+                            alignItems: 'center',
                         }}
                     >
                         <div
@@ -119,11 +164,11 @@ export const ClanLobbyTab: React.FC<ClanLobbyTabProps> = ({
                                 position: 'absolute',
                                 width: '100%',
                                 textAlign: 'center',
-                                fontSize: '8px',
-                                top: 0,
+                                fontSize: '11px',
                                 fontWeight: 900,
                                 color: '#fff',
                                 textShadow: '1px 1px 2px #000',
+                                pointerEvents: 'none',
                             }}
                         >
                             {clanLevelData.xp} / {clanLevelData.maxXp} XP
@@ -142,7 +187,7 @@ export const ClanLobbyTab: React.FC<ClanLobbyTabProps> = ({
                     </p>
 
                     <div style={{ display: 'flex', gap: '20px' }}>
-                        <StatBlock label="ОНЛАЙН" value={`${clanData?.onlineCount || 1}/${members.length}`} />
+                        <StatBlock label="ОНЛАЙН" value={`${onlineCount}/${members.length}`} />
                         <StatBlock
                             label="ТРОФЕИ КЛАНА"
                             value={clanData?.totalTrophies?.toLocaleString() || rating.toLocaleString() || '0'}
@@ -154,64 +199,166 @@ export const ClanLobbyTab: React.FC<ClanLobbyTabProps> = ({
                     style={{
                         display: 'flex',
                         flexDirection: 'column',
-                        gap: '10px',
+                        gap: '12px',
                         alignItems: 'flex-end',
+                        justifyContent: 'center',
                     }}
                 >
-                    <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.92 }}
-                        onClick={onDonate}
-                        style={{
-                            padding: '12px 24px',
-                            background: 'linear-gradient(180deg, #4ade80 0%, #166534 100%)',
-                            border: 'none',
-                            borderRadius: '12px',
-                            color: '#fff',
-                            fontWeight: 900,
-                            cursor: 'pointer',
-                            boxShadow: '0 4px 15px rgba(74,222,128,0.2)',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '8px',
-                        }}
-                    >
-                        ВКЛАД (1000 <CurrencyIcon type="GOLD" size={16} />)
-                    </motion.button>
-                    <button
-                        onClick={onEditClan}
-                        style={{
-                            background: 'rgba(255,255,255,0.05)',
-                            border: `1px solid ${colors.border}`,
-                            color: colors.accent,
-                            padding: '6px 15px',
-                            borderRadius: '8px',
-                            fontSize: '11px',
-                            fontWeight: 800,
-                            cursor: 'pointer',
-                        }}
-                    >
-                        ⚙️ НАСТРОЙКИ
-                    </button>
-                    <button
-                        onClick={onLeave}
-                        style={{
-                            background: 'none',
-                            border: 'none',
-                            color: '#ef4444',
-                            fontSize: '12px',
-                            fontWeight: 700,
-                            cursor: 'pointer',
-                            opacity: 0.7,
-                        }}
-                    >
-                        ПОКИНУТЬ КЛАН
-                    </button>
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                        {isLeaderOrOfficer && (
+                            <button
+                                onClick={onEditClan}
+                                style={{
+                                    background: 'rgba(255,255,255,0.05)',
+                                    border: `1px solid ${colors.border}`,
+                                    color: colors.accent,
+                                    padding: '6px 12px',
+                                    borderRadius: '8px',
+                                    fontSize: '11px',
+                                    fontWeight: 800,
+                                    cursor: 'pointer',
+                                }}
+                            >
+                                ⚙️ НАСТРОЙКИ
+                            </button>
+                        )}
+                        <button
+                            onClick={onLeave}
+                            style={{
+                                background: 'none',
+                                border: 'none',
+                                color: '#ef4444',
+                                fontSize: '11px',
+                                fontWeight: 700,
+                                cursor: 'pointer',
+                                opacity: 0.75,
+                            }}
+                        >
+                            ПОКИНУТЬ КЛАН
+                        </button>
+                    </div>
                 </div>
             </div>
 
             {/* CHAT / MOTD SECTION */}
-            <div style={{ flex: 1, display: 'flex', gap: '20px' }}>
+            <div style={{ flex: 1, display: 'flex', gap: '20px', minHeight: 0 }}>
+                {/* CLAN CHAT PANEL */}
+                <div
+                    style={{
+                        flex: 1.8,
+                        background: colors.card,
+                        borderRadius: '15px',
+                        border: `1px solid ${colors.border}`,
+                        padding: '20px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'space-between',
+                        minHeight: '280px',
+                    }}
+                >
+                    <div style={{ fontSize: '12px', fontWeight: 800, color: colors.accent, textTransform: 'uppercase', marginBottom: '10px' }}>
+                        Чат клана
+                    </div>
+                    
+                    {/* Messages scroll */}
+                    <div
+                        className="leaderboard-scroll"
+                        style={{
+                            flex: 1,
+                            overflowY: 'auto',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '8px',
+                            marginBottom: '12px',
+                            paddingRight: '4px',
+                            minHeight: '140px',
+                        }}
+                    >
+                        {clanMessages.map((msg: any, idx: number) => {
+                            const isUser = msg.author === currentUserName;
+                            const msgMember = members.find((m) => m.name === msg.author);
+                            const msgRole = msg.role || (msgMember ? msgMember.role : 'MEMBER');
+                            const timestampStr = formatTime(msg.timestamp);
+                            return (
+                                <div
+                                    key={msg.id || idx}
+                                    style={{
+                                        padding: '8px 12px',
+                                        background: isUser ? 'rgba(240, 192, 64, 0.06)' : 'rgba(255,255,255,0.02)',
+                                        borderRadius: '8px',
+                                        border: `1px solid ${isUser ? 'rgba(240,192,64,0.15)' : 'rgba(255,255,255,0.04)'}`,
+                                        alignSelf: 'stretch',
+                                    }}
+                                >
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2px' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                            <span style={{ fontSize: '13px', fontWeight: 800, color: isUser ? colors.accent : '#60a5fa' }}>
+                                                {msg.author}
+                                            </span>
+                                            <span style={{
+                                                fontSize: '7px',
+                                                fontWeight: 800,
+                                                padding: '1px 4px',
+                                                borderRadius: '2px',
+                                                background: msgRole === 'LEADER' ? 'rgba(240,192,64,0.15)' : msgRole === 'OFFICER' ? 'rgba(59,130,246,0.15)' : 'rgba(255,255,255,0.03)',
+                                                color: msgRole === 'LEADER' ? colors.accent : msgRole === 'OFFICER' ? '#60a5fa' : 'rgba(255,255,255,0.4)',
+                                                textTransform: 'uppercase',
+                                            }}>
+                                                {msgRole === 'LEADER' ? 'Глава' : msgRole === 'OFFICER' ? 'Офицер' : 'Рядовой'}
+                                            </span>
+                                        </div>
+                                        <span style={{ fontSize: '10px', opacity: 0.4 }}>{timestampStr}</span>
+                                    </div>
+                                    <div style={{ fontSize: '13px', color: '#fff', lineHeight: '1.4' }}>{msg.text}</div>
+                                </div>
+                            );
+                        })}
+                    </div>
+
+                    {/* Chat Input */}
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                        <input
+                            type="text"
+                            placeholder="Напишите сообщение в чат клана..."
+                            value={newMessageText}
+                            onChange={(e) => setNewMessageText(e.target.value)}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter') handleSendMessage();
+                            }}
+                            style={{
+                                flex: 1,
+                                background: 'rgba(0,0,0,0.4)',
+                                border: `1.5px solid ${colors.border}`,
+                                borderRadius: '10px',
+                                color: '#fff',
+                                padding: '10px 14px',
+                                outline: 'none',
+                                fontSize: '13px',
+                                fontWeight: 500,
+                                transition: 'border-color 0.2s',
+                            }}
+                            onFocus={(e) => e.target.style.borderColor = colors.accent}
+                            onBlur={(e) => e.target.style.borderColor = colors.border}
+                        />
+                        <button
+                            onClick={handleSendMessage}
+                            style={{
+                                padding: '10px 16px',
+                                background: 'linear-gradient(180deg, #f0c040 0%, #a88020 100%)',
+                                border: 'none',
+                                borderRadius: '10px',
+                                color: '#000',
+                                fontWeight: 900,
+                                fontSize: '12px',
+                                cursor: 'pointer',
+                            }}
+                        >
+                            ОТПРАВИТЬ
+                        </button>
+                    </div>
+                </div>
+
+                {/* MOTD PANEL */}
                 <div
                     style={{
                         flex: 1,
@@ -222,6 +369,7 @@ export const ClanLobbyTab: React.FC<ClanLobbyTabProps> = ({
                         display: 'flex',
                         flexDirection: 'column',
                         position: 'relative',
+                        minHeight: '280px',
                     }}
                 >
                     <div
@@ -242,17 +390,19 @@ export const ClanLobbyTab: React.FC<ClanLobbyTabProps> = ({
                         >
                             Сообщение дня
                         </div>
-                        <button
-                            onClick={() => setIsEditingMOTD(!isEditingMOTD)}
-                            style={{
-                                background: 'none',
-                                border: 'none',
-                                cursor: 'pointer',
-                                fontSize: '16px',
-                            }}
-                        >
-                            📝
-                        </button>
+                        {isLeaderOrOfficer && (
+                            <button
+                                onClick={() => setIsEditingMOTD(!isEditingMOTD)}
+                                style={{
+                                    background: 'none',
+                                    border: 'none',
+                                    cursor: 'pointer',
+                                    fontSize: '16px',
+                                }}
+                            >
+                                📝
+                            </button>
+                        )}
                     </div>
 
                     {isEditingMOTD ? (
@@ -271,6 +421,7 @@ export const ClanLobbyTab: React.FC<ClanLobbyTabProps> = ({
                                 resize: 'none',
                                 flex: 1,
                                 fontStyle: 'italic',
+                                fontSize: '13px',
                             }}
                         />
                     ) : (
@@ -280,37 +431,12 @@ export const ClanLobbyTab: React.FC<ClanLobbyTabProps> = ({
                                 fontStyle: 'italic',
                                 opacity: 0.9,
                                 lineHeight: '1.6',
+                                fontSize: '13px',
                             }}
                         >
                             {clanMOTD}
                         </div>
                     )}
-                </div>
-                <div
-                    style={{
-                        width: '300px',
-                        background: colors.card,
-                        borderRadius: '15px',
-                        border: `1px solid ${colors.border}`,
-                        padding: '20px',
-                    }}
-                >
-                    <div
-                        style={{
-                            fontSize: '12px',
-                            fontWeight: 800,
-                            color: colors.accent,
-                            marginBottom: '15px',
-                            textTransform: 'uppercase',
-                        }}
-                    >
-                        Бонусы уровня
-                    </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                        <PerkItem icon="💰" label="+5% Золота за бой" locked={(clanData?.level || 1) < 2} />
-                        <PerkItem icon="❤️" label="+2% HP зверей" locked={(clanData?.level || 1) < 3} />
-                        <PerkItem icon="⚡" label="-10% время сундуков" locked />
-                    </div>
                 </div>
             </div>
         </motion.div>

@@ -9,6 +9,9 @@ import { ClanCreateTab } from './Clan/ClanCreateTab';
 import { ClanLobbyTab } from './Clan/ClanLobbyTab';
 import { ClanMembersTab } from './Clan/ClanMembersTab';
 import { ClanStoreTab } from './Clan/ClanStoreTab';
+import { ClanBankTab } from './Clan/ClanBankTab';
+import { MOCK_CLANS, DEFAULT_MOCK_MEMBERS } from './Clan/ClanMockData';
+import { syncService } from '../../../services/SyncService';
 
 export const ClanWindow: React.FC = () => {
     const {
@@ -20,10 +23,15 @@ export const ClanWindow: React.FC = () => {
         rating,
         vkUser,
         avatar: playerAvatar,
+        frame: playerFrame,
         gold,
         addGold,
+        crystals,
+        addCrystals,
         clanCoins,
         addClanCoins,
+        level,
+        name: playerName,
     } = useGameStore(
         useShallow((state) => ({
             clanId: state.clanId,
@@ -34,17 +42,22 @@ export const ClanWindow: React.FC = () => {
             rating: state.rating,
             vkUser: state.vkUser,
             avatar: state.avatar,
+            frame: state.frame,
             gold: state.gold,
             addGold: state.addGold,
+            crystals: state.crystals,
+            addCrystals: state.addCrystals,
             clanCoins: state.clanCoins,
             addClanCoins: state.addClanCoins,
+            level: state.level,
+            name: state.name,
         }))
     );
 
     const isLight = uiTheme === 'LIGHT';
 
     const [view, setView] = useState<'BROWSE' | 'CREATE' | 'DASHBOARD'>(clanId ? 'DASHBOARD' : 'BROWSE');
-    const [dashboardTab, setDashboardTab] = useState<'LOBBY' | 'MEMBERS' | 'STORE'>('LOBBY');
+    const [dashboardTab, setDashboardTab] = useState<'LOBBY' | 'MEMBERS' | 'STORE' | 'BANK'>('LOBBY');
 
     const [isMobile, setIsMobile] = useState(false);
     useEffect(() => {
@@ -57,27 +70,76 @@ export const ClanWindow: React.FC = () => {
     }, []);
 
     const [members, setMembers] = useState<ClanMember[]>([]);
+    const [playerContribution, setPlayerContribution] = useState(0);
+    const [appliedClans, setAppliedClans] = useState<string[]>([]);
+
+    useEffect(() => {
+        if (clanId) {
+            const mockClan = MOCK_CLANS.find(c => c.id === clanId);
+            const activeClanData = clanData || mockClan;
+            if (activeClanData) {
+                setClanLevelData({
+                    level: activeClanData.level || 1,
+                    xp: activeClanData.xp || 0,
+                    maxXp: activeClanData.maxXp || 1000
+                });
+            } else {
+                setClanLevelData({ level: 1, xp: 0, maxXp: 1000 });
+            }
+        } else {
+            setClanLevelData({ level: 1, xp: 0, maxXp: 1000 });
+        }
+        setPlayerContribution(0);
+    }, [clanId, clanData]);
 
     useEffect(() => {
         const timer = setTimeout(() => {
             if (clanId) {
-                setMembers([
-                    {
-                        name: vkUser?.first_name || 'Воин',
-                        role: 'LEADER',
-                        trophies: rating,
-                        lastSeen: 'Online',
-                        isOnline: true,
-                        avatar: playerAvatar || '🐺',
-                        contribution: 0,
-                    },
-                ]);
+                const currentUserName = playerName && playerName !== 'Мастер'
+                    ? playerName
+                    : (vkUser?.firstName ? `${vkUser.firstName} ${vkUser.lastName}` : 'Воин');
+
+                const playerMember: ClanMember = {
+                    name: currentUserName,
+                    role: clanId.startsWith('clan_') ? 'MEMBER' : 'LEADER',
+                    trophies: rating,
+                    lastSeen: 'В сети',
+                    isOnline: true,
+                    avatar: playerAvatar || '🐺',
+                    frame: playerFrame || 'none',
+                    contribution: playerContribution,
+                    level: level || 1,
+                };
+
+                if (clanId.startsWith('clan_')) {
+                    const clan = MOCK_CLANS.find(c => c.id === clanId);
+                    const clanLeaderName = clan ? `${clan.name.split(' ')[0]}Глава` : 'Глава Клана';
+                    setMembers([
+                        {
+                            name: clanLeaderName,
+                            role: 'LEADER',
+                            trophies: clan ? Math.floor(clan.totalTrophies / 10) : 3000,
+                            lastSeen: 'В сети',
+                            isOnline: true,
+                            avatar: 'sprite:sprite-avatar avatar-pos-1',
+                            contribution: 500,
+                            level: clan ? clan.level * 2 + 5 : 20,
+                        },
+                        ...DEFAULT_MOCK_MEMBERS,
+                        playerMember,
+                    ]);
+                } else {
+                    setMembers([
+                        playerMember,
+                        ...DEFAULT_MOCK_MEMBERS,
+                    ]);
+                }
             } else {
                 setMembers([]);
             }
         }, 0);
         return () => clearTimeout(timer);
-    }, [clanId, vkUser, rating, playerAvatar]);
+    }, [clanId]); // RUN ONLY WHEN clanId CHANGES TO PERSIST MEMBERS ACTIONS
 
     const [error, setError] = useState<string | null>(null);
     const [showSuccess, setShowSuccess] = useState<boolean>(false);
@@ -89,20 +151,30 @@ export const ClanWindow: React.FC = () => {
 
     // Dashboard settings / stats
     const [isEditingClan, setIsEditingClan] = useState(false);
-    const [clanLevelData, setClanLevelData] = useState({ level: 1, xp: 250, maxXp: 1000 });
+    const [clanLevelData, setClanLevelData] = useState({ level: 1, xp: 0, maxXp: 1000 });
 
     const colors = {
-        text: isLight ? '#4a3219' : '#e8d8a8',
+        text: isLight ? '#4a3219' : '#f7ebd3',
         accent: isLight ? '#8b4513' : '#f0c040',
-        card: isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.03)',
-        border: isLight ? 'rgba(139,69,19,0.2)' : 'rgba(240,192,64,0.15)',
+        card: isLight ? 'rgba(0,0,0,0.05)' : 'rgba(20, 12, 6, 0.75)',
+        border: isLight ? 'rgba(139,69,19,0.2)' : 'rgba(240,192,64,0.25)',
         danger: '#ef4444',
         success: '#4ade80',
+    };
+
+    const handleApply = (clan: ClanData) => {
+        if (appliedClans.includes(clan.id)) return;
+        setAppliedClans((prev) => [...prev, clan.id]);
+        useGameStore.getState().showAlert(`Заявка отправлена офицерам клана ${clan.name}!`);
     };
 
     const handleJoin = (clan: ClanData) => {
         if (rating < clan.minTrophies) return;
         if (clan.type === 'CLOSED') return;
+        if (clan.type === 'INVITE') {
+            handleApply(clan);
+            return;
+        }
         joinClan(clan.id, clan);
         setView('DASHBOARD');
     };
@@ -148,19 +220,175 @@ export const ClanWindow: React.FC = () => {
         setShowSuccess(true);
     };
 
-    const handleDonate = () => {
-        if (gold < 1000) return setError('Недостаточно золота для вклада (нужно 1000)!');
-        addGold(-1000);
-        addClanCoins(100);
+    const handleDonate = (amount: number, currency: 'GOLD' | 'ALMAZ') => {
+        const store = useGameStore.getState();
+        const currentClanData = store.clanData || (clanId ? MOCK_CLANS.find(c => c.id === clanId) : null);
+        if (!currentClanData) return;
 
-        setClanLevelData((prev) => {
-            const newXp = prev.xp + 50;
-            if (newXp >= prev.maxXp) {
-                return { level: prev.level + 1, xp: newXp - prev.maxXp, maxXp: (prev.level + 1) * 1000 };
-            }
-            return { ...prev, xp: newXp };
+        const currentUserName = playerName && playerName !== 'Мастер'
+            ? playerName
+            : (vkUser?.firstName ? `${vkUser.firstName} ${vkUser.lastName}` : 'Воин');
+
+        let coinsEarned = 0;
+        let nextLevel = clanLevelData.level;
+        let nextXp = clanLevelData.xp;
+        let nextMaxXp = clanLevelData.maxXp;
+
+        const updatedClanData = { ...currentClanData };
+
+        if (currency === 'GOLD') {
+            if (gold < amount) return setError(`Недостаточно золота для вклада (нужно ${amount})!`);
+            addGold(-amount);
+            coinsEarned = Math.floor(amount / 10);
+            nextXp += Math.floor(amount / 20);
+            const prevBank = currentClanData.goldBank !== undefined ? currentClanData.goldBank : 5000;
+            updatedClanData.goldBank = prevBank + amount;
+        } else {
+            if (crystals < amount) return setError(`Недостаточно алмазов для вклада (нужно ${amount})!`);
+            addCrystals(-amount);
+            coinsEarned = amount * 2;
+            nextXp += amount; // 1 crystal = 1 XP
+            const prevCrystals = currentClanData.crystalsBank !== undefined ? currentClanData.crystalsBank : 250;
+            updatedClanData.crystalsBank = prevCrystals + amount;
+        }
+
+        if (nextXp >= nextMaxXp) {
+            nextLevel = clanLevelData.level + 1;
+            nextXp = nextXp - nextMaxXp;
+            nextMaxXp = nextLevel * 1000;
+        }
+
+        setClanLevelData({ level: nextLevel, xp: nextXp, maxXp: nextMaxXp });
+
+        const prevTransactions = currentClanData.bankTransactions || [];
+        const newTx = {
+            id: Date.now().toString(),
+            type: 'DEPOSIT',
+            currency: currency,
+            author: currentUserName,
+            amount: amount,
+            time: 'только что'
+        };
+
+        updatedClanData.level = nextLevel;
+        updatedClanData.xp = nextXp;
+        updatedClanData.maxXp = nextMaxXp;
+        updatedClanData.bankTransactions = [newTx, ...prevTransactions].slice(0, 30);
+
+        useGameStore.setState({ clanData: updatedClanData });
+
+        setPlayerContribution((prev) => {
+            const nextContribution = prev + coinsEarned;
+            setMembers((mList) =>
+                mList.map((m) => (m.name === currentUserName ? { ...m, contribution: nextContribution } : m))
+            );
+            return nextContribution;
         });
+
         setError(null);
+        syncService.debouncedSync();
+    };
+
+    const handleWithdraw = (amount: number, currency: 'GOLD' | 'ALMAZ') => {
+        const store = useGameStore.getState();
+        const currentClanData = store.clanData || (clanId ? MOCK_CLANS.find(c => c.id === clanId) : null);
+        if (!currentClanData) return;
+
+        const currentUserName = playerName && playerName !== 'Мастер'
+            ? playerName
+            : (vkUser?.firstName ? `${vkUser.firstName} ${vkUser.lastName}` : 'Воин');
+
+        const updatedClanData = { ...currentClanData };
+        const prevTransactions = currentClanData.bankTransactions || [];
+
+        if (currency === 'GOLD') {
+            const currentBank = currentClanData.goldBank !== undefined ? currentClanData.goldBank : 5000;
+            if (currentBank < amount) {
+                return setError(`В банке клана недостаточно золота (доступно ${currentBank})!`);
+            }
+            updatedClanData.goldBank = currentBank - amount;
+            addGold(amount);
+        } else {
+            const currentCrystals = currentClanData.crystalsBank !== undefined ? currentClanData.crystalsBank : 250;
+            if (currentCrystals < amount) {
+                return setError(`В банке клана недостаточно алмазов (доступно ${currentCrystals})!`);
+            }
+            updatedClanData.crystalsBank = currentCrystals - amount;
+            addCrystals(amount);
+        }
+
+        const newTx = {
+            id: Date.now().toString(),
+            type: 'WITHDRAW',
+            currency: currency,
+            author: currentUserName,
+            amount: amount,
+            time: 'только что'
+        };
+
+        updatedClanData.bankTransactions = [newTx, ...prevTransactions].slice(0, 30);
+
+        useGameStore.setState({ clanData: updatedClanData });
+        setError(null);
+        useGameStore.getState().showAlert(`Успешно снято ${amount} ${currency === 'GOLD' ? 'золота' : 'алмазов'} из казны клана!`);
+        syncService.debouncedSync();
+    };
+
+    const handleUpgradeBank = () => {
+        const store = useGameStore.getState();
+        const currentClanData = store.clanData || (clanId ? MOCK_CLANS.find(c => c.id === clanId) : null);
+        if (!currentClanData) return;
+
+        const currentLevel = currentClanData.bankLevel || 1;
+        if (currentLevel >= 5) {
+            return setError('Казна уже максимального уровня!');
+        }
+
+        const cost = currentLevel * 10000;
+        const currentBankGold = currentClanData.goldBank !== undefined ? currentClanData.goldBank : 5000;
+
+        if (currentBankGold < cost) {
+            return setError(`В казне недостаточно золота для улучшения (нужно ${cost}, доступно ${currentBankGold})!`);
+        }
+
+        const currentUserName = playerName && playerName !== 'Мастер'
+            ? playerName
+            : (vkUser?.firstName ? `${vkUser.firstName} ${vkUser.lastName}` : 'Воин');
+
+        const prevTransactions = currentClanData.bankTransactions || [];
+        const newTx = {
+            id: Date.now().toString(),
+            type: 'UPGRADE',
+            currency: 'GOLD',
+            author: currentUserName,
+            amount: cost,
+            time: 'только что'
+        };
+
+        const updated = {
+            ...currentClanData,
+            bankLevel: currentLevel + 1,
+            goldBank: currentBankGold - cost,
+            bankTransactions: [newTx, ...prevTransactions].slice(0, 30)
+        };
+
+        useGameStore.setState({ clanData: updated });
+        useGameStore.getState().showAlert(`Казна успешно улучшена до уровня ${currentLevel + 1}!`);
+        setError(null);
+        syncService.debouncedSync();
+    };
+
+    const handleToggleOfficersWithdraw = (enabled: boolean) => {
+        const store = useGameStore.getState();
+        const currentClanData = store.clanData || (clanId ? MOCK_CLANS.find(c => c.id === clanId) : null);
+        if (!currentClanData) return;
+
+        const updated = {
+            ...currentClanData,
+            officersCanWithdraw: enabled
+        };
+        useGameStore.setState({ clanData: updated });
+        syncService.debouncedSync();
     };
 
     const handleBuyItem = (item: ShopItem) => {
@@ -172,6 +400,37 @@ export const ClanWindow: React.FC = () => {
 
     const handleKickMember = (memberName: string) => {
         setMembers((prev) => prev.filter((m) => m.name !== memberName));
+    };
+
+    const handlePromoteMember = (memberName: string) => {
+        setMembers((prev) =>
+            prev.map((m) => (m.name === memberName ? { ...m, role: 'OFFICER' } : m))
+        );
+    };
+
+    const handleDemoteMember = (memberName: string) => {
+        setMembers((prev) =>
+            prev.map((m) => (m.name === memberName ? { ...m, role: 'MEMBER' } : m))
+        );
+    };
+
+    const handleTransferLeadership = (memberName: string) => {
+        const currentUserName = playerName && playerName !== 'Мастер'
+            ? playerName
+            : (vkUser?.firstName ? `${vkUser.firstName} ${vkUser.lastName}` : 'Воин');
+        
+        setMembers((prev) =>
+            prev.map((m) => {
+                if (m.name === memberName) {
+                    return { ...m, role: 'LEADER' };
+                }
+                if (m.name === currentUserName) {
+                    return { ...m, role: 'OFFICER' };
+                }
+                return m;
+            })
+        );
+        useGameStore.getState().showAlert(`Вы передали руководство клана игроку ${memberName}!`);
     };
 
     return (
@@ -204,7 +463,7 @@ export const ClanWindow: React.FC = () => {
                             ? 'ПОИСК КЛАНОВ'
                             : view === 'CREATE'
                               ? 'ОСНОВАНИЕ КЛАНА'
-                              : `КЛАН: ${clanData?.name || createdClanName}`}
+                              : (clanData?.name || createdClanName)}
                     </h2>
                     {view === 'DASHBOARD' && (
                         <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
@@ -242,11 +501,19 @@ export const ClanWindow: React.FC = () => {
                             colors={colors}
                         />
                         <TabButton
+                            active={dashboardTab === 'BANK'}
+                            onClick={() => setDashboardTab('BANK')}
+                            label="КАЗНА"
+                            colors={colors}
+                        />
+                        {/* 
+                        <TabButton
                             active={dashboardTab === 'STORE'}
                             onClick={() => setDashboardTab('STORE')}
                             label="МАГАЗИН"
                             colors={colors}
                         />
+                        */}
                     </div>
                 )}
             </div>
@@ -257,9 +524,9 @@ export const ClanWindow: React.FC = () => {
                 dragElastic={0.15}
                 onDragEnd={(_, info) => {
                     if (!isMobile || view !== 'DASHBOARD') return;
-                    const TABS = ['LOBBY', 'MEMBERS', 'STORE'] as const;
+                    const TABS = ['LOBBY', 'MEMBERS', 'BANK'] as const;
                     const swipeThreshold = 50;
-                    const currentIndex = TABS.indexOf(dashboardTab);
+                    const currentIndex = TABS.indexOf(dashboardTab as any);
                     if (info.offset.x < -swipeThreshold) {
                         if (currentIndex < TABS.length - 1) {
                             setDashboardTab(TABS[currentIndex + 1]);
@@ -276,6 +543,7 @@ export const ClanWindow: React.FC = () => {
                     flexDirection: 'column',
                     overflow: 'hidden',
                     touchAction: isMobile && view === 'DASHBOARD' ? 'pan-y' : 'auto',
+                    minHeight: 0,
                 }}
             >
                 <AnimatePresence mode="wait">
@@ -288,6 +556,8 @@ export const ClanWindow: React.FC = () => {
                                 setError(null);
                                 setView('CREATE');
                             }}
+                            appliedClans={appliedClans}
+                            onApply={handleApply}
                         />
                     )}
 
@@ -311,9 +581,32 @@ export const ClanWindow: React.FC = () => {
                             clanLevelData={clanLevelData}
                             members={members}
                             rating={rating}
-                            onDonate={handleDonate}
                             onEditClan={() => setIsEditingClan(true)}
                             onLeave={handleLeave}
+                        />
+                    )}
+
+                    {view === 'DASHBOARD' && dashboardTab === 'BANK' && (
+                        <ClanBankTab
+                            colors={colors}
+                            clanData={clanData}
+                            clanLevelData={clanLevelData}
+                            members={members}
+                            gold={gold}
+                            crystals={crystals}
+                            playerRole={(() => {
+                                const currentUserName = playerName && playerName !== 'Мастер'
+                                    ? playerName
+                                    : (vkUser?.firstName ? `${vkUser.firstName} ${vkUser.lastName}` : 'Воин');
+                                const playerMember = members.find((m) => m.name === currentUserName);
+                                return playerMember ? playerMember.role : (clanId?.startsWith('clan_') ? 'MEMBER' : 'LEADER');
+                            })()}
+                            onDonate={handleDonate}
+                            onWithdraw={handleWithdraw}
+                            onUpgradeBank={handleUpgradeBank}
+                            onToggleOfficersWithdraw={handleToggleOfficersWithdraw}
+                            error={error}
+                            setError={setError}
                         />
                     )}
 
@@ -323,6 +616,9 @@ export const ClanWindow: React.FC = () => {
                             members={members}
                             isLight={isLight}
                             onKickMember={handleKickMember}
+                            onPromoteMember={handlePromoteMember}
+                            onDemoteMember={handleDemoteMember}
+                            onTransferLeadership={handleTransferLeadership}
                         />
                     )}
 

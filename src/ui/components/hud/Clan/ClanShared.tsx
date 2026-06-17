@@ -10,7 +10,9 @@ export interface ClanMember {
     lastSeen: string;
     isOnline: boolean;
     avatar: string;
+    frame?: string;
     contribution: number; // Вклад за неделю
+    level?: number;
 }
 
 export interface ClanData {
@@ -27,6 +29,13 @@ export interface ClanData {
     onlineCount: number;
     xp: number;
     maxXp: number;
+    tag?: string;
+    bonus?: string;
+    goldBank?: number;
+    crystalsBank?: number;
+    bankLevel?: number;
+    officersCanWithdraw?: boolean;
+    bankTransactions?: any[];
 }
 
 export interface ShopItem {
@@ -38,7 +47,8 @@ export interface ShopItem {
     rarity: 'COMMON' | 'RARE' | 'EPIC' | 'LEGENDARY';
 }
 
-export const MOCK_CLANS: ClanData[] = [];
+import { MOCK_CLANS } from './ClanMockData';
+export { MOCK_CLANS };
 
 export const SHOP_ITEMS: ShopItem[] = [
     {
