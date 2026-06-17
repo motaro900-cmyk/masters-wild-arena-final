@@ -2,10 +2,54 @@ import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ClanData, MOCK_CLANS, StatItem } from './ClanShared';
 import { ClanEmblemIcon } from '../../GameIcons';
-import { useGameStore } from '../../../../store/useGameStore';
 import { resolveAssetPath } from '../../../../utils/assetPath';
 import { AssetsMap } from '../../../../configs/AssetsMap';
 import { ClanInspectModal } from './ClanInspectModal';
+
+interface CustomCheckboxProps {
+    checked: boolean;
+    onChange: (checked: boolean) => void;
+    label: string;
+    colors: any;
+}
+
+const CustomCheckbox: React.FC<CustomCheckboxProps> = ({ checked, onChange, label, colors }) => {
+    return (
+        <div
+            onClick={() => onChange(!checked)}
+            style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                cursor: 'pointer',
+                fontSize: '13px',
+                userSelect: 'none',
+                fontWeight: 600,
+                color: '#fff',
+            }}
+        >
+            <div
+                style={{
+                    width: '16px',
+                    height: '16px',
+                    borderRadius: '4px',
+                    border: `1.5px solid ${checked ? colors.accent : 'rgba(255, 255, 255, 0.2)'}`,
+                    background: checked ? colors.accent : 'rgba(0,0,0,0.4)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '10px',
+                    color: '#000',
+                    fontWeight: 900,
+                    transition: 'all 0.15s ease',
+                }}
+            >
+                {checked && '✓'}
+            </div>
+            <span>{label}</span>
+        </div>
+    );
+};
 
 interface ClanCardProps {
     clan: ClanData;
@@ -249,19 +293,7 @@ export const ClanBrowseTab: React.FC<ClanBrowseTabProps> = ({
         });
     }, [searchQuery, sortBy, hideFull, onlyOpen, compatibleTrophies, playerTrophies]);
 
-    const handleQuickJoin = () => {
-        // Находим лучший подходящий открытый клан
-        const bestClan = MOCK_CLANS.find(
-            (c) => c.type === 'OPEN' && c.membersCount < c.maxMembers && playerTrophies >= c.minTrophies
-        );
 
-        if (bestClan) {
-            onJoin(bestClan);
-            useGameStore.getState().showAlert(`Успешное вступление в клан ${bestClan.name}!`);
-        } else {
-            useGameStore.getState().showAlert("Не найдено подходящих открытых кланов для быстрого вступления.");
-        }
-    };
 
     return (
         <motion.div
@@ -431,77 +463,28 @@ export const ClanBrowseTab: React.FC<ClanBrowseTabProps> = ({
                 </motion.button>
             </div>
 
-            {/* Ряд с интерактивными фильтрами и кнопкой Быстрого Вступления */}
+            {/* Ряд с интерактивными фильтрами */}
             <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap', alignItems: 'center', padding: '0 4px' }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px', userSelect: 'none', fontWeight: 600 }}>
-                    <input 
-                        type="checkbox" 
-                        checked={hideFull} 
-                        onChange={(e) => setHideFull(e.target.checked)}
-                        style={{
-                            accentColor: colors.accent,
-                            width: '16px',
-                            height: '16px',
-                            cursor: 'pointer',
-                        }}
-                    />
-                    Скрыть полные
-                </label>
+                <CustomCheckbox
+                    checked={hideFull}
+                    onChange={setHideFull}
+                    label="Скрыть полные"
+                    colors={colors}
+                />
 
-                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px', userSelect: 'none', fontWeight: 600 }}>
-                    <input 
-                        type="checkbox" 
-                        checked={onlyOpen} 
-                        onChange={(e) => setOnlyOpen(e.target.checked)}
-                        style={{
-                            accentColor: colors.accent,
-                            width: '16px',
-                            height: '16px',
-                            cursor: 'pointer',
-                        }}
-                    />
-                    Только открытые
-                </label>
+                <CustomCheckbox
+                    checked={onlyOpen}
+                    onChange={setOnlyOpen}
+                    label="Только открытые"
+                    colors={colors}
+                />
 
-                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px', userSelect: 'none', fontWeight: 600 }}>
-                    <input 
-                        type="checkbox" 
-                        checked={compatibleTrophies} 
-                        onChange={(e) => setCompatibleTrophies(e.target.checked)}
-                        style={{
-                            accentColor: colors.accent,
-                            width: '16px',
-                            height: '16px',
-                            cursor: 'pointer',
-                        }}
-                    />
-                    Подходят мне
-                </label>
-
-                <div style={{ flex: 1 }} />
-
-                <motion.button
-                    whileHover={{ scale: 1.03, boxShadow: '0 4px 12px rgba(74, 222, 128, 0.25)' }}
-                    whileTap={{ scale: 0.97 }}
-                    onClick={handleQuickJoin}
-                    style={{
-                        padding: '10px 18px',
-                        background: 'linear-gradient(180deg, #4ade80 0%, #16a34a 100%)',
-                        border: 'none',
-                        borderRadius: '10px',
-                        color: '#000',
-                        fontWeight: 900,
-                        fontSize: '12px',
-                        cursor: 'pointer',
-                        textTransform: 'uppercase',
-                        boxShadow: '0 2px 8px rgba(74, 222, 128, 0.15)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '6px',
-                    }}
-                >
-                    <span>⚡</span> БЫСТРЫЙ ВЫБОР
-                </motion.button>
+                <CustomCheckbox
+                    checked={compatibleTrophies}
+                    onChange={setCompatibleTrophies}
+                    label="Подходят мне"
+                    colors={colors}
+                />
             </div>
 
             {/* Область списка / Заглушка */}
