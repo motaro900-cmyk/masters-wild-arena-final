@@ -41,7 +41,11 @@ export const createChatSlice = (set: any, get: any) => ({
     combatLogs: [] as string[],
     leaderboard: [] as any[],
     privateMessages: [] as any[],
-    clanMessages: [] as any[],
+    clanMessages: [
+        { id: 'mock-clan-1', author: 'Алексей', role: 'OFFICER', text: 'Всем привет! Готовимся к осаде в 20:00.', timestamp: Date.now() - 3 * 60 * 1000 },
+        { id: 'mock-clan-2', author: 'Дмитрий', role: 'MEMBER', text: 'Да, я уже собрал нужные зелья и экипировку.', timestamp: Date.now() - 2 * 60 * 1000 },
+        { id: 'mock-clan-3', author: 'София', role: 'OFFICER', text: 'Отлично! Не забудьте сделать ежедневные взносы золота.', timestamp: Date.now() - 1 * 60 * 1000 },
+    ] as any[],
     lastMessageTime: 0,
     chatActiveTab: 'all' as 'all' | 'system' | 'clan' | 'private',
     chatPrivateRecipient: null as string | null,
@@ -168,7 +172,9 @@ export const createChatSlice = (set: any, get: any) => ({
         const activeHeroId = state.selectedHeroId || 'panda';
         const activeHeroLevel = state.heroes?.[activeHeroId]?.level || 1;
 
+        const msgId = `msg_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
         const newMessage: any = {
+            id: msgId,
             senderId: SyncService.getPrefixedUserId(state.vkUser, state.playerId),
             author: finalAuthor,
             avatar: finalAvatar,
@@ -189,6 +195,15 @@ export const createChatSlice = (set: any, get: any) => ({
             set({
                 messages: [...state.messages, { ...newMessage, id: Math.random().toString(36).substring(2, 11) }],
             });
+        } else if (finalType === 'clan') {
+            set((s: any) => {
+                const allClanMsgs = [...s.clanMessages, newMessage];
+                const uniqueClanMsgs = Array.from(new Map(allClanMsgs.map((m) => [m.id, m])).values());
+                return {
+                    clanMessages: uniqueClanMsgs.sort((a: any, b: any) => a.timestamp - b.timestamp).slice(-100),
+                };
+            });
+            await syncService.sendChatMessage(newMessage);
         } else if (finalType === 'private') {
             const userId = SyncService.getPrefixedUserId(state.vkUser, state.playerId);
             if (userId) {
@@ -246,6 +261,13 @@ export const createChatSlice = (set: any, get: any) => ({
                 }
             }
         } else {
+            set((s: any) => {
+                const allMsgs = [...s.messages, newMessage];
+                const uniqueMsgs = Array.from(new Map(allMsgs.map((m) => [m.id, m])).values());
+                return {
+                    messages: uniqueMsgs.sort((a: any, b: any) => a.timestamp - b.timestamp).slice(-100),
+                };
+            });
             await syncService.sendChatMessage(newMessage);
         }
     },

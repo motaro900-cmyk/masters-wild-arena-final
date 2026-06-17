@@ -101,11 +101,11 @@ export const ProfileCustomizeWindow: React.FC<ProfileCustomizeWindowProps> = () 
 
     const colors = {
         text: '#f2e8c9',
-        textDim: '#eedfa0',
+        textDim: '#fbf3cf',
         accent: '#f5d37a',
         accentLight: '#ffeaad',
-        cardBg: 'rgba(25, 12, 5, 0.55)',
-        cardBorder: 'rgba(240, 192, 64, 0.22)',
+        cardBg: 'rgba(20, 10, 5, 0.82)',
+        cardBorder: 'rgba(240, 192, 64, 0.35)',
         unlockedText: '#4ade80',
         lockedText: '#f87171',
         lockedBg: 'rgba(239, 68, 68, 0.12)',

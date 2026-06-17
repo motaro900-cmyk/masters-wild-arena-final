@@ -10,8 +10,27 @@ type VkUser = {
     photo200?: string;
 };
 
+const isMobileVKApp = (): boolean => {
+    if (typeof window === 'undefined') return false;
+    const ua = navigator.userAgent.toLowerCase();
+    const hasMobileUA = ua.includes('vkapp') || ua.includes('vkwebview') || ua.includes('messenger');
+    const hasMobileBridge = 
+        (window as any).AndroidBridge !== undefined || 
+        ((window as any).webkit && (window as any).webkit.messageHandlers && (window as any).webkit.messageHandlers.VKWebAppAPI !== undefined);
+    return hasMobileUA || hasMobileBridge;
+};
+
 export const isVkMiniApp = (): boolean => {
     if (typeof window === 'undefined') return false;
+
+    const isIframe = window.self !== window.top;
+    
+    // Standalone desktop/browser launches (not inside iframe and not the VK mobile app webview)
+    // should use the mock bridge to prevent "Platform not initialized" crashes.
+    if (!isIframe && !isMobileVKApp()) {
+        return false;
+    }
+
     const search = window.location.search;
     const params = new URLSearchParams(search);
     const hasVkQuery =

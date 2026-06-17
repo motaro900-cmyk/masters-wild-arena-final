@@ -123,6 +123,12 @@ export const createClanSlice = (set: any, get: any) => ({
         })),
 
     addClanCoins: (amount: number) => set((state: any) => ({ clanCoins: state.clanCoins + amount })),
-    joinClan: (id: string, data: any) => set({ clanId: id, clanData: data }),
-    leaveClan: () => set({ clanId: null, clanData: null }),
+    joinClan: (id: string, data: any) => {
+        set({ clanId: id, clanData: data });
+        syncService.debouncedSync();
+    },
+    leaveClan: () => {
+        set({ clanId: null, clanData: null });
+        syncService.debouncedSync();
+    },
 });

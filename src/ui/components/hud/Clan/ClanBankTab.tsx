@@ -22,6 +22,7 @@ interface ClanBankTabProps {
 export const ClanBankTab: React.FC<ClanBankTabProps> = ({
     colors,
     clanData,
+    clanLevelData,
     gold,
     crystals,
     playerRole,
@@ -89,6 +90,14 @@ export const ClanBankTab: React.FC<ClanBankTabProps> = ({
 
     const hasWithdrawPermission = playerRole === 'LEADER' || (playerRole === 'OFFICER' && officersCanWithdraw);
 
+    const goldRate = 0.001 + (bankLevel - 1) * 0.001;
+    const goldHourlyIncome = Math.floor(goldBank * goldRate);
+    const goldDailyIncome = Math.floor(goldBank * goldRate * 24);
+
+    const crystalsRate = 0.0005 * bankLevel;
+    const crystalsHourlyIncome = Math.floor(crystalsBank * crystalsRate);
+    const crystalsDailyIncome = Math.floor(crystalsBank * crystalsRate * 24);
+
     // Perks definitions based on bank level
     const perks = [
         { lvl: 1, desc: 'Начальный уровень казны. Ставка: +0.1% золота / +0.05% алмазов в час.' },
@@ -134,6 +143,40 @@ export const ClanBankTab: React.FC<ClanBankTabProps> = ({
                     </div>
                 </div>
 
+                {/* Clan Level & XP Progress Card */}
+                <div
+                    style={{
+                        background: 'rgba(255, 255, 255, 0.03)',
+                        border: '1px solid rgba(255, 255, 255, 0.08)',
+                        borderRadius: '12px',
+                        padding: '12px 16px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '8px',
+                    }}
+                >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ fontSize: '12px', fontWeight: 900, color: colors.accent, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                            Уровень Клана: {clanLevelData?.level || 1}
+                        </span>
+                        <span style={{ fontSize: '11px', fontWeight: 800, color: '#4ade80' }}>
+                            {clanLevelData?.xp || 0} / {clanLevelData?.maxXp || 1000} XP
+                        </span>
+                    </div>
+                    {/* XP Progress Bar */}
+                    <div style={{ width: '100%', height: '8px', background: 'rgba(0,0,0,0.5)', borderRadius: '4px', overflow: 'hidden' }}>
+                        <div
+                            style={{
+                                width: `${Math.min(100, ((clanLevelData?.xp || 0) / (clanLevelData?.maxXp || 1000)) * 100)}%`,
+                                height: '100%',
+                                background: 'linear-gradient(90deg, #4ade80 0%, #22c55e 100%)',
+                                borderRadius: '4px',
+                                boxShadow: '0 0 8px rgba(74,222,128,0.4)',
+                            }}
+                        />
+                    </div>
+                </div>
+
                 {/* Vault Visual Card - Gold & Crystals */}
                 <div
                     style={{
@@ -161,7 +204,10 @@ export const ClanBankTab: React.FC<ClanBankTabProps> = ({
                                 </span>
                             </div>
                             <div style={{ fontSize: '10px', color: '#4ade80', fontWeight: 800, marginTop: '4px', textShadow: '0 0 4px rgba(74,222,128,0.2)' }}>
-                                +{((0.001 + (bankLevel - 1) * 0.001) * 100).toFixed(2)}% в час
+                                +{(goldRate * 100).toFixed(2)}% в час
+                            </div>
+                            <div style={{ fontSize: '10px', color: 'rgba(255, 255, 255, 0.7)', fontWeight: 800, marginTop: '2px' }}>
+                                ≈ +{goldHourlyIncome} 🪙/час • +{goldDailyIncome} 🪙/день
                             </div>
                         </div>
 
@@ -180,7 +226,10 @@ export const ClanBankTab: React.FC<ClanBankTabProps> = ({
                                 </span>
                             </div>
                             <div style={{ fontSize: '10px', color: '#60a5fa', fontWeight: 800, marginTop: '4px', textShadow: '0 0 4px rgba(96,165,250,0.2)' }}>
-                                +{(0.0005 * bankLevel * 100).toFixed(2)}% в час
+                                +{(crystalsRate * 100).toFixed(2)}% в час
+                            </div>
+                            <div style={{ fontSize: '10px', color: 'rgba(255, 255, 255, 0.7)', fontWeight: 800, marginTop: '2px' }}>
+                                ≈ +{crystalsHourlyIncome} 💎/час • +{crystalsDailyIncome} 💎/день
                             </div>
                         </div>
                     </div>
@@ -456,11 +505,11 @@ export const ClanBankTab: React.FC<ClanBankTabProps> = ({
                             ))}
                         </div>
                         {donateAmount > 0 && (
-                            <span style={{ fontSize: '10px', color: '#4ade80', fontWeight: 800 }}>
+                            <span style={{ fontSize: '10px', color: '#4ade80', fontWeight: 800, textAlign: 'right', display: 'inline-block' }}>
                                 {donateCurrency === 'GOLD' ? (
-                                    `+${Math.floor(donateAmount / 10)} монет клана • +${Math.floor(donateAmount / 20)} XP клана`
+                                    `В казну: +${donateAmount} 🪙 • Награда: +${Math.floor(donateAmount / 10)} монет клана • +${Math.floor(donateAmount / 20)} XP`
                                 ) : (
-                                    `+${donateAmount * 2} монет клана • +${donateAmount} XP клана`
+                                    `В казну: +${donateAmount} 💎 • Награда: +${donateAmount * 2} монет клана • +${donateAmount} XP`
                                 )}
                             </span>
                         )}

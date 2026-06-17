@@ -202,28 +202,44 @@ const isMobile = useGameStore(state => state.isMobile);
                 height: '100%',
                 display: 'flex',
                 flexDirection: 'column',
-                gap: isMobile ? '10px' : '16px',
-                padding: '24px',
+                gap: isMobile ? '12px' : '18px',
+                padding: isMobile ? '16px 20px' : '24px 32px',
                 boxSizing: 'border-box',
                 userSelect: 'none',
                 overflowY: 'auto',
+                fontFamily: "'Outfit', 'Nunito', sans-serif",
             }}
-            className="leaderboard-scroll"
+            className="custom-scrollbar"
         >
+            <style>{`
+                @keyframes floatCrown {
+                    0% { transform: translateY(0px) rotate(0deg); }
+                    50% { transform: translateY(-5px) rotate(2deg); }
+                    100% { transform: translateY(0px) rotate(0deg); }
+                }
+                @keyframes activePulse {
+                    0% { opacity: 0.85; filter: drop-shadow(0 0 4px rgba(240, 192, 64, 0.45)); }
+                    50% { opacity: 1; filter: drop-shadow(0 0 12px rgba(240, 192, 64, 0.85)); }
+                    100% { opacity: 0.85; filter: drop-shadow(0 0 4px rgba(240, 192, 64, 0.45)); }
+                }
+            `}</style>
+
             {/* ────────── 1. STATUS HEADER ────────── */}
             <motion.div
                 initial={{ opacity: 0, y: -8 }}
                 animate={{ opacity: 1, y: 0 }}
                 style={{
                     background: isActive
-                        ? 'linear-gradient(180deg, rgba(240,192,64,0.18) 0%, rgba(22,14,8,0.97) 100%)'
-                        : 'linear-gradient(180deg, rgba(35,24,16,0.98) 0%, rgba(14,8,4,0.98) 100%)',
-                    padding: isMobile ? '12px 14px 10px' : '22px 20px 18px',
+                        ? 'linear-gradient(135deg, rgba(88, 28, 135, 0.4) 0%, rgba(26, 12, 45, 0.98) 60%, rgba(12, 5, 20, 1) 100%)'
+                        : 'linear-gradient(135deg, rgba(30, 30, 30, 0.95) 0%, rgba(12, 12, 12, 0.99) 100%)',
+                    padding: isMobile ? '14px 18px 12px' : '24px 28px 20px',
                     borderRadius: '16px',
-                    border: isActive ? '1.5px solid rgba(240,192,64,0.65)' : '1px solid rgba(255,255,255,0.05)',
+                    border: isActive 
+                        ? '2px solid #ffd700' 
+                        : '1.5px solid rgba(255,255,255,0.08)',
                     boxShadow: isActive
-                        ? '0 0 40px rgba(240,192,64,0.16), inset 0 0 24px rgba(240,192,64,0.06)'
-                        : '0 6px 22px rgba(0,0,0,0.7)',
+                        ? '0 0 35px rgba(240, 192, 64, 0.3), inset 0 0 20px rgba(240, 192, 64, 0.15)'
+                        : '0 8px 25px rgba(0,0,0,0.85)',
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
@@ -232,7 +248,7 @@ const isMobile = useGameStore(state => state.isMobile);
                     overflow: 'hidden',
                 }}
             >
-                {/* Радиальный свет сверху */}
+                {/* Radial light shimmer for active status */}
                 {isActive && (
                     <div
                         style={{
@@ -240,38 +256,38 @@ const isMobile = useGameStore(state => state.isMobile);
                             top: 0,
                             left: 0,
                             right: 0,
-                            height: '60%',
-                            background: 'radial-gradient(ellipse at 50% 0%, rgba(240,192,64,0.22) 0%, transparent 70%)',
+                            height: '100%',
+                            background: 'radial-gradient(circle at 50% 0%, rgba(240, 192, 64, 0.35) 0%, transparent 75%)',
                             pointerEvents: 'none',
-                            animation: 'pulse 3s ease-in-out infinite alternate',
                         }}
                     />
                 )}
 
-                {/* Crown sprite */}
-                <img
+                {/* Floating crown */}
+                <motion.img
                     src={AssetsMap.UI.ICON_CROWN}
                     alt="crown"
                     style={{
-                        width: isMobile ? '32px' : '42px',
-                        height: isMobile ? '32px' : '42px',
+                        width: isMobile ? '36px' : '48px',
+                        height: isMobile ? '36px' : '48px',
                         objectFit: 'contain',
                         filter: isActive
-                            ? 'drop-shadow(0 0 10px rgba(240,192,64,0.7)) drop-shadow(0 2px 4px rgba(0,0,0,0.8))'
-                            : 'grayscale(1) brightness(0.3) drop-shadow(0 2px 4px rgba(0,0,0,0.9))',
+                            ? 'drop-shadow(0 0 14px rgba(240,192,64,0.75)) drop-shadow(0 2px 4px rgba(0,0,0,0.9))'
+                            : 'grayscale(1) brightness(0.35) drop-shadow(0 2px 4px rgba(0,0,0,0.95))',
                         zIndex: 1,
-                        transition: 'filter 0.3s ease',
+                        animation: isActive ? 'floatCrown 3s ease-in-out infinite' : 'none',
                     }}
                 />
 
                 <span
                     style={{
-                        color: isActive ? 'rgba(240,192,64,0.6)' : 'rgba(255,255,255,0.18)',
-                        fontSize: '10px',
-                        fontWeight: 700,
+                        color: isActive ? '#ffd700' : 'rgba(255, 255, 255, 0.35)',
+                        fontSize: '10.5px',
+                        fontWeight: 950,
                         textTransform: 'uppercase',
                         letterSpacing: '3px',
                         zIndex: 1,
+                        textShadow: '0 1.5px 3px rgba(0,0,0,0.95)',
                     }}
                 >
                     Текущий статус
@@ -283,20 +299,20 @@ const isMobile = useGameStore(state => state.isMobile);
                             display: 'flex',
                             flexDirection: 'column',
                             alignItems: 'center',
-                            gap: '10px',
+                            gap: '8px',
                             zIndex: 1,
                         }}
                     >
                         <span
                             style={{
-                                background: 'linear-gradient(to bottom, #fff8cc 0%, #f0c040 45%, #9a6200 100%)',
+                                background: 'linear-gradient(to bottom, #fffdf0 0%, #ffd700 45%, #b87800 100%)',
                                 WebkitBackgroundClip: 'text',
                                 WebkitTextFillColor: 'transparent',
-                                fontSize: isMobile ? '26px' : '34px',
+                                fontSize: isMobile ? '24px' : '32px',
                                 fontWeight: 950,
                                 fontFamily: "'Cinzel', serif",
-                                filter: 'drop-shadow(0 2px 10px rgba(0,0,0,0.95)) drop-shadow(0 0 16px rgba(240,192,64,0.45))',
-                                letterSpacing: '2px',
+                                filter: 'drop-shadow(0 2px 10px rgba(0,0,0,0.95))',
+                                letterSpacing: '2.5px',
                                 lineHeight: 1.1,
                             }}
                         >
@@ -307,30 +323,36 @@ const isMobile = useGameStore(state => state.isMobile);
                                 display: 'flex',
                                 alignItems: 'center',
                                 gap: '8px',
-                                background: 'rgba(0,0,0,0.6)',
-                                border: '1px solid rgba(16,185,129,0.3)',
-                                padding: '5px 18px',
+                                background: 'rgba(0,0,0,0.65)',
+                                border: '1.5px solid rgba(16,185,129,0.45)',
+                                padding: '4px 16px',
                                 borderRadius: '20px',
+                                boxShadow: '0 0 12px rgba(16,185,129,0.25)',
+                                animation: 'activePulse 2.5s infinite ease-in-out',
                             }}
                         >
                             <span
                                 style={{
-                                    width: '7px',
-                                    height: '7px',
+                                    width: '6px',
+                                    height: '6px',
                                     borderRadius: '50%',
                                     background: '#10b981',
                                     display: 'inline-block',
                                     boxShadow: '0 0 6px #10b981',
-                                    animation: 'pulse 1.5s ease-in-out infinite',
                                 }}
                             />
-                            <span style={{ color: '#d1d5db', fontSize: '13px', fontWeight: 700 }}>
+                            <span style={{ 
+                                color: '#ffffff', 
+                                fontSize: '13.5px', 
+                                fontWeight: 900,
+                                textShadow: '0 1.5px 3px #000'
+                            }}>
                                 Осталось:{' '}
                                 <span
                                     style={{
-                                        color: '#f0c040',
-                                        textShadow: '0 0 8px rgba(240,192,64,0.4)',
-                                        fontWeight: 900,
+                                        color: '#ffd700',
+                                        textShadow: '0 0 8px rgba(240,192,64,0.45)',
+                                        fontWeight: 955,
                                     }}
                                 >
                                     {daysLeft} дней
@@ -350,11 +372,11 @@ const isMobile = useGameStore(state => state.isMobile);
                     >
                         <span
                             style={{
-                                color: '#a68f7b',
-                                fontSize: isMobile ? '24px' : '32px',
-                                fontWeight: 950,
+                                color: '#dfc08a',
+                                fontSize: isMobile ? '22px' : '30px',
+                                fontWeight: 955,
                                 fontFamily: "'Cinzel', serif",
-                                letterSpacing: '1.5px',
+                                letterSpacing: '2px',
                                 lineHeight: 1.1,
                                 textShadow: '0 2px 10px rgba(0,0,0,0.98)',
                             }}
@@ -364,10 +386,12 @@ const isMobile = useGameStore(state => state.isMobile);
                         <span
                             style={{
                                 color: '#bca895',
-                                fontSize: '12px',
+                                fontSize: '13px',
                                 textAlign: 'center',
                                 lineHeight: 1.5,
-                                maxWidth: '300px',
+                                maxWidth: '420px',
+                                fontWeight: 800,
+                                textShadow: '0 1.5px 3px rgba(0,0,0,0.95)',
                             }}
                         >
                             Приобретите VIP, чтобы мгновенно активировать все бонусы!
@@ -377,134 +401,176 @@ const isMobile = useGameStore(state => state.isMobile);
             </motion.div>
 
             {/* ────────── 2. BENEFITS LIST ────────── */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 <h3
                     style={{
                         fontFamily: "'Cinzel', serif",
-                        color: '#f0c040',
-                        fontSize: '12px',
-                        fontWeight: 800,
-                        borderBottom: '1px solid rgba(240,192,64,0.15)',
+                        color: '#ffd700',
+                        fontSize: '12.5px',
+                        fontWeight: 955,
+                        borderBottom: '1px solid rgba(240,192,64,0.18)',
                         paddingBottom: '8px',
                         textAlign: 'center',
                         letterSpacing: '3px',
-                        margin: 0,
+                        margin: '6px 0 0 0',
                         textTransform: 'uppercase',
+                        textShadow: '0 2px 5px rgba(0,0,0,0.95), 0 0 4px rgba(0,0,0,0.8)',
                     }}
                 >
                     Привилегии VIP
                 </h3>
 
-                {benefits.map((b, i) => (
-                    <motion.div
-                        key={i}
-                        onMouseEnter={() => setHoveredBenefit(i)}
-                        onMouseLeave={() => setHoveredBenefit(null)}
-                        style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '12px',
-                            padding: isMobile ? '6px 10px' : '10px 14px',
-                            background:
-                                hoveredBenefit === i
-                                    ? 'linear-gradient(90deg, rgba(240,192,64,0.15) 0%, rgba(0,0,0,0.15) 100%)'
-                                    : isActive
-                                      ? 'linear-gradient(90deg, rgba(240,192,64,0.08) 0%, rgba(0,0,0,0.2) 100%)'
-                                      : 'linear-gradient(90deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%)',
-                            borderRadius: '10px',
-                            border: `1px solid ${hoveredBenefit === i ? 'rgba(240,192,64,0.32)' : 'rgba(255,255,255,0.09)'}`,
-                            borderLeft: `3px solid ${
-                                isActive
-                                    ? hoveredBenefit === i
-                                        ? '#f0c040'
-                                        : 'rgba(240,192,64,0.45)'
-                                    : hoveredBenefit === i
-                                      ? 'rgba(220,180,100,0.65)'
-                                      : 'rgba(180,140,60,0.45)'
-                            }`,
-                            transform: hoveredBenefit === i ? 'translateX(3px)' : 'translateX(0)',
-                            transition: 'all 0.2s ease',
-                            opacity: isActive ? 1 : 0.95,
-                        }}
-                    >
-                        {/* Icon */}
-                        <span
+                <div
+                    style={{
+                        display: 'grid',
+                        gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr',
+                        gap: '10px',
+                    }}
+                >
+                    {benefits.map((b, i) => (
+                        <motion.div
+                            key={i}
+                            onMouseEnter={() => setHoveredBenefit(i)}
+                            onMouseLeave={() => setHoveredBenefit(null)}
                             style={{
                                 display: 'flex',
                                 alignItems: 'center',
-                                justifyContent: 'center',
-                                flexShrink: 0,
-                                filter: isActive ? 'none' : 'grayscale(0.2) brightness(0.85)',
-                                transition: 'filter 0.2s',
+                                gap: '12px',
+                                padding: '10px 14px',
+                                background:
+                                    hoveredBenefit === i
+                                        ? 'linear-gradient(90deg, rgba(255,215,0,0.14) 0%, rgba(20,10,0,0.85) 100%)'
+                                        : 'linear-gradient(90deg, rgba(255,255,255,0.03) 0%, rgba(10,5,2,0.65) 100%)',
+                                borderRadius: '12px',
+                                border: `1.5px solid ${hoveredBenefit === i ? 'rgba(240,192,64,0.45)' : 'rgba(255,255,255,0.06)'}`,
+                                borderLeft: `3.5px solid ${
+                                    isActive
+                                        ? '#ffd700'
+                                        : hoveredBenefit === i
+                                          ? 'rgba(220,180,100,0.5)'
+                                          : 'rgba(180,140,60,0.35)'
+                                }`,
+                                transform: hoveredBenefit === i ? 'translateX(3px)' : 'translateX(0)',
+                                transition: 'all 0.2s ease',
+                                opacity: isActive ? 1 : 0.85,
+                                boxSizing: 'border-box',
                             }}
                         >
-                            {b.icon}
-                        </span>
+                            {/* Icon */}
+                            <span
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    flexShrink: 0,
+                                    filter: isActive ? 'none' : 'grayscale(0.4) brightness(0.8)',
+                                    transition: 'filter 0.2s',
+                                }}
+                            >
+                                {b.icon}
+                            </span>
 
-                        {/* Text */}
-                        <span
-                            style={{
-                                color: isActive ? '#e0cfa0' : '#e5d7bc',
-                                fontSize: isMobile ? '10px' : '11.5px',
-                                fontWeight: 700,
-                                fontFamily: "'Cinzel', serif",
-                                letterSpacing: '0.3px',
-                                flex: 1,
-                            }}
-                        >
-                            {b.text}
-                        </span>
+                            {/* Text */}
+                            <span
+                                style={{
+                                    color: isActive ? '#ffffff' : '#dfc08a',
+                                    fontSize: '11.5px',
+                                    fontWeight: 900,
+                                    fontFamily: "'Cinzel', serif",
+                                    letterSpacing: '0.5px',
+                                    flex: 1,
+                                    textShadow: '0 2px 4px rgba(0,0,0,0.95), 0 0 4px rgba(0,0,0,0.8)',
+                                }}
+                            >
+                                {b.text}
+                            </span>
 
-                        {/* Availability badge */}
-                        <span
-                            style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '4px',
-                                flexShrink: 0,
-                                fontSize: '9px',
-                                fontWeight: 900,
-                                letterSpacing: '0.8px',
-                                padding: '3px 9px 3px 7px',
-                                borderRadius: '20px',
-                                background: isActive ? 'rgba(16,185,129,0.12)' : 'rgba(90,60,20,0.65)',
-                                border: isActive
-                                    ? '1px solid rgba(16,185,129,0.28)'
-                                    : '1px solid rgba(160,110,40,0.55)',
-                                color: isActive ? '#34d399' : '#b8843a',
-                                textShadow: isActive ? '0 0 6px rgba(52,211,153,0.35)' : 'none',
-                            }}
-                        >
-                            {!isActive && <Lock size={8} color="#b8843a" style={{ flexShrink: 0 }} />}
-                            {isActive ? 'ДОСТУПНО' : 'ЗАПЕРТО'}
-                        </span>
-                    </motion.div>
-                ))}
+                            {/* Availability badge */}
+                            <span
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '4px',
+                                    flexShrink: 0,
+                                    fontSize: '9px',
+                                    fontWeight: 955,
+                                    letterSpacing: '0.8px',
+                                    padding: '3px 9px',
+                                    borderRadius: '20px',
+                                    background: isActive ? 'rgba(16,185,129,0.15)' : 'rgba(0,0,0,0.45)',
+                                    border: isActive
+                                        ? '1px solid rgba(16,185,129,0.4)'
+                                        : '1px solid rgba(255,255,255,0.06)',
+                                    color: isActive ? '#34d399' : '#8c8276',
+                                    textShadow: isActive ? '0 0 6px rgba(52,211,153,0.45)' : 'none',
+                                    fontFamily: "'Cinzel', serif",
+                                }}
+                            >
+                                {!isActive && <Lock size={9} color="#8c8276" style={{ flexShrink: 0 }} />}
+                                {isActive ? 'ДОСТУПНО' : 'ЗАПЕРТО'}
+                            </span>
+                        </motion.div>
+                    ))}
+                </div>
             </div>
 
             {/* ────────── 3. PURCHASE PACKAGES ────────── */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 <h3
                     style={{
                         fontFamily: "'Cinzel', serif",
-                        color: isActive ? 'rgba(240,192,64,0.35)' : '#f0c040',
-                        fontSize: '12px',
-                        fontWeight: 800,
-                        borderBottom: '1px solid rgba(240,192,64,0.15)',
+                        color: '#ffd700',
+                        fontSize: '12.5px',
+                        fontWeight: 955,
+                        borderBottom: '1px solid rgba(240,192,64,0.18)',
                         paddingBottom: '8px',
                         textAlign: 'center',
                         letterSpacing: '3px',
-                        margin: 0,
+                        margin: '6px 0 0 0',
                         textTransform: 'uppercase',
+                        textShadow: '0 2px 5px rgba(0,0,0,0.95), 0 0 4px rgba(0,0,0,0.8)',
                     }}
                 >
                     {isActive ? 'Продлить VIP статус' : 'Активировать VIP'}
                 </h3>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: isMobile ? '8px' : '10px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: isMobile ? '10px' : '14px' }}>
                     {vipPackages.map((pkg, i) => {
                         const isBest = pkg.days === 30;
                         const isHov = hoveredPkg === i;
+
+                        // Theme physical collectible card gradients & borders
+                        let cardBg = '';
+                        let cardBorder = '';
+                        let cardGlow = '';
+
+                        if (pkg.days === 1) { // Bronze card
+                            cardBg = isHov 
+                                ? 'linear-gradient(135deg, rgba(92, 53, 33, 0.98) 0%, rgba(35, 20, 10, 1) 100%)'
+                                : 'linear-gradient(135deg, rgba(66, 36, 20, 0.95) 0%, rgba(22, 12, 6, 0.98) 100%)';
+                            cardBorder = isHov ? '2px solid #cd7f32' : '1.5px solid rgba(205, 127, 50, 0.35)';
+                            cardGlow = isHov ? '0 8px 20px rgba(205, 127, 50, 0.22)' : '0 3px 8px rgba(0,0,0,0.45)';
+                        } else if (pkg.days === 3) { // Silver card
+                            cardBg = isHov 
+                                ? 'linear-gradient(135deg, rgba(62, 64, 70, 0.98) 0%, rgba(27, 28, 30, 1) 100%)'
+                                : 'linear-gradient(135deg, rgba(46, 48, 54, 0.95) 0%, rgba(18, 19, 21, 0.98) 100%)';
+                            cardBorder = isHov ? '2px solid #e2e2e2' : '1.5px solid rgba(192, 192, 192, 0.3)';
+                            cardGlow = isHov ? '0 8px 20px rgba(192, 192, 192, 0.16)' : '0 3px 8px rgba(0,0,0,0.45)';
+                        } else if (pkg.days === 7) { // Gold card
+                            cardBg = isHov 
+                                ? 'linear-gradient(135deg, rgba(90, 72, 28, 0.98) 0%, rgba(30, 24, 6, 1) 100%)'
+                                : 'linear-gradient(135deg, rgba(68, 54, 18, 0.95) 0%, rgba(22, 17, 4, 0.98) 100%)';
+                            cardBorder = isHov ? '2px solid #ffd700' : '1.5px solid rgba(255, 215, 0, 0.35)';
+                            cardGlow = isHov ? '0 10px 22px rgba(255, 215, 0, 0.22)' : '0 3px 8px rgba(0,0,0,0.45)';
+                        } else { // 30 days - Amethyst Royal choice
+                            cardBg = isHov 
+                                ? 'linear-gradient(135deg, rgba(90, 50, 148, 0.98) 0%, rgba(30, 12, 58, 1) 100%)'
+                                : 'linear-gradient(135deg, rgba(62, 32, 108, 0.95) 0%, rgba(20, 8, 40, 0.98) 100%)';
+                            cardBorder = isHov ? '2.5px solid #d8b4fe' : '2.5px solid rgba(168, 85, 247, 0.65)';
+                            cardGlow = isHov 
+                                ? '0 12px 30px rgba(168, 85, 247, 0.45), inset 0 1px 0 rgba(255,255,255,0.15)' 
+                                : '0 6px 20px rgba(168, 85, 247, 0.25), inset 0 1px 0 rgba(255,255,255,0.06)';
+                        }
 
                         return (
                             <button
@@ -518,31 +584,18 @@ const isMobile = useGameStore(state => state.isMobile);
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'space-between',
-                                    background: isBest
-                                        ? isHov
-                                            ? 'linear-gradient(135deg, rgba(76,52,16,0.97) 0%, rgba(36,22,6,0.99) 100%)'
-                                            : 'linear-gradient(135deg, rgba(58,40,12,0.94) 0%, rgba(26,15,4,0.97) 100%)'
-                                        : isHov
-                                          ? 'linear-gradient(135deg, rgba(46,34,24,0.93) 0%, rgba(26,16,8,0.97) 100%)'
-                                          : 'linear-gradient(135deg, rgba(34,24,16,0.87) 0%, rgba(18,10,4,0.94) 100%)',
-                                    border: isBest
-                                        ? `1.5px solid ${isHov ? '#f0c040' : 'rgba(240,192,64,0.52)'}`
-                                        : `1px solid ${isHov ? 'rgba(240,192,64,0.35)' : 'rgba(255,255,255,0.055)'}`,
-                                    borderRadius: '12px',
-                                    padding: isMobile ? '10px 12px' : '14px 16px',
+                                    background: cardBg,
+                                    border: cardBorder,
+                                    borderRadius: '14px',
+                                    padding: isMobile ? '10px 14px' : '16px 20px',
                                     cursor: 'pointer',
                                     transition: 'all 0.22s ease',
-                                    transform: isHov ? 'scale(1.03) translateY(-2px)' : 'scale(1)',
-                                    boxShadow: isBest
-                                        ? isHov
-                                            ? '0 8px 26px rgba(240,192,64,0.28), inset 0 1px 0 rgba(255,255,255,0.06)'
-                                            : '0 4px 18px rgba(240,192,64,0.14), inset 0 1px 0 rgba(255,255,255,0.03)'
-                                        : isHov
-                                          ? '0 4px 16px rgba(0,0,0,0.45)'
-                                          : '0 2px 8px rgba(0,0,0,0.32)',
+                                    transform: isHov ? 'scale(1.04) translateY(-3px) rotate(1deg)' : 'scale(1)',
+                                    boxShadow: cardGlow,
+                                    boxSizing: 'border-box',
                                 }}
                             >
-                                {/* Gold line shimmer on top of best package */}
+                                {/* Gold line shimmer on top of Best/Amethyst package */}
                                 {isBest && (
                                     <div
                                         style={{
@@ -550,9 +603,9 @@ const isMobile = useGameStore(state => state.isMobile);
                                             top: 0,
                                             left: 0,
                                             right: 0,
-                                            height: '1px',
+                                            height: '1.5px',
                                             background:
-                                                'linear-gradient(90deg, transparent 0%, rgba(240,192,64,0.6) 50%, transparent 100%)',
+                                                'linear-gradient(90deg, transparent 0%, rgba(216,180,254,0.8) 50%, transparent 100%)',
                                         }}
                                     />
                                 )}
@@ -563,20 +616,25 @@ const isMobile = useGameStore(state => state.isMobile);
                                         style={{
                                             position: 'absolute',
                                             top: '-1px',
-                                            right: '12px',
+                                            right: '14px',
                                             background: isBest
-                                                ? 'linear-gradient(135deg, #f0c040 0%, #b87800 100%)'
-                                                : 'linear-gradient(135deg, #555 0%, #333 100%)',
-                                            color: isBest ? '#1a0d00' : '#aaa',
-                                            fontSize: '8px',
-                                            fontWeight: 900,
-                                            padding: '2px 9px',
+                                                ? 'linear-gradient(135deg, #a855f7 0%, #6b21a8 100%)'
+                                                : 'linear-gradient(135deg, #ffd700 0%, #b87800 100%)',
+                                            color: isBest ? '#ffffff' : '#1c1002',
+                                            fontSize: '8.5px',
+                                            fontWeight: 955,
+                                            padding: '2px 10px',
                                             borderRadius: '0 0 8px 8px',
-                                            letterSpacing: '0.5px',
-                                            boxShadow: isBest ? '0 2px 8px rgba(240,192,64,0.35)' : 'none',
+                                            letterSpacing: '0.6px',
+                                            boxShadow: '0 2px 8px rgba(0,0,0,0.5)',
+                                            border: isBest 
+                                                ? '1px solid rgba(168,85,247,0.5)' 
+                                                : '1px solid #ffd700',
+                                            borderTop: 'none',
+                                            fontFamily: "'Cinzel', serif",
                                         }}
                                     >
-                                        {pkg.discount}
+                                        {isBest ? `${pkg.discount} ВЫБОР` : pkg.discount}
                                     </div>
                                 )}
 
@@ -585,15 +643,17 @@ const isMobile = useGameStore(state => state.isMobile);
                                     style={{
                                         fontFamily: "'Cinzel', serif",
                                         fontSize: isMobile ? '13px' : '15px',
-                                        fontWeight: 900,
-                                        letterSpacing: '0.5px',
+                                        fontWeight: 955,
+                                        letterSpacing: '1px',
                                         background: isBest
-                                            ? 'linear-gradient(to bottom, #fff8d8 0%, #f0c040 55%, #9a6200 100%)'
-                                            : 'none',
-                                        WebkitBackgroundClip: isBest ? 'text' : 'initial',
-                                        WebkitTextFillColor: isBest ? 'transparent' : 'initial',
-                                        color: isBest ? undefined : isHov ? '#e0d0b0' : '#9a8868',
-                                        filter: isBest ? 'drop-shadow(0 1px 5px rgba(0,0,0,0.85))' : 'none',
+                                            ? 'linear-gradient(to bottom, #ffffff 0%, #d8b4fe 50%, #8b5cf6 100%)'
+                                            : pkg.days === 7
+                                              ? 'linear-gradient(to bottom, #fffdf0 0%, #ffd700 55%, #c87800 100%)'
+                                              : 'none',
+                                        WebkitBackgroundClip: (isBest || pkg.days === 7) ? 'text' : 'initial',
+                                        WebkitTextFillColor: (isBest || pkg.days === 7) ? 'transparent' : 'initial',
+                                        color: (isBest || pkg.days === 7) ? undefined : isHov ? '#ffe259' : '#dfc08a',
+                                        filter: 'drop-shadow(0 2px 3px rgba(0,0,0,0.85))',
                                     }}
                                 >
                                     {pkg.label}
@@ -604,14 +664,14 @@ const isMobile = useGameStore(state => state.isMobile);
                                     style={{
                                         display: 'flex',
                                         alignItems: 'center',
-                                        gap: '5px',
-                                        background: 'rgba(0,0,0,0.52)',
-                                        padding: isMobile ? '3px 8px' : '5px 12px',
+                                        gap: '6px',
+                                        background: 'rgba(0,0,0,0.68)',
+                                        padding: '5px 12px',
                                         borderRadius: '20px',
                                         border: isBest
-                                            ? '1px solid rgba(192,132,252,0.38)'
-                                            : '1px solid rgba(255,255,255,0.055)',
-                                        boxShadow: isBest ? '0 0 10px rgba(192,132,252,0.18)' : 'none',
+                                            ? '1.5px solid rgba(168,85,247,0.45)'
+                                            : '1px solid rgba(255,255,255,0.06)',
+                                        boxShadow: isBest ? '0 0 12px rgba(168,85,247,0.25)' : 'none',
                                         flexShrink: 0,
                                     }}
                                 >
@@ -627,9 +687,10 @@ const isMobile = useGameStore(state => state.isMobile);
                                     <span
                                         style={{
                                             color: '#c084fc',
-                                            fontWeight: 900,
-                                            fontSize: isMobile ? '12.5px' : '14px',
+                                            fontWeight: 955,
+                                            fontSize: '13.5px',
                                             textShadow: '0 0 8px rgba(192,132,252,0.38)',
+                                            fontFamily: "'Cinzel', serif",
                                         }}
                                     >
                                         {pkg.price}

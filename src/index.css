@@ -31,10 +31,9 @@ html,
     -webkit-text-size-adjust: 100%;
     -moz-text-size-adjust: 100%;
     -ms-text-size-adjust: 100%;
-    text-size-adjust: 100%;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: subpixel-antialiased;
+    -moz-osx-font-smoothing: auto;
+    text-rendering: auto;
     overscroll-behavior: none;
     touch-action: pan-y;
 }
@@ -758,9 +757,9 @@ button[style*="background-image"] {
 
 /* Улучшение рендеринга и контрастности всех текстов */
 body, button, span, div, h1, h2, h3, h4, h5, h6 {
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: subpixel-antialiased;
+  -moz-osx-font-smoothing: auto;
+  text-rendering: auto;
 }
 
 /* Эффект жесткой выдавливающей тени для шрифтов на темном фоне */

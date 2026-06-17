@@ -88,10 +88,10 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
 
 
     const colors = {
-        text: '#e8d8a8',
+        text: '#f7ebd3',
         accent: '#f0c040',
-        card: 'rgba(255,255,255,0.03)',
-        border: 'rgba(240,192,64,0.15)',
+        card: 'rgba(20, 12, 6, 0.75)',
+        border: 'rgba(240,192,64,0.25)',
         danger: '#ef4444',
     };
 

@@ -283,8 +283,16 @@ export class PixiApp {
                         localStorage.setItem('forceWebGLUntilVersion', nextVersion);
                         console.log(`[PixiApp] Saved forceWebGLUntilVersion: ${nextVersion} to localStorage.`);
 
+                        // Cleanup the failed app instance
+                        try {
+                            this.pixiApp.destroy(true, { children: true, texture: false });
+                        } catch (destroyError) {
+                            console.warn('[PixiApp] Failed to destroy partially initialized WebGPU app:', destroyError);
+                        }
+
                         // Retry with webgl
                         preference = 'webgl';
+                        this.pixiApp = new PIXI.Application();
                         await this.pixiApp.init({
                             width: this.config.width,
                             height: this.config.height,

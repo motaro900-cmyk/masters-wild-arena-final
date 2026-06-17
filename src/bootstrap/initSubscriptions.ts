@@ -134,6 +134,32 @@ export const initSubscriptions = async (
                 unsubClanChat();
                 unsubClanChat = null;
             }
+
+            // Sync clanId and clanData to the local store!
+            const store = useGameStore.getState();
+            if (store.clanId !== dbClanId) {
+                import('../ui/components/hud/Clan/ClanMockData').then(({ MOCK_CLANS }) => {
+                    let resolvedClanData = null;
+                    if (dbClanId) {
+                        const mockClan = MOCK_CLANS.find((c: any) => c.id === dbClanId);
+                        if (mockClan) {
+                            resolvedClanData = mockClan;
+                        } else if (store.clanId === dbClanId) {
+                            resolvedClanData = store.clanData;
+                        }
+                    }
+                    bootController.execute({
+                        type: 'MUTATE_STATE',
+                        payload: {
+                            patch: {
+                                clanId: dbClanId,
+                                clanData: resolvedClanData
+                            }
+                        }
+                    }).catch(() => {});
+                });
+            }
+
             if (dbClanId) {
                 unsubClanChat = syncService.subscribeToClanChat(dbClanId, (messages) => {
                     bootController.execute({
@@ -254,6 +280,10 @@ export const initSubscriptions = async (
                     'ownedHeroes',
                     'energy',
                     'maxEnergy',
+                    'friends',
+                    'clanId',
+                    'clanCoins',
+                    'clanData',
                 ];
 
                 for (const field of trackedFields) {

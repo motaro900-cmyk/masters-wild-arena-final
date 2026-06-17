@@ -34,12 +34,26 @@ export const WindowManager: React.FC<WindowManagerProps> = ({
 
     return (
         <div
-            className="absolute inset-0 z-[100] pointer-events-auto bg-black/60 backdrop-blur-sm"
+            className="pointer-events-auto"
+            style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                zIndex: 100,
+                backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                backdropFilter: 'blur(4px)',
+                WebkitBackdropFilter: 'blur(4px)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+            }}
             onClick={() => setActiveWindow(null)}
         >
             <div
-                className="absolute top-[508px] left-[960px] hud-interactive"
-                style={{ transform: 'translate3d(-50%, -50%, 0)', willChange: 'transform' }}
+                className="hud-interactive"
+                style={{ position: 'relative' }}
                 onClick={(e) => e.stopPropagation()}
             >
                 <React.Suspense fallback={<WindowLoadingSpinner />}>
@@ -64,8 +78,8 @@ export const WindowManager: React.FC<WindowManagerProps> = ({
                         title="VIP СТАТУС"
                         isOpen={true}
                         onClose={() => setActiveWindow(null)}
-                        width="1000px"
-                        height="900px"
+                        width="1100px"
+                        height="800px"
                     >
                         <VIPWindow onClose={() => setActiveWindow(null)} />
                     </BaseWindow>
@@ -109,7 +123,7 @@ export const WindowManager: React.FC<WindowManagerProps> = ({
                         isOpen={true}
                         onClose={() => setActiveWindow(null)}
                         width="1100px"
-                        height="900px"
+                        height="720px"
                     >
                         <DailyGiftWindow onClose={() => setActiveWindow(null)} />
                     </BaseWindow>

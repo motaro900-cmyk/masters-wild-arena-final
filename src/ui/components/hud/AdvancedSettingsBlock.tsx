@@ -153,8 +153,8 @@ export const AdvancedSettingsBlock: React.FC<AdvancedSettingsBlockProps> = ({
 
     const colors = {
         accent: '#f0c040',
-        border: 'rgba(240,192,64,0.15)',
-        bgCard: 'rgba(255,255,255,0.02)',
+        border: 'rgba(240,192,64,0.25)',
+        bgCard: 'rgba(20, 12, 6, 0.75)',
     };
 
     const [perfStats, setPerfStats] = React.useState<{
@@ -353,9 +353,9 @@ export const AdvancedSettingsBlock: React.FC<AdvancedSettingsBlockProps> = ({
                             cursor: 'pointer',
                             transition: 'all 0.2s',
                             background: graphicsQuality === g.id
-                                ? `rgba(${g.color === '#f44336' ? '244,67,54' : g.color === '#ffeb3b' ? '255,235,59' : '76,175,80'},0.12)`
-                                : 'rgba(255,255,255,0.02)',
-                            border: `1.5px solid ${graphicsQuality === g.id ? g.color : 'rgba(255,255,255,0.05)'}`,
+                                ? `rgba(${g.color === '#f44336' ? '244,67,54' : g.color === '#ffeb3b' ? '255,235,59' : '76,175,80'},0.18)`
+                                : 'rgba(0, 0, 0, 0.45)',
+                            border: `1.5px solid ${graphicsQuality === g.id ? g.color : 'rgba(240,192,64,0.18)'}`,
                             display: 'flex',
                             flexDirection: 'column',
                             alignItems: 'center',
@@ -368,7 +368,7 @@ export const AdvancedSettingsBlock: React.FC<AdvancedSettingsBlockProps> = ({
                             fontFamily: "'Cinzel', serif",
                             fontSize: '10px',
                             fontWeight: 900,
-                            color: graphicsQuality === g.id ? g.color : 'rgba(255,255,255,0.4)',
+                            color: graphicsQuality === g.id ? g.color : '#dfc08a',
                             letterSpacing: '0.5px',
                         }}>
                             {g.label}
@@ -377,7 +377,7 @@ export const AdvancedSettingsBlock: React.FC<AdvancedSettingsBlockProps> = ({
                             {g.desc.map((line, i) => (
                                 <div key={i} style={{
                                     fontSize: '9px',
-                                    color: graphicsQuality === g.id ? 'rgba(255,255,255,0.75)' : 'rgba(255,255,255,0.2)',
+                                    color: graphicsQuality === g.id ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.55)',
                                     textAlign: 'center',
                                     lineHeight: '1.3',
                                 }}>
@@ -785,7 +785,7 @@ export const AdvancedSettingsBlock: React.FC<AdvancedSettingsBlockProps> = ({
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px 20px' }}>
                     {/* Device model */}
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px', gridColumn: 'span 2' }}>
-                        <span style={{ opacity: 0.6 }}>📱 {language === 'RU' ? 'Устройство:' : 'Device:'}</span>
+                        <span style={{ opacity: 0.9 }}>📱 {language === 'RU' ? 'Устройство:' : 'Device:'}</span>
                         <span style={{ fontWeight: 800, color: '#e0e0e0' }}>
                             {profile?.device || 'Unknown'}
                         </span>
@@ -793,7 +793,7 @@ export const AdvancedSettingsBlock: React.FC<AdvancedSettingsBlockProps> = ({
 
                     {/* OS */}
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px', gridColumn: 'span 2' }}>
-                        <span style={{ opacity: 0.6 }}>💻 {language === 'RU' ? 'Операционная система:' : 'OS:'}</span>
+                        <span style={{ opacity: 0.9 }}>💻 {language === 'RU' ? 'Операционная система:' : 'OS:'}</span>
                         <span style={{ fontWeight: 800, color: '#b0b0b0' }}>
                             {profile?.os || 'Unknown'}
                         </span>
@@ -801,7 +801,7 @@ export const AdvancedSettingsBlock: React.FC<AdvancedSettingsBlockProps> = ({
 
                     {/* Browser */}
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px', gridColumn: 'span 2' }}>
-                        <span style={{ opacity: 0.6 }}>🌐 {language === 'RU' ? 'Браузер:' : 'Browser:'}</span>
+                        <span style={{ opacity: 0.9 }}>🌐 {language === 'RU' ? 'Браузер:' : 'Browser:'}</span>
                         <span style={{ fontWeight: 800, color: '#b0b0b0' }}>
                             {profile?.browser || 'Unknown'}
                         </span>
@@ -809,7 +809,7 @@ export const AdvancedSettingsBlock: React.FC<AdvancedSettingsBlockProps> = ({
 
                     {/* GPU */}
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px', gridColumn: 'span 2' }}>
-                        <span style={{ opacity: 0.6 }}>🎮 {language === 'RU' ? 'Видеочип (GPU):' : 'GPU:'}</span>
+                        <span style={{ opacity: 0.9 }}>🎮 {language === 'RU' ? 'Видеочип (GPU):' : 'GPU:'}</span>
                         <span style={{ fontWeight: 800, color: '#b0b0b0', textAlign: 'right', fontSize: '10px', maxWidth: '300px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={profile?.gpuRenderer || ''}>
                             {profile?.gpuRenderer || 'Unknown'}
                         </span>
@@ -817,7 +817,7 @@ export const AdvancedSettingsBlock: React.FC<AdvancedSettingsBlockProps> = ({
 
                     {/* Renderer */}
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px' }}>
-                        <span style={{ opacity: 0.6 }}>⚙️ {language === 'RU' ? 'Рендерер:' : 'Renderer:'}</span>
+                        <span style={{ opacity: 0.9 }}>⚙️ {language === 'RU' ? 'Рендерер:' : 'Renderer:'}</span>
                         <span style={{ fontWeight: 800, color: colors.accent }}>
                             {profile?.renderer && profile.renderer !== 'unknown' ? profile.renderer.toUpperCase() : 'WebGL2'}
                         </span>
@@ -825,7 +825,7 @@ export const AdvancedSettingsBlock: React.FC<AdvancedSettingsBlockProps> = ({
 
                     {/* Refresh Rate */}
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px' }}>
-                        <span style={{ opacity: 0.6 }}>🔄 {language === 'RU' ? 'Экран:' : 'Screen:'}</span>
+                        <span style={{ opacity: 0.9 }}>🔄 {language === 'RU' ? 'Экран:' : 'Screen:'}</span>
                         <span style={{ fontWeight: 800, color: '#e0e0e0' }}>
                             {profile?.refreshRate || 60}Hz
                         </span>
@@ -833,7 +833,7 @@ export const AdvancedSettingsBlock: React.FC<AdvancedSettingsBlockProps> = ({
 
                     {/* FPS */}
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px' }}>
-                        <span style={{ opacity: 0.6 }}>📈 {pt.fps}</span>
+                        <span style={{ opacity: 0.9 }}>📈 {pt.fps}</span>
                         {(() => {
                             const displayFps = (activeScreen === 'BATTLE' && currentFps !== null)
                                 ? currentFps
@@ -849,14 +849,14 @@ export const AdvancedSettingsBlock: React.FC<AdvancedSettingsBlockProps> = ({
                     {/* Ping */}
                     {perfStats.ping !== null ? (
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px' }}>
-                            <span style={{ opacity: 0.6 }}>📡 {pt.ping}</span>
+                            <span style={{ opacity: 0.9 }}>📡 {pt.ping}</span>
                             <span style={{ fontWeight: 800, color: perfStats.ping < 100 ? '#4caf50' : perfStats.ping < 250 ? '#ffeb3b' : '#f44336' }}>
                                 {perfStats.ping} ms
                             </span>
                         </div>
                     ) : (
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px' }}>
-                            <span style={{ opacity: 0.6 }}>🔋 {language === 'RU' ? 'Качество:' : 'Quality:'}</span>
+                            <span style={{ opacity: 0.9 }}>🔋 {language === 'RU' ? 'Качество:' : 'Quality:'}</span>
                             <span style={{ fontWeight: 800, color: graphicsQuality === 'ULTRA' ? '#4caf50' : graphicsQuality === 'MEDIUM' ? '#ffeb3b' : '#f44336' }}>
                                 {graphicsQuality}
                             </span>
@@ -865,7 +865,7 @@ export const AdvancedSettingsBlock: React.FC<AdvancedSettingsBlockProps> = ({
 
                     {/* CPU Cores */}
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px' }}>
-                        <span style={{ opacity: 0.6 }}>🔲 {language === 'RU' ? 'Ядра CPU:' : 'CPU Cores:'}</span>
+                        <span style={{ opacity: 0.9 }}>🔲 {language === 'RU' ? 'Ядра CPU:' : 'CPU Cores:'}</span>
                         <span style={{ fontWeight: 800, color: '#e0e0e0' }}>
                             {profile?.cpuCores || 'Unknown'}
                         </span>
@@ -873,7 +873,7 @@ export const AdvancedSettingsBlock: React.FC<AdvancedSettingsBlockProps> = ({
 
                     {/* System RAM */}
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px' }}>
-                        <span style={{ opacity: 0.6 }}>💾 {language === 'RU' ? 'Память ОЗУ:' : 'System RAM:'}</span>
+                        <span style={{ opacity: 0.9 }}>💾 {language === 'RU' ? 'Память ОЗУ:' : 'System RAM:'}</span>
                         <span style={{ fontWeight: 800, color: '#e0e0e0' }}>
                             {profile?.memory || 'Unknown'}
                         </span>
@@ -884,7 +884,7 @@ export const AdvancedSettingsBlock: React.FC<AdvancedSettingsBlockProps> = ({
                 {perfStats.ramUsed !== null && perfStats.ramLimit !== null && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontSize: '11px', marginTop: '4px', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '8px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <span style={{ opacity: 0.6 }}>📦 {language === 'RU' ? 'Куча JS:' : 'JS Heap:'}</span>
+                            <span style={{ opacity: 0.9 }}>📦 {language === 'RU' ? 'Куча JS:' : 'JS Heap:'}</span>
                             <span style={{ fontWeight: 800, color: '#e0e0e0' }}>
                                 {Math.round(perfStats.ramUsed / 1024 / 1024)} MB / {Math.round(perfStats.ramLimit / 1024 / 1024)} MB
                             </span>
@@ -1003,7 +1003,7 @@ const ToggleItem: React.FC<{ label: string; icon: string; active: boolean; onTog
     >
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <span style={{ fontSize: '16px' }}>{icon}</span>
-            <span style={{ fontSize: '11px', fontWeight: 800, opacity: 0.7, maxWidth: '140px', lineHeight: '1.2' }}>
+            <span style={{ fontSize: '11px', fontWeight: 800, opacity: 0.9, maxWidth: '140px', lineHeight: '1.2' }}>
                 {label}
             </span>
         </div>

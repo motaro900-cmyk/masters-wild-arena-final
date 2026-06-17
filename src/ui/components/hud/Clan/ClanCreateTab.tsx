@@ -67,7 +67,7 @@ export const ClanCreateTab: React.FC<ClanCreateTabProps> = ({ colors, error, set
                 >
                     Основание Клана
                 </h2>
-                <p style={{ opacity: 0.7, marginTop: '5px' }}>Создайте свой союз и ведите его к славе!</p>
+                <p style={{ opacity: 0.7, marginTop: '5px' }}>Создайте свой клан и ведите его к славе!</p>
             </div>
 
             <div style={{ display: 'flex', gap: '40px' }}>

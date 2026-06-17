@@ -21,7 +21,7 @@ export const RanksListWindow: React.FC = () => {
                 boxSizing: 'border-box',
             }}
         >
-            <p style={{ color: '#c8a870', textAlign: 'center', fontStyle: 'italic', margin: '0 0 10px 0' }}>
+            <p style={{ color: '#dfc08a', textAlign: 'center', fontStyle: 'italic', margin: '0 0 10px 0' }}>
                 Побеждайте в боях, чтобы зарабатывать кубки и открывать новые ранги!
             </p>
 
@@ -49,13 +49,13 @@ export const RanksListWindow: React.FC = () => {
                                     display: 'flex',
                                     alignItems: 'center',
                                     padding: '15px 25px',
-                                    background: isCurrent ? 'rgba(240,192,64,0.15)' : 'rgba(255,255,255,0.03)',
+                                    background: isCurrent ? 'rgba(240,192,64,0.22)' : 'rgba(20, 12, 6, 0.75)',
                                     borderRadius: '12px',
                                     border: isCurrent
                                         ? '2px solid #f0c040'
                                         : isReached
-                                          ? '1px solid rgba(240,192,64,0.3)'
-                                          : '1px solid rgba(255,255,255,0.05)',
+                                          ? '1px solid rgba(240,192,64,0.35)'
+                                          : '1px solid rgba(240,192,64,0.18)',
                                     opacity: isReached ? 1 : 0.6,
                                     filter: isReached ? 'none' : 'grayscale(0.5)',
                                     position: 'relative',
@@ -110,7 +110,7 @@ export const RanksListWindow: React.FC = () => {
                                     </div>
                                     <div
                                         style={{
-                                            color: '#c8a870',
+                                            color: '#dfc08a',
                                             fontSize: '14px',
                                             fontWeight: 600,
                                             marginTop: '2px',

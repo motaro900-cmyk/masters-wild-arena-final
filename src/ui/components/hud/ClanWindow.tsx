@@ -341,6 +341,7 @@ export const ClanWindow: React.FC = () => {
         updatedClanData.bankTransactions = [newTx, ...prevTransactions].slice(0, 30);
 
         useGameStore.setState({ clanData: updatedClanData });
+        addClanCoins(coinsEarned);
 
         setPlayerContribution((prev) => {
             const nextContribution = prev + coinsEarned;

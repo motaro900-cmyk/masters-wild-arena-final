@@ -743,6 +743,7 @@ export class SyncService {
             friends: state.friends,
             clanId: state.clanId,
             clanCoins: state.clanCoins,
+            clanData: state.clanData,
             heroes: state.heroes,
             heroTalents: state.heroTalents,
             pet: state.pet,

@@ -104,7 +104,7 @@ export const BaseWindow: React.FC<BaseWindowProps> = ({
     const theme = {
         bg: isLight
             ? 'var(--panel-parchment)'
-            : 'linear-gradient(165deg, rgba(20, 13, 7, 0.98) 0%, rgba(30, 16, 7, 0.96) 50%, rgba(12, 7, 3, 0.99) 100%)',
+            : 'linear-gradient(165deg, rgba(20, 13, 7, 1) 0%, rgba(30, 16, 7, 1) 50%, rgba(12, 7, 3, 1) 100%)',
         pattern: isLight
             ? 'repeating-linear-gradient(45deg, rgba(0,0,0,0.02) 0px, rgba(0,0,0,0.02) 2px, transparent 2px, transparent 4px)'
             : 'none',
@@ -132,6 +132,8 @@ export const BaseWindow: React.FC<BaseWindowProps> = ({
                         height: height,
                         minHeight: '520px',
                         background: theme.bg,
+                        backdropFilter: 'blur(20px)',
+                        WebkitBackdropFilter: 'blur(20px)',
                         ...(theme.pattern !== 'none' && { backgroundImage: theme.pattern }),
                         border: isLight ? `4px solid ${theme.border}` : `2px solid ${theme.border}`,
                         borderRadius: '12px',
@@ -141,10 +143,6 @@ export const BaseWindow: React.FC<BaseWindowProps> = ({
                         flexDirection: 'column',
                         overflow: 'hidden',
                         pointerEvents: 'auto',
-                        willChange: 'transform, opacity',
-                        backfaceVisibility: 'hidden',
-                        WebkitBackfaceVisibility: 'hidden',
-                        transformStyle: 'preserve-3d',
                     }}
                 >
                     {/* Угловые акценты (только в темной теме) */}

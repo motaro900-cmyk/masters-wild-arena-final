@@ -26,8 +26,9 @@ export async function sendChatMessage(message: any): Promise<void> {
         if (message && typeof message.text === 'string') {
             message.text = censorText(message.text);
         }
-        const chatRef = doc(collection(db, CHAT_COLLECTION));
-        await setDoc(chatRef, { ...message, serverTimestamp: serverTimestamp() });
+        const msgId = message.id || doc(collection(db, CHAT_COLLECTION)).id;
+        const chatRef = doc(db, CHAT_COLLECTION, msgId);
+        await setDoc(chatRef, { ...message, id: msgId, serverTimestamp: serverTimestamp() });
     } catch (error) {
         console.error('[ChatService] Failed to send chat message:', error);
     }

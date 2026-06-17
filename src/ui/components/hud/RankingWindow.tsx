@@ -6,6 +6,7 @@ import { getRankInfo } from '../../../configs/RankSystem';
 import { audioService } from '../../../services/AudioService';
 import { AssetsMap } from '../../../configs/AssetsMap';
 import { resolveAvatarPath } from '../../../configs/ProfileCustomization';
+import { MOCK_CLANS, DEFAULT_MOCK_MEMBERS } from './Clan/ClanMockData';
 
 interface LeaderboardEntry {
     id: string;
@@ -33,12 +34,14 @@ export const RankingWindow: React.FC = () => {
     const selectedHeroId = useGameStore(state => state.selectedHeroId) || 'panda';
     const playerLevel = heroes[selectedHeroId]?.level || 1;
     const playerVipLevel = useGameStore(state => state.vipLevel) || 0;
+    const clanId = useGameStore(state => state.clanId);
 
     const [activeTab, setActiveTab] = React.useState<'GLOBAL' | 'CLAN' | 'FRIENDS'>('GLOBAL');
 
     const [showRewards, setShowRewards] = React.useState(false);
     const [globalLeaders, setGlobalLeaders] = React.useState<LeaderboardEntry[]>([]);
     const [friendsLeaders, setFriendsLeaders] = React.useState<LeaderboardEntry[]>([]);
+    const [clanLeaders, setClanLeaders] = React.useState<LeaderboardEntry[]>([]);
     const [isLoading, setIsLoading] = React.useState(false);
 
     // Effect for friends leaderboard loading and synchronization
@@ -121,6 +124,72 @@ export const RankingWindow: React.FC = () => {
         };
     }, [activeTab, friends, rating, playerAvatar, playerName, playerId, playerLevel, playerVipLevel, vkUser]);
 
+    // Effect for clan leaderboard
+    React.useEffect(() => {
+        if (activeTab !== 'CLAN' || !clanId) {
+            setClanLeaders([]);
+            return;
+        }
+
+        const currentUserName = playerName && playerName !== 'Мастер'
+            ? playerName
+            : (vkUser?.firstName ? `${vkUser.firstName} ${vkUser.lastName}` : 'Воин');
+
+        const playerMember: LeaderboardEntry = {
+            id: playerId || 'me',
+            rank: 0,
+            name: currentUserName,
+            level: playerLevel,
+            trophies: rating,
+            avatar: resolveAvatarPath(vkUser?.photo_200 || vkUser?.photo || playerAvatar),
+            change: 'stable',
+            isMe: true,
+            vipLevel: playerVipLevel,
+        };
+
+        let membersList: any[] = [];
+        if (clanId.startsWith('clan_')) {
+            const clan = MOCK_CLANS.find(c => c.id === clanId);
+            const clanLeaderName = clan ? `${clan.name.split(' ')[0]}Глава` : 'Глава Клана';
+            const clanLeaderEntry = {
+                id: 'clan_leader',
+                name: clanLeaderName,
+                level: clan ? clan.level * 2 + 5 : 20,
+                trophies: clan ? Math.floor(clan.totalTrophies / 10) : 3000,
+                avatar: 'sprite:sprite-avatar avatar-pos-1',
+                contribution: 500,
+            };
+            membersList = [clanLeaderEntry, ...DEFAULT_MOCK_MEMBERS, playerMember];
+        } else {
+            membersList = [playerMember, ...DEFAULT_MOCK_MEMBERS];
+        }
+
+        const mapped: LeaderboardEntry[] = membersList.map((m: any, idx: number) => {
+            const isMe = m.id === playerId || m.name === currentUserName;
+            return {
+                id: m.id || `clan_member_${idx}`,
+                rank: 0,
+                name: m.name,
+                level: m.level || 1,
+                trophies: m.trophies || 0,
+                avatar: resolveAvatarPath(m.avatar),
+                change: 'stable' as const,
+                isMe,
+                vipLevel: isMe ? playerVipLevel : 0,
+            };
+        });
+
+        // Sort by trophies descending
+        const sorted = mapped
+            .sort((a, b) => b.trophies - a.trophies)
+            .map((entry, index) => ({
+                ...entry,
+                rank: index + 1,
+            }));
+
+        setClanLeaders(sorted);
+    }, [activeTab, clanId, rating, playerAvatar, playerName, playerId, playerLevel, playerVipLevel, vkUser]);
+
     const scrollRef = React.useRef<HTMLDivElement>(null);
 
     const [isMobile, setIsMobile] = React.useState(false);
@@ -135,7 +204,13 @@ export const RankingWindow: React.FC = () => {
 
     const TABS = ['GLOBAL', 'CLAN', 'FRIENDS'] as const;
 
-    const myLeaderboardEntry = globalLeaders.find((l) => l.isMe);
+    const activeLeaders = activeTab === 'GLOBAL'
+        ? globalLeaders
+        : activeTab === 'FRIENDS'
+        ? friendsLeaders
+        : clanLeaders;
+
+    const myLeaderboardEntry = activeLeaders.find((l) => l.isMe);
     const myRank = myLeaderboardEntry ? `#${myLeaderboardEntry.rank}` : '50+';
 
     React.useEffect(() => {
@@ -232,7 +307,7 @@ export const RankingWindow: React.FC = () => {
                                     : 'rgba(255,255,255,0.05)',
                             border: activeTab === tab ? 'none' : '1px solid rgba(240,192,64,0.3)',
                             borderRadius: '8px',
-                            color: activeTab === tab ? '#000' : '#c8a870',
+                            color: activeTab === tab ? '#000' : '#dfc08a',
                             fontFamily: "'Cinzel', serif",
                             fontSize: '14px',
                             fontWeight: 800,
@@ -261,7 +336,7 @@ export const RankingWindow: React.FC = () => {
                 <div>
                     <div
                         style={{
-                            color: '#c8a870',
+                            color: '#dfc08a',
                             fontSize: '10px',
                             fontWeight: 800,
                             textTransform: 'uppercase',
@@ -370,35 +445,46 @@ export const RankingWindow: React.FC = () => {
                         ЗАГРУЗКА ЛИДЕРОВ...
                     </div>
                 ) : activeTab === 'CLAN' ? (
-                    <div
-                        style={{
-                            textAlign: 'center',
-                            padding: '100px 20px',
-                            color: '#c8a870',
-                            fontWeight: 800,
-                            fontFamily: "'Cinzel', serif",
-                            fontSize: '16px',
-                        }}
-                    >
-                        ВЫ НЕ СОСТОИТЕ В КЛАНЕ
-                        <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)', marginTop: '10px' }}>
-                            Вступите в клан, чтобы видеть рейтинг соклановцев!
+                    clanId ? (
+                        clanLeaders.map((player) => (
+                            <LeaderItem key={player.rank} player={player} onClick={() => {
+                                const setInspect = useGameStore.getState().setInspectPlayerId;
+                                if (setInspect && player.id !== 'clan_leader' && !player.id.startsWith('mock_member_')) {
+                                    setInspect(player.id);
+                                }
+                            }} />
+                        ))
+                    ) : (
+                        <div
+                            style={{
+                                textAlign: 'center',
+                                padding: '100px 20px',
+                                color: '#dfc08a',
+                                fontWeight: 800,
+                                fontFamily: "'Cinzel', serif",
+                                fontSize: '16px',
+                            }}
+                        >
+                            ВЫ НЕ СОСТОИТЕ В КЛАНЕ
+                            <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)', marginTop: '10px' }}>
+                                Вступите в клан, чтобы видеть рейтинг соклановцев!
+                            </div>
                         </div>
-                    </div>
+                    )
                 ) : activeTab === 'FRIENDS' ? (
                     friendsLeaders.length <= 1 ? (
                         <div
                             style={{
                                 textAlign: 'center',
                                 padding: '100px 20px',
-                                color: '#c8a870',
+                                color: '#dfc08a',
                                 fontWeight: 800,
                                 fontFamily: "'Cinzel', serif",
                                 fontSize: '16px',
                             }}
                         >
                             У ВАС НЕТ ДРУЗЕЙ В ИГРЕ
-                            <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)', marginTop: '10px' }}>
+                            <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)', marginTop: '10px' }}>
                                 Пригласите друзей, чтобы соревноваться с ними!
                             </div>
                         </div>
@@ -768,11 +854,11 @@ export const RankingWindow: React.FC = () => {
 const LeaderItem: React.FC<{ player: LeaderboardEntry; onClick: () => void }> = ({ player, onClick }) => {
     const isTop3 = player.rank <= 3;
     const rankColor =
-        player.rank === 1 ? '#FFD700' : player.rank === 2 ? '#C0C0C0' : player.rank === 3 ? '#CD7F32' : '#c8a870';
+        player.rank === 1 ? '#FFD700' : player.rank === 2 ? '#C0C0C0' : player.rank === 3 ? '#CD7F32' : '#dfc08a';
 
     return (
         <motion.div
-            whileHover={{ x: 5, backgroundColor: 'rgba(240,192,64,0.15)' }}
+            whileHover={{ x: 5, backgroundColor: 'rgba(240,192,64,0.22)' }}
             whileTap={{ scale: 0.98 }}
             onClick={onClick}
             style={{
@@ -781,12 +867,12 @@ const LeaderItem: React.FC<{ player: LeaderboardEntry; onClick: () => void }> = 
                 padding: '12px 20px',
                 background:
                     player.rank === 1
-                        ? 'linear-gradient(90deg, rgba(240,192,64,0.15) 0%, rgba(240,192,64,0.05) 100%)'
+                        ? 'linear-gradient(90deg, rgba(240,192,64,0.2) 0%, rgba(240,192,64,0.08) 100%)'
                         : player.isMe
-                          ? 'rgba(240,192,64,0.1)'
-                          : 'rgba(255,255,255,0.03)',
+                          ? 'rgba(240,192,64,0.18)'
+                          : 'rgba(20, 12, 6, 0.75)',
                 borderRadius: '10px',
-                border: player.isMe ? '1px solid #f0c040' : '1px solid rgba(240,192,64,0.1)',
+                border: player.isMe ? '1.5px solid #f0c040' : '1px solid rgba(240,192,64,0.22)',
                 transition: 'all 0.2s ease',
                 position: 'relative',
                 cursor: 'pointer',
@@ -921,7 +1007,7 @@ const LeaderItem: React.FC<{ player: LeaderboardEntry; onClick: () => void }> = 
                     )}
                     {player.isMe && <span style={{ fontSize: '12px', opacity: 0.7 }}>(ВЫ)</span>}
                 </div>
-                <div style={{ color: '#c8a870', fontSize: '12px' }}>Уровень {player.level}</div>
+                <div style={{ color: '#dfc08a', fontSize: '12px', fontWeight: 600 }}>Уровень {player.level}</div>
             </div>
 
             {/* ЛИГА */}
