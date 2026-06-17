@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useGameStore } from '../../../../store/useGameStore';
 import { ITEMS_DATABASE } from '../../../../game/configs/ItemsConfig';
+import { syncService } from '../../../../services/SyncService';
 import { audioService } from '../../../../services/AudioService';
 import { AssetsMap } from '../../../../configs/AssetsMap';
 import { getRankInfo } from '../../../../configs/RankSystem';
+import { ServerPlayersList } from './components/ServerPlayersList';
+import { AdminSpectatorModal } from './AdminSpectatorModal';
 import {
-    contentGrid,
+    RealPlayer,
     Section,
     editRow,
     inputStyle,
@@ -14,11 +17,11 @@ import {
     bigBtnStyle,
     btnStyle,
     ToggleRow,
+    statLabel,
+    statBox,
 } from './AdminShared';
 
 // ─── Local style helpers ───────────────────────────────────────────────────────
-
-/** Серая подсказка под блоком */
 const hint = (text: string) => (
     <div style={{
         fontSize: '10px',
@@ -32,7 +35,6 @@ const hint = (text: string) => (
     </div>
 );
 
-/** Заголовок подсекции */
 const subTitle = (text: string) => (
     <div style={{
         fontSize: '10px',
@@ -49,7 +51,6 @@ const subTitle = (text: string) => (
     </div>
 );
 
-/** Горизонтальный разделитель */
 const Divider = () => (
     <div style={{
         width: '100%',
@@ -59,7 +60,6 @@ const Divider = () => (
     }} />
 );
 
-/** Бейдж текущего ранга */
 const RankBadge = ({ name, rating }: { name: string; rating: number }) => (
     <div style={{
         display: 'inline-flex',
@@ -82,7 +82,6 @@ const RankBadge = ({ name, rating }: { name: string; rating: number }) => (
     </div>
 );
 
-/** Кнопка быстрого изменения кубков */
 const TrophyBtn = ({ label, onClick, positive }: { label: string; onClick: () => void; positive: boolean }) => (
     <button
         onClick={onClick}
@@ -105,33 +104,6 @@ const TrophyBtn = ({ label, onClick, positive }: { label: string; onClick: () =>
     </button>
 );
 
-/** Кнопка прыжка к рангу */
-const RankJumpBtn = ({
-    label, value, currentRating, onClick,
-}: { label: string; value: number; currentRating: number; onClick: () => void }) => {
-    const active = currentRating >= value;
-    return (
-        <button
-            onClick={onClick}
-            title={`Установить кубки = ${value}`}
-            style={{
-                ...btnStyle,
-                background: active ? 'rgba(240,192,64,0.12)' : '#0d0d0d',
-                border: active ? '1px solid rgba(240,192,64,0.35)' : '1px solid #1e1e1e',
-                color: active ? '#f0c040' : 'rgba(255,255,255,0.45)',
-                fontSize: '10px',
-                padding: '8px 4px',
-                textAlign: 'center' as const,
-            }}
-        >
-            {label}
-            <br />
-            <span style={{ fontSize: '9px', opacity: 0.55 }}>{value} куб.</span>
-        </button>
-    );
-};
-
-/** Зелёная кнопка «Применить всё» */
 const BigApplyBtn = ({ onClick, flash }: { onClick: () => void; flash: boolean }) => (
     <button
         onClick={onClick}
@@ -158,474 +130,665 @@ const BigApplyBtn = ({ onClick, flash }: { onClick: () => void; flash: boolean }
     </button>
 );
 
-// ─── Main Component ────────────────────────────────────────────────────────────
-export const AdminPlayersTab: React.FC = () => {
-    const gold         = useGameStore((s) => s.gold);
-    const crystals     = useGameStore((s) => s.crystals);
-    const level        = useGameStore((s) => s.level);
-    const talentPoints = useGameStore((s) => s.talentPoints);
-    const rating       = useGameStore((s) => s.rating);
-    const activeScreen = useGameStore((s) => s.activeScreen);
-    const hasInfiniteEnergy = useGameStore((s) => s.hasInfiniteEnergy);
+const addItemToInventoryList = (inventory: any[], item: any) => {
+    const itemObj = typeof item === 'string' ? { id: item } : item;
+    const itemId = String(itemObj.id);
+    const itemConfig = ITEMS_DATABASE[itemId];
+    if (!itemConfig) return inventory;
 
-    // Fields for batch editor
-    const [customGold,     setCustomGold]     = useState(String(gold));
-    const [customCrystals, setCustomCrystals] = useState(String(crystals));
-    const [customLevel,    setCustomLevel]    = useState(String(level));
-    const [customPoints,   setCustomPoints]   = useState(String(talentPoints));
-    const [batchFlash,     setBatchFlash]     = useState(false);
+    const list = [...inventory];
+    if (itemConfig.mainTab === 'ALCHEMY') {
+        const existingIdx = list.findIndex((i: any) => String(i?.id) === itemId);
+        if (existingIdx > -1) {
+            list[existingIdx] = {
+                ...list[existingIdx],
+                amount: (list[existingIdx].amount || 1) + (itemObj.amount || 1),
+            };
+            return list;
+        }
+    }
 
-    // Fields for trophies
-    const [customRating, setCustomRating] = useState(String(rating));
-    const [trophyDelta,  setTrophyDelta]  = useState('100');
+    const newItem = {
+        ...itemObj,
+        id: itemId,
+        type: (itemConfig as any).subTab || (itemConfig as any).type || itemObj.type || 'WEAPONS',
+        rarity: itemConfig.rarity || itemObj.rarity || 'COMMON',
+        level: itemObj.level || 1,
+        amount: itemObj.amount || 1,
+        instanceId: itemObj.instanceId || `${itemId}_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+    };
+    list.push(newItem);
+    return list;
+};
 
+interface AdminPlayersTabProps {
+    selectedPlayerId: string | null;
+    onSelectPlayer: (id: string | null) => void;
+    realPlayers: RealPlayer[];
+    isLoadingPlayers: boolean;
+    refreshPlayers: () => void;
+    setMailRecipient: (id: string) => void;
+    setActiveTab: (tab: any) => void;
+}
+
+export const AdminPlayersTab: React.FC<AdminPlayersTabProps> = ({
+    selectedPlayerId,
+    onSelectPlayer,
+    realPlayers,
+    isLoadingPlayers,
+    refreshPlayers,
+    setMailRecipient,
+    setActiveTab,
+}) => {
+    const localPlayerId = useGameStore((s) => s.playerId);
+    const localVkUser = useGameStore((s) => s.vkUser);
+    const localPlayerName = useGameStore((s) => s.name);
+    const localPlayerAvatar = useGameStore((s) => s.avatar);
+    const localPlayerGold = useGameStore((s) => s.gold);
+    const localPlayerCrystals = useGameStore((s) => s.crystals);
+    const localPlayerLevel = useGameStore((s) => s.level);
+    const localPlayerRating = useGameStore((s) => s.rating);
+    const localPlayerVipLevel = useGameStore((s) => s.vipLevel);
+    const localPlayerIsVipActive = useGameStore((s) => s.isVipActive);
+    const localPlayerVipDaysRemaining = useGameStore((s) => s.vipDaysRemaining);
+    const localPlayerEnergy = useGameStore((s) => s.energy);
+    const localPlayerMaxEnergy = useGameStore((s) => s.maxEnergy);
+    const localPlayerInventory = useGameStore((s) => s.inventory);
+    const localPlayerActiveScreen = useGameStore((s) => s.activeScreen);
+    const localPlayerTalentPoints = useGameStore((s) => s.talentPoints);
+    const localPlayerHasInfiniteEnergy = useGameStore((s) => s.hasInfiniteEnergy);
+
+    // Selected player state resolution
+    const getSelectedPlayerObj = (): RealPlayer | undefined => {
+        if (!selectedPlayerId) return undefined;
+        if (selectedPlayerId === localPlayerId) {
+            return {
+                id: localPlayerId,
+                vkId: localVkUser ? Number(localVkUser.id) : 0,
+                name: `${localPlayerName || 'Разработчик'} (Я)`,
+                photo: localPlayerAvatar || 'https://vk.com/images/camera_100.png',
+                status: 'ONLINE',
+                screen: localPlayerActiveScreen || 'MAP',
+                level: localPlayerLevel || 1,
+                gold: localPlayerGold || 0,
+                crystals: localPlayerCrystals || 0,
+                regDate: 'сегодня',
+                reports: 0,
+                reportLogs: [],
+                gear: {},
+                isTest: true,
+                isDev: true,
+                lastSeenTime: 'сейчас',
+                rating: localPlayerRating || 0,
+                vipLevel: localPlayerVipLevel || 0,
+                isVipActive: localPlayerIsVipActive || false,
+                vipDaysRemaining: localPlayerVipDaysRemaining || 0,
+                energy: localPlayerEnergy || 0,
+                maxEnergy: localPlayerMaxEnergy || 0,
+                inventory: localPlayerInventory || [],
+                talentPoints: localPlayerTalentPoints || 0,
+                hasInfiniteEnergy: localPlayerHasInfiniteEnergy || false,
+            };
+        }
+        return realPlayers.find((p) => p.id === selectedPlayerId);
+    };
+
+    const selectedPlayer = getSelectedPlayerObj();
+
+    // Editor field states
+    const [customGold, setCustomGold] = useState('');
+    const [customCrystals, setCustomCrystals] = useState('');
+    const [customLevel, setCustomLevel] = useState('');
+    const [customPoints, setCustomPoints] = useState('');
+    const [customRating, setCustomRating] = useState('');
+    const [trophyDelta, setTrophyDelta] = useState('100');
     const [selectedItemId, setSelectedItemId] = useState('');
+    const [batchFlash, setBatchFlash] = useState(false);
 
-    // Sync from store
+    // Moderation fields
+    const [banDuration, setBanDuration] = useState('24h');
+    const [muteDuration, setMuteDuration] = useState('1h');
+    const [modReason, setModReason] = useState('');
+    const [isSpectating, setIsSpectating] = useState(false);
+
+    // Sync input fields when player changes
     useEffect(() => {
-        const t = setTimeout(() => {
-            setCustomGold(String(gold));
-            setCustomCrystals(String(crystals));
-            setCustomLevel(String(level));
-            setCustomPoints(String(talentPoints));
-        }, 0);
-        return () => clearTimeout(t);
-    }, [gold, crystals, level, talentPoints]);
+        if (selectedPlayer) {
+            setCustomGold(String(selectedPlayer.gold));
+            setCustomCrystals(String(selectedPlayer.crystals));
+            setCustomLevel(String(selectedPlayer.level));
+            setCustomPoints(String(selectedPlayer.talentPoints || 0));
+            setCustomRating(String(selectedPlayer.rating || 0));
+        }
+    }, [selectedPlayerId, selectedPlayer?.gold, selectedPlayer?.crystals, selectedPlayer?.level, selectedPlayer?.talentPoints, selectedPlayer?.rating]);
 
-    useEffect(() => {
-        setCustomRating(String(rating));
-    }, [rating]);
+    const sfx = () => audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
 
-    // Helpers
-    const sfx  = () => audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
-    const st   = useGameStore.getState;
+    // Universal state updater
+    const handleUpdate = async (fields: any) => {
+        if (!selectedPlayerId) return;
+        sfx();
+        try {
+            // 1. If self, update local Zustand state so UI reactive binding updates instantly
+            if (selectedPlayerId === localPlayerId) {
+                const store = useGameStore.getState();
+                
+                if (fields.gold !== undefined) store.setGold(Number(fields.gold));
+                if (fields.crystals !== undefined) store.setCrystals(Number(fields.crystals));
+                if (fields.level !== undefined) store.setLevel(Number(fields.level));
+                if (fields.talentPoints !== undefined) store.setTalentPoints(Number(fields.talentPoints));
+                if (fields.rating !== undefined) store.setRating(Number(fields.rating));
+                if (fields.hasInfiniteEnergy !== undefined) store.setHasInfiniteEnergy(!!fields.hasInfiniteEnergy);
+                if (fields.inventory !== undefined) {
+                    useGameStore.setState({ inventory: fields.inventory, isSystemUpdate: true });
+                }
+                if (fields.activeScreen !== undefined) {
+                    store.setScreen(fields.activeScreen);
+                }
+            }
+
+            // 2. Synchronize remotely to Firestore
+            await syncService.updateRemotePlayerData(selectedPlayerId, fields);
+            useGameStore.getState().showAlert('Изменения успешно применены! ✅');
+            refreshPlayers();
+        } catch (err) {
+            console.error('[AdminPlayersTab] Update failed:', err);
+            useGameStore.getState().showAlert('Не удалось сохранить изменения ❌');
+        }
+    };
 
     const applyAll = () => {
-        sfx();
-        if (customGold     !== '') st().setGold(Math.max(0, Number(customGold)));
-        if (customCrystals !== '') st().setCrystals(Math.max(0, Number(customCrystals)));
-        if (customLevel    !== '') st().setLevel(Math.max(1, Number(customLevel)));
-        if (customPoints   !== '') st().setTalentPoints(Math.max(0, Number(customPoints)));
+        handleUpdate({
+            gold: Number(customGold),
+            crystals: Number(customCrystals),
+            level: Number(customLevel),
+            talentPoints: Number(customPoints)
+        });
         setBatchFlash(true);
         setTimeout(() => setBatchFlash(false), 600);
     };
 
-    const applyRating  = () => { sfx(); st().setRating(Math.max(0, Number(customRating))); };
-    const changeRating = (delta: number) => { sfx(); st().addRating(delta); };
-
-    const rankInfo = getRankInfo(rating);
-
     const RANK_PRESETS = [
         { label: 'Новобранец', value: 0 },
-        { label: 'Воин',       value: 400 },
-        { label: 'Ветеран',    value: 1000 },
-        { label: 'Мастер',     value: 2000 },
-        { label: 'Герой',      value: 3000 },
-        { label: 'Легенда',    value: 5000 },
+        { label: 'Воин', value: 400 },
+        { label: 'Ветеран', value: 1000 },
+        { label: 'Мастер', value: 2000 },
+        { label: 'Герой', value: 3000 },
+        { label: 'Легенда', value: 5000 },
     ];
 
-    // ─── Render ───────────────────────────────────────────────────────────────
+    const rating = selectedPlayer?.rating || 0;
+    const rankInfo = getRankInfo(rating);
+
     return (
-        <div style={contentGrid}>
+        <div
+            style={{
+                display: 'grid',
+                gridTemplateColumns: '320px 1fr',
+                gap: '20px',
+                height: 'auto',
+                minHeight: '680px',
+            }}
+        >
+            {/* Левая колонка — Список игроков */}
+            <ServerPlayersList
+                realPlayers={realPlayers}
+                isLoadingPlayers={isLoadingPlayers}
+                selectedPlayerId={selectedPlayerId}
+                onSelectPlayer={onSelectPlayer}
+                onRefresh={refreshPlayers}
+            />
 
-            {/* ══════════════════════════════════════════════════
-                КОЛОНКА 1 — РЕДАКТОР РЕСУРСОВ
-            ══════════════════════════════════════════════════ */}
-            <Section title="🪙 Редактор ресурсов — прямой ввод">
+            {/* Правая колонка — Универсальная панель управления */}
+            <div
+                className="h-auto lg:h-[700px] lg:overflow-y-auto"
+                style={{
+                    background: '#0a0a0a',
+                    border: '1px solid #222',
+                    borderRadius: '10px',
+                    padding: '20px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '20px'
+                }}
+            >
+                {selectedPlayer ? (
+                    <>
+                        {/* 1. ШАПКА ПРОФИЛЯ */}
+                        <div style={{ display: 'flex', gap: '20px', alignItems: 'center', marginBottom: '10px' }}>
+                            <img
+                                src={selectedPlayer.photo}
+                                style={{
+                                    width: '80px',
+                                    height: '80px',
+                                    borderRadius: '10px',
+                                    border: `2px solid ${selectedPlayer.id === localPlayerId ? '#f0c040' : '#222'}`,
+                                }}
+                                alt=""
+                            />
+                            <div style={{ flex: 1 }}>
+                                <h2 style={{ margin: 0, color: selectedPlayer.id === localPlayerId ? '#f0c040' : '#ffffff', fontSize: '24px' }}>
+                                    {selectedPlayer.name} {selectedPlayer.id === localPlayerId && <span style={{ fontSize: '12px', color: '#ff4d4d' }}>(Я)</span>}
+                                </h2>
+                                <div style={{ fontSize: '11px', color: '#666', fontFamily: 'monospace', marginTop: '4px' }}>
+                                    ID: {selectedPlayer.id} | VK ID: {selectedPlayer.vkId || 'Нет'}
+                                </div>
+                                <div style={{ display: 'flex', gap: '15px', marginTop: '10px' }}>
+                                    {selectedPlayer.vkId > 0 && (
+                                        <a
+                                            href={`https://vk.com/id${selectedPlayer.vkId}`}
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            style={{ fontSize: '11px', color: '#3b82f6', textDecoration: 'none', fontWeight: 'bold' }}
+                                        >
+                                            ПРОФИЛЬ ВК 🔗
+                                        </a>
+                                    )}
+                                    <button
+                                        onClick={() => setIsSpectating(true)}
+                                        style={{ background: 'none', border: 'none', color: '#60a5fa', fontSize: '11px', cursor: 'pointer', padding: 0, fontWeight: 'bold' }}
+                                    >
+                                        СМОТРЕТЬ БОЙ 👁️
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
 
-                {/* Инфо-блок */}
-                <div style={{
-                    background: 'rgba(255,255,255,0.03)',
-                    border: '1px solid rgba(255,255,255,0.07)',
-                    borderRadius: '8px',
-                    padding: '10px 14px',
-                    marginBottom: '16px',
-                    fontSize: '11px',
-                    color: 'rgba(255,255,255,0.5)',
-                    lineHeight: 1.6,
-                }}>
-                    📝 <strong style={{ color: 'rgba(255,255,255,0.7)' }}>Как пользоваться:</strong> введи нужные значения в поля ниже
-                    и нажми <strong style={{ color: '#2ecc71' }}>«ПРИМЕНИТЬ ВСЁ СРАЗУ»</strong> — изменения применятся одновременно.
-                    Либо нажимай <strong style={{ color: '#4dff4d' }}>«ОК»</strong> рядом с каждым полем отдельно.
-                </div>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px' }}>
+                            
+                            {/* СТОЛБЕЦ A: РЕДАКТОР РЕСУРСОВ */}
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                                
+                                <Section title="🪙 Баланс и Ресурсы">
+                                    {subTitle('🪙 Золото')}
+                                    {hint('Тратится на снаряжение и клановые постройки')}
+                                    <div style={editRow}>
+                                        <input
+                                            type="number"
+                                            style={inputStyle}
+                                            value={customGold}
+                                            onChange={(e) => setCustomGold(e.target.value)}
+                                        />
+                                        <button onClick={() => handleUpdate({ gold: customGold })} style={applyBtn}>ОК</button>
+                                    </div>
 
-                {/* ── Золото ── */}
-                {subTitle('🪙 Золото — основная валюта')}
-                {hint('Тратится на покупку снаряжения, улучшения и открытие героев')}
-                <div style={editRow}>
-                    <div style={{ flex: 1 }}>
-                        <input
-                            type="number"
-                            style={inputStyle}
-                            value={customGold}
-                            onChange={(e) => setCustomGold(e.target.value)}
-                            placeholder="например: 100000"
-                        />
+                                    {subTitle('💎 Алмазы')}
+                                    {hint('Премиум-валюта магазина')}
+                                    <div style={editRow}>
+                                        <input
+                                            type="number"
+                                            style={inputStyle}
+                                            value={customCrystals}
+                                            onChange={(e) => setCustomCrystals(e.target.value)}
+                                        />
+                                        <button onClick={() => handleUpdate({ crystals: customCrystals })} style={applyBtn}>ОК</button>
+                                    </div>
+
+                                    {subTitle('🌟 Уровень игрока')}
+                                    <div style={editRow}>
+                                        <input
+                                            type="number"
+                                            style={inputStyle}
+                                            value={customLevel}
+                                            onChange={(e) => setCustomLevel(e.target.value)}
+                                        />
+                                        <button onClick={() => handleUpdate({ level: customLevel })} style={applyBtn}>ОК</button>
+                                    </div>
+
+                                    {subTitle('🎯 Очки талантов')}
+                                    <div style={editRow}>
+                                        <input
+                                            type="number"
+                                            style={inputStyle}
+                                            value={customPoints}
+                                            onChange={(e) => setCustomPoints(e.target.value)}
+                                        />
+                                        <button onClick={() => handleUpdate({ talentPoints: customPoints })} style={applyBtn}>ОК</button>
+                                    </div>
+
+                                    <BigApplyBtn onClick={applyAll} flash={batchFlash} />
+                                    
+                                    <Divider />
+                                    
+                                    {subTitle('⚡ Быстрый левел-ап')}
+                                    <div style={{ display: 'flex', gap: '8px' }}>
+                                        <button onClick={() => handleUpdate({ level: selectedPlayer.level + 1 })} style={{ ...smallBtnStyle, flex: 1 }}>
+                                            LVL +1
+                                        </button>
+                                        <button onClick={() => handleUpdate({ level: selectedPlayer.level + 10 })} style={{ ...smallBtnStyle, flex: 1, color: '#f0c040' }}>
+                                            LVL +10
+                                        </button>
+                                    </div>
+                                </Section>
+
+                                <Section title="🏆 Арена и Ранг PvP">
+                                    <RankBadge name={rankInfo.name} rating={rating} />
+
+                                    {subTitle('🎯 Точное число кубков')}
+                                    <div style={editRow}>
+                                        <input
+                                            type="number"
+                                            style={inputStyle}
+                                            value={customRating}
+                                            onChange={(e) => setCustomRating(e.target.value)}
+                                        />
+                                        <button onClick={() => handleUpdate({ rating: customRating })} style={applyBtn}>ОК</button>
+                                    </div>
+
+                                    <Divider />
+
+                                    {subTitle('➕➖ Изменить на шаг')}
+                                    <input
+                                        type="number"
+                                        style={{ ...inputStyle, marginBottom: '8px' }}
+                                        value={trophyDelta}
+                                        onChange={(e) => setTrophyDelta(e.target.value)}
+                                    />
+                                    <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
+                                        <TrophyBtn
+                                            label={`− ${trophyDelta}`}
+                                            onClick={() => handleUpdate({ rating: Math.max(0, rating - Number(trophyDelta)) })}
+                                            positive={false}
+                                        />
+                                        <TrophyBtn
+                                            label={`+ ${trophyDelta}`}
+                                            onClick={() => handleUpdate({ rating: rating + Number(trophyDelta) })}
+                                            positive
+                                        />
+                                    </div>
+
+                                    {subTitle('🚀 Прыжки по пресетам')}
+                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '6px', marginBottom: '12px' }}>
+                                        {RANK_PRESETS.map((preset) => (
+                                            <button
+                                                key={preset.label}
+                                                onClick={() => handleUpdate({ rating: preset.value })}
+                                                style={{
+                                                    ...btnStyle,
+                                                    fontSize: '9px',
+                                                    padding: '6px 2px',
+                                                    borderColor: rating >= preset.value ? '#f0c040' : '#222',
+                                                    color: rating >= preset.value ? '#f0c040' : '#888'
+                                                }}
+                                            >
+                                                {preset.label}
+                                            </button>
+                                        ))}
+                                    </div>
+
+                                    <button
+                                        onClick={() => handleUpdate({ rating: 0 })}
+                                        style={{ ...bigBtnStyle, background: '#1c0808', color: '#f87171', border: '1px solid rgba(248,113,113,0.3)', fontSize: '11px', padding: '10px' }}
+                                    >
+                                        🔄 Обнулить рейтинг PvP
+                                    </button>
+                                </Section>
+
+                            </div>
+
+                            {/* СТОЛБЕЦ B: ИНВЕНТАРЬ И МОДЕРАЦИЯ */}
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+
+                                <Section title="📦 Инвентарь и Предметы">
+                                    {subTitle('Генератор предметов')}
+                                    <select
+                                        value={selectedItemId}
+                                        onChange={(e) => setSelectedItemId(e.target.value)}
+                                        style={{ ...inputStyle, marginBottom: '8px' }}
+                                    >
+                                        <option value="">— Выбрать предмет —</option>
+                                        {Object.keys(ITEMS_DATABASE).map((id) => (
+                                            <option key={id} value={id}>{id}</option>
+                                        ))}
+                                    </select>
+                                    <button
+                                        onClick={() => {
+                                            if (selectedItemId) {
+                                                const updated = addItemToInventoryList(selectedPlayer.inventory, { id: selectedItemId, level: 1 });
+                                                handleUpdate({ inventory: updated });
+                                            }
+                                        }}
+                                        style={{ ...bigBtnStyle, marginBottom: '6px', fontSize: '11px', padding: '10px 12px' }}
+                                    >
+                                        ➕ Добавить в инвентарь
+                                    </button>
+
+                                    <button
+                                        onClick={() => {
+                                            const updated = addItemToInventoryList(selectedPlayer.inventory, { id: 'season_chest', level: 1, amount: 1 });
+                                            handleUpdate({ inventory: updated });
+                                        }}
+                                        style={{ ...bigBtnStyle, marginBottom: '6px', background: '#d4af37', color: '#000', fontWeight: 'bold', fontSize: '11px', padding: '10px 12px' }}
+                                    >
+                                        🎁 Выдать сундук сезона
+                                    </button>
+
+                                    <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+                                        <button
+                                            onClick={() => {
+                                                useGameStore.getState().showConfirm('Очистить инвентарь?', () => {
+                                                    handleUpdate({ inventory: [] });
+                                                });
+                                            }}
+                                            style={{ ...btnStyle, flex: 1, background: '#2a0808', color: '#ff6b6b', fontSize: '10px', padding: '8px' }}
+                                        >
+                                            🗑️ Очистить
+                                        </button>
+                                        <button
+                                            onClick={() => {
+                                                const items = Object.keys(ITEMS_DATABASE).map((id) => ({ id, level: 1 }));
+                                                let updated = [...selectedPlayer.inventory];
+                                                items.forEach((item) => {
+                                                    updated = addItemToInventoryList(updated, item);
+                                                });
+                                                handleUpdate({ inventory: updated });
+                                            }}
+                                            style={{ ...btnStyle, flex: 1, background: '#0d0d2e', color: '#9b9bff', fontSize: '10px', padding: '8px' }}
+                                        >
+                                            🔓 Разблокировать всё
+                                        </button>
+                                    </div>
+                                </Section>
+
+                                <Section title="🛡️ Модерация и Санкции">
+                                    <input
+                                        type="text"
+                                        placeholder="Укажите причину блокировки..."
+                                        style={{ ...inputStyle, marginBottom: '10px' }}
+                                        value={modReason}
+                                        onChange={(e) => setModReason(e.target.value)}
+                                    />
+
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '10px' }}>
+                                        <div style={{ display: 'flex', gap: '4px' }}>
+                                            <select
+                                                value={banDuration}
+                                                onChange={(e) => setBanDuration(e.target.value)}
+                                                style={{ ...inputStyle, padding: '8px' }}
+                                            >
+                                                <option value="1h">1 Час</option>
+                                                <option value="24h">1 День</option>
+                                                <option value="7d">7 Дней</option>
+                                                <option value="perm">Перманент</option>
+                                            </select>
+                                            <button
+                                                onClick={() => handleUpdate({ status: 'BANNED', banReason: modReason, banUntil: banDuration })}
+                                                style={{ ...btnStyle, background: '#431b1b', color: '#ff4d4d', padding: '0 10px', fontSize: '11px' }}
+                                            >
+                                                БАН
+                                            </button>
+                                        </div>
+                                        <div style={{ display: 'flex', gap: '4px' }}>
+                                            <select
+                                                value={muteDuration}
+                                                onChange={(e) => setMuteDuration(e.target.value)}
+                                                style={{ ...inputStyle, padding: '8px' }}
+                                            >
+                                                <option value="1h">1 Час</option>
+                                                <option value="24h">1 День</option>
+                                            </select>
+                                            <button
+                                                onClick={() => handleUpdate({ isMuted: true, muteReason: modReason, muteUntil: muteDuration })}
+                                                style={{ ...btnStyle, padding: '0 10px', fontSize: '11px' }}
+                                            >
+                                                МУТ
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div style={{ display: 'flex', gap: '6px', marginBottom: '10px' }}>
+                                        <button
+                                            onClick={() => {
+                                                useGameStore.getState().showConfirm(`Кикнуть игрока ${selectedPlayer.name}?`, () => {
+                                                    handleUpdate({ status: 'KICKED' });
+                                                });
+                                            }}
+                                            style={{ ...btnStyle, flex: 1, background: '#301010', color: '#fff', fontSize: '10px', padding: '8px' }}
+                                        >
+                                            КИКНУТЬ
+                                        </button>
+                                        <button
+                                            onClick={() => {
+                                                useGameStore.getState().showConfirm('Выполнить мягкий сброс сезона?', () => {
+                                                    let newRating = 0;
+                                                    if (rating >= 10500) newRating = 7500;
+                                                    else if (rating >= 9000) newRating = 6000;
+                                                    else if (rating >= 6000) newRating = 4500;
+                                                    handleUpdate({ rating: newRating, trophies: newRating });
+                                                });
+                                            }}
+                                            style={{ ...btnStyle, flex: 1, background: '#2d3748', color: '#fff', fontSize: '10px', padding: '8px' }}
+                                        >
+                                            СБРОС СЕЗОНА
+                                        </button>
+                                    </div>
+
+                                    <div style={{ display: 'flex', gap: '6px' }}>
+                                        <button
+                                            onClick={() => {
+                                                useGameStore.getState().showConfirm(`СБРОСИТЬ ВЕСЬ ПРОГРЕСС ИГРОКА ${selectedPlayer.name}?`, () => {
+                                                    handleUpdate({
+                                                        gold: 0,
+                                                        crystals: 0,
+                                                        level: 1,
+                                                        rating: 0,
+                                                        talentPoints: 0,
+                                                        inventory: [],
+                                                        equipment: {
+                                                            WEAPONS: null,
+                                                            HELMETS: null,
+                                                            ARMOR: null,
+                                                            SHIELDS: null,
+                                                            SHOULDERS: null,
+                                                            PANTS: null,
+                                                            BOOTS: null,
+                                                        },
+                                                        fullStateJSON: '',
+                                                    });
+                                                });
+                                            }}
+                                            style={{ ...btnStyle, flex: 1.5, background: '#601010', color: '#fff', fontWeight: 'bold', fontSize: '10px', padding: '10px' }}
+                                        >
+                                            ПОЛНЫЙ ВАЙП 🔥
+                                        </button>
+                                        <button
+                                            onClick={() => {
+                                                setMailRecipient(selectedPlayer.id);
+                                                setActiveTab('ПОЧТА');
+                                            }}
+                                            style={{ ...btnStyle, flex: 1, background: '#1b4332', color: '#4dff4d', fontSize: '10px', padding: '10px' }}
+                                        >
+                                            ПИСЬМО ✉️
+                                        </button>
+                                    </div>
+                                </Section>
+
+                                <Section title="🔧 Читы разработчика">
+                                    <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
+                                        <button
+                                            onClick={() => handleUpdate({ ownedSkins: ['default', 'panda_frost', 'raccoon_default', 'skin_lava_golem'] })}
+                                            style={{ ...btnStyle, flex: 1, background: 'linear-gradient(135deg, #d97706 0%, #b45309 100%)', borderColor: '#f59e0b', fontSize: '10px', padding: '8px' }}
+                                        >
+                                            👑 Все скины
+                                        </button>
+                                        <button
+                                            onClick={() => handleUpdate({ ownedHeroes: ['panda', 'raccoon'] })}
+                                            style={{ ...btnStyle, flex: 1, background: 'linear-gradient(135deg, #059669 0%, #047857 100%)', borderColor: '#10b981', fontSize: '10px', padding: '8px' }}
+                                        >
+                                            👥 Все герои
+                                        </button>
+                                    </div>
+                                    <div style={{ display: 'flex', gap: '8px' }}>
+                                        <button
+                                            onClick={() => handleUpdate({ gold: selectedPlayer.gold + 100000, crystals: selectedPlayer.crystals + 5000 })}
+                                            style={{ ...btnStyle, flex: 1, background: 'linear-gradient(135deg, #ca8a04 0%, #a16207 100%)', borderColor: '#eab308', fontSize: '10px', padding: '8px' }}
+                                        >
+                                            💰 +100к, 💎 +5к
+                                        </button>
+                                        <button
+                                            onClick={() => handleUpdate({ energy: 9999, maxEnergy: 9999 })}
+                                            style={{ ...btnStyle, flex: 1, background: 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)', borderColor: '#0ea5e9', fontSize: '10px', padding: '8px' }}
+                                        >
+                                            ⚡ 9999 энергии
+                                        </button>
+                                    </div>
+                                    <div style={{ marginTop: '12px' }}>
+                                        <ToggleRow
+                                            label="♾️ БЕСКОНЕЧНАЯ ЭНЕРГИЯ"
+                                            active={selectedPlayer.hasInfiniteEnergy}
+                                            onToggle={() => handleUpdate({ hasInfiniteEnergy: !selectedPlayer.hasInfiniteEnergy })}
+                                        />
+                                    </div>
+                                </Section>
+
+                            </div>
+
+                        </div>
+
+                        {/* 2. ДЕТАЛИ И СПИСКИ ПРЕДМЕТОВ */}
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                            <Section title="🔎 Логи жалоб">
+                                <div style={{ background: '#050505', padding: '12px', borderRadius: '6px', fontSize: '11px', color: '#888', maxHeight: '100px', overflowY: 'auto' }}>
+                                    {selectedPlayer.reportLogs && selectedPlayer.reportLogs.length > 0 ? (
+                                        selectedPlayer.reportLogs.map((log, i) => (
+                                            <div key={i} style={{ padding: '3px 0', borderBottom: '1px solid #111' }}>
+                                                • {log}
+                                            </div>
+                                        ))
+                                    ) : (
+                                        'История жалоб пуста'
+                                    )}
+                                </div>
+                            </Section>
+
+                            <Section title="📱 Метаданные устройства">
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: '10px', fontSize: '11px' }}>
+                                    <div style={statBox}>
+                                        <div style={statLabel}>Разрешение экрана</div>
+                                        <span style={{ color: '#10b981', fontWeight: 'bold' }}>🖥️ {selectedPlayer.screen}</span>
+                                    </div>
+                                    <div style={statBox}>
+                                        <div style={statLabel}>Регистрация (Был в сети)</div>
+                                        <span style={{ color: '#fff', fontWeight: 'bold', fontSize: '10px' }}>🕒 {selectedPlayer.regDate}</span>
+                                    </div>
+                                </div>
+                            </Section>
+                        </div>
+                    </>
+                ) : (
+                    <div style={{ color: '#888', textAlign: 'center', marginTop: '140px', fontSize: '14px' }}>
+                        Выберите игрока в списке слева для детального управления балансом, инвентарем, читами и санкциями
                     </div>
-                    <button
-                        title="Применить только золото"
-                        onClick={() => { sfx(); st().setGold(Number(customGold)); }}
-                        style={applyBtn}
-                    >ОК</button>
-                </div>
+                )}
+            </div>
 
-                {/* ── Алмазы ── */}
-                {subTitle('💎 Алмазы (кристаллы) — премиум-валюта')}
-                {hint('Нужны для покупки скинов, героев и платных паков в магазине')}
-                <div style={editRow}>
-                    <div style={{ flex: 1 }}>
-                        <input
-                            type="number"
-                            style={inputStyle}
-                            value={customCrystals}
-                            onChange={(e) => setCustomCrystals(e.target.value)}
-                            placeholder="например: 5000"
-                        />
-                    </div>
-                    <button
-                        title="Применить только кристаллы"
-                        onClick={() => { sfx(); st().setCrystals(Number(customCrystals)); }}
-                        style={applyBtn}
-                    >ОК</button>
-                </div>
-
-                {/* ── Уровень ── */}
-                {subTitle('⭐ Уровень игрока (1–100)')}
-                {hint('Влияет на силу врагов, доступ к контенту и силу боевых способностей')}
-                <div style={editRow}>
-                    <div style={{ flex: 1 }}>
-                        <input
-                            type="number"
-                            style={inputStyle}
-                            value={customLevel}
-                            onChange={(e) => setCustomLevel(e.target.value)}
-                            placeholder="например: 50"
-                            min={1}
-                            max={100}
-                        />
-                    </div>
-                    <button
-                        title="Применить только уровень"
-                        onClick={() => { sfx(); st().setLevel(Number(customLevel)); }}
-                        style={applyBtn}
-                    >ОК</button>
-                </div>
-
-                {/* ── Таланты ── */}
-                {subTitle('🎯 Очки талантов')}
-                {hint('Используются в дереве талантов для усиления персонажа')}
-                <div style={editRow}>
-                    <div style={{ flex: 1 }}>
-                        <input
-                            type="number"
-                            style={inputStyle}
-                            value={customPoints}
-                            onChange={(e) => setCustomPoints(e.target.value)}
-                            placeholder="например: 20"
-                        />
-                    </div>
-                    <button
-                        title="Применить только очки талантов"
-                        onClick={() => { sfx(); st().setTalentPoints(Number(customPoints)); }}
-                        style={applyBtn}
-                    >ОК</button>
-                </div>
-
-                {/* ПРИМЕНИТЬ ВСЁ */}
-                <BigApplyBtn onClick={applyAll} flash={batchFlash} />
-
-                <Divider />
-
-                {/* Быстрые кнопки уровня */}
-                {subTitle('⚡ Быстрые кнопки уровня')}
-                {hint('LVL UP — добавляет ровно 1 уровень через опыт. LVL +10 — мгновенно прибавляет 10 уровней')}
-                <div style={{ display: 'flex', gap: '8px' }}>
-                    <button
-                        title="Добавить ровно 1 уровень через начисление опыта"
-                        onClick={() => { sfx(); st().addExp(level * 600); }}
-                        style={{ ...smallBtnStyle, flex: 1 }}
-                    >
-                        LVL UP (+1)
-                    </button>
-                    <button
-                        title="Мгновенно прибавить 10 уровней (без опыта)"
-                        onClick={() => { sfx(); st().setLevel(level + 10); }}
-                        style={{ ...smallBtnStyle, flex: 1, color: '#f0c040' }}
-                    >
-                        LVL +10
-                    </button>
-                </div>
-            </Section>
-
-            {/* ══════════════════════════════════════════════════
-                КОЛОНКА 2 — КУБКИ И РАНГ
-            ══════════════════════════════════════════════════ */}
-            <Section title="🏆 Кубки и ранг (рейтинг PvP)">
-
-                {/* Инфо */}
-                <div style={{
-                    background: 'rgba(255,255,255,0.03)',
-                    border: '1px solid rgba(255,255,255,0.07)',
-                    borderRadius: '8px',
-                    padding: '10px 14px',
-                    marginBottom: '14px',
-                    fontSize: '11px',
-                    color: 'rgba(255,255,255,0.5)',
-                    lineHeight: 1.6,
-                }}>
-                    🏆 <strong style={{ color: 'rgba(255,255,255,0.7)' }}>Кубки</strong> = рейтинг PvP-арены.
-                    Они определяют <strong style={{ color: '#f0c040' }}>ранг</strong> игрока и открывают доступ к покупке героев.
-                    <br />
-                    <span style={{ color: 'rgba(255,255,255,0.35)' }}>После сброса сезона кубки снижаются, но купленные герои остаются навсегда.</span>
-                </div>
-
-                {/* Текущий ранг */}
-                <RankBadge name={rankInfo.name} rating={rating} />
-
-                {/* ── Точная установка ── */}
-                {subTitle('🎯 Установить точное количество кубков')}
-                {hint('Введи любое число и нажми ОК — кубки станут ровно такими')}
-                <div style={editRow}>
-                    <div style={{ flex: 1 }}>
-                        <input
-                            type="number"
-                            style={inputStyle}
-                            value={customRating}
-                            onChange={(e) => setCustomRating(e.target.value)}
-                            placeholder="например: 1500"
-                            min={0}
-                        />
-                    </div>
-                    <button
-                        title="Установить кубки в указанное значение"
-                        onClick={applyRating}
-                        style={applyBtn}
-                    >ОК</button>
-                </div>
-
-                <Divider />
-
-                {/* ── Добавить / отнять ── */}
-                {subTitle('➕➖ Добавить или отнять кубки')}
-                {hint('Сначала задай шаг в поле ниже, потом нажимай + или −')}
-
-                <div style={{ marginBottom: '8px' }}>
-                    <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.35)', marginBottom: '5px' }}>
-                        ШАГ (сколько кубков за раз):
-                    </div>
-                    <input
-                        type="number"
-                        style={{ ...inputStyle, marginBottom: '8px' }}
-                        value={trophyDelta}
-                        onChange={(e) => setTrophyDelta(e.target.value)}
-                        placeholder="100"
-                        min={1}
-                    />
-                    <div style={{ display: 'flex', gap: '8px' }}>
-                        <TrophyBtn
-                            label={`− ${trophyDelta} кубков`}
-                            onClick={() => changeRating(-Number(trophyDelta))}
-                            positive={false}
-                        />
-                        <TrophyBtn
-                            label={`+ ${trophyDelta} кубков`}
-                            onClick={() => changeRating(Number(trophyDelta))}
-                            positive
-                        />
-                    </div>
-                </div>
-
-                <Divider />
-
-                {/* ── Быстрые пресеты ── */}
-                {subTitle('⚡ Быстрые пресеты ±')}
-                {hint('Кнопки для быстрого изменения без ввода шага вручную')}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '6px', marginBottom: '4px' }}>
-                    {[100, 500, 1000].map((v) => (
-                        <TrophyBtn key={`+${v}`} label={`+${v}`} onClick={() => changeRating(v)} positive />
-                    ))}
-                    {[-100, -500, -1000].map((v) => (
-                        <TrophyBtn key={`${v}`} label={`${v}`} onClick={() => changeRating(v)} positive={false} />
-                    ))}
-                </div>
-
-                <Divider />
-
-                {/* ── Прыжок к рангу ── */}
-                {subTitle('🚀 Прыжок к рангу')}
-                {hint('Нажми на ранг — кубки сразу установятся на минимальное значение этого ранга. Подсвечены уже достигнутые')}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: '6px' }}>
-                    {RANK_PRESETS.map(({ label, value }) => (
-                        <RankJumpBtn
-                            key={label}
-                            label={label}
-                            value={value}
-                            currentRating={rating}
-                            onClick={() => { sfx(); st().setRating(value); }}
-                        />
-                    ))}
-                </div>
-
-                {/* Сброс */}
-                <button
-                    title="Обнулить кубки игрока (имитация сброса сезона)"
-                    onClick={() => { sfx(); st().setRating(0); }}
-                    style={{
-                        ...bigBtnStyle,
-                        marginTop: '12px',
-                        background: '#1c0808',
-                        color: '#f87171',
-                        border: '1px solid rgba(248,113,113,0.3)',
-                        fontSize: '12px',
-                    }}
-                >
-                    🔄 Сбросить кубки в 0 &nbsp;<span style={{ opacity: 0.45, fontSize: '10px' }}>(имитация нового сезона)</span>
-                </button>
-            </Section>
-
-            {/* ══════════════════════════════════════════════════
-                КОЛОНКА 3 — ИНВЕНТАРЬ, НАВИГАЦИЯ, МЕГА-КНОПКИ
-            ══════════════════════════════════════════════════ */}
-            <Section title="📦 Инвентарь, навигация и управление">
-
-                {/* ── Инвентарь ── */}
-                {subTitle('📦 Генератор предметов')}
-                {hint('Выбери предмет из базы и нажми «Добавить» — он появится в инвентаре игрока')}
-                <select
-                    value={selectedItemId}
-                    onChange={(e) => setSelectedItemId(e.target.value)}
-                    style={{ ...inputStyle, marginBottom: '8px' }}
-                >
-                    <option value="">— Выбрать предмет из базы —</option>
-                    {Object.keys(ITEMS_DATABASE).map((id) => (
-                        <option key={id} value={id}>{id}</option>
-                    ))}
-                </select>
-                <button
-                    title="Добавить выбранный предмет в инвентарь (1 штука, уровень 1)"
-                    onClick={() => { sfx(); if (selectedItemId) st().addItemToInventory({ id: selectedItemId, level: 1 }); }}
-                    style={{ ...bigBtnStyle, marginBottom: '6px' }}
-                >
-                    ➕ Добавить выбранный предмет в инвентарь
-                </button>
-
-                <button
-                    title="Добавить сундук сезона — особый предмет с наградами сезона"
-                    onClick={() => { sfx(); st().addItemToInventory({ id: 'season_chest', level: 1, amount: 1 }); }}
-                    style={{ ...bigBtnStyle, marginBottom: '6px', background: '#d4af37', color: '#000', fontWeight: 'bold' }}
-                >
-                    🎁 Добавить сундук сезона
-                </button>
-
-                {hint('Выдаёт сундук с призами текущего сезона — как если бы игрок дошёл до него в рейтинге')}
-
-                <button
-                    title="Удалить все предметы из инвентаря игрока. Внимание — без отмены!"
-                    onClick={() => { sfx(); st().showConfirm('Очистить инвентарь? Отменить нельзя!', () => st().clearInventory()); }}
-                    style={{ ...bigBtnStyle, marginBottom: '2px', background: '#2a0808', color: '#ff6b6b', border: '1px solid rgba(255,80,80,0.25)' }}
-                >
-                    🗑️ Очистить инвентарь (WIPE INVENTORY)
-                </button>
-                {hint('⚠️ Удаляет всё снаряжение и предметы. Отменить нельзя!')}
-
-                <button
-                    title="Добавить сразу все существующие предметы в инвентарь"
-                    onClick={() => {
-                        sfx();
-                        const items = Object.keys(ITEMS_DATABASE).map((id) => ({ id, level: 1 }));
-                        st().addItemsToInventory(items);
-                        st().showAlert('ВЕСЬ АРСЕНАЛ ВЫДАН!');
-                    }}
-                    style={{ ...bigBtnStyle, background: '#0d0d2e', color: '#9b9bff', border: '1px solid rgba(150,150,255,0.2)' }}
-                >
-                    🔓 Выдать весь арсенал (Unlock All)
-                </button>
-                {hint('Добавляет в инвентарь по 1 штуке каждого предмета из базы — для быстрого тестирования')}
-
-                <Divider />
-
-                {/* ── Быстрый переход ── */}
-                {subTitle('🗺️ Мгновенный переход между экранами')}
-                {hint('Нажми — игра сразу откроет этот экран без анимации. Активный экран подсвечен')}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '5px', marginBottom: '4px' }}>
-                    {[
-                        { id: 'MAP',    label: '🗺️ Карта' },
-                        { id: 'BOSS',   label: '💀 Босс' },
-                        { id: 'ARENA',  label: '⚔️ Арена' },
-                        { id: 'SHOP',   label: '🛒 Магаз.' },
-                        { id: 'HEROES', label: '🦸 Герои' },
-                        { id: 'CLAN',   label: '🛡️ Клан' },
-                    ].map(({ id, label }) => (
-                        <button
-                            key={id}
-                            title={`Перейти на экран ${id}`}
-                            onClick={() => { sfx(); st().setScreen(id); }}
-                            style={{
-                                ...btnStyle,
-                                background: activeScreen === id ? '#1a2a1a' : '#0d0d0d',
-                                border: activeScreen === id ? '1px solid #2ecc71' : '1px solid #1a1a1a',
-                                color: activeScreen === id ? '#2ecc71' : 'rgba(255,255,255,0.5)',
-                                fontSize: '10px',
-                                padding: '9px 4px',
-                            }}
-                        >
-                            {label}
-                        </button>
-                    ))}
-                </div>
-
-                <Divider />
-
-                {/* ── Мега-кнопки ── */}
-                {subTitle('🚨 Мега-операции')}
-
-                <button
-                    title="Мгновенно выдать: 999 999 золота, 99 999 алмазов, уровень 100, 500 очков талантов"
-                    onClick={() => {
-                        sfx();
-                        st().setGold(999999);
-                        st().setCrystals(99999);
-                        st().setLevel(100);
-                        st().setTalentPoints(500);
-                    }}
-                    style={{ ...bigBtnStyle, marginBottom: '6px', background: '#0d2a18', color: '#4dff88', border: '1px solid rgba(77,255,136,0.25)' }}
-                >
-                    ⚡ БОЖЕСТВЕННЫЙ СТАРТ (Full Max Out)
-                </button>
-                {hint('Выдаёт: 999 999 🪙 + 99 999 💎 + Уровень 100 + 500 очков талантов — всё одной кнопкой')}
-
-                <button
-                    title="Полный сброс всего прогресса до начального состояния. Требует подтверждения"
-                    onClick={() => {
-                        sfx();
-                        st().showConfirm(
-                            'ПОЛНЫЙ СБРОС ПРОГРЕССА? Вернёт игрока к началу. Отменить нельзя!',
-                            () => st().resetAllProgress()
-                        );
-                    }}
-                    style={{ ...bigBtnStyle, marginBottom: '6px', background: '#2a0808', color: '#ff4d4d', border: '1px solid rgba(255,80,80,0.25)' }}
-                >
-                    💣 СБРОСИТЬ ВЕСЬ ПРОГРЕСС (Wipe Progress)
-                </button>
-                {hint('⚠️ Удаляет всё: золото, уровень, инвентарь, героев, кубки. Потребует подтверждения')}
-
-                <Divider />
-
-                {/* ── Тогглы ── */}
-                {subTitle('🔧 Режимы и читы')}
-
-                <div style={{ marginBottom: '4px' }}>
-                    <ToggleRow
-                        label="♾️ БЕСКОНЕЧНАЯ ЭНЕРГИЯ"
-                        active={hasInfiniteEnergy}
-                        onToggle={() => {
-                            const action = useGameStore.getState().setHasInfiniteEnergy;
-                            if (action) action(!hasInfiniteEnergy);
-                        }}
-                    />
-                </div>
-                {hint('Включи — энергия перестанет тратиться на бои. Удобно для тестирования карты и арены')}
-            </Section>
+            {isSpectating && selectedPlayer && (
+                <AdminSpectatorModal
+                    playerId={selectedPlayer.id}
+                    playerName={selectedPlayer.name}
+                    onClose={() => setIsSpectating(false)}
+                />
+            )}
         </div>
     );
 };

@@ -204,7 +204,7 @@ export async function getDeviceProfile(): Promise<DeviceProfile> {
         // 3. WebGL details
         try {
             const canvas = document.createElement('canvas');
-            let gl = canvas.getContext('webgl2') as WebGL2RenderingContext | null;
+            let gl: WebGL2RenderingContext | WebGLRenderingContext | null = canvas.getContext('webgl2') as WebGL2RenderingContext | null;
             if (gl) {
                 webglVersion = 'WebGL2';
             } else {

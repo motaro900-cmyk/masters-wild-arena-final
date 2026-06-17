@@ -20,113 +20,212 @@ import {
     terminalStyle,
     statLabel,
     contentGrid,
+    mapRawPlayerToRealPlayer,
 } from './Admin/AdminShared';
 
 
 type AdminTab = 'ИГРОК' | 'БОЙ' | 'СЕРВЕР' | 'ПОЧТА' | 'ЧАТ' | 'ОТЗЫВЫ' | 'СИСТЕМА';
 
-const mapRawPlayerToRealPlayer = (p: any): RealPlayer => {
-    const nameVal = p.name || p.имя || 'Unknown';
-    const photoVal = p.avatar || p.фото || p.photo || 'https://vk.com/images/camera_100.png';
-    const activeScreenVal = p.activeScreen || p.активныйЭкран || 'MAP';
-    const lastSeenMillis = p.wasOnline?.toMillis?.() || p.былВСети?.toMillis?.() || p.lastSeen?.toMillis?.() || 0;
-    const statusVal =
-        activeScreenVal === 'BATTLE' ? 'BATTLE' : Date.now() - lastSeenMillis < 300000 ? 'ONLINE' : 'OFFLINE';
+// ─── Feedback Tab ─────────────────────────────────────────────────────────────
 
-    // Парсим полноеСостояниеJSON / fullStateJSON для получения актуальных значений ресурсов игрока в реальном времени
-    let parsedState: any = {};
-    const stateJson = p.fullStateJSON || p.полноеСостояниеJSON;
-    if (stateJson) {
-        try {
-            parsedState = JSON.parse(stateJson);
-        } catch (e) {
-            console.error('Failed to parse state JSON in AdminPanel', e);
-        }
-    }
+interface FeedbackTabProps {
+    feedbackList: any[];
+    isLoadingFeedback: boolean;
+    onRefresh: () => void;
+    onDelete: (id: string) => void;
+    onGoToPlayer: (userId: string) => void;
+}
 
-    const activeHero = p.hero || parsedState.selectedHeroId || p.герой || 'panda';
-    const gearVal =
-        p.equipment ||
-        (parsedState.heroEquipment && parsedState.heroEquipment[activeHero]
-            ? parsedState.heroEquipment[activeHero]
-            : p.снаряжение || p.геройСнаряжение || {});
+const FEEDBACK_COLUMNS = [
+    { key: 'BUG',      label: '🐞 БАГИ',              color: '#ef4444', dimColor: 'rgba(239,68,68,0.08)',   border: 'rgba(239,68,68,0.25)' },
+    { key: 'IDEA',     label: '💡 ПРЕДЛОЖЕНИЯ',        color: '#f59e0b', dimColor: 'rgba(245,158,11,0.08)',  border: 'rgba(245,158,11,0.25)' },
+    { key: 'QUESTION', label: '💬 ВОПРОСЫ / ДРУГОЕ',   color: '#3b82f6', dimColor: 'rgba(59,130,246,0.08)',  border: 'rgba(59,130,246,0.25)' },
+] as const;
 
-    const lastSeenDate =
-        (p.wasOnline || p.былВСети || p.lastSeen)?.toDate?.() || (lastSeenMillis ? new Date(lastSeenMillis) : null);
-    const lastSeenTimeVal = lastSeenDate
-        ? lastSeenDate.toLocaleString('ru-RU', {
-              day: '2-digit',
-              month: '2-digit',
-              year: 'numeric',
-              hour: '2-digit',
-              minute: '2-digit',
-          })
-        : 'неизвестно';
-
-    const ratingVal =
-        p.rating !== undefined ? p.rating : parsedState.rating !== undefined ? parsedState.rating : p.рейтинг || 0;
-    const vipLevelVal =
-        p.vipLevel !== undefined ? p.vipLevel : parsedState.vipLevel !== undefined ? parsedState.vipLevel : 0;
-
-    const vipEndTime = p.vipEndTime || parsedState.vipEndTime || 0;
-    const isVipActiveVal = p.isVipActive !== undefined ? p.isVipActive : vipLevelVal > 0 && vipEndTime > Date.now();
-    const vipDaysRemainingVal =
-        p.vipDaysRemaining !== undefined
-            ? p.vipDaysRemaining
-            : isVipActiveVal
-              ? Math.ceil((vipEndTime - Date.now()) / (24 * 60 * 60 * 1000))
-              : 0;
-
-    const energyVal = p.energy !== undefined ? p.energy : parsedState.energy !== undefined ? parsedState.energy : 0;
-    const maxEnergyVal =
-        p.maxEnergy !== undefined ? p.maxEnergy : parsedState.maxEnergy !== undefined ? parsedState.maxEnergy : 0;
-    const inventoryVal = p.inventory || parsedState.inventory || p.инвентарь || [];
-
-    return {
-        id: p.id,
-        vkId: p.vkId || 0,
-        name: nameVal,
-        photo: photoVal,
-        status: p.status === 'BANNED' ? 'BANNED' : statusVal,
-        screen: activeScreenVal,
-        level:
-            p.level !== undefined
-                ? p.level
-                : parsedState.level !== undefined
-                  ? parsedState.level
-                  : p.уровень || p.лев || 1,
-        gold:
-            p.gold !== undefined
-                ? p.gold
-                : parsedState.gold !== undefined
-                  ? parsedState.gold
-                  : p.золото !== undefined
-                    ? p.золото
-                    : 0,
-        crystals:
-            p.crystals !== undefined
-                ? p.crystals
-                : parsedState.crystals !== undefined
-                  ? parsedState.crystals
-                  : p.кристаллы !== undefined
-                    ? p.кристаллы
-                    : 0,
-        regDate: lastSeenTimeVal,
-        reports: p.reports || 0,
-        reportLogs: p.reportLogs || [],
-        gear: gearVal as any,
-        isTest: p.isTestPlayer !== undefined ? p.isTestPlayer : p.тестовый || false,
-        isDev: p.isDeveloper !== undefined ? p.isDeveloper : p.разработчик || false,
-        lastSeenTime: lastSeenTimeVal,
-        rating: ratingVal,
-        vipLevel: vipLevelVal,
-        isVipActive: isVipActiveVal,
-        vipDaysRemaining: vipDaysRemainingVal,
-        energy: energyVal,
-        maxEnergy: maxEnergyVal,
-        inventory: inventoryVal,
-    };
+const formatFeedbackTime = (ts: number) => {
+    if (!ts) return '—';
+    const d = new Date(ts);
+    return d.toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
 };
+
+const FeedbackTab: React.FC<FeedbackTabProps> = ({ feedbackList, isLoadingFeedback, onRefresh, onDelete, onGoToPlayer }) => (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', height: 'auto' }}>
+        {/* Header */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ fontSize: '13px', fontWeight: 800, letterSpacing: '1px', color: '#aaa' }}>
+                ОТЗЫВЫ ИГРОКОВ
+                <span style={{ marginLeft: '10px', fontSize: '11px', color: '#555', fontWeight: 400 }}>
+                    (всего: {feedbackList.length})
+                </span>
+            </div>
+            <button
+                onClick={onRefresh}
+                disabled={isLoadingFeedback}
+                style={{
+                    ...applyBtn,
+                    padding: '5px 16px',
+                    background: isLoadingFeedback ? '#1a1a1a' : undefined,
+                    cursor: isLoadingFeedback ? 'not-allowed' : 'pointer',
+                }}
+            >
+                {isLoadingFeedback ? 'ЗАГРУЗКА...' : 'ОБНОВИТЬ 🔄'}
+            </button>
+        </div>
+
+        {/* 3-column grid */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '14px', alignItems: 'start' }}>
+            {FEEDBACK_COLUMNS.map((col) => {
+                const items = feedbackList.filter((f: any) => f.category === col.key);
+                return (
+                    <div
+                        key={col.key}
+                        style={{
+                            background: col.dimColor,
+                            border: `1px solid ${col.border}`,
+                            borderRadius: '12px',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '0',
+                            maxHeight: '640px',
+                            overflow: 'hidden',
+                        }}
+                    >
+                        {/* Column header */}
+                        <div style={{
+                            padding: '12px 14px',
+                            borderBottom: `1px solid ${col.border}`,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                        }}>
+                            <span style={{ fontSize: '12px', fontWeight: 900, color: col.color, letterSpacing: '0.5px' }}>
+                                {col.label}
+                            </span>
+                            <span style={{
+                                background: col.color,
+                                color: '#000',
+                                fontWeight: 900,
+                                fontSize: '10px',
+                                borderRadius: '20px',
+                                padding: '1px 8px',
+                                minWidth: '22px',
+                                textAlign: 'center',
+                            }}>
+                                {items.length}
+                            </span>
+                        </div>
+
+                        {/* Cards list */}
+                        <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '0' }}>
+                            {items.length === 0 ? (
+                                <div style={{ padding: '30px 14px', textAlign: 'center', color: '#444', fontSize: '12px' }}>
+                                    Отзывов нет
+                                </div>
+                            ) : (
+                                items.map((f: any) => (
+                                    <div
+                                        key={f.id}
+                                        style={{
+                                            padding: '12px 14px',
+                                            borderBottom: '1px solid rgba(255,255,255,0.04)',
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            gap: '6px',
+                                        }}
+                                    >
+                                        {/* Sender row */}
+                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '6px' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flex: 1, minWidth: 0 }}>
+                                                <span style={{ fontSize: '11px', fontWeight: 700, color: '#e2e2e2', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                                    {f.userName || 'Игрок'}
+                                                </span>
+                                                {f.level > 0 && (
+                                                    <span style={{ fontSize: '9px', color: '#888', flexShrink: 0 }}>
+                                                        Ур.{f.level}
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <span style={{ fontSize: '9px', color: '#555', flexShrink: 0 }}>
+                                                {formatFeedbackTime(f.timestamp)}
+                                            </span>
+                                        </div>
+
+                                        {/* Platform / version */}
+                                        <div style={{ display: 'flex', gap: '6px' }}>
+                                            {f.platform && (
+                                                <span style={{ fontSize: '9px', color: '#666', background: 'rgba(255,255,255,0.04)', padding: '1px 6px', borderRadius: '4px' }}>
+                                                    {f.platform}
+                                                </span>
+                                            )}
+                                            {f.version && (
+                                                <span style={{ fontSize: '9px', color: '#666', background: 'rgba(255,255,255,0.04)', padding: '1px 6px', borderRadius: '4px' }}>
+                                                    {f.version}
+                                                </span>
+                                            )}
+                                        </div>
+
+                                        {/* Feedback text */}
+                                        <div style={{
+                                            fontSize: '12px',
+                                            color: '#ccc',
+                                            lineHeight: '1.5',
+                                            background: 'rgba(0,0,0,0.25)',
+                                            padding: '8px 10px',
+                                            borderRadius: '7px',
+                                            wordBreak: 'break-word',
+                                        }}>
+                                            {f.text}
+                                        </div>
+
+                                        {/* Action buttons */}
+                                        <div style={{ display: 'flex', gap: '6px', marginTop: '2px' }}>
+                                            <button
+                                                onClick={() => onDelete(f.id)}
+                                                style={{
+                                                    flex: 1,
+                                                    padding: '5px 0',
+                                                    borderRadius: '6px',
+                                                    border: '1px solid rgba(74,222,128,0.3)',
+                                                    background: 'rgba(74,222,128,0.07)',
+                                                    color: '#4ade80',
+                                                    fontSize: '9px',
+                                                    fontWeight: 800,
+                                                    cursor: 'pointer',
+                                                    letterSpacing: '0.5px',
+                                                }}
+                                            >
+                                                ✅ РЕШЕНО
+                                            </button>
+                                            {f.userId && (
+                                                <button
+                                                    onClick={() => onGoToPlayer(f.userId)}
+                                                    style={{
+                                                        flex: 1,
+                                                        padding: '5px 0',
+                                                        borderRadius: '6px',
+                                                        border: '1px solid rgba(96,165,250,0.3)',
+                                                        background: 'rgba(96,165,250,0.07)',
+                                                        color: '#60a5fa',
+                                                        fontSize: '9px',
+                                                        fontWeight: 800,
+                                                        cursor: 'pointer',
+                                                        letterSpacing: '0.5px',
+                                                    }}
+                                                >
+                                                    👤 ИГРОК
+                                                </button>
+                                            )}
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                    </div>
+                );
+            })}
+        </div>
+    </div>
+);
 
 const AdminPanelContent: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     const messages = useGameStore((state) => state.messages);
@@ -188,7 +287,7 @@ const AdminPanelContent: React.FC<{ onClose: () => void }> = ({ onClose }) => {
         let timer: any;
         let unsubscribePlayers: (() => void) | null = null;
 
-        if (activeTab === 'СЕРВЕР') {
+        if (activeTab === 'ИГРОК' || activeTab === 'СЕРВЕР') {
             timer = setTimeout(() => refreshPlayers(), 0);
             unsubscribePlayers = syncService.subscribeToAllPlayers((players) => {
                 const mappedPlayers = players.map(mapRawPlayerToRealPlayer);
@@ -211,10 +310,36 @@ const AdminPanelContent: React.FC<{ onClose: () => void }> = ({ onClose }) => {
         setAdminChatMessage('');
     };
 
+    const handleDeleteFeedback = async (id: string) => {
+        try {
+            await syncService.deleteFeedback(id);
+            setFeedbackList((prev) => prev.filter((f: any) => f.id !== id));
+        } catch (e) {
+            console.error('Failed to delete feedback:', e);
+            useGameStore.getState().showAlert('Ошибка при удалении отзыва ❌');
+        }
+    };
+
+    const handleGoToPlayer = (userId: string) => {
+        if (!userId) return;
+        setSelectedPlayerId(userId);
+        setActiveTab('ИГРОК');
+    };
+
     const renderTabContent = () => {
         switch (activeTab) {
             case 'ИГРОК':
-                return <AdminPlayersTab />;
+                return (
+                    <AdminPlayersTab
+                        selectedPlayerId={selectedPlayerId}
+                        onSelectPlayer={setSelectedPlayerId}
+                        realPlayers={realPlayers}
+                        isLoadingPlayers={isLoadingPlayers}
+                        refreshPlayers={refreshPlayers}
+                        setMailRecipient={setMailRecipient}
+                        setActiveTab={setActiveTab}
+                    />
+                );
             case 'БОЙ':
                 return (
                     <div style={contentGrid}>
@@ -577,46 +702,13 @@ const AdminPanelContent: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                     </div>
                 );
             case 'ОТЗЫВЫ':
-                return (
-                    <div
-                        className="h-[500px] lg:h-[700px]"
-                        style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}
-                    >
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <div style={statLabel}>ПОСЛЕДНИЕ СООБЩЕНИЯ ОТ ИГРОКОВ</div>
-                            <button
-                                onClick={refreshFeedback}
-                                style={{ ...applyBtn, padding: '5px 15px' }}
-                                disabled={isLoadingFeedback}
-                            >
-                                {isLoadingFeedback ? 'ЗАГРУЗКА...' : 'ОБНОВИТЬ 🔄'}
-                            </button>
-                        </div>
-                        <div
-                            style={{
-                                flex: 1,
-                                overflowY: 'auto',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                gap: '10px',
-                            }}
-                        >
-                            {feedbackList.map((f: any) => (
-                                <div
-                                    key={f.id}
-                                    style={{
-                                        background: '#0a0a0a',
-                                        border: '1px solid #222',
-                                        borderRadius: '12px',
-                                        padding: '20px',
-                                    }}
-                                >
-                                    <div style={{ color: '#ccc', fontSize: '14px' }}>{f.text}</div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                );
+                return <FeedbackTab
+                    feedbackList={feedbackList}
+                    isLoadingFeedback={isLoadingFeedback}
+                    onRefresh={refreshFeedback}
+                    onDelete={handleDeleteFeedback}
+                    onGoToPlayer={handleGoToPlayer}
+                />;
         }
     };
 

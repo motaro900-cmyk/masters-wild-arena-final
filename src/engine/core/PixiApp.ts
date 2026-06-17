@@ -65,7 +65,7 @@ export class PixiApp {
     private _debugLayer: PIXI.Container;
     private homeContainer: HTMLElement | null = null;
     private storeUnsubscribe: (() => void) | null = null;
-    private lastFrameTime: number = 0;
+
     private lastFpsUpdate: number = 0;
     private fpsFrameCount: number = 0;
     private currentActualFps: number = 0;

@@ -682,8 +682,14 @@ export class SyncService {
     public async getAllFeedback(): Promise<any[]> {
         return Admin.getAllFeedback();
     }
+    public async deleteFeedback(id: string): Promise<void> {
+        return Admin.deleteFeedback(id);
+    }
     public async searchPlayerById(playerId: string): Promise<any | null> {
         return Admin.searchPlayerById(playerId);
+    }
+    public async searchPlayersGlobal(searchTerm: string): Promise<any[]> {
+        return Admin.searchPlayersGlobal(searchTerm);
     }
     public async getGlobalPlayers(limitCount = 20): Promise<any[]> {
         return Admin.getGlobalPlayers(limitCount);

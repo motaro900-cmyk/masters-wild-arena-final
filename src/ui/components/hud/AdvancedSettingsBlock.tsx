@@ -12,72 +12,7 @@ interface AdvancedSettingsBlockProps {
     handleFullscreenToggle: () => void;
 }
 
-// Utility to get GPU renderer name
-let cachedGPUInfo: string | null | undefined = undefined;
 
-const getGPUInfo = (): string | null => {
-    if (cachedGPUInfo !== undefined) return cachedGPUInfo;
-    if (typeof document === 'undefined') return null;
-    try {
-        const canvas = document.createElement('canvas');
-        const gl = (canvas.getContext('webgl') || canvas.getContext('experimental-webgl')) as WebGLRenderingContext | null;
-        if (gl) {
-            const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
-            let clean: string | null = null;
-            if (debugInfo) {
-                const renderer = gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
-                if (renderer) {
-                    clean = renderer;
-                    const match = renderer.match(/ANGLE \(([^,]+), ([^,]+) Direct3D/);
-                    if (match && match[2]) {
-                        clean = match[2];
-                    } else {
-                        clean = renderer
-                            .replace(/^ANGLE \(([^,]+), /, '')
-                            .replace(/\s*Direct3D.*/, '')
-                            .replace(/\s*\([^)]*\)/g, '')
-                            .trim();
-                    }
-                }
-            }
-            // Manually lose the WebGL context to free memory immediately
-            gl.getExtension('WEBGL_lose_context')?.loseContext();
-            cachedGPUInfo = clean;
-            return clean;
-        }
-    } catch (e) {
-        // ignore
-    }
-    cachedGPUInfo = null;
-    return null;
-};
-
-// Utility to detect OS and Browser
-const getOSAndBrowser = (): string => {
-    if (typeof navigator === 'undefined') return 'Unknown';
-    const ua = navigator.userAgent;
-    let os = 'Unknown OS';
-    if (ua.indexOf('Win') !== -1) os = 'Windows';
-    else if (ua.indexOf('Mac') !== -1) {
-        if (navigator.maxTouchPoints > 0) os = 'iPadOS';
-        else os = 'macOS';
-    }
-    else if (ua.indexOf('Linux') !== -1) os = 'Linux';
-    else if (ua.indexOf('Android') !== -1) os = 'Android';
-    else if (ua.indexOf('iPhone') !== -1 || ua.indexOf('iPad') !== -1 || ua.indexOf('iPod') !== -1) os = 'iOS';
-
-    let browser = 'Unknown Browser';
-    if (ua.indexOf('Chrome') !== -1 && ua.indexOf('Safari') !== -1) {
-        if (ua.indexOf('Edg') !== -1) browser = 'Edge';
-        else if (ua.indexOf('OPR') !== -1 || ua.indexOf('Opera') !== -1) browser = 'Opera';
-        else browser = 'Chrome';
-    }
-    else if (ua.indexOf('Safari') !== -1 && ua.indexOf('Chrome') === -1) browser = 'Safari';
-    else if (ua.indexOf('Firefox') !== -1) browser = 'Firefox';
-    else if (ua.indexOf('MSIE') !== -1 || !!(document as any).documentMode) browser = 'Internet Explorer';
-
-    return `${os} / ${browser}`;
-};
 
 export const AdvancedSettingsBlock: React.FC<AdvancedSettingsBlockProps> = ({
     isFullscreen,
@@ -229,20 +164,6 @@ export const AdvancedSettingsBlock: React.FC<AdvancedSettingsBlockProps> = ({
         return () => clearInterval(interval);
     }, []);
 
-    // GPU / CPU Cores / Memory detection
-    const cores = typeof navigator !== 'undefined' ? navigator.hardwareConcurrency : undefined;
-    const memoryGb = typeof navigator !== 'undefined' ? (navigator as any).deviceMemory : undefined;
-
-    let gpuTier = 'Tier 2';
-    if (cores && memoryGb) {
-        if (memoryGb >= 8 && cores >= 8) gpuTier = 'Tier 3 (High)';
-        else if (memoryGb >= 4 && cores >= 4) gpuTier = 'Tier 2 (Mid)';
-        else gpuTier = 'Tier 1 (Low)';
-    } else if (cores) {
-        if (cores >= 8) gpuTier = 'Tier 3 (High)';
-        else if (cores >= 4) gpuTier = 'Tier 2 (Mid)';
-        else gpuTier = 'Tier 1 (Low)';
-    }
 
     const perfTranslations = {
         RU: {

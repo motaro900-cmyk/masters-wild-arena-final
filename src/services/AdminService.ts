@@ -14,6 +14,7 @@ import {
     onSnapshot,
     where,
     serverTimestamp,
+    deleteDoc,
 } from 'firebase/firestore';
 import { useGameStore } from '../store/useGameStore';
 import { sendMail } from './MailService';
@@ -192,6 +193,8 @@ export async function updateRemotePlayerData(userId: string, data: any): Promise
             avatar: 'фото',
             inventory: 'инвентарь',
             heroEquipment: 'снаряжение',
+            talentPoints: 'talentPoints',
+            hasInfiniteEnergy: 'hasInfiniteEnergy',
         };
 
         const updatedData: any = {};
@@ -224,6 +227,8 @@ export async function updateRemotePlayerData(userId: string, data: any): Promise
                         parsed.heroEquipment = data.снаряжение ?? data.heroEquipment;
                     if (data.ownedSkins !== undefined) parsed.ownedSkins = data.ownedSkins;
                     if (data.ownedHeroes !== undefined) parsed.ownedHeroes = data.ownedHeroes;
+                    if (data.talentPoints !== undefined) parsed.talentPoints = Number(data.talentPoints);
+                    if (data.hasInfiniteEnergy !== undefined) parsed.hasInfiniteEnergy = !!data.hasInfiniteEnergy;
                     updatedData.fullStateJSON = JSON.stringify(parsed);
                 } catch (e) {
                     console.error('[AdminService] Failed to parse fullStateJSON:', e);
@@ -313,6 +318,74 @@ export async function distributeSeasonRewards(): Promise<number> {
         return count;
     } catch (error) {
         console.error('[AdminService] Season rewards distribution failed:', error);
+        throw error;
+    }
+}
+
+export async function searchPlayersGlobal(searchTerm: string): Promise<any[]> {
+    try {
+        const playersRef = collection(db, USERS_COLLECTION);
+        const results: any[] = [];
+        const cleanTerm = searchTerm.trim();
+        if (!cleanTerm) return [];
+
+        // 1. Поиск по точному ID документа
+        const docRef = doc(db, USERS_COLLECTION, cleanTerm);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+            results.push({ ...docSnap.data(), id: docSnap.id });
+        }
+
+        // 2. Поиск по короткому гостевому ID
+        if (!cleanTerm.toUpperCase().startsWith('VK-') && !cleanTerm.toUpperCase().startsWith('GUEST-')) {
+            const guestDocSnap = await getDoc(doc(db, USERS_COLLECTION, `GUEST-${cleanTerm}`));
+            if (guestDocSnap.exists()) {
+                results.push({ ...guestDocSnap.data(), id: guestDocSnap.id });
+            }
+        }
+
+        // 3. Поиск по префиксу имени (name)
+        const qName = query(
+            playersRef,
+            where('name', '>=', cleanTerm),
+            where('name', '<=', cleanTerm + '\uf8ff'),
+            limit(20)
+        );
+        const snapName = await getDocs(qName);
+        snapName.forEach((d) => {
+            if (!results.some((r) => r.id === d.id)) {
+                results.push({ ...d.data(), id: d.id });
+            }
+        });
+
+        // 4. Поиск по префиксу имени (имя)
+        const qImya = query(
+            playersRef,
+            where('имя', '>=', cleanTerm),
+            where('имя', '<=', cleanTerm + '\uf8ff'),
+            limit(20)
+        );
+        const snapImya = await getDocs(qImya);
+        snapImya.forEach((d) => {
+            if (!results.some((r) => r.id === d.id)) {
+                results.push({ ...d.data(), id: d.id });
+            }
+        });
+
+        return results;
+    } catch (error) {
+        console.error('[AdminService] Global player search failed:', error);
+        return [];
+    }
+}
+
+export async function deleteFeedback(id: string): Promise<void> {
+    try {
+        const feedbackRef = doc(db, FEEDBACK_COLLECTION, id);
+        await deleteDoc(feedbackRef);
+        console.log(`[AdminService] Feedback doc ${id} deleted successfully.`);
+    } catch (error) {
+        console.error('[AdminService] Failed to delete feedback:', error);
         throw error;
     }
 }

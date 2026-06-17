@@ -1,11 +1,13 @@
-import React, { useState } from 'react';
-import { RealPlayer, inputStyle, smallBtnStyle, applyBtn } from '../AdminShared';
+import React, { useState, useEffect } from 'react';
+import { RealPlayer, inputStyle, smallBtnStyle, applyBtn, mapRawPlayerToRealPlayer } from '../AdminShared';
+import { syncService } from '../../../../../services/SyncService';
+import { useGameStore } from '../../../../../store/useGameStore';
 
 interface ServerPlayersListProps {
     realPlayers: RealPlayer[];
     isLoadingPlayers: boolean;
     selectedPlayerId: string | null;
-    onSelectPlayer: (id: string) => void;
+    onSelectPlayer: (id: string | null) => void;
     onRefresh: () => void;
 }
 
@@ -18,13 +20,92 @@ export const ServerPlayersList: React.FC<ServerPlayersListProps> = ({
 }) => {
     const [searchQuery, setSearchQuery] = useState('');
     const [filterStatus, setFilterStatus] = useState<'ALL' | 'ONLINE' | 'BANNED'>('ALL');
-    const [filterType, setFilterType] = useState<'VK_REAL' | 'VK_TEST' | 'GUEST' | 'ALL'>('VK_REAL');
+    const [filterType, setFilterType] = useState<'VK_REAL' | 'VK_TEST' | 'GUEST' | 'ALL'>('ALL');
 
-    const filteredPlayers = realPlayers.filter((p) => {
+    const [searchResults, setSearchResults] = useState<RealPlayer[]>([]);
+    const [isSearching, setIsSearching] = useState(false);
+
+    // 400ms debounced global database search
+    useEffect(() => {
+        if (!searchQuery.trim()) {
+            setSearchResults([]);
+            setIsSearching(false);
+            return;
+        }
+
+        setIsSearching(true);
+        const timer = setTimeout(async () => {
+            try {
+                const rawResults = await syncService.searchPlayersGlobal(searchQuery);
+                const mapped = rawResults.map(mapRawPlayerToRealPlayer);
+                setSearchResults(mapped);
+            } catch (err) {
+                console.error('[ServerPlayersList] Global search failed:', err);
+            } finally {
+                setIsSearching(false);
+            }
+        }, 400);
+
+        return () => clearTimeout(timer);
+    }, [searchQuery]);
+
+    // Local player identity details to keep self-editor reactive
+    const localPlayerId = useGameStore((s) => s.playerId);
+    const localVkUser = useGameStore((s) => s.vkUser);
+    const localPlayerName = useGameStore((s) => s.name);
+    const localPlayerAvatar = useGameStore((s) => s.avatar);
+    const localPlayerGold = useGameStore((s) => s.gold);
+    const localPlayerCrystals = useGameStore((s) => s.crystals);
+    const localPlayerLevel = useGameStore((s) => s.level);
+    const localPlayerRating = useGameStore((s) => s.rating);
+    const localPlayerVipLevel = useGameStore((s) => s.vipLevel);
+    const localPlayerIsVipActive = useGameStore((s) => s.isVipActive);
+    const localPlayerVipDaysRemaining = useGameStore((s) => s.vipDaysRemaining);
+    const localPlayerEnergy = useGameStore((s) => s.energy);
+    const localPlayerMaxEnergy = useGameStore((s) => s.maxEnergy);
+    const localPlayerInventory = useGameStore((s) => s.inventory);
+    const localPlayerActiveScreen = useGameStore((s) => s.activeScreen);
+    const localPlayerTalentPoints = useGameStore((s) => s.talentPoints);
+    const localPlayerHasInfiniteEnergy = useGameStore((s) => s.hasInfiniteEnergy);
+
+    const selfPlayer: RealPlayer = {
+        id: localPlayerId,
+        vkId: localVkUser ? Number(localVkUser.id) : 0,
+        name: `${localPlayerName || 'Разработчик'} (Я)`,
+        photo: localPlayerAvatar || 'https://vk.com/images/camera_100.png',
+        status: 'ONLINE',
+        screen: localPlayerActiveScreen || 'MAP',
+        level: localPlayerLevel || 1,
+        gold: localPlayerGold || 0,
+        crystals: localPlayerCrystals || 0,
+        regDate: 'сегодня',
+        reports: 0,
+        reportLogs: [],
+        gear: {},
+        isTest: true,
+        isDev: true,
+        lastSeenTime: 'сейчас',
+        rating: localPlayerRating || 0,
+        vipLevel: localPlayerVipLevel || 0,
+        isVipActive: localPlayerIsVipActive || false,
+        vipDaysRemaining: localPlayerVipDaysRemaining || 0,
+        energy: localPlayerEnergy || 0,
+        maxEnergy: localPlayerMaxEnergy || 0,
+        inventory: localPlayerInventory || [],
+        talentPoints: localPlayerTalentPoints || 0,
+        hasInfiniteEnergy: localPlayerHasInfiniteEnergy || false,
+    };
+
+    const activeList = searchQuery.trim() ? searchResults : realPlayers;
+
+    const filteredBase = activeList.filter((p) => {
+        if (p.id === localPlayerId) return false; // self is prepended manually
+
         const matchesSearch =
             p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
             p.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
             String(p.vkId).includes(searchQuery);
+
         const matchesStatus =
             filterStatus === 'ALL' ||
             (filterStatus === 'ONLINE' && p.status === 'ONLINE') ||
@@ -39,6 +120,17 @@ export const ServerPlayersList: React.FC<ServerPlayersListProps> = ({
 
         return matchesSearch && matchesStatus && matchesType;
     });
+
+    // Self matching filters
+    const matchesSearchSelf =
+        selfPlayer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        selfPlayer.id.toLowerCase().includes(searchQuery.toLowerCase());
+
+    const matchesStatusSelf = filterStatus === 'ALL' || filterStatus === 'ONLINE';
+    const matchesTypeSelf = filterType === 'ALL' || filterType === 'VK_TEST';
+
+    const showSelf = matchesSearchSelf && matchesStatusSelf && matchesTypeSelf;
+    const finalPlayers = showSelf ? [selfPlayer, ...filteredBase] : filteredBase;
 
     return (
         <div
@@ -61,8 +153,8 @@ export const ServerPlayersList: React.FC<ServerPlayersListProps> = ({
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                     />
-                    <button onClick={onRefresh} style={{ ...applyBtn, padding: '0 10px' }} disabled={isLoadingPlayers}>
-                        {isLoadingPlayers ? '...' : '🔄'}
+                    <button onClick={onRefresh} style={{ ...applyBtn, padding: '0 10px' }} disabled={isLoadingPlayers || isSearching}>
+                        {isLoadingPlayers || isSearching ? '...' : '🔄'}
                     </button>
                 </div>
 
@@ -175,72 +267,88 @@ export const ServerPlayersList: React.FC<ServerPlayersListProps> = ({
 
             {/* Прокручиваемый список игроков */}
             <div style={{ flex: 1, overflowY: 'auto' }}>
-                {filteredPlayers.map((p) => (
-                    <div
-                        key={p.id}
-                        onClick={() => onSelectPlayer(p.id)}
-                        style={{
-                            padding: '12px',
-                            borderBottom: '1px solid #111',
-                            cursor: 'pointer',
-                            background: selectedPlayerId === p.id ? '#1a1a1a' : 'transparent',
-                            display: 'flex',
-                            gap: '10px',
-                            alignItems: 'center',
-                        }}
-                    >
-                        <div
-                            style={{
-                                width: '8px',
-                                height: '8px',
-                                borderRadius: '50%',
-                                background:
-                                    p.status === 'ONLINE' ? '#4dff4d' : p.status === 'BATTLE' ? '#3b82f6' : '#777',
-                            }}
-                        />
-                        <img
-                            src={p.photo}
-                            style={{
-                                width: '32px',
-                                height: '32px',
-                                borderRadius: '50%',
-                                border: '1px solid #444',
-                            }}
-                            alt=""
-                        />
-                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '3px' }}>
-                            <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#ffffff' }}>{p.name}</div>
-                            <div style={{ fontSize: '11px', color: '#aaaaaa' }}>ID: {p.id}</div>
-                            <div
-                                style={{
-                                    fontSize: '10px',
-                                    color: p.status === 'ONLINE' || p.status === 'BATTLE' ? '#4dff4d' : '#888888',
-                                }}
-                            >
-                                {p.status === 'ONLINE'
-                                    ? 'В сети'
-                                    : p.status === 'BATTLE'
-                                      ? 'В бою ⚔️'
-                                      : p.status === 'BANNED'
-                                        ? 'Забанен'
-                                        : `Был(а) в сети: ${p.lastSeenTime}`}
-                            </div>
-                        </div>
-                        {p.reports > 0 && (
-                            <div
-                                style={{
-                                    background: '#ff4d4d',
-                                    color: '#fff',
-                                    fontSize: '8px',
-                                    padding: '1px 4px',
-                                    borderRadius: '3px',
-                                }}
-                            >
-                                {p.reports}!
-                            </div>
-                        )}
+                {isSearching && (
+                    <div style={{ padding: '20px', textAlign: 'center', color: '#666', fontSize: '12px' }}>
+                        Идет поиск в базе данных... ⏳
                     </div>
-                ))}
+                )}
+                {!isSearching && finalPlayers.length === 0 && (
+                    <div style={{ padding: '20px', textAlign: 'center', color: '#666', fontSize: '12px' }}>
+                        Ничего не найдено
+                    </div>
+                )}
+                {!isSearching && finalPlayers.map((p) => {
+                    const isSelf = p.id === localPlayerId;
+                    return (
+                        <div
+                            key={p.id}
+                            onClick={() => onSelectPlayer(p.id)}
+                            style={{
+                                padding: '12px',
+                                borderBottom: '1px solid #111',
+                                cursor: 'pointer',
+                                background: selectedPlayerId === p.id ? '#1a1a1a' : 'transparent',
+                                display: 'flex',
+                                gap: '10px',
+                                alignItems: 'center',
+                                borderLeft: isSelf ? '3px solid #f0c040' : 'none',
+                            }}
+                        >
+                            <div
+                                style={{
+                                    width: '8px',
+                                    height: '8px',
+                                    borderRadius: '50%',
+                                    background:
+                                        p.status === 'ONLINE' ? '#4dff4d' : p.status === 'BATTLE' ? '#3b82f6' : '#777',
+                                }}
+                            />
+                            <img
+                                src={p.photo}
+                                style={{
+                                    width: '32px',
+                                    height: '32px',
+                                    borderRadius: '50%',
+                                    border: `1px solid ${isSelf ? '#f0c040' : '#444'}`,
+                                }}
+                                alt=""
+                            />
+                            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                                <div style={{ fontSize: '14px', fontWeight: 'bold', color: isSelf ? '#f0c040' : '#ffffff' }}>
+                                    {p.name} {isSelf && <span style={{ fontSize: '9px', fontWeight: 'normal', opacity: 0.65 }}>(Вы)</span>}
+                                </div>
+                                <div style={{ fontSize: '11px', color: '#aaaaaa', fontFamily: 'monospace' }}>ID: {p.id}</div>
+                                <div
+                                    style={{
+                                        fontSize: '10px',
+                                        color: p.status === 'ONLINE' || p.status === 'BATTLE' ? '#4dff4d' : '#888888',
+                                    }}
+                                >
+                                    {p.status === 'ONLINE'
+                                        ? 'В сети'
+                                        : p.status === 'BATTLE'
+                                          ? 'В бою ⚔️'
+                                          : p.status === 'BANNED'
+                                            ? 'Забанен'
+                                            : `Был(а) в сети: ${p.lastSeenTime}`}
+                                </div>
+                            </div>
+                            {p.reports > 0 && (
+                                <div
+                                    style={{
+                                        background: '#ff4d4d',
+                                        color: '#fff',
+                                        fontSize: '8px',
+                                        padding: '1px 4px',
+                                        borderRadius: '3px',
+                                    }}
+                                >
+                                    {p.reports}!
+                                </div>
+                            )}
+                        </div>
+                    );
+                })}
             </div>
         </div>
     );
