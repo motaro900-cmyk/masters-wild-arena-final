@@ -213,8 +213,60 @@ export const AdminServerTab: React.FC<AdminServerTabProps> = ({
                         />
                     </>
                 ) : (
-                    <div style={{ color: '#222', textAlign: 'center', marginTop: '220px', fontSize: '14px' }}>
-                        Выберите игрока в списке слева для управления
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                        <div style={{ color: '#888', textAlign: 'center', marginTop: '40px', marginBottom: '20px', fontSize: '14px' }}>
+                            Выберите игрока в списке слева для детального управления ресурсами и банами
+                        </div>
+                        
+                        <Section title="ГЛОБАЛЬНЫЕ ДЕЙСТВИЯ СЕРВЕРА">
+                            <div style={{
+                                padding: '18px',
+                                background: 'rgba(240, 192, 64, 0.03)',
+                                border: '1px solid rgba(240, 192, 64, 0.15)',
+                                borderRadius: '10px',
+                                marginBottom: '15px'
+                            }}>
+                                <h3 style={{ margin: '0 0 8px 0', color: '#FFE07D', fontSize: '14px', fontWeight: 800 }}>
+                                    🏆 РАСПРЕДЕЛЕНИЕ НАГРАД СЕЗОНА I
+                                </h3>
+                                <p style={{ margin: '0 0 15px 0', color: '#a1a1aa', fontSize: '12px', lineHeight: 1.5 }}>
+                                    Начислит награды за Сезон I (кристаллы, золото, сундуки) в почтовые ящики топ-100 игрокам из глобальной таблицы лидеров.
+                                    Дев-аккаунты и тестеры будут автоматически отфильтрованы.
+                                </p>
+                                
+                                <button
+                                    onClick={async (e) => {
+                                        const btn = e.currentTarget;
+                                        btn.disabled = true;
+                                        const originalText = btn.innerText;
+                                        btn.innerText = 'РАСПРЕДЕЛЕНИЕ... ⏳';
+                                        try {
+                                            const count = await syncService.distributeSeasonRewards();
+                                            useGameStore.getState().showAlert(`Успешно распределено наград: ${count} игрокам!`);
+                                        } catch (err) {
+                                            console.error(err);
+                                            useGameStore.getState().showAlert('Ошибка при распределении наград');
+                                        } finally {
+                                            btn.disabled = false;
+                                            btn.innerText = originalText;
+                                        }
+                                    }}
+                                    style={{
+                                        ...applyBtn,
+                                        width: '100%',
+                                        background: 'linear-gradient(180deg, #f59e0b 0%, #b45309 100%)',
+                                        color: '#fff',
+                                        fontWeight: 'bold',
+                                        padding: '12px',
+                                        fontSize: '13px',
+                                        border: '1px solid #fcd34d',
+                                        cursor: 'pointer',
+                                    }}
+                                >
+                                    РАСПРЕДЕЛИТЬ НАГРАДЫ ТОП-100 ИГРОКАМ
+                                </button>
+                            </div>
+                        </Section>
                     </div>
                 )}
             </div>

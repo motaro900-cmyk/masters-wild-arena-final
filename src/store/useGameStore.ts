@@ -2,6 +2,9 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { getStorage } from '../utils/SafeStorage';
 import { ENERGY_CONFIG } from '../game/configs/constants';
+import { TimeService } from '../utils/TimeService';
+
+
 
 import { createPlayerSlice } from './slices/playerSlice';
 import { createShopSlice } from './slices/shopSlice';
@@ -17,6 +20,7 @@ import { createMailSlice } from './slices/mailSlice';
 
 export { WEEKLY_QUESTS_POOL } from './slices/questSlice';
 
+// Removed global localStorage guard – moved to Zustand persistence layer
 // TODO: полная типизация store — заменить all 'any' на конкретные интерфейсы slice по slice
 // Частичный тип для ключевых полей store; остальные поля пока untyped через intersection
 type GameStoreState = {
@@ -40,7 +44,16 @@ type GameStoreState = {
     setInspectPlayerName?: (name: string | null) => void;
     pvpCooldowns?: Record<string, number>;
     recordAttack?: (targetId: string) => void;
-    lastSavedTimestamp?: number;
+    
+    // Precomputed HUD values
+    hudPlayerRank?: any;
+    hudPlayerAvatar?: string;
+    hudEnemyLevel?: number;
+    hudEnemyRating?: number;
+    hudEnemyRank?: any;
+    hudEnemyAvatar?: string;
+    hudPrecomputed?: boolean;
+
     [key: string]: any; // временно — постепенно заменять на строгие типы
 };
 
@@ -151,6 +164,13 @@ const store = create<GameStoreState>()(
                     ...createBattleSlice(set, get),
                     ...createChatSlice(set, get),
                     ...createMailSlice(set, get),
+                    hudPlayerRank: null,
+                    hudPlayerAvatar: '',
+                    hudEnemyLevel: 1,
+                    hudEnemyRating: 0,
+                    hudEnemyRank: null,
+                    hudEnemyAvatar: '',
+                    hudPrecomputed: false,
                 });
             },
         }),
@@ -158,6 +178,7 @@ const store = create<GameStoreState>()(
             name: 'game-storage',
             storage: createJSONStorage(() => getStorage()),
             version: 34, // v34: Add rendererPreference and fpsCap
+            skipHydration: true,
 
             partialize: (state: any) => ({
                 level: state.level,
@@ -425,21 +446,31 @@ const store = create<GameStoreState>()(
 
 const originalSetState = store.setState;
 store.setState = (partial: any, replace?: boolean) => {
+    // When replace=true (e.g. Zustand persist rehydrate), NEVER modify the state
+    // — pass straight through to avoid wiping action functions from the store.
+    if (replace) {
+        originalSetState(partial, replace);
+        return;
+    }
+
     const currentState = store.getState();
     const patch = typeof partial === 'function' ? (partial as any)(currentState) : partial;
-    
-    // Check if crystals decreased (spent)
-    const crystalsSpent = patch && patch.crystals !== undefined && patch.crystals < (currentState.crystals || 0);
+
+    // Check if crystals decreased (spent) — trigger sync (only after READY to avoid boot-time storms)
+    const crystalsSpent =
+        patch &&
+        patch.crystals !== undefined &&
+        patch.crystals < (currentState.crystals || 0);
 
     const isSystemUpdate = patch && patch.isSystemUpdate;
 
     if (isSystemUpdate) {
         const { isSystemUpdate: _, ...cleanPatch } = patch;
-        originalSetState(cleanPatch, replace);
+        originalSetState(cleanPatch, false);
     } else if (patch && !Object.prototype.hasOwnProperty.call(patch, 'lastSavedTimestamp')) {
-        originalSetState({ ...patch, lastSavedTimestamp: Date.now() }, replace);
+        originalSetState({ ...patch, lastSavedTimestamp: TimeService.now() }, false);
     } else {
-        originalSetState(partial, replace);
+        originalSetState(partial, false);
     }
 
     if (crystalsSpent) {
@@ -450,3 +481,8 @@ store.setState = (partial: any, replace?: boolean) => {
 };
 
 export const useGameStore = store;
+
+if (typeof window !== 'undefined') {
+    (window as any).useGameStore = store;
+}
+

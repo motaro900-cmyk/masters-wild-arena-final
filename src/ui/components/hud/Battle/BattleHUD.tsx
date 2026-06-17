@@ -5,6 +5,8 @@ import { getRankInfo } from '../../../../configs/RankSystem';
 import { AssetsMap } from '../../../../configs/AssetsMap';
 import { getAvatarFrameStyle, getAvatarFramePath, getAvatarImageStyle } from '../../../../configs/ProfileCustomization';
 
+import { bootController } from '../../../../bootstrap/BootController';
+
 interface BattleHUDProps {
     playerHero: any;
     enemyData: any;
@@ -300,6 +302,11 @@ export const BattleHUD = React.memo<BattleHUDProps>(({
     currentAttacker,
     liveLog,
 }) => {
+    // READY GATE HARD BLOCK
+    if (bootController.getState() !== 'READY') {
+        console.error('[READY GATE VIOLATION] BattleHUD attempted to render before BootController is READY.');
+        return null;
+    }
     const [timeLeft, setTimeLeft] = React.useState(300); // 5 minutes in seconds
     const [scale, setScale] = React.useState(1);
 
@@ -343,52 +350,36 @@ export const BattleHUD = React.memo<BattleHUDProps>(({
     const heroes = useGameStore((s) => s.heroes) || {};
     const heroLevel = heroes[selectedHeroId]?.level || 1;
     const playerRating = useGameStore((s) => s.rating || s.trophies || 0);
-    const playerRank = getRankInfo(playerRating);
+
+    // Read precomputed HUD values from the store
+    const precomputedPlayerRank = useGameStore((s) => s.hudPlayerRank);
+    const precomputedPlayerAvatar = useGameStore((s) => s.hudPlayerAvatar);
+    const precomputedEnemyLevel = useGameStore((s) => s.hudEnemyLevel);
+    const precomputedEnemyRating = useGameStore((s) => s.hudEnemyRating);
+    const precomputedEnemyRank = useGameStore((s) => s.hudEnemyRank);
+    const precomputedEnemyAvatar = useGameStore((s) => s.hudEnemyAvatar);
+
+    const playerRank = precomputedPlayerRank || getRankInfo(playerRating);
     const playerName = useGameStore((s) => s.name) || 'Мастер';
     const rawAvatar = useGameStore((s) => s.avatar);
     const vkUser = useGameStore((s) => s.vkUser);
     const playerFrame = useGameStore((s) => s.frame) || 'default';
     const vipLevel = useGameStore((s) => s.vipLevel) || 0;
 
-    const playerAvatar = useMemo(() => {
-        if (rawAvatar && !rawAvatar.startsWith('sprite:')) return rawAvatar;
-        return vkUser?.photo_200 || vkUser?.photo || '/assets/images/avatars/panda.webp';
-    }, [rawAvatar, vkUser]);
+    const playerAvatar = precomputedPlayerAvatar || (rawAvatar && !rawAvatar.startsWith('sprite:') ? rawAvatar : (vkUser?.photo200 || vkUser?.photo_200 || vkUser?.photo || '/assets/images/avatars/panda.webp'));
 
     const activeRankedOpponent = useGameStore((s) => s.activeRankedOpponent);
 
-    const { enemyLevel, enemyRating } = useMemo(() => {
-        if (battleMode === 'PVE' && activePveEnemy) {
-            const lvl = activePveEnemy.level || 1;
-            return { enemyLevel: lvl, enemyRating: Math.max(0, lvl * 180) };
-        }
-        if (battleMode === 'RANKED' && activeRankedOpponent) {
-            return {
-                enemyLevel: activeRankedOpponent.level || 1,
-                enemyRating: activeRankedOpponent.rating || 0,
-            };
-        }
-        return { enemyLevel: Math.max(1, heroLevel), enemyRating: Math.max(0, playerRating) };
-    }, [battleMode, activePveEnemy, heroLevel, playerRating, activeRankedOpponent]);
+    const enemyLevel = precomputedEnemyLevel !== undefined ? precomputedEnemyLevel : (battleMode === 'PVE' && activePveEnemy ? (activePveEnemy.level || 1) : (activeRankedOpponent?.level || 1));
+    const enemyRating = precomputedEnemyRating !== undefined ? precomputedEnemyRating : (battleMode === 'PVE' && activePveEnemy ? Math.max(0, (activePveEnemy.level || 1) * 180) : (activeRankedOpponent?.rating || 0));
 
-    const enemyRank = getRankInfo(enemyRating);
+    const enemyRank = precomputedEnemyRank || getRankInfo(enemyRating);
 
     const enemyName = battleMode === 'PVE' && activePveEnemy ? activePveEnemy.name : enemyData.name;
     const lastLog = liveLog.length > 0 ? liveLog[liveLog.length - 1] : null;
 
     // Enemy Avatar
-    const enemyAvatar = useMemo(() => {
-        if (battleMode === 'PVE') {
-            // PVE mobs image path is usually raw character sprite
-            return enemyData.image || '/assets/images/avatars/wolf.webp';
-        }
-        // PVP: use opponent's real VK/in-game avatar if available
-        if (activeRankedOpponent?.avatar) {
-            return activeRankedOpponent.avatar;
-        }
-        // Fallback to hero sprite
-        return enemyData.image || '/assets/images/avatars/wolf.webp';
-    }, [battleMode, enemyData, activeRankedOpponent]);
+    const enemyAvatar = precomputedEnemyAvatar || (battleMode === 'PVE' ? (enemyData.image || '/assets/images/avatars/wolf.webp') : (activeRankedOpponent?.avatar || enemyData.image || '/assets/images/avatars/wolf.webp'));
 
     return (
         <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 100 }}>

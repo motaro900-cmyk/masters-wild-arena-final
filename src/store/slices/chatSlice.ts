@@ -43,9 +43,13 @@ export const createChatSlice = (set: any, get: any) => ({
     privateMessages: [] as any[],
     clanMessages: [] as any[],
     lastMessageTime: 0,
+    chatActiveTab: 'all' as 'all' | 'system' | 'clan' | 'private',
+    chatPrivateRecipient: null as string | null,
 
     // --- Actions ---
 
+    setChatActiveTab: (tab: 'all' | 'system' | 'clan' | 'private') => set({ chatActiveTab: tab }),
+    setChatPrivateRecipient: (recipient: string | null) => set({ chatPrivateRecipient: recipient }),
     setLeaderboard: (leaders: any[]) => set({ leaderboard: leaders }),
 
     setMessages: (newMessages: any[]) => {

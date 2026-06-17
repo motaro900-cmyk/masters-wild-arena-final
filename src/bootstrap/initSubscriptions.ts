@@ -1,4 +1,5 @@
 import { useGameStore } from '../store/useGameStore';
+import { bootController } from './BootController';
 
 interface SubscriptionsResult {
     unsubChat: () => void;
@@ -18,23 +19,58 @@ export const initSubscriptions = async (
     let unsubClanChat: (() => void) | null = null;
 
     const unsubChat = syncService.subscribeToChat((messages) => {
-        useGameStore.getState().setMessages(messages);
+        bootController.execute({
+            type: 'MUTATE_STATE',
+            payload: {
+                patch: () => {
+                    useGameStore.getState().setMessages(messages);
+                }
+            }
+        }).catch(() => {});
     });
 
     const unsubLeaderboard = syncService.subscribeToGlobalLeaders(10, (leaders) => {
-        useGameStore.getState().setLeaderboard(leaders);
+        bootController.execute({
+            type: 'MUTATE_STATE',
+            payload: {
+                patch: () => {
+                    useGameStore.getState().setLeaderboard(leaders);
+                }
+            }
+        }).catch(() => {});
     });
 
     const unsubFriends = syncService.subscribeToFriendRequests(prefixedId, (requests) => {
-        useGameStore.getState().setFriendRequests(requests);
+        bootController.execute({
+            type: 'MUTATE_STATE',
+            payload: {
+                patch: () => {
+                    useGameStore.getState().setFriendRequests(requests);
+                }
+            }
+        }).catch(() => {});
     });
 
     const unsubMail = syncService.subscribeToMail(prefixedId, (mails) => {
-        useGameStore.getState().setMail(mails);
+        bootController.execute({
+            type: 'MUTATE_STATE',
+            payload: {
+                patch: () => {
+                    useGameStore.getState().setMail(mails);
+                }
+            }
+        }).catch(() => {});
     });
 
     const unsubPrivateChat = syncService.subscribeToPrivateMessages(prefixedId, (messages) => {
-        useGameStore.getState().setPrivateMessages(messages);
+        bootController.execute({
+            type: 'MUTATE_STATE',
+            payload: {
+                patch: () => {
+                    useGameStore.getState().setPrivateMessages(messages);
+                }
+            }
+        }).catch(() => {});
     });
 
     let lastAppliedAdminVersion: number | null = null;
@@ -44,17 +80,23 @@ export const initSubscriptions = async (
         if (!dbData) return;
 
         // Session conflict check (multi-device concurrent session kick)
-        const localSessionToken = useGameStore.getState().sessionToken;
+        const storeState = useGameStore.getState();
+        const localSessionToken = storeState?.sessionToken;
         if (dbData.activeSessionToken && localSessionToken && dbData.activeSessionToken !== localSessionToken) {
             console.warn('[SyncService] Session conflict detected: activeSessionToken in DB is different!');
-            useGameStore.setState({ sessionConflict: true });
+            bootController.execute({
+                type: 'MUTATE_STATE',
+                payload: {
+                    patch: { sessionConflict: true }
+                }
+            }).catch(() => {});
             syncService.disableSync();
             return;
         }
 
         // Friends list dynamic sync check
         const dbFriendIds = dbData.friends || [];
-        const localFriends = useGameStore.getState().friends || [];
+        const localFriends = useGameStore.getState()?.friends || [];
         const localFriendIds = localFriends.map((f: any) => f.id);
         const hasDiff =
             dbFriendIds.length !== localFriendIds.length ||
@@ -70,8 +112,13 @@ export const initSubscriptions = async (
                     hasGift: oldFriend ? !!oldFriend.hasGift : false,
                 };
             });
-            useGameStore.setState({ friends: merged });
-            syncService.debouncedSync();
+            bootController.execute({
+                type: 'MUTATE_STATE',
+                payload: {
+                    patch: { friends: merged }
+                }
+            }).catch(() => {});
+            // Note: sync will be triggered by startAutoSync() after BootController reaches READY
         }
 
         const dbClanId = dbData.clanId || null;
@@ -83,31 +130,62 @@ export const initSubscriptions = async (
             }
             if (dbClanId) {
                 unsubClanChat = syncService.subscribeToClanChat(dbClanId, (messages) => {
-                    useGameStore.getState().setClanMessages(messages);
+                    bootController.execute({
+                        type: 'MUTATE_STATE',
+                        payload: {
+                            patch: () => {
+                                useGameStore.getState().setClanMessages(messages);
+                            }
+                        }
+                    }).catch(() => {});
                 });
             } else {
-                useGameStore.getState().setClanMessages([]);
+                bootController.execute({
+                    type: 'MUTATE_STATE',
+                    payload: {
+                        patch: () => {
+                            useGameStore.getState().setClanMessages([]);
+                        }
+                    }
+                }).catch(() => {});
             }
         }
 
         if (dbData.status === 'BANNED') {
-            useGameStore.setState({
-                isBanned: true,
-                banReason: dbData.banReason || 'Нарушение правил игры',
-                banUntil: dbData.banUntil || '',
-            });
+            bootController.execute({
+                type: 'MUTATE_STATE',
+                payload: {
+                    patch: {
+                        isBanned: true,
+                        banReason: dbData.banReason || 'Нарушение правил игры',
+                        banUntil: dbData.banUntil || '',
+                    }
+                }
+            }).catch(() => {});
             return;
         } else {
-            useGameStore.setState({ isBanned: false });
+            bootController.execute({
+                type: 'MUTATE_STATE',
+                payload: {
+                    patch: { isBanned: false }
+                }
+            }).catch(() => {});
         }
 
         if (dbData.status === 'KICKED') {
             syncService.updateRemotePlayerData(userId, { status: 'OFFLINE' }).catch(() => {});
-            useGameStore
-                .getState()
-                .showAlert('Соединение разорвано: Вы были отключены администратором (KICKED).', () => {
-                    window.location.reload();
-                });
+            bootController.execute({
+                type: 'MUTATE_STATE',
+                payload: {
+                    patch: () => {
+                        useGameStore
+                            .getState()
+                            .showAlert('Соединение разорвано: Вы были отключены администратором (KICKED).', () => {
+                                window.location.reload();
+                            });
+                    }
+                }
+            }).catch(() => {});
             return;
         }
 
@@ -198,7 +276,12 @@ export const initSubscriptions = async (
                         '[SyncService] Admin updated player state, applying changes:',
                         updatePayload,
                     );
-                    useGameStore.setState(updatePayload);
+                    bootController.execute({
+                        type: 'MUTATE_STATE',
+                        payload: {
+                            patch: updatePayload
+                        }
+                    }).catch(() => {});
                 }
             } catch (e) {
                 console.error('[SyncService] Error parsing own profile JSON update:', e);

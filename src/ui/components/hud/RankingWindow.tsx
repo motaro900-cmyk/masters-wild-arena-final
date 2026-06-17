@@ -93,8 +93,8 @@ const playerName = useGameStore(state => state.name);
         };
     }, [vkUser]);
 
-    // Сезон I: РАССВЕТ ДИКОГО ЛЕСА — 1–15 июня 2026
-    const SEASON_END = new Date('2026-06-15T23:59:59');
+    // Сезон I: РАССВЕТ ДИКОГО ЛЕСА — до 31 августа 2026
+    const SEASON_END = new Date('2026-08-31T23:59:59');
     const getRemainingTime = () => {
         const now = new Date();
         const diff = SEASON_END.getTime() - now.getTime();
@@ -191,32 +191,45 @@ const playerName = useGameStore(state => state.name);
                         <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '10px' }}>ДО КОНЦА СЕЗОНА</div>
                     </div>
                     <motion.button
-                        whileHover={{ scale: 1.12, rotate: 4 }}
+                        whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                         onClick={() => setShowRewards(true)}
                         style={{
-                            background: 'none',
-                            border: 'none',
-                            width: '56px',
-                            height: '56px',
+                            background: 'linear-gradient(180deg, rgba(240, 192, 64, 0.18) 0%, rgba(240, 192, 64, 0.05) 100%)',
+                            border: '1px solid rgba(240, 192, 64, 0.45)',
+                            borderRadius: '12px',
+                            padding: '6px 12px 6px 16px',
                             cursor: 'pointer',
                             display: 'flex',
                             alignItems: 'center',
-                            justifyContent: 'center',
+                            gap: '10px',
+                            boxShadow: '0 4px 15px rgba(0,0,0,0.3)',
+                            fontFamily: "'Outfit', 'Cinzel', sans-serif",
                             overflow: 'visible',
-                            padding: 0,
                             flexShrink: 0,
                         }}
                         title="Награды сезона"
                     >
+                        <span style={{
+                            color: '#FFE07D',
+                            fontSize: '11px',
+                            fontWeight: 900,
+                            textTransform: 'uppercase',
+                            letterSpacing: '1px',
+                            textAlign: 'right',
+                            lineHeight: 1.3,
+                            textShadow: '0 1px 2px rgba(0,0,0,0.8)'
+                        }}>
+                            Награды<br/>сезона
+                        </span>
                         <img
                             src={AssetsMap.UI.ICON_SEASON_RATE}
                             alt="season rewards"
                             style={{
-                                width: '56px',
-                                height: '56px',
+                                width: '38px',
+                                height: '38px',
                                 objectFit: 'contain',
-                                filter: 'drop-shadow(0 0 12px rgba(240,192,64,0.8)) drop-shadow(0 2px 4px rgba(0,0,0,0.7))',
+                                filter: 'drop-shadow(0 0 8px rgba(240,192,64,0.6))',
                             }}
                         />
                     </motion.button>

@@ -65,6 +65,10 @@ export class PixiApp {
     private _debugLayer: PIXI.Container;
     private homeContainer: HTMLElement | null = null;
     private storeUnsubscribe: (() => void) | null = null;
+    private lastFrameTime: number = 0;
+    private lastFpsUpdate: number = 0;
+    private fpsFrameCount: number = 0;
+    private currentActualFps: number = 0;
 
     private constructor() {
         this._backgroundLayer = new PIXI.Container();
@@ -129,6 +133,12 @@ export class PixiApp {
                 console.warn('Failed to unsubscribe useGameStore in PixiApp destroy:', e);
             }
             this.storeUnsubscribe = null;
+        }
+
+        try {
+            useGameStore.setState({ currentFps: null });
+        } catch (e) {
+            // ignore
         }
 
         if (PixiApp.canvas) {
@@ -301,7 +311,7 @@ export class PixiApp {
                         const canvas = this.pixiApp?.canvas;
                         if (!canvas) return originalMapPositionToPoint.call(events, point, x, y);
 
-                        const isPortraitMobile = useGameStore.getState().isMobile && window.innerWidth < window.innerHeight;
+                        const isPortraitMobile = useGameStore.getState()?.isMobile && window.innerWidth < window.innerHeight;
                         if (isPortraitMobile) {
                             const rect = canvas.getBoundingClientRect();
                             const nx = rect.width > 0 ? (x - rect.left) / rect.width : 0;
@@ -403,6 +413,26 @@ export class PixiApp {
     private update(ticker: PIXI.Ticker): void {
         try {
             if (!this.pixiApp?.canvas) return;
+
+            // Measure FPS of the actual game loop
+            this.fpsFrameCount++;
+            const now = performance.now();
+            if (this.lastFpsUpdate === 0) {
+                this.lastFpsUpdate = now;
+            }
+            if (now - this.lastFpsUpdate >= 1000) {
+                const elapsed = now - this.lastFpsUpdate;
+                this.currentActualFps = Math.round((this.fpsFrameCount * 1000) / elapsed);
+                this.fpsFrameCount = 0;
+                this.lastFpsUpdate = now;
+
+                // Sync the actual game loop FPS to our state store so UI can display it
+                try {
+                    useGameStore.setState({ currentFps: this.currentActualFps });
+                } catch (e) {
+                    // ignore
+                }
+            }
 
             // [Lead Architect]: Update loop for all registered systems
             for (const loop of this.updateLoops) {

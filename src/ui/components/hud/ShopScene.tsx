@@ -278,26 +278,47 @@ export const ShopScene: React.FC = () => {
                     }}
                 >
                     {/* SUB-TABS (ОРУЖИЕ, ЩИТЫ, etc) */}
-                    <div
-                        style={{
-                            display: 'flex',
-                            gap: isMobile ? '8px' : '15px',
-                            borderBottom: 'none',
-                            paddingBottom: isMobile ? '6px' : '10px',
-                            alignItems: 'center',
-                            overflowX: 'auto',
-                            whiteSpace: 'nowrap',
-                        }}
-                    >
-                        {getSubTabs(activeMainTab).map((tab) => (
-                            <SubTabBtn
-                                key={tab.id}
-                                label={tab.label}
-                                isActive={activeSubTab === tab.id}
-                                onClick={() => setActiveSubTab(tab.id)}
-                                isMobile={isMobile}
-                            />
-                        ))}
+                    <div style={{ position: 'relative', width: '100%', overflow: 'hidden' }}>
+                        <div
+                            className="no-scrollbar"
+                            style={{
+                                display: 'flex',
+                                gap: isMobile ? '8px' : '15px',
+                                borderBottom: 'none',
+                                paddingBottom: isMobile ? '6px' : '10px',
+                                alignItems: 'center',
+                                overflowX: 'auto',
+                                whiteSpace: 'nowrap',
+                                scrollbarWidth: 'none',
+                            }}
+                        >
+                            <style>{`
+                                .no-scrollbar::-webkit-scrollbar {
+                                    display: none;
+                                }
+                            `}</style>
+                            {getSubTabs(activeMainTab).map((tab) => (
+                                <SubTabBtn
+                                    key={tab.id}
+                                    label={tab.label}
+                                    isActive={activeSubTab === tab.id}
+                                    onClick={() => setActiveSubTab(tab.id)}
+                                    isMobile={isMobile}
+                                />
+                            ))}
+                        </div>
+                        {isMobile && (
+                            <div style={{
+                                position: 'absolute',
+                                right: 0,
+                                top: 0,
+                                bottom: '6px',
+                                width: '35px',
+                                background: 'linear-gradient(to right, rgba(10,8,8,0) 0%, rgba(10,8,8,0.95) 100%)',
+                                pointerEvents: 'none',
+                                zIndex: 10,
+                            }} />
+                        )}
                     </div>
 
                     {/* MAIN MIDDLE ROW (PEDESTAL & INSPECTION CARD) */}

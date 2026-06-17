@@ -15,7 +15,13 @@ export const initFirebaseProfile = async (
     setLoadingText: (text: string) => void
 ): Promise<FirebaseProfileResult | null> => {
     const { syncService, SyncService } = await import('../services/SyncService');
+    const { bootController } = await import('./BootController');
     let state = useGameStore.getState();
+
+    if (bootController.getState() !== 'LOAD') {
+        console.warn(`[initFirebaseProfile] Aborting load: bootState is ${bootController.getState()}, expected LOAD`);
+        return null;
+    }
 
     const isLocalhost =
         typeof window !== 'undefined' &&
@@ -144,9 +150,9 @@ export const initFirebaseProfile = async (
 
             if (localTimestamp > remoteTimestamp && localState.name && localState.name !== 'Мастер') {
                 console.log(
-                    '[SyncService] Local offline progress is newer than remote. Keeping local state and syncing to remote.',
+                    '[SyncService] Local offline progress is newer than remote. Keeping local state (will sync to remote post-boot).',
                 );
-                syncService.syncPlayerData();
+                bootController.setNeedPostBootSync(true);
                 useGameStore.setState({
                     isAdmin: finalAdminStatus,
                     isDeveloper: finalAdminStatus,
@@ -198,6 +204,7 @@ export const initFirebaseProfile = async (
                     stateToRestore.activeScreen = 'MAIN_MENU';
                 }
 
+                stateToRestore.isSystemUpdate = true;
                 useGameStore.setState(stateToRestore);
                 useGameStore.setState({
                     isAdmin: finalAdminStatus,
@@ -206,8 +213,8 @@ export const initFirebaseProfile = async (
                 });
 
                 if (needSync) {
-                    console.log('💾 Syncing corrected profile data to Firebase...');
-                    syncService.syncPlayerData();
+                    console.log('💾 Autocorrected profile data (will sync to Firebase post-boot)...');
+                    bootController.setNeedPostBootSync(true);
                 }
             }
             return { userId, isNew: false, data: fbProfile };

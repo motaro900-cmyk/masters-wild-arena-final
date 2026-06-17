@@ -6,8 +6,9 @@ import { getRankInfo } from '../../../configs/RankSystem';
 import { getHeroConfig } from '../../../configs/HeroesConfig';
 import { AvatarFrame } from './SharedUI';
 import { syncService, SyncService } from '../../../services/SyncService';
-import { buildStatsFromEquipment, calculateCombatPower } from '../../../services/MatchmakingService';
+import { buildStatsFromEquipment } from '../../../services/MatchmakingService';
 import { ITEMS_DATABASE } from '../../../game/configs/ItemsConfig';
+import { calculateTotalPower } from './Matchmaking/utils/matchmakingUtils';
 import { audioService } from '../../../services/AudioService';
 import { AssetsMap } from '../../../configs/AssetsMap';
 import { resolveAvatarPath } from '../../../configs/ProfileCustomization';
@@ -228,17 +229,16 @@ export const PlayerInspectModal: React.FC = () => {
         }
     };
 
-    const handleWriteMail = () => {
+    const handleWritePrivateMessage = () => {
         if (!playerData) return;
         audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
+        const recipientName = playerData.name || playerData.имя || 'Мастер';
         useGameStore.setState({
-            activeMailRecipientId: playerData.id,
+            chatActiveTab: 'private',
+            chatPrivateRecipient: recipientName,
             inspectPlayerId: null,
             inspectPlayerName: null,
         });
-        if ((window as any).setActiveHUDWindow) {
-            (window as any).setActiveHUDWindow('MAIL');
-        }
     };
 
     const gold = playerData ? (playerData.gold !== undefined ? playerData.gold : playerData.золото !== undefined ? playerData.золото : 0) : 0;
@@ -293,7 +293,7 @@ export const PlayerInspectModal: React.FC = () => {
                 border: `1.5px solid ${itemData ? rarityColor + '33' : 'rgba(255,255,255,0.05)'}`,
                 borderRadius: '12px',
                 padding: '8px 12px',
-                height: '81px',
+                height: '94px',
                 boxSizing: 'border-box',
                 display: 'flex',
                 alignItems: 'center',
@@ -301,8 +301,8 @@ export const PlayerInspectModal: React.FC = () => {
                 boxShadow: itemData ? `0 4px 12px rgba(0,0,0,0.5), inset 0 0 10px ${rarityColor}11` : 'none',
             }}>
                 <div style={{
-                    width: '42px',
-                    height: '42px',
+                    width: '50px',
+                    height: '50px',
                     borderRadius: '8px',
                     background: itemData
                         ? `radial-gradient(circle at 50% 30%, rgba(40, 32, 24, 0.95) 0%, rgba(14, 10, 8, 0.98) 100%)`
@@ -317,7 +317,7 @@ export const PlayerInspectModal: React.FC = () => {
                 }}>
                     {itemData ? (
                         itemData.spriteClass ? (
-                            <div className={itemData.spriteClass} style={{ width: '36px', height: '36px', borderRadius: '6px' }} />
+                            <div className={itemData.spriteClass} style={{ width: '44px', height: '44px', borderRadius: '6px' }} />
                         ) : (
                             <img
                                 src={resolveAssetPath(itemData.image)}
@@ -341,15 +341,15 @@ export const PlayerInspectModal: React.FC = () => {
 
                 <div style={{ textAlign: 'left', flex: 1, overflow: 'hidden' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2px' }}>
-                        <span style={{ fontSize: '9px', color: 'rgba(255,255,255,0.4)', fontWeight: 800 }}>{slotLabel}</span>
+                        <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', fontWeight: 800 }}>{slotLabel}</span>
                         {itemData && (
-                            <span style={{ fontSize: '8px', color: rarityColor, fontWeight: 900, textTransform: 'uppercase' }}>
+                            <span style={{ fontSize: '9px', color: rarityColor, fontWeight: 900, textTransform: 'uppercase' }}>
                                 {RARITY_RU[itemData.rarity] || itemData.rarity}
                             </span>
                         )}
                     </div>
                     <div style={{
-                        fontSize: '12px',
+                        fontSize: '13.5px',
                         fontWeight: 800,
                         color: itemData ? '#fff' : 'rgba(255,255,255,0.3)',
                         whiteSpace: 'nowrap',
@@ -359,7 +359,7 @@ export const PlayerInspectModal: React.FC = () => {
                         {itemData ? itemData.name : 'Пусто'}
                     </div>
                     {itemData && (
-                        <div style={{ fontSize: '9px', color: '#4ade80', fontWeight: 700, marginTop: '2px' }}>
+                        <div style={{ fontSize: '10px', color: '#4ade80', fontWeight: 700, marginTop: '2px' }}>
                             {[
                                 itemData.hpBonus && `+${itemData.hpBonus} HP`,
                                 itemData.attackBonus && `+${itemData.attackBonus} ATK`,
@@ -374,10 +374,7 @@ export const PlayerInspectModal: React.FC = () => {
     };
 
     const renderPowerCard = () => {
-        const baseStats = buildStatsFromEquipment(selectedHeroId, heroLevel, {});
-        const basePower = calculateCombatPower(baseStats);
-        const totalPower = calculateCombatPower(computedStats);
-        const gearPower = totalPower - basePower;
+        const gearPower = calculateTotalPower(playerData?.equipment || playerData?.снаряжение || {});
 
         return (
             <div style={{
@@ -385,7 +382,7 @@ export const PlayerInspectModal: React.FC = () => {
                 border: '1.5px solid #f0c040',
                 borderRadius: '12px',
                 padding: '6px 12px',
-                height: '94px',
+                height: '104px',
                 boxSizing: 'border-box',
                 display: 'flex',
                 alignItems: 'center',
@@ -393,8 +390,8 @@ export const PlayerInspectModal: React.FC = () => {
                 boxShadow: '0 4px 12px rgba(240,192,64,0.15), inset 0 0 15px rgba(240,192,64,0.1)',
             }}>
                 <div style={{
-                    width: '40px',
-                    height: '40px',
+                    width: '44px',
+                    height: '44px',
                     borderRadius: '8px',
                     background: 'radial-gradient(circle, rgba(240,192,64,0.2) 0%, rgba(0,0,0,0.5) 100%)',
                     border: '1.5px solid #f0c040',
@@ -412,12 +409,12 @@ export const PlayerInspectModal: React.FC = () => {
                 </div>
 
                 <div style={{ textAlign: 'left', flex: 1 }}>
-                    <div style={{ fontSize: '9px', color: '#f0c040', fontWeight: 800 }}>БОЕВАЯ МОЩЬ</div>
-                    <div style={{ fontSize: '18px', fontWeight: 900, color: '#fff', fontFamily: "'Cinzel', serif", textShadow: '0 2px 4px rgba(0,0,0,0.6)', lineHeight: '1.1' }}>
-                        {totalPower.toLocaleString()}
+                    <div style={{ fontSize: '10.5px', color: '#f0c040', fontWeight: 800 }}>БОЕВАЯ МОЩЬ</div>
+                    <div style={{ fontSize: '22px', fontWeight: 900, color: '#fff', fontFamily: "'Cinzel', serif", textShadow: '0 2px 4px rgba(0,0,0,0.6)', lineHeight: '1.1' }}>
+                        {gearPower.toLocaleString()}
                     </div>
-                    <div style={{ fontSize: '8px', color: 'rgba(255,255,255,0.45)', fontWeight: 700, marginTop: '2px', whiteSpace: 'nowrap' }}>
-                        Герой: {basePower.toLocaleString()} | Снаряж: +{gearPower.toLocaleString()}
+                    <div style={{ fontSize: '9.5px', color: 'rgba(255,255,255,0.45)', fontWeight: 700, marginTop: '2px', whiteSpace: 'nowrap' }}>
+                        Герой: 0 | Снаряж: +{gearPower.toLocaleString()}
                     </div>
                 </div>
             </div>
@@ -451,7 +448,7 @@ export const PlayerInspectModal: React.FC = () => {
                 border: '1.5px solid rgba(240,192,64,0.15)',
                 borderRadius: '12px',
                 padding: '8px 12px',
-                height: '81px',
+                height: '94px',
                 boxSizing: 'border-box',
                 display: 'flex',
                 flexDirection: 'column',
@@ -460,20 +457,20 @@ export const PlayerInspectModal: React.FC = () => {
                 gap: '2px',
                 boxShadow: 'inset 0 0 10px rgba(0,0,0,0.3)',
             }}>
-                <div style={{ fontSize: '8.5px', color: '#f0c040', fontWeight: 800, textTransform: 'uppercase', marginBottom: '1px' }}>
+                <div style={{ fontSize: '10px', color: '#f0c040', fontWeight: 800, textTransform: 'uppercase', marginBottom: '1px' }}>
                     БОНУСЫ ЭКИПИРОВКИ
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1px 8px' }}>
-                    <div style={{ fontSize: '10px', color: totalHp > 0 ? '#4ade80' : 'rgba(255,255,255,0.2)', fontWeight: 700 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px 10px' }}>
+                    <div style={{ fontSize: '11.5px', color: totalHp > 0 ? '#4ade80' : 'rgba(255,255,255,0.2)', fontWeight: 700 }}>
                         HP: {totalHp > 0 ? `+${totalHp}` : '0'}
                     </div>
-                    <div style={{ fontSize: '10px', color: totalAtk > 0 ? '#4ade80' : 'rgba(255,255,255,0.2)', fontWeight: 700 }}>
+                    <div style={{ fontSize: '11.5px', color: totalAtk > 0 ? '#4ade80' : 'rgba(255,255,255,0.2)', fontWeight: 700 }}>
                         ATK: {totalAtk > 0 ? `+${totalAtk}` : '0'}
                     </div>
-                    <div style={{ fontSize: '10px', color: totalDef > 0 ? '#4ade80' : 'rgba(255,255,255,0.2)', fontWeight: 700 }}>
+                    <div style={{ fontSize: '11.5px', color: totalDef > 0 ? '#4ade80' : 'rgba(255,255,255,0.2)', fontWeight: 700 }}>
                         DEF: {totalDef > 0 ? `+${totalDef}` : '0'}
                     </div>
-                    <div style={{ fontSize: '10px', color: totalCrit > 0 ? '#4ade80' : 'rgba(255,255,255,0.2)', fontWeight: 700 }}>
+                    <div style={{ fontSize: '11.5px', color: totalCrit > 0 ? '#4ade80' : 'rgba(255,255,255,0.2)', fontWeight: 700 }}>
                         CRIT: {totalCrit > 0 ? `+${Math.round(totalCrit)}%` : '0%'}
                     </div>
                 </div>
@@ -502,7 +499,7 @@ export const PlayerInspectModal: React.FC = () => {
                 exit={{ scale: 0.92, opacity: 0, y: 15 }}
                 onClick={(e) => e.stopPropagation()}
                 style={{
-                    width: '820px',
+                    width: '880px',
                     background: 'radial-gradient(circle at center, #231c15 0%, #120e0a 100%)',
                     border: '2px solid #f0c040',
                     borderRadius: '24px',
@@ -569,7 +566,7 @@ export const PlayerInspectModal: React.FC = () => {
                     <>
                         {/* АВАТАР И РАМКА */}
                         <div style={{ marginBottom: '15px' }}>
-                            <AvatarFrame avatarFilename={avatar} frameFilename={frame} size={110} showGlow />
+                            <AvatarFrame avatarFilename={avatar} frameFilename={frame} size={130} showGlow />
                         </div>
 
                         {/* НИКНЕЙМ, VIP И ТИТУЛ */}
@@ -705,7 +702,7 @@ export const PlayerInspectModal: React.FC = () => {
                                     }
                                 }}
                             >
-                                📊 ОБЩАЯ ИНФО
+                                ОБЩАЯ ИНФОРМАЦИЯ
                             </button>
                             <button
                                 onClick={() => {
@@ -749,13 +746,13 @@ export const PlayerInspectModal: React.FC = () => {
                                     }
                                 }}
                             >
-                                🛡️ ЭКИПИРОВКА
+                                ЭКИПИРОВКА
                             </button>
                         </div>
 
                         {/* СОДЕРЖИМОЕ ВКЛАДОК */}
                         {activeTab === 'info' ? (
-                            <div style={{ width: '100%', height: '350px', overflow: 'hidden' }}>
+                            <div style={{ width: '100%', height: '410px', overflow: 'hidden' }}>
                                 {/* ЛЮБИМЫЙ ПЕРСОНАЖ */}
                                 <div
                                     style={{
@@ -773,8 +770,8 @@ export const PlayerInspectModal: React.FC = () => {
                                     <img
                                         src={resolveAssetPath(heroConfig.image)}
                                         style={{
-                                            width: '72px',
-                                            height: '72px',
+                                            width: '82px',
+                                            height: '82px',
                                             objectFit: 'contain',
                                             filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.6))',
                                         }}
@@ -784,10 +781,10 @@ export const PlayerInspectModal: React.FC = () => {
                                         <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                                             Любимый Персонаж
                                         </div>
-                                        <div style={{ color: '#fff', fontSize: '18px', fontWeight: 800, fontFamily: "'Cinzel', serif" }}>
-                                            {heroConfig.name} <span style={{ color: '#fcd34d', fontSize: '14px', fontWeight: 700 }}>• Ур. {heroLevel}</span>
+                                        <div style={{ color: '#fff', fontSize: '20px', fontWeight: 800, fontFamily: "'Cinzel', serif" }}>
+                                            {heroConfig.name} <span style={{ color: '#fcd34d', fontSize: '16px', fontWeight: 700 }}>• Ур. {heroLevel}</span>
                                         </div>
-                                        <div style={{ color: '#c8a870', fontSize: '12px', opacity: 0.8 }}>
+                                        <div style={{ color: '#c8a870', fontSize: '13px', opacity: 0.8 }}>
                                             {heroConfig.title} • {heroConfig.role === 'TANK' ? 'Танк' : heroConfig.role === 'ASSASSIN' ? 'Убийца' : heroConfig.role === 'MAGE' ? 'Маг' : heroConfig.role === 'SUPPORT' ? 'Поддержка' : 'Боец'}
                                         </div>
                                     </div>
@@ -806,7 +803,7 @@ export const PlayerInspectModal: React.FC = () => {
                                     }}
                                 >
                                     <div style={{
-                                        fontSize: '11px',
+                                        fontSize: '13px',
                                         color: '#f0c040',
                                         fontWeight: 800,
                                         textTransform: 'uppercase',
@@ -820,31 +817,27 @@ export const PlayerInspectModal: React.FC = () => {
                                     <div style={{
                                         display: 'grid',
                                         gridTemplateColumns: '1fr 1fr',
-                                        gap: '5px 25px',
+                                        gap: '8px 30px',
                                     }}>
                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                            <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', fontWeight: 700 }}>ЗДОРОВЬЕ (HP)</span>
-                                            <span style={{ fontSize: '12px', color: '#fff', fontWeight: 800 }}>{computedStats.hp}</span>
+                                            <span style={{ fontSize: '12.5px', color: 'rgba(255,255,255,0.4)', fontWeight: 700 }}>❤️ ЗДОРОВЬЕ (HP)</span>
+                                            <span style={{ fontSize: '14px', color: '#fff', fontWeight: 800 }}>{computedStats.hp}</span>
                                         </div>
                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                            <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', fontWeight: 700 }}>АТАКА (ATK)</span>
-                                            <span style={{ fontSize: '12px', color: '#fff', fontWeight: 800 }}>{computedStats.attack}</span>
+                                            <span style={{ fontSize: '12.5px', color: 'rgba(255,255,255,0.4)', fontWeight: 700 }}>⚔️ АТАКА (ATK)</span>
+                                            <span style={{ fontSize: '14px', color: '#fff', fontWeight: 800 }}>{computedStats.attack}</span>
                                         </div>
                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                            <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', fontWeight: 700 }}>ЗАЩИТА (DEF)</span>
-                                            <span style={{ fontSize: '12px', color: '#fff', fontWeight: 800 }}>{computedStats.defense}</span>
+                                            <span style={{ fontSize: '12.5px', color: 'rgba(255,255,255,0.4)', fontWeight: 700 }}>🛡️ ЗАЩИТА (DEF)</span>
+                                            <span style={{ fontSize: '14px', color: '#fff', fontWeight: 800 }}>{computedStats.defense}</span>
                                         </div>
                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                            <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', fontWeight: 700 }}>СКОРОСТЬ (SPD)</span>
-                                            <span style={{ fontSize: '12px', color: '#fff', fontWeight: 800 }}>{computedStats.speed.toFixed(2)}</span>
+                                            <span style={{ fontSize: '12.5px', color: 'rgba(255,255,255,0.4)', fontWeight: 700 }}>💨 СКОРОСТЬ (SPD)</span>
+                                            <span style={{ fontSize: '14px', color: '#fff', fontWeight: 800 }}>{computedStats.speed.toFixed(2)}</span>
                                         </div>
                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                            <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', fontWeight: 700 }}>КРИТ (CRIT)</span>
-                                            <span style={{ fontSize: '12px', color: '#fff', fontWeight: 800 }}>{Math.round(computedStats.critChance)}%</span>
-                                        </div>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                            <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', fontWeight: 700 }}>УКЛОНЕНИЕ (EVA)</span>
-                                            <span style={{ fontSize: '12px', color: '#fff', fontWeight: 800 }}>{Math.round(computedStats.evasion)}%</span>
+                                            <span style={{ fontSize: '12.5px', color: 'rgba(255,255,255,0.4)', fontWeight: 700 }}>💥 КРИТ (CRIT)</span>
+                                            <span style={{ fontSize: '14px', color: '#fff', fontWeight: 800 }}>{Math.round(computedStats.critChance)}%</span>
                                         </div>
                                     </div>
                                 </div>
@@ -865,16 +858,16 @@ export const PlayerInspectModal: React.FC = () => {
                                             background: 'rgba(255,255,255,0.02)',
                                             border: '1px solid rgba(240,192,64,0.1)',
                                             borderRadius: '12px',
-                                            padding: '8px 10px',
+                                            padding: '10px 12px',
                                             display: 'flex',
                                             alignItems: 'center',
                                             gap: '10px',
                                         }}
                                     >
-                                        <img src={rankInfo.icon} style={{ width: '32px', height: '32px', objectFit: 'contain' }} alt="" />
+                                        <img src={rankInfo.icon} style={{ width: '38px', height: '38px', objectFit: 'contain' }} alt="" />
                                         <div style={{ textAlign: 'left' }}>
-                                            <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.4)' }}>РАНГ</div>
-                                            <div style={{ fontSize: '12px', fontWeight: 800, color: rankInfo.color }}>
+                                            <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)' }}>РАНГ</div>
+                                            <div style={{ fontSize: '14px', fontWeight: 800, color: rankInfo.color }}>
                                                 {rankInfo.name}
                                             </div>
                                         </div>
@@ -886,16 +879,16 @@ export const PlayerInspectModal: React.FC = () => {
                                             background: 'rgba(255,255,255,0.02)',
                                             border: '1px solid rgba(240,192,64,0.1)',
                                             borderRadius: '12px',
-                                            padding: '8px 10px',
+                                            padding: '10px 12px',
                                             display: 'flex',
                                             alignItems: 'center',
                                             gap: '10px',
                                         }}
                                     >
-                                        <img src={resolveAssetPath(AssetsMap.UI.TROPHY_PREMIUM)} style={{ width: '32px', height: '32px', objectFit: 'contain' }} alt="trophy" />
+                                        <img src={resolveAssetPath(AssetsMap.UI.TROPHY_PREMIUM)} style={{ width: '38px', height: '38px', objectFit: 'contain' }} alt="trophy" />
                                         <div style={{ textAlign: 'left' }}>
-                                            <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.4)' }}>РЕЙТИНГ</div>
-                                            <div style={{ fontSize: '14px', fontWeight: 900, color: '#fff' }}>{rating}</div>
+                                            <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)' }}>РЕЙТИНГ</div>
+                                            <div style={{ fontSize: '16px', fontWeight: 900, color: '#fff' }}>{rating}</div>
                                         </div>
                                     </div>
 
@@ -905,12 +898,12 @@ export const PlayerInspectModal: React.FC = () => {
                                             background: 'rgba(255,255,255,0.02)',
                                             border: '1px solid rgba(240,192,64,0.1)',
                                             borderRadius: '12px',
-                                            padding: '8px 10px',
+                                            padding: '10px 12px',
                                             textAlign: 'left',
                                         }}
                                     >
-                                        <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.4)' }}>ВСЕГО БОЕВ</div>
-                                        <div style={{ fontSize: '16px', fontWeight: 900, color: '#fff' }}>{totalBattles}</div>
+                                        <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)' }}>ВСЕГО БОЕВ</div>
+                                        <div style={{ fontSize: '18px', fontWeight: 900, color: '#fff' }}>{totalBattles}</div>
                                     </div>
 
                                     {/* ДОЛЯ ПОБЕД */}
@@ -919,12 +912,12 @@ export const PlayerInspectModal: React.FC = () => {
                                             background: 'rgba(255,255,255,0.02)',
                                             border: '1px solid rgba(240,192,64,0.1)',
                                             borderRadius: '12px',
-                                            padding: '8px 10px',
+                                            padding: '10px 12px',
                                             textAlign: 'left',
                                         }}
                                     >
-                                        <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.4)' }}>ПРОЦЕНТ ПОБЕД</div>
-                                        <div style={{ fontSize: '16px', fontWeight: 900, color: '#4ade80' }}>{winRate}%</div>
+                                        <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)' }}>ПРОЦЕНТ ПОБЕД</div>
+                                        <div style={{ fontSize: '18px', fontWeight: 900, color: '#4ade80' }}>{winRate}%</div>
                                     </div>
                                 </div>
                             </div>
@@ -934,11 +927,11 @@ export const PlayerInspectModal: React.FC = () => {
                                 display: 'flex',
                                 gap: '20px',
                                 marginBottom: '20px',
-                                height: '350px',
+                                height: '410px',
                             }}>
                                 {/* LEFT COLUMN: Hero Preview & Combat Power */}
                                 <div style={{
-                                    width: '220px',
+                                    width: '250px',
                                     display: 'flex',
                                     flexDirection: 'column',
                                     gap: '10px',
@@ -946,7 +939,7 @@ export const PlayerInspectModal: React.FC = () => {
                                 }}>
                                     {/* Hero Card */}
                                     <div style={{
-                                        height: '246px',
+                                        height: '296px',
                                         background: 'rgba(0,0,0,0.3)',
                                         border: '1.5px solid rgba(240,192,64,0.15)',
                                         borderRadius: '16px',
@@ -961,17 +954,17 @@ export const PlayerInspectModal: React.FC = () => {
                                         <img
                                             src={resolveAssetPath(heroConfig.image)}
                                             style={{
-                                                height: '130px',
+                                                height: '160px',
                                                 objectFit: 'contain',
                                                 filter: 'drop-shadow(0 6px 12px rgba(0,0,0,0.85))',
                                                 marginBottom: '6px',
                                             }}
                                             alt={heroConfig.name}
                                         />
-                                        <div style={{ color: '#fff', fontSize: '15px', fontWeight: 800, fontFamily: "'Cinzel', serif", textAlign: 'center' }}>
+                                        <div style={{ color: '#fff', fontSize: '17px', fontWeight: 800, fontFamily: "'Cinzel', serif", textAlign: 'center' }}>
                                             {heroConfig.name}
                                         </div>
-                                        <div style={{ color: '#c8a870', fontSize: '11px', fontWeight: 700, textAlign: 'center', marginTop: '2px' }}>
+                                        <div style={{ color: '#c8a870', fontSize: '12px', fontWeight: 700, textAlign: 'center', marginTop: '2px' }}>
                                             Ур. {heroLevel} • {heroConfig.role === 'TANK' ? 'Танк' : heroConfig.role === 'ASSASSIN' ? 'Убийца' : heroConfig.role === 'MAGE' ? 'Маг' : heroConfig.role === 'SUPPORT' ? 'Поддержка' : 'Боец'}
                                         </div>
                                     </div>
@@ -987,7 +980,7 @@ export const PlayerInspectModal: React.FC = () => {
                                         display: 'grid',
                                         gridTemplateColumns: '1fr 1fr',
                                         gap: '8px',
-                                        height: '350px',
+                                        height: '410px',
                                         overflow: 'hidden',
                                     }}
                                 >
@@ -1031,7 +1024,7 @@ export const PlayerInspectModal: React.FC = () => {
                                     {isAlreadyFriend ? 'УЖЕ В ДРУЗЬЯХ' : 'В ДРУЗЬЯ'}
                                 </button>
                                 <button
-                                    onClick={handleWriteMail}
+                                    onClick={handleWritePrivateMessage}
                                     style={{
                                         flex: 1,
                                         height: '46px',

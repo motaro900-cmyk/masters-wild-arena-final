@@ -32,6 +32,7 @@ export const SubTabBtn: React.FC<SubTabBtnProps> = ({ label, isActive, onClick, 
                 transition: 'all 0.3s',
                 minWidth: 'unset',
                 minHeight: 'unset',
+                flexShrink: 0,
                 boxShadow: isActive ? '0 0 10px rgba(240, 192, 64, 0.2)' : 'none',
             }}
         >

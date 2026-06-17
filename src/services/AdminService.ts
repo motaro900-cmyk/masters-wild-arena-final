@@ -250,3 +250,69 @@ export async function sendBroadcastMail(mailData: any): Promise<void> {
         throw error;
     }
 }
+
+export async function distributeSeasonRewards(): Promise<number> {
+    try {
+        const playersRef = collection(db, USERS_COLLECTION);
+        const q = query(playersRef, orderBy('рейтинг', 'desc'));
+        const snapshot = await getDocs(q);
+        const raw = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+
+        const filtered = raw.filter((p: any) => {
+            const name = (p.имя || p.name || '').toLowerCase();
+            if (['разработчик', 'test'].some((w) => name.includes(w))) return false;
+            if (p.тестовый || p.разработчик) return false;
+            return true;
+        });
+
+        let count = 0;
+        const timestamp = Date.now();
+
+        for (let i = 0; i < Math.min(filtered.length, 100); i++) {
+            const player = filtered[i];
+            const rank = i + 1;
+            let rewards: any[] = [];
+            
+            if (rank >= 1 && rank <= 3) {
+                rewards = [
+                    { type: 'CRYSTALS', amount: 500 },
+                    { type: 'GOLD', amount: 25000 },
+                    { type: 'ITEM', itemId: 'season_chest', amount: 1 }
+                ];
+            } else if (rank >= 4 && rank <= 10) {
+                rewards = [
+                    { type: 'CRYSTALS', amount: 250 },
+                    { type: 'GOLD', amount: 10000 }
+                ];
+            } else if (rank >= 11 && rank <= 100) {
+                rewards = [
+                    { type: 'CRYSTALS', amount: 100 },
+                    { type: 'GOLD', amount: 3000 }
+                ];
+            }
+
+            const mailData = {
+                id: `season_reward_s1_${timestamp}_${rank}`,
+                tab: 'INBOX',
+                type: 'REWARD',
+                from: 'ВЕСТНИК СЕЗОНА',
+                subject: '🏆 НАГРАДА ЗА СЕЗОН I',
+                body: `Поздравляем! Вы заняли ${rank}-е место в глобальном рейтинге по итогам Сезона I • Рассвет дикого леса. Ваша заслуженная награда прикреплена к этому письму! Спасибо за участие в сражениях!`,
+                date: 'СЕГОДНЯ',
+                isRead: false,
+                isStarred: false,
+                rewards,
+                timestamp
+            };
+
+            await sendMail(player.id, mailData);
+            count++;
+        }
+
+        console.log(`[AdminService] Distributed season rewards to ${count} players.`);
+        return count;
+    } catch (error) {
+        console.error('[AdminService] Season rewards distribution failed:', error);
+        throw error;
+    }
+}

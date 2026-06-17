@@ -1,18 +1,16 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../../store/useGameStore';
-import { AppConfig } from '../../configs/AppConfig';
-import { audioService } from '../../services/AudioService';
-import { AssetsMap } from '../../configs/AssetsMap';
 import { SceneSwitcher } from '../components/SceneSwitcher';
 import { GameHUD } from '../components/GameHUD';
 import { ItemBuilder } from '../../components/dev/ItemBuilder';
 
-export const SafeGameLayout = ({ containerRef }: { containerRef: React.RefObject<HTMLDivElement> }) => {
-    const [scale, setScale] = React.useState(1);
-    const [isPortrait, setIsPortrait] = React.useState(
-        typeof window !== 'undefined' && window.innerWidth < window.innerHeight,
-    );
+interface SafeGameLayoutProps {
+    isPortrait?: boolean;
+    isMobile?: boolean;
+}
+
+export const SafeGameLayout = ({ isPortrait = false, isMobile = false }: SafeGameLayoutProps) => {
     const [dismissedRotationWarning, setDismissedRotationWarning] = React.useState(false);
     const [showItemBuilder, setShowItemBuilder] = React.useState(false);
 
@@ -20,8 +18,7 @@ export const SafeGameLayout = ({ containerRef }: { containerRef: React.RefObject
         typeof window !== 'undefined' &&
         (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
 
-    const { setShowFps, isBanned, banReason, banUntil, sessionConflict, graphicsQuality } = useGameStore((state) => ({
-        setShowFps: state.setShowFps,
+    const { isBanned, banReason, banUntil, sessionConflict, graphicsQuality } = useGameStore((state) => ({
         isBanned: state.isBanned,
         banReason: state.banReason,
         banUntil: state.banUntil,
@@ -30,53 +27,22 @@ export const SafeGameLayout = ({ containerRef }: { containerRef: React.RefObject
     }));
 
     React.useEffect(() => {
-        const handleResize = () => {
-            const sw = window.innerWidth;
-            const sh = window.innerHeight;
-            const gw = AppConfig.GAME_WIDTH;
-            const gh = AppConfig.GAME_HEIGHT;
-
-            const portrait = sw < sh;
-            setIsPortrait(portrait);
-
-            const isMobileDevice = useGameStore.getState().isMobile || (typeof navigator !== 'undefined' && /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent));
-
-            // If we are on mobile in portrait mode, we rotate by 90 degrees,
-            // so we scale relative to sw/gh and sh/gw
-            const s = (portrait && isMobileDevice)
-                ? Math.min(sw / gh, sh / gw)
-                : portrait
-                  ? sw / gw
-                  : Math.min(sw / gw, sh / gh);
-
-            setScale(s);
-
-            // [Mobile Fix]: Force scroll to top to hide address bar
-            window.scrollTo(0, 0);
-        };
-
         const handleKey = (e: KeyboardEvent) => {
-            if (e.code === 'F8') setShowFps(!useGameStore.getState().showFps);
-        };
-
-        const handleFirstInteraction = () => {
-            audioService.resumeContext();
-            const state = useGameStore.getState();
-            if (AssetsMap?.AUDIO?.MUSIC_LIST && !audioService.isPlaying() && !state.isMuted) {
-                audioService.playPlaylist(AssetsMap.AUDIO.MUSIC_LIST);
+            if (e.code === 'F8') {
+                const store = useGameStore.getState();
+                if (typeof store.setShowFps === 'function') {
+                    store.setShowFps(!store.showFps);
+                }
             }
-            // Remove listener after first interaction
-            window.removeEventListener('pointerdown', handleFirstInteraction);
         };
-
-        window.addEventListener('resize', handleResize);
-        window.addEventListener('orientationchange', handleResize);
         window.addEventListener('keydown', handleKey);
-        window.addEventListener('pointerdown', handleFirstInteraction);
-        handleResize();
+        return () => {
+            window.removeEventListener('keydown', handleKey);
+        };
+    }, []);
 
+    React.useEffect(() => {
         // ─── Global energy regeneration timer ───────────────────────────────
-        // Runs every 10 seconds to keep energy up-to-date on all screens
         const energyTimer = setInterval(() => {
             const s = useGameStore.getState();
             if (typeof s.regenerateEnergy === 'function') s.regenerateEnergy();
@@ -88,13 +54,9 @@ export const SafeGameLayout = ({ containerRef }: { containerRef: React.RefObject
         if (typeof s.regenerateEnergy === 'function') s.regenerateEnergy();
 
         return () => {
-            window.removeEventListener('resize', handleResize);
-            window.removeEventListener('orientationchange', handleResize);
-            window.removeEventListener('keydown', handleKey);
-            window.removeEventListener('pointerdown', handleFirstInteraction);
             clearInterval(energyTimer);
         };
-    }, [setShowFps]);
+    }, []);
 
     React.useEffect(() => {
         if (graphicsQuality === 'LOW') {
@@ -107,30 +69,55 @@ export const SafeGameLayout = ({ containerRef }: { containerRef: React.RefObject
         };
     }, [graphicsQuality]);
 
-    const isMobile = useGameStore((state) => state.isMobile);
-
     return (
         <div
-            className={isMobile ? 'is-mobile' : 'is-pc'}
+            className="hud-layer"
             style={{
-                width: '100vw',
-                height: '100vh',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: '#0a0806',
-                backgroundImage: `radial-gradient(circle, rgba(12, 9, 7, 0.4) 0%, rgba(5, 4, 3, 0.98) 100%), url(${
-                    isMobile ? AssetsMap.BACKGROUNDS.MAIN_MENU_MOBILE : AssetsMap.BACKGROUNDS.MAIN_MENU
-                })`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                overflow: 'hidden',
-                position: 'fixed',
-                top: 0,
-                left: 0,
+                position: 'absolute',
+                inset: 0,
+                zIndex: 100,
+                pointerEvents: 'none',
             }}
         >
-             {/* ⚠️ Session Conflict Overlay */}
+            <div
+                style={{
+                    width: '100%',
+                    height: '100%',
+                    position: 'relative',
+                    pointerEvents: 'none',
+                }}
+            >
+                <div style={{ position: 'absolute', inset: 0, zIndex: 10, pointerEvents: 'none' }}>
+                    <React.Suspense
+                        fallback={
+                            <div
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    height: '100%',
+                                    width: '100%',
+                                    backgroundColor: '#0a0806',
+                                    color: '#f5d37a',
+                                    fontWeight: 'bold',
+                                    fontSize: '20px',
+                                    fontFamily: "'Cinzel', 'Philosopher', serif",
+                                    pointerEvents: 'auto',
+                                }}
+                            >
+                                Загрузка локации...
+                            </div>
+                        }
+                    >
+                        <SceneSwitcher />
+                    </React.Suspense>
+                </div>
+                <div style={{ position: 'absolute', inset: 0, zIndex: 100, pointerEvents: 'none' }}>
+                    <GameHUD />
+                </div>
+            </div>
+
+            {/* ⚠️ Session Conflict Overlay */}
             <AnimatePresence>
                 {sessionConflict && (
                     <motion.div
@@ -329,8 +316,7 @@ export const SafeGameLayout = ({ containerRef }: { containerRef: React.RefObject
                                 lineHeight: 1.5,
                             }}
                         >
-                            Если вы считаете, что блокировка была выдана по ошибке, обратитесь в поддержку игры или
-                            напишите разработчикам.
+                            Если вы считаете, что блокировка была выдана по ошибке, обратитесь в поддержку игры или напишите разработчикам.
                         </p>
                     </motion.div>
                 )}
@@ -392,8 +378,7 @@ export const SafeGameLayout = ({ containerRef }: { containerRef: React.RefObject
                                 margin: '0 0 32px 0',
                             }}
                         >
-                            Игра создана для горизонтального режима. Пожалуйста, переверните телефон для лучшего
-                            игрового опыта.
+                            Игра создана для горизонтального режима. Пожалуйста, переверните телефон для лучшего игрового опыта.
                         </p>
                         <button
                             onClick={() => setDismissedRotationWarning(true)}
@@ -422,110 +407,16 @@ export const SafeGameLayout = ({ containerRef }: { containerRef: React.RefObject
                             Играть в портретном
                         </button>
                         <style>{`
-                        @keyframes spin-device {
-                            0% { transform: rotate(0deg); }
-                            50% { transform: rotate(-90deg); }
-                            100% { transform: rotate(0deg); }
-                        }
-                    `}</style>
+                            @keyframes spin-device {
+                                0% { transform: rotate(0deg); }
+                                50% { transform: rotate(-90deg); }
+                                100% { transform: rotate(0deg); }
+                            }
+                        `}</style>
                     </motion.div>
                 )}
             </AnimatePresence>
 
-            <div
-                className="game-scale-wrapper"
-                style={{
-                    width: `${AppConfig.GAME_WIDTH}px`,
-                    height: `${AppConfig.GAME_HEIGHT}px`,
-                    position: 'absolute',
-                    top: '50%',
-                    left: '50%',
-                    transform: `translate(-50%, -50%) rotate(${isPortrait && isMobile ? 90 : 0}deg) scale(${scale})`,
-                    transformOrigin: 'center center',
-                    flexShrink: 0,
-                    overflow: 'hidden',
-                    pointerEvents: 'none',
-                    filter:
-                        !isMobile && graphicsQuality === 'ULTRA'
-                            ? 'contrast(1.08) saturate(1.15) brightness(1.02)'
-                            : !isMobile && graphicsQuality === 'MEDIUM'
-                              ? 'contrast(1.04) saturate(1.06) brightness(1.01)'
-                              : 'none',
-                }}
-            >
-                {/* 1. GAME LAYER (PIXI + SCALED CONTENT) */}
-                <div
-                    className="game-container"
-                    style={{
-                        width: '100%',
-                        height: '100%',
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        backgroundImage: `url(${
-                            isMobile ? AssetsMap.BACKGROUNDS.MAIN_MENU_MOBILE : AssetsMap.BACKGROUNDS.MAIN_MENU
-                        })`,
-                        backgroundSize: 'cover',
-                        backgroundPosition: 'center',
-                        backgroundColor: '#0c0c0c',
-                        boxShadow: '0 0 100px rgba(0,0,0,0.5)',
-                        overflow: 'hidden',
-                        zIndex: 1,
-                        pointerEvents: 'auto',
-                    }}
-                >
-                    <div ref={containerRef} style={{ position: 'absolute', inset: 0, pointerEvents: 'auto' }} />
-                </div>
-
-                {/* 2. HUD LAYER (LIQUID / ADAPTIVE) */}
-                <div
-                    className="hud-layer"
-                    style={{
-                        position: 'absolute',
-                        inset: 0,
-                        zIndex: 100,
-                        pointerEvents: 'none',
-                    }}
-                >
-                    <div
-                        style={{
-                            width: '100%',
-                            height: '100%',
-                            position: 'relative',
-                            pointerEvents: 'none',
-                        }}
-                    >
-                        <div style={{ position: 'absolute', inset: 0, zIndex: 10, pointerEvents: 'none' }}>
-                            <React.Suspense
-                                fallback={
-                                    <div
-                                        style={{
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            height: '100%',
-                                            width: '100%',
-                                            backgroundColor: '#0a0806',
-                                            color: '#f5d37a',
-                                            fontWeight: 'bold',
-                                            fontSize: '20px',
-                                            fontFamily: "'Cinzel', 'Philosopher', serif",
-                                            pointerEvents: 'auto',
-                                        }}
-                                    >
-                                        Загрузка локации...
-                                    </div>
-                                }
-                            >
-                                <SceneSwitcher />
-                            </React.Suspense>
-                        </div>
-                        <div style={{ position: 'absolute', inset: 0, zIndex: 100, pointerEvents: 'none' }}>
-                            <GameHUD />
-                        </div>
-                    </div>
-                </div>
-            </div>
             {isDev && (
                 <>
                     <button

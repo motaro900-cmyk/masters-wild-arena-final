@@ -109,6 +109,8 @@ export const AdvancedSettingsBlock: React.FC<AdvancedSettingsBlockProps> = ({
         fpsCap,
         setFpsCap,
         hasCustomSettings,
+        currentFps,
+        activeScreen,
     } = useGameStore(
         useShallow((state) => ({
             graphicsQuality: state.graphicsQuality,
@@ -136,6 +138,8 @@ export const AdvancedSettingsBlock: React.FC<AdvancedSettingsBlockProps> = ({
             fpsCap: state.fpsCap || 60,
             setFpsCap: state.setFpsCap,
             hasCustomSettings: state.hasCustomSettings,
+            currentFps: state.currentFps,
+            activeScreen: state.activeScreen,
         }))
     );
 
@@ -830,9 +834,16 @@ export const AdvancedSettingsBlock: React.FC<AdvancedSettingsBlockProps> = ({
                     {/* FPS */}
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px' }}>
                         <span style={{ opacity: 0.6 }}>📈 {pt.fps}</span>
-                        <span style={{ fontWeight: 800, color: perfStats.fps >= 50 ? '#4caf50' : perfStats.fps >= 30 ? '#ffeb3b' : perfStats.fps > 0 ? '#f44336' : '#9e9e9e' }}>
-                            {perfStats.fps > 0 ? `${perfStats.fps} FPS` : '...'}
-                        </span>
+                        {(() => {
+                            const displayFps = (activeScreen === 'BATTLE' && currentFps !== null)
+                                ? currentFps
+                                : (perfStats.fps > 0 ? Math.min(perfStats.fps, fpsCap) : 0);
+                            return (
+                                <span style={{ fontWeight: 800, color: displayFps >= 50 ? '#4caf50' : displayFps >= 30 ? '#ffeb3b' : displayFps > 0 ? '#f44336' : '#9e9e9e' }}>
+                                    {displayFps > 0 ? `${displayFps} FPS` : '...'}
+                                </span>
+                            );
+                        })()}
                     </div>
 
                     {/* Ping */}

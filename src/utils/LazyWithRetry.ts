@@ -21,7 +21,9 @@ export function lazyWithRetry<T extends React.ComponentType<any>>(
             if (!hasRetried) {
                 sessionStorage.setItem(hasRetriedKey, 'true');
                 console.warn('⚠️ Chunk loading failed. Retrying page load...', error);
-                window.location.reload();
+                const url = new URL(window.location.href);
+                url.searchParams.set('t', Date.now().toString());
+                window.location.href = url.toString();
                 // Возвращаем бесконечный промис, чтобы предотвратить дальнейший рендер сломанного состояния во время перезагрузки
                 return new Promise<{ default: T }>(() => {});
             }

@@ -25,6 +25,8 @@ import {
 } from 'firebase/firestore';
 import { useGameStore } from '../store/useGameStore';
 import { getVkUserInfo } from '../utils/VKBridge';
+import { TimeService } from '../utils/TimeService';
+import { bootController } from '../bootstrap/BootController';
 
 // --- Sub-service imports ---
 import * as Chat from './ChatService';
@@ -34,7 +36,9 @@ import * as Admin from './AdminService';
 import { resolveFriendProfiles } from './SocialService';
 
 export class SyncService {
-    private static instance: SyncService;
+    // Anchor to window so HMR module reloads reuse the same instance
+    private static get instance(): SyncService { return (window as any).__SYNC_SERVICE__; }
+    private static set instance(v: SyncService) { (window as any).__SYNC_SERVICE__ = v; }
     private syncInterval: any = null;
     private syncTimeout: ReturnType<typeof setTimeout> | null = null;
     private writeChain: Promise<any> = Promise.resolve();
@@ -58,6 +62,11 @@ export class SyncService {
     }
 
     private async performSyncWithRetry(retries = 3, delay = 1000): Promise<void> {
+        // Do not retry if boot is not complete — silently skip
+        if (bootController.getState() !== 'READY') {
+            console.warn('[SyncService] performSyncWithRetry: skipped (not READY).');
+            return;
+        }
         try {
             await this.performSync();
         } catch (error) {
@@ -87,84 +96,61 @@ export class SyncService {
         if (typeof window !== 'undefined' && !SyncService.eventListenersAdded) {
             SyncService.eventListenersAdded = true;
 
-            // Build sync payload synchronously and fire via sendBeacon/fetch keepalive
-            // This is the ONLY reliable way to save data on page close in VK Mini Apps
-            // (VK blocks beforeunload/unload events per Permissions Policy)
-            const beaconFlush = () => {
-                if (this.syncDisabled) return;
-                // Clear any pending debounced sync (we're about to send immediately)
-                if (this.syncTimeout) {
-                    clearTimeout(this.syncTimeout);
-                    this.syncTimeout = null;
-                }
-                try {
-                    const state = useGameStore.getState();
-                    const userId = this.getCurrentUserId();
-                    if (!userId.startsWith('VK-')) return;
-
-                    // Build minimal critical payload synchronously
-                    const criticalPayload = {
-                        userId,
-                        energy: state.energy,
-                        gold: state.gold,
-                        crystals: state.crystals,
-                        rating: state.rating,
-                        wins: state.wins,
-                        totalBattles: state.totalBattles,
-                        trophies: state.trophies,
-                        fullStateJSON: JSON.stringify({
-                            lastSavedTimestamp: Date.now(),
-                            energy: state.energy,
-                            gold: state.gold,
-                            crystals: state.crystals,
-                            rating: state.rating,
-                            wins: state.wins,
-                            totalBattles: state.totalBattles,
-                            trophies: state.trophies,
-                            level: state.level,
-                            exp: state.exp,
-                            name: state.name,
-                            inventory: state.inventory,
-                            heroEquipment: state.heroEquipment,
-                            heroes: state.heroes,
-                            dailyQuests: state.dailyQuests,
-                            bpDailyQuests: state.bpDailyQuests,
-                            weeklyQuests: state.weeklyQuests,
-                            lastDailyRefresh: state.lastDailyRefresh,
-                            friendNotes: state.friendNotes,
-                        }),
-                        wasOnline: new Date().toISOString(),
-                    };
-
-                    // Try sendBeacon first (most reliable for page-close)
-                    const blob = new Blob([JSON.stringify(criticalPayload)], { type: 'application/json' });
-                    const beaconSent = navigator.sendBeacon?.('/api/beacon-sync', blob);
-                    if (!beaconSent) {
-                        // Fallback: keepalive fetch (also works after page is hidden)
-                        fetch('/api/beacon-sync', {
-                            method: 'POST',
-                            body: JSON.stringify(criticalPayload),
-                            headers: { 'Content-Type': 'application/json' },
-                            keepalive: true,
-                        }).catch(() => {});
-                    }
-                } catch (e) {
-                    // Best-effort — ignore errors on page close
-                }
-            };
-
-            // pagehide is more reliable than beforeunload in modern browsers and VK
-            window.addEventListener('pagehide', beaconFlush);
-            // visibilitychange hidden catches tab switches and VK app suspend
+            window.addEventListener('pagehide', () => {
+                bootController.execute({ type: 'BEACON_SYNC' }).catch(() => {});
+            });
             window.addEventListener('visibilitychange', () => {
                 if (document.visibilityState === 'hidden') {
-                    beaconFlush();
-                    // Also attempt normal async sync (may succeed if just tab-switching)
+                    bootController.execute({ type: 'BEACON_SYNC' }).catch(() => {});
                     if (!this.syncDisabled) {
-                        this.syncPlayerData().catch(() => {});
+                        bootController.execute({ type: 'SYNC_DATA' }).catch(() => {});
                     }
                 }
             });
+        }
+    }
+
+    public beaconFlush(): void {
+        if (this.syncDisabled) return;
+        if (this.syncTimeout) {
+            clearTimeout(this.syncTimeout);
+            this.syncTimeout = null;
+        }
+        try {
+            const state = useGameStore.getState();
+            const isReady = bootController.isReady();
+            if (!isReady) {
+                console.warn('[SyncService] Blocked beacon sync: Profile is not ready.');
+                return;
+            }
+            const userId = this.getCurrentUserId();
+            if (!userId.startsWith('VK-')) return;
+
+            const criticalPayload = {
+                userId,
+                energy: state.energy,
+                gold: state.gold,
+                crystals: state.crystals,
+                rating: state.rating,
+                wins: state.wins,
+                totalBattles: state.totalBattles,
+                trophies: state.trophies,
+                fullStateJSON: this.buildFullStateJSON(state, TimeService.now()),
+                wasOnline: new Date().toISOString(),
+            };
+
+            const blob = new Blob([JSON.stringify(criticalPayload)], { type: 'application/json' });
+            const beaconSent = navigator.sendBeacon?.('/api/beacon-sync', blob);
+            if (!beaconSent) {
+                fetch('/api/beacon-sync', {
+                    method: 'POST',
+                    body: JSON.stringify(criticalPayload),
+                    headers: { 'Content-Type': 'application/json' },
+                    keepalive: true,
+                }).catch(() => {});
+            }
+        } catch (e) {
+            // ignore
         }
     }
 
@@ -202,6 +188,12 @@ export class SyncService {
             return Promise.resolve();
         }
         if (this.syncDisabled) return Promise.resolve();
+
+        if (bootController.getState() !== 'READY') {
+            console.warn('[SyncService] syncPlayerData: skipped, BootController not READY.');
+            return Promise.resolve();
+        }
+
         return new Promise<void>((resolve, reject) => {
             this.writeChain = this.writeChain
                 .then(async () => {
@@ -231,6 +223,11 @@ export class SyncService {
         }
         if (this.syncDisabled) return;
 
+        if (bootController.getState() !== 'READY') {
+            console.warn('[SyncService] performSync: skipped, BootController not READY.');
+            return;
+        }
+
         const state = useGameStore.getState();
         let vkUser = state.vkUser;
         if (!vkUser) {
@@ -248,117 +245,11 @@ export class SyncService {
             const selectedHeroId = state.selectedHeroId || 'panda';
             const activeHeroLevel = state.heroes?.[selectedHeroId]?.level || 1;
 
-            const syncTimestamp = Date.now();
+            const syncTimestamp = TimeService.now();
             // Also update the store's lastSavedTimestamp so local cache matches
             useGameStore.setState({ lastSavedTimestamp: syncTimestamp, isSystemUpdate: true });
 
-            const fullState = {
-                lastSavedTimestamp: syncTimestamp,
-                level: state.level,
-                vipLevel: state.vipLevel,
-                vipExp: state.vipExp,
-                exp: state.exp,
-                gold: state.gold,
-                crystals: state.crystals,
-                shards: state.shards,
-                rating: state.rating,
-                energy: state.energy,
-                maxEnergy: state.maxEnergy,
-                lastEnergyUpdate: state.lastEnergyUpdate,
-                vipEndTime: state.vipEndTime,
-                dailyAdWatchesCount: state.dailyAdWatchesCount,
-                name: state.name,
-                lastNameChange: state.lastNameChange,
-                avatar: state.avatar,
-                frame: state.frame,
-                title: state.title,
-                bpLevel: state.bpLevel,
-                bpExp: state.bpExp,
-                friendNotes: state.friendNotes || {},
-                trophies: state.trophies,
-                wins: state.wins,
-                totalBattles: state.totalBattles,
-                claimedSocialRewards: state.claimedSocialRewards,
-                ownedSkins: state.ownedSkins,
-                equippedSkins: state.equippedSkins,
-                usedPromoCodes: state.usedPromoCodes,
-                claimedGifts: state.claimedGifts || [],
-                pveStage: state.pveStage,
-                maxPveStage: state.maxPveStage,
-                winStreak: state.winStreak,
-                lossStreak: state.lossStreak,
-                onboardingCompleted: state.onboardingCompleted,
-                newbieWins: state.newbieWins || 0,
-                hasBoughtStarterPack: state.hasBoughtStarterPack || false,
-                friends: state.friends,
-                clanId: state.clanId,
-                clanCoins: state.clanCoins,
-                heroes: state.heroes,
-                heroTalents: state.heroTalents,
-                pet: state.pet,
-                petCharges: state.petCharges,
-                lastPetTime: state.lastPetTime,
-                inventory: state.inventory,
-                heroEquipment: state.heroEquipment,
-                selectedHeroId: state.selectedHeroId,
-                ownedHeroes: state.ownedHeroes,
-                claimedRewards: state.claimedRewards,
-                coal: state.coal,
-                steel_bars: state.steel_bars,
-                runic_shards: state.runic_shards,
-                ancient_compass: state.ancient_compass,
-                astral_crystal: state.astral_crystal,
-                void_sphere: state.void_sphere,
-                golden_sprout: state.golden_sprout,
-                dragon_scale: state.dragon_scale,
-                lava_heart: state.lava_heart,
-                protection_stones: state.protection_stones,
-                shopRotation: state.shopRotation,
-                shopDiscounts: state.shopDiscounts,
-                shopLastRefreshTime: state.shopLastRefreshTime,
-                lastWheelSpinTime: state.lastWheelSpinTime,
-                lastDailyGiftClaimedTime: state.lastDailyGiftClaimedTime,
-                loginStreak: state.loginStreak || 0,
-                activeBuffs: state.activeBuffs || {},
-                dailyQuests: state.dailyQuests,
-                bpDailyQuests: state.bpDailyQuests,
-                weeklyQuests: state.weeklyQuests,
-                lastDailyRefresh: state.lastDailyRefresh,
-                lastWeeklyRefresh: state.lastWeeklyRefresh,
-                lastWeeklyQuestReset: state.lastWeeklyQuestReset,
-                pvpCooldowns: state.pvpCooldowns || {},
-                referralProcessed: state.referralProcessed || false,
-                referredBy: state.referredBy || null,
-            };
-
-            const prunedFullState = { ...fullState } as any;
-
-            // Trim battleLog arrays (battleLog, battleLogs, combatLogs) to last 10 entries
-            for (const logKey of ['battleLog', 'battleLogs', 'combatLogs']) {
-                const rawLog = state[logKey] || prunedFullState[logKey];
-                if (rawLog && Array.isArray(rawLog)) {
-                    prunedFullState[logKey] = rawLog.slice(-10);
-                }
-            }
-
-            // Remove temporary UI states (activeScreen, isLoading, alerts)
-            delete prunedFullState.activeScreen;
-            delete prunedFullState.isLoading;
-            delete prunedFullState.alerts;
-            delete prunedFullState.alert;
-            delete prunedFullState.activeAlert;
-
-            // Trim friends cache if more than 50 records
-            if (prunedFullState.friends && Array.isArray(prunedFullState.friends)) {
-                if (prunedFullState.friends.length > 50) {
-                    prunedFullState.friends = prunedFullState.friends.slice(0, 50);
-                }
-            }
-            if (prunedFullState.friendProfiles && Array.isArray(prunedFullState.friendProfiles)) {
-                if (prunedFullState.friendProfiles.length > 50) {
-                    prunedFullState.friendProfiles = prunedFullState.friendProfiles.slice(0, 50);
-                }
-            }
+            const fullStateJsonStr = this.buildFullStateJSON(state, syncTimestamp);
 
             const isLocalhost =
                 typeof window !== 'undefined' &&
@@ -401,7 +292,7 @@ export class SyncService {
                 equipment: equipmentSlice,
                 inventory: state.inventory || [],
                 friends: (state.friends || []).map((f: any) => (typeof f === 'object' ? f.id : f)).filter(Boolean),
-                fullStateJSON: JSON.stringify(prunedFullState),
+                fullStateJSON: fullStateJsonStr,
                 isTestPlayer: isLocalhost || !!state.isDeveloper || !!state.isAdmin,
                 isDeveloper: isLocalhost || !!state.isDeveloper || !!state.isAdmin,
                 vipLevel: state.vipLevel || 0,
@@ -435,6 +326,10 @@ export class SyncService {
     }
 
     public debouncedSync(delay = 3000): void {
+        if (bootController.getState() !== 'READY') {
+            console.warn('[SyncService] debouncedSync: skipped, BootController not READY.');
+            return;
+        }
         const actualDelay = Math.max(3000, delay);
         if (this.syncDisabled) return;
         if (this.syncTimeout) clearTimeout(this.syncTimeout);
@@ -446,6 +341,10 @@ export class SyncService {
 
     /** Immediate (non-debounced) sync — use after critical events like battle end */
     public immediateSync(): void {
+        if (bootController.getState() !== 'READY') {
+            console.warn('[SyncService] immediateSync: skipped, BootController not READY.');
+            return;
+        }
         if (this.syncDisabled) return;
         if (this.syncTimeout) {
             clearTimeout(this.syncTimeout);
@@ -463,6 +362,10 @@ export class SyncService {
     }
 
     public startAutoSync(intervalMs = 60000): void {
+        if (bootController.getState() !== 'READY') {
+            console.warn('[SyncService] startAutoSync: skipped, BootController not READY.');
+            return;
+        }
         if (this.syncInterval) return;
         const actualInterval = Math.max(10000, intervalMs);
         this.syncPlayerData();
@@ -651,7 +554,7 @@ export class SyncService {
             }
 
             const localTimestamp = useGameStore.getState().lastSavedTimestamp || 0;
-            if (localTimestamp > Date.now() - 60 * 60 * 1000) {
+            if (localTimestamp > TimeService.now() - 60 * 60 * 1000) {
                 console.warn('[SyncService] Blocking reset — local save exists from last hour');
                 return { data: null, isNew: false };
             }
@@ -793,6 +696,138 @@ export class SyncService {
     }
     public async sendBroadcastMail(mailData: any): Promise<void> {
         return Admin.sendBroadcastMail(mailData);
+    }
+    public async distributeSeasonRewards(): Promise<number> {
+        return Admin.distributeSeasonRewards();
+    }
+
+    private buildFullStateJSON(state: any, syncTimestamp: number): string {
+        const fullState: Record<string, any> = {
+            lastSavedTimestamp: syncTimestamp,
+            level: state.level,
+            vipLevel: state.vipLevel,
+            vipExp: state.vipExp,
+            exp: state.exp,
+            gold: state.gold,
+            crystals: state.crystals,
+            shards: state.shards,
+            rating: state.rating,
+            energy: state.energy,
+            maxEnergy: state.maxEnergy,
+            lastEnergyUpdate: state.lastEnergyUpdate,
+            vipEndTime: state.vipEndTime,
+            dailyAdWatchesCount: state.dailyAdWatchesCount,
+            name: state.name,
+            lastNameChange: state.lastNameChange,
+            avatar: state.avatar,
+            frame: state.frame,
+            title: state.title,
+            bpLevel: state.bpLevel,
+            bpExp: state.bpExp,
+            friendNotes: state.friendNotes || {},
+            trophies: state.trophies,
+            wins: state.wins,
+            totalBattles: state.totalBattles,
+            claimedSocialRewards: state.claimedSocialRewards,
+            ownedSkins: state.ownedSkins,
+            equippedSkins: state.equippedSkins,
+            usedPromoCodes: state.usedPromoCodes,
+            claimedGifts: state.claimedGifts || [],
+            pveStage: state.pveStage,
+            maxPveStage: state.maxPveStage,
+            winStreak: state.winStreak,
+            lossStreak: state.lossStreak,
+            onboardingCompleted: state.onboardingCompleted,
+            newbieWins: state.newbieWins || 0,
+            hasBoughtStarterPack: state.hasBoughtStarterPack || false,
+            friends: state.friends,
+            clanId: state.clanId,
+            clanCoins: state.clanCoins,
+            heroes: state.heroes,
+            heroTalents: state.heroTalents,
+            pet: state.pet,
+            petCharges: state.petCharges,
+            lastPetTime: state.lastPetTime,
+            inventory: state.inventory,
+            heroEquipment: state.heroEquipment,
+            selectedHeroId: state.selectedHeroId,
+            ownedHeroes: state.ownedHeroes,
+            claimedRewards: state.claimedRewards,
+            coal: state.coal,
+            steel_bars: state.steel_bars,
+            runic_shards: state.runic_shards,
+            ancient_compass: state.ancient_compass,
+            astral_crystal: state.astral_crystal,
+            void_sphere: state.void_sphere,
+            golden_sprout: state.golden_sprout,
+            dragon_scale: state.dragon_scale,
+            lava_heart: state.lava_heart,
+            protection_stones: state.protection_stones,
+            shopRotation: state.shopRotation,
+            shopDiscounts: state.shopDiscounts,
+            shopLastRefreshTime: state.shopLastRefreshTime,
+            lastWheelSpinTime: state.lastWheelSpinTime,
+            lastDailyGiftClaimedTime: state.lastDailyGiftClaimedTime,
+            loginStreak: state.loginStreak || 0,
+            activeBuffs: state.activeBuffs || {},
+            dailyQuests: state.dailyQuests,
+            bpDailyQuests: state.bpDailyQuests,
+            weeklyQuests: state.weeklyQuests,
+            lastDailyRefresh: state.lastDailyRefresh,
+            lastWeeklyRefresh: state.lastWeeklyRefresh,
+            lastWeeklyQuestReset: state.lastWeeklyQuestReset,
+            pvpCooldowns: state.pvpCooldowns || {},
+            referralProcessed: state.referralProcessed || false,
+            referredBy: state.referredBy || null,
+            // Options
+            musicVolume: state.musicVolume,
+            soundVolume: state.soundVolume,
+            graphicsQuality: state.graphicsQuality,
+            showFps: state.showFps,
+            notificationsEnabled: state.notificationsEnabled,
+            uiAnimations: state.uiAnimations,
+            particlesQuality: state.particlesQuality,
+            glowEnabled: state.glowEnabled,
+            arenaBgQuality: state.arenaBgQuality,
+            showPing: state.showPing,
+            isPowerSaving: state.isPowerSaving,
+            hasCustomSettings: state.hasCustomSettings,
+            rendererPreference: state.rendererPreference,
+            fpsCap: state.fpsCap,
+            isMuted: state.isMuted,
+        };
+
+        const pruned = { ...fullState } as any;
+
+        // Trim logs
+        for (const logKey of ['battleLog', 'battleLogs', 'combatLogs']) {
+            const rawLog = state[logKey];
+            if (rawLog && Array.isArray(rawLog)) {
+                pruned[logKey] = rawLog.slice(-10);
+            }
+        }
+
+        // Remove UI temp states
+        delete pruned.activeScreen;
+        delete pruned.isLoading;
+        delete pruned.alerts;
+        delete pruned.alert;
+        delete pruned.activeAlert;
+        delete pruned.activeConfirm;
+
+        // Trim friends
+        if (pruned.friends && Array.isArray(pruned.friends)) {
+            if (pruned.friends.length > 50) {
+                pruned.friends = pruned.friends.slice(0, 50);
+            }
+        }
+        if (pruned.friendProfiles && Array.isArray(pruned.friendProfiles)) {
+            if (pruned.friendProfiles.length > 50) {
+                pruned.friendProfiles = pruned.friendProfiles.slice(0, 50);
+            }
+        }
+
+        return JSON.stringify(pruned);
     }
 }
 

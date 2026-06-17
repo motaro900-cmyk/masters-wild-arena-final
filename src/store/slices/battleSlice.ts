@@ -26,6 +26,8 @@ export const createBattleSlice = (set: any, get: any) => ({
     activeRankedOpponent: null as any,
     winStreak: 0,
     lossStreak: 0,
+    activeMapId: 'forest',
+    battleWeatherState: 'rain',
 
     // --- Экшены ---
 

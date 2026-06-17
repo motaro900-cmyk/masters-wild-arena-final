@@ -23,8 +23,10 @@ export const ChatPanel = React.memo(() => {
     const clanId = useGameStore((state) => state.clanId);
     const [showEmoji, setShowEmoji] = useState(false);
     const [activeTab, setActiveTab] = useState('general');
-    const [activeChatTab, setActiveChatTab] = useState<'all' | 'system' | 'clan' | 'private'>('all');
-    const [privateRecipient, setPrivateRecipient] = useState<string | null>(null);
+    const activeChatTab = useGameStore((state) => state.chatActiveTab || 'all');
+    const privateRecipient = useGameStore((state) => state.chatPrivateRecipient || null);
+    const setActiveChatTab = useGameStore((state) => state.setChatActiveTab);
+    const setPrivateRecipient = useGameStore((state) => state.setChatPrivateRecipient);
     const [isFocused, setIsFocused] = useState(false);
     const [hasNewMessages, setHasNewMessages] = useState(false);
 

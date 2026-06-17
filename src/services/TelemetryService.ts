@@ -39,23 +39,53 @@ export function measureRefreshRate(): Promise<number> {
             return;
         }
 
-        let start = performance.now();
-        let count = 0;
-        const ticks = 15;
+        const ticks = 30; // Increased sample count for high accuracy
+        let frameTimes: number[] = [];
+        let resolved = false;
 
-        const step = () => {
-            count++;
-            if (count >= ticks) {
-                const duration = performance.now() - start;
-                const fps = Math.round((ticks * 1000) / duration);
-                if (fps > 100) resolve(120);
-                else if (fps > 80) resolve(90);
-                else if (fps > 50) resolve(60);
-                else if (fps > 25) resolve(30);
-                else resolve(fps);
-            } else {
-                window.requestAnimationFrame(step);
+        // Safety fallback if animation frames do not trigger (e.g. backgrounded tab)
+        const timeoutId = setTimeout(() => {
+            if (!resolved) {
+                resolved = true;
+                resolve(60); // Default to 60Hz fallback
             }
+        }, 1000);
+
+        const step = (timestamp: number) => {
+            if (resolved) return;
+            frameTimes.push(timestamp);
+            if (frameTimes.length > ticks) {
+                const deltas: number[] = [];
+                for (let i = 1; i < frameTimes.length; i++) {
+                    const delta = frameTimes[i] - frameTimes[i - 1];
+                    // Skip delays caused by tab suspension/throttling (>150ms)
+                    if (delta < 150) {
+                        deltas.push(delta);
+                    }
+                }
+
+                if (deltas.length >= 10) {
+                    const avgDelta = deltas.reduce((a, b) => a + b, 0) / deltas.length;
+                    const fps = Math.round(1000 / avgDelta);
+
+                    resolved = true;
+                    clearTimeout(timeoutId);
+
+                    // Map calculated values to standardized screen refresh rates
+                    if (fps > 200) resolve(240);
+                    else if (fps > 155) resolve(180);
+                    else if (fps > 130) resolve(144);
+                    else if (fps > 100) resolve(120);
+                    else if (fps > 80) resolve(90);
+                    else if (fps > 50) resolve(60);
+                    else if (fps > 25) resolve(30);
+                    else resolve(fps);
+                    return;
+                }
+                // If we hit an abnormal delay and had to discard frames, reset samples
+                frameTimes = [];
+            }
+            window.requestAnimationFrame(step);
         };
         window.requestAnimationFrame(step);
     });
@@ -109,8 +139,41 @@ export async function getDeviceProfile(): Promise<DeviceProfile> {
         } else if (/Windows/i.test(ua)) {
             platform = 'Windows';
             const match = ua.match(/Windows NT\s+([0-9.]+)/i);
-            os = match ? `Windows NT ${match[1]}` : 'Windows';
+            const ntMap: Record<string, string> = {
+                '10.0': 'Windows 10',
+                '6.3': 'Windows 8.1',
+                '6.2': 'Windows 8',
+                '6.1': 'Windows 7',
+                '6.0': 'Windows Vista',
+                '5.1': 'Windows XP',
+            };
+            if (match) {
+                const ntVersion = match[1];
+                os = ntMap[ntVersion] || `Windows NT ${ntVersion}`;
+            } else {
+                os = 'Windows';
+            }
             device = 'PC / Windows';
+
+            // Check for Windows 11 using User-Agent Client Hints if available
+            if (os === 'Windows 10' && typeof navigator !== 'undefined' && (navigator as any).userAgentData) {
+                const uaData = (navigator as any).userAgentData;
+                if (uaData.platform === 'Windows') {
+                    try {
+                        const values = await uaData.getHighEntropyValues(['platformVersion']);
+                        if (values.platformVersion) {
+                            const versionParts = values.platformVersion.split('.').map((p: string) => parseInt(p, 10));
+                            const major = versionParts[0] || 0;
+                            const build = versionParts[2] || 0;
+                            if (major >= 13 || (major === 10 && build >= 22000)) {
+                                os = 'Windows 11';
+                            }
+                        }
+                    } catch (e) {
+                        // ignore and keep Windows 10
+                    }
+                }
+            }
         } else if (/Linux/i.test(ua)) {
             platform = 'Linux';
             os = 'Linux';
@@ -191,7 +254,7 @@ export async function getDeviceProfile(): Promise<DeviceProfile> {
     const orientation = typeof window !== 'undefined' && window.innerWidth < window.innerHeight ? 'portrait' : 'landscape';
     const buildHash = typeof __BUILD_TIME__ !== 'undefined' ? `build_${__BUILD_TIME__}` : 'dev';
 
-    deviceProfile = {
+    const profile: DeviceProfile = {
         platform,
         device,
         os,
@@ -215,7 +278,14 @@ export async function getDeviceProfile(): Promise<DeviceProfile> {
         orientation
     };
 
-    return deviceProfile;
+    // Cache the profile globally only if the document is visible,
+    // ensuring we run a fresh, accurate refresh rate measurement next time
+    // once the tab gains active focus.
+    if (typeof document !== 'undefined' && !document.hidden) {
+        deviceProfile = profile;
+    }
+
+    return profile;
 }
 
 /**

@@ -182,65 +182,97 @@ export const MailWindow: React.FC<MailWindowProps> = () => {
         >
             {/* ВКЛАДКИ */}
             <div
-                style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}
+                style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', width: '100%', overflow: 'hidden' }}
             >
-                <div style={{ display: 'flex', gap: '10px' }}>
-                    {['INBOX', 'NEWS', 'ARCHIVE', 'SUPPORT', 'PROMO'].map((tab) => {
-                        const unread = getUnreadCount(tab);
-                        const labels = {
-                            INBOX: 'ВХОДЯЩИЕ',
-                            NEWS: 'НОВОСТИ',
-                            ARCHIVE: 'АРХИВ',
-                            SUPPORT: 'СВЯЗЬ',
-                            PROMO: 'ПРОМОКОД',
-                        };
-                        return (
-                            <button
-                                key={tab}
-                                onClick={() => {
-                                    setActiveTab(tab as any);
-                                    setView('LIST');
-                                }}
-                                style={{
-                                    background: activeTab === tab ? 'rgba(240,192,64,0.1)' : 'transparent',
-                                    border: `1px solid ${activeTab === tab ? colors.accent : colors.border}`,
-                                    color: activeTab === tab ? '#fff' : 'rgba(232, 216, 168, 0.4)',
-                                    padding: '12px 24px',
-                                    borderRadius: '10px',
-                                    fontSize: '13px',
-                                    fontWeight: 800,
-                                    fontFamily: "'Cinzel', serif",
-                                    cursor: 'pointer',
-                                    position: 'relative',
-                                    transition: '0.3s',
-                                }}
-                            >
-                                {(labels as any)[tab]}
-                                {unread > 0 && tab !== 'ARCHIVE' && tab !== 'PROMO' && (
-                                    <div
-                                        style={{
-                                            position: 'absolute',
-                                            top: -5,
-                                            right: -5,
-                                            width: '18px',
-                                            height: '18px',
-                                            background: colors.danger,
-                                            color: '#fff',
-                                            fontSize: '10px',
-                                            borderRadius: '50%',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            fontWeight: 900,
-                                            border: '2px solid #1a1008',
-                                        }}
-                                    >
-                                        {unread}
-                                    </div>
-                                )}
-                            </button>
-                        );
-                    })}
+                <div style={{ position: 'relative', flex: 1, overflow: 'hidden', marginRight: '10px' }}>
+                    <div
+                        className="no-scrollbar"
+                        style={{
+                            display: 'flex',
+                            gap: '10px',
+                            overflowX: isMobile ? 'auto' : 'visible',
+                            whiteSpace: 'nowrap',
+                            paddingBottom: isMobile ? '6px' : 0,
+                            WebkitOverflowScrolling: 'touch',
+                            scrollbarWidth: 'none',
+                        }}
+                    >
+                        <style>{`
+                            .no-scrollbar::-webkit-scrollbar {
+                                display: none;
+                            }
+                        `}</style>
+                        {['INBOX', 'NEWS', 'ARCHIVE', 'SUPPORT', 'PROMO'].map((tab) => {
+                            const unread = getUnreadCount(tab);
+                            const labels = {
+                                INBOX: 'ВХОДЯЩИЕ',
+                                NEWS: 'НОВОСТИ',
+                                ARCHIVE: 'АРХИВ',
+                                SUPPORT: 'СВЯЗЬ',
+                                PROMO: 'ПРОМОКОД',
+                            };
+                            return (
+                                <button
+                                    key={tab}
+                                    onClick={() => {
+                                        setActiveTab(tab as any);
+                                        setView('LIST');
+                                    }}
+                                    style={{
+                                        background: activeTab === tab ? 'rgba(240,192,64,0.1)' : 'transparent',
+                                        border: `1px solid ${activeTab === tab ? colors.accent : colors.border}`,
+                                        color: activeTab === tab ? '#fff' : 'rgba(232, 216, 168, 0.4)',
+                                        padding: isMobile ? '10px 18px' : '12px 24px',
+                                        borderRadius: '10px',
+                                        fontSize: isMobile ? '11.5px' : '13px',
+                                        fontWeight: 800,
+                                        fontFamily: "'Cinzel', serif",
+                                        cursor: 'pointer',
+                                        position: 'relative',
+                                        transition: '0.3s',
+                                        flexShrink: 0,
+                                    }}
+                                >
+                                    {(labels as any)[tab]}
+                                    {unread > 0 && tab !== 'ARCHIVE' && tab !== 'PROMO' && (
+                                        <div
+                                            style={{
+                                                position: 'absolute',
+                                                top: -5,
+                                                right: -5,
+                                                width: '18px',
+                                                height: '18px',
+                                                background: colors.danger,
+                                                color: '#fff',
+                                                fontSize: '10px',
+                                                borderRadius: '50%',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                fontWeight: 900,
+                                                border: '2px solid #1a1008',
+                                            }}
+                                        >
+                                            {unread}
+                                        </div>
+                                    )}
+                                </button>
+                            );
+                        })}
+                    </div>
+                    {/* Right fade indicator on mobile to suggest swipeability */}
+                    {isMobile && (
+                        <div style={{
+                            position: 'absolute',
+                            right: 0,
+                            top: 0,
+                            bottom: '6px',
+                            width: '35px',
+                            background: 'linear-gradient(to right, rgba(26,16,8,0) 0%, rgba(26,16,8,0.95) 100%)',
+                            pointerEvents: 'none',
+                            zIndex: 10,
+                        }} />
+                    )}
                 </div>
 
                 {view !== 'LIST' && (

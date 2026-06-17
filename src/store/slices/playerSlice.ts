@@ -196,6 +196,7 @@ export const createPlayerSlice = (set: any, get: any) => {
     hasCustomSettings: false,
     rendererPreference: 'auto',
     fpsCap: 60,
+    currentFps: null as number | null,
     pet: {
         id: 'baby_dragon',
         name: 'Дракоша',
@@ -706,6 +707,7 @@ export const createPlayerSlice = (set: any, get: any) => {
     setShowPing: (val: boolean) => set({ showPing: val, hasCustomSettings: true }),
     setRendererPreference: (val: 'auto' | 'webgl' | 'webgpu') => set({ rendererPreference: val, hasCustomSettings: true }),
     setFpsCap: (val: number) => set({ fpsCap: val, hasCustomSettings: true }),
+    setCurrentFps: (val: number | null) => set({ currentFps: val }),
     autoTuneSettings: () => {
         const isMobileVal = get().isMobile;
         let autoGraphics = 'ULTRA';
