@@ -86,17 +86,26 @@ export const ClanBankTab: React.FC<ClanBankTabProps> = ({
     const transactions = clanData?.bankTransactions || [];
 
     const upgradeCost = bankLevel * 10000;
-    const canUpgrade = goldBank >= upgradeCost && bankLevel < 5;
+    const requiredClanLevel = bankLevel + 1;
+    const isClanLevelMet = (clanLevelData?.level || 1) >= requiredClanLevel;
+    const canUpgrade = goldBank >= upgradeCost && bankLevel < 5 && isClanLevelMet;
 
     const hasWithdrawPermission = playerRole === 'LEADER' || (playerRole === 'OFFICER' && officersCanWithdraw);
 
     const goldRate = 0.001 + (bankLevel - 1) * 0.001;
-    const goldHourlyIncome = Math.floor(goldBank * goldRate);
-    const goldDailyIncome = Math.floor(goldBank * goldRate * 24);
+    const goldHourlyIncomeVal = goldBank * goldRate;
+    const goldDailyIncomeVal = goldBank * goldRate * 24;
 
     const crystalsRate = 0.0005 * bankLevel;
-    const crystalsHourlyIncome = Math.floor(crystalsBank * crystalsRate);
-    const crystalsDailyIncome = Math.floor(crystalsBank * crystalsRate * 24);
+    const crystalsHourlyIncomeVal = crystalsBank * crystalsRate;
+    const crystalsDailyIncomeVal = crystalsBank * crystalsRate * 24;
+
+    const formatIncome = (value: number) => {
+        if (value === 0) return '0';
+        if (value < 1) return value.toFixed(2).replace(/\.?0+$/, '');
+        if (value < 10) return value.toFixed(1).replace(/\.?0+$/, '');
+        return Math.floor(value).toLocaleString();
+    };
 
     // Perks definitions based on bank level
     const perks = [
@@ -203,16 +212,21 @@ export const ClanBankTab: React.FC<ClanBankTabProps> = ({
                                     {goldBank.toLocaleString()}
                                 </span>
                             </div>
-                            <div style={{ fontSize: '10px', color: '#4ade80', fontWeight: 800, marginTop: '4px', textShadow: '0 0 4px rgba(74,222,128,0.2)' }}>
+                            <div style={{ fontSize: '11px', color: '#4ade80', fontWeight: 800, marginTop: '6px', textShadow: '0 0 4px rgba(74,222,128,0.2)' }}>
                                 +{(goldRate * 100).toFixed(2)}% в час
                             </div>
-                            <div style={{ fontSize: '10px', color: 'rgba(255, 255, 255, 0.7)', fontWeight: 800, marginTop: '2px' }}>
-                                ≈ +{goldHourlyIncome} 🪙/час • +{goldDailyIncome} 🪙/день
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', marginTop: '6px', background: 'rgba(0,0,0,0.3)', padding: '6px 8px', borderRadius: '6px' }}>
+                                <div style={{ fontSize: '11px', color: '#ccc', fontWeight: 800 }}>
+                                    Доход: <span style={{ color: '#4ade80', fontWeight: 900 }}>+{formatIncome(goldHourlyIncomeVal)}</span> 🪙/ч
+                                </div>
+                                <div style={{ fontSize: '11px', color: '#ccc', fontWeight: 800 }}>
+                                    В сутки: <span style={{ color: '#4ade80', fontWeight: 900 }}>+{formatIncome(goldDailyIncomeVal)}</span> 🪙
+                                </div>
                             </div>
                         </div>
 
                         {/* Divider */}
-                        <div style={{ width: '1px', height: '40px', background: 'rgba(255,255,255,0.1)' }} />
+                        <div style={{ width: '1px', height: '60px', background: 'rgba(255,255,255,0.1)' }} />
 
                         {/* Crystals Reserve */}
                         <div style={{ textAlign: 'center', flex: 1 }}>
@@ -225,11 +239,16 @@ export const ClanBankTab: React.FC<ClanBankTabProps> = ({
                                     {crystalsBank.toLocaleString()}
                                 </span>
                             </div>
-                            <div style={{ fontSize: '10px', color: '#60a5fa', fontWeight: 800, marginTop: '4px', textShadow: '0 0 4px rgba(96,165,250,0.2)' }}>
+                            <div style={{ fontSize: '11px', color: '#60a5fa', fontWeight: 800, marginTop: '6px', textShadow: '0 0 4px rgba(96,165,250,0.2)' }}>
                                 +{(crystalsRate * 100).toFixed(2)}% в час
                             </div>
-                            <div style={{ fontSize: '10px', color: 'rgba(255, 255, 255, 0.7)', fontWeight: 800, marginTop: '2px' }}>
-                                ≈ +{crystalsHourlyIncome} 💎/час • +{crystalsDailyIncome} 💎/день
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', marginTop: '6px', background: 'rgba(0,0,0,0.3)', padding: '6px 8px', borderRadius: '6px' }}>
+                                <div style={{ fontSize: '11px', color: '#ccc', fontWeight: 800 }}>
+                                    Доход: <span style={{ color: '#60a5fa', fontWeight: 900 }}>+{formatIncome(crystalsHourlyIncomeVal)}</span> 💎/ч
+                                </div>
+                                <div style={{ fontSize: '11px', color: '#ccc', fontWeight: 800 }}>
+                                    В сутки: <span style={{ color: '#60a5fa', fontWeight: 900 }}>+{formatIncome(crystalsDailyIncomeVal)}</span> 💎
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -305,6 +324,11 @@ export const ClanBankTab: React.FC<ClanBankTabProps> = ({
                                     <CurrencyIcon type="GOLD" size={14} />
                                     {upgradeCost.toLocaleString()}
                                 </div>
+                                {!isClanLevelMet && (
+                                    <div style={{ fontSize: '9px', color: '#ef4444', fontWeight: 800, marginTop: '2px' }}>
+                                        Требуется ур. клана: {requiredClanLevel}
+                                    </div>
+                                )}
                             </div>
 
                             {(playerRole === 'LEADER' || playerRole === 'OFFICER') ? (
@@ -507,9 +531,9 @@ export const ClanBankTab: React.FC<ClanBankTabProps> = ({
                         {donateAmount > 0 && (
                             <span style={{ fontSize: '10px', color: '#4ade80', fontWeight: 800, textAlign: 'right', display: 'inline-block' }}>
                                 {donateCurrency === 'GOLD' ? (
-                                    `В казну: +${donateAmount} 🪙 • Награда: +${Math.floor(donateAmount / 10)} монет клана • +${Math.floor(donateAmount / 20)} XP`
+                                    `Награда: +${Math.floor(donateAmount / 10)} монет • +${Math.floor(donateAmount / 20)} XP клана`
                                 ) : (
-                                    `В казну: +${donateAmount} 💎 • Награда: +${donateAmount * 2} монет клана • +${donateAmount} XP`
+                                    `Награда: +${donateAmount * 2} монет • +${donateAmount} XP клана`
                                 )}
                             </span>
                         )}

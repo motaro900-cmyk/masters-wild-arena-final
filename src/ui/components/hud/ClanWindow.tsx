@@ -410,6 +410,11 @@ export const ClanWindow: React.FC = () => {
             return setError('Казна уже максимального уровня!');
         }
 
+        const requiredClanLevel = currentLevel + 1;
+        if (clanLevelData.level < requiredClanLevel) {
+            return setError(`Для улучшения казны до уровня ${requiredClanLevel} требуется уровень клана: ${requiredClanLevel}!`);
+        }
+
         const cost = currentLevel * 10000;
         const currentBankGold = currentClanData.goldBank !== undefined ? currentClanData.goldBank : 5000;
 
