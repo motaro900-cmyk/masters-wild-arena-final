@@ -805,7 +805,8 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
                     if (isAdmin) {
                         onOpenAdmin?.();
                     } else {
-                        console.log('Current User ID:', useGameStore.getState().vkUser?.id || useGameStore.getState().vkUser?.uid);
+                        const currentId = useGameStore.getState().vkUser?.id || useGameStore.getState().vkUser?.uid || 'Не найден (локальный игрок)';
+                        useGameStore.getState().showAlert(`Ваш VK ID: ${currentId}. Скопируйте его и добавьте в Firestore в документ system/admins в массив vkIds.`);
                     }
                 }}
                 style={{
