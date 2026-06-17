@@ -91,11 +91,11 @@ export const ClanBankTab: React.FC<ClanBankTabProps> = ({
 
     // Perks definitions based on bank level
     const perks = [
-        { lvl: 1, desc: 'Начальный уровень казны.' },
-        { lvl: 2, desc: '+5% золота во всех боях для всех участников.' },
-        { lvl: 3, desc: '+10% золота во всех боях для всех участников.' },
-        { lvl: 4, desc: '+5% алмазов в PvE боях для всех участников.' },
-        { lvl: 5, desc: '+10% опыта в клановых рейдах для всех участников.' },
+        { lvl: 1, desc: 'Начальный уровень казны. Ставка: +0.1% золота / +0.05% алмазов в час.' },
+        { lvl: 2, desc: '+5% золота во всех боях. Ставка: +0.2% золота / +0.10% алмазов в час.' },
+        { lvl: 3, desc: '+10% золота во всех боях. Ставка: +0.3% золота / +0.15% алмазов в час.' },
+        { lvl: 4, desc: '+5% алмазов в PvE боях. Ставка: +0.4% золота / +0.20% алмазов в час.' },
+        { lvl: 5, desc: '+10% опыта в клановых рейдах. Ставка: +0.5% золота / +0.25% алмазов в час.' },
     ];
 
     return (
@@ -160,6 +160,9 @@ export const ClanBankTab: React.FC<ClanBankTabProps> = ({
                                     {goldBank.toLocaleString()}
                                 </span>
                             </div>
+                            <div style={{ fontSize: '10px', color: '#4ade80', fontWeight: 800, marginTop: '4px', textShadow: '0 0 4px rgba(74,222,128,0.2)' }}>
+                                +{((0.001 + (bankLevel - 1) * 0.001) * 100).toFixed(2)}% в час
+                            </div>
                         </div>
 
                         {/* Divider */}
@@ -175,6 +178,9 @@ export const ClanBankTab: React.FC<ClanBankTabProps> = ({
                                 <span style={{ fontSize: '24px', fontWeight: 900, color: '#60a5fa', textShadow: '0 0 10px rgba(96,165,250,0.2)' }}>
                                     {crystalsBank.toLocaleString()}
                                 </span>
+                            </div>
+                            <div style={{ fontSize: '10px', color: '#60a5fa', fontWeight: 800, marginTop: '4px', textShadow: '0 0 4px rgba(96,165,250,0.2)' }}>
+                                +{(0.0005 * bankLevel * 100).toFixed(2)}% в час
                             </div>
                         </div>
                     </div>

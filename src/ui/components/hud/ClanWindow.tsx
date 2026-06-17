@@ -93,6 +93,71 @@ export const ClanWindow: React.FC = () => {
     }, [clanId, clanData]);
 
     useEffect(() => {
+        if (clanId && clanData && dashboardTab === 'BANK') {
+            const now = Date.now();
+            const lastTime = clanData.lastInterestTime || now;
+            // Limit calculation to a maximum of 24 hours to prevent extreme scaling if player is away for months
+            const elapsedHours = Math.min(24, (now - lastTime) / (1000 * 60 * 60));
+            if (elapsedHours > 0.01) { // Calculate interest if more than 36 seconds passed
+                const goldBank = clanData.goldBank !== undefined ? clanData.goldBank : 5000;
+                const crystalsBank = clanData.crystalsBank !== undefined ? clanData.crystalsBank : 250;
+                const bankLevel = clanData.bankLevel || 1;
+                
+                const goldRate = 0.001 + (bankLevel - 1) * 0.001; // 0.1% to 0.5% per hour
+                const crystalsRate = 0.0005 * bankLevel; // 0.05% to 0.25% per hour
+                
+                const goldGrown = Math.floor(goldBank * goldRate * elapsedHours);
+                const crystalsGrown = Math.floor(crystalsBank * crystalsRate * elapsedHours);
+                
+                if (goldGrown > 0 || crystalsGrown > 0) {
+                    const prevTransactions = clanData.bankTransactions || [];
+                    const newTransactions = [...prevTransactions];
+                    
+                    if (goldGrown > 0) {
+                        newTransactions.unshift({
+                            id: `interest_gold_${Date.now()}`,
+                            type: 'DEPOSIT',
+                            currency: 'GOLD',
+                            author: 'Проценты Казны',
+                            amount: goldGrown,
+                            time: 'только что'
+                        });
+                    }
+                    
+                    if (crystalsGrown > 0) {
+                        newTransactions.unshift({
+                            id: `interest_cry_${Date.now()}`,
+                            type: 'DEPOSIT',
+                            currency: 'ALMAZ',
+                            author: 'Проценты Казны',
+                            amount: crystalsGrown,
+                            time: 'только что'
+                        });
+                    }
+                    
+                    const updated = {
+                        ...clanData,
+                        goldBank: goldBank + goldGrown,
+                        crystalsBank: crystalsBank + crystalsGrown,
+                        lastInterestTime: now,
+                        bankTransactions: newTransactions.slice(0, 30)
+                    };
+                    
+                    useGameStore.setState({ clanData: updated });
+                    syncService.debouncedSync();
+                } else {
+                    // Just update timestamp to avoid building up elapsed time without growing
+                    const updated = {
+                        ...clanData,
+                        lastInterestTime: now
+                    };
+                    useGameStore.setState({ clanData: updated });
+                }
+            }
+        }
+    }, [clanId, dashboardTab]);
+
+    useEffect(() => {
         const timer = setTimeout(() => {
             if (clanId) {
                 const currentUserName = playerName && playerName !== 'Мастер'
