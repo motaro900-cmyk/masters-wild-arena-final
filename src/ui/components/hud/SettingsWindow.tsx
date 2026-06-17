@@ -705,6 +705,27 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
                     {isAdmin && (
                         <>
                             <button
+                                onClick={onOpenAdmin}
+                                style={{
+                                    gridColumn: 'span 2',
+                                    padding: '14px',
+                                    borderRadius: '10px',
+                                    background: 'linear-gradient(180deg, #f0c040 0%, #a88020 100%)',
+                                    border: 'none',
+                                    color: '#000',
+                                    fontSize: '12px',
+                                    fontWeight: 900,
+                                    cursor: 'pointer',
+                                    boxShadow: '0 2px 8px rgba(240,192,64,0.25)',
+                                    pointerEvents: 'auto',
+                                    transition: 'transform 0.15s ease',
+                                }}
+                                onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.02)'}
+                                onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                            >
+                                🔧 ОТКРЫТЬ ПАНЕЛЬ РАЗРАБОТЧИКА
+                            </button>
+                            <button
                                 onClick={() => {
                                     if (!confirmWipeProgress) {
                                         setConfirmWipeProgress(true);
