@@ -201,7 +201,7 @@ export const RankingWindow: React.FC = () => {
         <div
             style={{
                 width: '100%',
-                height: '620px',
+                height: '780px',
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '15px',

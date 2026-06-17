@@ -306,7 +306,7 @@ export const FriendsWindow: React.FC<FriendsWindowProps> = () => {
                     flex: 1,
                     overflowY: 'auto',
                     paddingRight: '5px',
-                    maxHeight: '630px',
+                    maxHeight: '790px',
                     display: 'flex',
                     flexDirection: 'column',
                     gap: 12,
