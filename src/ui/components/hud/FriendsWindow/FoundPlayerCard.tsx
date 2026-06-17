@@ -59,8 +59,8 @@ export const FoundPlayerCard: React.FC<FoundPlayerCardProps> = ({ foundPlayer, c
                             color: colors.accent,
                         }}
                     >
-                        {foundPlayer.имя || foundPlayer.name
-                            ? (foundPlayer.имя || foundPlayer.name).split(' ')[0]
+                        {foundPlayer.name || foundPlayer.имя
+                            ? (foundPlayer.name || foundPlayer.имя).split(' ')[0]
                             : 'Мастер'}
                     </span>
                     <span

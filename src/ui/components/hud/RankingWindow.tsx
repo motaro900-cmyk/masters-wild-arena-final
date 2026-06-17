@@ -58,7 +58,7 @@ const playerName = useGameStore(state => state.name);
                 const { syncService } = await import('../../../services/SyncService');
                 unsubscribe = syncService.subscribeToGlobalLeaders(50, (players) => {
                     const mappedLeaders: LeaderboardEntry[] = players.map((p, index) => {
-                        const nameVal = p.имя || p.name || 'Мастер';
+                        const nameVal = p.name || p.имя || 'Мастер';
                         const firstName = nameVal.split(' ')[0];
 
                         return {

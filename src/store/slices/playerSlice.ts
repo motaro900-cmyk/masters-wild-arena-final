@@ -3,6 +3,7 @@ import { AssetsMap } from '../../configs/AssetsMap';
 import { getRankInfo, RANK_SYSTEM } from '../../configs/RankSystem';
 import { syncService } from '../../services/SyncService';
 import { audioService } from '../../services/AudioService';
+import { getCachedRefreshRate } from '../../services/TelemetryService';
 import { safeSetItem } from '../../utils/SafeStorage';
 import { TimeService } from '../../utils/TimeService';
 import { showRewardedVideo, isGroupMember } from '../../utils/VKBridge';
@@ -746,7 +747,7 @@ export const createPlayerSlice = (set: any, get: any) => {
             arenaBgQuality: autoArenaBg,
             uiAnimations: autoUiAnim,
             rendererPreference: 'auto',
-            fpsCap: autoPowerSaving ? 30 : 60,
+            fpsCap: autoPowerSaving ? 30 : getCachedRefreshRate(),
             hasCustomSettings: true,
         });
     },

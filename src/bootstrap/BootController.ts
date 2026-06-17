@@ -283,6 +283,25 @@ class BootController {
                     this.recordBootIssue({ phase: 'LOAD_PROFILE', severity: 'warning', message: 'level is 0/missing — defaulting to 1' });
                 }
 
+                // ── LOAD_TELEMETRY ─────────────────────────────────────────
+                setLoadingText('Анализ производительности устройства...');
+                const { getDeviceProfile } = await import('../services/TelemetryService');
+                try {
+                    const profile = await getDeviceProfile();
+                    console.log(`[BootController] Device Profile loaded. OS: ${profile.os}, Refresh Rate: ${profile.refreshRate}Hz`);
+                    if (!profileState.hasCustomSettings) {
+                        const isMobileOrTablet = profile.touchDevice || /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
+                        const recommendedFpsCap = isMobileOrTablet ? 60 : (profile.refreshRate || 60);
+                        useGameStore.setState({
+                            fpsCap: recommendedFpsCap,
+                            isSystemUpdate: true
+                        });
+                        console.log(`[BootController] Auto-configured recommended FPS: ${recommendedFpsCap}`);
+                    }
+                } catch (telemetryErr) {
+                    console.warn('[BootController] Telemetry failed to load:', telemetryErr);
+                }
+
                 // ── LOAD_QUESTS ────────────────────────────────────────────
                 setLoadingText('Загрузка ежедневных заданий...');
                 await this.execute({ type: 'LOAD_QUESTS' });

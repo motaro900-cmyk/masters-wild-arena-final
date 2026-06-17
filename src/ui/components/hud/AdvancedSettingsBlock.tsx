@@ -694,7 +694,7 @@ export const AdvancedSettingsBlock: React.FC<AdvancedSettingsBlockProps> = ({
                                 </span>
                             </div>
                             <div style={{ display: 'flex', background: 'rgba(0,0,0,0.3)', borderRadius: '8px', padding: '3px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                                {([30, 60, 120] as const).map((cap) => (
+                                {([30, 60, 120, 180, 240] as const).map((cap) => (
                                     <button
                                         key={cap}
                                         onClick={() => setFpsCap(cap)}

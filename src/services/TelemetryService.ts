@@ -366,3 +366,11 @@ export function sendPerformanceReport(stats: {
         );
     });
 }
+
+export function getCachedRefreshRate(): number {
+    return deviceProfile ? deviceProfile.refreshRate : 60;
+}
+
+export function getCachedDeviceProfile(): DeviceProfile | null {
+    return deviceProfile;
+}

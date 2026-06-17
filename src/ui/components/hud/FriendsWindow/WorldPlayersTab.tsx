@@ -97,7 +97,7 @@ export const WorldPlayersTab: React.FC<WorldPlayersTabProps> = ({
                                         color: '#fff',
                                     }}
                                 >
-                                    {p.имя || p.name ? (p.имя || p.name).split(' ')[0] : 'Мастер'}
+                                    {p.name || p.имя ? (p.name || p.имя).split(' ')[0] : 'Мастер'}
                                 </div>
                                 <div style={{ fontSize: 9, opacity: 0.6 }}>
                                     ID: {p.id} • LVL {p.уровень || p.level || 1}

@@ -124,7 +124,7 @@ export async function getGlobalPlayers(limitCount: number = 20): Promise<any[]> 
         const state = useGameStore.getState();
         return raw
             .filter((p: any) => {
-                const name = (p.имя || p.name || '').toLowerCase();
+                const name = (p.name || p.имя || '').toLowerCase();
                 const isMe =
                     p.id === state.playerId ||
                     (p.vkId && String(p.vkId) === String(state.vkUser?.id));
@@ -156,7 +156,7 @@ export function subscribeToGlobalLeaders(
                     const raw = snapshot.docs.map((d: any) => ({ id: d.id, ...d.data() }));
                     const filtered = raw
                         .filter((p: any) => {
-                            const name = (p.имя || p.name || '').toLowerCase();
+                            const name = (p.name || p.имя || '').toLowerCase();
                             const isMe =
                                 p.id === state.playerId ||
                                 (p.vkId && String(p.vkId) === String(state.vkUser?.id));
@@ -259,7 +259,7 @@ export async function distributeSeasonRewards(): Promise<number> {
         const raw = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
 
         const filtered = raw.filter((p: any) => {
-            const name = (p.имя || p.name || '').toLowerCase();
+            const name = (p.name || p.имя || '').toLowerCase();
             if (['разработчик', 'test'].some((w) => name.includes(w))) return false;
             if (p.тестовый || p.разработчик) return false;
             return true;
