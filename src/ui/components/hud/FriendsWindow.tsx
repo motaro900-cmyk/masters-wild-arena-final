@@ -79,7 +79,8 @@ export const FriendsWindow: React.FC<FriendsWindowProps> = () => {
                 width: '100%',
                 height: '100%',
                 backgroundColor: 'transparent',
-                padding: '10px 25px',
+                padding: '24px',
+                boxSizing: 'border-box',
                 display: 'flex',
                 flexDirection: 'column',
                 color: colors.text,
@@ -306,7 +307,7 @@ export const FriendsWindow: React.FC<FriendsWindowProps> = () => {
                     flex: 1,
                     overflowY: 'auto',
                     paddingRight: '5px',
-                    maxHeight: '790px',
+                    maxHeight: 'none',
                     display: 'flex',
                     flexDirection: 'column',
                     gap: 12,
@@ -377,11 +378,13 @@ export const FriendsWindow: React.FC<FriendsWindowProps> = () => {
                 ) : (
                     <div
                         style={{
+                            flex: 1,
                             textAlign: 'center',
                             padding: '40px 20px',
                             display: 'flex',
                             flexDirection: 'column',
                             alignItems: 'center',
+                            justifyContent: 'center',
                         }}
                     >
                         <motion.div

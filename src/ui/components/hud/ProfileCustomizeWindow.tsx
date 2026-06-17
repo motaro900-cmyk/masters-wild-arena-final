@@ -115,7 +115,8 @@ export const ProfileCustomizeWindow: React.FC<ProfileCustomizeWindowProps> = () 
     return (
         <div
             style={{
-                height: '630px',
+                width: '100%',
+                height: '100%',
                 display: 'flex',
                 gap: '28px',
                 padding: '24px',

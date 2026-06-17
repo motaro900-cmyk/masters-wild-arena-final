@@ -180,11 +180,12 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
         <div
             style={{
                 width: '100%',
-                height: '680px',
+                height: '100%',
                 display: 'flex',
                 flexDirection: 'column',
                 gap: isMobile ? '12px' : '20px',
-                padding: isMobile ? '5px 15px' : '10px 30px',
+                padding: '24px',
+                boxSizing: 'border-box',
                 color: colors.text,
                 overflowY: 'auto',
             }}

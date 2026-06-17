@@ -196,7 +196,20 @@ const isMobile = useGameStore(state => state.isMobile);
     const isActive = daysLeft > 0;
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? '10px' : '16px', padding: '4px', userSelect: 'none' }}>
+        <div
+            style={{
+                width: '100%',
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: isMobile ? '10px' : '16px',
+                padding: '24px',
+                boxSizing: 'border-box',
+                userSelect: 'none',
+                overflowY: 'auto',
+            }}
+            className="leaderboard-scroll"
+        >
             {/* ────────── 1. STATUS HEADER ────────── */}
             <motion.div
                 initial={{ opacity: 0, y: -8 }}

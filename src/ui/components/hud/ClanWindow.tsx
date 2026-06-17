@@ -178,11 +178,12 @@ export const ClanWindow: React.FC = () => {
         <div
             style={{
                 width: '100%',
-                height: '650px',
+                height: '100%',
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '20px',
-                padding: '10px',
+                padding: '24px',
+                boxSizing: 'border-box',
                 position: 'relative',
                 color: colors.text,
             }}

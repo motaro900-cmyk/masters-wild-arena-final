@@ -13,11 +13,12 @@ export const RanksListWindow: React.FC = () => {
         <div
             style={{
                 width: '100%',
-                height: '650px',
+                height: '100%',
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '15px',
-                padding: '10px',
+                padding: '24px',
+                boxSizing: 'border-box',
             }}
         >
             <p style={{ color: '#c8a870', textAlign: 'center', fontStyle: 'italic', margin: '0 0 10px 0' }}>

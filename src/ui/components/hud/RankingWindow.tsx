@@ -201,11 +201,12 @@ export const RankingWindow: React.FC = () => {
         <div
             style={{
                 width: '100%',
-                height: '780px',
+                height: '100%',
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '15px',
-                padding: '10px',
+                padding: '24px',
+                boxSizing: 'border-box',
             }}
         >
             {/* ТАБЫ */}

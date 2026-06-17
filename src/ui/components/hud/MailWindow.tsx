@@ -172,9 +172,10 @@ export const MailWindow: React.FC<MailWindowProps> = () => {
         <div
             style={{
                 width: '100%',
-                height: '700px',
+                height: '100%',
                 backgroundColor: 'transparent',
-                padding: '10px 30px',
+                padding: '24px',
+                boxSizing: 'border-box',
                 display: 'flex',
                 flexDirection: 'column',
                 color: colors.text,

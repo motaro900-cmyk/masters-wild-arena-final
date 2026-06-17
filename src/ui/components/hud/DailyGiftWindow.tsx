@@ -464,7 +464,7 @@ const setCanClaimDailyGift = useGameStore(state => state.setCanClaimDailyGift);
                     <div
                         style={{
                             display: 'grid',
-                            gridTemplateColumns: 'repeat(4, 185px)',
+                            gridTemplateColumns: 'repeat(4, 220px)',
                             gap: '15px',
                             justifyContent: 'center',
                             marginBottom: '20px',
