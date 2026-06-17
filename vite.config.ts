@@ -5,20 +5,26 @@ import { fileURLToPath, URL } from 'node:url'; // 👈 Используем node
 import fs from 'node:fs';
 import path from 'node:path';
 
-const buildTime = Date.now();
+// buildTime генерируется только при продакшн-сборке.
+// В dev-режиме используем 0, чтобы checkUpdate делал ранний return
+// и баннер "ОБНОВЛЕНИЕ ИГРЫ" не появлялся в локалке.
+const isBuild = process.argv.includes('build');
+const buildTime = isBuild ? Date.now() : 0;
 
-try {
-  const publicDir = fileURLToPath(new URL('./public', import.meta.url));
-  if (!fs.existsSync(publicDir)) {
-    fs.mkdirSync(publicDir, { recursive: true });
+if (isBuild) {
+  try {
+    const publicDir = fileURLToPath(new URL('./public', import.meta.url));
+    if (!fs.existsSync(publicDir)) {
+      fs.mkdirSync(publicDir, { recursive: true });
+    }
+    fs.writeFileSync(
+      path.join(publicDir, 'version.json'),
+      JSON.stringify({ buildTime, version: '1.1.5' }, null, 2),
+      'utf-8'
+    );
+  } catch (e) {
+    console.error('Failed to write version.json:', e);
   }
-  fs.writeFileSync(
-    path.join(publicDir, 'version.json'),
-    JSON.stringify({ buildTime, version: '1.1.5' }, null, 2),
-    'utf-8'
-  );
-} catch (e) {
-  console.error('Failed to write version.json:', e);
 }
 
 export default defineConfig({
