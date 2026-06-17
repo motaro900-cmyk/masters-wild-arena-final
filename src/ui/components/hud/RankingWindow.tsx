@@ -17,20 +17,109 @@ interface LeaderboardEntry {
     change: 'up' | 'down' | 'stable';
     isMe?: boolean;
     vipLevel?: number;
+    isVipActive?: boolean;
 }
 
 // Список лидеров формируется динамически в компоненте
 
 export const RankingWindow: React.FC = () => {
     const rating = useGameStore(state => state.rating);
-const vkUser = useGameStore(state => state.vkUser);
-const playerAvatar = useGameStore(state => state.avatar);
-const playerName = useGameStore(state => state.name);
+    const vkUser = useGameStore(state => state.vkUser);
+    const playerAvatar = useGameStore(state => state.avatar);
+    const playerName = useGameStore(state => state.name);
+    const playerId = useGameStore(state => state.playerId);
+    const friends = useGameStore(state => state.friends) || [];
+    const heroes = useGameStore(state => state.heroes) || {};
+    const selectedHeroId = useGameStore(state => state.selectedHeroId) || 'panda';
+    const playerLevel = heroes[selectedHeroId]?.level || 1;
+    const playerVipLevel = useGameStore(state => state.vipLevel) || 0;
+
     const [activeTab, setActiveTab] = React.useState<'GLOBAL' | 'CLAN' | 'FRIENDS'>('GLOBAL');
 
     const [showRewards, setShowRewards] = React.useState(false);
     const [globalLeaders, setGlobalLeaders] = React.useState<LeaderboardEntry[]>([]);
+    const [friendsLeaders, setFriendsLeaders] = React.useState<LeaderboardEntry[]>([]);
     const [isLoading, setIsLoading] = React.useState(false);
+
+    // Effect for friends leaderboard loading and synchronization
+    React.useEffect(() => {
+        if (activeTab !== 'FRIENDS') return;
+
+        // Build list based on locally stored friend data + the player themselves
+        const buildFriendsLeaders = (currentFriends: any[]) => {
+            const meEntry: LeaderboardEntry = {
+                id: playerId,
+                rank: 1,
+                name: (playerName || 'Мастер').split(' ')[0],
+                level: playerLevel,
+                trophies: rating,
+                avatar: resolveAvatarPath(vkUser?.photo_200 || vkUser?.photo || playerAvatar),
+                change: 'stable',
+                isMe: true,
+                vipLevel: playerVipLevel,
+            };
+
+            const friendsEntries: LeaderboardEntry[] = currentFriends.map((f: any) => {
+                const nameVal = f.name || 'Мастер';
+                const firstName = nameVal.split(' ')[0];
+                return {
+                    id: f.id,
+                    rank: 0,
+                    name: firstName,
+                    level: f.level || 1,
+                    trophies: f.rating ?? f.trophies ?? 0,
+                    avatar: resolveAvatarPath(f.avatar),
+                    change: 'stable',
+                    isMe: false,
+                    vipLevel: f.vipLevel || 0,
+                };
+            });
+
+            return [meEntry, ...friendsEntries]
+                .sort((a, b) => b.trophies - a.trophies)
+                .map((entry, index) => ({
+                    ...entry,
+                    rank: index + 1,
+                }));
+        };
+
+        setFriendsLeaders(buildFriendsLeaders(friends));
+
+        if (friends.length === 0) return;
+
+        // Fetch up-to-date ratings/levels of friends in background from database
+        let isMounted = true;
+        const fetchLatestFriendsData = async () => {
+            try {
+                const { syncService } = await import('../../../services/SyncService');
+                const friendIds = friends.map((f: any) => f.id);
+                const resolved = await syncService.resolveFriendProfiles(friendIds);
+                if (!isMounted) return;
+
+                if (resolved && resolved.length > 0) {
+                    const mergedFriends = friends.map((oldFriend: any) => {
+                        const rf = resolved.find((r: any) => r.id === oldFriend.id);
+                        if (!rf) return oldFriend;
+                        return {
+                            ...oldFriend,
+                            ...rf,
+                        };
+                    });
+
+                    useGameStore.setState({ friends: mergedFriends });
+                    setFriendsLeaders(buildFriendsLeaders(mergedFriends));
+                }
+            } catch (e) {
+                console.error('[RankingWindow] Failed to update friends ratings:', e);
+            }
+        };
+
+        fetchLatestFriendsData();
+
+        return () => {
+            isMounted = false;
+        };
+    }, [activeTab, friends, rating, playerAvatar, playerName, playerId, playerLevel, playerVipLevel, vkUser]);
 
     const scrollRef = React.useRef<HTMLDivElement>(null);
 
@@ -296,21 +385,30 @@ const playerName = useGameStore(state => state.name);
                         </div>
                     </div>
                 ) : activeTab === 'FRIENDS' ? (
-                    <div
-                        style={{
-                            textAlign: 'center',
-                            padding: '100px 20px',
-                            color: '#c8a870',
-                            fontWeight: 800,
-                            fontFamily: "'Cinzel', serif",
-                            fontSize: '16px',
-                        }}
-                    >
-                        У ВАС НЕТ ДРУЗЕЙ В ИГРЕ
-                        <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)', marginTop: '10px' }}>
-                            Пригласите друзей, чтобы соревноваться с ними!
+                    friendsLeaders.length <= 1 ? (
+                        <div
+                            style={{
+                                textAlign: 'center',
+                                padding: '100px 20px',
+                                color: '#c8a870',
+                                fontWeight: 800,
+                                fontFamily: "'Cinzel', serif",
+                                fontSize: '16px',
+                            }}
+                        >
+                            У ВАС НЕТ ДРУЗЕЙ В ИГРЕ
+                            <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)', marginTop: '10px' }}>
+                                Пригласите друзей, чтобы соревноваться с ними!
+                            </div>
                         </div>
-                    </div>
+                    ) : (
+                        friendsLeaders.map((player) => (
+                            <LeaderItem key={player.rank} player={player} onClick={() => {
+                                const setInspect = useGameStore.getState().setInspectPlayerId;
+                                if (setInspect) setInspect(player.id);
+                            }} />
+                        ))
+                    )
                 ) : (
                     globalLeaders.map((player) => (
                         <LeaderItem key={player.rank} player={player} onClick={() => {

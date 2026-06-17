@@ -49,6 +49,7 @@ export const FriendsWindow: React.FC<FriendsWindowProps> = () => {
     } = useFriendsWindow();
 
     const [isMobile, setIsMobile] = useState(false);
+    const [isInviting, setIsInviting] = useState(false);
     useEffect(() => {
         const checkLayout = () => {
             setIsMobile(typeof window !== 'undefined' && window.innerWidth < 1024);
@@ -144,11 +145,17 @@ export const FriendsWindow: React.FC<FriendsWindowProps> = () => {
                         )}
                     </div>
                     <motion.button
-                        whileHover={{ scale: 1.05, background: colors.accent, color: '#000' }}
-                        whileTap={{ scale: 0.92 }}
-                        onClick={() => {
-                            if (!searchQuery) showInviteBox();
-                            else handleSearch();
+                        whileHover={isInviting ? {} : { scale: 1.05, background: colors.accent, color: '#000' }}
+                        whileTap={isInviting ? {} : { scale: 0.92 }}
+                        disabled={isInviting}
+                        onClick={async () => {
+                            if (!searchQuery) {
+                                setIsInviting(true);
+                                await showInviteBox();
+                                setIsInviting(false);
+                            } else {
+                                handleSearch();
+                            }
                         }}
                         style={{
                             width: '52px',
@@ -156,7 +163,7 @@ export const FriendsWindow: React.FC<FriendsWindowProps> = () => {
                             background: colors.cardBg,
                             border: `2px solid ${colors.border}`,
                             borderRadius: 14,
-                            cursor: 'pointer',
+                            cursor: isInviting ? 'default' : 'pointer',
                             fontSize: '24px',
                             display: 'flex',
                             alignItems: 'center',
@@ -165,7 +172,27 @@ export const FriendsWindow: React.FC<FriendsWindowProps> = () => {
                             transition: '0.2s',
                         }}
                     >
-                        {searchQuery.toUpperCase().startsWith('MW-') ? '➕' : '+'}
+                        <style>{`
+                            @keyframes spinInvite {
+                                to { transform: rotate(360deg); }
+                            }
+                        `}</style>
+                        {isInviting ? (
+                            <div
+                                style={{
+                                    width: '20px',
+                                    height: '20px',
+                                    border: '2px solid rgba(255,255,255,0.3)',
+                                    borderTopColor: colors.accent,
+                                    borderRadius: '50%',
+                                    animation: 'spinInvite 1s linear infinite',
+                                }}
+                            />
+                        ) : searchQuery.toUpperCase().startsWith('MW-') ? (
+                            '➕'
+                        ) : (
+                            '+'
+                        )}
                     </motion.button>
                 </div>
 

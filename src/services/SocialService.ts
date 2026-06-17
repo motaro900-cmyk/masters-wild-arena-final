@@ -155,6 +155,9 @@ export async function resolveFriendProfiles(friendIds: string[]): Promise<any[]>
                     level: data.level || data.уровень || 1,
                     online: Date.now() - lastSeenTime < 5 * 60 * 1000,
                     lastSeen: lastSeenTime,
+                    rating: data.rating ?? data.рейтинг ?? 0,
+                    trophies: data.rating ?? data.рейтинг ?? 0,
+                    vipLevel: data.vipLevel ?? 0,
                 });
             });
         }
