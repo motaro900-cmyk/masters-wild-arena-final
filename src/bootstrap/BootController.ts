@@ -814,12 +814,10 @@ class BootController {
         // Start auto-synchronization
         const { syncService } = await import('../services/SyncService');
         
-        // If we deferred a profile correction sync during boot, run it now!
-        if (this.needPostBootSync) {
-            console.log('[BootController] Performing deferred post-boot profile sync...');
-            await syncService.syncPlayerData();
-            this.needPostBootSync = false;
-        }
+        // Always perform an initial sync on startup to register the active session token and set online status
+        console.log('[BootController] Performing initial startup session sync...');
+        await syncService.syncPlayerData();
+        this.needPostBootSync = false;
 
         syncService.startAutoSync(60000);
     }
