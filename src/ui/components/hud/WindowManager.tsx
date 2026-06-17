@@ -38,7 +38,8 @@ export const WindowManager: React.FC<WindowManagerProps> = ({
             onClick={() => setActiveWindow(null)}
         >
             <div
-                className="absolute top-[515px] left-[960px] -translate-x-1/2 -translate-y-1/2 hud-interactive"
+                className="absolute top-[515px] left-[960px] hud-interactive"
+                style={{ transform: 'translate3d(-50%, -50%, 0)', willChange: 'transform' }}
                 onClick={(e) => e.stopPropagation()}
             >
                 <React.Suspense fallback={<WindowLoadingSpinner />}>

@@ -141,6 +141,10 @@ export const BaseWindow: React.FC<BaseWindowProps> = ({
                         flexDirection: 'column',
                         overflow: 'hidden',
                         pointerEvents: 'auto',
+                        willChange: 'transform, opacity',
+                        backfaceVisibility: 'hidden',
+                        WebkitBackfaceVisibility: 'hidden',
+                        transformStyle: 'preserve-3d',
                     }}
                 >
                     {/* Угловые акценты (только в темной теме) */}
