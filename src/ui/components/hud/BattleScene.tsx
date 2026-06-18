@@ -278,7 +278,7 @@ export const BattleScene: React.FC = () => {
                             } else {
                                 if (isWarmup) {
                                     gold = 0;
-                                    xp = isVictory ? 200 : 50;
+                                    xp = 0;
                                     trophies = 0;
                                 } else {
                                     // Record result in matchmaking service to update honeymoon counter
