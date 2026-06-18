@@ -7,6 +7,52 @@ const ITEMS = {
     starter_pack: { title: 'Стартовый Пакет', price: 20 }
 };
 
+// Robust function to parse the body in serverless environments
+async function getParsedBody(req) {
+    if (!req.body) {
+        // Fallback: read stream manually if body parser is disabled
+        try {
+            const buffers = [];
+            for await (const chunk of req) {
+                buffers.push(chunk);
+            }
+            const rawBody = Buffer.concat(buffers).toString('utf-8');
+            if (!rawBody) return {};
+            try {
+                return JSON.parse(rawBody);
+            } catch {
+                return Object.fromEntries(new URLSearchParams(rawBody));
+            }
+        } catch (e) {
+            console.error('Failed to read request body stream:', e);
+            return {};
+        }
+    }
+
+    if (Buffer.isBuffer(req.body)) {
+        const str = req.body.toString('utf-8');
+        try {
+            return JSON.parse(str);
+        } catch {
+            return Object.fromEntries(new URLSearchParams(str));
+        }
+    }
+
+    if (typeof req.body === 'string') {
+        try {
+            return JSON.parse(req.body);
+        } catch {
+            return Object.fromEntries(new URLSearchParams(req.body));
+        }
+    }
+
+    if (typeof req.body === 'object') {
+        return req.body;
+    }
+
+    return {};
+}
+
 export default async function handler(req, res) {
     // Enable CORS for VK servers
     res.setHeader('Access-Control-Allow-Credentials', 'true');
@@ -27,40 +73,54 @@ export default async function handler(req, res) {
     }
 
     try {
-        const body = req.body || {};
-        const secretKey = process.env.VK_APP_SECRET;
+        const body = await getParsedBody(req);
+        console.log('Received VK payment notification:', JSON.stringify(body));
 
+        const secretKey = process.env.VK_APP_SECRET;
         if (!secretKey) {
-            console.error('VK_APP_SECRET environment variable is not set');
-            return res.status(500).json({ error: 'Server configuration error' });
+            console.error('VK_APP_SECRET environment variable is not set in Vercel dashboard!');
+            return res.status(200).json({
+                error: {
+                    error_code: 1,
+                    error_msg: 'Server environment configuration error',
+                    critical: true
+                }
+            });
         }
 
         // 1. Проверяем подпись (sig)
         const sig = body.sig;
         if (!sig) {
-            return res.status(400).json({ error: { error_code: 10, error_msg: 'Missing sig parameter', critical: true } });
+            console.warn('Missing sig parameter in VK payment notification');
+            return res.status(200).json({
+                error: {
+                    error_code: 10,
+                    error_msg: 'Missing sig parameter',
+                    critical: true
+                }
+            });
         }
 
-        // Собираем все параметры кроме sig
-        const params = [];
-        for (const [key, val] of Object.entries(body)) {
-            if (key !== 'sig') {
-                params.push({ key, value: String(val) });
-            }
-        }
-
-        // Сортируем по ключам в алфавитном порядке
-        params.sort((a, b) => a.key.localeCompare(b.key));
-
-        // Склеиваем пары key=value
-        const signatureString = params.map(p => `${p.key}=${p.value}`).join('') + secretKey;
-
-        // Вычисляем MD5
+        // Вычисляем подпись:
+        // Все параметры, кроме 'sig', сортируются в алфавитном порядке ключей.
+        // Склеиваются в формате 'имя=значение' и в конце добавляется secretKey.
+        const keys = Object.keys(body).filter(k => k !== 'sig').sort();
+        const signatureString = keys.map(k => `${k}=${body[k]}`).join('') + secretKey;
         const calculatedSig = crypto.createHash('md5').update(signatureString, 'utf-8').digest('hex');
 
         if (calculatedSig !== sig) {
-            console.warn('Signature verification failed', { calculatedSig, sig, signatureString });
-            return res.status(400).json({ error: { error_code: 10, error_msg: 'Incorrect signature', critical: true } });
+            console.warn('VK Payment signature verification failed!', {
+                receivedSig: sig,
+                calculatedSig,
+                signatureStringRule: signatureString.replace(secretKey, '***' + secretKey.slice(-4))
+            });
+            return res.status(200).json({
+                error: {
+                    error_code: 10,
+                    error_msg: 'Incorrect signature',
+                    critical: true
+                }
+            });
         }
 
         // 2. Обрабатываем типы уведомлений
@@ -72,6 +132,7 @@ export default async function handler(req, res) {
             const itemData = ITEMS[itemId];
 
             if (!itemData) {
+                console.warn(`Item not found in database: ${itemId}`);
                 return res.status(200).json({
                     error: {
                         error_code: 20,
@@ -81,6 +142,7 @@ export default async function handler(req, res) {
                 });
             }
 
+            console.log(`Fulfilling get_item info request for: ${itemId}`, itemData);
             return res.status(200).json({
                 response: {
                     item_id: itemId,
@@ -94,9 +156,11 @@ export default async function handler(req, res) {
         if (notificationType === 'order_status_change' || notificationType === 'order_status_change_test') {
             const status = body.status;
             const orderId = body.order_id;
+            console.log(`Order status change notification received. OrderId: ${orderId}, Status: ${status}`);
 
             if (status === 'chargeable') {
                 // Платёж готов к списанию (VK ждет подтверждения от нашего сервера)
+                console.log(`Order ${orderId} is chargeable. Confirming order to VK.`);
                 return res.status(200).json({
                     response: {
                         order_id: Number(orderId),
@@ -114,9 +178,23 @@ export default async function handler(req, res) {
             });
         }
 
-        return res.status(400).json({ error: { error_code: 100, error_msg: 'Unsupported notification type', critical: true } });
+        console.warn(`Unsupported notification type: ${notificationType}`);
+        return res.status(200).json({
+            error: {
+                error_code: 100,
+                error_msg: 'Unsupported notification type',
+                critical: true
+            }
+        });
     } catch (err) {
         console.error('VK payment callback error:', err);
-        return res.status(500).json({ error: 'Internal server error' });
+        return res.status(200).json({
+            error: {
+                error_code: 1000,
+                error_msg: 'Internal server error',
+                critical: true
+            }
+        });
     }
 }
+
