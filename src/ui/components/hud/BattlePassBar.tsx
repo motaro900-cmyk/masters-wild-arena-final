@@ -103,7 +103,7 @@ const graphicsQuality = useGameStore(state => state.graphicsQuality);
                 <div
                     style={{
                         position: 'absolute',
-                        left: '24.9%',
+                        left: '25.9%',
                         top: 'calc(49% + 10px)',
                         width: '48.2%',
                         height: '18px',
@@ -157,7 +157,7 @@ const graphicsQuality = useGameStore(state => state.graphicsQuality);
                 <div
                     style={{
                         position: 'absolute',
-                        left: '48%',
+                        left: '50%',
                         top: '18%',
                         transform: 'translateX(-50%)',
                         fontFamily: "'Cinzel', serif",
@@ -179,7 +179,7 @@ const graphicsQuality = useGameStore(state => state.graphicsQuality);
                 <div
                     style={{
                         position: 'absolute',
-                        left: '48%',
+                        left: '50%',
                         bottom: '12%', // Чуть подняли от края
                         transform: 'translateX(-50%)',
                         fontFamily: "'Nunito', sans-serif",
