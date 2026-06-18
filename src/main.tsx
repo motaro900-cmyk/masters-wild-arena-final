@@ -38,7 +38,7 @@ const UpdateModal: React.FC = () => {
             fontFamily: "'Outfit', 'Cinzel', sans-serif",
         }}>
             <div style={{
-                width: '420px',
+                width: 'min(420px, 94vw)',
                 padding: '35px 25px',
                 background: 'linear-gradient(135deg, rgba(30, 20, 10, 0.95) 0%, rgba(15, 10, 5, 0.98) 100%)',
                 border: '2px solid #d4af37',

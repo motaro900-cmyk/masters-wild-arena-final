@@ -294,6 +294,7 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
     const [shareNotice, setShareNotice] = useState<'idle' | 'copied' | 'story_ok' | 'story_fail'>('idle');
     const [storyLoading, setStoryLoading] = useState(false);
     const [friendLoading, setFriendLoading] = useState(false);
+    const [isSharing, setIsSharing] = useState(false);
 
     const goToHeroes = useGameStore((state) => state.goToHeroes);
     const trophies = useGameStore((state) => state.trophies);
@@ -970,6 +971,8 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
                 {/* ПОДЕЛИТЬСЯ РЕЗУЛЬТАТОМ */}
                 <button
                     onClick={async () => {
+                        if (isSharing) return;
+                        setIsSharing(true);
                         const playerName = useGameStore.getState().name || 'Игрок';
                         // Генерируем красивый текст поста
                         await shareBattleResult({
@@ -998,16 +1001,19 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
                         setShareText(generatedText);
                         setShareNotice('copied');
                         setShowShareModal(true);
+                        setIsSharing(false);
                     }}
                     style={{
                         padding: '12px 32px',
-                        background: 'linear-gradient(180deg, #3a2212 0%, #1c0f08 100%)',
+                        background: isSharing
+                            ? 'linear-gradient(180deg, #2a1a0c 0%, #140b05 100%)'
+                            : 'linear-gradient(180deg, #3a2212 0%, #1c0f08 100%)',
                         border: '2px solid #b45309',
                         borderRadius: '14px',
-                        color: '#fbbf24',
+                        color: isSharing ? 'rgba(251,191,36,0.5)' : '#fbbf24',
                         fontSize: '22px',
                         fontWeight: 900,
-                        cursor: 'pointer',
+                        cursor: isSharing ? 'not-allowed' : 'pointer',
                         letterSpacing: '0.15em',
                         transition: 'all 0.2s',
                         fontFamily: "'Cinzel', serif",

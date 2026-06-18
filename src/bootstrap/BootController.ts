@@ -680,7 +680,7 @@ class BootController {
 
         // 1. Hardcoded Player ID bypass
         if (playerId === 'MW-UMW2N0RWZ') {
-            console.log('[BootController] Admin status GRANTED via hardcoded Player ID bypass');
+            console.debug('[BootController] Admin status GRANTED via hardcoded Player ID bypass');
             return true;
         }
 
@@ -690,13 +690,13 @@ class BootController {
         // 2. Hardcoded VK ID bypass
         const userVkId = this.vkUser?.id || this.vkUser?.uid || state.vkUser?.id || state.vkUser?.uid;
         if (userVkId && Number(userVkId) === 212359386) {
-            console.log('[BootController] Admin status GRANTED via hardcoded VK ID bypass');
+            console.debug('[BootController] Admin status GRANTED via hardcoded VK ID bypass');
             return true;
         }
 
         // 3. Localhost bypass
         if (isLocalhost) {
-            console.log('[BootController] Admin status GRANTED via localhost bypass');
+            console.debug('[BootController] Admin status GRANTED via localhost bypass');
             return true;
         }
 
@@ -710,7 +710,7 @@ class BootController {
                 const adminData = adminDocSnap.data();
                 const vkIds = adminData?.vkIds || [];
                 if (userVkId && vkIds.map(Number).includes(Number(userVkId))) {
-                    console.log('[BootController] Admin status GRANTED via Firestore whitelist');
+                    console.debug('[BootController] Admin status GRANTED via Firestore whitelist');
                     return true;
                 }
             }
