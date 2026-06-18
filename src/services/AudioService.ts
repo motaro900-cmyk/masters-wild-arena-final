@@ -450,7 +450,7 @@ class AudioService {
             try {
                 sound = new Howl({
                     src: [critUrl, hitFallbackUrl],
-                    volume: this.sfxVolume * 1.25,
+                    volume: Math.min(1.0, this.sfxVolume * 1.25),
                     onloaderror: (_id, err) => console.warn(`❌ Crit SFX Load Error, using fallback`, err),
                 });
                 this.sfx.set(critUrl, sound);
@@ -461,7 +461,7 @@ class AudioService {
         }
 
         try {
-            sound?.volume(this.sfxVolume * 1.25);
+            sound?.volume(Math.min(1.0, this.sfxVolume * 1.25));
             sound?.play();
         } catch (err) {
             console.warn(`❌ Failed to play Crit SFX:`, err);

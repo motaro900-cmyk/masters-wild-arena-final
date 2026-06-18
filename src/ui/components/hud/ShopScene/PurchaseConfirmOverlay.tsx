@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ShopItem } from '../../../../configs/ShopConfig';
 import { getRarityColor } from './shopHelpers';
+import { useGameStore } from '../../../../store/useGameStore';
 
 interface PurchaseConfirmOverlayProps {
     item: ShopItem;
@@ -19,6 +20,7 @@ export const PurchaseConfirmOverlay: React.FC<PurchaseConfirmOverlayProps> = ({
     const [isProcessing, setIsProcessing] = useState(false);
     const rarityColor = getRarityColor(item.rarity);
     const [imageLoaded, setImageLoaded] = useState(false);
+    const isMobile = useGameStore((state) => state.isMobile);
 
     React.useEffect(() => {
         setImageLoaded(false);
@@ -29,8 +31,9 @@ export const PurchaseConfirmOverlay: React.FC<PurchaseConfirmOverlayProps> = ({
         setIsProcessing(true);
         try {
             await onConfirm(currency);
-        } finally {
+        } catch (err) {
             setIsProcessing(false);
+            throw err;
         }
     };
     return (
@@ -56,16 +59,18 @@ export const PurchaseConfirmOverlay: React.FC<PurchaseConfirmOverlayProps> = ({
                 exit={{ scale: 0.8, y: 50, opacity: 0 }}
                 onClick={(e) => e.stopPropagation()}
                 style={{
-                    width: '600px',
+                    width: 'min(600px, 92vw)',
+                    maxHeight: '90vh',
+                    overflowY: 'auto',
                     background: 'rgba(20,18,18,0.98)',
                     borderRadius: '24px',
                     border: `2.5px solid ${rarityColor}`,
                     boxShadow: `0 0 50px ${rarityColor}33, inset 0 0 30px rgba(0,0,0,0.8)`,
-                    padding: '40px',
+                    padding: isMobile ? '24px 16px' : '40px',
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
-                    gap: '20px',
+                    gap: isMobile ? '12px' : '20px',
                 }}
             >
                 <span
@@ -147,7 +152,7 @@ export const PurchaseConfirmOverlay: React.FC<PurchaseConfirmOverlayProps> = ({
                                   : 'Вы уверены, что хотите приобрести этот предмет? Характеристики будут немедленно добавлены к вашей силе.'}
                 </p>
 
-                <div style={{ display: 'flex', gap: '20px', width: '100%', marginTop: '10px' }}>
+                <div style={{ display: 'flex', gap: isMobile ? '10px' : '20px', width: '100%', marginTop: '10px' }}>
                     <button
                         onClick={onCancel}
                         style={{

@@ -230,9 +230,9 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
-                    justifyContent: 'center',
+                    justifyContent: isMobile ? 'flex-start' : 'center',
                     color: 'white',
-                    padding: '40px',
+                    padding: isMobile ? '20px 12px 10px 12px' : '40px',
                 }}
             >
                 <div
@@ -241,10 +241,10 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
                         flex: 1,
                         display: 'flex',
                         flexDirection: 'column',
-                        justifyContent: 'center',
+                        justifyContent: isMobile ? 'flex-start' : 'center',
                         overflowY: 'auto',
                         padding: '10px 0',
-                        marginBottom: '20px',
+                        marginBottom: '10px',
                     }}
                     className="custom-scrollbar"
                 >
@@ -261,8 +261,8 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
                                     margin: '0 auto',
                                     background: 'rgba(0,0,0,0.7)',
                                     backdropFilter: 'blur(30px)',
-                                    padding: '30px 40px',
-                                    borderRadius: '40px',
+                                    padding: isMobile ? '20px 16px' : '30px 40px',
+                                    borderRadius: isMobile ? '24px' : '40px',
                                     border: '1px solid rgba(200,149,42,0.4)',
                                     boxShadow: '0 25px 100px rgba(0,0,0,0.8)',
                                 }}
@@ -270,7 +270,7 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
                                 <div
                                     style={{
                                         color: '#ffd700',
-                                        fontSize: '18px',
+                                        fontSize: isMobile ? '13px' : '18px',
                                         letterSpacing: '0.4em',
                                         marginBottom: '15px',
                                         textTransform: 'uppercase',
@@ -280,7 +280,7 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
                                 </div>
                                 <h1
                                     style={{
-                                        fontSize: '42px',
+                                        fontSize: isMobile ? '24px' : '42px',
                                         margin: '0 0 20px 0',
                                         lineHeight: 1.1,
                                         textShadow: '0 5px 15px rgba(0,0,0,1)',
@@ -290,7 +290,7 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
                                 </h1>
                                 <p
                                     style={{
-                                        fontSize: '18px',
+                                        fontSize: isMobile ? '14px' : '18px',
                                         lineHeight: 1.6,
                                         color: 'rgba(255,255,255,0.9)',
                                         textAlign: 'justify',
@@ -317,8 +317,8 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
                                     margin: '0 auto',
                                     background: 'rgba(0,0,0,0.65)',
                                     backdropFilter: 'blur(25px)',
-                                    padding: '40px 60px',
-                                    borderRadius: '45px',
+                                    padding: isMobile ? '20px 16px' : '40px 60px',
+                                    borderRadius: isMobile ? '24px' : '45px',
                                     border: '1px solid rgba(255,255,255,0.1)',
                                     boxShadow: '0 20px 80px rgba(0,0,0,0.6)',
                                 }}
@@ -326,32 +326,32 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
                                 <div
                                     style={{
                                         color: '#ffd700',
-                                        fontSize: '22px',
-                                        letterSpacing: '0.5em',
+                                        fontSize: isMobile ? '15px' : '22px',
+                                        letterSpacing: isMobile ? '0.2em' : '0.5em',
                                         marginBottom: '20px',
                                         textTransform: 'uppercase',
                                     }}
                                 >
                                     Основы Мастерства
                                 </div>
-                                <h2 style={{ fontSize: '48px', marginBottom: '30px', color: 'white' }}>
+                                <h2 style={{ fontSize: isMobile ? '26px' : '48px', marginBottom: isMobile ? '15px' : '30px', color: 'white' }}>
                                     Что нужно знать?
                                 </h2>
                                 <div
-                                    style={{ textAlign: 'left', display: 'flex', flexDirection: 'column', gap: '20px' }}
+                                    style={{ textAlign: 'left', display: 'flex', flexDirection: 'column', gap: isMobile ? '12px' : '20px' }}
                                 >
                                     <div
                                         style={{
                                             background: 'rgba(255,255,255,0.05)',
-                                            padding: '20px',
+                                            padding: isMobile ? '12px 14px' : '20px',
                                             borderRadius: '20px',
                                             borderLeft: '4px solid #ffd700',
                                         }}
                                     >
-                                        <strong style={{ color: '#ffd700', fontSize: '22px' }}>
+                                        <strong style={{ color: '#ffd700', fontSize: isMobile ? '16px' : '22px' }}>
                                             🛡️ Победа в подготовке:
                                         </strong>{' '}
-                                        <span style={{ fontSize: '18px', color: '#ddd' }}>
+                                        <span style={{ fontSize: isMobile ? '13px' : '18px', color: '#ddd' }}>
                                             Битвы на арене проходят автоматически. Твоя главная задача — собрать
                                             идеальный билд из оружия и доспехов *до* начала боя.
                                         </span>
@@ -359,15 +359,15 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
                                     <div
                                         style={{
                                             background: 'rgba(255,255,255,0.05)',
-                                            padding: '20px',
+                                            padding: isMobile ? '12px 14px' : '20px',
                                             borderRadius: '20px',
                                             borderLeft: '4px solid #ffd700',
                                         }}
                                     >
-                                        <strong style={{ color: '#ffd700', fontSize: '22px' }}>
+                                        <strong style={{ color: '#ffd700', fontSize: isMobile ? '16px' : '22px' }}>
                                             ⚡ Баланс характеристик:
                                         </strong>{' '}
-                                        <span style={{ fontSize: '18px', color: '#ddd' }}>
+                                        <span style={{ fontSize: isMobile ? '13px' : '18px', color: '#ddd' }}>
                                             Сила увеличивает урон, Ловкость — шанс крита и скорость, а Стойкость — твое
                                             здоровье. Ищи баланс, подходящий под твоего героя.
                                         </span>
@@ -375,15 +375,15 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
                                     <div
                                         style={{
                                             background: 'rgba(255,255,255,0.05)',
-                                            padding: '20px',
+                                            padding: isMobile ? '12px 14px' : '20px',
                                             borderRadius: '20px',
                                             borderLeft: '4px solid #ffd700',
                                         }}
                                     >
-                                        <strong style={{ color: '#ffd700', fontSize: '22px' }}>
+                                        <strong style={{ color: '#ffd700', fontSize: isMobile ? '16px' : '22px' }}>
                                             📜 Квесты и Энергия:
                                         </strong>{' '}
-                                        <span style={{ fontSize: '18px', color: '#ddd' }}>
+                                        <span style={{ fontSize: isMobile ? '13px' : '18px', color: '#ddd' }}>
                                             Каждый бой тратит энергию. Выполняй ежедневные квесты — это твой главный
                                             источник золота и алмазов.
                                         </span>
@@ -401,7 +401,7 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
                                 style={{
                                     maxWidth: '1300px',
                                     width: '100%',
-                                    padding: '40px',
+                                    padding: isMobile ? '20px 16px' : '40px',
                                     margin: '0 auto',
                                     background: 'rgba(0,0,0,0.5)',
                                     backdropFilter: 'blur(15px)',
@@ -411,30 +411,34 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
                             >
                                 <h2
                                     style={{
-                                        fontSize: '42px',
+                                        fontSize: isMobile ? '26px' : '42px',
                                         textAlign: 'center',
-                                        marginBottom: '40px',
+                                        marginBottom: isMobile ? '20px' : '40px',
                                         color: '#ffd700',
                                     }}
                                 >
                                     Путеводитель Мастера
                                 </h2>
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px' }}>
+                                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: isMobile ? '12px' : '30px' }}>
                                     <GuideItem
                                         title="ГЕРОИ"
                                         desc="Твой чемпион. Нанимай и повышай уровень могучих воинов: от верного Панды Фэн Луна до благородного Льва Аурелиуса и свирепого Минотавра Громма."
+                                        isMobile={isMobile}
                                     />
                                     <GuideItem
                                         title="МАГАЗИН"
                                         desc="Снаряжение и ресурсы. Здесь ты найдешь всё необходимое для подготовки к битвам: от простых клинков до редких доспехов и эликсиров энергии."
+                                        isMobile={isMobile}
                                     />
                                     <GuideItem
                                         title="РАНГИ"
                                         desc="Путь к славе. Сражайся на Арене, зарабатывай рейтинг и кубки, поднимаясь от скромного Странника до великой Легенды Арены!"
+                                        isMobile={isMobile}
                                     />
                                     <GuideItem
                                         title="КУЗНИЦА"
                                         desc="Снаряжение и ковка. Переплавляй ненужные предметы в Кузнице, создавая легендарное снаряжение и многократно усиливая боевую мощь твоего Героя."
+                                        isMobile={isMobile}
                                     />
                                 </div>
                             </motion.div>
@@ -451,8 +455,8 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
                                     margin: '0 auto',
                                     background: 'rgba(10, 7, 5, 0.95)',
                                     backdropFilter: 'blur(40px)',
-                                    padding: '50px 70px',
-                                    borderRadius: '60px',
+                                    padding: isMobile ? '24px 20px 30px 20px' : '50px 70px',
+                                    borderRadius: isMobile ? '28px' : '60px',
                                     border: '2px solid #c8952a',
                                     boxShadow: '0 0 120px rgba(200,149,42,0.25)',
                                 }}
@@ -460,9 +464,9 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
                                 <div
                                     style={{
                                         color: '#ffd700',
-                                        fontSize: '20px',
-                                        letterSpacing: '0.8em',
-                                        marginBottom: '20px',
+                                        fontSize: 'clamp(14px, 3.5vw, 20px)',
+                                        letterSpacing: isMobile ? '0.4em' : '0.8em',
+                                        marginBottom: isMobile ? '10px' : '20px',
                                         textTransform: 'uppercase',
                                         fontWeight: 900,
                                     }}
@@ -471,7 +475,7 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
                                 </div>
                                 <h2
                                     style={{
-                                        fontSize: '56px',
+                                        fontSize: 'clamp(24px, 5.5vw, 56px)',
                                         marginBottom: '15px',
                                         color: 'white',
                                         textShadow: '0 4px 15px #000',
@@ -482,9 +486,9 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
                                 </h2>
                                 <p
                                     style={{
-                                        fontSize: '22px',
+                                        fontSize: 'clamp(14px, 2.5vw, 22px)',
                                         color: 'rgba(255,255,255,0.8)',
-                                        marginBottom: '35px',
+                                        marginBottom: isMobile ? '15px' : '35px',
                                         lineHeight: 1.5,
                                     }}
                                 >
@@ -496,16 +500,16 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
                                 <div
                                     style={{
                                         display: 'grid',
-                                        gridTemplateColumns: '1fr 1fr 1fr',
-                                        gap: '15px',
-                                        marginBottom: '35px',
+                                        gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr 1fr',
+                                        gap: isMobile ? '10px' : '15px',
+                                        marginBottom: isMobile ? '20px' : '35px',
                                         textAlign: 'left',
                                     }}
                                 >
                                     <div
                                         style={{
                                             background: 'rgba(255,255,255,0.03)',
-                                            padding: '15px',
+                                            padding: isMobile ? '10px 12px' : '15px',
                                             borderRadius: '15px',
                                             border: '1px solid rgba(200,149,42,0.2)',
                                         }}
@@ -513,21 +517,21 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
                                         <div
                                             style={{
                                                 color: '#ffd700',
-                                                fontSize: '14px',
+                                                fontSize: isMobile ? '12px' : '14px',
                                                 fontWeight: 'bold',
                                                 marginBottom: '5px',
                                             }}
                                         >
                                             📜 УНИКАЛЬНОСТЬ
                                         </div>
-                                        <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)' }}>
+                                        <div style={{ fontSize: isMobile ? '11px' : '12px', color: 'rgba(255,255,255,0.5)' }}>
                                             Двух одинаковых Мастеров не существует.
                                         </div>
                                     </div>
                                     <div
                                         style={{
                                             background: 'rgba(255,255,255,0.03)',
-                                            padding: '15px',
+                                            padding: isMobile ? '10px 12px' : '15px',
                                             borderRadius: '15px',
                                             border: '1px solid rgba(200,149,42,0.2)',
                                         }}
@@ -535,21 +539,21 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
                                         <div
                                             style={{
                                                 color: '#ffd700',
-                                                fontSize: '14px',
+                                                fontSize: isMobile ? '12px' : '14px',
                                                 fontWeight: 'bold',
                                                 marginBottom: '5px',
                                             }}
                                         >
                                             🛡️ ЧЕСТЬ
                                         </div>
-                                        <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)' }}>
+                                        <div style={{ fontSize: isMobile ? '11px' : '12px', color: 'rgba(255,255,255,0.5)' }}>
                                             Без нецензурной лексики. Соблюдай правила Арены.
                                         </div>
                                     </div>
                                     <div
                                         style={{
                                             background: 'rgba(255,255,255,0.03)',
-                                            padding: '15px',
+                                            padding: isMobile ? '10px 12px' : '15px',
                                             borderRadius: '15px',
                                             border: '1px solid rgba(200,149,42,0.2)',
                                         }}
@@ -557,14 +561,14 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
                                         <div
                                             style={{
                                                 color: '#ffd700',
-                                                fontSize: '14px',
+                                                fontSize: isMobile ? '12px' : '14px',
                                                 fontWeight: 'bold',
                                                 marginBottom: '5px',
                                             }}
                                         >
                                             🏆 СЛАВА
                                         </div>
-                                        <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)' }}>
+                                        <div style={{ fontSize: isMobile ? '11px' : '12px', color: 'rgba(255,255,255,0.5)' }}>
                                             Это имя увидят все соперники в таблице лидеров.
                                         </div>
                                     </div>
@@ -584,9 +588,9 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
                                             width: '100%',
                                             background: 'rgba(0,0,0,0.6)',
                                             border: '2px solid rgba(200,149,42,0.6)',
-                                            borderRadius: '25px',
-                                            padding: '25px 35px',
-                                            fontSize: '36px',
+                                            borderRadius: isMobile ? '15px' : '25px',
+                                            padding: isMobile ? '12px 20px' : '25px 35px',
+                                            fontSize: 'clamp(18px, 4vw, 36px)',
                                             color: '#fff',
                                             textAlign: 'center',
                                             fontFamily: "'Cinzel', serif",
@@ -607,12 +611,12 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
                                         <div
                                             style={{
                                                 position: 'absolute',
-                                                right: '30px',
+                                                right: isMobile ? '15px' : '30px',
                                                 top: '50%',
                                                 transform: 'translateY(-50%)',
                                             }}
                                         >
-                                            <div className="animate-spin h-8 w-8 border-3 border-[#ffd700] border-t-transparent rounded-full" />
+                                            <div className="animate-spin h-6 w-6 border-3 border-[#ffd700] border-t-transparent rounded-full" />
                                         </div>
                                     )}
                                 </div>
@@ -623,7 +627,7 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
                                         animate={{ opacity: 1, y: 0 }}
                                         style={{
                                             color: '#ff4444',
-                                            fontSize: '18px',
+                                            fontSize: isMobile ? '14px' : '18px',
                                             fontWeight: 'bold',
                                             marginTop: '15px',
                                             background: 'rgba(255,0,0,0.1)',
@@ -639,14 +643,14 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
                                 {/* LEGAL CONSENT */}
                                 <div
                                     style={{
-                                        marginTop: '20px',
+                                        marginTop: isMobile ? '12px' : '20px',
                                         display: 'flex',
                                         alignItems: 'flex-start',
                                         gap: '12px',
                                         background: legalAccepted ? 'rgba(240,192,64,0.07)' : 'rgba(255,255,255,0.03)',
                                         border: `1px solid ${legalAccepted ? 'rgba(240,192,64,0.35)' : 'rgba(255,255,255,0.1)'}`,
                                         borderRadius: '14px',
-                                        padding: '14px 18px',
+                                        padding: isMobile ? '10px 12px' : '14px 18px',
                                         cursor: 'pointer',
                                         transition: 'all 0.2s',
                                     }}
@@ -667,7 +671,7 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
                                     }}>
                                         {legalAccepted && <span style={{ color: '#1a0e05', fontSize: '14px', fontWeight: 900 }}>✓</span>}
                                     </div>
-                                    <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.65)', lineHeight: 1.5, textAlign: 'left' }}>
+                                    <div style={{ fontSize: isMobile ? '12px' : '13px', color: 'rgba(255,255,255,0.65)', lineHeight: 1.5, textAlign: 'left' }}>
                                         Я прочитал(а) и принимаю{' '}
                                         <span
                                             onClick={(e) => { e.stopPropagation(); setOpenDoc('terms'); }}
@@ -688,9 +692,9 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
 
                                 <p
                                     style={{
-                                        marginTop: '25px',
+                                        marginTop: isMobile ? '15px' : '25px',
                                         color: 'rgba(255,255,255,0.3)',
-                                        fontSize: '13px',
+                                        fontSize: isMobile ? '11px' : '13px',
                                         letterSpacing: '0.1em',
                                         textTransform: 'uppercase',
                                     }}
@@ -701,18 +705,18 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
                         )}
                     </AnimatePresence>
 
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '30px', paddingBottom: '20px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '30px', paddingBottom: isMobile ? '60px' : '20px' }}>
                         <motion.button
                             whileHover={{ scale: 1.05, boxShadow: '0 0 50px rgba(200,149,42,0.7)' }}
                             whileTap={{ scale: 0.95 }}
                             disabled={isChecking}
                             onClick={nextStep}
                             style={{
-                                padding: '20px 80px',
+                                padding: isMobile ? '14px 40px' : '20px 80px',
                                 background: isChecking ? '#333' : 'linear-gradient(135deg, #ffe082, #c8952a)',
                                 border: 'none',
                                 borderRadius: '12px',
-                                fontSize: '24px',
+                                fontSize: isMobile ? '18px' : '24px',
                                 fontWeight: 'bold',
                                 color: isChecking ? '#666' : '#1a0e05',
                                 cursor: isChecking ? 'not-allowed' : 'pointer',
@@ -741,17 +745,17 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
     );
 };
 
-const GuideItem = ({ title, desc }: { title: string; desc: string }) => (
+const GuideItem = ({ title, desc, isMobile }: { title: string; desc: string; isMobile?: boolean }) => (
     <div
         style={{
-            padding: '30px',
+            padding: isMobile ? '14px 16px' : '30px',
             background: 'rgba(255,255,255,0.04)',
             borderRadius: '25px',
             borderLeft: '5px solid #c8952a',
             boxShadow: '0 10px 20px rgba(0,0,0,0.2)',
         }}
     >
-        <h4 style={{ margin: '0 0 15px 0', color: '#ffd700', fontSize: '26px', letterSpacing: '0.05em' }}>{title}</h4>
-        <p style={{ margin: 0, fontSize: '20px', lineHeight: 1.6, color: 'rgba(255,255,255,0.85)' }}>{desc}</p>
+        <h4 style={{ margin: '0 0 10px 0', color: '#ffd700', fontSize: isMobile ? '18px' : '26px', letterSpacing: '0.05em' }}>{title}</h4>
+        <p style={{ margin: 0, fontSize: isMobile ? '14px' : '20px', lineHeight: 1.6, color: 'rgba(255,255,255,0.85)' }}>{desc}</p>
     </div>
 );

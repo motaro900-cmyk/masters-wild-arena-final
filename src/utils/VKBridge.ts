@@ -239,25 +239,19 @@ export const purchaseVotes = async (item: string): Promise<boolean> => {
     } catch (error: any) {
         console.warn('VKWebAppShowOrderBox failed:', error);
         
-        // 1. Проверяем стандартные маркеры песочницы в ошибке
-        if (error && typeof error === 'object') {
-            const errCode = error.error_code || (error.error_data && error.error_data.error_code);
-            const errType = error.error_type || (error.error_data && error.error_data.error_type);
-            const errMsg = String(error.error_reason || error.error_msg || '').toLowerCase();
-            
-            if (errCode === 100 || errType === 'sandbox' || errMsg.includes('sandbox') || errMsg.includes('test') || errMsg.includes('песочн')) {
-                console.log('VKWebAppShowOrderBox: sandbox/test payment error detected, treating as success');
-                return true;
-            }
-        }
-
-        // 2. Для администраторов и разработчиков в режиме песочницы/теста предлагаем зачислить товар бесплатно
+        // Для администраторов и разработчиков предлагаем зачислить товар бесплатно при сбоях API (только на localhost и в режиме DEV)
         const state = useGameStore.getState();
-        const isAdmin = state.isAdmin || state.isDeveloper || (state.vkUser && Number(state.vkUser.id) === 212359386);
-        const params = new URLSearchParams(window.location.search);
-        const isSandboxQuery = params.get('vk_is_sandbox') === '1' || params.get('sandbox') === '1' || params.get('test') === '1';
+        const isLocalhost =
+            typeof window !== 'undefined' &&
+            (window.location.hostname === 'localhost' ||
+                window.location.hostname === '127.0.0.1' ||
+                window.location.hostname.startsWith('192.168.'));
         
-        if (isAdmin || isSandboxQuery) {
+        // Разрешаем bypass только авторизованным администраторам на localhost или разработчикам из вайтлиста
+        const isAuthorizedTester = state.isAdmin || state.isDeveloper || (state.vkUser && Number(state.vkUser.id) === 212359386);
+        const isDevMode = import.meta.env.DEV === true;
+        
+        if (isDevMode && isAuthorizedTester && isLocalhost) {
             return new Promise<boolean>((resolve) => {
                 state.showConfirm(
                     `[Тестовый режим] Платёж через VK Bridge не удался. Зачислить товар бесплатно для тестирования?`,
@@ -480,10 +474,22 @@ export const shareBattleResult = async (params: {
     damageDealt: number;
     trophiesChange: number;
     isVictory: boolean;
+    goldEarned: number;
+    xpEarned: number;
+    crystalsEarned?: number;
+    battleDurationSeconds?: number;
 }): Promise<'shared' | 'posted' | 'copied' | 'failed'> => {
+    const durationText = params.battleDurationSeconds ? ` за ${params.battleDurationSeconds} сек.` : '';
+    const crystalsText = params.crystalsEarned && params.crystalsEarned > 0 ? `+${params.crystalsEarned} Кристалла 💎\n` : '';
+    const trophiesText = params.trophiesChange > 0 
+        ? `+${params.trophiesChange} Кубков 🏆\n` 
+        : params.trophiesChange < 0 
+            ? `${params.trophiesChange} Кубков 📉\n` 
+            : '';
+
     const text = params.isVictory
-        ? `⚔️ Masters of the Wild\n${params.playerName} победил!\nПротивник: ${params.enemyName}\nНанесено урона: ${params.damageDealt.toLocaleString()}\nКубки: +${params.trophiesChange} ▲\n🎮 Играй: https://vk.com/app${import.meta.env.VITE_VK_APP_ID || '52446645'}`
-        : `⚔️ Masters of the Wild\n${params.playerName} против ${params.enemyName}!\nТяжёлый бой... Нанесено урона: ${params.damageDealt.toLocaleString()}\n🎮 Бросишь вызов? https://vk.com/app${import.meta.env.VITE_VK_APP_ID || '52446645'}`;
+        ? `⚔️ Я победил в Masters of the Wild!\n\n🏆 Результат боя:\n${params.playerName} vs ${params.enemyName}\nПобеда${durationText}\n\n+${params.xpEarned} XP 🛡️\n+${params.goldEarned} Золота 💰\n${crystalsText}${trophiesText}\nСыграть: https://vk.com/app${import.meta.env.VITE_VK_APP_ID || '52446645'}`
+        : `⚔️ Masters of the Wild\nБой с ${params.enemyName} оказался тяжелым испытанием...\n\n🛡️ Результат боя:\n${params.playerName} vs ${params.enemyName}\nНанесено урона: ${params.damageDealt.toLocaleString()} ед. 💥\n${trophiesText}\n🎮 Бросить вызов: https://vk.com/app${import.meta.env.VITE_VK_APP_ID || '52446645'}`;
 
     // На localhost — просто копируем
     if (!bridge || !isVkMiniApp()) {
@@ -493,8 +499,11 @@ export const shareBattleResult = async (params: {
 
     try {
         // Попытка открыть редактор историй (в первую очередь для мобильных)
+        // Используем красивый фон из папки backgrounds
+        const bgUrl = `${window.location.origin}/assets/images/backgrounds/bg_main_mobile.webp`;
         await bridge.send('VKWebAppShowStoryBox', {
-            background_type: 'none',
+            background_type: 'image',
+            url: bgUrl,
             attachment: {
                 text: 'open',
                 type: 'url',
@@ -503,9 +512,19 @@ export const shareBattleResult = async (params: {
         });
         copyToClipboard(text);
         return 'shared';
-    } catch (storyErr) {
-        console.warn('VKWebAppShowStoryBox failed, trying VKWebAppShare & clipboard:', storyErr);
+    } catch (storyErr: any) {
+        console.warn('VKWebAppShowStoryBox failed:', storyErr);
         
+        // Если пользователь явно отменил (User denied / закрыл редактор), не спамим его вторым окном
+        const isUserDenied = storyErr?.error_data?.error_code === 4 || 
+            (storyErr?.error_data?.error_msg && storyErr.error_data.error_msg.toLowerCase().includes('user denied')) ||
+            (storyErr?.message && storyErr.message.toLowerCase().includes('user denied'));
+            
+        if (isUserDenied) {
+            const copied = copyToClipboard(text);
+            return copied ? 'copied' : 'failed';
+        }
+
         // Пытаемся открыть стандартный шаринг ссылки ВК (работает на десктопе)
         let shareSuccess = false;
         try {
@@ -591,3 +610,52 @@ export const openExternalUrl = async (url: string): Promise<boolean> => {
     }
 };
 
+
+/**
+ * Открывает редактор историй ВК с фоном игры.
+ * Используется кнопкой "Опубликовать Историю" внутри SharePreviewModal.
+ */
+export const openStoryBox = async (): Promise<'shared' | 'cancelled' | 'failed'> => {
+    if (!bridge || !isVkMiniApp()) {
+        console.log('[Mock] VKWebAppShowStoryBox вызван (localhost)');
+        return 'failed';
+    }
+    try {
+        const bgUrl = `${window.location.origin}/assets/images/backgrounds/bg_main_mobile.webp`;
+        await bridge.send('VKWebAppShowStoryBox', {
+            background_type: 'image',
+            url: bgUrl,
+            attachment: {
+                text: 'open',
+                type: 'url',
+                url: `https://vk.com/app${import.meta.env.VITE_VK_APP_ID || '52446645'}`,
+            },
+        });
+        return 'shared';
+    } catch (err: any) {
+        const isCancel = err?.error_data?.error_code === 4 ||
+            (err?.error_data?.error_msg && err.error_data.error_msg.toLowerCase().includes('user denied')) ||
+            (err?.message && err.message.toLowerCase().includes('user denied'));
+        return isCancel ? 'cancelled' : 'failed';
+    }
+};
+
+/**
+ * Открывает стандартное окно шаринга ВК (ЛС, группы, история).
+ * Используется кнопкой "Отправить друзьям" внутри SharePreviewModal.
+ */
+export const openShareLink = async (): Promise<boolean> => {
+    if (!bridge || !isVkMiniApp()) {
+        console.log('[Mock] VKWebAppShare вызван (localhost)');
+        return false;
+    }
+    try {
+        await bridge.send('VKWebAppShare', {
+            link: `https://vk.com/app${import.meta.env.VITE_VK_APP_ID || '52446645'}`,
+        });
+        return true;
+    } catch (err) {
+        console.warn('VKWebAppShare failed:', err);
+        return false;
+    }
+};

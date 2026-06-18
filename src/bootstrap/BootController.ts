@@ -88,6 +88,19 @@ class BootController {
         return this.errorText;
     }
 
+    public reset(): void {
+        if (this.state === 'INIT' || this.state === 'LOAD') {
+            console.warn('[BootController] reset() ignored: pipeline is actively booting.');
+            return;
+        }
+        this.initPromise = null;
+        this.errorText = null;
+        this.bootIssues = [];
+        this.remoteProfileData = null;
+        this.vkUser = null;
+        this.transition('INIT');
+    }
+
     public isReady(): boolean {
         return this.state === 'READY';
     }
@@ -423,22 +436,58 @@ class BootController {
             console.error('Failed to init telemetry:', e);
         }
 
+        // Helper for fetching with retries
+        const fetchWithRetry = async (url: string, options: RequestInit = {}, retries: number = 3, delay: number = 1500): Promise<Response> => {
+            let lastErr: any = null;
+            for (let i = 0; i < retries; i++) {
+                try {
+                    const response = await fetch(url, options);
+                    if (response.ok) return response;
+                    throw new Error(`Server returned status ${response.status}`);
+                } catch (err) {
+                    lastErr = err;
+                    console.warn(`[BootController] Fetch attempt ${i + 1}/${retries} failed for ${url}:`, err);
+                    if (i < retries - 1) {
+                        await new Promise((resolve) => setTimeout(resolve, delay));
+                    }
+                }
+            }
+            throw lastErr || new Error(`Failed to fetch ${url} after ${retries} attempts`);
+        };
+
+        // Helper for getting VK user info with retries
+        const getVkUserInfoWithRetry = async (retries: number = 3, delay: number = 1500): Promise<any> => {
+            let lastErr: any = null;
+            for (let i = 0; i < retries; i++) {
+                try {
+                    const user = await getVkUserInfo();
+                    if (user) return user;
+                    throw new Error('VK getVkUserInfo returned null/empty user info');
+                } catch (err) {
+                    lastErr = err;
+                    console.warn(`[BootController] VK user info attempt ${i + 1}/${retries} failed:`, err);
+                    if (i < retries - 1) {
+                        await new Promise((resolve) => setTimeout(resolve, delay));
+                    }
+                }
+            }
+            throw lastErr || new Error('Failed to get VK user info after retries');
+        };
+
         // Calibrate server time
         try {
             const start = Date.now();
-            const response = await fetch('/api/time', {
+            const response = await fetchWithRetry('/api/time', {
                 method: 'GET',
                 cache: 'no-cache',
                 signal: AbortSignal.timeout(3000),
-            });
-            if (response.ok) {
-                const data = await response.json();
-                if (data.serverTime) {
-                    const latency = (Date.now() - start) / 2;
-                    this.timeOffset = data.serverTime + latency - Date.now();
-                    console.log('[BootController] Calibrated server time offset:', this.timeOffset);
-                    TimeService.setOffset(this.timeOffset);
-                }
+            }, 3, 1000);
+            const data = await response.json();
+            if (data.serverTime) {
+                const latency = (Date.now() - start) / 2;
+                this.timeOffset = data.serverTime + latency - Date.now();
+                console.log('[BootController] Calibrated server time offset:', this.timeOffset);
+                TimeService.setOffset(this.timeOffset);
             }
         } catch (e) {
             console.warn('[BootController] Calibrate time failed, falling back to local clock');
@@ -459,10 +508,7 @@ class BootController {
         try {
             const searchParams = window.location.search;
             if (searchParams) {
-                const response = await fetch(`/api/verify-sign${searchParams}`);
-                if (!response.ok) {
-                    throw new Error(`Signature check endpoint returned ${response.status}`);
-                }
+                const response = await fetchWithRetry(`/api/verify-sign${searchParams}`, {}, 3, 1500);
                 const data = await response.json();
                 if (data && data.valid === false) {
                     throw new Error('Invalid signature');
@@ -474,7 +520,7 @@ class BootController {
 
         // Fetch VK User Profile Info
         try {
-            this.vkUser = await getVkUserInfo();
+            this.vkUser = await getVkUserInfoWithRetry(3, 1500);
             if (this.vkUser) {
                 const { useGameStore } = await import('../store/useGameStore');
                 useGameStore.setState({ vkUser: this.vkUser, isSystemUpdate: true });
@@ -508,8 +554,25 @@ class BootController {
         
         this.userId = SyncService.getPrefixedUserId(this.vkUser, playerId);
 
+        let remoteResult = null;
+        let loadError = null;
+        for (let i = 0; i < 3; i++) {
+            try {
+                remoteResult = await syncService.loadPlayerData(this.userId);
+                break;
+            } catch (err) {
+                loadError = err;
+                console.warn(`[BootController] Failed to load remote profile, attempt ${i + 1}/3...`, err);
+                if (i < 2) {
+                    await new Promise((resolve) => setTimeout(resolve, 1500));
+                }
+            }
+        }
+
         try {
-            const remoteResult = await syncService.loadPlayerData(this.userId);
+            if (!remoteResult && loadError) {
+                throw loadError;
+            }
             
             // Read raw local storage cache
             const cacheRaw = localStorage.getItem('game-storage');

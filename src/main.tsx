@@ -268,6 +268,13 @@ export const Root = () => {
         };
     }, [bootState]);
 
+    const handleRetry = React.useCallback(() => {
+        if (!containerRef.current) return;
+        setInitError(null);
+        bootController.reset();
+        bootController.start(containerRef.current, setLoadingText, setInitError, setNotInVk).catch(() => {});
+    }, []);
+
     // Start BootController
     React.useEffect(() => {
         if (!containerRef.current) return;
@@ -275,7 +282,7 @@ export const Root = () => {
     }, []);
 
     if (notInVk) return <NotInVkScreen />;
-    if (initError || bootState === 'FAILED') return <InitErrorScreen error={initError || 'Ошибка инициализации игры'} />;
+    if (initError || bootState === 'FAILED') return <InitErrorScreen error={initError || 'Ошибка инициализации игры'} onRetry={handleRetry} />;
 
     const isAppLoading = bootState !== 'READY';
 

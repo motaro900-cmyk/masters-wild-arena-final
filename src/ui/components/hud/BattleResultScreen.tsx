@@ -1,8 +1,8 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { useGameStore } from '../../../store/useGameStore';
 import { AssetsMap } from '../../../configs/AssetsMap';
-import { shareBattleResult } from '../../../utils/VKBridge';
+import { shareBattleResult, openStoryBox, openShareLink, copyToClipboard } from '../../../utils/VKBridge';
 import { audioService } from '../../../services/AudioService';
 import { getHeroExpNeeded } from '../../../features/heroes/leveling/HeroLevelConfig';
 import { HEROES_DB } from '../../../configs/HeroesConfig';
@@ -288,6 +288,12 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
     const panelRef = useRef<HTMLDivElement>(null);
     const statsRef = useRef<HTMLDivElement>(null);
     const buttonsRef = useRef<HTMLDivElement>(null);
+
+    const [showShareModal, setShowShareModal] = useState(false);
+    const [shareText, setShareText] = useState('');
+    const [shareNotice, setShareNotice] = useState<'idle' | 'copied' | 'story_ok' | 'story_fail'>('idle');
+    const [storyLoading, setStoryLoading] = useState(false);
+    const [friendLoading, setFriendLoading] = useState(false);
 
     const goToHeroes = useGameStore((state) => state.goToHeroes);
     const trophies = useGameStore((state) => state.trophies);
@@ -965,22 +971,33 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
                 <button
                     onClick={async () => {
                         const playerName = useGameStore.getState().name || 'Игрок';
-                        const status = await shareBattleResult({
+                        // Генерируем красивый текст поста
+                        await shareBattleResult({
                             playerName,
                             enemyName: data.enemyName,
                             damageDealt: data.damageDealt,
                             trophiesChange: data.trophiesChange || 0,
                             isVictory: data.isVictory,
+                            goldEarned: data.goldEarned,
+                            xpEarned: data.xpEarned,
+                            crystalsEarned: data.crystalsEarned,
+                            battleDurationSeconds: data.battleDurationSeconds,
                         });
-                        if (status === 'copied') {
-                            useGameStore.getState().showAlert('Результат боя скопирован в буфер обмена!');
-                        } else if (status === 'shared') {
-                            useGameStore.getState().showAlert('Редактор историй открыт! Результат боя скопирован в буфер обмена.');
-                        } else if (status === 'posted') {
-                            useGameStore.getState().showAlert('Окно публикации ВК открыто! Результат боя скопирован в буфер обмена.');
-                        } else if (status === 'failed') {
-                            useGameStore.getState().showAlert('Не удалось поделиться. Пожалуйста, скопируйте текст вручную.');
-                        }
+                        // Формируем текст для превью (дублируем логику для отображения)
+                        const durationText = data.battleDurationSeconds ? ` за ${data.battleDurationSeconds} сек.` : '';
+                        const crystalsLine = data.crystalsEarned && data.crystalsEarned > 0 ? `+${data.crystalsEarned} Кристалла 💎\n` : '';
+                        const trophiesLine = (data.trophiesChange || 0) > 0
+                            ? `+${data.trophiesChange} Кубков 🏆\n`
+                            : (data.trophiesChange || 0) < 0
+                            ? `${data.trophiesChange} Кубков 📉\n`
+                            : '';
+                        const appId = import.meta.env.VITE_VK_APP_ID || '52446645';
+                        const generatedText = data.isVictory
+                            ? `⚔️ Я победил в Masters of the Wild!\n\n🏆 Результат боя:\n${playerName} vs ${data.enemyName}\nПобеда${durationText}\n\n+${data.xpEarned} XP 🛡️\n+${data.goldEarned} Золота 💰\n${crystalsLine}${trophiesLine}\nСыграть: https://vk.com/app${appId}`
+                            : `⚔️ Masters of the Wild\nБой с ${data.enemyName} оказался тяжелым испытанием...\n\n🛡️ Результат боя:\n${playerName} vs ${data.enemyName}\nНанесено урона: ${data.damageDealt.toLocaleString()} ед. 💥\n${trophiesLine}\n🎮 Бросить вызов: https://vk.com/app${appId}`;
+                        setShareText(generatedText);
+                        setShareNotice('copied');
+                        setShowShareModal(true);
                     }}
                     style={{
                         padding: '12px 32px',
@@ -1048,6 +1065,217 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
                     {battleMode === 'PVE' ? 'В ОБИТЕЛЬ' : 'ДОМОЙ'}
                 </button>
             </div>
+
+            {/* SHARE PREVIEW MODAL */}
+            {showShareModal && (
+                <div
+                    onClick={(e) => { if (e.target === e.currentTarget) { setShowShareModal(false); setShareNotice('idle'); } }}
+                    style={{
+                        position: 'fixed',
+                        inset: 0,
+                        background: 'rgba(0,0,0,0.80)',
+                        backdropFilter: 'blur(10px)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        zIndex: 99999,
+                        padding: '16px',
+                    }}
+                >
+                    <div
+                        style={{
+                            background: 'linear-gradient(160deg, rgba(20,12,5,0.98) 0%, rgba(8,5,2,0.99) 100%)',
+                            border: '1.5px solid rgba(251,191,36,0.35)',
+                            boxShadow: '0 0 60px rgba(251,191,36,0.10), 0 20px 60px rgba(0,0,0,0.9)',
+                            borderRadius: '20px',
+                            padding: '28px 24px 24px',
+                            width: 'min(460px, 96vw)',
+                            maxHeight: '92vh',
+                            overflowY: 'auto',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '18px',
+                            fontFamily: "'Outfit', 'Nunito', sans-serif",
+                        }}
+                    >
+                        {/* Заголовок */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', borderBottom: '1px solid rgba(251,191,36,0.15)', paddingBottom: '14px' }}>
+                            <span style={{ fontSize: '26px' }}>⚔️</span>
+                            <div>
+                                <div style={{ color: '#fbbf24', fontFamily: "'Cinzel', serif", fontSize: '16px', fontWeight: 900, letterSpacing: '0.05em' }}>ПОДЕЛИТЬСЯ РЕЗУЛЬТАТОМ</div>
+                                <div style={{ color: 'rgba(255,255,255,0.45)', fontSize: '12px', marginTop: '2px' }}>Расскажи друзьям о своём бое</div>
+                            </div>
+                        </div>
+
+                        {/* Превью текста поста */}
+                        <div
+                            style={{
+                                background: 'rgba(251,191,36,0.05)',
+                                border: '1px solid rgba(251,191,36,0.18)',
+                                borderRadius: '12px',
+                                padding: '14px 16px',
+                                color: '#eedfa0',
+                                fontSize: '13px',
+                                lineHeight: '1.7',
+                                whiteSpace: 'pre-line',
+                                userSelect: 'text',
+                            }}
+                        >
+                            {shareText}
+                        </div>
+
+                        {/* Уведомление о копировании */}
+                        <div
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                                background: shareNotice === 'copied' ? 'rgba(34,197,94,0.12)' : shareNotice === 'story_ok' ? 'rgba(59,130,246,0.12)' : 'rgba(239,68,68,0.10)',
+                                border: `1px solid ${shareNotice === 'copied' ? 'rgba(34,197,94,0.30)' : shareNotice === 'story_ok' ? 'rgba(59,130,246,0.30)' : 'rgba(239,68,68,0.20)'}`,
+                                borderRadius: '10px',
+                                padding: '10px 14px',
+                                color: shareNotice === 'copied' ? '#86efac' : shareNotice === 'story_ok' ? '#93c5fd' : '#fca5a5',
+                                fontSize: '13px',
+                                fontWeight: 600,
+                                transition: 'all 0.3s',
+                                opacity: shareNotice === 'idle' ? 0 : 1,
+                            }}
+                        >
+                            {shareNotice === 'copied' && <><span>📋</span> Текст скопирован в буфер обмена!</>}
+                            {shareNotice === 'story_ok' && <><span>✅</span> Редактор Историй ВК открыт!</>}
+                            {shareNotice === 'story_fail' && <><span>⚠️</span> Истории недоступны — только копирование</>}
+                        </div>
+
+                        {/* Кнопки действий */}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                            {/* Опубликовать Историю */}
+                            <button
+                                disabled={storyLoading}
+                                onClick={async () => {
+                                    setStoryLoading(true);
+                                    const res = await openStoryBox();
+                                    setStoryLoading(false);
+                                    if (res === 'shared') {
+                                        setShareNotice('story_ok');
+                                    } else if (res === 'failed') {
+                                        setShareNotice('story_fail');
+                                    }
+                                    // Если 'cancelled' — просто ничего не показываем
+                                }}
+                                style={{
+                                    width: '100%',
+                                    padding: '13px',
+                                    background: storyLoading ? 'rgba(59,130,246,0.15)' : 'linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 100%)',
+                                    border: '1.5px solid rgba(59,130,246,0.5)',
+                                    borderRadius: '12px',
+                                    color: '#bfdbfe',
+                                    fontSize: '14px',
+                                    fontWeight: 800,
+                                    cursor: storyLoading ? 'wait' : 'pointer',
+                                    fontFamily: "'Cinzel', serif",
+                                    letterSpacing: '0.04em',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '8px',
+                                    transition: 'all 0.2s',
+                                    opacity: storyLoading ? 0.7 : 1,
+                                }}
+                                onMouseEnter={(e) => { if (!storyLoading) e.currentTarget.style.transform = 'scale(1.02)'; }}
+                                onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)'; }}
+                            >
+                                <span style={{ fontSize: '18px' }}>📸</span>
+                                {storyLoading ? 'Открываем...' : 'ОПУБЛИКОВАТЬ ИСТОРИЮ'}
+                            </button>
+
+                            {/* Отправить друзьям */}
+                            <button
+                                disabled={friendLoading}
+                                onClick={async () => {
+                                    setFriendLoading(true);
+                                    await openShareLink();
+                                    setFriendLoading(false);
+                                }}
+                                style={{
+                                    width: '100%',
+                                    padding: '13px',
+                                    background: friendLoading ? 'rgba(251,191,36,0.08)' : 'linear-gradient(135deg, rgba(40,24,8,0.95) 0%, rgba(28,15,5,0.98) 100%)',
+                                    border: '1.5px solid rgba(251,191,36,0.35)',
+                                    borderRadius: '12px',
+                                    color: '#fbbf24',
+                                    fontSize: '14px',
+                                    fontWeight: 800,
+                                    cursor: friendLoading ? 'wait' : 'pointer',
+                                    fontFamily: "'Cinzel', serif",
+                                    letterSpacing: '0.04em',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '8px',
+                                    transition: 'all 0.2s',
+                                    opacity: friendLoading ? 0.7 : 1,
+                                }}
+                                onMouseEnter={(e) => { if (!friendLoading) e.currentTarget.style.transform = 'scale(1.02)'; }}
+                                onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)'; }}
+                            >
+                                <span style={{ fontSize: '18px' }}>💬</span>
+                                {friendLoading ? 'Открываем...' : 'ОТПРАВИТЬ ДРУЗЬЯМ'}
+                            </button>
+
+                            {/* Скопировать повторно */}
+                            <button
+                                onClick={() => {
+                                    copyToClipboard(shareText);
+                                    setShareNotice('copied');
+                                }}
+                                style={{
+                                    width: '100%',
+                                    padding: '11px',
+                                    background: 'rgba(255,255,255,0.04)',
+                                    border: '1px solid rgba(255,255,255,0.12)',
+                                    borderRadius: '12px',
+                                    color: 'rgba(255,255,255,0.55)',
+                                    fontSize: '13px',
+                                    fontWeight: 700,
+                                    cursor: 'pointer',
+                                    fontFamily: "'Outfit', sans-serif",
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '6px',
+                                    transition: 'all 0.2s',
+                                }}
+                                onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.25)'; e.currentTarget.style.color = 'rgba(255,255,255,0.75)'; }}
+                                onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)'; e.currentTarget.style.color = 'rgba(255,255,255,0.55)'; }}
+                            >
+                                <span>📋</span> Скопировать текст ещё раз
+                            </button>
+
+                            {/* Закрыть */}
+                            <button
+                                onClick={() => { setShowShareModal(false); setShareNotice('idle'); }}
+                                style={{
+                                    width: '100%',
+                                    padding: '9px',
+                                    background: 'transparent',
+                                    border: 'none',
+                                    borderRadius: '10px',
+                                    color: 'rgba(255,255,255,0.30)',
+                                    fontSize: '13px',
+                                    fontWeight: 500,
+                                    cursor: 'pointer',
+                                    fontFamily: "'Outfit', sans-serif",
+                                    transition: 'color 0.2s',
+                                }}
+                                onMouseEnter={(e) => { e.currentTarget.style.color = 'rgba(255,255,255,0.6)'; }}
+                                onMouseLeave={(e) => { e.currentTarget.style.color = 'rgba(255,255,255,0.30)'; }}
+                            >
+                                ✕ Закрыть
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

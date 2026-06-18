@@ -260,9 +260,9 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ mode = 'FULL', o
     const bagFill = inventory.length / MAX_SLOTS;
     const bagColor = bagFill > 0.9 ? '#ef4444' : bagFill > 0.75 ? '#f59e0b' : '#4ade80';
 
-    const cols = mode === 'FULL' ? (isMobile ? 6 : 5) : 3;
-    const rowHeight = mode === 'FULL' ? (isMobile ? 95 : 125) : (isMobile ? 85 : 100);
-    const gapHeight = mode === 'FULL' ? (isMobile ? 8 : 14) : (isMobile ? 6 : 10);
+    const cols = mode === 'FULL' ? (isMobile ? 5 : 5) : 3;
+    const rowHeight = mode === 'FULL' ? (isMobile ? 80 : 125) : (isMobile ? 72 : 100);
+    const gapHeight = mode === 'FULL' ? (isMobile ? 6 : 14) : (isMobile ? 5 : 10);
     const rowSpacing = rowHeight + gapHeight;
 
     const totalItems = useMemo(() => {

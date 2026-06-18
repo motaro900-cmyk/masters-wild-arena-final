@@ -32,7 +32,9 @@ export const AlertDialog: React.FC = () => {
                         boxShadow: '0 10px 40px rgba(0, 0, 0, 0.8), 0 0 25px rgba(240, 192, 64, 0.1)',
                         borderRadius: '16px',
                         padding: '28px',
-                        width: '380px',
+                        width: 'min(380px, 92vw)',
+                        maxHeight: '90vh',
+                        overflowY: 'auto',
                         textAlign: 'center',
                         fontFamily: "'Philosopher', 'Nunito', sans-serif",
                     }}
@@ -107,7 +109,9 @@ export const ConfirmDialog: React.FC = () => {
                         boxShadow: '0 10px 40px rgba(0, 0, 0, 0.8), 0 0 25px rgba(240, 192, 64, 0.1)',
                         borderRadius: '16px',
                         padding: '28px',
-                        width: '380px',
+                        width: 'min(380px, 92vw)',
+                        maxHeight: '90vh',
+                        overflowY: 'auto',
                         textAlign: 'center',
                         fontFamily: "'Philosopher', 'Nunito', sans-serif",
                     }}
