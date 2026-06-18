@@ -970,55 +970,34 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
             <div ref={buttonsRef} style={{ display: 'flex', gap: '20px' }}>
                 {/* ПОДЕЛИТЬСЯ РЕЗУЛЬТАТОМ */}
                 <button
-                    onClick={async () => {
-                        if (isSharing) return;
-                        setIsSharing(true);
-                        try {
-                            const playerName = useGameStore.getState().name || 'Игрок';
-                            // Генерируем красивый текст поста
-                            await shareBattleResult({
-                                playerName,
-                                enemyName: data.enemyName || 'Враг',
-                                damageDealt: data.damageDealt ?? 0,
-                                trophiesChange: data.trophiesChange || 0,
-                                isVictory: data.isVictory,
-                                goldEarned: data.goldEarned ?? 0,
-                                xpEarned: data.xpEarned ?? 0,
-                                crystalsEarned: data.crystalsEarned,
-                                battleDurationSeconds: data.battleDurationSeconds,
-                            });
-                            // Формируем текст для превью (дублируем логику для отображения)
-                            const durationText = data.battleDurationSeconds ? ` за ${data.battleDurationSeconds} сек.` : '';
-                            const crystalsLine = data.crystalsEarned && data.crystalsEarned > 0 ? `+${data.crystalsEarned} Кристалла 💎\n` : '';
-                            const trophiesLine = (data.trophiesChange || 0) > 0
-                                ? `+${data.trophiesChange} Кубков 🏆\n`
-                                : (data.trophiesChange || 0) < 0
-                                ? `${data.trophiesChange} Кубков 📉\n`
-                                : '';
-                            const appId = import.meta.env.VITE_VK_APP_ID || '54585995';
-                            const generatedText = data.isVictory
-                                ? `⚔️ Я победил в Masters of the Wild!\n\n🏆 Результат боя:\n${playerName} vs ${(data.enemyName || 'Враг')}\nПобеда${durationText}\n\n+${(data.xpEarned ?? 0)} XP 🛡️\n+${(data.goldEarned ?? 0)} Золота 💰\n${crystalsLine}${trophiesLine}\nСыграть: https://vk.com/app${appId}`
-                                : `⚔️ Masters of the Wild\nБой с ${(data.enemyName || 'Враг')} оказался тяжелым испытанием...\n\n🛡️ Результат боя:\n${playerName} vs ${(data.enemyName || 'Враг')}\nНанесено урона: ${(data.damageDealt ?? 0).toLocaleString()} ед. 💥\n${trophiesLine}\n🎮 Бросить вызов: https://vk.com/app${appId}`;
-                            setShareText(generatedText);
-                            setShareNotice('copied');
-                            setShowShareModal(true);
-                        } catch (err) {
-                            console.error('Failed to share battle result:', err);
-                        } finally {
-                            setIsSharing(false);
-                        }
+                    onClick={() => {
+                        const playerName = useGameStore.getState().name || 'Игрок';
+                        const durationText = data.battleDurationSeconds ? ` за ${data.battleDurationSeconds.toFixed(1)} сек.` : '';
+                        const crystalsLine = data.crystalsEarned && data.crystalsEarned > 0 ? `+${data.crystalsEarned} Кристалла 💎\n` : '';
+                        const trophiesLine = (data.trophiesChange || 0) > 0
+                            ? `+${data.trophiesChange} Кубков 🏆\n`
+                            : (data.trophiesChange || 0) < 0
+                            ? `${data.trophiesChange} Кубков 📉\n`
+                            : '';
+                        const appId = import.meta.env.VITE_VK_APP_ID || '54585995';
+                        const generatedText = data.isVictory
+                            ? `⚔️ Я победил в Masters of the Wild!\n\n🏆 Результат боя:\n${playerName} vs ${(data.enemyName || 'Враг')}\nПобеда${durationText}\n\n+${(data.xpEarned ?? 0)} XP 🛡️\n+${(data.goldEarned ?? 0)} Золота 💰\n${crystalsLine}${trophiesLine}\nСыграть: https://vk.com/app${appId}`
+                            : `⚔️ Masters of the Wild\nБой с ${(data.enemyName || 'Враг')} оказался тяжелым испытанием...\n\n🛡️ Результат боя:\n${playerName} vs ${(data.enemyName || 'Враг')}\nНанесено урона: ${(data.damageDealt ?? 0).toLocaleString()} ед. 💥\n${trophiesLine}\n🎮 Бросить вызов: https://vk.com/app${appId}`;
+                        
+                        copyToClipboard(generatedText);
+                        setShareText(generatedText);
+                        setShareNotice('copied');
+                        setShowShareModal(true);
                     }}
                     style={{
                         padding: '12px 32px',
-                        background: isSharing
-                            ? 'linear-gradient(180deg, #2a1a0c 0%, #140b05 100%)'
-                            : 'linear-gradient(180deg, #3a2212 0%, #1c0f08 100%)',
+                        background: 'linear-gradient(180deg, #3a2212 0%, #1c0f08 100%)',
                         border: '2px solid #b45309',
                         borderRadius: '14px',
-                        color: isSharing ? 'rgba(251,191,36,0.5)' : '#fbbf24',
+                        color: '#fbbf24',
                         fontSize: '22px',
                         fontWeight: 900,
-                        cursor: isSharing ? 'not-allowed' : 'pointer',
+                        cursor: 'pointer',
                         letterSpacing: '0.15em',
                         transition: 'all 0.2s',
                         fontFamily: "'Cinzel', serif",
