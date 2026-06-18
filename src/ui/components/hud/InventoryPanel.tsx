@@ -325,8 +325,8 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ mode = 'FULL', o
                                     flex: 1, padding: '11px 4px', borderRadius: '6px',
                                     background: active ? 'linear-gradient(180deg,#f0c040 0%,#c8960a 100%)' : 'transparent',
                                     border: active ? '1px solid #fffdf7' : '1px solid transparent',
-                                    color: active ? '#1a0f00' : 'rgba(255,254,250,0.6)',
-                                    fontSize: '11.5px', fontWeight: active ? 900 : 700, cursor: 'pointer',
+                                    color: active ? '#1a0f00' : 'rgba(255,254,250,0.8)',
+                                    fontSize: '13.5px', fontWeight: active ? 900 : 700, cursor: 'pointer',
                                     fontFamily: "'Philosopher', 'Inter', sans-serif", textAlign: 'center',
                                     whiteSpace: 'nowrap', transition: 'all 0.15s ease',
                                     display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px',
@@ -338,7 +338,7 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ mode = 'FULL', o
                                         background: active ? 'rgba(0,0,0,0.2)' : 'rgba(240,192,64,0.2)',
                                         color: active ? '#1a0f00' : '#f0c040',
                                         borderRadius: '10px', padding: '0 5px',
-                                        fontSize: '9px', fontWeight: 900, minWidth: '16px', textAlign: 'center',
+                                        fontSize: '11px', fontWeight: 900, minWidth: '16px', textAlign: 'center',
                                     }}>
                                         {count}
                                     </span>
@@ -365,7 +365,7 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ mode = 'FULL', o
                             style={{
                                 width: '100%', padding: '8px 10px 8px 28px',
                                 background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(240,192,64,0.2)',
-                                borderRadius: '8px', color: '#fff', fontSize: '11px',
+                                borderRadius: '8px', color: '#fff', fontSize: '13px',
                                 fontFamily: "'Nunito', sans-serif", outline: 'none',
                                 boxSizing: 'border-box',
                             }}
@@ -381,7 +381,7 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ mode = 'FULL', o
 
                     {/* Полоса заполнения */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', minWidth: '90px' }}>
-                        <div style={{ fontSize: '11px', color: '#fffdf5', fontWeight: 800, fontFamily: "'Philosopher', 'Inter', sans-serif", letterSpacing: '0.5px' }}>
+                        <div style={{ fontSize: '13.5px', color: '#fffdf5', fontWeight: 800, fontFamily: "'Philosopher', 'Inter', sans-serif", letterSpacing: '0.5px' }}>
                             СУМКА {inventory.length}/{MAX_SLOTS}
                         </div>
                         <div style={{ height: '8px', background: 'rgba(0,0,0,0.4)', borderRadius: '4px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.07)' }}>
@@ -402,7 +402,7 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ mode = 'FULL', o
                             style={{
                                 background: 'rgba(168,85,247,0.12)', color: '#c084fc',
                                 border: '1px solid rgba(168,85,247,0.35)', borderRadius: '8px',
-                                padding: '6px 10px', fontSize: '10px', fontWeight: 900,
+                                padding: '6px 10px', fontSize: '12.5px', fontWeight: 900,
                                 cursor: 'pointer', fontFamily: "'Cinzel', serif",
                                 display: 'flex', alignItems: 'center', gap: '4px', whiteSpace: 'nowrap',
                             }}
@@ -420,7 +420,7 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ mode = 'FULL', o
                             background: junkItems.length > 0 ? 'rgba(239,68,68,0.1)' : 'rgba(255,255,255,0.03)',
                             color: junkItems.length > 0 ? '#ef4444' : 'rgba(255,255,255,0.2)',
                             border: `1px solid ${junkItems.length > 0 ? 'rgba(239,68,68,0.3)' : 'rgba(255,255,255,0.06)'}`,
-                            borderRadius: '8px', padding: '9px 12px', fontSize: '11px',
+                            borderRadius: '8px', padding: '9px 12px', fontSize: '13px',
                             fontWeight: 900, cursor: junkItems.length > 0 ? 'pointer' : 'default',
                             fontFamily: "'Cinzel', serif", letterSpacing: '0.5px',
                             display: 'flex', alignItems: 'center', gap: '4px',
@@ -430,7 +430,7 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ mode = 'FULL', o
                         <span>🗑️</span>
                         <span>ХЛАМ</span>
                         {junkItems.length > 0 && (
-                            <span style={{ opacity: 0.75, fontSize: '9px' }}>+{junkGold.toLocaleString('ru-RU')} 🪙</span>
+                            <span style={{ opacity: 0.75, fontSize: '11px' }}>+{junkGold.toLocaleString('ru-RU')} 🪙</span>
                         )}
                     </button>
 
@@ -448,7 +448,7 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ mode = 'FULL', o
                         style={{
                             background: 'rgba(240,192,64,0.05)', color: '#f0c040',
                             border: '1px solid rgba(240,192,64,0.25)', borderRadius: '8px',
-                            padding: '9px 12px', fontSize: '11px', fontWeight: 900,
+                            padding: '9px 12px', fontSize: '13px', fontWeight: 900,
                             cursor: 'pointer', fontFamily: "'Cinzel', serif",
                             display: 'flex', alignItems: 'center', gap: '4px',
                             transition: 'all 0.2s ease', whiteSpace: 'nowrap',
@@ -461,7 +461,7 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ mode = 'FULL', o
 
                 {/* Подсказка про Shift */}
                 {selectedItems.size === 0 && mode === 'FULL' && (
-                    <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.22)', letterSpacing: '0.3px', paddingLeft: '2px' }}>
+                    <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.35)', letterSpacing: '0.3px', paddingLeft: '2px' }}>
                         💡 Shift+клик — выделить предметы для массовой продажи &nbsp;·&nbsp; ЛКМ — надеть/снять снаряжение
                     </div>
                 )}
