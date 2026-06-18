@@ -5,7 +5,7 @@ import { ROLE_ICONS } from '../../../constants/roleIcons';
 import { audioService } from '../../../../../../../services/AudioService';
 import { getSkinsForHero } from '../../../../../../../configs/SkinsConfig';
 import { resolveAssetPath } from '../../../../../../../utils/assetPath';
-import { RARITY_LABELS, SOURCE_ICONS, deriveStats } from '../utils/heroUtils';
+import { RARITY_LABELS, deriveStats } from '../utils/heroUtils';
 import { useGameStore } from '../../../../../../../store/useGameStore';
 import { getRankInfo } from '../../../../../../../configs/RankSystem';
 import { AssetsMap } from '../../../../../../../configs/AssetsMap';
@@ -433,17 +433,18 @@ export const HeroDetailPanel = memo(function HeroDetailPanel({
                                                     fontFamily: "'Nunito', sans-serif",
                                                     fontWeight: 900,
                                                     textAlign: 'center',
-                                                    padding: '2px 6px',
+                                                    padding: '4px 8px',
                                                     textTransform: 'uppercase',
                                                     background: 'rgba(20, 16, 12, 0.85)',
                                                     border: '1px solid rgba(240, 192, 64, 0.25)',
                                                     borderRadius: '4px',
                                                     letterSpacing: '0.3px',
-                                                    maxWidth: '90%',
+                                                    maxWidth: '92%',
                                                     wordBreak: 'break-word',
+                                                    lineHeight: '1.25',
                                                 }}
                                             >
-                                                {SOURCE_ICONS[skin.source] || '🏆'} {skin.sourceLabel || 'БП'}
+                                                {skin.sourceLabel || 'БП'}
                                             </span>
                                         </div>
                                     )}

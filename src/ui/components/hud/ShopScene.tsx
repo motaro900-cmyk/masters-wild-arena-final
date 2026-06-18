@@ -221,7 +221,7 @@ export const ShopScene: React.FC = () => {
                 {/* LEFT SIDEBAR (CATEGORY SELECTION) */}
                 <div
                     style={{
-                        width: isMobile ? '180px' : '320px',
+                        width: isMobile ? '210px' : '320px',
                         background: 'rgba(10,8,8,0.85)',
                         borderRadius: '12px',
                         border: '2px solid rgba(240, 192, 64, 0.15)',
@@ -955,8 +955,8 @@ export const ShopScene: React.FC = () => {
                 }}
             >
                 {/* Countdown timer & Manual Refresh Button */}
-                <div style={{ color: '#8a7a6a', fontSize: '12px', fontStyle: 'italic' }}>
-                    ✦ Все предметы доступны в полном объёме
+                <div style={{ color: '#c8a870', fontSize: '13px', fontFamily: "'Nunito', sans-serif", fontWeight: 700, letterSpacing: '0.5px' }}>
+                    ✦ Желаем приятных покупок и великих побед на Арене! ⚔️
                 </div>
             </div>
 
