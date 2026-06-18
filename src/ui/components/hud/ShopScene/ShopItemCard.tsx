@@ -35,6 +35,15 @@ const getRarityColor = (rarity: ShopItem['rarity']) => {
     }
 };
 
+const getVotesPlural = (num: number) => {
+    const mod10 = num % 10;
+    const mod100 = num % 100;
+    if (mod100 >= 11 && mod100 <= 19) return 'голосов';
+    if (mod10 === 1) return 'голос';
+    if (mod10 >= 2 && mod10 <= 4) return 'голоса';
+    return 'голосов';
+};
+
 export const ShopItemCard: React.FC<ShopItemCardProps> = React.memo(({
     item,
     isSelected,
@@ -337,7 +346,9 @@ export const ShopItemCard: React.FC<ShopItemCardProps> = React.memo(({
                         {price.toLocaleString()}
                     </span>
                     {item.priceVotes !== undefined ? (
-                        <span style={{ fontSize: isMobile ? '9px' : '10.5px', color: '#c8a870', fontWeight: 900 }}>Г</span>
+                        <span style={{ fontSize: isMobile ? '8.5px' : '10px', color: '#c8a870', fontWeight: 900, marginLeft: '3px' }}>
+                            {getVotesPlural(item.priceVotes)}
+                        </span>
                     ) : (
                         <img
                             src={item.priceGem !== undefined ? AssetsMap.UI.ICON_ALMAZ_FULL : AssetsMap.UI.ICON_GOLD_FULL}
