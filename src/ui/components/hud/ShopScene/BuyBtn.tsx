@@ -11,6 +11,15 @@ const VkIcon = () => (
     </svg>
 );
 
+const getVotesPlural = (num: number) => {
+    const mod10 = num % 10;
+    const mod100 = num % 100;
+    if (mod100 >= 11 && mod100 <= 19) return 'голосов';
+    if (mod10 === 1) return 'голос';
+    if (mod10 >= 2 && mod10 <= 4) return 'голоса';
+    return 'голосов';
+};
+
 interface BuyBtnProps {
     item: ShopItem;
     onTrigger: () => void;
@@ -140,14 +149,9 @@ export const BuyBtn: React.FC<BuyBtnProps> = ({ item, onTrigger, discount = 0 })
             ) : item.isAd ? (
                 <>СМОТРЕТЬ РЕКЛАМУ 📺</>
             ) : item.priceVotes !== undefined ? (
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', lineHeight: 1.2 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <VkIcon />
-                        <span>{item.priceVotes} голосов</span>
-                    </div>
-                    <span style={{ fontSize: '11px', opacity: 0.8, fontWeight: 500 }}>
-                        (~{item.priceVotes * 7} руб.)
-                    </span>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                    <VkIcon />
+                    <span>{item.priceVotes} {getVotesPlural(item.priceVotes)}</span>
                 </div>
             ) : (
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>

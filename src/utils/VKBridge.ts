@@ -405,7 +405,7 @@ export const getVkFriendsWhoPlay = async (): Promise<number[]> => {
 /**
  * Шаринг результата боя в ВК.
  * На localhost — копирует текст в буфер обмена.
- * В мини-приложении — вызывает VKWebAppShowWallPostBox.
+ * В мини-приложении — открывает редактор историй (VKWebAppShowStoryBox).
  */
 export const shareBattleResult = async (params: {
     playerName: string;
@@ -429,10 +429,21 @@ export const shareBattleResult = async (params: {
     }
 
     try {
-        await bridge.send('VKWebAppShowWallPostBox', { message: text });
+        await bridge.send('VKWebAppShowStoryBox', {
+            background_type: 'none',
+            attachment: {
+                text: 'open',
+                type: 'url',
+                url: `https://vk.com/app${import.meta.env.VITE_VK_APP_ID || '52446645'}`,
+            },
+        });
+        // Дополнительно копируем текст в буфер для удобства
+        try {
+            await navigator.clipboard.writeText(text);
+        } catch {}
         return 'shared';
-    } catch {
-        // Fallback: clipboard
+    } catch (storyErr) {
+        console.warn('VKWebAppShowStoryBox failed, falling back to clipboard:', storyErr);
         try {
             await navigator.clipboard.writeText(text);
             return 'copied';

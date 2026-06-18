@@ -296,28 +296,31 @@ export const Root = () => {
                 WebkitUserSelect: 'none',
                 zIndex: 1,
             }}>
-                <div style={{
-                    position: 'relative',
-                    width: AppConfig.GAME_WIDTH,
-                    height: AppConfig.GAME_HEIGHT,
-                    transform: `scale(${scale})`,
-                    transformOrigin: 'center center',
-                    boxShadow: '0 0 100px rgba(0, 0, 0, 0.9)',
-                    backgroundImage: `url(${
-                        isMobile ? AssetsMap.BACKGROUNDS.MAIN_MENU_MOBILE : AssetsMap.BACKGROUNDS.MAIN_MENU
-                    })`,
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center',
-                    backgroundColor: '#050403',
-                    borderRadius: '12px',
-                    overflow: 'hidden',
-                    filter:
-                        !isMobile && graphicsQuality === 'ULTRA'
-                            ? 'contrast(1.08) saturate(1.15) brightness(1.02)'
-                            : !isMobile && graphicsQuality === 'MEDIUM'
-                              ? 'contrast(1.04) saturate(1.06) brightness(1.01)'
-                              : 'none',
-                }}>
+                <div
+                    className="game-scale-wrapper"
+                    style={{
+                        position: 'relative',
+                        width: AppConfig.GAME_WIDTH,
+                        height: AppConfig.GAME_HEIGHT,
+                        transform: `scale(${scale})`,
+                        transformOrigin: 'center center',
+                        boxShadow: '0 0 100px rgba(0, 0, 0, 0.9)',
+                        backgroundImage: `url(${
+                            isMobile ? AssetsMap.BACKGROUNDS.MAIN_MENU_MOBILE : AssetsMap.BACKGROUNDS.MAIN_MENU
+                        })`,
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center',
+                        backgroundColor: '#050403',
+                        borderRadius: '12px',
+                        overflow: 'hidden',
+                        filter:
+                            !isMobile && graphicsQuality === 'ULTRA'
+                                ? 'contrast(1.08) saturate(1.15) brightness(1.02)'
+                                : !isMobile && graphicsQuality === 'MEDIUM'
+                                  ? 'contrast(1.04) saturate(1.06) brightness(1.01)'
+                                  : 'none',
+                    }}
+                >
                     {/* Pixi Canvas attaches to this ref */}
                     <div ref={containerRef} style={{ position: 'absolute', inset: 0, pointerEvents: 'auto' }} />
 
