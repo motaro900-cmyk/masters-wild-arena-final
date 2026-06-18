@@ -197,10 +197,14 @@ export const purchaseVotes = async (item: string): Promise<boolean> => {
             item: item,
         });
 
-        // VK возвращает success как BOOLEAN, не строку 'success'
-        const isSuccess = (orderResult as any).success === true;
+        // VK может возвращать success как boolean, status как 'success' или просто order_id при успехе
+        const isSuccess =
+            (orderResult as any).success === true ||
+            (orderResult as any).status === 'success' ||
+            !!(orderResult as any).order_id;
+
         if (!isSuccess) {
-            console.warn('VKWebAppShowOrderBox: success !== true', orderResult);
+            console.warn('VKWebAppShowOrderBox: check failed', orderResult);
             return false;
         }
 
@@ -314,7 +318,7 @@ const getToken = async (scope: string): Promise<string | null> => {
         return _cachedToken;
     }
     try {
-        const appId = Number(import.meta.env.VITE_VK_APP_ID || '52446645');
+        const appId = Number(import.meta.env.VITE_VK_APP_ID || '54585995');
         const result = await bridge.send('VKWebAppGetAuthToken', {
             app_id: appId,
             scope,
@@ -399,7 +403,9 @@ export const copyToClipboard = (text: string): boolean => {
     // 1. Попытка через современный Clipboard API
     if (navigator.clipboard && navigator.clipboard.writeText) {
         try {
-            navigator.clipboard.writeText(text);
+            navigator.clipboard.writeText(text).catch((err) => {
+                console.warn('Modern clipboard writeText promise rejected:', err);
+            });
             return true;
         } catch (err) {
             console.warn('Modern clipboard API failed, trying fallback:', err);
@@ -461,8 +467,8 @@ export const shareBattleResult = async (params: {
             : '';
 
     const text = params.isVictory
-        ? `⚔️ Я победил в Masters of the Wild!\n\n🏆 Результат боя:\n${params.playerName} vs ${params.enemyName}\nПобеда${durationText}\n\n+${params.xpEarned} XP 🛡️\n+${params.goldEarned} Золота 💰\n${crystalsText}${trophiesText}\nСыграть: https://vk.com/app${import.meta.env.VITE_VK_APP_ID || '52446645'}`
-        : `⚔️ Masters of the Wild\nБой с ${params.enemyName} оказался тяжелым испытанием...\n\n🛡️ Результат боя:\n${params.playerName} vs ${params.enemyName}\nНанесено урона: ${params.damageDealt.toLocaleString()} ед. 💥\n${trophiesText}\n🎮 Бросить вызов: https://vk.com/app${import.meta.env.VITE_VK_APP_ID || '52446645'}`;
+        ? `⚔️ Я победил в Masters of the Wild!\n\n🏆 Результат боя:\n${params.playerName} vs ${params.enemyName}\nПобеда${durationText}\n\n+${params.xpEarned} XP 🛡️\n+${params.goldEarned} Золота 💰\n${crystalsText}${trophiesText}\nСыграть: https://vk.com/app${import.meta.env.VITE_VK_APP_ID || '54585995'}`
+        : `⚔️ Masters of the Wild\nБой с ${params.enemyName} оказался тяжелым испытанием...\n\n🛡️ Результат боя:\n${params.playerName} vs ${params.enemyName}\nНанесено урона: ${params.damageDealt.toLocaleString()} ед. 💥\n${trophiesText}\n🎮 Бросить вызов: https://vk.com/app${import.meta.env.VITE_VK_APP_ID || '54585995'}`;
 
     // На localhost — просто копируем
     if (!bridge || !isVkMiniApp()) {
@@ -480,7 +486,7 @@ export const shareBattleResult = async (params: {
             attachment: {
                 text: 'open',
                 type: 'url',
-                url: `https://vk.com/app${import.meta.env.VITE_VK_APP_ID || '52446645'}`,
+                url: `https://vk.com/app${import.meta.env.VITE_VK_APP_ID || '54585995'}`,
             },
         });
         copyToClipboard(text);
@@ -490,8 +496,8 @@ export const shareBattleResult = async (params: {
         
         // Если пользователь явно отменил (User denied / закрыл редактор), не спамим его вторым окном
         const isUserDenied = storyErr?.error_data?.error_code === 4 || 
-            (storyErr?.error_data?.error_msg && storyErr.error_data.error_msg.toLowerCase().includes('user denied')) ||
-            (storyErr?.message && storyErr.message.toLowerCase().includes('user denied'));
+            (storyErr?.error_data?.error_msg && typeof storyErr.error_data.error_msg === 'string' && storyErr.error_data.error_msg.toLowerCase().includes('user denied')) ||
+            (storyErr?.message && typeof storyErr.message === 'string' && storyErr.message.toLowerCase().includes('user denied'));
             
         if (isUserDenied) {
             const copied = copyToClipboard(text);
@@ -502,7 +508,7 @@ export const shareBattleResult = async (params: {
         let shareSuccess = false;
         try {
             await bridge.send('VKWebAppShare', {
-                link: `https://vk.com/app${import.meta.env.VITE_VK_APP_ID || '52446645'}`,
+                link: `https://vk.com/app${import.meta.env.VITE_VK_APP_ID || '54585995'}`,
             });
             shareSuccess = true;
         } catch (shareErr) {
@@ -591,7 +597,8 @@ export const openExternalUrl = async (url: string): Promise<boolean> => {
 export const openStoryBox = async (): Promise<'shared' | 'cancelled' | 'failed'> => {
     if (!bridge || !isVkMiniApp()) {
         console.log('[Mock] VKWebAppShowStoryBox вызван (localhost)');
-        return 'failed';
+        alert('[Тест] VKWebAppShowStoryBox вызван на localhost с фоном bg_main_mobile.webp! Симулируем успешную публикацию Истории.');
+        return 'shared';
     }
     try {
         const bgUrl = `${window.location.origin}/assets/images/backgrounds/bg_main_mobile.webp`;
@@ -601,14 +608,14 @@ export const openStoryBox = async (): Promise<'shared' | 'cancelled' | 'failed'>
             attachment: {
                 text: 'open',
                 type: 'url',
-                url: `https://vk.com/app${import.meta.env.VITE_VK_APP_ID || '52446645'}`,
+                url: `https://vk.com/app${import.meta.env.VITE_VK_APP_ID || '54585995'}`,
             },
         });
         return 'shared';
     } catch (err: any) {
         const isCancel = err?.error_data?.error_code === 4 ||
-            (err?.error_data?.error_msg && err.error_data.error_msg.toLowerCase().includes('user denied')) ||
-            (err?.message && err.message.toLowerCase().includes('user denied'));
+            (err?.error_data?.error_msg && typeof err.error_data.error_msg === 'string' && err.error_data.error_msg.toLowerCase().includes('user denied')) ||
+            (err?.message && typeof err.message === 'string' && err.message.toLowerCase().includes('user denied'));
         return isCancel ? 'cancelled' : 'failed';
     }
 };
@@ -618,13 +625,17 @@ export const openStoryBox = async (): Promise<'shared' | 'cancelled' | 'failed'>
  * Используется кнопкой "Отправить друзьям" внутри SharePreviewModal.
  */
 export const openShareLink = async (): Promise<boolean> => {
+    const appId = import.meta.env.VITE_VK_APP_ID || '54585995';
+    const link = `https://vk.com/app${appId}`;
     if (!bridge || !isVkMiniApp()) {
         console.log('[Mock] VKWebAppShare вызван (localhost)');
-        return false;
+        copyToClipboard(link);
+        alert(`[Тест] VKWebAppShare вызван на localhost для ссылки: ${link}. Ссылка скопирована в буфер обмена!`);
+        return true;
     }
     try {
         await bridge.send('VKWebAppShare', {
-            link: `https://vk.com/app${import.meta.env.VITE_VK_APP_ID || '52446645'}`,
+            link: link,
         });
         return true;
     } catch (err) {

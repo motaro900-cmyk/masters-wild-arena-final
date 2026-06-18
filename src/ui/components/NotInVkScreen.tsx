@@ -83,7 +83,7 @@ export const NotInVkScreen: React.FC = () => {
                     мини-приложение ВКонтакте. Гостевой доступ к веб-версии отключен разработчиком.
                 </p>
                 <button
-                    onClick={() => window.open('https://vk.com/app52446645', '_blank')}
+                    onClick={() => window.open('https://vk.com/app54585995', '_blank')}
                     style={{
                         padding: '16px 45px',
                         background: 'linear-gradient(135deg, #ffe082, #c8952a)',

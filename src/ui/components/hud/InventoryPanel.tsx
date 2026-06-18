@@ -54,19 +54,10 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ mode = 'FULL', o
     }, [storeIsMobile]);
 
     const containerRef = useRef<HTMLDivElement>(null);
-    const [scrollTop, setScrollTop] = useState(0);
-    const [clientHeight, setClientHeight] = useState(600);
-
-    const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
-        setScrollTop(e.currentTarget.scrollTop);
-        setClientHeight(e.currentTarget.clientHeight);
-    };
 
     useEffect(() => {
-        setScrollTop(0);
         if (containerRef.current) {
             containerRef.current.scrollTop = 0;
-            setClientHeight(containerRef.current.clientHeight);
         }
     }, [activeTab, searchQuery]);
 
@@ -263,8 +254,6 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ mode = 'FULL', o
     const cols = mode === 'FULL' ? (isMobile ? 5 : 5) : 3;
     const rowHeight = mode === 'FULL' ? (isMobile ? 80 : 125) : (isMobile ? 72 : 100);
     const gapHeight = mode === 'FULL' ? (isMobile ? 6 : 14) : (isMobile ? 5 : 10);
-    const rowSpacing = rowHeight + gapHeight;
-
     const totalItems = useMemo(() => {
         type GridElement =
             | { type: 'ITEM'; item: any; index: number }
@@ -275,24 +264,6 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ mode = 'FULL', o
         const emptyList: GridElement[] = Array.from({ length: emptyCount }).map((_, index) => ({ type: 'EMPTY' as const, index }));
         return [...itemsList, ...emptyList];
     }, [filteredItems, mode]);
-
-    const rows = useMemo(() => {
-        const result: typeof totalItems[] = [];
-        for (let i = 0; i < totalItems.length; i += cols) {
-            result.push(totalItems.slice(i, i + cols));
-        }
-        return result;
-    }, [totalItems, cols]);
-
-    const startIndex = Math.max(0, Math.floor(scrollTop / rowSpacing) - 5);
-    const endIndex = Math.min(rows.length - 1, Math.ceil((scrollTop + clientHeight) / rowSpacing) - 1 + 5);
-
-    const topSpacerHeight = startIndex * rowSpacing;
-    const bottomSpacerHeight = Math.max(0, (rows.length - 1 - endIndex) * rowSpacing);
-
-    const visibleRows = useMemo(() => {
-        return rows.slice(startIndex, endIndex + 1);
-    }, [rows, startIndex, endIndex]);
 
     // ─── Render ───────────────────────────────────────────────────────────────
     return (
@@ -470,7 +441,6 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ mode = 'FULL', o
             {/* ══ СЕТКА ПРЕДМЕТОВ ═════════════════════════════════════════════ */}
             <motion.div
                 ref={containerRef}
-                onScroll={handleScroll}
                 drag={isMobile ? "x" : undefined}
                 dragConstraints={{ left: 0, right: 0 }}
                 dragElastic={0.15}
@@ -494,119 +464,113 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ mode = 'FULL', o
                     borderRadius: '16px', border: '1.5px solid rgba(240,192,64,0.3)',
                     padding: mode === 'FULL' ? '20px' : '12px',
                     overflowY: 'auto',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: gapHeight + 'px',
                     boxShadow: 'inset 0 0 24px rgba(0,0,0,0.95), 0 4px 15px rgba(0,0,0,0.5)',
                     touchAction: isMobile ? 'pan-y' : 'auto',
                 }}
                 className="leaderboard-scroll"
             >
-                <div style={{ height: topSpacerHeight, flexShrink: 0 }} />
-                {visibleRows.map((row, rowIndex) => (
-                    <div
-                        key={startIndex + rowIndex}
-                        style={{
-                            display: 'grid',
-                            gridTemplateColumns: `repeat(${cols}, 1fr)`,
-                            gap: gapHeight + 'px',
-                            height: rowHeight + 'px',
-                            width: '100%',
-                            flexShrink: 0,
-                        }}
-                    >
-                        {row.map((element) => {
-                            if (element.type === 'ITEM') {
-                                const { item, index: i } = element;
-                                const data = ITEMS_DATABASE[item.id] as any;
-                                if (!data) return null;
+                <div
+                    style={{
+                        display: 'grid',
+                        gridTemplateColumns: `repeat(${cols}, 1fr)`,
+                        gridAutoRows: rowHeight + 'px',
+                        gap: gapHeight + 'px',
+                        width: '100%',
+                    }}
+                >
+                    {totalItems.map((element, i) => {
+                        if (element.type === 'ITEM') {
+                            const { item, index: itemIndex } = element;
+                            const data = ITEMS_DATABASE[item.id] as any;
+                            if (!data) return null;
 
-                                const equippedHeroId = getHeroByItemId(item.instanceId || item.id);
-                                const isEquippedOnCurrent = String(equippedHeroId) === String(selectedHeroId || 'panda');
-                                const isEquippedOnOther = equippedHeroId && !isEquippedOnCurrent;
-                                const rarity = RARITY_COLORS[String(data?.rarity || 'COMMON')];
-                                const instanceId = item.instanceId || item.id;
-                                const isSelected = selectedItems.has(instanceId);
+                            const equippedHeroId = getHeroByItemId(item.instanceId || item.id);
+                            const isEquippedOnCurrent = String(equippedHeroId) === String(selectedHeroId || 'panda');
+                            const isEquippedOnOther = equippedHeroId && !isEquippedOnCurrent;
+                            const rarity = RARITY_COLORS[String(data?.rarity || 'COMMON')];
+                            const instanceId = item.instanceId || item.id;
+                            const isSelected = selectedItems.has(instanceId);
 
-                                return (
-                                    <div
-                                        key={instanceId + i}
-                                        style={{ position: 'relative', width: '100%', height: '100%', boxSizing: 'border-box' }}
-                                        onClick={(e) => {
-                                            if (e.shiftKey && !item.isResource) {
-                                                toggleSelectItem(instanceId, e);
+                            return (
+                                <div
+                                    key={instanceId + '-' + itemIndex + '-' + i}
+                                    style={{ position: 'relative', width: '100%', height: '100%', boxSizing: 'border-box' }}
+                                    onClick={(e) => {
+                                        if (e.shiftKey && !item.isResource) {
+                                            toggleSelectItem(instanceId, e);
+                                        }
+                                    }}
+                                >
+                                    <DraggableItem
+                                        item={item}
+                                        data={data}
+                                        rarity={rarity}
+                                        isEquippedOnCurrent={isEquippedOnCurrent}
+                                        isEquippedOnOther={!!isEquippedOnOther}
+                                        equippedHeroId={equippedHeroId}
+                                        onItemClick={async (id: string) => {
+                                            if (id === 'season_chest') { handleOpenChest(); return; }
+                                            const executeEquip = async () => {
+                                                if (onItemClick) await onItemClick(id);
+                                            };
+                                            if (isEquippedOnOther) {
+                                                setConfirmData({
+                                                    isOpen: true, title: 'ПЕРЕДАЧА ВЕЩИ',
+                                                    message: `Предмет надет на ${HEROES_DB.find((h) => h.id === equippedHeroId)?.name || equippedHeroId}. Передать текущему герою?`,
+                                                    variant: 'normal', onConfirm: executeEquip,
+                                                });
+                                            } else {
+                                                await executeEquip();
                                             }
                                         }}
-                                    >
-                                        <DraggableItem
-                                            item={item}
-                                            data={data}
-                                            rarity={rarity}
-                                            isEquippedOnCurrent={isEquippedOnCurrent}
-                                            isEquippedOnOther={!!isEquippedOnOther}
-                                            equippedHeroId={equippedHeroId}
-                                            onItemClick={async (id: string) => {
-                                                if (id === 'season_chest') { handleOpenChest(); return; }
-                                                const executeEquip = async () => {
-                                                    if (onItemClick) await onItemClick(id);
-                                                };
-                                                if (isEquippedOnOther) {
-                                                    setConfirmData({
-                                                        isOpen: true, title: 'ПЕРЕДАЧА ВЕЩИ',
-                                                        message: `Предмет надет на ${HEROES_DB.find((h) => h.id === equippedHeroId)?.name || equippedHeroId}. Передать текущему герою?`,
-                                                        variant: 'normal', onConfirm: executeEquip,
-                                                    });
-                                                } else {
-                                                    await executeEquip();
-                                                }
-                                            }}
-                                            setGlobalHoveredItem={(id: string | null, x: number, y: number) => {
-                                                setHoveredItem(id ? { id, x, y } : null);
-                                                propSetGlobalHoveredItem?.(id, x, y);
-                                            }}
-                                        />
-                                        {/* Рамка выделения (Shift) */}
-                                        {isSelected && (
-                                            <div style={{
-                                                position: 'absolute', inset: 0, borderRadius: '8px',
-                                                border: '2px solid #c084fc',
-                                                boxShadow: '0 0 12px rgba(192,132,252,0.5)',
-                                                pointerEvents: 'none', zIndex: 15,
-                                            }} />
-                                        )}
-                                        {/* Галочка выделения */}
-                                        {isSelected && (
-                                            <div style={{
-                                                position: 'absolute', top: '2px', left: '2px',
-                                                width: '16px', height: '16px', borderRadius: '4px',
-                                                background: '#c084fc', display: 'flex', alignItems: 'center',
-                                                justifyContent: 'center', fontSize: '9px', color: '#fff',
-                                                fontWeight: 900, zIndex: 16, pointerEvents: 'none',
-                                            }}>✓</div>
-                                        )}
-                                    </div>
-                                );
-                            } else {
-                                const { index: i } = element;
-                                return (
-                                    <div key={'empty-' + i} style={{
-                                        background: 'radial-gradient(circle, rgba(28, 22, 18, 0.4) 0%, rgba(18, 14, 11, 0.6) 100%)',
-                                        borderRadius: '8px',
-                                        border: '1.5px solid rgba(240, 192, 64, 0.08)',
-                                        boxShadow: 'inset 0 0 10px rgba(0,0,0,0.85)',
-                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                    }}>
+                                        setGlobalHoveredItem={(id: string | null, x: number, y: number) => {
+                                            setHoveredItem(id ? { id, x, y } : null);
+                                            propSetGlobalHoveredItem?.(id, x, y);
+                                        }}
+                                    />
+                                    {/* Рамка выделения (Shift) */}
+                                    {isSelected && (
                                         <div style={{
-                                            width: '8px', height: '8px', borderRadius: '50%',
-                                            background: 'rgba(240,192,64,0.04)',
+                                            position: 'absolute', inset: 0, borderRadius: '8px',
+                                            border: '2px solid #c084fc',
+                                            boxShadow: '0 0 12px rgba(192,132,252,0.5)',
+                                            pointerEvents: 'none', zIndex: 15,
                                         }} />
-                                    </div>
-                                );
-                            }
-                        })}
-                    </div>
-                ))}
-                <div style={{ height: bottomSpacerHeight, flexShrink: 0 }} />
+                                    )}
+                                    {/* Галочка выделения */}
+                                    {isSelected && (
+                                        <div style={{
+                                            position: 'absolute', top: '2px', left: '2px',
+                                            width: '16px', height: '16px', borderRadius: '4px',
+                                            background: '#c084fc', display: 'flex', alignItems: 'center',
+                                            justifyContent: 'center', fontSize: '9px', color: '#fff',
+                                            fontWeight: 900, zIndex: 16, pointerEvents: 'none',
+                                        }}>✓</div>
+                                    )}
+                                </div>
+                            );
+                        } else {
+                            const { index: emptyIndex } = element;
+                            return (
+                                <div key={'empty-' + emptyIndex + '-' + i} style={{
+                                    background: 'radial-gradient(circle, rgba(28, 22, 18, 0.4) 0%, rgba(18, 14, 11, 0.6) 100%)',
+                                    borderRadius: '8px',
+                                    border: '1.5px solid rgba(240, 192, 64, 0.08)',
+                                    boxShadow: 'inset 0 0 10px rgba(0,0,0,0.85)',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    height: '100%',
+                                    width: '100%',
+                                    boxSizing: 'border-box',
+                                }}>
+                                    <div style={{
+                                        width: '8px', height: '8px', borderRadius: '50%',
+                                        background: 'rgba(240,192,64,0.04)',
+                                    }} />
+                                </div>
+                            );
+                        }
+                    })}
+                </div>
             </motion.div>
 
             {/* Context menu removed */}

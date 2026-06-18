@@ -270,9 +270,9 @@ export const PurchaseConfirmOverlay: React.FC<PurchaseConfirmOverlayProps> = ({
                             ) : (
                                 <>
                                     <span style={{ fontSize: isMobile ? '11px' : '12px', opacity: 0.85, letterSpacing: '0.1em' }}>
-                                        ОПЛАТИТЬ ЧЕРЕЗ VK
+                                        КУПИТЬ
                                     </span>
-                                    <span style={{ fontSize: isMobile ? '16px' : '18px', fontWeight: 900 }}>
+                                    <span style={{ fontSize: isMobile ? '15px' : '17px', fontWeight: 900 }}>
                                         💙 {item.priceVotes} {getVotesPlural(item.priceVotes)}
                                     </span>
                                 </>

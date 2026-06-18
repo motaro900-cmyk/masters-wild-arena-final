@@ -4,7 +4,7 @@ import { mkdirSync } from 'fs';
 
 const CHROME_PATH = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
 const GAME_URL = 'http://localhost:5173';
-const SCREENSHOT_DIR = 'C:\\Users\\Motar\\.gemini\\antigravity\\brain\\3ec5a0ff-e008-48fd-bb03-6484fcc002be\\';
+const SCREENSHOT_DIR = 'C:\\Users\\Motar\\.gemini\\antigravity\\brain\\58973397-dd97-4519-bee5-0c864b49d46c\\';
 
 // Ensure the screenshot directory exists
 mkdirSync(SCREENSHOT_DIR, { recursive: true });

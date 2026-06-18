@@ -32,6 +32,7 @@ export const useShopScene = () => {
     const [showRefreshConfirm, setShowRefreshConfirm] = useState(false);
     const [toastMessage, setToastMessage] = useState<string | null>(null);
     const [timeStr, setTimeStr] = useState('00:00:00');
+    const [successModal, setSuccessModal] = useState<{ itemName: string; crystalsAmount: number } | null>(null);
 
     // Initialize shop rotation on load
     useEffect(() => {
@@ -178,7 +179,17 @@ export const useShopScene = () => {
 
             if (success) {
                 audioService.playSFX(AssetsMap.AUDIO.SFX_BUY);
-                setToastMessage('✅ Покупка успешно завершена!');
+                if (currency === 'votes') {
+                    // Показываем красивый success-модал вместо тоста
+                    let crystalsAmount = 0;
+                    if (item.id === 'gem_pack_1') crystalsAmount = 100;
+                    if (item.id === 'gem_pack_2') crystalsAmount = 700;
+                    if (item.id === 'gem_pack_3') crystalsAmount = 4000;
+                    if (item.id === 'starter_pack') crystalsAmount = 200;
+                    setSuccessModal({ itemName: item.name, crystalsAmount });
+                } else {
+                    setToastMessage('✅ Покупка успешно завершена!');
+                }
             } else {
                 audioService.playSFX(AssetsMap.AUDIO.SFX_ERROR);
                 setToastMessage('❌ Ошибка покупки или операция отменена.');
@@ -220,6 +231,8 @@ export const useShopScene = () => {
         setShowRefreshConfirm,
         toastMessage,
         setToastMessage,
+        successModal,
+        setSuccessModal,
         timeStr,
         filteredItems,
         isMobile,

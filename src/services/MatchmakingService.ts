@@ -173,7 +173,12 @@ class MatchmakingServiceClass {
         myStats?: any,
         winStreak = 0,
         lossStreak = 0,
+        forceBot = false,
     ): Promise<MatchOpponent> {
+        if (forceBot) {
+            return this.generateBot(myRating, myLevel, myStats, winStreak, lossStreak);
+        }
+
         // ── TIER 1: 0–700 cups ──────────────────────────────────────────────
         if (myRating < 700) {
             // First 5 consecutive wins are guaranteed (newbie honeymoon)

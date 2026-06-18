@@ -973,35 +973,40 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
                     onClick={async () => {
                         if (isSharing) return;
                         setIsSharing(true);
-                        const playerName = useGameStore.getState().name || 'Игрок';
-                        // Генерируем красивый текст поста
-                        await shareBattleResult({
-                            playerName,
-                            enemyName: data.enemyName,
-                            damageDealt: data.damageDealt,
-                            trophiesChange: data.trophiesChange || 0,
-                            isVictory: data.isVictory,
-                            goldEarned: data.goldEarned,
-                            xpEarned: data.xpEarned,
-                            crystalsEarned: data.crystalsEarned,
-                            battleDurationSeconds: data.battleDurationSeconds,
-                        });
-                        // Формируем текст для превью (дублируем логику для отображения)
-                        const durationText = data.battleDurationSeconds ? ` за ${data.battleDurationSeconds} сек.` : '';
-                        const crystalsLine = data.crystalsEarned && data.crystalsEarned > 0 ? `+${data.crystalsEarned} Кристалла 💎\n` : '';
-                        const trophiesLine = (data.trophiesChange || 0) > 0
-                            ? `+${data.trophiesChange} Кубков 🏆\n`
-                            : (data.trophiesChange || 0) < 0
-                            ? `${data.trophiesChange} Кубков 📉\n`
-                            : '';
-                        const appId = import.meta.env.VITE_VK_APP_ID || '52446645';
-                        const generatedText = data.isVictory
-                            ? `⚔️ Я победил в Masters of the Wild!\n\n🏆 Результат боя:\n${playerName} vs ${data.enemyName}\nПобеда${durationText}\n\n+${data.xpEarned} XP 🛡️\n+${data.goldEarned} Золота 💰\n${crystalsLine}${trophiesLine}\nСыграть: https://vk.com/app${appId}`
-                            : `⚔️ Masters of the Wild\nБой с ${data.enemyName} оказался тяжелым испытанием...\n\n🛡️ Результат боя:\n${playerName} vs ${data.enemyName}\nНанесено урона: ${data.damageDealt.toLocaleString()} ед. 💥\n${trophiesLine}\n🎮 Бросить вызов: https://vk.com/app${appId}`;
-                        setShareText(generatedText);
-                        setShareNotice('copied');
-                        setShowShareModal(true);
-                        setIsSharing(false);
+                        try {
+                            const playerName = useGameStore.getState().name || 'Игрок';
+                            // Генерируем красивый текст поста
+                            await shareBattleResult({
+                                playerName,
+                                enemyName: data.enemyName || 'Враг',
+                                damageDealt: data.damageDealt ?? 0,
+                                trophiesChange: data.trophiesChange || 0,
+                                isVictory: data.isVictory,
+                                goldEarned: data.goldEarned ?? 0,
+                                xpEarned: data.xpEarned ?? 0,
+                                crystalsEarned: data.crystalsEarned,
+                                battleDurationSeconds: data.battleDurationSeconds,
+                            });
+                            // Формируем текст для превью (дублируем логику для отображения)
+                            const durationText = data.battleDurationSeconds ? ` за ${data.battleDurationSeconds} сек.` : '';
+                            const crystalsLine = data.crystalsEarned && data.crystalsEarned > 0 ? `+${data.crystalsEarned} Кристалла 💎\n` : '';
+                            const trophiesLine = (data.trophiesChange || 0) > 0
+                                ? `+${data.trophiesChange} Кубков 🏆\n`
+                                : (data.trophiesChange || 0) < 0
+                                ? `${data.trophiesChange} Кубков 📉\n`
+                                : '';
+                            const appId = import.meta.env.VITE_VK_APP_ID || '54585995';
+                            const generatedText = data.isVictory
+                                ? `⚔️ Я победил в Masters of the Wild!\n\n🏆 Результат боя:\n${playerName} vs ${(data.enemyName || 'Враг')}\nПобеда${durationText}\n\n+${(data.xpEarned ?? 0)} XP 🛡️\n+${(data.goldEarned ?? 0)} Золота 💰\n${crystalsLine}${trophiesLine}\nСыграть: https://vk.com/app${appId}`
+                                : `⚔️ Masters of the Wild\nБой с ${(data.enemyName || 'Враг')} оказался тяжелым испытанием...\n\n🛡️ Результат боя:\n${playerName} vs ${(data.enemyName || 'Враг')}\nНанесено урона: ${(data.damageDealt ?? 0).toLocaleString()} ед. 💥\n${trophiesLine}\n🎮 Бросить вызов: https://vk.com/app${appId}`;
+                            setShareText(generatedText);
+                            setShareNotice('copied');
+                            setShowShareModal(true);
+                        } catch (err) {
+                            console.error('Failed to share battle result:', err);
+                        } finally {
+                            setIsSharing(false);
+                        }
                     }}
                     style={{
                         padding: '12px 32px',
@@ -1159,12 +1164,18 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
                                 disabled={storyLoading}
                                 onClick={async () => {
                                     setStoryLoading(true);
-                                    const res = await openStoryBox();
-                                    setStoryLoading(false);
-                                    if (res === 'shared') {
-                                        setShareNotice('story_ok');
-                                    } else if (res === 'failed') {
+                                    try {
+                                        const res = await openStoryBox();
+                                        if (res === 'shared') {
+                                            setShareNotice('story_ok');
+                                        } else if (res === 'failed') {
+                                            setShareNotice('story_fail');
+                                        }
+                                    } catch (err) {
+                                        console.error('Story share error:', err);
                                         setShareNotice('story_fail');
+                                    } finally {
+                                        setStoryLoading(false);
                                     }
                                     // Если 'cancelled' — просто ничего не показываем
                                 }}
@@ -1199,8 +1210,13 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
                                 disabled={friendLoading}
                                 onClick={async () => {
                                     setFriendLoading(true);
-                                    await openShareLink();
-                                    setFriendLoading(false);
+                                    try {
+                                        await openShareLink();
+                                    } catch (err) {
+                                        console.error('Share link error:', err);
+                                    } finally {
+                                        setFriendLoading(false);
+                                    }
                                 }}
                                 style={{
                                     width: '100%',

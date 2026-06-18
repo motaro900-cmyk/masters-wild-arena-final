@@ -15,6 +15,7 @@ import { ShopItemCard } from './ShopScene/ShopItemCard';
 import { SidebarBtn } from './ShopScene/SidebarBtn';
 import { PurchaseConfirmOverlay } from './ShopScene/PurchaseConfirmOverlay';
 import { ShopDetailPanel } from './ShopScene/ShopDetailPanel';
+import { PurchaseSuccessModal } from './ShopScene/PurchaseSuccessModal';
 
 import { getSubTabs, getRarityColor } from './ShopScene/shopHelpers';
 
@@ -38,6 +39,8 @@ export const ShopScene: React.FC = () => {
         handleItemClick,
         handleBuyTrigger,
         confirmPurchase,
+        successModal,
+        setSuccessModal,
     } = useShopScene();
 
     const [isMobile, setIsMobile] = React.useState(isMobileFromStore);
@@ -971,6 +974,14 @@ export const ShopScene: React.FC = () => {
                     />
                 )}
             </AnimatePresence>
+
+            {/* PURCHASE SUCCESS MODAL (голоса VK) */}
+            <PurchaseSuccessModal
+                isOpen={!!successModal}
+                itemName={successModal?.itemName || ''}
+                crystalsAmount={successModal?.crystalsAmount || 0}
+                onClose={() => setSuccessModal(null)}
+            />
 
             {/* TOAST MESSAGE */}
             <AnimatePresence>

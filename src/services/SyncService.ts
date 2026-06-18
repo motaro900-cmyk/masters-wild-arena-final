@@ -388,7 +388,12 @@ export class SyncService {
     public async loadPlayerData(userId: string): Promise<{ data: any; isNew: boolean } | null> {
         try {
             const playerRef = doc(db, USERS_COLLECTION, userId);
-            const playerSnap = await getDoc(playerRef);
+            
+            // Задаем таймаут 5 секунд на получение документа из Firebase
+            const profileTimeout = new Promise<never>((_, reject) =>
+                setTimeout(() => reject(new Error('Firebase player profile fetch timeout')), 5000)
+            );
+            const playerSnap = await Promise.race([getDoc(playerRef), profileTimeout]);
 
             if (playerSnap.exists()) {
                 const data = playerSnap.data();
@@ -408,7 +413,13 @@ export class SyncService {
                     .filter(Boolean);
                 let resolvedFriends = [];
                 try {
-                    resolvedFriends = dbFriendIds.length > 0 ? await resolveFriendProfiles(dbFriendIds) : [];
+                    // Задаем таймаут 3 секунды на загрузку профилей друзей, чтобы не блокировать вход
+                    const friendTimeout = new Promise<never>((_, reject) =>
+                        setTimeout(() => reject(new Error('Firebase friends fetch timeout')), 3000)
+                    );
+                    resolvedFriends = dbFriendIds.length > 0 
+                        ? await Promise.race([resolveFriendProfiles(dbFriendIds), friendTimeout]) 
+                        : [];
                 } catch (friendErr) {
                     console.error('[SyncService] Failed to resolve friend profiles, using empty list:', friendErr);
                 }

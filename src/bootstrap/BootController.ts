@@ -508,7 +508,9 @@ class BootController {
         try {
             const searchParams = window.location.search;
             if (searchParams) {
-                const response = await fetchWithRetry(`/api/verify-sign${searchParams}`, {}, 3, 1500);
+                const response = await fetchWithRetry(`/api/verify-sign${searchParams}`, {
+                    signal: AbortSignal.timeout(4000),
+                }, 3, 1500);
                 const data = await response.json();
                 if (data && data.valid === false) {
                     throw new Error('Invalid signature');
@@ -554,16 +556,20 @@ class BootController {
         
         this.userId = SyncService.getPrefixedUserId(this.vkUser, playerId);
 
+        const cacheRaw = typeof window !== 'undefined' ? localStorage.getItem('game-storage') : null;
+        const hasLocalCache = !!cacheRaw;
+        const maxAttempts = hasLocalCache ? 1 : 3;
+
         let remoteResult = null;
         let loadError = null;
-        for (let i = 0; i < 3; i++) {
+        for (let i = 0; i < maxAttempts; i++) {
             try {
                 remoteResult = await syncService.loadPlayerData(this.userId);
                 break;
             } catch (err) {
                 loadError = err;
-                console.warn(`[BootController] Failed to load remote profile, attempt ${i + 1}/3...`, err);
-                if (i < 2) {
+                console.warn(`[BootController] Failed to load remote profile, attempt ${i + 1}/${maxAttempts}...`, err);
+                if (i < maxAttempts - 1) {
                     await new Promise((resolve) => setTimeout(resolve, 1500));
                 }
             }
@@ -829,7 +835,8 @@ class BootController {
             50,
             null,
             state.winStreak || 0,
-            state.lossStreak || 0
+            state.lossStreak || 0,
+            true // forceBot = true during startup to load immediately without network delay
         );
 
         useGameStore.setState({
@@ -964,7 +971,9 @@ class BootController {
         
         // Always perform an initial sync on startup to register the active session token and set online status
         console.log('[BootController] Performing initial startup session sync...');
-        await syncService.syncPlayerData();
+        syncService.syncPlayerData().catch((err) => {
+            console.warn('[BootController] Initial sync failed (continuing in background):', err);
+        });
         this.needPostBootSync = false;
 
         syncService.startAutoSync(60000);
