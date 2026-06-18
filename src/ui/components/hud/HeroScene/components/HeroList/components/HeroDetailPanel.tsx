@@ -301,7 +301,7 @@ export const HeroDetailPanel = memo(function HeroDetailPanel({
                 <div>
                     <div
                         style={{
-                            fontSize: '9.5px',
+                            fontSize: '14px',
                             fontWeight: 900,
                             color: 'rgba(255, 254, 250, 0.4)',
                             fontFamily: "'Cinzel', serif",
@@ -317,7 +317,7 @@ export const HeroDetailPanel = memo(function HeroDetailPanel({
                             style={{
                                 color: 'rgba(255, 254, 250, 0.5)',
                                 fontWeight: 700,
-                                fontSize: '9px',
+                                fontSize: '13px',
                                 fontFamily: "'Nunito', sans-serif",
                             }}
                         >
@@ -343,8 +343,8 @@ export const HeroDetailPanel = memo(function HeroDetailPanel({
                                         audioService.playSFX('SFX_CLICK');
                                     }}
                                     style={{
-                                        width: '80px',
-                                        height: '80px',
+                                        width: '120px',
+                                        height: '120px',
                                         borderRadius: '12px',
                                         border: isSelectedSkin
                                             ? `2px solid ${sc}`
@@ -380,9 +380,9 @@ export const HeroDetailPanel = memo(function HeroDetailPanel({
                                         <div
                                             style={{
                                                 position: 'absolute',
-                                                bottom: '6px',
-                                                width: '6px',
-                                                height: '6px',
+                                                bottom: '8px',
+                                                width: '8px',
+                                                height: '8px',
                                                 borderRadius: '50%',
                                                 background: sc,
                                                 boxShadow: `0 0 6px ${sc}`,
@@ -407,16 +407,16 @@ export const HeroDetailPanel = memo(function HeroDetailPanel({
                                                     display: 'flex',
                                                     alignItems: 'center',
                                                     justifyContent: 'center',
-                                                    width: '18px',
-                                                    height: '18px',
+                                                    width: '24px',
+                                                    height: '24px',
                                                     borderRadius: '50%',
                                                     background: 'linear-gradient(135deg, #f5d782 0%, #d59f22 100%)',
                                                     border: '1px solid #fffdf7',
                                                     boxShadow: '0 1px 4px rgba(197, 137, 17, 0.3)',
-                                                    marginBottom: '4px',
+                                                    marginBottom: '6px',
                                                 }}
                                             >
-                                                <svg width="8" height="10" viewBox="0 0 10 12" fill="none">
+                                                <svg width="11" height="13" viewBox="0 0 10 12" fill="none">
                                                     <path
                                                         d="M2.5 4.5V3a2.5 2.5 0 1 1 5 0v1.5M1.5 4.5h7a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1h-7a1 1 0 0 1-1-1v-5a1 1 0 0 1 1-1Z"
                                                         stroke="#fff"
@@ -428,17 +428,19 @@ export const HeroDetailPanel = memo(function HeroDetailPanel({
                                             </div>
                                             <span
                                                 style={{
-                                                    fontSize: '8px',
+                                                    fontSize: '11px',
                                                     color: '#f0c040',
                                                     fontFamily: "'Nunito', sans-serif",
                                                     fontWeight: 900,
                                                     textAlign: 'center',
-                                                    padding: '1px 4px',
+                                                    padding: '2px 6px',
                                                     textTransform: 'uppercase',
                                                     background: 'rgba(20, 16, 12, 0.85)',
                                                     border: '1px solid rgba(240, 192, 64, 0.25)',
                                                     borderRadius: '4px',
                                                     letterSpacing: '0.3px',
+                                                    maxWidth: '90%',
+                                                    wordBreak: 'break-word',
                                                 }}
                                             >
                                                 {SOURCE_ICONS[skin.source] || '🏆'} {skin.sourceLabel || 'БП'}
@@ -456,7 +458,7 @@ export const HeroDetailPanel = memo(function HeroDetailPanel({
                             marginTop: '10px',
                             background: 'rgba(18, 14, 11, 0.92)',
                             borderRadius: '8px',
-                            padding: '8px 10px',
+                            padding: '10px 14px',
                             border: '1.5px solid rgba(240, 192, 64, 0.25)',
                             boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.5)',
                         }}
@@ -464,7 +466,7 @@ export const HeroDetailPanel = memo(function HeroDetailPanel({
                         <div
                             style={{
                                 color: displaySkin?.color || '#fdfbf7',
-                                fontSize: '11.5px',
+                                fontSize: '16px',
                                 fontWeight: 800,
                                 fontFamily: "'Cinzel', serif",
                                 letterSpacing: '0.3px',
@@ -476,7 +478,7 @@ export const HeroDetailPanel = memo(function HeroDetailPanel({
                             <span>{displaySkin?.name}</span>
                             <span
                                 style={{
-                                    fontSize: '8px',
+                                    fontSize: '11px',
                                     fontWeight: 900,
                                     color: rarityColors[displaySkin?.rarity] || '#fff',
                                     textTransform: 'uppercase',
@@ -490,9 +492,9 @@ export const HeroDetailPanel = memo(function HeroDetailPanel({
                             style={{
                                 margin: '4px 0 0',
                                 color: 'rgba(255, 254, 250, 0.7)',
-                                fontSize: '9.5px',
+                                fontSize: '12.5px',
                                 fontFamily: "'Nunito', sans-serif",
-                                lineHeight: 1.4,
+                                lineHeight: 1.45,
                             }}
                         >
                             {displaySkin?.description}
