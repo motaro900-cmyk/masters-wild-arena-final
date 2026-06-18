@@ -254,7 +254,7 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
                             transition: 'all 0.2s',
                         }}
                     >
-                        <span style={{ fontSize: '11px', fontWeight: 900, color: isMuted ? colors.danger : '#fff' }}>
+                        <span style={{ fontSize: '13px', fontWeight: 900, color: isMuted ? colors.danger : '#fff' }}>
                             {isMuted ? `🔇 ${t.off}` : `🔊 ${t.on}`}
                         </span>
                     </div>
@@ -279,7 +279,7 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
                                 style={{
                                     display: 'flex',
                                     justifyContent: 'space-between',
-                                    fontSize: '11px',
+                                    fontSize: '13px',
                                     fontWeight: 800,
                                     opacity: 0.7,
                                 }}
@@ -519,7 +519,7 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
                         }}
                     >
                         <div>
-                            <div style={{ fontSize: '9px', opacity: 0.5, fontWeight: 800, letterSpacing: '0.5px' }}>{t.playerId}</div>
+                            <div style={{ fontSize: '11.5px', opacity: 0.5, fontWeight: 800, letterSpacing: '0.5px' }}>{t.playerId}</div>
                             <div
                                 style={{
                                     fontSize: '14px',
@@ -554,7 +554,7 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
                                 background: copied ? 'rgba(46, 204, 113, 0.15)' : 'rgba(240,192,64,0.1)',
                                 border: `1.5px solid ${copied ? '#2ecc71' : colors.accent}`,
                                 color: copied ? '#2ecc71' : colors.accent,
-                                fontSize: '11px',
+                                fontSize: '13px',
                                 fontWeight: 900,
                                 cursor: 'pointer',
                                 transition: 'all 0.2s ease',
@@ -591,7 +591,7 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
                                 background: language === 'RU' ? 'rgba(240,192,64,0.15)' : 'rgba(0,0,0,0.3)',
                                 border: `1.5px solid ${language === 'RU' ? colors.accent : 'rgba(255,255,255,0.05)'}`,
                                 color: language === 'RU' ? '#fff' : 'rgba(255,255,255,0.4)',
-                                fontSize: '11px',
+                                fontSize: '13px',
                                 fontWeight: 900,
                                 cursor: 'pointer',
                                 transition: 'all 0.2s ease',
@@ -609,7 +609,7 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
                                 background: language === 'EN' ? 'rgba(240,192,64,0.15)' : 'rgba(0,0,0,0.3)',
                                 border: `1.5px solid ${language === 'EN' ? colors.accent : 'rgba(255,255,255,0.05)'}`,
                                 color: language === 'EN' ? '#fff' : 'rgba(255,255,255,0.4)',
-                                fontSize: '11px',
+                                fontSize: '13px',
                                 fontWeight: 900,
                                 cursor: 'pointer',
                                 transition: 'all 0.2s ease',
@@ -642,7 +642,7 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
                                 background: '#0077FF',
                                 border: '1px solid rgba(255,255,255,0.3)',
                                 color: '#fff',
-                                fontSize: '12px',
+                                fontSize: '14px',
                                 fontWeight: 900,
                                 cursor: 'pointer',
                                 display: 'flex',
@@ -676,7 +676,7 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
                                 background: 'linear-gradient(180deg, #f0c040, #c87820)',
                                 border: '1px solid rgba(255,255,255,0.4)',
                                 color: '#000',
-                                fontSize: '12px',
+                                fontSize: '14px',
                                 fontWeight: 900,
                                 cursor: 'pointer',
                                 display: 'flex',
@@ -707,7 +707,7 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
                             background: 'rgba(240,192,64,0.1)',
                             border: `1px solid ${colors.accent}`,
                             color: colors.accent,
-                            fontSize: '12px',
+                            fontSize: '14px',
                             fontWeight: 900,
                             cursor: 'pointer',
                             boxShadow: 'inset 0 1px 1px rgba(240,192,64,0.2)',
@@ -727,7 +727,7 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
                                     background: 'linear-gradient(180deg, #f0c040 0%, #a88020 100%)',
                                     border: 'none',
                                     color: '#000',
-                                    fontSize: '12px',
+                                    fontSize: '14px',
                                     fontWeight: 900,
                                     cursor: 'pointer',
                                     boxShadow: '0 2px 8px rgba(240,192,64,0.25)',
@@ -757,7 +757,7 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
                                         : 'rgba(255,255,255,0.05)',
                                     border: `1px solid ${colors.danger}88`,
                                     color: colors.danger,
-                                    fontSize: '12px',
+                                    fontSize: '14px',
                                     fontWeight: 900,
                                     cursor: 'pointer',
                                     boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.05)',
@@ -787,7 +787,7 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
                                     background: confirmWipeChat ? 'rgba(240,192,64,0.2)' : 'rgba(255,255,255,0.05)',
                                     border: `1px solid #f0c04088`,
                                     color: '#f0c040',
-                                    fontSize: '12px',
+                                    fontSize: '14px',
                                     fontWeight: 900,
                                     cursor: 'pointer',
                                     boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.05)',
