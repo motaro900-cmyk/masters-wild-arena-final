@@ -41,15 +41,17 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ mode = 'FULL', o
     const [searchQuery, setSearchQuery] = useState('');
     const [hoveredItem, setHoveredItem] = useState<{ id: string; x: number; y: number } | null>(null);
     const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
-    const [isMobile, setIsMobile] = useState(false);
+    const storeIsMobile = useGameStore((state) => state.isMobile);
+    const [isMobile, setIsMobile] = useState(storeIsMobile);
     useEffect(() => {
         const checkLayout = () => {
-            setIsMobile(typeof window !== 'undefined' && window.innerWidth < 1024);
+            const isSmall = typeof window !== 'undefined' && window.innerWidth < 1024;
+            setIsMobile(storeIsMobile || isSmall);
         };
         checkLayout();
         window.addEventListener('resize', checkLayout);
         return () => window.removeEventListener('resize', checkLayout);
-    }, []);
+    }, [storeIsMobile]);
 
     const containerRef = useRef<HTMLDivElement>(null);
     const [scrollTop, setScrollTop] = useState(0);
@@ -259,7 +261,7 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ mode = 'FULL', o
     const bagColor = bagFill > 0.9 ? '#ef4444' : bagFill > 0.75 ? '#f59e0b' : '#4ade80';
 
     const cols = mode === 'FULL' ? (isMobile ? 6 : 5) : 3;
-    const rowHeight = mode === 'FULL' ? (isMobile ? 85 : 125) : (isMobile ? 70 : 100);
+    const rowHeight = mode === 'FULL' ? (isMobile ? 95 : 125) : (isMobile ? 85 : 100);
     const gapHeight = mode === 'FULL' ? (isMobile ? 8 : 14) : (isMobile ? 6 : 10);
     const rowSpacing = rowHeight + gapHeight;
 
@@ -506,7 +508,7 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ mode = 'FULL', o
                         key={startIndex + rowIndex}
                         style={{
                             display: 'grid',
-                            gridTemplateColumns: mode === 'FULL' ? 'repeat(5,1fr)' : 'repeat(3,1fr)',
+                            gridTemplateColumns: `repeat(${cols}, 1fr)`,
                             gap: gapHeight + 'px',
                             height: rowHeight + 'px',
                             width: '100%',

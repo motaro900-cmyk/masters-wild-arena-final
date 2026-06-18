@@ -141,8 +141,10 @@ export const DraggableItem: React.FC<DraggableItemProps> = React.memo(({
                 <div
                     className={data.spriteClass}
                     style={{
-                        width: '80px',
-                        height: '80px',
+                        width: '75%',
+                        height: '75%',
+                        maxWidth: '80px',
+                        maxHeight: '80px',
                         opacity: isEquippedOnOther ? 0.6 : 1,
                         pointerEvents: 'none',
                         zIndex: 1,
