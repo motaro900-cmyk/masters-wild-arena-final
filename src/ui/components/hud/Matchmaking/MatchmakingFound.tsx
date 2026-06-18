@@ -59,8 +59,9 @@ export const MatchmakingFound: React.FC<MatchmakingFoundProps> = ({
     shouldFlipEnemy,
     onStartFight,
 }) => {
-    const { heroEquipment, selectedHeroId, title, name, wins, totalBattles, isPremium, winStreak } = useGameStore(
+    const { accountLevel, heroEquipment, selectedHeroId, title, name, wins, totalBattles, isPremium, winStreak } = useGameStore(
         useShallow((state) => ({
+            accountLevel: state.level,
             heroEquipment: state.heroEquipment,
             selectedHeroId: state.selectedHeroId,
             title: state.title,
@@ -95,8 +96,8 @@ export const MatchmakingFound: React.FC<MatchmakingFoundProps> = ({
     const opponentPower = React.useMemo(() => calculateTotalPower(enemyEq), [enemyEq]);
 
     const winRewards = React.useMemo(
-        () => calculateWinRewards(level, isPremium, rating, opponent.rating, winStreak),
-        [level, isPremium, rating, opponent.rating, winStreak],
+        () => calculateWinRewards(accountLevel, isPremium, rating, opponent.rating, winStreak),
+        [accountLevel, isPremium, rating, opponent.rating, winStreak],
     );
 
     const playerWinRateStr = React.useMemo(() => {

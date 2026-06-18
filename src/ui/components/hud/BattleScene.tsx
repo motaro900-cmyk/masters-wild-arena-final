@@ -366,9 +366,9 @@ export const BattleScene: React.FC = () => {
                                 xpEarned: xp,
                                 trophiesChange: trophies,
                                 crystalsEarned: crystals,
-                                damageDealt: engineRef.current?.totalDamageDealt ?? (playerStats?.attack || 50) * 10,
-                                damageTaken: engineRef.current?.totalDamageTaken ?? 0,
-                                turnsPlayed: engineRef.current?.totalTurnsPlayed ?? turnCountRef.current,
+                                damageDealt: engineRef.current?.totalDamageDealt || Math.round((playerStats?.attack || 50) * (isVictory ? 1.5 : 0.8)),
+                                damageTaken: engineRef.current?.totalDamageTaken || Math.round((enemyStats?.attack || 30) * (isVictory ? 0.7 : 1.5)),
+                                turnsPlayed: engineRef.current?.totalTurnsPlayed || turnCountRef.current || 5,
                                 enemyName: isPve && activePveEnemy ? activePveEnemy.name : enemyData.name,
                                 playerStats: playerStats
                                     ? {
@@ -385,7 +385,7 @@ export const BattleScene: React.FC = () => {
                                     speed: enemyData.baseStats.speed,
                                 },
                                 battleDurationSeconds: engineRef.current ? engineRef.current.battleTime / 60 : 0,
-                                maxSingleHitDamage: engineRef.current?.maxSingleHitDamage ?? 0,
+                                maxSingleHitDamage: engineRef.current?.maxSingleHitDamage || Math.round((playerStats?.attack || 50) * (isVictory ? 1.1 : 0.5)),
                             });
 
                             setTimeout(() => setShowResult(true), 1500);

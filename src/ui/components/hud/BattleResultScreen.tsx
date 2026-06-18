@@ -5,6 +5,8 @@ import { AssetsMap } from '../../../configs/AssetsMap';
 import { shareBattleResult } from '../../../utils/VKBridge';
 import { audioService } from '../../../services/AudioService';
 import { getHeroExpNeeded } from '../../../features/heroes/leveling/HeroLevelConfig';
+import { HEROES_DB } from '../../../configs/HeroesConfig';
+import { getExpNeeded } from '../../../store/slices/playerSlice';
 
 const RESOURCE_METADATA: Record<string, { name: string; image: string; rarity: string }> = {
     coal: { name: 'Уголь', image: '/assets/images/resources/coal.webp', rarity: 'COMMON' },
@@ -92,6 +94,194 @@ interface BattleResultScreenProps {
     onContinue: (target?: string | (() => void)) => void;
 }
 
+interface AnimatingXPBarProps {
+    label: string;
+    startLevel: number;
+    endLevel: number;
+    startExp: number;
+    endExp: number;
+    xpEarned: number;
+    getExpNeededFunc: (lvl: number) => number;
+    icon: React.ReactNode;
+    barColor: string;
+    glowColor: string;
+    textColor: string;
+}
+
+const AnimatingXPBar: React.FC<AnimatingXPBarProps> = ({
+    label,
+    startLevel,
+    endLevel,
+    startExp,
+    endExp,
+    xpEarned,
+    getExpNeededFunc,
+    icon,
+    barColor,
+    glowColor,
+    textColor,
+}) => {
+    const startTotal = React.useMemo(() => {
+        let total = startExp;
+        for (let l = 1; l < startLevel; l++) {
+            total += getExpNeededFunc(l);
+        }
+        return total;
+    }, [startLevel, startExp, getExpNeededFunc]);
+
+    const endTotal = React.useMemo(() => {
+        let total = endExp;
+        for (let l = 1; l < endLevel; l++) {
+            total += getExpNeededFunc(l);
+        }
+        return total;
+    }, [endLevel, endExp, getExpNeededFunc]);
+
+    const getLevelAndExpFromTotal = React.useCallback(
+        (totalXP: number) => {
+            let l = 1;
+            let remaining = totalXP;
+            let needed = getExpNeededFunc(l);
+            while (remaining >= needed) {
+                remaining -= needed;
+                l++;
+                needed = getExpNeededFunc(l);
+            }
+            return { level: l, exp: remaining, maxExp: needed };
+        },
+        [getExpNeededFunc]
+    );
+
+    const [displayLevel, setDisplayLevel] = React.useState(startLevel);
+    const [displayExp, setDisplayExp] = React.useState(startExp);
+    const [displayMaxExp, setDisplayMaxExp] = React.useState(getExpNeededFunc(startLevel));
+    
+    const [isLevelUp, setIsLevelUp] = React.useState(false);
+    const levelRef = React.useRef(startLevel);
+
+    React.useEffect(() => {
+        const obj = { value: startTotal };
+        const duration = Math.min(2.2, Math.max(1.2, (endTotal - startTotal) / 180));
+        const tween = gsap.to(obj, {
+            value: endTotal,
+            duration: duration,
+            ease: 'power2.out',
+            delay: 1.2,
+            onUpdate: () => {
+                const { level: currentLvl, exp: currentXp, maxExp: currentMax } = getLevelAndExpFromTotal(obj.value);
+                setDisplayLevel(currentLvl);
+                setDisplayExp(Math.round(currentXp));
+                setDisplayMaxExp(currentMax);
+                
+                if (currentLvl > levelRef.current) {
+                    levelRef.current = currentLvl;
+                    setIsLevelUp(true);
+                    audioService.playSFX(AssetsMap.AUDIO.SFX_LEVEL_UP);
+                    setTimeout(() => setIsLevelUp(false), 800);
+                }
+            },
+        });
+
+        return () => {
+            tween.kill();
+        };
+    }, [startTotal, endTotal, getLevelAndExpFromTotal]);
+
+    const progressPercent = Math.min(100, (displayExp / displayMaxExp) * 100);
+
+    return (
+        <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    {icon}
+                    <span
+                        style={{
+                            color: textColor,
+                            fontSize: '14px',
+                            fontWeight: 800,
+                            fontFamily: "'Cinzel', serif",
+                            letterSpacing: '1.5px',
+                            transition: 'transform 0.2s',
+                            transform: isLevelUp ? 'scale(1.2)' : 'scale(1)',
+                            display: 'inline-block',
+                        }}
+                    >
+                        {label}: {displayLevel}
+                    </span>
+                    {isLevelUp && (
+                        <span
+                            style={{
+                                color: '#10b981',
+                                fontSize: '12px',
+                                fontWeight: 900,
+                                fontFamily: "'Cinzel', serif",
+                                letterSpacing: '1px',
+                                marginLeft: '8px',
+                                textShadow: '0 0 8px rgba(16,185,129,0.6)',
+                            }}
+                        >
+                            УРОВЕНЬ ПОВЫШЕН!
+                        </span>
+                    )}
+                </div>
+                <span
+                    style={{
+                        color: '#d1d5db',
+                        fontSize: '13px',
+                        fontWeight: 700,
+                        fontFamily: "'Cinzel', serif",
+                        letterSpacing: '0.5px',
+                    }}
+                >
+                    +{xpEarned} XP ({displayExp}/{displayMaxExp} XP)
+                </span>
+            </div>
+
+            <div
+                style={{
+                    height: '14px',
+                    background: 'rgba(0, 0, 0, 0.7)',
+                    borderRadius: '7px',
+                    border: '1.5px solid rgba(255, 255, 255, 0.12)',
+                    overflow: 'hidden',
+                    position: 'relative',
+                    boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.8)',
+                }}
+            >
+                <div
+                    style={{
+                        position: 'absolute',
+                        left: 0,
+                        top: 0,
+                        height: '100%',
+                        width: `${progressPercent}%`,
+                        background: barColor,
+                        borderRadius: '7px',
+                        boxShadow: `0 0 12px ${glowColor}`,
+                        transition: 'width 0.05s linear',
+                    }}
+                />
+                
+                {progressPercent > 0 && progressPercent < 100 && (
+                    <div
+                        style={{
+                            position: 'absolute',
+                            left: `calc(${progressPercent}% - 6px)`,
+                            top: 0,
+                            width: '12px',
+                            height: '100%',
+                            background: '#ffffff',
+                            opacity: 0.8,
+                            filter: `blur(2px) drop-shadow(0 0 6px ${glowColor})`,
+                            borderRadius: '50%',
+                        }}
+                    />
+                )}
+            </div>
+        </div>
+    );
+};
+
 export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, onContinue }) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const titleRef = useRef<HTMLDivElement>(null);
@@ -105,11 +295,45 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
     const battleMode = useGameStore((state) => state.battleMode);
     const pveLoot = useGameStore((state) => state.pveLoot);
 
-    const { selectedHeroId, heroes, gold } = useGameStore();
+    const { selectedHeroId, heroes, gold, level: accountLevelVal, exp: accountExpVal } = useGameStore();
     const activeHero = heroes[selectedHeroId] || { level: 1, exp: 0 };
     const level = activeHero.level || 1;
     const exp = activeHero.exp || 0;
-    const maxExp = getHeroExpNeeded(level);
+
+    const accountLevel = accountLevelVal || 1;
+    const accountExp = accountExpVal || 0;
+
+    const startAccount = React.useMemo(() => {
+        let startLvl = accountLevel;
+        let startXp = accountExp - data.xpEarned;
+        while (startXp < 0) {
+            startLvl--;
+            if (startLvl < 1) {
+                startLvl = 1;
+                startXp = 0;
+                break;
+            }
+            startXp += getExpNeeded(startLvl);
+        }
+        return { level: startLvl, exp: startXp };
+    }, [accountLevel, accountExp, data.xpEarned]);
+
+    const startHero = React.useMemo(() => {
+        let startLvl = level;
+        let startXp = exp - data.xpEarned;
+        while (startXp < 0) {
+            startLvl--;
+            if (startLvl < 1) {
+                startLvl = 1;
+                startXp = 0;
+                break;
+            }
+            startXp += getHeroExpNeeded(startLvl);
+        }
+        return { level: startLvl, exp: startXp };
+    }, [level, exp, data.xpEarned]);
+
+    const heroConfig = HEROES_DB.find(h => h.id === selectedHeroId) || HEROES_DB[0];
 
     const isVictory = data.isVictory;
 
@@ -480,53 +704,61 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
                         ))}
                     </div>
 
-                    {/* ПОЛОСКА ПРОГРЕССА ОПЫТА */}
-                    <div style={{ marginTop: '15px' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                            <span
-                                style={{
-                                    color: '#ffffff',
-                                    fontSize: '14px',
-                                    fontWeight: 800,
-                                    fontFamily: "'Cinzel', serif",
-                                }}
-                            >
-                                ПРОГРЕСС УРОВНЯ: {level} УРОВЕНЬ
-                            </span>
-                            <span
-                                style={{
-                                    color: '#ffffff',
-                                    fontSize: '14px',
-                                    fontWeight: 900,
-                                    fontFamily: "'Cinzel', serif",
-                                }}
-                            >
-                                +{data.xpEarned} XP (Текущий: {exp}/{maxExp} XP)
-                            </span>
-                        </div>
-                        <div
-                            style={{
-                                height: '12px',
-                                background: 'rgba(0,0,0,0.5)',
-                                borderRadius: '6px',
-                                border: '1px solid rgba(255,255,255,0.2)',
-                                overflow: 'hidden',
-                                position: 'relative',
-                            }}
-                        >
-                            <div
-                                style={{
-                                    position: 'absolute',
-                                    left: 0,
-                                    top: 0,
-                                    height: '100%',
-                                    width: `${Math.min(100, (exp / maxExp) * 100)}%`,
-                                    background: isVictory
-                                        ? 'linear-gradient(90deg, #3b82f6, #60a5fa)'
-                                        : 'linear-gradient(90deg, #8b1c1c, #b91c1c)',
-                                }}
-                            />
-                        </div>
+                    {/* ПРОГРЕСС ОПЫТА */}
+                    <div
+                        style={{
+                            marginTop: '20px',
+                            background: 'rgba(0, 0, 0, 0.25)',
+                            borderRadius: '16px',
+                            padding: '16px 20px',
+                            border: '1px solid rgba(255, 255, 255, 0.05)',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '16px',
+                        }}
+                    >
+                        {/* 1. УРОВЕНЬ АККАУНТА */}
+                        <AnimatingXPBar
+                            label="УРОВЕНЬ АККАУНТА"
+                            startLevel={startAccount.level}
+                            endLevel={accountLevel}
+                            startExp={startAccount.exp}
+                            endExp={accountExp}
+                            xpEarned={data.xpEarned}
+                            getExpNeededFunc={getExpNeeded}
+                            icon={<span style={{ fontSize: '16px' }}>👑</span>}
+                            barColor="linear-gradient(90deg, #d97706, #fbbf24)"
+                            glowColor="rgba(251, 191, 36, 0.5)"
+                            textColor="#fbbf24"
+                        />
+
+                        {/* 2. УРОВЕНЬ ГЕРОЯ */}
+                        <AnimatingXPBar
+                            label={`ГЕРОЙ ${heroConfig.name.toUpperCase()}`}
+                            startLevel={startHero.level}
+                            endLevel={level}
+                            startExp={startHero.exp}
+                            endExp={exp}
+                            xpEarned={data.xpEarned}
+                            getExpNeededFunc={getHeroExpNeeded}
+                            icon={
+                                <img
+                                    src={heroConfig.image}
+                                    style={{
+                                        width: '24px',
+                                        height: '24px',
+                                        borderRadius: '50%',
+                                        border: '1.5px solid #38bdf8',
+                                        objectFit: 'cover',
+                                        backgroundColor: '#1c1917',
+                                    }}
+                                    alt={heroConfig.name}
+                                />
+                            }
+                            barColor="linear-gradient(90deg, #0284c7, #38bdf8)"
+                            glowColor="rgba(56, 189, 248, 0.5)"
+                            textColor="#38bdf8"
+                        />
                     </div>
 
                     {/* НАГРАДЫ ОБИТЕЛИ (ТОЛЬКО PVE ПОБЕДА) */}

@@ -52,19 +52,7 @@ export function calculateWinRewards(
         goldMax = 500;
     }
 
-    const getXPReward = (lvl: number, won: boolean): number => {
-        if (won) {
-            if (lvl <= 10) return 100 + lvl * 20;
-            if (lvl <= 30) return 300 + (lvl - 10) * 10;
-            return Math.min(500 + (lvl - 30) * 5, 600);
-        } else {
-            if (lvl <= 10) return 20 + lvl * 4;
-            if (lvl <= 30) return 60 + (lvl - 10) * 2;
-            return Math.min(100 + (lvl - 30) * 1, 120);
-        }
-    };
-
-    const xpBase = getXPReward(pLevel, true);
+    const xpBase = 150 + pLevel * 4;
     const xpAmount = Math.round(xpBase * (isPremium ? 1.25 : 1.0));
 
     let baseMin = 20;
@@ -104,8 +92,19 @@ export function calculateWinRewards(
         streakBonus = 10;
     }
 
-    const minTrophies = baseMin + streakBonus;
-    const maxTrophies = baseMax + streakBonus;
+    let minTrophies = baseMin + streakBonus;
+    let maxTrophies = baseMax + streakBonus;
+
+    // Применяем Catch-up множитель (до 3000 кубков) как в BattleResultService
+    if (playerRating < 3000) {
+        const expectedLevel = playerRating < 1000 ? 1 : (playerRating < 2000 ? 10 : 20);
+        const levelDiff = pLevel - expectedLevel;
+        if (levelDiff >= 20) {
+            const multiplier = Math.min(5, 1 + levelDiff / 20);
+            minTrophies = Math.round(minTrophies * multiplier);
+            maxTrophies = Math.round(maxTrophies * multiplier);
+        }
+    }
 
     let trophiesStr = "";
     if (minTrophies !== maxTrophies) {
