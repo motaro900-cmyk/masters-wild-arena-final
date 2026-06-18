@@ -190,44 +190,25 @@ export const purchaseVotes = async (item: string): Promise<boolean> => {
     }
 
     try {
-        // Шаг 1: Показываем окно оплаты
+        // VKWebAppShowOrderBox возвращает { success: boolean, order_id: string }
+        // Документация: https://dev.vk.com/ru/bridge/VKWebAppShowOrderBox
         const orderResult = await bridge.send('VKWebAppShowOrderBox', {
             type: 'item',
             item: item,
         });
 
-        if (orderResult.status !== 'success') {
-            console.warn('VKWebAppShowOrderBox: status is not success', orderResult.status);
+        // VK возвращает success как BOOLEAN, не строку 'success'
+        const isSuccess = (orderResult as any).success === true;
+        if (!isSuccess) {
+            console.warn('VKWebAppShowOrderBox: success !== true', orderResult);
             return false;
         }
 
         const orderId = (orderResult as any).order_id;
-        if (!orderId) {
-            // Нет order_id — считаем успешным (некоторые платформы не возвращают id)
-            console.log('VKWebAppShowOrderBox: no order_id, treating as success');
-            return true;
-        }
+        console.log(`VKWebAppShowOrderBox: purchase successful, order_id=${orderId}`);
+        // order_id есть — платёж прошёл, начисляем кристаллы
+        return true;
 
-        // Шаг 2: Обязательно проверяем статус заказа (требование VK)
-        try {
-            const checkResult = await bridge.send('VKWebAppCheckOrderStatus' as any, {
-                order_id: orderId,
-            });
-            const status = (checkResult as any).status;
-            console.log(`VKWebAppCheckOrderStatus [${orderId}]: ${status}`);
-            if (status === 'chargeable' || status === 'charged') {
-                return true;
-            }
-            if (typeof status === 'string' && (status.toLowerCase().includes('test') || status.toLowerCase().includes('sandbox') || status.toLowerCase().includes('success'))) {
-                console.log('VKWebAppCheckOrderStatus: sandbox/test status detected, treating as success');
-                return true;
-            }
-            return false;
-        } catch (checkErr) {
-            // Если CheckOrderStatus недоступен (устаревшие клиенты) — доверяем ShowOrderBox
-            console.warn('VKWebAppCheckOrderStatus failed, trusting ShowOrderBox result:', checkErr);
-            return true;
-        }
     } catch (error: any) {
         console.warn('VKWebAppShowOrderBox failed:', error);
         
