@@ -4,6 +4,8 @@ import { ShopItem } from '../../../../configs/ShopConfig';
 import { AssetsMap } from '../../../../configs/AssetsMap';
 import { rarityTranslation } from './shopHelpers';
 import { resolveAssetPath } from '../../../../utils/assetPath';
+import { useGameStore } from '../../../../store/useGameStore';
+import { useShallow } from 'zustand/react/shallow';
 
 interface ShopItemCardProps {
     item: ShopItem;
@@ -41,9 +43,32 @@ export const ShopItemCard: React.FC<ShopItemCardProps> = React.memo(({
     onClick,
     isMobile = false,
 }) => {
+    const { ownedSkins, inventory, heroEquipment } = useGameStore(
+        useShallow((state) => ({
+            ownedSkins: state.ownedSkins || [],
+            inventory: state.inventory || [],
+            heroEquipment: state.heroEquipment || {},
+        }))
+    );
+
+    const isSkinOwned = item.mainTab === 'SKINS' && ownedSkins.includes(String(item.id));
+    const isArsenalItem = item.mainTab === 'ARSENAL';
+    const isEquipped =
+        isArsenalItem &&
+        Object.values(heroEquipment || {}).some(
+            (gear: any) => gear && Object.values(gear).some((eqId) => String(eqId) === String(item.id)),
+        );
+    const isOwnedInInventory = isArsenalItem && inventory.some((i: any) => String(i.id) === String(item.id));
+    const isOwned = isSkinOwned || isEquipped || isOwnedInInventory;
+
     const glow = getRarityColor(item.rarity);
     const isLocked = item.requiredLevel !== undefined && (playerLevel || 1) < item.requiredLevel;
     const isStarterPack = item.id === 'starter_pack';
+
+    const originalPrice = item.priceGold ?? item.priceGem ?? item.priceVotes;
+    const hasDiscount = discount > 0 && originalPrice !== undefined;
+    const price =
+        hasDiscount && originalPrice ? Math.max(1, Math.round(originalPrice * (1 - discount / 100))) : originalPrice;
 
     const [imageLoaded, setImageLoaded] = React.useState(false);
 
@@ -61,7 +86,7 @@ export const ShopItemCard: React.FC<ShopItemCardProps> = React.memo(({
                 minWidth: isMobile ? '130px' : '155px',
                 boxSizing: 'border-box',
                 flexShrink: 0,
-                height: isMobile ? '150px' : '175px',
+                height: isMobile ? '154px' : '180px',
                 background: isSelected
                     ? (isMobile
                         ? `radial-gradient(circle, rgba(240,192,64,0.25) 0%, rgba(20,15,15,0.98) 100%)`
@@ -262,6 +287,88 @@ export const ShopItemCard: React.FC<ShopItemCardProps> = React.memo(({
             >
                 {item.name}
             </span>
+
+            {/* Price or Owned Display */}
+            {isOwned ? (
+                <span
+                    style={{
+                        fontSize: isMobile ? '10px' : '11.5px',
+                        color: '#10b981',
+                        fontWeight: 900,
+                        fontFamily: "'Cinzel', 'Philosopher', serif",
+                        marginTop: '2px',
+                        zIndex: 2,
+                        letterSpacing: '0.5px',
+                    }}
+                >
+                    КУПЛЕНО
+                </span>
+            ) : price !== undefined ? (
+                <div
+                    style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '4px',
+                        marginTop: '2px',
+                        zIndex: 2,
+                    }}
+                >
+                    {hasDiscount && (
+                        <span
+                            style={{
+                                textDecoration: 'line-through',
+                                opacity: 0.6,
+                                fontSize: isMobile ? '9px' : '10px',
+                                color: '#ef4444',
+                            }}
+                        >
+                            {originalPrice?.toLocaleString()}
+                        </span>
+                    )}
+                    <span
+                        style={{
+                            fontSize: isMobile ? '11.5px' : '13px',
+                            fontWeight: 900,
+                            color: item.priceVotes !== undefined ? '#2b82c9' : item.priceGem !== undefined ? '#c084fc' : '#ffd700',
+                            fontFamily: "'Cinzel', 'Philosopher', serif",
+                        }}
+                    >
+                        {price.toLocaleString()}
+                    </span>
+                    {item.priceVotes !== undefined ? (
+                        <span style={{ fontSize: isMobile ? '9px' : '10.5px', color: '#c8a870', fontWeight: 900 }}>Г</span>
+                    ) : (
+                        <img
+                            src={item.priceGem !== undefined ? AssetsMap.UI.ICON_ALMAZ_FULL : AssetsMap.UI.ICON_GOLD_FULL}
+                            style={{
+                                width: isMobile ? '12px' : '14px',
+                                height: isMobile ? '12px' : '14px',
+                                objectFit: 'contain',
+                            }}
+                            alt=""
+                        />
+                    )}
+                </div>
+            ) : item.isAd ? (
+                <div
+                    style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '4px',
+                        marginTop: '2px',
+                        zIndex: 2,
+                        fontSize: isMobile ? '10px' : '11.5px',
+                        fontWeight: 900,
+                        color: '#10b981',
+                        fontFamily: "'Cinzel', 'Philosopher', serif",
+                    }}
+                >
+                    <span>РЕКЛАМА</span>
+                    <span>📺</span>
+                </div>
+            ) : null}
         </motion.div>
     );
 }, (prevProps, nextProps) => {
