@@ -744,6 +744,10 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
                             useGameStore.getState().showAlert('Результат боя скопирован в буфер обмена!');
                         } else if (status === 'shared') {
                             useGameStore.getState().showAlert('Редактор историй открыт! Результат боя скопирован в буфер обмена.');
+                        } else if (status === 'posted') {
+                            useGameStore.getState().showAlert('Окно публикации ВК открыто! Результат боя скопирован в буфер обмена.');
+                        } else if (status === 'failed') {
+                            useGameStore.getState().showAlert('Не удалось поделиться. Пожалуйста, скопируйте текст вручную.');
                         }
                     }}
                     style={{

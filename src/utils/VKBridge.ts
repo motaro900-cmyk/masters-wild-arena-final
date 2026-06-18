@@ -403,9 +403,55 @@ export const getVkFriendsWhoPlay = async (): Promise<number[]> => {
 };
 
 /**
+ * Надежная функция копирования в буфер обмена с фоллбеком для iframe (VK Mini Apps)
+ */
+export const copyToClipboard = (text: string): boolean => {
+    if (typeof window === 'undefined') return false;
+
+    // 1. Попытка через современный Clipboard API
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        try {
+            navigator.clipboard.writeText(text);
+            return true;
+        } catch (err) {
+            console.warn('Modern clipboard API failed, trying fallback:', err);
+        }
+    }
+
+    // 2. Старый надежный fallback через создание textarea и execCommand('copy')
+    try {
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        textArea.setAttribute('readonly', '');
+        textArea.style.position = 'fixed';
+        textArea.style.top = '0';
+        textArea.style.left = '0';
+        textArea.style.width = '2em';
+        textArea.style.height = '2em';
+        textArea.style.padding = '0';
+        textArea.style.border = 'none';
+        textArea.style.outline = 'none';
+        textArea.style.boxShadow = 'none';
+        textArea.style.background = 'transparent';
+        
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        
+        const successful = document.execCommand('copy');
+        document.body.removeChild(textArea);
+        return successful;
+    } catch (err) {
+        console.error('Fallback clipboard copy failed:', err);
+        return false;
+    }
+};
+
+/**
  * Шаринг результата боя в ВК.
  * На localhost — копирует текст в буфер обмена.
- * В мини-приложении — открывает редактор историй (VKWebAppShowStoryBox).
+ * В мини-приложении — открывает редактор историй (VKWebAppShowStoryBox) на мобильных
+ * или стандартное окно шаринга ВК (VKWebAppShare) на десктопе.
  */
 export const shareBattleResult = async (params: {
     playerName: string;
@@ -413,22 +459,19 @@ export const shareBattleResult = async (params: {
     damageDealt: number;
     trophiesChange: number;
     isVictory: boolean;
-}): Promise<'shared' | 'copied' | 'failed'> => {
+}): Promise<'shared' | 'posted' | 'copied' | 'failed'> => {
     const text = params.isVictory
         ? `⚔️ Masters of the Wild\n${params.playerName} победил!\nПротивник: ${params.enemyName}\nНанесено урона: ${params.damageDealt.toLocaleString()}\nКубки: +${params.trophiesChange} ▲\n🎮 Играй: https://vk.com/app${import.meta.env.VITE_VK_APP_ID || '52446645'}`
         : `⚔️ Masters of the Wild\n${params.playerName} против ${params.enemyName}!\nТяжёлый бой... Нанесено урона: ${params.damageDealt.toLocaleString()}\n🎮 Бросишь вызов? https://vk.com/app${import.meta.env.VITE_VK_APP_ID || '52446645'}`;
 
     // На localhost — просто копируем
     if (!bridge || !isVkMiniApp()) {
-        try {
-            await navigator.clipboard.writeText(text);
-            return 'copied';
-        } catch {
-            return 'failed';
-        }
+        const copied = copyToClipboard(text);
+        return copied ? 'copied' : 'failed';
     }
 
     try {
+        // Попытка открыть редактор историй (в первую очередь для мобильных)
         await bridge.send('VKWebAppShowStoryBox', {
             background_type: 'none',
             attachment: {
@@ -437,19 +480,32 @@ export const shareBattleResult = async (params: {
                 url: `https://vk.com/app${import.meta.env.VITE_VK_APP_ID || '52446645'}`,
             },
         });
-        // Дополнительно копируем текст в буфер для удобства
-        try {
-            await navigator.clipboard.writeText(text);
-        } catch {}
+        copyToClipboard(text);
         return 'shared';
     } catch (storyErr) {
-        console.warn('VKWebAppShowStoryBox failed, falling back to clipboard:', storyErr);
+        console.warn('VKWebAppShowStoryBox failed, trying VKWebAppShare & clipboard:', storyErr);
+        
+        // Пытаемся открыть стандартный шаринг ссылки ВК (работает на десктопе)
+        let shareSuccess = false;
         try {
-            await navigator.clipboard.writeText(text);
-            return 'copied';
-        } catch {
-            return 'failed';
+            await bridge.send('VKWebAppShare', {
+                link: `https://vk.com/app${import.meta.env.VITE_VK_APP_ID || '52446645'}`,
+            });
+            shareSuccess = true;
+        } catch (shareErr) {
+            console.warn('VKWebAppShare failed:', shareErr);
         }
+
+        // Копируем текст результата боя
+        const copied = copyToClipboard(text);
+        
+        if (shareSuccess) {
+            return 'posted';
+        }
+        if (copied) {
+            return 'copied';
+        }
+        return 'failed';
     }
 };
 
