@@ -181,20 +181,12 @@ export const showRewardedVideo = async (): Promise<boolean> => {
  */
 export const purchaseVotes = async (item: string): Promise<boolean> => {
     if (!bridge || !isVkMiniApp()) {
-        console.log(`Mock Payment: initiating purchase for: ${item}`);
-        return new Promise<boolean>((resolve) => {
-            useGameStore.getState().showConfirm(
-                `[Mock Payment] Вы хотите приобрести товар "${item}"?`,
-                () => {
-                    console.log(`Mock Payment: purchase of ${item} completed successfully`);
-                    resolve(true);
-                },
-                () => {
-                    console.log(`Mock Payment: purchase of ${item} cancelled`);
-                    resolve(false);
-                },
-            );
-        });
+        // Мок-среда (localhost/dev). PurchaseConfirmOverlay уже запросил подтверждение у пользователя,
+        // поэтому не показываем второй диалог — просто симулируем успешный платёж.
+        console.log(`[Mock Payment] Simulating successful VK Votes purchase for: "${item}"`);
+        await new Promise((resolve) => setTimeout(resolve, 850)); // имитация задержки сети
+        console.log(`[Mock Payment] Purchase "${item}" completed (mock).`);
+        return true;
     }
 
     try {

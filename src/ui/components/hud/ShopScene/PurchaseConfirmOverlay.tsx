@@ -4,6 +4,15 @@ import { ShopItem } from '../../../../configs/ShopConfig';
 import { getRarityColor } from './shopHelpers';
 import { useGameStore } from '../../../../store/useGameStore';
 
+const getVotesPlural = (n: number) => {
+    const abs = Math.abs(n) % 100;
+    const r = abs % 10;
+    if (abs >= 11 && abs <= 19) return 'голосов';
+    if (r === 1) return 'голос';
+    if (r >= 2 && r <= 4) return 'голоса';
+    return 'голосов';
+};
+
 interface PurchaseConfirmOverlayProps {
     item: ShopItem;
     dailyAdWatchesCount: number;
@@ -232,25 +241,42 @@ export const PurchaseConfirmOverlay: React.FC<PurchaseConfirmOverlayProps> = ({
                             disabled={isProcessing}
                             style={{
                                 flex: 1.5,
-                                height: '50px',
+                                height: '58px',
                                 background: isProcessing
                                     ? 'linear-gradient(180deg, #4b5563 0%, #1f2937 100%)'
-                                    : 'linear-gradient(180deg, #5de2ff 0%, #0066ff 100%)',
+                                    : 'linear-gradient(180deg, #2787f5 0%, #1263c7 100%)',
                                 border: 'none',
-                                borderRadius: '8px',
+                                borderRadius: '10px',
                                 color: isProcessing ? '#9ca3af' : '#fff',
                                 fontWeight: 900,
-                                fontSize: '18px',
+                                fontSize: isMobile ? '13px' : '15px',
                                 cursor: isProcessing ? 'not-allowed' : 'pointer',
                                 fontFamily: "'Cinzel', 'Philosopher', serif",
                                 display: 'flex',
+                                flexDirection: 'column',
                                 alignItems: 'center',
                                 justifyContent: 'center',
-                                gap: '8px',
+                                gap: '2px',
                                 opacity: isProcessing ? 0.6 : 1,
+                                boxShadow: isProcessing ? 'none' : '0 4px 15px rgba(39,135,245,0.4)',
+                                transition: 'all 0.2s',
+                                letterSpacing: '0.05em',
+                                position: 'relative',
+                                overflow: 'hidden',
                             }}
                         >
-                            {isProcessing ? '...' : 'КУПИТЬ'}
+                            {isProcessing ? (
+                                <span style={{ fontSize: '22px', animation: 'spin 1s linear infinite' }}>⏳</span>
+                            ) : (
+                                <>
+                                    <span style={{ fontSize: isMobile ? '11px' : '12px', opacity: 0.85, letterSpacing: '0.1em' }}>
+                                        ОПЛАТИТЬ ЧЕРЕЗ VK
+                                    </span>
+                                    <span style={{ fontSize: isMobile ? '16px' : '18px', fontWeight: 900 }}>
+                                        💙 {item.priceVotes} {getVotesPlural(item.priceVotes)}
+                                    </span>
+                                </>
+                            )}
                         </button>
                     )}
 
