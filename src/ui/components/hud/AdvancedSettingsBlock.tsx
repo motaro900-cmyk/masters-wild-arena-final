@@ -760,7 +760,7 @@ export const AdvancedSettingsBlock: React.FC<AdvancedSettingsBlockProps> = ({
                                 ? currentFps
                                 : (perfStats.fps > 0 ? Math.min(perfStats.fps, fpsCap) : 0);
                             return (
-                                <span style={{ fontWeight: 800, color: displayFps >= 50 ? '#4caf50' : displayFps >= 30 ? '#ffeb3b' : displayFps > 0 ? '#f44336' : '#9e9e9e' }}>
+                                <span style={{ fontWeight: 800, color: displayFps >= 50 ? '#66bb6a' : displayFps >= 30 ? '#fbbf24' : displayFps > 0 ? '#f87171' : '#9e9e9e' }}>
                                     {displayFps > 0 ? `${displayFps} FPS` : '...'}
                                 </span>
                             );
@@ -771,14 +771,14 @@ export const AdvancedSettingsBlock: React.FC<AdvancedSettingsBlockProps> = ({
                     {perfStats.ping !== null ? (
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px' }}>
                             <span style={{ opacity: 0.9 }}>📡 {pt.ping}</span>
-                            <span style={{ fontWeight: 800, color: perfStats.ping < 100 ? '#4caf50' : perfStats.ping < 250 ? '#ffeb3b' : '#f44336' }}>
+                            <span style={{ fontWeight: 800, color: perfStats.ping < 100 ? '#66bb6a' : perfStats.ping < 250 ? '#fbbf24' : '#f87171' }}>
                                 {perfStats.ping} ms
                             </span>
                         </div>
                     ) : (
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px' }}>
                             <span style={{ opacity: 0.9 }}>🔋 {language === 'RU' ? 'Качество:' : 'Quality:'}</span>
-                            <span style={{ fontWeight: 800, color: graphicsQuality === 'ULTRA' ? '#4caf50' : graphicsQuality === 'MEDIUM' ? '#ffeb3b' : '#f44336' }}>
+                            <span style={{ fontWeight: 800, color: graphicsQuality === 'ULTRA' ? '#66bb6a' : graphicsQuality === 'MEDIUM' ? '#fbbf24' : '#f87171' }}>
                                 {graphicsQuality}
                             </span>
                         </div>

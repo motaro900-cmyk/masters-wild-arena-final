@@ -639,9 +639,9 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
                             style={{
                                 padding: '14px',
                                 borderRadius: '10px',
-                                background: '#0077FF',
-                                border: '1px solid rgba(255,255,255,0.3)',
-                                color: '#fff',
+                                background: 'linear-gradient(180deg, rgba(28, 62, 140, 0.4) 0%, rgba(14, 30, 70, 0.8) 100%)',
+                                border: '1.5px solid #0077ff',
+                                color: '#fffdf5',
                                 fontSize: '14px',
                                 fontWeight: 900,
                                 cursor: 'pointer',
@@ -649,8 +649,8 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
                                 alignItems: 'center',
                                 justifyContent: 'center',
                                 gap: '8px',
-                                boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.3), 0 4px 6px rgba(0,0,0,0.3)',
-                                textShadow: '0 1px 2px rgba(0,0,0,0.5)',
+                                boxShadow: 'inset 0 1px 1px rgba(59, 130, 246, 0.4), 0 4px 10px rgba(0, 0, 0, 0.5)',
+                                textShadow: '0 2px 4px rgba(0,0,0,0.8)',
                             }}
                         >
                             {t.vkCommunity} (+50{' '}
@@ -673,9 +673,9 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
                             style={{
                                 padding: '14px',
                                 borderRadius: '10px',
-                                background: 'linear-gradient(180deg, #f0c040, #c87820)',
-                                border: '1px solid rgba(255,255,255,0.4)',
-                                color: '#000',
+                                background: 'linear-gradient(180deg, rgba(240, 192, 64, 0.25) 0%, rgba(180, 110, 10, 0.6) 100%)',
+                                border: `1.5px solid ${colors.accent}`,
+                                color: '#fffdf5',
                                 fontSize: '14px',
                                 fontWeight: 900,
                                 cursor: 'pointer',
@@ -683,7 +683,8 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
                                 alignItems: 'center',
                                 justifyContent: 'center',
                                 gap: '8px',
-                                boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.5), 0 4px 6px rgba(0,0,0,0.3)',
+                                boxShadow: 'inset 0 1px 1px rgba(240, 192, 64, 0.3), 0 4px 10px rgba(0, 0, 0, 0.5)',
+                                textShadow: '0 2px 4px rgba(0,0,0,0.8)',
                             }}
                         >
                             {t.toFavorites} (+50{' '}
