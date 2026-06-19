@@ -166,7 +166,7 @@ export const ClanWindow: React.FC = () => {
 
                 const resolvedAvatar = (playerAvatar && !playerAvatar.startsWith('sprite:'))
                     ? playerAvatar
-                    : (vkUser?.photo_200 || vkUser?.photo || playerAvatar || 'panda');
+                    : (vkUser?.photo_200 || vkUser?.photo || 'panda');
 
                 const playerMember: ClanMember = {
                     name: currentUserName,
