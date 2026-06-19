@@ -178,7 +178,7 @@ export const LegalModal: React.FC<LegalDocumentsProps> = ({ open, onClose }) => 
                     exit={{ opacity: 0 }}
                     onClick={onClose}
                     style={{
-                        position: 'fixed',
+                        position: 'absolute',
                         inset: 0,
                         background: 'rgba(0,0,0,0.88)',
                         display: 'flex',
@@ -200,7 +200,7 @@ export const LegalModal: React.FC<LegalDocumentsProps> = ({ open, onClose }) => 
                             borderRadius: '24px',
                             width: '100%',
                             maxWidth: '720px',
-                            maxHeight: '80vh',
+                            maxHeight: '90%',
                             display: 'flex',
                             flexDirection: 'column',
                             boxShadow: '0 30px 80px rgba(0,0,0,0.9)',
