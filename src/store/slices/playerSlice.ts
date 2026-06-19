@@ -323,15 +323,15 @@ export const createPlayerSlice = (set: any, get: any) => {
 
         // --- НАГРАДЫ ЗА ДОСТИЖЕНИЕ РАНГА (Трофейная Дорога) ---
         const rankRewards: Record<string, { crystals: number; gold: number; hasItem?: boolean; rewardName?: string }> = {
-            'ВОИН': { crystals: 150, gold: 2000, hasItem: true, rewardName: 'Случайный предмет' },
-            'ВЕТЕРАН': { crystals: 300, gold: 5000, hasItem: true, rewardName: 'Случайный предмет' },
-            'МАСТЕР': { crystals: 600, gold: 10000, hasItem: true, rewardName: 'Случайный предмет' },
-            'ГЕРОЙ': { crystals: 1000, gold: 15000, hasItem: true, rewardName: 'Случайный предмет' },
-            'ЭЛИТА': { crystals: 1500, gold: 20000, hasItem: true, rewardName: 'Случайный предмет' },
-            'ЧЕМПИОН': { crystals: 2000, gold: 25000, hasItem: true, rewardName: 'Случайный предмет' },
-            'МАГИСТР': { crystals: 3000, gold: 40000, hasItem: true, rewardName: 'Случайный предмет' },
-            'ВЛАСТЕЛИН': { crystals: 4000, gold: 50000, hasItem: true, rewardName: 'Случайный предмет' },
-            'ЛЕГЕНДА': { crystals: 6000, gold: 100000, hasItem: true, rewardName: 'Случайный предмет' },
+            'ВОИН': { crystals: 75, gold: 1000, hasItem: true, rewardName: 'Случайный предмет' },
+            'ВЕТЕРАН': { crystals: 150, gold: 2500, hasItem: true, rewardName: 'Случайный предмет' },
+            'МАСТЕР': { crystals: 300, gold: 5000, hasItem: true, rewardName: 'Случайный предмет' },
+            'ГЕРОЙ': { crystals: 500, gold: 7500, hasItem: true, rewardName: 'Случайный предмет' },
+            'ЭЛИТА': { crystals: 750, gold: 10000, hasItem: true, rewardName: 'Случайный предмет' },
+            'ЧЕМПИОН': { crystals: 1000, gold: 12500, hasItem: true, rewardName: 'Случайный предмет' },
+            'МАГИСТР': { crystals: 1500, gold: 20000, hasItem: true, rewardName: 'Случайный предмет' },
+            'ВЛАСТЕЛИН': { crystals: 2000, gold: 25000, hasItem: true, rewardName: 'Случайный предмет' },
+            'ЛЕГЕНДА': { crystals: 3000, gold: 50000, hasItem: true, rewardName: 'Случайный предмет' },
         };
 
         const claimed = [...(state.claimedRankRewards || [])];
