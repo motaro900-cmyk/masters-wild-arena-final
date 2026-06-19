@@ -29,13 +29,21 @@ export const ClanLobbyTab: React.FC<ClanLobbyTabProps> = ({
     onEditClan,
     onLeave,
 }) => {
-    const [clanMOTD, setClanMOTD] = useState('Внимание, Мастера! Завтра в 20:00 стартует Клановая Осада.');
+    const clanId = useGameStore((state) => state.clanId);
+    const isMock = clanId?.startsWith('clan_');
+    const defaultMOTD = isMock 
+        ? 'Внимание, Мастера! Завтра в 20:00 стартует Клановая Осада.'
+        : 'Приветствуем в нашем клане! Будьте вежливы и помогайте соратникам.';
+    const [clanMOTD, setClanMOTD] = useState(defaultMOTD);
     const [isEditingMOTD, setIsEditingMOTD] = useState(false);
 
     // Чат клана
     const name = useGameStore((state) => state.name);
     const vkUser = useGameStore((state) => state.vkUser);
-    const clanMessages = useGameStore((state) => state.clanMessages) || [];
+    const rawClanMessages = useGameStore((state) => state.clanMessages) || [];
+    const clanMessages = isMock
+        ? rawClanMessages
+        : rawClanMessages.filter((m: any) => !m.id?.toString().startsWith('mock-'));
     const addMessage = useGameStore((state) => state.addMessage);
 
     const currentUserName = name && name !== 'Мастер' 

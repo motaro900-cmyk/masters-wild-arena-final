@@ -196,7 +196,6 @@ export const ClanWindow: React.FC = () => {
                 } else {
                     setMembers([
                         playerMember,
-                        ...DEFAULT_MOCK_MEMBERS,
                     ]);
                 }
             } else {
