@@ -131,7 +131,7 @@ class BattleResultServiceClass {
             const expectedLevel = params.myRating < 1000 ? 1 : (params.myRating < 2000 ? 10 : 20);
             const levelDiff = params.myLevel - expectedLevel;
             if (levelDiff >= 20) {
-                const multiplier = Math.min(5, 1 + levelDiff / 20);
+                const multiplier = Math.min(3, 1 + levelDiff / 30);
                 myCupsChange = Math.round(myCupsChange * multiplier);
             }
         }
