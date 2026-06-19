@@ -212,38 +212,56 @@ export const ClanLobbyTab: React.FC<ClanLobbyTabProps> = ({
                         justifyContent: 'center',
                     }}
                 >
-                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
                         {isLeaderOrOfficer && (
-                            <button
+                            <motion.button
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
                                 onClick={onEditClan}
                                 style={{
-                                    background: 'rgba(255,255,255,0.05)',
-                                    border: `1px solid ${colors.border}`,
+                                    background: 'rgba(240, 192, 64, 0.08)',
+                                    border: `1.5px solid ${colors.accent}`,
                                     color: colors.accent,
-                                    padding: '6px 12px',
-                                    borderRadius: '8px',
-                                    fontSize: '11px',
-                                    fontWeight: 800,
+                                    padding: '8px 16px',
+                                    borderRadius: '10px',
+                                    fontSize: '12px',
+                                    fontWeight: 900,
+                                    fontFamily: "'Cinzel', serif",
                                     cursor: 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '6px',
+                                    boxShadow: '0 4px 15px rgba(240,192,64,0.15)',
+                                    outline: 'none',
                                 }}
                             >
                                 ⚙️ НАСТРОЙКИ
-                            </button>
+                            </motion.button>
                         )}
-                        <button
+                        <motion.button
+                            whileHover={{ scale: 1.05, opacity: 1 }}
+                            whileTap={{ scale: 0.95 }}
                             onClick={onLeave}
                             style={{
-                                background: 'none',
-                                border: 'none',
+                                background: 'rgba(239, 68, 68, 0.08)',
+                                border: '1.5px solid #ef4444',
                                 color: '#ef4444',
-                                fontSize: '11px',
-                                fontWeight: 700,
+                                padding: '8px 16px',
+                                borderRadius: '10px',
+                                fontSize: '12px',
+                                fontWeight: 900,
+                                fontFamily: "'Cinzel', serif",
                                 cursor: 'pointer',
-                                opacity: 0.75,
+                                opacity: 0.9,
+                                boxShadow: '0 4px 15px rgba(239,68,68,0.15)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '6px',
+                                outline: 'none',
                             }}
                         >
-                            ПОКИНУТЬ КЛАН
-                        </button>
+                            🚪 {playerRole === 'LEADER' ? 'РАСПУСТИТЬ КЛАН' : 'ПОКИНУТЬ КЛАН'}
+                        </motion.button>
                     </div>
                 </div>
             </div>
