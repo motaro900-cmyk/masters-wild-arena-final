@@ -72,7 +72,7 @@ const MemberRow: React.FC<MemberRowProps> = ({ member, onClick, colors }) => {
                 <AvatarFrame
                     avatarFilename={member.avatar || 'panda'}
                     frameFilename={frame}
-                    size={44}
+                    size={54}
                 />
                 <div>
                     <div style={{ color: '#fff', fontWeight: 800, fontSize: '17px', fontFamily: "'Cinzel', serif" }}>{member.name}</div>

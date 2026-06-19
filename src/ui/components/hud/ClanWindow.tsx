@@ -164,13 +164,17 @@ export const ClanWindow: React.FC = () => {
                     ? playerName
                     : (vkUser?.firstName ? `${vkUser.firstName} ${vkUser.lastName}` : 'Воин');
 
+                const resolvedAvatar = (playerAvatar && !playerAvatar.startsWith('sprite:'))
+                    ? playerAvatar
+                    : (vkUser?.photo_200 || vkUser?.photo || playerAvatar || 'panda');
+
                 const playerMember: ClanMember = {
                     name: currentUserName,
                     role: clanId.startsWith('clan_') ? 'MEMBER' : 'LEADER',
                     trophies: rating,
                     lastSeen: 'В сети',
                     isOnline: true,
-                    avatar: playerAvatar || '🐺',
+                    avatar: resolvedAvatar,
                     frame: playerFrame || 'none',
                     contribution: playerContribution,
                     level: level || 1,
@@ -203,7 +207,7 @@ export const ClanWindow: React.FC = () => {
             }
         }, 0);
         return () => clearTimeout(timer);
-    }, [clanId]); // RUN ONLY WHEN clanId CHANGES TO PERSIST MEMBERS ACTIONS
+    }, [clanId, playerAvatar, playerFrame, playerName, vkUser, rating, level, playerContribution]); // RUN WHEN CLAN OR PROFILE CHANGES TO KEEP AVATAR/FRAME SYNCED
 
     const [error, setError] = useState<string | null>(null);
     const [showSuccess, setShowSuccess] = useState<boolean>(false);
@@ -1002,7 +1006,7 @@ export const ClanWindow: React.FC = () => {
                                 >
                                     Да начнется великая история клана{' '}
                                     <span style={{ color: colors.accent, fontWeight: 900 }}>
-                                        {createdClanName.toUpperCase()}
+                                        {createdClanName}
                                     </span>
                                 </motion.p>
                             </div>
