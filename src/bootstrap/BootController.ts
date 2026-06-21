@@ -527,8 +527,8 @@ class BootController {
             const searchParams = window.location.search;
             if (searchParams) {
                 const response = await fetchWithRetry(`/api/verify-sign${searchParams}`, {
-                    signal: AbortSignal.timeout(7000),
-                }, 2, 2000);
+                    signal: AbortSignal.timeout(10000),
+                }, 3, 2000);
                 const data = await response.json();
                 if (data && data.valid === false) {
                     throw new Error('Invalid signature');
@@ -540,7 +540,7 @@ class BootController {
 
         // Fetch VK User Profile Info
         try {
-            this.vkUser = await getVkUserInfoWithRetry(3, 1500);
+            this.vkUser = await getVkUserInfoWithRetry(5, 2000);
             if (this.vkUser) {
                 const { useGameStore } = await import('../store/useGameStore');
                 useGameStore.setState({ vkUser: this.vkUser, isSystemUpdate: true });

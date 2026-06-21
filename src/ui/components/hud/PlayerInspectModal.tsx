@@ -1,9 +1,9 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../../../store/useGameStore';
 import { resolveAssetPath } from '../../../utils/assetPath';
 import { getRankInfo } from '../../../configs/RankSystem';
-import { getHeroConfig } from '../../../configs/HeroesConfig';
+import { getHeroConfig, HEROES_DB } from '../../../configs/HeroesConfig';
 import { AvatarFrame } from './SharedUI';
 import { syncService, SyncService } from '../../../services/SyncService';
 import { buildStatsFromEquipment } from '../../../services/MatchmakingService';
@@ -16,1133 +16,582 @@ import { resolveAvatarPath } from '../../../configs/ProfileCustomization';
 const getTemplateId = (id: string) => {
     if (!id) return '';
     if (ITEMS_DATABASE[id]) return id;
-    const match = Object.keys(ITEMS_DATABASE)
-        .filter((key) => id.startsWith(key + '_'))
-        .sort((a, b) => b.length - a.length)[0];
+    const match = Object.keys(ITEMS_DATABASE).filter((k) => id.startsWith(k + '_')).sort((a, b) => b.length - a.length)[0];
     return match || id;
 };
+const roleToRu = (role: string) => {
+    switch (role) { case 'TANK': return 'Танк'; case 'ASSASSIN': return 'Убийца'; case 'MAGE': return 'Маг'; case 'SUPPORT': return 'Поддержка'; default: return 'Боец'; }
+};
+const rarityColors: Record<string, string> = { COMMON: '#9ca3af', UNCOMMON: '#4ade80', RARE: '#3b82f6', EPIC: '#a855f7', MYTHIC: '#ef4444', LEGENDARY: '#eab308' };
+const RARITY_RU: Record<string, string> = { COMMON: 'Обычный', UNCOMMON: 'Необычный', RARE: 'Редкий', EPIC: 'Эпический', MYTHIC: 'Мифический', LEGENDARY: 'Легендарный' };
 
+/* ─── CSS ────────────────────────────────────────────────────────────────── */
+const GLOBAL_STYLES = `
+    .insp-scroll::-webkit-scrollbar { width: 4px; }
+    .insp-scroll::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); border-radius: 2px; }
+    .insp-scroll::-webkit-scrollbar-thumb { background: rgba(240,192,64,0.35); border-radius: 2px; }
+    .sc-h { transition: background 0.15s; }
+    .sc-h:hover { background: rgba(255,255,255,0.04) !important; }
+    .act-btn { transition: all 0.16s ease; }
+    @keyframes vip-p { 0%,100%{opacity:.65;}50%{opacity:1;} }
+    .vip-a { animation: vip-p 2.8s ease-in-out infinite; }
+    @keyframes shimmer-b { 0%{background-position:-200% 0;} 100%{background-position:200% 0;} }
+    .bdg-sh {
+        background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.1) 50%, transparent 100%);
+        background-size: 200% 100%;
+        animation: shimmer-b 3.5s linear infinite;
+    }
+    @keyframes hfloat { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-5px);} }
+    .h-float { animation: hfloat 4s ease-in-out infinite; }
+    .d-slot { transition: border-color 0.2s, box-shadow 0.2s; }
+    .d-slot:hover { border-color: rgba(240,192,64,0.7) !important; box-shadow: 0 0 14px rgba(240,192,64,0.22) !important; }
+`;
+
+/* ─── Components ─────────────────────────────────────────────────────────── */
+const GoldDivider: React.FC<{ style?: React.CSSProperties }> = ({ style }) => (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%', ...style }}>
+        <div style={{ flex: 1, height: '1px', background: 'linear-gradient(90deg, transparent, rgba(240,192,64,0.35))' }} />
+        <div style={{ width: 5, height: 5, background: '#c8a040', borderRadius: '50%', boxShadow: '0 0 5px rgba(240,192,64,0.6)', flexShrink: 0 }} />
+        <div style={{ flex: 1, height: '1px', background: 'linear-gradient(90deg, rgba(240,192,64,0.35), transparent)' }} />
+    </div>
+);
+
+const SectionLabel: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '7px', marginBottom: '7px' }}>
+        <div style={{ width: '3px', height: '13px', background: 'linear-gradient(180deg, #ffe880, #c88020)', borderRadius: '2px', flexShrink: 0 }} />
+        <span style={{ fontSize: '9.5px', color: '#d4a030', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '1.8px', fontFamily: "'Cinzel', serif" }}>{children}</span>
+    </div>
+);
+
+const MiniCard: React.FC<{ emoji: string; label: string; value: React.ReactNode; vc: string; bg?: string }> = ({ emoji, label, value, vc, bg = 'rgba(255,255,255,0.02)' }) => (
+    <div className="sc-h" style={{ background: 'rgba(255,255,255,0.022)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '10px', padding: '8px 10px', display: 'flex', alignItems: 'center', gap: '8px', boxSizing: 'border-box', minWidth: 0 }}>
+        <div style={{ width: '32px', height: '32px', borderRadius: '8px', flexShrink: 0, background: bg, border: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', lineHeight: 1 }}>{emoji}</div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: '8px', color: 'rgba(255,255,255,0.28)', fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase', marginBottom: '2px' }}>{label}</div>
+            <div style={{ fontSize: '13px', fontWeight: 800, color: vc, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontFamily: "'Outfit', sans-serif", lineHeight: 1.2 }}>{value}</div>
+        </div>
+    </div>
+);
+
+const Diamond: React.FC<{ size?: number; style?: React.CSSProperties }> = ({ size = 10, style }) => (
+    <div style={{ width: size, height: size, background: '#f0c040', transform: 'rotate(45deg)', boxShadow: '0 0 8px rgba(240,192,64,0.9)', flexShrink: 0, ...style }} />
+);
+
+/* ══════════════════════════════════════════════════════════════════════════ */
 export const PlayerInspectModal: React.FC = () => {
-    const inspectPlayerId = useGameStore((state) => state.inspectPlayerId);
-    const inspectPlayerName = useGameStore((state) => state.inspectPlayerName);
-    
-    const myPlayerId = useGameStore((state) => state.playerId);
-    const myVkUser = useGameStore((state) => state.vkUser);
-    const myFriends = useGameStore((state) => state.friends) || [];
-    const showAlert = useGameStore((state) => state.showAlert);
+    const inspectPlayerId    = useGameStore((s) => s.inspectPlayerId);
+    const inspectPlayerName  = useGameStore((s) => s.inspectPlayerName);
+    const myPlayerId         = useGameStore((s) => s.playerId);
+    const myVkUser           = useGameStore((s) => s.vkUser);
+    const myFriends          = useGameStore((s) => s.friends) || [];
+    const showAlert          = useGameStore((s) => s.showAlert);
 
-    const [loading, setLoading] = React.useState(false);
-    const [playerData, setPlayerData] = React.useState<any | null>(null);
-    const [error, setError] = React.useState<string | null>(null);
-    const [activeTab, setActiveTab] = React.useState<'info' | 'gear'>('info');
+    const [loading, setLoading]   = React.useState(false);
+    const [playerData, setPlayer] = React.useState<any>(null);
+    const [error, setError]       = React.useState<string | null>(null);
+    const [activeTab, setTab]     = React.useState<'info' | 'gear'>('info');
 
-    const activeInspectVal = inspectPlayerId || inspectPlayerName;
+    const activeVal = inspectPlayerId || inspectPlayerName;
 
     React.useEffect(() => {
-        if (!activeInspectVal) {
-            setPlayerData(null);
-            setError(null);
-            return;
-        }
-        setActiveTab('info');
-
-        const fetchPlayer = async () => {
-            setLoading(true);
-            setError(null);
+        if (!activeVal) { setPlayer(null); setError(null); return; }
+        setTab('info');
+        (async () => {
+            setLoading(true); setError(null);
             try {
-                let targetId = inspectPlayerId;
-
-                // Если есть только имя, резолвим ID по имени
-                if (!targetId && inspectPlayerName) {
-                    targetId = await syncService.getPlayerIdByName(inspectPlayerName);
-                }
-
-                if (!targetId) {
-                    setError('Игрок не найден');
-                    setLoading(false);
-                    return;
-                }
-
-                // Check if target is current player (isMe)
-                const isTargetMe = targetId === 'me' ||
-                    targetId === myPlayerId ||
-                    targetId === `VK-${myVkUser?.id}` ||
-                    targetId === `GUEST-${myPlayerId}`;
-
-                if (isTargetMe) {
-                    const store = useGameStore.getState();
-                    const activeHero = store.selectedHeroId || 'panda';
-                    const selfData = {
-                        id: SyncService.getPrefixedUserId(myVkUser, myPlayerId),
-                        name: store.name || 'Мастер',
-                        avatar: store.avatar,
-                        level: store.level || 1,
-                        rating: store.rating || 0,
-                        gold: store.gold || 0,
-                        crystals: store.crystals || 0,
-                        vipLevel: store.vipLevel || 0,
-                        isVipActive: store.isVipActive || false,
-                        wins: store.wins || 0,
-                        totalBattles: store.totalBattles || 0,
-                        hero: activeHero,
-                        equipment: store.heroEquipment?.[activeHero] || {},
-                    };
-                    setPlayerData(selfData);
+                let tid = inspectPlayerId;
+                if (!tid && inspectPlayerName) tid = await syncService.getPlayerIdByName(inspectPlayerName);
+                if (!tid) { setError('Игрок не найден'); return; }
+                const isMe_ = tid === 'me' || tid === myPlayerId || tid === `VK-${myVkUser?.id}` || tid === `GUEST-${myPlayerId}`;
+                if (isMe_) {
+                    const st = useGameStore.getState(); const ah = st.selectedHeroId || 'panda';
+                    setPlayer({ id: SyncService.getPrefixedUserId(myVkUser, myPlayerId), name: st.name || 'Мастер', avatar: st.avatar, level: st.level || 1, rating: st.rating || 0, vipLevel: st.vipLevel || 0, isVipActive: st.isVipActive || false, wins: st.wins || 0, totalBattles: st.totalBattles || 0, hero: ah, equipment: st.heroEquipment?.[ah] || {} });
                 } else {
-                    const docData = await syncService.searchPlayerById(targetId);
-                    if (docData) {
-                        setPlayerData(docData);
-                    } else {
-                        setError('Не удалось загрузить данные игрока');
-                    }
+                    const doc = await syncService.searchPlayerById(tid);
+                    if (doc) setPlayer(doc); else setError('Не удалось загрузить данные игрока');
                 }
-            } catch (err) {
-                console.error('[PlayerInspectModal] Error fetching player details:', err);
-                setError('Ошибка при загрузке данных');
-            } finally {
-                setLoading(false);
-            }
-        };
+            } catch { setError('Ошибка при загрузке данных'); }
+            finally { setLoading(false); }
+        })();
+    }, [inspectPlayerId, inspectPlayerName, activeVal]);
 
-        fetchPlayer();
-    }, [inspectPlayerId, inspectPlayerName, activeInspectVal]);
+    if (!activeVal) return null;
 
-    if (!activeInspectVal) return null;
-
-    const handleClose = () => {
-        audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
-        useGameStore.setState({ inspectPlayerId: null, inspectPlayerName: null });
-    };
-
+    const handleClose = () => { audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK); useGameStore.setState({ inspectPlayerId: null, inspectPlayerName: null }); };
     const store = useGameStore.getState();
-    const isMe = activeInspectVal === 'me' ||
-        activeInspectVal === myPlayerId ||
-        activeInspectVal === `VK-${myVkUser?.id}` ||
-        activeInspectVal === `GUEST-${myPlayerId}` ||
-        (playerData && (
-            playerData.id === myPlayerId || 
-            String(playerData.vkId) === String(myVkUser?.id) ||
-            playerData.id === `VK-${myVkUser?.id}` ||
-            playerData.id === `GUEST-${myPlayerId}`
-        ));
+    const isMe = activeVal === 'me' || activeVal === myPlayerId || activeVal === `VK-${myVkUser?.id}` || activeVal === `GUEST-${myPlayerId}` ||
+        (playerData && (playerData.id === myPlayerId || String(playerData.vkId) === String(myVkUser?.id) || playerData.id === `VK-${myVkUser?.id}` || playerData.id === `GUEST-${myPlayerId}`));
 
-    // Парсим детальную инфу из fullStateJSON
-    let frame = 'none';
-    let title = 'Странник';
-    let wins = 0;
-    let totalBattles = 0;
-    let selectedHeroId = 'panda';
-    let level = 1;
-    let rating = 0;
-    let name = 'Мастер';
-    let avatar = '/assets/images/avatars/panda.webp';
-    let vipLevel = 0;
-    let isVipActive = false;
-
-    let heroLevel = 1;
+    /* ─── Parse ─────────────────────────────────────────────────────── */
+    let frame = 'none', title = 'Странник', wins = 0, totalBattles = 0, selectedHeroId = 'panda';
+    let level = 1, rating = 0, name = 'Мастер', avatar = '/assets/images/avatars/panda.webp';
+    let vipLevel = 0, isVipActive = false, heroLevel = 1, clanName = 'Отсутствует';
+    let ownedHeroesCount = 1, bpLevel = 1, heroTalents: any = {}, inventory: any[] = [];
+    let remoteHeroEquipment: any = null;
 
     if (isMe) {
-        name = store.name || 'Мастер';
-        avatar = resolveAvatarPath(myVkUser?.photo_200 || myVkUser?.photo || store.avatar);
-        level = store.level || 1;
-        rating = store.rating || 0;
-        vipLevel = store.vipLevel || 0;
-        isVipActive = store.isVipActive || false;
-        wins = store.wins || 0;
-        totalBattles = store.totalBattles || 0;
-        selectedHeroId = store.selectedHeroId || 'panda';
-        heroLevel = store.heroes?.[selectedHeroId]?.level || 1;
-        frame = store.frame || 'none';
-        title = store.title || 'Странник';
+        name = store.name || 'Мастер'; avatar = resolveAvatarPath(myVkUser?.photo_200 || myVkUser?.photo || store.avatar);
+        level = store.level || 1; rating = store.rating || 0; vipLevel = store.vipLevel || 0; isVipActive = store.isVipActive || false;
+        wins = store.wins || 0; totalBattles = store.totalBattles || 0; selectedHeroId = store.selectedHeroId || 'panda';
+        heroLevel = store.heroes?.[selectedHeroId]?.level || 1; frame = store.frame || 'none'; title = store.title || 'Странник';
+        clanName = store.clanData?.name || 'Отсутствует'; ownedHeroesCount = store.ownedHeroes?.length || 1; bpLevel = store.bpLevel || 1;
+        heroTalents = store.heroTalents?.[selectedHeroId] || {}; inventory = store.inventory || [];
     } else if (playerData) {
-        name = playerData.name || playerData.имя || 'Мастер';
-        avatar = resolveAvatarPath(playerData.avatar || playerData.фото);
-        level = playerData.level || playerData.уровень || 1;
-        rating = playerData.rating || playerData.рейтинг || 0;
-        vipLevel = playerData.vipLevel || 0;
-        isVipActive = playerData.isVipActive || false;
-        
-        // По умолчанию берём из документа
-        wins = playerData.wins || 0;
-        totalBattles = playerData.totalBattles || 0;
-        selectedHeroId = playerData.hero || 'panda';
-        heroLevel = level;
-
+        name = playerData.name || playerData.имя || 'Мастер'; avatar = resolveAvatarPath(playerData.avatar || playerData.фото);
+        level = playerData.level || playerData.уровень || 1; rating = playerData.rating || playerData.рейтинг || 0;
+        vipLevel = playerData.vipLevel || 0; isVipActive = playerData.isVipActive || false;
+        wins = playerData.wins || 0; totalBattles = playerData.totalBattles || 0; selectedHeroId = playerData.hero || 'panda'; heroLevel = level;
+        clanName = playerData.clanData?.name || (playerData.clanId ? 'В клане' : 'Отсутствует'); inventory = playerData.inventory || [];
         if (playerData.fullStateJSON) {
             try {
-                const parsed = JSON.parse(playerData.fullStateJSON);
-                frame = parsed.frame || frame;
-                title = parsed.title || title;
-                wins = parsed.wins !== undefined ? parsed.wins : wins;
-                totalBattles = parsed.totalBattles !== undefined ? parsed.totalBattles : totalBattles;
-                selectedHeroId = parsed.selectedHeroId || selectedHeroId;
-                
-                if (parsed.avatar) {
-                    avatar = resolveAvatarPath(parsed.avatar);
-                }
-
-                if (parsed.heroes && parsed.heroes[selectedHeroId]) {
-                    heroLevel = parsed.heroes[selectedHeroId].level || heroLevel;
-                }
-            } catch (e) {
-                console.error('[PlayerInspectModal] Failed to parse fullStateJSON', e);
-            }
+                const p = JSON.parse(playerData.fullStateJSON);
+                frame = p.frame || frame; title = p.title || title;
+                wins = p.wins !== undefined ? p.wins : wins; totalBattles = p.totalBattles !== undefined ? p.totalBattles : totalBattles;
+                selectedHeroId = p.selectedHeroId || selectedHeroId;
+                clanName = p.clanData?.name || (p.clanId ? 'В клане' : 'Отсутствует');
+                ownedHeroesCount = p.ownedHeroes?.length || 1; bpLevel = p.bpLevel || 1; inventory = p.inventory || inventory;
+                if (p.avatar) avatar = resolveAvatarPath(p.avatar);
+                if (p.heroes?.[selectedHeroId]) heroLevel = p.heroes[selectedHeroId].level || heroLevel;
+                if (p.heroTalents?.[selectedHeroId]) heroTalents = p.heroTalents[selectedHeroId] || {};
+                if (p.heroEquipment?.[selectedHeroId]) remoteHeroEquipment = p.heroEquipment[selectedHeroId];
+            } catch { /* ignore */ }
         }
     }
 
-    const winRate = totalBattles > 0 ? Math.round((wins / totalBattles) * 100) : 0;
-    const heroConfig = getHeroConfig(selectedHeroId);
-    const rankInfo = getRankInfo(rating);
-
-    const equipmentSource = isMe
-        ? (store.heroEquipment?.[selectedHeroId] || {})
-        : (playerData?.equipment || playerData?.снаряжение || {});
-    const computedStats = buildStatsFromEquipment(selectedHeroId, heroLevel, equipmentSource);
-
-    // Проверяем, есть ли уже в друзьях
+    const winRate      = totalBattles > 0 ? Math.round((wins / totalBattles) * 100) : 0;
+    const heroConfig   = getHeroConfig(selectedHeroId);
+    const rankInfo     = getRankInfo(rating);
+    const equipSrc     = isMe ? (store.heroEquipment?.[selectedHeroId] || {}) : (remoteHeroEquipment || playerData?.equipment || playerData?.снаряжение || {});
+    const cs           = buildStatsFromEquipment(selectedHeroId, heroLevel, equipSrc, 1, inventory, heroTalents);
+    const effectiveVip = vipLevel > 0 || isVipActive;
     const isAlreadyFriend = playerData && myFriends.some((f: any) => f.id === playerData.id);
+    const gearPower    = calculateTotalPower(equipSrc);
+    const heroXp       = isMe ? (store.heroes?.[selectedHeroId]?.xp || 0) : 0;
+    const heroXpToNext = isMe ? (store.heroes?.[selectedHeroId]?.xpToNext || 100) : 100;
+    const xpPct        = Math.min(100, (heroXp / heroXpToNext) * 100);
 
+    // ─── Валюта ────────────────────────────────────────────────────────────
+    let gold = 0, crystals = 0;
+    if (isMe) {
+        gold = store.gold || 0;
+        crystals = store.crystals || 0;
+    } else if (playerData?.fullStateJSON) {
+        try {
+            const p = JSON.parse(playerData.fullStateJSON);
+            gold = p.gold || 0;
+            crystals = p.crystals || 0;
+        } catch { /* ignore */ }
+    } else {
+        gold = playerData?.gold || 0;
+        crystals = playerData?.crystals || 0;
+    }
+
+    /* ─── Stat rows ──────────────────────────────────────────────── */
+    const statRows = [
+        { icon: '❤️', name: 'ЗДОРОВЬЕ', abbr: 'HP',   value: cs.hp,               color: '#f87171', pct: Math.min(100, (cs.hp / 1000) * 100) },
+        { icon: '⚔️', name: 'АТАКА',    abbr: 'ATK',  value: cs.attack,            color: '#fb923c', pct: Math.min(100, (cs.attack / 150) * 100) },
+        { icon: '🛡️', name: 'ЗАЩИТА',   abbr: 'DEF',  value: cs.defense,           color: '#60a5fa', pct: Math.min(100, (cs.defense / 80) * 100) },
+        { icon: '💨', name: 'СКОРОСТЬ', abbr: 'SPD',  value: cs.speed.toFixed(2),  color: '#4ade80', pct: Math.min(100, (cs.speed / 3) * 100) },
+        { icon: '💥', name: 'КРИТ',     abbr: 'CRIT', value: `${Math.round(cs.critChance)}%`, color: '#c084fc', pct: Math.min(100, (cs.critChance / 100) * 100) },
+    ];
+
+    /* ─── Handlers ───────────────────────────────────────────────── */
     const handleAddFriend = async () => {
         if (!playerData || isMe || isAlreadyFriend) return;
         audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
-
-        const store = useGameStore.getState();
-        const prefixedSenderId = SyncService.getPrefixedUserId(store.vkUser, store.playerId);
-        
-        // Уровень берется по выбранному герою
-        const activeHeroId = store.selectedHeroId || 'panda';
-        const activeHeroLevel = store.heroes?.[activeHeroId]?.level || 1;
-
-        const senderData = {
-            id: prefixedSenderId,
-            name: store.name || 'Мастер',
-            avatar: store.avatar,
-            level: activeHeroLevel,
-        };
-
+        const st = useGameStore.getState();
         try {
-            const ok = await syncService.sendFriendRequest(playerData.id, senderData);
-            if (ok && showAlert) {
-                showAlert('Запрос в друзья успешно отправлен!');
-            }
-        } catch (e) {
-            console.error('Failed to send friend request from inspect modal:', e);
-            if (showAlert) showAlert('Не удалось отправить запрос.');
-        }
+            const ok = await syncService.sendFriendRequest(playerData.id, { id: SyncService.getPrefixedUserId(st.vkUser, st.playerId), name: st.name || 'Мастер', avatar: st.avatar, level: st.heroes?.[st.selectedHeroId || 'panda']?.level || 1 });
+            if (ok && showAlert) showAlert('Запрос в друзья успешно отправлен!');
+        } catch { if (showAlert) showAlert('Не удалось отправить запрос.'); }
     };
-
     const handleChallenge = () => {
         if (!playerData) return;
         audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
-
-        const store = useGameStore.getState();
-
-        const oppObj = {
-            id: selectedHeroId,
-            name: name,
-            avatar: avatar,   // real VK photo or in-game avatar
-            rating: rating,
-            level: heroLevel,
-            heroId: selectedHeroId,
-            heroImage: heroConfig.image,
-            rankIcon: getRankInfo(rating).icon,
-            equipment: playerData.equipment || {},
-            stats: {
-                hp: computedStats.hp,
-                attack: computedStats.attack,
-                defense: computedStats.defense,
-                speed: computedStats.speed,
-                crit: computedStats.critChance / 100,
-                evasion: computedStats.evasion,
-                critChance: computedStats.critChance,
-                avgItemLevel: computedStats.avgItemLevel || 1,
-            },
-            winRate: winRate,
-            isBot: false,
-            realUserId: playerData.id,
-            vipLevel: vipLevel,
-        };
-
-        useGameStore.setState({
-            selectedEnemyId: selectedHeroId,
-            battleMode: 'WARMUP',
-            activeRankedOpponent: oppObj,
-            inspectPlayerId: null,
-            inspectPlayerName: null,
-        });
-
-        // Запуск разминочного боя
-        if (store.setScreen) {
-            store.setScreen('BATTLE');
-        }
+        const st = useGameStore.getState();
+        useGameStore.setState({ selectedEnemyId: selectedHeroId, battleMode: 'WARMUP', activeRankedOpponent: { id: selectedHeroId, name, avatar, rating, level: heroLevel, heroId: selectedHeroId, heroImage: heroConfig.image, rankIcon: rankInfo.icon, equipment: equipSrc, stats: { hp: cs.hp, attack: cs.attack, defense: cs.defense, speed: cs.speed, crit: cs.critChance / 100, evasion: cs.evasion, critChance: cs.critChance, avgItemLevel: cs.avgItemLevel || 1 }, winRate, isBot: false, realUserId: playerData.id, vipLevel }, inspectPlayerId: null, inspectPlayerName: null });
+        if (st.setScreen) st.setScreen('BATTLE');
     };
-
-    const handleWritePrivateMessage = () => {
+    const handleWriteMsg = () => {
         if (!playerData) return;
         audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
-        const recipientName = playerData.name || playerData.имя || 'Мастер';
-        useGameStore.setState({
-            chatActiveTab: 'private',
-            chatPrivateRecipient: recipientName,
-            inspectPlayerId: null,
-            inspectPlayerName: null,
-        });
+        useGameStore.setState({ chatActiveTab: 'private', chatPrivateRecipient: playerData.name || 'Мастер', inspectPlayerId: null, inspectPlayerName: null });
     };
 
-    const gold = isMe 
-        ? store.gold 
-        : (playerData ? (playerData.gold !== undefined ? playerData.gold : playerData.золото !== undefined ? playerData.золото : 0) : 0);
-    const crystals = isMe 
-        ? store.crystals 
-        : (playerData ? (playerData.crystals !== undefined ? playerData.crystals : playerData.кристаллы !== undefined ? playerData.кристаллы : 0) : 0);
+    /* ─── Diorama slot ───────────────────────────────────────────── */
+    const renderSlot = (slotKey: string, label: string, side: 'left' | 'right') => {
+        const itemId = equipSrc[slotKey] || null;
+        let item: any = null;
+        if (itemId) { const rid = getTemplateId(String(itemId)); item = ITEMS_DATABASE[rid] as any; }
+        const rc = item ? (rarityColors[item.rarity] || '#f0c040') : null;
+        const icons: Record<string, string> = { HELMETS: AssetsMap.UI.BLUEPRINT_HELMET, SHOULDERS: AssetsMap.UI.BLUEPRINT_SHOULDERS, ARMOR: AssetsMap.UI.BLUEPRINT_ARMOR, PANTS: AssetsMap.UI.BLUEPRINT_PANTS, WEAPONS: AssetsMap.UI.BLUEPRINT_WEAPON, SHIELDS: AssetsMap.UI.BLUEPRINT_SHIELD, BOOTS: AssetsMap.UI.BLUEPRINT_BOOTS };
 
-    const rarityColors: Record<string, string> = {
-        COMMON: '#9ca3af',
-        UNCOMMON: '#4ade80',
-        RARE: '#3b82f6',
-        EPIC: '#a855f7',
-        MYTHIC: '#ef4444',
-        LEGENDARY: '#eab308',
-    };
+        const iconBox = (
+            <div className="d-slot" style={{ width: '68px', height: '68px', borderRadius: '8px', flexShrink: 0, background: item ? 'radial-gradient(circle at 40% 30%, rgba(50,36,20,0.98) 0%, rgba(10,7,4,1) 100%)' : 'rgba(0,0,0,0.42)', border: `2px solid ${rc ? rc + 'bb' : 'rgba(240,192,64,0.3)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: rc ? `0 0 12px ${rc}44, inset 0 0 8px rgba(0,0,0,0.5)` : 'inset 0 0 8px rgba(0,0,0,0.5)', position: 'relative', overflow: 'hidden' }}>
+                {rc && <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '2px', background: `linear-gradient(90deg, transparent, ${rc}, transparent)` }} />}
+                {item ? (item.spriteClass ? <div className={item.spriteClass} style={{ width: '56px', height: '56px' }} /> : <img src={resolveAssetPath(item.image)} style={{ width: '74%', height: '74%', objectFit: 'contain' }} alt="" />) : <img src={icons[slotKey] || ''} style={{ width: '50%', height: '50%', objectFit: 'contain', opacity: 0.18, filter: 'grayscale(1)' }} alt="" />}
+            </div>
+        );
 
-    const RARITY_RU: Record<string, string> = {
-        COMMON: 'Обычный',
-        UNCOMMON: 'Необычный',
-        RARE: 'Редкий',
-        EPIC: 'Эпический',
-        MYTHIC: 'Мифический',
-        LEGENDARY: 'Легендарный',
-    };
-
-    const renderGearCard = (slotKey: string, slotLabel: string) => {
-        if (!playerData) return null;
-        const itemId = isMe
-            ? store.heroEquipment?.[selectedHeroId]?.[slotKey]
-            : (playerData?.equipment?.[slotKey] || playerData?.снаряжение?.[slotKey] || null);
-
-        let itemData = null;
-        if (itemId) {
-            const resolvedId = getTemplateId(String(itemId));
-            itemData = ITEMS_DATABASE[resolvedId] as any;
-        }
-
-        const rarityColor = itemData ? rarityColors[itemData.rarity] || '#f0c040' : '#444';
-
-        const getPlaceholderIcon = () => {
-            switch (slotKey) {
-                case 'HELMETS': return AssetsMap.UI.BLUEPRINT_HELMET;
-                case 'SHOULDERS': return AssetsMap.UI.BLUEPRINT_SHOULDERS;
-                case 'ARMOR': return AssetsMap.UI.BLUEPRINT_ARMOR;
-                case 'PANTS': return AssetsMap.UI.BLUEPRINT_PANTS;
-                case 'WEAPONS': return AssetsMap.UI.BLUEPRINT_WEAPON;
-                case 'SHIELDS': return AssetsMap.UI.BLUEPRINT_SHIELD;
-                case 'BOOTS': return AssetsMap.UI.BLUEPRINT_BOOTS;
-                default: return '';
-            }
-        };
+        const txt = (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '5px', justifyContent: side === 'right' ? 'flex-start' : 'flex-end', minWidth: 0 }}>
+                {side === 'right' && <><Diamond size={7} /><div style={{ width: '14px', height: '1px', background: 'rgba(240,192,64,0.3)', flexShrink: 0 }} /></>}
+                <div style={{ textAlign: side === 'right' ? 'left' : 'right', minWidth: 0 }}>
+                    <div style={{ fontSize: '10px', color: '#c8921e', fontWeight: 800, letterSpacing: '0.8px', textTransform: 'uppercase', fontFamily: "'Cinzel', serif", whiteSpace: 'nowrap' }}>{label}</div>
+                    <div style={{ fontSize: '10px', fontWeight: 700, color: rc ?? 'rgba(255,255,255,0.18)', fontStyle: item ? 'normal' : 'italic', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '88px', marginTop: '1px' }}>
+                        {item ? (item.name.length > 12 ? item.name.slice(0, 12) + '…' : item.name) : 'Пусто'}
+                    </div>
+                    {item && <div style={{ fontSize: '8px', color: rc || '#f0c040', fontWeight: 700, opacity: 0.8, textAlign: side === 'right' ? 'left' : 'right' }}>{RARITY_RU[item.rarity] || ''}</div>}
+                </div>
+                {side === 'left' && <><div style={{ width: '14px', height: '1px', background: 'rgba(240,192,64,0.3)', flexShrink: 0 }} /><Diamond size={7} /></>}
+            </div>
+        );
 
         return (
-            <div style={{
-                background: 'rgba(255,255,255,0.02)',
-                border: `1.5px solid ${itemData ? rarityColor + '33' : 'rgba(255,255,255,0.05)'}`,
-                borderRadius: '12px',
-                padding: '8px 12px',
-                height: '94px',
-                boxSizing: 'border-box',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                boxShadow: itemData ? `0 4px 12px rgba(0,0,0,0.5), inset 0 0 10px ${rarityColor}11` : 'none',
-            }}>
-                <div style={{
-                    width: '50px',
-                    height: '50px',
-                    borderRadius: '8px',
-                    background: itemData
-                        ? `radial-gradient(circle at 50% 30%, rgba(40, 32, 24, 0.95) 0%, rgba(14, 10, 8, 0.98) 100%)`
-                        : 'radial-gradient(circle at 50% 30%, rgba(28, 22, 17, 0.92) 0%, rgba(12, 9, 7, 0.97) 100%)',
-                    border: `1.5px solid ${itemData ? rarityColor : 'rgba(240,192,64,0.15)'}`,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    position: 'relative',
-                    flexShrink: 0,
-                    boxShadow: itemData ? `0 0 10px ${rarityColor}33` : 'none',
-                }}>
-                    {itemData ? (
-                        itemData.spriteClass ? (
-                            <div className={itemData.spriteClass} style={{ width: '44px', height: '44px', borderRadius: '6px' }} />
-                        ) : (
-                            <img
-                                src={resolveAssetPath(itemData.image)}
-                                style={{ width: '70%', height: '70%', objectFit: 'contain' }}
-                                alt=""
-                            />
-                        )
-                    ) : (
-                        <img
-                            src={getPlaceholderIcon()}
-                            style={{
-                                width: '50%',
-                                height: '50%',
-                                objectFit: 'contain',
-                                filter: 'sepia(0.9) brightness(0.8) opacity(0.4)',
-                            }}
-                            alt=""
-                        />
-                    )}
-                </div>
-
-                <div style={{ textAlign: 'left', flex: 1, overflow: 'hidden' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2px' }}>
-                        <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', fontWeight: 800 }}>{slotLabel}</span>
-                        {itemData && (
-                            <span style={{ fontSize: '9px', color: rarityColor, fontWeight: 900, textTransform: 'uppercase' }}>
-                                {RARITY_RU[itemData.rarity] || itemData.rarity}
-                            </span>
-                        )}
-                    </div>
-                    <div style={{
-                        fontSize: '13.5px',
-                        fontWeight: 800,
-                        color: itemData ? '#fff' : 'rgba(255,255,255,0.3)',
-                        whiteSpace: 'nowrap',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                    }}>
-                        {itemData ? itemData.name : 'Пусто'}
-                    </div>
-                    {itemData && (
-                        <div style={{
-                            display: 'flex',
-                            flexWrap: 'wrap',
-                            gap: '4px 8px',
-                            fontSize: '11.5px',
-                            fontWeight: 800,
-                            marginTop: '4px',
-                            fontFamily: 'system-ui, -apple-system, sans-serif'
-                        }}>
-                            {itemData.hpBonus && (
-                                <span style={{ color: '#ff6b6b', display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
-                                    ❤️ +{itemData.hpBonus}
-                                </span>
-                            )}
-                            {itemData.attackBonus && (
-                                <span style={{ color: '#c084fc', display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
-                                    ⚔️ +{itemData.attackBonus}
-                                </span>
-                            )}
-                            {itemData.defenseBonus && (
-                                <span style={{ color: '#60a5fa', display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
-                                    🛡️ +{itemData.defenseBonus}
-                                </span>
-                            )}
-                            {(itemData.critBonus || itemData.critChance) && (
-                                <span style={{ color: '#fbbf24', display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
-                                    💥 +{Math.round((itemData.critBonus || itemData.critChance) <= 1 ? (itemData.critBonus || itemData.critChance) * 100 : (itemData.critBonus || itemData.critChance))}%
-                                </span>
-                            )}
-                        </div>
-                    )}
-                </div>
+            <div key={slotKey} style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: side === 'left' ? 'flex-start' : 'flex-end' }}>
+                {side === 'left' ? <>{iconBox}{txt}</> : <>{txt}{iconBox}</>}
             </div>
         );
     };
 
-    const renderPowerCard = () => {
-        const gearPower = calculateTotalPower(playerData?.equipment || playerData?.снаряжение || {});
-
-        return (
-            <div style={{
-                background: 'linear-gradient(135deg, rgba(240,192,64,0.06) 0%, rgba(168,128,32,0.15) 100%)',
-                border: '1.5px solid #f0c040',
-                borderRadius: '12px',
-                padding: '6px 12px',
-                height: '104px',
-                boxSizing: 'border-box',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                boxShadow: '0 4px 12px rgba(240,192,64,0.15), inset 0 0 15px rgba(240,192,64,0.1)',
-            }}>
-                <div style={{
-                    width: '44px',
-                    height: '44px',
-                    borderRadius: '8px',
-                    background: 'radial-gradient(circle, rgba(240,192,64,0.2) 0%, rgba(0,0,0,0.5) 100%)',
-                    border: '1.5px solid #f0c040',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    flexShrink: 0,
-                    boxShadow: '0 0 8px rgba(240,192,64,0.3)',
-                }}>
-                    <img
-                        src={resolveAssetPath(AssetsMap.UI.ICON_POWER)}
-                        style={{ width: '60%', height: '60%', objectFit: 'contain' }}
-                        alt="power"
-                    />
-                </div>
-
-                <div style={{ textAlign: 'left', flex: 1 }}>
-                    <div style={{ fontSize: '10.5px', color: '#f0c040', fontWeight: 800 }}>БОЕВАЯ МОЩЬ</div>
-                    <div style={{ fontSize: '22px', fontWeight: 900, color: '#fff', fontFamily: "'Cinzel', serif", textShadow: '0 2px 4px rgba(0,0,0,0.6)', lineHeight: '1.1' }}>
-                        {gearPower.toLocaleString()}
-                    </div>
-                    <div style={{ fontSize: '9.5px', color: 'rgba(255,255,255,0.45)', fontWeight: 700, marginTop: '2px', whiteSpace: 'nowrap' }}>
-                        Герой: 0 | Снаряж: +{gearPower.toLocaleString()}
-                    </div>
-                </div>
-            </div>
-        );
-    };
-
-    const renderStatsSummaryCard = () => {
-        let totalHp = 0;
-        let totalAtk = 0;
-        let totalDef = 0;
-        let totalCrit = 0;
-
-        const eq = playerData?.equipment || playerData?.снаряжение || {};
-        Object.values(eq).forEach((itemId) => {
-            if (!itemId) return;
-            const resolvedId = getTemplateId(String(itemId));
-            const item = ITEMS_DATABASE[resolvedId] as any;
-            if (!item) return;
-            if (item.hpBonus) totalHp += item.hpBonus;
-            if (item.attackBonus) totalAtk += item.attackBonus;
-            if (item.defenseBonus) totalDef += item.defenseBonus;
-            const rawCrit = item.critBonus || 0;
-            if (rawCrit) {
-                totalCrit += rawCrit <= 1 ? rawCrit * 100 : rawCrit;
-            }
-        });
-
-        return (
-            <div style={{
-                background: 'rgba(255,255,255,0.02)',
-                border: '1.5px solid rgba(240,192,64,0.15)',
-                borderRadius: '12px',
-                padding: '8px 12px',
-                height: '94px',
-                boxSizing: 'border-box',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'center',
-                textAlign: 'left',
-                gap: '2px',
-                boxShadow: 'inset 0 0 10px rgba(0,0,0,0.3)',
-            }}>
-                <div style={{ fontSize: '10px', color: '#f0c040', fontWeight: 800, textTransform: 'uppercase', marginBottom: '1px' }}>
-                    БОНУСЫ ЭКИПИРОВКИ
-                </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px 10px' }}>
-                    <div style={{ fontSize: '11.5px', color: totalHp > 0 ? '#4ade80' : 'rgba(255,255,255,0.2)', fontWeight: 700 }}>
-                        HP: {totalHp > 0 ? `+${totalHp}` : '0'}
-                    </div>
-                    <div style={{ fontSize: '11.5px', color: totalAtk > 0 ? '#4ade80' : 'rgba(255,255,255,0.2)', fontWeight: 700 }}>
-                        ATK: {totalAtk > 0 ? `+${totalAtk}` : '0'}
-                    </div>
-                    <div style={{ fontSize: '11.5px', color: totalDef > 0 ? '#4ade80' : 'rgba(255,255,255,0.2)', fontWeight: 700 }}>
-                        DEF: {totalDef > 0 ? `+${totalDef}` : '0'}
-                    </div>
-                    <div style={{ fontSize: '11.5px', color: totalCrit > 0 ? '#4ade80' : 'rgba(255,255,255,0.2)', fontWeight: 700 }}>
-                        CRIT: {totalCrit > 0 ? `+${Math.round(totalCrit)}%` : '0%'}
-                    </div>
-                </div>
-            </div>
-        );
-    };
-
+    /* ══════════════════════════════════════════════════════════════════ */
+    /* RENDER                                                             */
+    /* ══════════════════════════════════════════════════════════════════ */
     return (
-        <div
-            style={{
-                position: 'fixed',
-                inset: 0,
-                background: 'rgba(0,0,0,0.55)',
-                backdropFilter: 'blur(8px)',
-                zIndex: 100000,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                pointerEvents: 'auto',
-            }}
-            onClick={handleClose}
-        >
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.72)', backdropFilter: 'blur(12px)', zIndex: 100000, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'auto', padding: '12px' }} onClick={handleClose}>
+            <style>{GLOBAL_STYLES}</style>
+
             <motion.div
-                initial={{ scale: 0.92, opacity: 0, y: 15 }}
+                initial={{ scale: 0.88, opacity: 0, y: 24 }}
                 animate={{ scale: 1, opacity: 1, y: 0 }}
-                exit={{ scale: 0.92, opacity: 0, y: 15 }}
+                exit={{ scale: 0.88, opacity: 0, y: 24 }}
+                transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
                 onClick={(e) => e.stopPropagation()}
                 style={{
-                    width: '880px',
-                    background: 'radial-gradient(circle at center, #231c15 0%, #120e0a 100%)',
-                    border: '2px solid #f0c040',
-                    borderRadius: '24px',
-                    padding: '30px',
-                    boxShadow: '0 20px 60px rgba(0,0,0,0.95), inset 0 0 30px rgba(240,192,64,0.12)',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    position: 'relative',
+                    width: '100%',
+                    maxWidth: '1020px',
+                    /* ★ ФИКСИРОВАННАЯ ВЫСОТА — окно не прыгает при смене вкладок */
+                    height: 'min(88vh, 700px)',
+                    background: 'linear-gradient(158deg, #231b0e 0%, #160f09 48%, #0e0804 100%)',
+                    border: '2px solid rgba(240,192,64,0.42)',
+                    borderRadius: '22px',
+                    boxShadow: '0 32px 100px rgba(0,0,0,0.98), 0 0 0 1px rgba(255,255,255,0.03), inset 0 1px 0 rgba(255,255,255,0.05)',
+                    display: 'flex', flexDirection: 'column',
+                    position: 'relative', overflow: 'hidden',
                 }}
             >
-                <style>{`
-                    .inspect-scrollbar::-webkit-scrollbar {
-                        width: 6px;
-                        height: 6px;
-                    }
-                    .inspect-scrollbar::-webkit-scrollbar-track {
-                        background: rgba(0, 0, 0, 0.2);
-                        border-radius: 3px;
-                    }
-                    .inspect-scrollbar::-webkit-scrollbar-thumb {
-                        background: #f0c040;
-                        border-radius: 3px;
-                    }
-                    .inspect-scrollbar::-webkit-scrollbar-thumb:hover {
-                        background: #ffe880;
-                    }
-                `}</style>
+                {/* Gold top stripe */}
+                <div style={{ position: 'absolute', top: 0, left: '6%', right: '6%', height: '2px', background: 'linear-gradient(90deg, transparent, rgba(240,192,64,0.85) 35%, #fff9c0 50%, rgba(240,192,64,0.85) 65%, transparent)', borderRadius: '1px', zIndex: 2 }} />
 
-                {/* Close Button */}
-                <button
-                    onClick={handleClose}
-                    style={{
-                        position: 'absolute',
-                        top: '18px',
-                        right: '18px',
-                        background: 'none',
-                        border: 'none',
-                        color: 'rgba(255,255,255,0.4)',
-                        fontSize: '28px',
-                        fontWeight: 300,
-                        cursor: 'pointer',
-                        lineHeight: 1,
-                        transition: 'color 0.2s',
-                        zIndex: 10,
-                    }}
-                    onMouseEnter={(e) => (e.currentTarget.style.color = '#fff')}
-                    onMouseLeave={(e) => (e.currentTarget.style.color = 'rgba(255,255,255,0.4)')}
-                >
-                    &times;
-                </button>
+                {/* Close btn */}
+                <button onClick={handleClose} style={{ position: 'absolute', top: '12px', right: '12px', zIndex: 20, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'rgba(255,255,255,0.4)', fontSize: '18px', cursor: 'pointer', width: '30px', height: '30px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0, transition: 'all .15s' }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(200,50,50,0.22)'; e.currentTarget.style.color = '#ff9090'; e.currentTarget.style.borderColor = 'rgba(200,50,50,0.4)'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = 'rgba(255,255,255,0.4)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; }}
+                >×</button>
 
-                {loading ? (
-                    <div style={{ padding: '80px 0', color: '#f0c040', fontWeight: 800, fontFamily: "'Cinzel', serif" }}>
-                        ЗАГРУЗКА ДАННЫХ...
+                {/* ══════════════════════════════════════════════════════ */}
+                {/* ГОРИЗОНТАЛЬНАЯ ШАПКА — баланс верх/низ                */}
+                {/* ══════════════════════════════════════════════════════ */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0', padding: '14px 20px 12px', background: 'linear-gradient(180deg, rgba(65,44,18,0.5) 0%, rgba(16,11,6,0.0) 100%)', flexShrink: 0, borderBottom: '1px solid rgba(240,192,64,0.14)', minHeight: '100px' }}>
+
+                    {/* LEFT: Аватар */}
+                    <div style={{ flexShrink: 0, position: 'relative', marginRight: '18px' }}>
+                        <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: '120px', height: '120px', borderRadius: '50%', background: effectiveVip ? 'radial-gradient(circle, rgba(240,192,64,0.18) 0%, transparent 65%)' : 'radial-gradient(circle, rgba(180,140,80,0.08) 0%, transparent 65%)', pointerEvents: 'none' }} />
+                        {loading || !playerData
+                            ? <div style={{ width: 90, height: 90, borderRadius: '50%', background: 'rgba(0,0,0,0.4)', border: '2px solid rgba(240,192,64,0.2)' }} />
+                            : <AvatarFrame avatarFilename={avatar} frameFilename={frame} size={90} showGlow={effectiveVip} />
+                        }
                     </div>
-                ) : error ? (
-                    <div style={{ padding: '60px 0' }}>
-                        <div style={{ color: '#ff4444', fontWeight: 800, marginBottom: '20px' }}>{error}</div>
+
+                    {/* CENTER: Имя + Титул + Badge уровня */}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                        {loading ? (
+                            <div style={{ color: '#f0c040', fontWeight: 800, fontFamily: "'Cinzel', serif", letterSpacing: '2px', fontSize: '13px' }}>ЗАГРУЗКА...</div>
+                        ) : error ? (
+                            <div style={{ color: '#ff5555', fontWeight: 800, fontSize: '15px' }}>{error}</div>
+                        ) : playerData ? (
+                            <>
+                                {/* Имя + VIP */}
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' }}>
+                                    <span style={{ color: '#fff', fontSize: '26px', fontWeight: 900, fontFamily: "'Cinzel', serif", letterSpacing: '0.5px', textShadow: '0 2px 12px rgba(0,0,0,0.9)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '340px' }}>{name}</span>
+                                    {effectiveVip && (
+                                        <div className="vip-a" style={{ position: 'relative', width: '48px', height: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                            <img src={resolveAssetPath(AssetsMap.UI.VIP_PLAQUE)} style={{ position: 'absolute', width: '100%', height: '100%', objectFit: 'contain', filter: 'drop-shadow(0 1px 5px rgba(240,192,64,0.6))' }} alt="" />
+                                            <span style={{ position: 'relative', fontSize: '7.5px', fontWeight: 900, color: '#fff', fontFamily: "'Cinzel', serif", zIndex: 1 }}>VIP</span>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Титул */}
+                                <div style={{ color: '#b08848', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '2.5px', marginBottom: '8px' }}>{title}</div>
+
+                                {/* Нижняя строка: Level Badge + Быстрые факты */}
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                                    {/* Level badge компактный */}
+                                    <div style={{ position: 'relative', overflow: 'hidden', borderRadius: '20px', flexShrink: 0 }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'linear-gradient(180deg, rgba(55,38,16,0.97) 0%, rgba(22,15,6,0.99) 100%)', border: '1px solid rgba(240,192,64,0.5)', borderRadius: '20px', padding: '3px 12px 3px 8px', boxShadow: '0 2px 10px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.07)', position: 'relative' }}>
+                                            <div className="bdg-sh" style={{ position: 'absolute', inset: 0, borderRadius: '20px', pointerEvents: 'none' }} />
+                                            <span style={{ fontSize: '10px', color: '#d4a030', filter: 'drop-shadow(0 0 4px rgba(240,192,64,0.7))', position: 'relative' }}>✦</span>
+                                            <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', position: 'relative' }}>
+                                                <span style={{ fontSize: '6.5px', color: 'rgba(200,160,80,0.6)', fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase' }}>УР.</span>
+                                                <span style={{ fontSize: '18px', fontWeight: 900, color: '#fde68a', fontFamily: "'Cinzel', serif", textShadow: '0 0 14px rgba(240,192,64,0.55), 0 2px 4px rgba(0,0,0,0.9)', lineHeight: 1 }}>{level}</span>
+                                            </div>
+                                            <span style={{ fontSize: '10px', color: '#d4a030', filter: 'drop-shadow(0 0 4px rgba(240,192,64,0.7))', position: 'relative' }}>✦</span>
+                                        </div>
+                                    </div>
+
+                                    {/* Золото */}
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px', background: 'rgba(240,192,64,0.09)', border: '1px solid rgba(240,192,64,0.28)', borderRadius: '16px', padding: '3px 11px', flexShrink: 0 }}>
+                                        <span style={{ fontSize: '14px', lineHeight: 1 }}>💰</span>
+                                        <span style={{ fontSize: '13px', fontWeight: 900, color: '#fde68a', fontFamily: "'Outfit', sans-serif" }}>{gold.toLocaleString()}</span>
+                                        <span style={{ fontSize: '8.5px', color: 'rgba(255,255,255,0.28)', fontWeight: 700, letterSpacing: '0.3px' }}>ЗОЛОТО</span>
+                                    </div>
+
+                                    {/* Кристаллы */}
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px', background: 'rgba(147,51,234,0.1)', border: '1px solid rgba(147,51,234,0.3)', borderRadius: '16px', padding: '3px 11px', flexShrink: 0 }}>
+                                        <span style={{ fontSize: '14px', lineHeight: 1 }}>💎</span>
+                                        <span style={{ fontSize: '13px', fontWeight: 900, color: '#d8b4fe', fontFamily: "'Outfit', sans-serif" }}>{crystals.toLocaleString()}</span>
+                                        <span style={{ fontSize: '8.5px', color: 'rgba(255,255,255,0.28)', fontWeight: 700, letterSpacing: '0.3px' }}>КРИСТАЛЛЫ</span>
+                                    </div>
+                                </div>
+                            </>
+                        ) : null}
                     </div>
-                ) : !playerData ? (
-                    <div style={{ color: '#fff', opacity: 0.6 }}>Нет данных для отображения</div>
-                ) : (
-                    <>
-                        {/* АВАТАР И РАМКА */}
-                        <div style={{ marginBottom: '15px' }}>
-                            <AvatarFrame avatarFilename={avatar} frameFilename={frame} size={130} showGlow />
+
+                    {/* Ранг убран — он отображается в разделе Статистика вкладки Общая информация */}
+                </div>
+
+                {/* ══════════════════════════════════════════════════════ */}
+                {/* BODY — занимает всё оставшееся место                  */}
+                {/* ══════════════════════════════════════════════════════ */}
+                {!loading && !error && playerData && (
+                    <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, padding: '12px 22px 16px', gap: '10px', overflow: 'hidden' }}>
+
+                        {/* Tabs */}
+                        <div style={{ display: 'flex', background: 'rgba(8,5,3,0.75)', borderRadius: '12px', border: '1px solid rgba(240,192,64,0.14)', padding: '3px', gap: '4px', flexShrink: 0, boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.7)' }}>
+                            {(['info', 'gear'] as const).map((tab) => {
+                                const active = activeTab === tab;
+                                return (
+                                    <button key={tab} onClick={() => { audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK); setTab(tab); }}
+                                        style={{ flex: 1, padding: '9px 0', background: active ? 'linear-gradient(180deg, #ffe880 0%, #f0c040 50%, #9a7010 100%)' : 'transparent', border: `1px solid ${active ? '#ffe080' : 'transparent'}`, borderRadius: '9px', color: active ? '#140900' : 'rgba(255,255,255,0.42)', fontWeight: 900, fontSize: '11.5px', cursor: 'pointer', transition: 'all .22s ease', fontFamily: "'Cinzel', serif", letterSpacing: '1.2px', boxShadow: active ? '0 2px 14px rgba(240,192,64,0.3), inset 0 1px 0 rgba(255,255,255,0.3)' : 'none', textShadow: active ? '0 1px 0 rgba(255,255,255,0.3)' : 'none', whiteSpace: 'nowrap' }}
+                                        onMouseEnter={(e) => { if (!active) { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = 'rgba(255,255,255,0.75)'; }}}
+                                        onMouseLeave={(e) => { if (!active) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'rgba(255,255,255,0.42)'; }}}
+                                    >{tab === 'info' ? 'ОБЩАЯ ИНФОРМАЦИЯ' : 'ЭКИПИРОВКА'}</button>
+                                );
+                            })}
                         </div>
 
-                        {/* НИКНЕЙМ, VIP И ТИТУЛ */}
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '2px' }}>
-                            <span style={{ color: '#fff', fontSize: '24px', fontWeight: 900, fontFamily: "'Cinzel', serif" }}>
-                                {name}
-                            </span>
-                            {vipLevel > 0 && isVipActive && (
-                                <div
-                                    style={{
-                                        backgroundImage: `url(${resolveAssetPath(AssetsMap.UI.VIP_PLAQUE)})`,
-                                        backgroundSize: '100% 100%',
-                                        backgroundPosition: 'center',
-                                        width: '45px',
-                                        height: '18px',
-                                        color: '#fff',
-                                        fontWeight: 900,
-                                        fontFamily: "'Cinzel', 'Philosopher', serif",
-                                        fontSize: '9px',
-                                        letterSpacing: '0.5px',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        textShadow: '0 1px 3px rgba(0,0,0,0.8)',
-                                        flexShrink: 0,
-                                    }}
-                                >
-                                    VIP
-                                </div>
-                            )}
-                        </div>
+                        {/* ★ Tab content — одинаковая высота для обеих вкладок */}
+                        <div style={{ flex: 1, minHeight: 0, position: 'relative' }}>
+                            <AnimatePresence mode="wait" initial={false}>
 
-                        <div style={{ color: '#c8a870', fontSize: '13px', fontWeight: 700, marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '1px' }}>
-                            {title}
-                        </div>
-                        <div style={{ color: '#fcd34d', fontSize: '14px', fontWeight: 800, marginBottom: '10px' }}>
-                            Уровень аккаунта: {level}
-                        </div>
-
-                        {/* РЕСУРСЫ (ЗОЛОТО И АЛМАЗЫ) */}
-                        <div style={{ display: 'flex', gap: '15px', marginBottom: '20px' }}>
-                            <div style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '6px',
-                                background: 'rgba(0,0,0,0.3)',
-                                border: '1px solid rgba(240,192,64,0.15)',
-                                borderRadius: '12px',
-                                padding: '6px 14px',
-                                boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.6)',
-                            }}>
-                                <img
-                                    src={resolveAssetPath(AssetsMap.UI.ICON_GOLD_FULL)}
-                                    style={{ width: '20px', height: '20px', objectFit: 'contain' }}
-                                    alt="gold"
-                                />
-                                <span style={{ color: '#fff', fontSize: '14px', fontWeight: 900, fontFamily: "'Outfit', sans-serif" }}>
-                                    {gold.toLocaleString()}
-                                </span>
-                            </div>
-                            <div style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '6px',
-                                background: 'rgba(0,0,0,0.3)',
-                                border: '1px solid rgba(240,192,64,0.15)',
-                                borderRadius: '12px',
-                                padding: '6px 14px',
-                                boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.6)',
-                            }}>
-                                <img
-                                    src={resolveAssetPath(AssetsMap.UI.ICON_ALMAZ_FULL)}
-                                    style={{ width: '20px', height: '20px', objectFit: 'contain' }}
-                                    alt="diamonds"
-                                />
-                                <span style={{ color: '#fff', fontSize: '14px', fontWeight: 900, fontFamily: "'Outfit', sans-serif" }}>
-                                    {crystals.toLocaleString()}
-                                </span>
-                            </div>
-                        </div>
-
-                        {/* НАВИГАЦИЯ ВКЛАДОК */}
-                        <div style={{
-                            display: 'flex',
-                            width: '100%',
-                            background: 'rgba(20, 15, 10, 0.65)',
-                            borderRadius: '16px',
-                            border: '1.5px solid rgba(240, 192, 64, 0.25)',
-                            padding: '4px',
-                            marginBottom: '20px',
-                            gap: '8px',
-                            boxShadow: 'inset 0 2px 10px rgba(0, 0, 0, 0.8), 0 4px 15px rgba(0, 0, 0, 0.5)',
-                        }}>
-                            <button
-                                onClick={() => {
-                                    audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
-                                    setActiveTab('info');
-                                }}
-                                style={{
-                                    flex: 1,
-                                    padding: '12px 0',
-                                    background: activeTab === 'info'
-                                        ? 'linear-gradient(180deg, #ffe880 0%, #f0c040 40%, #b08010 100%)'
-                                        : 'rgba(255,255,255,0.02)',
-                                    border: `1.5px solid ${activeTab === 'info' ? '#ffe880' : 'rgba(240, 192, 64, 0.1)'}`,
-                                    borderRadius: '12px',
-                                    color: activeTab === 'info' ? '#000' : 'rgba(255, 255, 255, 0.6)',
-                                    fontWeight: 900,
-                                    fontSize: '13px',
-                                    cursor: 'pointer',
-                                    transition: 'all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)',
-                                    fontFamily: "'Cinzel', serif",
-                                    letterSpacing: '1.5px',
-                                    boxShadow: activeTab === 'info'
-                                        ? '0 0 15px rgba(240, 192, 64, 0.45), inset 0 1px 2px rgba(255,255,255,0.4)'
-                                        : 'none',
-                                    textShadow: activeTab === 'info' ? '0 1px 1px rgba(255,255,255,0.5)' : 'none',
-                                }}
-                                onMouseEnter={(e) => {
-                                    if (activeTab !== 'info') {
-                                        e.currentTarget.style.background = 'rgba(255, 255, 255, 0.07)';
-                                        e.currentTarget.style.color = '#fff';
-                                        e.currentTarget.style.borderColor = 'rgba(240, 192, 64, 0.35)';
-                                        e.currentTarget.style.boxShadow = '0 0 10px rgba(240, 192, 64, 0.15)';
-                                    }
-                                }}
-                                onMouseLeave={(e) => {
-                                    if (activeTab !== 'info') {
-                                        e.currentTarget.style.background = 'rgba(255,255,255,0.02)';
-                                        e.currentTarget.style.color = 'rgba(255, 255, 255, 0.6)';
-                                        e.currentTarget.style.borderColor = 'rgba(240, 192, 64, 0.1)';
-                                        e.currentTarget.style.boxShadow = 'none';
-                                    }
-                                }}
-                            >
-                                ОБЩАЯ ИНФОРМАЦИЯ
-                            </button>
-                            <button
-                                onClick={() => {
-                                    audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
-                                    setActiveTab('gear');
-                                }}
-                                style={{
-                                    flex: 1,
-                                    padding: '12px 0',
-                                    background: activeTab === 'gear'
-                                        ? 'linear-gradient(180deg, #ffe880 0%, #f0c040 40%, #b08010 100%)'
-                                        : 'rgba(255,255,255,0.02)',
-                                    border: `1.5px solid ${activeTab === 'gear' ? '#ffe880' : 'rgba(240, 192, 64, 0.1)'}`,
-                                    borderRadius: '12px',
-                                    color: activeTab === 'gear' ? '#000' : 'rgba(255, 255, 255, 0.6)',
-                                    fontWeight: 900,
-                                    fontSize: '13px',
-                                    cursor: 'pointer',
-                                    transition: 'all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)',
-                                    fontFamily: "'Cinzel', serif",
-                                    letterSpacing: '1.5px',
-                                    boxShadow: activeTab === 'gear'
-                                        ? '0 0 15px rgba(240, 192, 64, 0.45), inset 0 1px 2px rgba(255,255,255,0.4)'
-                                        : 'none',
-                                    textShadow: activeTab === 'gear' ? '0 1px 1px rgba(255,255,255,0.5)' : 'none',
-                                }}
-                                onMouseEnter={(e) => {
-                                    if (activeTab !== 'gear') {
-                                        e.currentTarget.style.background = 'rgba(255, 255, 255, 0.07)';
-                                        e.currentTarget.style.color = '#fff';
-                                        e.currentTarget.style.borderColor = 'rgba(240, 192, 64, 0.35)';
-                                        e.currentTarget.style.boxShadow = '0 0 10px rgba(240, 192, 64, 0.15)';
-                                    }
-                                }}
-                                onMouseLeave={(e) => {
-                                    if (activeTab !== 'gear') {
-                                        e.currentTarget.style.background = 'rgba(255,255,255,0.02)';
-                                        e.currentTarget.style.color = 'rgba(255, 255, 255, 0.6)';
-                                        e.currentTarget.style.borderColor = 'rgba(240, 192, 64, 0.1)';
-                                        e.currentTarget.style.boxShadow = 'none';
-                                    }
-                                }}
-                            >
-                                ЭКИПИРОВКА
-                            </button>
-                        </div>
-
-                        {/* СОДЕРЖИМОЕ ВКЛАДОК */}
-                        {activeTab === 'info' ? (
-                            <div style={{ width: '100%', height: '410px', overflow: 'hidden' }}>
-                                {/* ЛЮБИМЫЙ ПЕРСОНАЖ */}
-                                <div
-                                    style={{
-                                        width: '100%',
-                                        background: 'rgba(0,0,0,0.35)',
-                                        borderRadius: '16px',
-                                        border: '1px solid rgba(240,192,64,0.15)',
-                                        padding: '12px 15px',
-                                        marginBottom: '10px',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: '15px',
-                                    }}
-                                >
-                                    <img
-                                        src={resolveAssetPath(heroConfig.image)}
-                                        style={{
-                                            width: '82px',
-                                            height: '82px',
-                                            objectFit: 'contain',
-                                            filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.6))',
-                                        }}
-                                        alt={heroConfig.name}
-                                    />
-                                    <div style={{ textAlign: 'left' }}>
-                                        <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                                            Любимый Персонаж
-                                        </div>
-                                        <div style={{ color: '#fff', fontSize: '20px', fontWeight: 800, fontFamily: "'Cinzel', serif" }}>
-                                            {heroConfig.name} <span style={{ color: '#fcd34d', fontSize: '16px', fontWeight: 700 }}>• Ур. {heroLevel}</span>
-                                        </div>
-                                        <div style={{ color: '#c8a870', fontSize: '13px', opacity: 0.8 }}>
-                                            {heroConfig.title} • {heroConfig.role === 'TANK' ? 'Танк' : heroConfig.role === 'ASSASSIN' ? 'Убийца' : heroConfig.role === 'MAGE' ? 'Маг' : heroConfig.role === 'SUPPORT' ? 'Поддержка' : 'Боец'}
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* ХАРАКТЕРИСТИКИ */}
-                                <div
-                                    style={{
-                                        width: '100%',
-                                        background: 'rgba(0,0,0,0.25)',
-                                        border: '1px solid rgba(240,192,64,0.1)',
-                                        borderRadius: '16px',
-                                        padding: '10px 15px',
-                                        marginBottom: '10px',
-                                        boxShadow: 'inset 0 0 15px rgba(0,0,0,0.4)',
-                                    }}
-                                >
-                                    <div style={{
-                                        fontSize: '13px',
-                                        color: '#f0c040',
-                                        fontWeight: 800,
-                                        textTransform: 'uppercase',
-                                        marginBottom: '8px',
-                                        fontFamily: "'Cinzel', serif",
-                                        letterSpacing: '1px',
-                                        textAlign: 'left'
-                                    }}>
-                                        Характеристики Героя
-                                    </div>
-                                    <div style={{
-                                        display: 'grid',
-                                        gridTemplateColumns: '1fr 1fr',
-                                        gap: '8px 30px',
-                                    }}>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                            <span style={{ fontSize: '12.5px', color: 'rgba(255,255,255,0.4)', fontWeight: 700 }}>❤️ ЗДОРОВЬЕ (HP)</span>
-                                            <span style={{ fontSize: '14px', color: '#fff', fontWeight: 800 }}>{computedStats.hp}</span>
-                                        </div>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                            <span style={{ fontSize: '12.5px', color: 'rgba(255,255,255,0.4)', fontWeight: 700 }}>⚔️ АТАКА (ATK)</span>
-                                            <span style={{ fontSize: '14px', color: '#fff', fontWeight: 800 }}>{computedStats.attack}</span>
-                                        </div>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                            <span style={{ fontSize: '12.5px', color: 'rgba(255,255,255,0.4)', fontWeight: 700 }}>🛡️ ЗАЩИТА (DEF)</span>
-                                            <span style={{ fontSize: '14px', color: '#fff', fontWeight: 800 }}>{computedStats.defense}</span>
-                                        </div>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                            <span style={{ fontSize: '12.5px', color: 'rgba(255,255,255,0.4)', fontWeight: 700 }}>💨 СКОРОСТЬ (SPD)</span>
-                                            <span style={{ fontSize: '14px', color: '#fff', fontWeight: 800 }}>{computedStats.speed.toFixed(2)}</span>
-                                        </div>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                            <span style={{ fontSize: '12.5px', color: 'rgba(255,255,255,0.4)', fontWeight: 700 }}>💥 КРИТ (CRIT)</span>
-                                            <span style={{ fontSize: '14px', color: '#fff', fontWeight: 800 }}>{Math.round(computedStats.critChance)}%</span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* СТАТИСТИКА */}
-                                <div
-                                    style={{
-                                        width: '100%',
-                                        display: 'grid',
-                                        gridTemplateColumns: '1fr 1fr',
-                                        gap: '8px',
-                                        marginBottom: '5px',
-                                    }}
-                                >
-                                    {/* РАНГ */}
-                                    <div
-                                        style={{
-                                            background: 'rgba(255,255,255,0.02)',
-                                            border: '1px solid rgba(240,192,64,0.1)',
-                                            borderRadius: '12px',
-                                            padding: '10px 12px',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            gap: '10px',
-                                        }}
+                                {/* ════════════════ INFO TAB ═══════════════════ */}
+                                {activeTab === 'info' && (
+                                    <motion.div key="info" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.18 }}
+                                        style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', gap: '10px', overflow: 'hidden' }}
                                     >
-                                        <img src={rankInfo.icon} style={{ width: '38px', height: '38px', objectFit: 'contain' }} alt="" />
-                                        <div style={{ textAlign: 'left' }}>
-                                            <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)' }}>РАНГ</div>
-                                            <div style={{ fontSize: '14px', fontWeight: 800, color: rankInfo.color }}>
-                                                {rankInfo.name}
+                                        {/* Любимый персонаж */}
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '14px', background: 'linear-gradient(135deg, rgba(44,30,14,0.85) 0%, rgba(18,12,7,0.92) 100%)', borderRadius: '12px', border: '1px solid rgba(240,192,64,0.12)', padding: '9px 14px', boxSizing: 'border-box', flexShrink: 0 }}>
+                                            <div style={{ position: 'relative', flexShrink: 0, width: '56px', height: '56px' }}>
+                                                <div style={{ position: 'absolute', inset: -5, borderRadius: '50%', background: 'radial-gradient(circle, rgba(240,192,64,0.12) 0%, transparent 70%)' }} />
+                                                <img src={resolveAssetPath(heroConfig.image)} style={{ width: '56px', height: '56px', objectFit: 'contain', filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.8))', position: 'relative', zIndex: 1 }} alt={heroConfig.name} onError={(e) => { (e.target as HTMLImageElement).style.opacity = '0'; }} />
+                                            </div>
+                                            <div style={{ flex: 1, minWidth: 0 }}>
+                                                <div style={{ color: 'rgba(255,255,255,0.25)', fontSize: '7.5px', textTransform: 'uppercase', letterSpacing: '1.2px', fontWeight: 700, marginBottom: '2px' }}>Любимый персонаж</div>
+                                                <div style={{ display: 'flex', alignItems: 'baseline', gap: '7px' }}>
+                                                    <span style={{ color: '#fff', fontSize: '16px', fontWeight: 800, fontFamily: "'Cinzel', serif", whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '180px' }}>{heroConfig.name}</span>
+                                                    <span style={{ color: '#f0c040', fontSize: '12px', fontWeight: 700, whiteSpace: 'nowrap', flexShrink: 0 }}>Ур. {heroLevel}</span>
+                                                </div>
+                                                <div style={{ color: '#907050', fontSize: '10.5px', fontWeight: 600, marginTop: '1px' }}>{heroConfig.title} &nbsp;•&nbsp; {roleToRu(heroConfig.role)}</div>
+                                            </div>
+                                            <div style={{ flexShrink: 0, textAlign: 'center' }}>
+                                                <div style={{ fontSize: '24px', lineHeight: 1, filter: 'drop-shadow(0 0 5px rgba(240,192,64,0.35))' }}>{heroConfig.role === 'TANK' ? '🛡️' : heroConfig.role === 'ASSASSIN' ? '⚔️' : heroConfig.role === 'MAGE' ? '🔮' : heroConfig.role === 'SUPPORT' ? '✨' : '⚔️'}</div>
+                                                <div style={{ fontSize: '7.5px', color: 'rgba(255,255,255,0.22)', fontWeight: 600, marginTop: '2px', letterSpacing: '0.4px' }}>{roleToRu(heroConfig.role).toUpperCase()}</div>
                                             </div>
                                         </div>
-                                    </div>
 
-                                    {/* РЕЙТИНГ */}
-                                    <div
-                                        style={{
-                                            background: 'rgba(255,255,255,0.02)',
-                                            border: '1px solid rgba(240,192,64,0.1)',
-                                            borderRadius: '12px',
-                                            padding: '10px 12px',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            gap: '10px',
-                                        }}
-                                    >
-                                        <img src={resolveAssetPath(AssetsMap.UI.TROPHY_PREMIUM)} style={{ width: '38px', height: '38px', objectFit: 'contain' }} alt="trophy" />
-                                        <div style={{ textAlign: 'left' }}>
-                                            <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)' }}>РЕЙТИНГ</div>
-                                            <div style={{ fontSize: '16px', fontWeight: 900, color: '#fff' }}>{rating}</div>
+                                        {/* Двухколоночный блок — flex: 1 */}
+                                        <div style={{ display: 'flex', gap: '12px', flex: 1, minHeight: 0 }}>
+                                            {/* LEFT: Характеристики */}
+                                            <div style={{ flex: 1, background: 'rgba(0,0,0,0.22)', border: '1px solid rgba(240,192,64,0.09)', borderRadius: '14px', padding: '12px 14px', boxSizing: 'border-box', boxShadow: 'inset 0 0 22px rgba(0,0,0,0.4)', display: 'flex', flexDirection: 'column' }}>
+                                                <SectionLabel>Характеристики</SectionLabel>
+                                                <div style={{ display: 'flex', flexDirection: 'column', flex: 1, justifyContent: 'space-evenly' }}>
+                                                    {statRows.map((s, i) => (
+                                                        <div key={i}>
+                                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                                                                <span style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '10.5px', color: 'rgba(255,255,255,0.5)', fontWeight: 700 }}>
+                                                                    <span style={{ fontSize: '12px' }}>{s.icon}</span><span>{s.name}</span>
+                                                                    <span style={{ fontSize: '8.5px', color: 'rgba(255,255,255,0.18)', fontWeight: 600 }}>({s.abbr})</span>
+                                                                </span>
+                                                                <span style={{ fontSize: '15px', color: s.color, fontWeight: 900, textShadow: `0 0 12px ${s.color}55`, minWidth: '44px', textAlign: 'right', fontFamily: "'Outfit', sans-serif" }}>{s.value}</span>
+                                                            </div>
+                                                            <div style={{ width: '100%', height: '5px', background: 'rgba(255,255,255,0.04)', borderRadius: '3px', overflow: 'hidden' }}>
+                                                                <motion.div initial={{ width: 0 }} animate={{ width: `${s.pct}%` }} transition={{ duration: 0.75, ease: 'easeOut', delay: i * 0.06 }} style={{ height: '100%', background: `linear-gradient(90deg, ${s.color}50 0%, ${s.color} 100%)`, borderRadius: '3px', boxShadow: `0 0 8px ${s.color}99` }} />
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+
+                                            {/* RIGHT: Профиль */}
+                                            <div style={{ flex: 1.12, display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                                <div>
+                                                    <SectionLabel>Статистика</SectionLabel>
+                                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
+                                                        {[
+                                                            { img: rankInfo.icon, label: 'РАНГ', val: rankInfo.name, vc: rankInfo.color, top: 'rgba(240,192,64,0.4)' },
+                                                            { img: resolveAssetPath(AssetsMap.UI.TROPHY_PREMIUM), label: 'РЕЙТИНГ', val: rating.toLocaleString(), vc: '#fff', top: 'rgba(240,192,64,0.4)' },
+                                                        ].map((c) => (
+                                                            <div key={c.label} className="sc-h" style={{ background: 'rgba(255,255,255,0.022)', border: '1px solid rgba(255,255,255,0.07)', borderTop: `2px solid ${c.top}`, borderRadius: '10px', padding: '8px 10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                                <img src={c.img} style={{ width: '28px', height: '28px', objectFit: 'contain', flexShrink: 0, filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.6))' }} alt="" />
+                                                                <div style={{ minWidth: 0 }}>
+                                                                    <div style={{ fontSize: '8px', color: 'rgba(255,255,255,0.28)', fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase' }}>{c.label}</div>
+                                                                    <div style={{ fontSize: '13px', fontWeight: 900, color: c.vc, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontFamily: "'Outfit', sans-serif" }}>{c.val}</div>
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                        <div className="sc-h" style={{ background: 'rgba(255,255,255,0.022)', border: '1px solid rgba(255,255,255,0.07)', borderTop: '2px solid rgba(96,165,250,0.4)', borderRadius: '10px', padding: '8px 10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                            <div style={{ width: '28px', height: '28px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px' }}>⚔️</div>
+                                                            <div><div style={{ fontSize: '8px', color: 'rgba(255,255,255,0.28)', fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase' }}>ВСЕГО БОЁВ</div><div style={{ fontSize: '13px', fontWeight: 900, color: '#e2e8f0', fontFamily: "'Outfit', sans-serif" }}>{totalBattles.toLocaleString()}</div></div>
+                                                        </div>
+                                                        <div className="sc-h" style={{ background: 'rgba(255,255,255,0.022)', border: '1px solid rgba(255,255,255,0.07)', borderTop: '2px solid rgba(74,222,128,0.4)', borderRadius: '10px', padding: '8px 10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                            <div style={{ width: '28px', height: '28px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px' }}>🏆</div>
+                                                            <div><div style={{ fontSize: '8px', color: 'rgba(255,255,255,0.28)', fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase' }}>ПОБЕДЫ</div><div style={{ fontSize: '13px', fontWeight: 900, color: '#4ade80', fontFamily: "'Outfit', sans-serif" }}>{winRate}%</div></div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+                                                    <SectionLabel>Профиль</SectionLabel>
+                                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px', flex: 1, gridAutoRows: '1fr' }}>
+                                                        <MiniCard emoji="🏰" label="Клан" value={clanName} vc={clanName !== 'Отсутствует' && clanName !== 'В клане' ? '#fcd34d' : 'rgba(255,255,255,0.38)'} bg="rgba(252,211,77,0.08)" />
+                                                        <MiniCard emoji="🎯" label="Боевой пропуск" value={bpLevel > 0 ? `Ур. ${bpLevel}` : 'Не активен'} vc={bpLevel > 0 ? '#fb7185' : 'rgba(255,255,255,0.28)'} bg={bpLevel > 0 ? 'rgba(251,113,133,0.1)' : 'rgba(255,255,255,0.02)'} />
+                                                        <MiniCard emoji="🦸" label="Герои" value={`${ownedHeroesCount} / ${HEROES_DB.length}`} vc="#60a5fa" bg="rgba(96,165,250,0.09)" />
+                                                        <MiniCard emoji={effectiveVip ? '👑' : '🔒'} label="VIP Статус" value={effectiveVip ? `VIP Ур. ${vipLevel}` : 'Нет'} vc={effectiveVip ? '#fbbf24' : 'rgba(255,255,255,0.28)'} bg={effectiveVip ? 'rgba(251,191,36,0.1)' : 'rgba(255,255,255,0.02)'} />
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
-                                    </div>
+                                    </motion.div>
+                                )}
 
-                                    {/* ВСЕГО БОЕВ */}
-                                    <div
-                                        style={{
-                                            background: 'rgba(255,255,255,0.02)',
-                                            border: '1px solid rgba(240,192,64,0.1)',
-                                            borderRadius: '12px',
-                                            padding: '10px 12px',
-                                            textAlign: 'left',
-                                        }}
+                                {/* ════════════════ GEAR TAB ═══════════════════ */}
+                                {activeTab === 'gear' && (
+                                    <motion.div key="gear" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.18 }}
+                                        style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', gap: '8px', overflow: 'hidden' }}
                                     >
-                                        <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)' }}>ВСЕГО БОЕВ</div>
-                                        <div style={{ fontSize: '18px', fontWeight: 900, color: '#fff' }}>{totalBattles}</div>
-                                    </div>
+                                        {/* DIORAMA */}
+                                        <div style={{ flex: 1, minHeight: 0, display: 'flex', alignItems: 'stretch' }}>
+                                            {/* LEFT SLOTS */}
+                                            <div style={{ width: '205px', display: 'flex', flexDirection: 'column', justifyContent: 'space-evenly', gap: '5px', padding: '4px 0', flexShrink: 0 }}>
+                                                {renderSlot('HELMETS',   'ШЛЕМ',   'left')}
+                                                {renderSlot('SHOULDERS', 'ПЛЕЧИ',  'left')}
+                                                {renderSlot('ARMOR',     'ДОСПЕХ', 'left')}
+                                                {renderSlot('PANTS',     'ПОНОЖИ', 'left')}
+                                            </div>
 
-                                    {/* ДОЛЯ ПОБЕД */}
-                                    <div
-                                        style={{
-                                            background: 'rgba(255,255,255,0.02)',
-                                            border: '1px solid rgba(240,192,64,0.1)',
-                                            borderRadius: '12px',
-                                            padding: '10px 12px',
-                                            textAlign: 'left',
-                                        }}
-                                    >
-                                        <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)' }}>ПРОЦЕНТ ПОБЕД</div>
-                                        <div style={{ fontSize: '18px', fontWeight: 900, color: '#4ade80' }}>{winRate}%</div>
-                                    </div>
-                                </div>
-                            </div>
-                        ) : (
-                            <div style={{
-                                width: '100%',
-                                display: 'flex',
-                                gap: '20px',
-                                marginBottom: '20px',
-                                height: '410px',
-                            }}>
-                                {/* LEFT COLUMN: Hero Preview & Combat Power */}
-                                <div style={{
-                                    width: '250px',
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    gap: '10px',
-                                    flexShrink: 0,
-                                }}>
-                                    {/* Hero Card */}
-                                    <div style={{
-                                        height: '296px',
-                                        background: 'rgba(0,0,0,0.3)',
-                                        border: '1.5px solid rgba(240,192,64,0.15)',
-                                        borderRadius: '16px',
-                                        padding: '10px',
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        position: 'relative',
-                                        boxShadow: 'inset 0 0 20px rgba(0,0,0,0.6)',
-                                    }}>
-                                        <img
-                                            src={resolveAssetPath(heroConfig.image)}
-                                            style={{
-                                                height: '160px',
-                                                objectFit: 'contain',
-                                                filter: 'drop-shadow(0 6px 12px rgba(0,0,0,0.85))',
-                                                marginBottom: '6px',
-                                            }}
-                                            alt={heroConfig.name}
-                                        />
-                                        <div style={{ color: '#fff', fontSize: '17px', fontWeight: 800, fontFamily: "'Cinzel', serif", textAlign: 'center' }}>
-                                            {heroConfig.name}
+                                            {/* CENTER FRAME */}
+                                            <div style={{ flex: 1, position: 'relative', margin: '0 10px', border: '2px solid rgba(240,192,64,0.48)', borderRadius: '10px', background: 'radial-gradient(ellipse at 50% 22%, rgba(55,36,16,0.52) 0%, rgba(8,5,3,0.97) 65%)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                                                {/* Corner ornaments */}
+                                                {[{ t: 5, l: 5 }, { t: 5, r: 5 }, { b: 5, l: 5 }, { b: 5, r: 5 }].map((p, i) => {
+                                                    const s: React.CSSProperties = { position: 'absolute', width: '14px', height: '14px', pointerEvents: 'none', ...(p as any).t !== undefined ? { top: (p as any).t } : { bottom: (p as any).b }, ...(p as any).l !== undefined ? { left: (p as any).l } : { right: (p as any).r } };
+                                                    const isRight = (p as any).r !== undefined, isBottom = (p as any).b !== undefined;
+                                                    return (
+                                                        <div key={i} style={s}>
+                                                            <div style={{ position: 'absolute', top: 0, [isRight ? 'right' : 'left']: 0, width: '8px', height: '1.5px', background: '#f0c040' }} />
+                                                            <div style={{ position: 'absolute', [isBottom ? 'bottom' : 'top']: 0, [isRight ? 'right' : 'left']: 0, width: '1.5px', height: '8px', background: '#f0c040' }} />
+                                                        </div>
+                                                    );
+                                                })}
+                                                {/* Diamonds at midpoints */}
+                                                <Diamond size={10} style={{ position: 'absolute', top: '50%', left: -6,  transform: 'translateY(-50%) rotate(45deg)' }} />
+                                                <Diamond size={10} style={{ position: 'absolute', top: '50%', right: -6, transform: 'translateY(-50%) rotate(45deg)' }} />
+                                                <Diamond size={10} style={{ position: 'absolute', top: -6,   left: '50%', transform: 'translateX(-50%) rotate(45deg)' }} />
+                                                <Diamond size={10} style={{ position: 'absolute', bottom: -6, left: '50%', transform: 'translateX(-50%) rotate(45deg)' }} />
+                                                {/* Ground glow */}
+                                                <div style={{ position: 'absolute', bottom: 0, left: '50%', transform: 'translateX(-50%)', width: '70%', height: '80px', background: 'radial-gradient(ellipse at 50% 100%, rgba(240,192,64,0.14) 0%, transparent 70%)', pointerEvents: 'none' }} />
+                                                {/* Top vignette */}
+                                                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '50px', background: 'linear-gradient(180deg, rgba(60,40,14,0.28) 0%, transparent 100%)', pointerEvents: 'none' }} />
+                                                {/* HERO */}
+                                                <img src={resolveAssetPath(heroConfig.image)} className="h-float" style={{ maxHeight: '88%', maxWidth: '88%', objectFit: 'contain', filter: 'drop-shadow(0 14px 28px rgba(0,0,0,0.98)) drop-shadow(0 0 10px rgba(0,0,0,0.7))', position: 'relative', zIndex: 1 }} alt={heroConfig.name} onError={(e) => { (e.target as HTMLImageElement).style.opacity = '0.12'; }} />
+                                            </div>
+
+                                            {/* RIGHT SLOTS */}
+                                            <div style={{ width: '205px', display: 'flex', flexDirection: 'column', justifyContent: 'space-evenly', gap: '5px', padding: '4px 0', flexShrink: 0 }}>
+                                                {renderSlot('WEAPONS', 'ОРУЖИЕ', 'right')}
+                                                {renderSlot('SHIELDS', 'ЩИТ',    'right')}
+                                                {renderSlot('BOOTS',   'САПОГИ', 'right')}
+                                                <div />
+                                            </div>
                                         </div>
-                                        <div style={{ color: '#c8a870', fontSize: '12px', fontWeight: 700, textAlign: 'center', marginTop: '2px' }}>
-                                            Ур. {heroLevel} • {heroConfig.role === 'TANK' ? 'Танк' : heroConfig.role === 'ASSASSIN' ? 'Убийца' : heroConfig.role === 'MAGE' ? 'Маг' : heroConfig.role === 'SUPPORT' ? 'Поддержка' : 'Боец'}
+
+                                        {/* Stats bar */}
+                                        <div style={{ background: 'rgba(0,0,0,0.55)', border: '1px solid rgba(240,192,64,0.28)', borderRadius: '10px', padding: '9px 16px', display: 'flex', justifyContent: 'space-around', alignItems: 'center', flexShrink: 0 }}>
+                                            {[
+                                                { label: 'МОЩЬ',       emoji: '🔥', val: gearPower.toLocaleString(), color: '#f0c040' },
+                                                { label: 'ЗДОРОВЬЕ',   emoji: '❤️', val: cs.hp,                      color: '#f87171' },
+                                                { label: 'АТАКА',      emoji: '⚔️', val: cs.attack,                  color: '#fb923c' },
+                                                { label: 'ЗАЩИТА',     emoji: '🛡️', val: cs.defense,                 color: '#60a5fa' },
+                                                { label: 'СКОРОСТЬ',   emoji: '💨', val: cs.speed.toFixed(2),         color: '#4ade80' },
+                                                { label: 'КРИТ',       emoji: '💥', val: `${Math.round(cs.critChance)}%`, color: '#c084fc' },
+                                            ].map((s, i, arr) => (
+                                                <React.Fragment key={s.label}>
+                                                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px' }}>
+                                                        <div style={{ fontSize: '7.5px', color: '#c8921e', fontWeight: 800, letterSpacing: '0.6px', textTransform: 'uppercase', fontFamily: "'Cinzel', serif" }}>{s.label}</div>
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+                                                            <span style={{ fontSize: '14px', lineHeight: 1 }}>{s.emoji}</span>
+                                                            <span style={{ fontSize: '16px', fontWeight: 900, color: s.color, fontFamily: "'Outfit', sans-serif", textShadow: `0 0 10px ${s.color}55` }}>{s.val}</span>
+                                                        </div>
+                                                    </div>
+                                                    {i < arr.length - 1 && <div style={{ width: '1px', height: '26px', background: 'rgba(240,192,64,0.16)', flexShrink: 0 }} />}
+                                                </React.Fragment>
+                                            ))}
                                         </div>
-                                    </div>
-                                    
-                                    {/* Combat Power */}
-                                    {renderPowerCard()}
-                                </div>
 
-                                {/* RIGHT COLUMN: 2x4 Grid of Gear Slots + Stats Summary */}
-                                <div 
-                                    style={{
-                                        flex: 1,
-                                        display: 'grid',
-                                        gridTemplateColumns: '1fr 1fr',
-                                        gap: '8px',
-                                        height: '410px',
-                                        overflow: 'hidden',
-                                    }}
-                                >
-                                    {renderGearCard('HELMETS', 'ШЛЕМ')}
-                                    {renderGearCard('SHOULDERS', 'ПЛЕЧИ')}
-                                    {renderGearCard('ARMOR', 'ДОСПЕХ')}
-                                    {renderGearCard('PANTS', 'ПОНОЖИ')}
-                                    {renderGearCard('WEAPONS', 'ОРУЖИЕ')}
-                                    {renderGearCard('SHIELDS', 'ЩИТ')}
-                                    {renderGearCard('BOOTS', 'САПОГИ')}
-                                    {renderStatsSummaryCard()}
-                                </div>
-                            </div>
-                        )}
+                                        {/* Hero name + XP */}
+                                        <div style={{ background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(240,192,64,0.13)', borderRadius: '10px', padding: '9px 16px', flexShrink: 0 }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', marginBottom: '2px' }}>
+                                                <span style={{ fontSize: '18px', fontWeight: 800, color: '#fff', fontFamily: "'Cinzel', serif", textShadow: '0 2px 8px rgba(0,0,0,0.8)' }}>{heroConfig.name}</span>
+                                                <div style={{ background: 'rgba(240,192,64,0.12)', border: '1px solid rgba(240,192,64,0.42)', borderRadius: '6px', padding: '2px 7px', fontSize: '9.5px', color: '#f0c040', fontWeight: 800, fontFamily: "'Cinzel', serif" }}>УР. {heroLevel}</div>
+                                            </div>
+                                            <div style={{ textAlign: 'center', fontSize: '9px', color: 'rgba(255,255,255,0.28)', letterSpacing: '2px', textTransform: 'uppercase', marginBottom: '6px' }}>{heroConfig.title}</div>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '3px' }}>
+                                                <span style={{ fontSize: '8px', color: 'rgba(255,255,255,0.26)', fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase' }}>ОПЫТ ГЕРОЯ</span>
+                                                <span style={{ fontSize: '8px', color: 'rgba(255,255,255,0.36)', fontWeight: 700 }}>{heroXp} / {heroXpToNext} ({Math.round(xpPct)}%)</span>
+                                            </div>
+                                            <div style={{ width: '100%', height: '4px', background: 'rgba(255,255,255,0.05)', borderRadius: '3px', overflow: 'hidden' }}>
+                                                <div style={{ width: `${xpPct}%`, height: '100%', background: 'linear-gradient(90deg, #c88020, #f0c040)', borderRadius: '3px', boxShadow: '0 0 6px rgba(240,192,64,0.5)', transition: 'width .5s ease' }} />
+                                            </div>
+                                        </div>
+                                    </motion.div>
+                                )}
 
-                        {/* КНОПКИ ДЕЙСТВИЙ */}
+                            </AnimatePresence>
+                        </div>
+
+                        {/* Action buttons */}
                         {!isMe && (
-                            <div style={{ display: 'flex', gap: '12px', width: '100%', marginTop: '10px' }}>
-                                <button
-                                    onClick={handleAddFriend}
-                                    disabled={isAlreadyFriend}
-                                    style={{
-                                        flex: 1,
-                                        height: '46px',
-                                        background: isAlreadyFriend ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.06)',
-                                        border: `1.5px solid ${isAlreadyFriend ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.2)'}`,
-                                        borderRadius: '12px',
-                                        color: isAlreadyFriend ? 'rgba(255,255,255,0.35)' : '#fff',
-                                        fontSize: '13px',
-                                        fontWeight: 800,
-                                        cursor: isAlreadyFriend ? 'default' : 'pointer',
-                                        transition: 'all 0.2s',
-                                    }}
-                                    onMouseEnter={(e) => {
-                                        if (!isAlreadyFriend) e.currentTarget.style.background = 'rgba(255,255,255,0.12)';
-                                    }}
-                                    onMouseLeave={(e) => {
-                                        if (!isAlreadyFriend) e.currentTarget.style.background = 'rgba(255,255,255,0.06)';
-                                    }}
-                                >
-                                    {isAlreadyFriend ? 'УЖЕ В ДРУЗЬЯХ' : 'В ДРУЗЬЯ'}
-                                </button>
-                                <button
-                                    onClick={handleWritePrivateMessage}
-                                    style={{
-                                        flex: 1,
-                                        height: '46px',
-                                        background: 'rgba(255,255,255,0.06)',
-                                        border: '1.5px solid rgba(255,255,255,0.2)',
-                                        borderRadius: '12px',
-                                        color: '#fff',
-                                        fontSize: '13px',
-                                        fontWeight: 800,
-                                        cursor: 'pointer',
-                                        transition: 'all 0.2s',
-                                    }}
-                                    onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.12)')}
-                                    onMouseLeave={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.06)')}
-                                >
-                                    НАПИСАТЬ
-                                </button>
-                                <button
-                                    onClick={handleChallenge}
-                                    style={{
-                                        flex: 1.4,
-                                        height: '46px',
-                                        background: 'linear-gradient(180deg, #f0c040 0%, #a88020 100%)',
-                                        border: '1.5px solid #ffe880',
-                                        borderRadius: '12px',
-                                        color: '#000',
-                                        fontSize: '13px',
-                                        fontWeight: 900,
-                                        cursor: 'pointer',
-                                        boxShadow: '0 4px 15px rgba(240, 192, 64, 0.3)',
-                                        transition: 'all 0.2s',
-                                        fontFamily: "'Cinzel', serif",
-                                        letterSpacing: '0.5px',
-                                    }}
-                                    onMouseEnter={(e) => (e.currentTarget.style.filter = 'brightness(1.15)')}
-                                    onMouseLeave={(e) => (e.currentTarget.style.filter = 'brightness(1)')}
-                                >
-                                    ВЫЗВАТЬ НА БОЙ
-                                </button>
-                            </div>
+                            <>
+                                <GoldDivider style={{ flexShrink: 0 }} />
+                                <div style={{ display: 'flex', gap: '10px', flexShrink: 0 }}>
+                                    <button onClick={handleAddFriend} disabled={isAlreadyFriend} className="act-btn"
+                                        style={{ flex: 1, height: '42px', background: isAlreadyFriend ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.04)', border: `1px solid ${isAlreadyFriend ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.15)'}`, borderRadius: '11px', color: isAlreadyFriend ? 'rgba(255,255,255,0.25)' : 'rgba(255,255,255,0.8)', fontSize: '11px', fontWeight: 800, cursor: isAlreadyFriend ? 'default' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px' }}
+                                        onMouseEnter={(e) => { if (!isAlreadyFriend) { e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; e.currentTarget.style.transform = 'translateY(-1px)'; }}}
+                                        onMouseLeave={(e) => { if (!isAlreadyFriend) { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.transform = 'none'; }}}
+                                    ><span style={{ fontSize: '13px' }}>{isAlreadyFriend ? '✓' : '＋'}</span>{isAlreadyFriend ? 'УЖЕ В ДРУЗЬЯХ' : 'В ДРУЗЬЯ'}</button>
+                                    <button onClick={handleWriteMsg} className="act-btn"
+                                        style={{ flex: 1, height: '42px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '11px', color: 'rgba(255,255,255,0.8)', fontSize: '11px', fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px' }}
+                                        onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
+                                        onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.transform = 'none'; }}
+                                    ><span style={{ fontSize: '13px' }}>💬</span>НАПИСАТЬ</button>
+                                    <button onClick={handleChallenge} className="act-btn"
+                                        style={{ flex: 1.7, height: '42px', background: 'linear-gradient(180deg, #ffe880 0%, #f0c040 50%, #9a6e10 100%)', border: '1px solid #ffe080', borderRadius: '11px', color: '#1a0a00', fontSize: '11.5px', fontWeight: 900, cursor: 'pointer', boxShadow: '0 4px 18px rgba(240,192,64,0.28), inset 0 1px 0 rgba(255,255,255,0.3)', fontFamily: "'Cinzel', serif", letterSpacing: '0.5px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px', textShadow: '0 1px 0 rgba(255,255,255,0.2)' }}
+                                        onMouseEnter={(e) => { e.currentTarget.style.filter = 'brightness(1.08)'; e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 7px 24px rgba(240,192,64,0.42), inset 0 1px 0 rgba(255,255,255,0.3)'; }}
+                                        onMouseLeave={(e) => { e.currentTarget.style.filter = ''; e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 4px 18px rgba(240,192,64,0.28), inset 0 1px 0 rgba(255,255,255,0.3)'; }}
+                                    ><span style={{ fontSize: '14px' }}>⚔️</span>ВЫЗВАТЬ НА БОЙ</button>
+                                </div>
+                            </>
                         )}
-                    </>
+                    </div>
                 )}
             </motion.div>
         </div>

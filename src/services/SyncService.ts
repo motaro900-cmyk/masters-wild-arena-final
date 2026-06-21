@@ -389,10 +389,10 @@ export class SyncService {
         try {
             const playerRef = doc(db, USERS_COLLECTION, userId);
             
-            // Задаем таймаут 5 секунд на получение документа из Firebase
+            // Задаем таймаут 10 секунд на получение документа из Firebase
             let profileTimeoutId: any;
             const profileTimeout = new Promise<never>((_, reject) => {
-                profileTimeoutId = setTimeout(() => reject(new Error('Firebase player profile fetch timeout')), 5000);
+                profileTimeoutId = setTimeout(() => reject(new Error('Firebase player profile fetch timeout')), 10000);
             });
             let playerSnap;
             try {

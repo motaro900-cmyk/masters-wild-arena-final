@@ -111,7 +111,23 @@ const generateOpponentEquipment = (
     return equip;
 };
 
-export const buildStatsFromEquipment = (heroId: string, level: number, equipment: Record<string, string | null>, avgItemLevel: number = 1) => {
+const getTemplateId = (id: string): string => {
+    if (!id) return '';
+    if (ITEMS_DATABASE[id]) return id;
+    const match = Object.keys(ITEMS_DATABASE)
+        .filter((key) => id.startsWith(key + '_'))
+        .sort((a, b) => b.length - a.length)[0];
+    return match || id;
+};
+
+export const buildStatsFromEquipment = (
+    heroId: string,
+    level: number,
+    equipment: Record<string, string | null>,
+    avgItemLevel: number = 1,
+    inventory: any[] = [],
+    talents: Record<string, number> = {}
+) => {
     const heroData = HEROES_DB.find((h) => h.id === heroId) || HEROES_DB[0];
     const levelMult = getLevelMultiplier(level);
     const total = {
@@ -123,18 +139,67 @@ export const buildStatsFromEquipment = (heroId: string, level: number, equipment
         evasion: heroData.stats.agility * 0.2,
         avgItemLevel,
     };
-    Object.values(equipment).forEach((itemId) => {
-        if (!itemId) return;
-        const item = ITEMS_DATABASE[itemId] as any;
-        if (!item) return;
-        if (item.hpBonus) total.hp += item.hpBonus;
-        if (item.attackBonus) total.attack += item.attackBonus;
-        if (item.defenseBonus) total.defense += item.defenseBonus;
-        const rawCrit = item.critChance || item.critBonus || 0;
-        if (rawCrit) total.critChance += rawCrit <= 1 ? rawCrit * 100 : rawCrit;
-        if (item.attackSpeed || item.speedBonus) total.speed += item.attackSpeed || item.speedBonus;
-        if (item.evasion) total.evasion += item.evasion;
+
+    // Apply talents
+    Object.entries(talents).forEach(([tId, lvl]) => {
+        const tLevel = lvl as number;
+        if (tLevel <= 0) return;
+        if (tId === 'atk_base') total.attack = Math.round(total.attack * (1 + tLevel * 0.05));
+        if (tId === 'atk_crit') total.critChance += tLevel * 2;
+        if (tId === 'def_base') total.hp = Math.round(total.hp * (1 + tLevel * 0.05));
+        if (tId === 'def_eva') total.evasion += tLevel * 2;
+        if (tId === 'def_ult') total.defense = Math.round(total.defense * (1 + tLevel * 0.2));
+        if (tId === 'mas_base') total.speed += tLevel * 0.1;
+        if (tId === 'mas_spd') total.speed = +(total.speed * (1 + tLevel * 0.03)).toFixed(2);
     });
+
+    const getEquippedItemInfo = (equippedId: string | null) => {
+        if (!equippedId) return null;
+        const invItem = inventory.find((i: any) => i.instanceId === equippedId || i.id === equippedId);
+        const resolvedId = getTemplateId(String(equippedId));
+        const itemTemplate = ITEMS_DATABASE[resolvedId];
+        if (!itemTemplate) return null;
+        return { template: itemTemplate, level: invItem?.level || 1 };
+    };
+
+    const multTable: Record<number, number> = {
+        1: 1.0,
+        2: 1.15,
+        3: 1.35,
+        4: 1.5,
+        5: 1.65,
+        6: 1.8,
+        7: 2.0,
+        8: 2.2,
+        9: 2.45,
+        10: 2.75,
+    };
+
+    Object.values(equipment).forEach((equippedId) => {
+        if (!equippedId) return;
+        const itemInfo = getEquippedItemInfo(equippedId);
+        if (!itemInfo) return;
+
+        const item = itemInfo.template as any;
+        const lvl = itemInfo.level;
+        const mult = multTable[lvl] ?? 1.0;
+
+        if (item.hpBonus) total.hp = Math.round(total.hp + item.hpBonus * mult);
+        if (item.attackBonus) total.attack = Math.round(total.attack + item.attackBonus * mult);
+        if (item.defenseBonus) total.defense = Math.round(total.defense + item.defenseBonus * mult);
+
+        const rawCrit = item.critChance || item.critBonus || 0;
+        if (rawCrit) {
+            const critPct = rawCrit <= 1 ? rawCrit * 100 : rawCrit;
+            total.critChance += critPct * mult;
+        }
+
+        const rawSpeed = item.attackSpeed || item.speedBonus || 0;
+        if (rawSpeed) total.speed += rawSpeed * mult;
+        
+        if (item.evasion) total.evasion += item.evasion * mult;
+    });
+
     total.critChance = Math.min(75, total.critChance);
     total.evasion = Math.min(60, total.evasion);
     return total;
