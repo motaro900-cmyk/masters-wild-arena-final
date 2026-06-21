@@ -483,8 +483,8 @@ class BootController {
             const response = await fetchWithRetry('/api/time', {
                 method: 'GET',
                 cache: 'no-cache',
-                signal: AbortSignal.timeout(3000),
-            }, 3, 1000);
+                signal: AbortSignal.timeout(7000),
+            }, 2, 1500);
             const data = await response.json();
             if (data.serverTime) {
                 const latency = (Date.now() - start) / 2;
@@ -512,8 +512,8 @@ class BootController {
             const searchParams = window.location.search;
             if (searchParams) {
                 const response = await fetchWithRetry(`/api/verify-sign${searchParams}`, {
-                    signal: AbortSignal.timeout(4000),
-                }, 3, 1500);
+                    signal: AbortSignal.timeout(7000),
+                }, 2, 2000);
                 const data = await response.json();
                 if (data && data.valid === false) {
                     throw new Error('Invalid signature');

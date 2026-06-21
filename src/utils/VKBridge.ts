@@ -95,6 +95,17 @@ export const initVK = async (): Promise<boolean> => {
             } catch {
                 // Игнорируем если платформа не поддерживает
             }
+            // Запрашиваем ландшафтную ориентацию на мобильных
+            try {
+                if (bridge.supports('VKWebAppLockOrientation')) {
+                    await bridge.send('VKWebAppLockOrientation', {
+                        orientation: 'landscape',
+                    });
+                    console.log('[VK Bridge] Orientation locked to landscape');
+                }
+            } catch (err) {
+                console.warn('[VK Bridge] Failed to lock orientation:', err);
+            }
             return true;
         } catch (error) {
             console.warn('VKWebAppInit failed:', error);

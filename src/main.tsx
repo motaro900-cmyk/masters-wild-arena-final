@@ -147,7 +147,8 @@ export const Root = () => {
     const [loadingText, setLoadingText] = React.useState('Инициализация приложения...');
     const [showUpdateModal, setShowUpdateModal] = React.useState(false);
     const isUpdatePendingRef = React.useRef(false);
-    const [scale, setScale] = React.useState(1);
+        const [scale, setScale] = React.useState(1);
+    const [rotated, setRotated] = React.useState(false);
     const isMobile = useGameStore((state: any) => state.isMobile) || (typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent));
     const graphicsQuality = useGameStore((state: any) => state.graphicsQuality) || 'ULTRA';
 
@@ -172,23 +173,20 @@ export const Root = () => {
             const isMobileDevice = typeof navigator !== 'undefined' && /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
             let s: number;
+            let isRotated = false;
+
             if (portrait && isMobileDevice) {
-                // Мобильный portrait: игра (landscape 1920×1080) вписывается в экран по ширине.
-                // Берём максимальный scale чтобы заполнить ширину экрана.
-                // sw / gw — заполнение по ширине (основной приоритет на мобильном)
-                // sh / gh — ограничение чтобы не выйти за высоту экрана
-                s = Math.min(sw / gw, sh / gh);
-                // Если игра слишком маленькая (< 50% ширины экрана), растягиваем по ширине
-                if (s * gw < sw * 0.98) {
-                    s = sw / gw;
-                }
-            } else if (portrait) {
-                s = sw / gw;
+                // Мобильный портрет: вписываем горизонтальную игру в вертикальный экран
+                // путем сопоставления gw -> sh и gh -> sw, с последующей ротацией на 90deg.
+                s = Math.min(sh / gw, sw / gh);
+                isRotated = true;
             } else {
+                // Обычный ландшафт или десктоп
                 s = Math.min(sw / gw, sh / gh);
             }
 
             setScale(s);
+            setRotated(isRotated);
             window.scrollTo(0, 0);
         };
 
@@ -306,7 +304,7 @@ export const Root = () => {
                 width: '100vw',
                 height: '100vh',
                 display: 'flex',
-                alignItems: isMobile ? 'flex-start' : 'center',
+                alignItems: 'center',
                 justifyContent: 'center',
                 backgroundColor: '#050403',
                 overflow: 'hidden',
@@ -317,11 +315,15 @@ export const Root = () => {
                 <div
                     className="game-scale-wrapper"
                     style={{
-                        position: 'relative',
+                        position: rotated ? 'absolute' : 'relative',
+                        left: rotated ? '50%' : 'auto',
+                        top: rotated ? '50%' : 'auto',
                         width: AppConfig.GAME_WIDTH,
                         height: AppConfig.GAME_HEIGHT,
-                        transform: `scale(${scale})`,
-                        transformOrigin: isMobile ? 'top center' : 'center center',
+                        transform: rotated
+                            ? `translate(-50%, -50%) rotate(90deg) scale(${scale})`
+                            : `scale(${scale})`,
+                        transformOrigin: 'center center',
                         boxShadow: '0 0 100px rgba(0, 0, 0, 0.9)',
                         backgroundImage: `url(${
                             isMobile ? AssetsMap.BACKGROUNDS.MAIN_MENU_MOBILE : AssetsMap.BACKGROUNDS.MAIN_MENU

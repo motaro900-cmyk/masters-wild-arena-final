@@ -14,10 +14,7 @@ const firebaseConfig = {
 
 // Инициализация
 const app = initializeApp(firebaseConfig);
-export const db = initializeFirestore(app, {
-    localCache: persistentLocalCache(),
-    experimentalForceLongPolling: true,
-});
+export const db = initializeFirestore(app, {});
 
 const isLocalhost =
     typeof window !== 'undefined' &&
