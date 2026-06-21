@@ -170,12 +170,23 @@ export const Root = () => {
             const gh = AppConfig.GAME_HEIGHT;
             const portrait = sw < sh;
             const isMobileDevice = typeof navigator !== 'undefined' && /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-            
-            const s = (portrait && isMobileDevice)
-                ? Math.min(sw / gh, sh / gw)
-                : portrait
-                  ? sw / gw
-                  : Math.min(sw / gw, sh / gh);
+
+            let s: number;
+            if (portrait && isMobileDevice) {
+                // Мобильный portrait: игра (landscape 1920×1080) вписывается в экран по ширине.
+                // Берём максимальный scale чтобы заполнить ширину экрана.
+                // sw / gw — заполнение по ширине (основной приоритет на мобильном)
+                // sh / gh — ограничение чтобы не выйти за высоту экрана
+                s = Math.min(sw / gw, sh / gh);
+                // Если игра слишком маленькая (< 50% ширины экрана), растягиваем по ширине
+                if (s * gw < sw * 0.98) {
+                    s = sw / gw;
+                }
+            } else if (portrait) {
+                s = sw / gw;
+            } else {
+                s = Math.min(sw / gw, sh / gh);
+            }
 
             setScale(s);
             window.scrollTo(0, 0);
@@ -295,7 +306,7 @@ export const Root = () => {
                 width: '100vw',
                 height: '100vh',
                 display: 'flex',
-                alignItems: 'center',
+                alignItems: isMobile ? 'flex-start' : 'center',
                 justifyContent: 'center',
                 backgroundColor: '#050403',
                 overflow: 'hidden',
@@ -310,7 +321,7 @@ export const Root = () => {
                         width: AppConfig.GAME_WIDTH,
                         height: AppConfig.GAME_HEIGHT,
                         transform: `scale(${scale})`,
-                        transformOrigin: 'center center',
+                        transformOrigin: isMobile ? 'top center' : 'center center',
                         boxShadow: '0 0 100px rgba(0, 0, 0, 0.9)',
                         backgroundImage: `url(${
                             isMobile ? AssetsMap.BACKGROUNDS.MAIN_MENU_MOBILE : AssetsMap.BACKGROUNDS.MAIN_MENU
