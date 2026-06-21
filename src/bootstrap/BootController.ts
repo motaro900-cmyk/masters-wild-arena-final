@@ -43,6 +43,7 @@ class BootController {
     // Invariant state caches
     private remoteProfileData: any = null;
     private needPostBootSync = false;
+    private bootStartTime: number = 0;
 
     // ── Diagnostic system ──────────────────────────────────────────────────
     public bootMode: BootMode = 'STRICT';
@@ -261,6 +262,7 @@ class BootController {
 
         this.initPromise = (async () => {
             try {
+                this.bootStartTime = Date.now();
                 console.log('[BootController] Starting boot pipeline...');
                 this.errorText = null;
                 this.bootIssues = [];
@@ -983,6 +985,9 @@ class BootController {
         this.needPostBootSync = false;
 
         syncService.startAutoSync(60000);
+
+        const duration = Date.now() - this.bootStartTime;
+        console.log(`[Performance] 🚀 Game successfully booted. Total loading time: ${duration}ms`);
     }
 }
 
