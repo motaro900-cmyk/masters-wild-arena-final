@@ -44,6 +44,7 @@ class BootController {
     private remoteProfileData: any = null;
     private needPostBootSync = false;
     private bootStartTime: number = 0;
+    private assetPreloadPromise: Promise<void> | null = null;
 
     // ── Diagnostic system ──────────────────────────────────────────────────
     public bootMode: BootMode = 'STRICT';
@@ -280,6 +281,18 @@ class BootController {
 
                 // ── PHASE 2: LOAD ──────────────────────────────────────────
                 this.transition('LOAD');
+
+                // Start parallel asset preload in the background
+                this.assetPreloadPromise = (async () => {
+                    try {
+                        const { AssetLoader } = await import('../engine/systems/AssetLoader');
+                        const manifest = AssetLoader.createGameManifest();
+                        await AssetLoader.getInstance().loadAssets(manifest);
+                        console.log('[BootController] Parallel assets preloading completed successfully.');
+                    } catch (e) {
+                        console.warn('[BootController] Parallel assets preloading error:', e);
+                    }
+                })();
 
                 // ── LOAD_PROFILE ───────────────────────────────────────────
                 setLoadingText('Загрузка игрового профиля...');
@@ -948,6 +961,11 @@ class BootController {
     }
 
     public async ready(container: HTMLElement): Promise<void> {
+        // Wait for parallel asset preloading to complete if it was started
+        if (this.assetPreloadPromise) {
+            await this.assetPreloadPromise;
+        }
+
         // Initialize Game Systems
         const { initGameSystems, setupReferralAndGifts } = await import('./initGameSystems');
         initGameSystems(this.timeOffset);

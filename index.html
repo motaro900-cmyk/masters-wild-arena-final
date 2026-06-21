@@ -22,6 +22,9 @@
     // [Optimization] Immediately "use" the preloaded resource to satisfy browser checks
     // This prevents the "Preloaded but not used within a few seconds" warning.
     (new Image()).src = "/assets/images/backgrounds/bg_main.webp";
+
+    // [Optimization] Warm up the API serverless functions in parallel with bundle downloads
+    fetch('./api/time', { method: 'GET', cache: 'no-cache' }).catch(function() {});
   </script>
   
   <style>
