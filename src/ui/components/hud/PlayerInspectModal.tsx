@@ -63,11 +63,38 @@ export const PlayerInspectModal: React.FC = () => {
                     return;
                 }
 
-                const docData = await syncService.searchPlayerById(targetId);
-                if (docData) {
-                    setPlayerData(docData);
+                // Check if target is current player (isMe)
+                const isTargetMe = targetId === 'me' ||
+                    targetId === myPlayerId ||
+                    targetId === `VK-${myVkUser?.id}` ||
+                    targetId === `GUEST-${myPlayerId}`;
+
+                if (isTargetMe) {
+                    const store = useGameStore.getState();
+                    const activeHero = store.selectedHeroId || 'panda';
+                    const selfData = {
+                        id: SyncService.getPrefixedUserId(myVkUser, myPlayerId),
+                        name: store.name || 'Мастер',
+                        avatar: store.avatar,
+                        level: store.level || 1,
+                        rating: store.rating || 0,
+                        gold: store.gold || 0,
+                        crystals: store.crystals || 0,
+                        vipLevel: store.vipLevel || 0,
+                        isVipActive: store.isVipActive || false,
+                        wins: store.wins || 0,
+                        totalBattles: store.totalBattles || 0,
+                        hero: activeHero,
+                        equipment: store.heroEquipment?.[activeHero] || {},
+                    };
+                    setPlayerData(selfData);
                 } else {
-                    setError('Не удалось загрузить данные игрока');
+                    const docData = await syncService.searchPlayerById(targetId);
+                    if (docData) {
+                        setPlayerData(docData);
+                    } else {
+                        setError('Не удалось загрузить данные игрока');
+                    }
                 }
             } catch (err) {
                 console.error('[PlayerInspectModal] Error fetching player details:', err);
@@ -87,6 +114,18 @@ export const PlayerInspectModal: React.FC = () => {
         useGameStore.setState({ inspectPlayerId: null, inspectPlayerName: null });
     };
 
+    const store = useGameStore.getState();
+    const isMe = activeInspectVal === 'me' ||
+        activeInspectVal === myPlayerId ||
+        activeInspectVal === `VK-${myVkUser?.id}` ||
+        activeInspectVal === `GUEST-${myPlayerId}` ||
+        (playerData && (
+            playerData.id === myPlayerId || 
+            String(playerData.vkId) === String(myVkUser?.id) ||
+            playerData.id === `VK-${myVkUser?.id}` ||
+            playerData.id === `GUEST-${myPlayerId}`
+        ));
+
     // Парсим детальную инфу из fullStateJSON
     let frame = 'none';
     let title = 'Странник';
@@ -102,7 +141,20 @@ export const PlayerInspectModal: React.FC = () => {
 
     let heroLevel = 1;
 
-    if (playerData) {
+    if (isMe) {
+        name = store.name || 'Мастер';
+        avatar = resolveAvatarPath(myVkUser?.photo_200 || myVkUser?.photo || store.avatar);
+        level = store.level || 1;
+        rating = store.rating || 0;
+        vipLevel = store.vipLevel || 0;
+        isVipActive = store.isVipActive || false;
+        wins = store.wins || 0;
+        totalBattles = store.totalBattles || 0;
+        selectedHeroId = store.selectedHeroId || 'panda';
+        heroLevel = store.heroes?.[selectedHeroId]?.level || 1;
+        frame = store.frame || 'none';
+        title = store.title || 'Странник';
+    } else if (playerData) {
         name = playerData.name || playerData.имя || 'Мастер';
         avatar = resolveAvatarPath(playerData.avatar || playerData.фото);
         level = playerData.level || playerData.уровень || 1;
@@ -141,15 +193,11 @@ export const PlayerInspectModal: React.FC = () => {
     const winRate = totalBattles > 0 ? Math.round((wins / totalBattles) * 100) : 0;
     const heroConfig = getHeroConfig(selectedHeroId);
     const rankInfo = getRankInfo(rating);
-    const computedStats = buildStatsFromEquipment(selectedHeroId, heroLevel, playerData?.equipment || playerData?.снаряжение || {});
 
-    // Проверяем, не сам ли это игрок
-    const isMe = playerData && (
-        playerData.id === myPlayerId || 
-        String(playerData.vkId) === String(myVkUser?.id) ||
-        playerData.id === `VK-${myVkUser?.id}` ||
-        playerData.id === `GUEST-${myPlayerId}`
-    );
+    const equipmentSource = isMe
+        ? (store.heroEquipment?.[selectedHeroId] || {})
+        : (playerData?.equipment || playerData?.снаряжение || {});
+    const computedStats = buildStatsFromEquipment(selectedHeroId, heroLevel, equipmentSource);
 
     // Проверяем, есть ли уже в друзьях
     const isAlreadyFriend = playerData && myFriends.some((f: any) => f.id === playerData.id);
@@ -241,15 +289,19 @@ export const PlayerInspectModal: React.FC = () => {
         });
     };
 
-    const gold = playerData ? (playerData.gold !== undefined ? playerData.gold : playerData.золото !== undefined ? playerData.золото : 0) : 0;
-    const crystals = playerData ? (playerData.crystals !== undefined ? playerData.crystals : playerData.кристаллы !== undefined ? playerData.кристаллы : 0) : 0;
+    const gold = isMe 
+        ? store.gold 
+        : (playerData ? (playerData.gold !== undefined ? playerData.gold : playerData.золото !== undefined ? playerData.золото : 0) : 0);
+    const crystals = isMe 
+        ? store.crystals 
+        : (playerData ? (playerData.crystals !== undefined ? playerData.crystals : playerData.кристаллы !== undefined ? playerData.кристаллы : 0) : 0);
 
     const rarityColors: Record<string, string> = {
         COMMON: '#9ca3af',
         UNCOMMON: '#4ade80',
         RARE: '#3b82f6',
         EPIC: '#a855f7',
-        MYTHIC: '#ec4899',
+        MYTHIC: '#ef4444',
         LEGENDARY: '#eab308',
     };
 
@@ -264,7 +316,9 @@ export const PlayerInspectModal: React.FC = () => {
 
     const renderGearCard = (slotKey: string, slotLabel: string) => {
         if (!playerData) return null;
-        const itemId = playerData.equipment?.[slotKey] || playerData.снаряжение?.[slotKey] || null;
+        const itemId = isMe
+            ? store.heroEquipment?.[selectedHeroId]?.[slotKey]
+            : (playerData?.equipment?.[slotKey] || playerData?.снаряжение?.[slotKey] || null);
 
         let itemData = null;
         if (itemId) {
@@ -359,13 +413,35 @@ export const PlayerInspectModal: React.FC = () => {
                         {itemData ? itemData.name : 'Пусто'}
                     </div>
                     {itemData && (
-                        <div style={{ fontSize: '10px', color: '#4ade80', fontWeight: 700, marginTop: '2px' }}>
-                            {[
-                                itemData.hpBonus && `+${itemData.hpBonus} HP`,
-                                itemData.attackBonus && `+${itemData.attackBonus} ATK`,
-                                itemData.defenseBonus && `+${itemData.defenseBonus} DEF`,
-                                (itemData.critBonus || itemData.critChance) && `+${Math.round((itemData.critBonus || itemData.critChance) <= 1 ? (itemData.critBonus || itemData.critChance) * 100 : (itemData.critBonus || itemData.critChance))}% CRIT`,
-                            ].filter(Boolean).join(' • ')}
+                        <div style={{
+                            display: 'flex',
+                            flexWrap: 'wrap',
+                            gap: '4px 8px',
+                            fontSize: '11.5px',
+                            fontWeight: 800,
+                            marginTop: '4px',
+                            fontFamily: 'system-ui, -apple-system, sans-serif'
+                        }}>
+                            {itemData.hpBonus && (
+                                <span style={{ color: '#ff6b6b', display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                                    ❤️ +{itemData.hpBonus}
+                                </span>
+                            )}
+                            {itemData.attackBonus && (
+                                <span style={{ color: '#c084fc', display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                                    ⚔️ +{itemData.attackBonus}
+                                </span>
+                            )}
+                            {itemData.defenseBonus && (
+                                <span style={{ color: '#60a5fa', display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                                    🛡️ +{itemData.defenseBonus}
+                                </span>
+                            )}
+                            {(itemData.critBonus || itemData.critChance) && (
+                                <span style={{ color: '#fbbf24', display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                                    💥 +{Math.round((itemData.critBonus || itemData.critChance) <= 1 ? (itemData.critBonus || itemData.critChance) * 100 : (itemData.critBonus || itemData.critChance))}%
+                                </span>
+                            )}
                         </div>
                     )}
                 </div>
