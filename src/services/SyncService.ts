@@ -390,10 +390,16 @@ export class SyncService {
             const playerRef = doc(db, USERS_COLLECTION, userId);
             
             // Задаем таймаут 5 секунд на получение документа из Firebase
-            const profileTimeout = new Promise<never>((_, reject) =>
-                setTimeout(() => reject(new Error('Firebase player profile fetch timeout')), 5000)
-            );
-            const playerSnap = await Promise.race([getDoc(playerRef), profileTimeout]);
+            let profileTimeoutId: any;
+            const profileTimeout = new Promise<never>((_, reject) => {
+                profileTimeoutId = setTimeout(() => reject(new Error('Firebase player profile fetch timeout')), 5000);
+            });
+            let playerSnap;
+            try {
+                playerSnap = await Promise.race([getDoc(playerRef), profileTimeout]);
+            } finally {
+                clearTimeout(profileTimeoutId);
+            }
 
             if (playerSnap.exists()) {
                 const data = playerSnap.data();
@@ -414,12 +420,19 @@ export class SyncService {
                 let resolvedFriends = [];
                 try {
                     // Задаем таймаут 3 секунды на загрузку профилей друзей, чтобы не блокировать вход
-                    const friendTimeout = new Promise<never>((_, reject) =>
-                        setTimeout(() => reject(new Error('Firebase friends fetch timeout')), 3000)
-                    );
-                    resolvedFriends = dbFriendIds.length > 0 
-                        ? await Promise.race([resolveFriendProfiles(dbFriendIds), friendTimeout]) 
-                        : [];
+                    if (dbFriendIds.length > 0) {
+                        let friendTimeoutId: any;
+                        const friendTimeout = new Promise<never>((_, reject) => {
+                            friendTimeoutId = setTimeout(() => reject(new Error('Firebase friends fetch timeout')), 3000);
+                        });
+                        try {
+                            resolvedFriends = await Promise.race([resolveFriendProfiles(dbFriendIds), friendTimeout]);
+                        } finally {
+                            clearTimeout(friendTimeoutId);
+                        }
+                    } else {
+                        resolvedFriends = [];
+                    }
                 } catch (friendErr) {
                     console.error('[SyncService] Failed to resolve friend profiles, using empty list:', friendErr);
                 }

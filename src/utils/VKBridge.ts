@@ -75,8 +75,9 @@ export const initVK = async (): Promise<boolean> => {
 
     // На мобильных устройствах с 3G инициализация VK Bridge может занять 5-10 сек.
     // Увеличиваем timeout до 12s чтобы дать Bridge время ответить.
+    let timeoutId: any;
     const timeoutPromise = new Promise<boolean>((resolve) => {
-        setTimeout(() => {
+        timeoutId = setTimeout(() => {
             console.warn('⚠️ VK Bridge Init Timeout (12s). Starting anyway...');
             resolve(false);
         }, 12000);
@@ -113,7 +114,12 @@ export const initVK = async (): Promise<boolean> => {
         }
     })();
 
-    const result = await Promise.race([initPromise, timeoutPromise]);
+    let result = false;
+    try {
+        result = await Promise.race([initPromise, timeoutPromise]);
+    } finally {
+        clearTimeout(timeoutId);
+    }
     if (result) {
         (window as any).vkBridgeInitialized = true;
     }
