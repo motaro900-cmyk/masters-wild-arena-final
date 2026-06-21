@@ -97,6 +97,8 @@ export const createPlayerSlice = (set: any, get: any) => {
     hasBoughtStarterPack: false,
     dailyAdWatchesCount: 0,
     dailyEnergyPurchasesCount: 0,
+    dailyGoldContributed: 0,
+    dailyCrystalsContributed: 0,
     claimedRankRewards: [] as string[],
     dailyBattles: 0,
     dailyBattleLimit: BATTLE_CONFIG.DAILY_LIMIT,
@@ -586,6 +588,8 @@ export const createPlayerSlice = (set: any, get: any) => {
                 lastBattleReset: TimeService.now(),
                 dailyAdWatchesCount: 0, // Сбрасываем лимит рекламы каждый день
                 dailyEnergyPurchasesCount: 0, // Сбрасываем лимит покупки энергии каждый день
+                dailyGoldContributed: 0, // Сбрасываем дневной взнос золота в клан
+                dailyCrystalsContributed: 0, // Сбрасываем дневной взнос алмазов в клан
             });
         }
     },

@@ -32,6 +32,8 @@ export const ClanWindow: React.FC = () => {
         addClanCoins,
         level,
         name: playerName,
+        dailyGoldContributed,
+        dailyCrystalsContributed,
     } = useGameStore(
         useShallow((state) => ({
             clanId: state.clanId,
@@ -51,8 +53,14 @@ export const ClanWindow: React.FC = () => {
             addClanCoins: state.addClanCoins,
             level: state.level,
             name: state.name,
+            dailyGoldContributed: state.dailyGoldContributed ?? 0,
+            dailyCrystalsContributed: state.dailyCrystalsContributed ?? 0,
         }))
     );
+
+    // Daily limits for clan bank contributions
+    const MAX_DAILY_GOLD = 500;
+    const MAX_DAILY_CRYSTALS = 100;
 
     const isLight = uiTheme === 'LIGHT';
 
@@ -321,6 +329,19 @@ export const ClanWindow: React.FC = () => {
         const currentClanData = store.clanData || (clanId ? MOCK_CLANS.find(c => c.id === clanId) : null);
         if (!currentClanData) return;
 
+        // Enforce daily limits
+        if (currency === 'GOLD') {
+            const remaining = MAX_DAILY_GOLD - (store.dailyGoldContributed ?? 0);
+            if (amount > remaining) {
+                return setError(`Превышен дневной лимит взноса золота! Осталось сегодня: ${remaining}`);
+            }
+        } else {
+            const remaining = MAX_DAILY_CRYSTALS - (store.dailyCrystalsContributed ?? 0);
+            if (amount > remaining) {
+                return setError(`Превышен дневной лимит взноса алмазов! Осталось сегодня: ${remaining}`);
+            }
+        }
+
         const currentUserName = playerName && playerName !== 'Мастер'
             ? playerName
             : (vkUser?.firstName ? `${vkUser.firstName} ${vkUser.lastName}` : 'Воин');
@@ -339,6 +360,7 @@ export const ClanWindow: React.FC = () => {
             nextXp += Math.floor(amount / 20);
             const prevBank = currentClanData.goldBank !== undefined ? currentClanData.goldBank : 5000;
             updatedClanData.goldBank = prevBank + amount;
+            useGameStore.setState({ dailyGoldContributed: (store.dailyGoldContributed ?? 0) + amount });
         } else {
             if (crystals < amount) return setError(`Недостаточно алмазов для вклада (нужно ${amount})!`);
             addCrystals(-amount);
@@ -346,6 +368,7 @@ export const ClanWindow: React.FC = () => {
             nextXp += amount; // 1 crystal = 1 XP
             const prevCrystals = currentClanData.crystalsBank !== undefined ? currentClanData.crystalsBank : 250;
             updatedClanData.crystalsBank = prevCrystals + amount;
+            useGameStore.setState({ dailyCrystalsContributed: (store.dailyCrystalsContributed ?? 0) + amount });
         }
 
         if (nextXp >= nextMaxXp) {
@@ -714,6 +737,10 @@ export const ClanWindow: React.FC = () => {
                             onToggleOfficersWithdraw={handleToggleOfficersWithdraw}
                             error={error}
                             setError={setError}
+                            dailyGoldContributed={dailyGoldContributed}
+                            dailyCrystalsContributed={dailyCrystalsContributed}
+                            maxDailyGold={MAX_DAILY_GOLD}
+                            maxDailyCrystals={MAX_DAILY_CRYSTALS}
                         />
                     )}
 

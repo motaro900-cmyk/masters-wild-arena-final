@@ -177,7 +177,7 @@ const store = create<GameStoreState>()(
         {
             name: 'game-storage',
             storage: createJSONStorage(() => getStorage()),
-            version: 34, // v34: Add rendererPreference and fpsCap
+            version: 35, // v35: Add daily clan bank contribution counters
             skipHydration: true,
 
             partialize: (state: any) => ({
@@ -194,6 +194,9 @@ const store = create<GameStoreState>()(
                 lastEnergyUpdate: state.lastEnergyUpdate,
                 vipEndTime: state.vipEndTime,
                 dailyAdWatchesCount: state.dailyAdWatchesCount,
+                dailyEnergyPurchasesCount: state.dailyEnergyPurchasesCount,
+                dailyGoldContributed: state.dailyGoldContributed,
+                dailyCrystalsContributed: state.dailyCrystalsContributed,
                 name: state.name,
                 lastNameChange: state.lastNameChange,
                 avatar: state.avatar,
@@ -436,6 +439,13 @@ const store = create<GameStoreState>()(
                     console.log('🔄 Migrating store to v34: Adding rendererPreference and fpsCap...');
                     persistedState.rendererPreference = 'auto';
                     persistedState.fpsCap = 60;
+                }
+
+                if (version < 35) {
+                    console.log('🔄 Migrating store to v35: Adding daily clan bank contribution counters...');
+                    persistedState.dailyGoldContributed = 0;
+                    persistedState.dailyCrystalsContributed = 0;
+                    persistedState.dailyEnergyPurchasesCount = persistedState.dailyEnergyPurchasesCount ?? 0;
                 }
 
                 return persistedState;

@@ -143,22 +143,29 @@ interface ClanMembersTabProps {
     colors: any;
     members: ClanMember[];
     isLight: boolean;
+    clanData: any;
     onKickMember: (name: string) => void;
     onPromoteMember?: (name: string) => void;
     onDemoteMember?: (name: string) => void;
     onTransferLeadership?: (name: string) => void;
+    onPaySalary?: (name: string, amount: number, currency: 'GOLD' | 'ALMAZ') => void;
 }
 
 export const ClanMembersTab: React.FC<ClanMembersTabProps> = ({
     colors,
     members,
     isLight,
+    clanData,
     onKickMember,
     onPromoteMember,
     onDemoteMember,
     onTransferLeadership,
+    onPaySalary,
 }) => {
     const [selectedMember, setSelectedMember] = useState<ClanMember | null>(null);
+    const [showSalaryDialog, setShowSalaryDialog] = useState(false);
+    const [salaryCurrency, setSalaryCurrency] = useState<'GOLD' | 'ALMAZ'>('GOLD');
+    const [salaryAmount, setSalaryAmount] = useState<number>(500);
 
     // Определяем имя и роль текущего игрока, чтобы разграничить права
     const name = useGameStore((state) => state.name);
@@ -263,7 +270,10 @@ export const ClanMembersTab: React.FC<ClanMembersTabProps> = ({
 
             {selectedMember && (
                 <div
-                    onClick={() => setSelectedMember(null)}
+                    onClick={() => {
+                        setSelectedMember(null);
+                        setShowSalaryDialog(false);
+                    }}
                     style={{
                         position: 'absolute',
                         top: 0,
@@ -279,62 +289,210 @@ export const ClanMembersTab: React.FC<ClanMembersTabProps> = ({
                         cursor: 'pointer',
                     }}
                 >
-                    <motion.div
-                        initial={{ scale: 0.9, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        exit={{ scale: 0.9, opacity: 0 }}
-                        onClick={(e) => e.stopPropagation()}
-                        style={{
-                            width: '420px',
-                            background: isLight ? '#f5f0e1' : 'linear-gradient(135deg, #1e150d 0%, #110c07 100%)',
-                            border: `2px solid ${colors.accent}`,
-                            borderRadius: '24px',
-                            padding: '30px',
-                            textAlign: 'center',
-                            cursor: 'default',
-                            boxShadow: '0 10px 40px rgba(0,0,0,0.8)',
-                        }}
-                    >
-                        <h3
+                    {!showSalaryDialog ? (
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.9, opacity: 0 }}
+                            onClick={(e) => e.stopPropagation()}
                             style={{
-                                color: colors.accent,
-                                fontSize: '28px',
-                                marginBottom: '2px',
-                                fontFamily: "'Cinzel', serif",
-                                letterSpacing: '1px',
+                                width: '420px',
+                                background: isLight ? '#f5f0e1' : 'linear-gradient(135deg, #1e150d 0%, #110c07 100%)',
+                                border: `2px solid ${colors.accent}`,
+                                borderRadius: '24px',
+                                padding: '30px',
+                                textAlign: 'center',
+                                cursor: 'default',
+                                boxShadow: '0 10px 40px rgba(0,0,0,0.8)',
                             }}
                         >
-                            {selectedMember.name}
-                        </h3>
-                        <p style={{ color: colors.text, marginBottom: '24px', opacity: 0.6, fontSize: '14px', fontWeight: 600 }}>
-                            {selectedMember.role === 'LEADER' ? 'Глава клана' : selectedMember.role === 'OFFICER' ? 'Офицер клана' : 'Участник клана'} • Ур. {selectedMember.level || 1}
-                        </p>
+                            <h3
+                                style={{
+                                    color: colors.accent,
+                                    fontSize: '28px',
+                                    marginBottom: '2px',
+                                    fontFamily: "'Cinzel', serif",
+                                    letterSpacing: '1px',
+                                }}
+                            >
+                                {selectedMember.name}
+                            </h3>
+                            <p style={{ color: colors.text, marginBottom: '24px', opacity: 0.6, fontSize: '14px', fontWeight: 600 }}>
+                                {selectedMember.role === 'LEADER' ? 'Глава клана' : selectedMember.role === 'OFFICER' ? 'Офицер клана' : 'Участник клана'} • Ур. {selectedMember.level || 1}
+                            </p>
 
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                            {/* Посмотреть профиль */}
-                            <ActionButton label="ОСМОТРЕТЬ ПРОФИЛЬ" color={colors.accent} onClick={handleInspect} />
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                {/* Посмотреть профиль */}
+                                <ActionButton label="ОСМОТРЕТЬ ПРОФИЛЬ" color={colors.accent} onClick={handleInspect} />
 
-                            {/* Админ действия по управлению ролями */}
-                            {canManage && currentUserRole === 'LEADER' && selectedMember.role === 'MEMBER' && onPromoteMember && (
-                                <ActionButton label="ПОВЫСИТЬ ДО ОФИЦЕРА" color="#3b82f6" onClick={handlePromote} />
-                            )}
+                                {/* Выплата зарплаты */}
+                                {(currentUserRole === 'LEADER' || currentUserRole === 'OFFICER') && onPaySalary && (
+                                    <ActionButton label="💸 ВЫПЛАТИТЬ ЗАРПЛАТУ" color="#10b981" onClick={() => setShowSalaryDialog(true)} />
+                                )}
 
-                            {canManage && currentUserRole === 'LEADER' && selectedMember.role === 'OFFICER' && onDemoteMember && (
-                                <ActionButton label="РАЗЖАЛОВАТЬ ДО РЯДОВОГО" color="#f59e0b" onClick={handleDemote} />
-                            )}
+                                {/* Админ действия по управлению ролями */}
+                                {canManage && currentUserRole === 'LEADER' && selectedMember.role === 'MEMBER' && onPromoteMember && (
+                                    <ActionButton label="ПОВЫСИТЬ ДО ОФИЦЕРА" color="#3b82f6" onClick={handlePromote} />
+                                )}
 
-                            {canManage && currentUserRole === 'LEADER' && onTransferLeadership && (
-                                <ActionButton label="ПЕРЕДАТЬ РУКОВОДСТВО" color="#a855f7" onClick={handleTransfer} />
-                            )}
+                                {canManage && currentUserRole === 'LEADER' && selectedMember.role === 'OFFICER' && onDemoteMember && (
+                                    <ActionButton label="РАЗЖАЛОВАТЬ ДО РЯДОВОГО" color="#f59e0b" onClick={handleDemote} />
+                                )}
 
-                            {/* Админ действие: Кик */}
-                            {canManage && (
-                                <ActionButton label="ИСКЛЮЧИТЬ ИЗ КЛАНА" color="#ef4444" onClick={handleKick} />
-                            )}
+                                {canManage && currentUserRole === 'LEADER' && onTransferLeadership && (
+                                    <ActionButton label="ПЕРЕДАТЬ РУКОВОДСТВО" color="#a855f7" onClick={handleTransfer} />
+                                )}
 
-                            <ActionButton label="ЗАКРЫТЬ" color="rgba(255,255,255,0.4)" onClick={() => setSelectedMember(null)} />
-                        </div>
-                    </motion.div>
+                                {/* Админ действие: Кик */}
+                                {canManage && (
+                                    <ActionButton label="ИСКЛЮЧИТЬ ИЗ КЛАНА" color="#ef4444" onClick={handleKick} />
+                                )}
+
+                                <ActionButton label="ЗАКРЫТЬ" color="rgba(255,255,255,0.4)" onClick={() => setSelectedMember(null)} />
+                            </div>
+                        </motion.div>
+                    ) : (
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.9, opacity: 0 }}
+                            onClick={(e) => e.stopPropagation()}
+                            style={{
+                                width: '420px',
+                                background: isLight ? '#f5f0e1' : 'linear-gradient(135deg, #1e150d 0%, #110c07 100%)',
+                                border: `2px solid ${colors.accent}`,
+                                borderRadius: '24px',
+                                padding: '30px',
+                                textAlign: 'center',
+                                cursor: 'default',
+                                boxShadow: '0 10px 40px rgba(0,0,0,0.8)',
+                            }}
+                        >
+                            <h3 style={{ color: colors.accent, fontSize: '24px', marginBottom: '8px', fontFamily: "'Cinzel', serif" }}>
+                                Выплата Зарплаты
+                            </h3>
+                            <p style={{ color: colors.text, opacity: 0.7, fontSize: '13px', marginBottom: '20px' }}>
+                                Вы собираетесь выплатить ресурсы из казны игроку <span style={{ color: colors.accent, fontWeight: 900 }}>{selectedMember.name}</span>
+                            </p>
+
+                            {/* Выбор валюты */}
+                            <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginBottom: '20px' }}>
+                                <button
+                                    onClick={() => {
+                                        setSalaryCurrency('GOLD');
+                                        setSalaryAmount(500);
+                                    }}
+                                    style={{
+                                        flex: 1,
+                                        padding: '8px 16px',
+                                        background: salaryCurrency === 'GOLD' ? 'rgba(240,192,64,0.15)' : 'rgba(0,0,0,0.4)',
+                                        border: `1.5px solid ${salaryCurrency === 'GOLD' ? colors.accent : 'rgba(255,255,255,0.1)'}`,
+                                        borderRadius: '8px',
+                                        color: salaryCurrency === 'GOLD' ? colors.accent : '#fff',
+                                        fontWeight: 800,
+                                        fontSize: '12px',
+                                        cursor: 'pointer',
+                                    }}
+                                >
+                                    🪙 ЗОЛОТО
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        setSalaryCurrency('ALMAZ');
+                                        setSalaryAmount(20);
+                                    }}
+                                    style={{
+                                        flex: 1,
+                                        padding: '8px 16px',
+                                        background: salaryCurrency === 'ALMAZ' ? 'rgba(96,165,250,0.15)' : 'rgba(0,0,0,0.4)',
+                                        border: `1.5px solid ${salaryCurrency === 'ALMAZ' ? '#60a5fa' : 'rgba(255,255,255,0.1)'}`,
+                                        borderRadius: '8px',
+                                        color: salaryCurrency === 'ALMAZ' ? '#60a5fa' : '#fff',
+                                        fontWeight: 800,
+                                        fontSize: '12px',
+                                        cursor: 'pointer',
+                                    }}
+                                >
+                                    💎 АЛМАЗЫ
+                                </button>
+                            </div>
+
+                            {/* Доступно в казне */}
+                            <div style={{ fontSize: '12px', color: colors.text, opacity: 0.6, marginBottom: '12px', textAlign: 'left' }}>
+                                Доступно в казне: {salaryCurrency === 'GOLD' 
+                                    ? `${(clanData?.goldBank !== undefined ? clanData.goldBank : 5000).toLocaleString()} 🪙` 
+                                    : `${(clanData?.crystalsBank !== undefined ? clanData.crystalsBank : 250).toLocaleString()} 💎`}
+                            </div>
+
+                            {/* Поле ввода */}
+                            <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '24px' }}>
+                                <input
+                                    type="number"
+                                    min="1"
+                                    max={salaryCurrency === 'GOLD' ? (clanData?.goldBank !== undefined ? clanData.goldBank : 5000) : (clanData?.crystalsBank !== undefined ? clanData.crystalsBank : 250)}
+                                    value={salaryAmount || ''}
+                                    onChange={(e) => {
+                                        const val = parseInt(e.target.value);
+                                        const maxVal = salaryCurrency === 'GOLD' ? (clanData?.goldBank !== undefined ? clanData.goldBank : 5000) : (clanData?.crystalsBank !== undefined ? clanData.crystalsBank : 250);
+                                        if (isNaN(val)) {
+                                            setSalaryAmount(0);
+                                        } else {
+                                            setSalaryAmount(Math.min(maxVal, Math.max(1, val)));
+                                        }
+                                    }}
+                                    style={{
+                                        flex: 1,
+                                        background: 'rgba(0,0,0,0.5)',
+                                        border: `1.5px solid ${colors.border}`,
+                                        borderRadius: '8px',
+                                        color: '#fff',
+                                        padding: '10px 14px',
+                                        outline: 'none',
+                                        fontSize: '14px',
+                                        fontWeight: 900,
+                                    }}
+                                />
+                                <button
+                                    onClick={() => {
+                                        const maxVal = salaryCurrency === 'GOLD' ? (clanData?.goldBank !== undefined ? clanData.goldBank : 5000) : (clanData?.crystalsBank !== undefined ? clanData.crystalsBank : 250);
+                                        setSalaryAmount(maxVal);
+                                    }}
+                                    style={{
+                                        padding: '10px 16px',
+                                        background: 'rgba(255,255,255,0.05)',
+                                        border: '1px solid rgba(255,255,255,0.1)',
+                                        borderRadius: '8px',
+                                        color: colors.accent,
+                                        fontWeight: 800,
+                                        fontSize: '12px',
+                                        cursor: 'pointer',
+                                    }}
+                                >
+                                    МАКС
+                                </button>
+                            </div>
+
+                            {/* Кнопки действия */}
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                <ActionButton 
+                                    label="ПОДТВЕРДИТЬ ВЫПЛАТУ" 
+                                    color="#10b981" 
+                                    onClick={() => {
+                                        if (onPaySalary && salaryAmount > 0) {
+                                            onPaySalary(selectedMember.name, salaryAmount, salaryCurrency);
+                                        }
+                                        setShowSalaryDialog(false);
+                                        setSelectedMember(null);
+                                    }} 
+                                />
+                                <ActionButton 
+                                    label="ОТМЕНА" 
+                                    color="rgba(255,255,255,0.4)" 
+                                    onClick={() => setShowSalaryDialog(false)} 
+                                />
+                            </div>
+                        </motion.div>
+                    )}
                 </div>
             )}
         </motion.div>

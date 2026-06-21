@@ -13,37 +13,52 @@ type VkUser = {
 const isMobileVKApp = (): boolean => {
     if (typeof window === 'undefined') return false;
     const ua = navigator.userAgent.toLowerCase();
-    const hasMobileUA = ua.includes('vkapp') || ua.includes('vkwebview') || ua.includes('messenger');
-    const hasMobileBridge = 
-        (window as any).AndroidBridge !== undefined || 
-        ((window as any).webkit && (window as any).webkit.messageHandlers && (window as any).webkit.messageHandlers.VKWebAppAPI !== undefined);
+    const hasMobileUA =
+        ua.includes('vkapp') ||
+        ua.includes('vkwebview') ||
+        ua.includes('vkontakte') ||
+        ua.includes('com.vkontakte') ||
+        ua.includes('messenger');
+    const hasMobileBridge =
+        (window as any).AndroidBridge !== undefined ||
+        ((window as any).webkit &&
+            (window as any).webkit.messageHandlers &&
+            (window as any).webkit.messageHandlers.VKWebAppAPI !== undefined);
     return hasMobileUA || hasMobileBridge;
 };
 
 export const isVkMiniApp = (): boolean => {
     if (typeof window === 'undefined') return false;
 
-    const isIframe = window.self !== window.top;
-    
-    // Standalone desktop/browser launches (not inside iframe and not the VK mobile app webview)
-    // should use the mock bridge to prevent "Platform not initialized" crashes.
-    if (!isIframe && !isMobileVKApp()) {
-        return false;
-    }
-
-    const search = window.location.search;
-    const params = new URLSearchParams(search);
-    const hasVkQuery =
+    // ── 1. URL-параметры — самый надёжный признак VK Mini App (десктоп и мобильный).
+    //    VK платформа ВСЕГДА добавляет vk_app_id / vk_user_id / vk_platform в URL.
+    //    Проверяем первыми, до iframe/webview, чтобы не зависеть от race condition
+    //    при инициализации AndroidBridge / webkit на медленных устройствах.
+    const params = new URLSearchParams(window.location.search);
+    const hasVkParams =
         params.has('vk_app_id') ||
+        params.has('vk_user_id') ||
         params.has('vk_platform') ||
         Array.from(params.keys()).some((k) => k.startsWith('vk_'));
+    if (hasVkParams) return true;
+
+    // ── 2. Десктоп VK — страница внутри iframe
+    if (window.self !== window.top) return true;
+
+    // ── 3. Мобильный VK webview — AndroidBridge / webkit или UA-сигнатуры
+    if (isMobileVKApp()) return true;
+
+    // ── 4. Реферер из домена VK
     const hasVkReferrer =
-        document.referrer &&
+        !!document.referrer &&
         (document.referrer.includes('vk.com') ||
             document.referrer.includes('vk-apps.com') ||
             document.referrer.includes('vk.ru'));
-    const hasVkName = window.name && window.name.includes('fXD');
-    return hasVkQuery || hasVkReferrer || hasVkName || (window as any).isVkMiniApp === true;
+    if (hasVkReferrer) return true;
+
+    // ── 5. Прочие маркеры
+    const hasVkName = !!(window.name && window.name.includes('fXD'));
+    return hasVkName || (window as any).isVkMiniApp === true;
 };
 
 export const initVK = async (): Promise<boolean> => {

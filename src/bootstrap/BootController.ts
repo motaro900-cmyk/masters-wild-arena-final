@@ -456,7 +456,8 @@ class BootController {
         };
 
         // Helper for getting VK user info with retries
-        const getVkUserInfoWithRetry = async (retries: number = 3, delay: number = 1500): Promise<any> => {
+        // Мобильный VK на медленном 3G может долго отвечать — даём 5 попыток с растущим delay
+        const getVkUserInfoWithRetry = async (retries: number = 5, delay: number = 2000): Promise<any> => {
             let lastErr: any = null;
             for (let i = 0; i < retries; i++) {
                 try {
@@ -467,7 +468,9 @@ class BootController {
                     lastErr = err;
                     console.warn(`[BootController] VK user info attempt ${i + 1}/${retries} failed:`, err);
                     if (i < retries - 1) {
-                        await new Promise((resolve) => setTimeout(resolve, delay));
+                        // Экспоненциальный backoff: 2s, 3s, 4.5s, 6.75s...
+                        const backoff = delay * Math.pow(1.5, i);
+                        await new Promise((resolve) => setTimeout(resolve, backoff));
                     }
                 }
             }
@@ -533,6 +536,9 @@ class BootController {
                 throw new Error('VK getVkUserInfo returned empty object');
             }
         } catch (vkErr) {
+            // Перепроверяем isVkMiniApp() ПОСЛЕ всех попыток — к этому моменту
+            // URL-параметры уже точно загружены и AndroidBridge инициализирован.
+            // Это исключает ложное setNotInVk(тrue) из-за race condition при старте.
             const { isVkMiniApp } = await import('../utils/VKBridge');
             if (isVkMiniApp()) {
                 throw new Error('Не удалось получить ваш профиль ВКонтакте. Проверьте интернет-подключение и попробуйте снова.');

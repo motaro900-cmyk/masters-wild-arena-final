@@ -17,6 +17,10 @@ interface ClanBankTabProps {
     onToggleOfficersWithdraw: (enabled: boolean) => void;
     error: string | null;
     setError: (err: string | null) => void;
+    dailyGoldContributed: number;
+    dailyCrystalsContributed: number;
+    maxDailyGold: number;
+    maxDailyCrystals: number;
 }
 
 export const ClanBankTab: React.FC<ClanBankTabProps> = ({
@@ -32,6 +36,10 @@ export const ClanBankTab: React.FC<ClanBankTabProps> = ({
     onToggleOfficersWithdraw,
     error,
     setError,
+    dailyGoldContributed,
+    dailyCrystalsContributed,
+    maxDailyGold,
+    maxDailyCrystals,
 }) => {
     const [donateCurrency, setDonateCurrency] = useState<'GOLD' | 'ALMAZ'>('GOLD');
     const [withdrawCurrency, setWithdrawCurrency] = useState<'GOLD' | 'ALMAZ'>('GOLD');
@@ -39,11 +47,43 @@ export const ClanBankTab: React.FC<ClanBankTabProps> = ({
     const [donateAmount, setDonateAmount] = useState<number>(100);
     const [withdrawAmount, setWithdrawAmount] = useState<number>(1000);
 
+    // getRequiredClanLevel(currentLevel) => clan level needed to upgrade FROM this level
+    const getRequiredClanLevel = (lvl: number) => {
+        if (lvl === 0) return 1;
+        if (lvl === 1) return 3;
+        if (lvl === 2) return 6;
+        if (lvl === 3) return 9;
+        if (lvl === 4) return 12;
+        return 99;
+    };
+
+    // getBankUpgradeCost(currentLevel) => gold cost to upgrade FROM this level
+    const getBankUpgradeCost = (lvl: number) => {
+        if (lvl === 0) return 15000;
+        if (lvl === 1) return 30000;
+        if (lvl === 2) return 50000;
+        if (lvl === 3) return 75000;
+        if (lvl === 4) return 100000;
+        return Infinity;
+    };
+
     const handleQuickPreset = (amount: number) => {
-        setDonateAmount(amount);
+        const remainingLimit = donateCurrency === 'GOLD' 
+            ? maxDailyGold - dailyGoldContributed 
+            : maxDailyCrystals - dailyCrystalsContributed;
+        setDonateAmount(Math.max(0, Math.min(amount, remainingLimit)));
     };
 
     const handleLocalDonate = () => {
+        const remainingLimit = donateCurrency === 'GOLD' 
+            ? maxDailyGold - dailyGoldContributed 
+            : maxDailyCrystals - dailyCrystalsContributed;
+        
+        if (donateAmount > remainingLimit) {
+            useGameStore.getState().showAlert(`Превышен дневной лимит взноса! Доступно сегодня: ${remainingLimit}`);
+            return;
+        }
+
         if (donateCurrency === 'GOLD') {
             if (donateAmount < 1 || donateAmount > 500) {
                 useGameStore.getState().showAlert('Взнос золота должен быть в пределах от 1 до 500!');
@@ -81,22 +121,22 @@ export const ClanBankTab: React.FC<ClanBankTabProps> = ({
 
     const goldBank = clanData?.goldBank !== undefined ? clanData.goldBank : 5000;
     const crystalsBank = clanData?.crystalsBank !== undefined ? clanData.crystalsBank : 250;
-    const bankLevel = clanData?.bankLevel || 1;
+    const bankLevel = clanData?.bankLevel !== undefined ? clanData.bankLevel : 0;
     const officersCanWithdraw = clanData?.officersCanWithdraw || false;
     const transactions = clanData?.bankTransactions || [];
 
-    const upgradeCost = bankLevel * 10000;
-    const requiredClanLevel = bankLevel + 1;
+    const upgradeCost = getBankUpgradeCost(bankLevel);
+    const requiredClanLevel = getRequiredClanLevel(bankLevel);
     const isClanLevelMet = (clanLevelData?.level || 1) >= requiredClanLevel;
     const canUpgrade = goldBank >= upgradeCost && bankLevel < 5 && isClanLevelMet;
 
     const hasWithdrawPermission = playerRole === 'LEADER' || (playerRole === 'OFFICER' && officersCanWithdraw);
 
-    const goldRate = 0.001 + (bankLevel - 1) * 0.001;
+    const goldRate = 0.001 * Math.max(1, bankLevel);
     const goldHourlyIncomeVal = goldBank * goldRate;
     const goldDailyIncomeVal = goldBank * goldRate * 24;
 
-    const crystalsRate = 0.0005 * bankLevel;
+    const crystalsRate = 0.0005 * Math.max(1, bankLevel);
     const crystalsHourlyIncomeVal = crystalsBank * crystalsRate;
     const crystalsDailyIncomeVal = crystalsBank * crystalsRate * 24;
 
@@ -107,13 +147,13 @@ export const ClanBankTab: React.FC<ClanBankTabProps> = ({
         return Math.floor(value).toLocaleString();
     };
 
-    // Perks definitions based on bank level
+    // Перки разблокируются при достижении каждого уровня казны (1–5)
     const perks = [
-        { lvl: 1, desc: 'Ставка: +0.10% золота / +0.05% алмазов в час.' },
-        { lvl: 2, desc: 'Ставка: +0.20% золота / +0.10% алмазов в час.' },
-        { lvl: 3, desc: 'Ставка: +0.30% золота / +0.15% алмазов в час.' },
-        { lvl: 4, desc: 'Ставка: +0.40% золота / +0.20% алмазов в час.' },
-        { lvl: 5, desc: 'Ставка: +0.50% золота / +0.25% алмазов в час.' },
+        { lvl: 1, reqClanLvl: 1,  desc: 'Ставка: +0.10% золота / +0.05% алмазов в час.', cost: 15000 },
+        { lvl: 2, reqClanLvl: 3,  desc: 'Ставка: +0.20% золота / +0.10% алмазов в час.', cost: 30000 },
+        { lvl: 3, reqClanLvl: 6,  desc: 'Ставка: +0.30% золота / +0.15% алмазов в час.', cost: 50000 },
+        { lvl: 4, reqClanLvl: 9,  desc: 'Ставка: +0.40% золота / +0.20% алмазов в час.', cost: 75000 },
+        { lvl: 5, reqClanLvl: 12, desc: 'Ставка: +0.50% золота / +0.25% алмазов в час.', cost: 100000 },
     ];
 
     return (
@@ -285,31 +325,40 @@ export const ClanBankTab: React.FC<ClanBankTabProps> = ({
                                     style={{
                                         display: 'flex',
                                         alignItems: 'center',
-                                        gap: '10px',
-                                        padding: '8px 10px',
+                                        justifyContent: 'space-between',
+                                        padding: '10px 14px',
                                         background: isUnlocked ? 'rgba(74, 222, 128, 0.05)' : 'rgba(0,0,0,0.2)',
                                         borderRadius: '8px',
                                         border: `1.5px solid ${isUnlocked ? 'rgba(74,222,128,0.2)' : 'rgba(255,255,255,0.05)'}`,
-                                        opacity: isUnlocked ? 1 : 0.4,
+                                        opacity: isUnlocked ? 1 : 0.6,
                                     }}
                                 >
-                                    <div style={{
-                                        width: '18px',
-                                        height: '18px',
-                                        borderRadius: '50%',
-                                        background: isUnlocked ? '#4ade80' : 'rgba(255,255,255,0.1)',
-                                        color: '#000',
-                                        fontSize: '10px',
-                                        fontWeight: 900,
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                    }}>
-                                        {p.lvl}
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                        <div style={{
+                                            width: '20px',
+                                            height: '20px',
+                                            borderRadius: '50%',
+                                            background: isUnlocked ? '#4ade80' : 'rgba(255,255,255,0.1)',
+                                            color: '#000',
+                                            fontSize: '11px',
+                                            fontWeight: 900,
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                        }}>
+                                            {p.lvl}
+                                        </div>
+                                        <span style={{ fontSize: '11px', color: isUnlocked ? '#fff' : '#ccc' }}>
+                                            {p.desc}
+                                        </span>
                                     </div>
-                                    <span style={{ fontSize: '11px', color: isUnlocked ? '#fff' : '#ccc' }}>
-                                        {p.desc}
-                                    </span>
+                                    
+                                    {!isUnlocked && (
+                                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', fontSize: '9px', fontWeight: 800 }}>
+                                            <span style={{ color: '#ef4444' }}>Ур. Клана: {p.reqClanLvl}</span>
+                                            <span style={{ color: '#f0c040', marginTop: '1px' }}>Цена: {p.cost.toLocaleString()} 🪙</span>
+                                        </div>
+                                    )}
                                 </div>
                             );
                         })}
@@ -438,6 +487,28 @@ export const ClanBankTab: React.FC<ClanBankTabProps> = ({
                         </span>
                     </div>
 
+                    {/* Дневной лимит взносов */}
+                    <div style={{ 
+                        background: 'rgba(0,0,0,0.2)', 
+                        padding: '6px 12px', 
+                        borderRadius: '6px', 
+                        fontSize: '11px',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        border: '1px solid rgba(255,255,255,0.05)',
+                        marginTop: '-4px'
+                    }}>
+                        <span style={{ color: '#ccc', fontWeight: 700 }}>Лимит сегодня:</span>
+                        <span style={{ fontWeight: 900, color: (donateCurrency === 'GOLD' ? dailyGoldContributed >= maxDailyGold : dailyCrystalsContributed >= maxDailyCrystals) ? '#ef4444' : colors.accent }}>
+                            {donateCurrency === 'GOLD' 
+                                ? `${dailyGoldContributed} / ${maxDailyGold}` 
+                                : `${dailyCrystalsContributed} / ${maxDailyCrystals}`}
+                            {' '}
+                            {donateCurrency === 'GOLD' ? '🪙' : '💎'}
+                        </span>
+                    </div>
+
                     <div style={{ display: 'flex', gap: '10px' }}>
                         <div style={{ position: 'relative', flex: 1, display: 'flex', alignItems: 'center' }}>
                             <input
@@ -448,10 +519,13 @@ export const ClanBankTab: React.FC<ClanBankTabProps> = ({
                                 onChange={(e) => {
                                     const val = parseInt(e.target.value);
                                     const maxVal = donateCurrency === 'GOLD' ? 500 : 100;
+                                    const remainingLimit = donateCurrency === 'GOLD' 
+                                        ? maxDailyGold - dailyGoldContributed 
+                                        : maxDailyCrystals - dailyCrystalsContributed;
                                     if (isNaN(val)) {
                                         setDonateAmount(0);
                                     } else {
-                                        setDonateAmount(Math.min(maxVal, Math.max(0, val)));
+                                        setDonateAmount(Math.min(maxVal, remainingLimit, Math.max(0, val)));
                                     }
                                 }}
                                 style={{
