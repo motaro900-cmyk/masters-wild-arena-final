@@ -161,7 +161,7 @@ export const RankingWindow: React.FC = () => {
             };
             membersList = [clanLeaderEntry, ...DEFAULT_MOCK_MEMBERS, playerMember];
         } else {
-            membersList = [playerMember, ...DEFAULT_MOCK_MEMBERS];
+            membersList = [playerMember];
         }
 
         const mapped: LeaderboardEntry[] = membersList.map((m: any, idx: number) => {
