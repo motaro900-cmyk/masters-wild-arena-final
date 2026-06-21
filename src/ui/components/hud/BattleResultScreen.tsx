@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { useGameStore } from '../../../store/useGameStore';
 import { AssetsMap } from '../../../configs/AssetsMap';
-import { shareBattleResult, openStoryBox, openShareLink, copyToClipboard } from '../../../utils/VKBridge';
+import { openStoryBox, openShareLink, copyToClipboard } from '../../../utils/VKBridge';
 import { audioService } from '../../../services/AudioService';
 import { getHeroExpNeeded } from '../../../features/heroes/leveling/HeroLevelConfig';
 import { HEROES_DB } from '../../../configs/HeroesConfig';
@@ -294,7 +294,6 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
     const [shareNotice, setShareNotice] = useState<'idle' | 'copied' | 'story_ok' | 'story_fail'>('idle');
     const [storyLoading, setStoryLoading] = useState(false);
     const [friendLoading, setFriendLoading] = useState(false);
-    const [isSharing, setIsSharing] = useState(false);
 
     const goToHeroes = useGameStore((state) => state.goToHeroes);
     const trophies = useGameStore((state) => state.trophies);

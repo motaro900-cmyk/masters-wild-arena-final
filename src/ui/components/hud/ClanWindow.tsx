@@ -749,6 +749,7 @@ export const ClanWindow: React.FC = () => {
                             colors={colors}
                             members={members}
                             isLight={isLight}
+                            clanData={clanData}
                             onKickMember={handleKickMember}
                             onPromoteMember={handlePromoteMember}
                             onDemoteMember={handleDemoteMember}

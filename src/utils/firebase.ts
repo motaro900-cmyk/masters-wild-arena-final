@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { initializeFirestore, persistentLocalCache } from 'firebase/firestore';
+import { initializeFirestore } from 'firebase/firestore';
 
 // Ваш конфиг из консоли Firebase
 const firebaseConfig = {

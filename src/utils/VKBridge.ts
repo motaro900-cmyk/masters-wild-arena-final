@@ -98,8 +98,8 @@ export const initVK = async (): Promise<boolean> => {
             }
             // Запрашиваем ландшафтную ориентацию на мобильных
             try {
-                if (bridge.supports('VKWebAppLockOrientation')) {
-                    await bridge.send('VKWebAppLockOrientation', {
+                if ((bridge.supports as any)('VKWebAppLockOrientation')) {
+                    await bridge.send('VKWebAppLockOrientation' as any, {
                         orientation: 'landscape',
                     });
                     console.log('[VK Bridge] Orientation locked to landscape');
