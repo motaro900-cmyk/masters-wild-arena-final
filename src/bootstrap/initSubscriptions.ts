@@ -76,6 +76,7 @@ export const initSubscriptions = async (
     let lastAppliedAdminVersion: number | null = null;
     let lastClanId: string | null = null;
     let sessionRegistered = false;
+    const subscriptionStartTime = Date.now();
 
     const unsubProfile = syncService.subscribeToOwnProfile(userId, async (dbData) => {
         if (!dbData) return;
@@ -89,15 +90,20 @@ export const initSubscriptions = async (
         }
 
         if (sessionRegistered && dbData.activeSessionToken && localSessionToken && dbData.activeSessionToken !== localSessionToken) {
-            console.warn('[SyncService] Session conflict detected: activeSessionToken in DB is different!');
-            bootController.execute({
-                type: 'MUTATE_STATE',
-                payload: {
-                    patch: { sessionConflict: true }
-                }
-            }).catch(() => {});
-            syncService.disableSync();
-            return;
+            // Only enforce kick if the mismatch persists beyond the initial 3-second grace period (settling cached snapshots/race conditions)
+            if (Date.now() - subscriptionStartTime > 3000) {
+                console.warn('[SyncService] Session conflict detected: activeSessionToken in DB is different!');
+                bootController.execute({
+                    type: 'MUTATE_STATE',
+                    payload: {
+                        patch: { sessionConflict: true }
+                    }
+                }).catch(() => {});
+                syncService.disableSync();
+                return;
+            } else {
+                console.log('[SyncService] Stale token snapshot ignored during initial grace period.');
+            }
         }
 
         // Friends list dynamic sync check
