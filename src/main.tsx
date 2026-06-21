@@ -315,15 +315,16 @@ export const Root = () => {
                 <div
                     className="game-scale-wrapper"
                     style={{
-                        position: rotated ? 'absolute' : 'relative',
-                        left: rotated ? '50%' : 'auto',
-                        top: rotated ? '50%' : 'auto',
+                        position: 'absolute',
+                        left: '50%',
+                        top: '50%',
                         width: AppConfig.GAME_WIDTH,
                         height: AppConfig.GAME_HEIGHT,
                         transform: rotated
                             ? `translate(-50%, -50%) rotate(90deg) scale(${scale})`
-                            : `scale(${scale})`,
+                            : `translate(-50%, -50%) scale(${scale})`,
                         transformOrigin: 'center center',
+                        flexShrink: 0,
                         boxShadow: '0 0 100px rgba(0, 0, 0, 0.9)',
                         backgroundImage: `url(${
                             isMobile ? AssetsMap.BACKGROUNDS.MAIN_MENU_MOBILE : AssetsMap.BACKGROUNDS.MAIN_MENU
