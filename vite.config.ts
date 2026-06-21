@@ -129,6 +129,6 @@ export default defineConfig({
     __BUILD_TIME__: buildTime,
   },
   esbuild: {
-    drop: ['console', 'debugger'],
+    drop: ['debugger'],
   },
 });
