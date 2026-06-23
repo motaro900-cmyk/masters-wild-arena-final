@@ -92,9 +92,20 @@ async function runSmokeTest() {
         await page.waitForFunction(() => typeof window.useGameStore !== 'undefined', { timeout: 25000 });
         console.log('✅ Game store initialized.');
 
+        // Wait for BootController to finish booting completely (READY state)
+        console.log('⏳ Waiting for bootController to transition to READY...');
+        await page.waitForFunction(async () => {
+            try {
+                const { bootController } = await import('/src/bootstrap/BootController.ts');
+                return bootController.getState() === 'READY';
+            } catch (e) {
+                return false;
+            }
+        }, { timeout: 35000 });
+        console.log('✅ BootController is READY.');
+
         // Initialize state to bypass onboarding/tutorials
         await page.evaluate(() => {
-            localStorage.clear();
             if (window.useGameStore) {
                 window.useGameStore.setState({
                     onboardingCompleted: true,
@@ -108,7 +119,7 @@ async function runSmokeTest() {
                 });
             }
         });
-        await delay(2000);
+        await delay(1000);
 
         // --- PRE-WARMING DYNAMIC IMPORTS ---
         // We visit all key screens unthrottled first, ensuring all react-lazy chunks (BattleScene, ShopScene, etc.)
@@ -125,18 +136,30 @@ async function runSmokeTest() {
         
         console.log('   - Pre-warming Battle...');
         await page.evaluate(() => window.useGameStore.getState().startPveBattle(1));
-        await delay(3000);
+        await delay(1500);
+        await page.evaluate(() => {
+            const dismissOverlay = () => {
+                const buttons = Array.from(document.querySelectorAll('button'));
+                const dismissBtn = buttons.find(b => b.textContent && b.textContent.includes('Играть в портретном'));
+                if (dismissBtn) dismissBtn.click();
+            };
+            dismissOverlay();
+            const btns = Array.from(document.querySelectorAll('button'));
+            const startBtn = btns.find(b => b.textContent.includes('НАЧАТЬ БОЙ'));
+            if (startBtn) startBtn.click();
+        });
+        await delay(6000); // Wait for PixiJS to load all battle assets unthrottled
         
         console.log('   - Pre-warming Heroes...');
         await page.evaluate(() => window.useGameStore.getState().goToHeroes());
         await delay(2000);
 
         console.log('   - Returning to Main Menu...');
-        await page.evaluate(() => window.useGameStore.getState().setActiveScreen('MAIN_MENU'));
+        await page.evaluate(() => window.useGameStore.getState().goToMainMenu());
         await delay(1000);
 
         // Pre-warm dynamic service imports inside BattleScene / BattleResultScreen
-        console.log('   - Pre-warming dynamic service modules...');
+        console.log('   - Pre-warming dynamic service modules and battle assets...');
         await page.evaluate(async () => {
             const paths = [
                 '/src/services/MatchmakingService.ts',
@@ -153,8 +176,12 @@ async function runSmokeTest() {
                     await import(p);
                 } catch (e) {}
             }
+            try {
+                const { AssetLoader } = await import('/src/engine/systems/AssetLoader.ts');
+                AssetLoader.getInstance().preloadBattleAssets();
+            } catch (e) {}
         });
-        await delay(1000);
+        await delay(2000);
         console.log('🔥 Pre-warming complete.');
 
         // 4. Emulate network Slow 3G now that scripts and bundles are loaded

@@ -54,6 +54,13 @@ type GameStoreState = {
     hudEnemyAvatar?: string;
     hudPrecomputed?: boolean;
 
+    // Security/Auth telemetry & verification status
+    authState?: {
+        vkVerified: boolean;
+        verifiedAt: number;
+        source: 'signature' | 'localhost' | 'bypass';
+    } | null;
+
     [key: string]: any; // временно — постепенно заменять на строгие типы
 };
 
@@ -72,6 +79,7 @@ const store = create<GameStoreState>()(
             ...createChatSlice(set, get),
             ...createMailSlice(set, get),
 
+            authState: null as any,
             showSummonOverlay: false,
             setShowSummonOverlay: (show: boolean) => set({ showSummonOverlay: show }),
 

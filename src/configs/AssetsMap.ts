@@ -161,6 +161,11 @@ const rawAssetsMap = {
         BONE_ARMOR: '/assets/images/items/armor/armor_bone.webp',
         LION_ARMOR: '/assets/images/items/armor/armor_lion.webp',
         PHOENIX_ARMOR: '/assets/images/items/armor/armor_phoenix.webp',
+        // Unified weapon texture atlas (generated from Free Texture Packer)
+        WEAPONS_ATLAS: '/assets/images/items/weapons/items.webp',
+        WEAPONS_ATLAS_MOBILE: '/assets/images/items/weapons/items_mobile.webp',
+        WEAPONS_ATLAS_JSON: '/assets/images/items/weapons/items.json',
+        WEAPONS_ATLAS_MOBILE_JSON: '/assets/images/items/weapons/items_mobile.json',
     },
     AUDIO: {
         MUSIC_MAIN: '/assets/audio/music/Dawn_of_the_Siege.mp3',

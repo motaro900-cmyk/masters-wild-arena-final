@@ -33,3 +33,6 @@ public/assets/
 
 # Temporary files folder
 temp/
+
+# Build output folder for assets
+build/

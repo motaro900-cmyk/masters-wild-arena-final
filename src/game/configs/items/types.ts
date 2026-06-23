@@ -18,6 +18,8 @@ export interface IBaseItem {
     level?: number;
     name: string;
     image: string;
+    /** Frame key inside the unified items atlas (items.webp / items_mobile.webp) */
+    atlasFrame?: string;
     rarity: ItemRarity | string;
     desc: string;
     priceGold?: number;

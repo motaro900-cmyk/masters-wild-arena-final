@@ -23,12 +23,17 @@ function ensureDirExists(filePath) {
     }
 }
 
-// Clean and recreate destination root
-if (fs.existsSync(DEST_ROOT)) {
-    console.log(`🧹 Cleaning destination folder: ${DEST_ROOT}`);
-    fs.rmSync(DEST_ROOT, { recursive: true, force: true });
+// STRICT COMPLIANCE GUARD: Prevent any destructive clean/wipe operations on DEST_ROOT (public/assets)
+const args = process.argv.slice(2);
+if (args.includes('--clean') || args.includes('--wipe') || args.includes('--reset')) {
+    console.error('🚨 FATAL ERROR: Destructive operations on public/assets are strictly forbidden by AGENTS.md compliance guidelines.');
+    process.exit(1);
 }
-fs.mkdirSync(DEST_ROOT, { recursive: true });
+
+// Ensure destination root exists (Incremental build, do NOT wipe)
+if (!fs.existsSync(DEST_ROOT)) {
+    fs.mkdirSync(DEST_ROOT, { recursive: true });
+}
 
 async function processDirectory(directory) {
     const files = fs.readdirSync(directory);
@@ -63,6 +68,14 @@ async function processFile(filePath) {
 
     const fileName = path.basename(filePath, ext);
     const destDir = path.dirname(destPath);
+
+    // If it's already a mobile version, just copy it to destination directly
+    if (fileName.toLowerCase().endsWith('_mobile')) {
+        ensureDirExists(destPath);
+        fs.copyFileSync(filePath, destPath);
+        console.log(`📋 Copied already optimized mobile file: ${relativePath}`);
+        return;
+    }
 
     // 1. Direct Copy Rule: audio/, fx/, ui/, resources/, shop/, sheets/, frames/, myicons/
     const isDirectCopy = 
@@ -235,5 +248,33 @@ async function processFile(filePath) {
 
 console.log('🚀 Starting asset optimization & distribution build...');
 processDirectory(SRC_ROOT)
-    .then(() => console.log('✨ All assets distributed & optimized successfully!'))
+    .then(async () => {
+        // Copy generated atlas files from build/atlas to DEST_ROOT (public/assets)
+        const ATLAS_SRC_DIR = path.join(__dirname, '../build/atlas');
+        const atlasFiles = [
+            'images/items/weapons/items.webp',
+            'images/items/weapons/items_mobile.webp',
+            'images/items/weapons/items.json',
+            'images/items/weapons/items_mobile.json'
+        ];
+        
+        let copiedCount = 0;
+        atlasFiles.forEach(file => {
+            const srcFile = path.join(ATLAS_SRC_DIR, file);
+            const destFile = path.join(DEST_ROOT, file);
+            if (fs.existsSync(srcFile)) {
+                ensureDirExists(destFile);
+                fs.copyFileSync(srcFile, destFile);
+                copiedCount++;
+            }
+        });
+        
+        if (copiedCount > 0) {
+            console.log(`📦 Successfully copied ${copiedCount} atlas files from build/atlas to public/assets`);
+        } else {
+            console.warn('⚠️ No atlas files found in build/atlas. Make sure to run generate-items-atlas.js first if needed.');
+        }
+
+        console.log('✨ All assets distributed & optimized successfully!');
+    })
     .catch(err => console.error('💥 Fatal error in asset distribution:', err));

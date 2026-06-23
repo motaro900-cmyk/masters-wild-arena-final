@@ -12,6 +12,7 @@ import { calculateTotalPower } from './Matchmaking/utils/matchmakingUtils';
 import { audioService } from '../../../services/AudioService';
 import { AssetsMap } from '../../../configs/AssetsMap';
 import { resolveAvatarPath } from '../../../configs/ProfileCustomization';
+import { getItemAtlasStyle } from '../../../utils/itemAtlas';
 
 const getTemplateId = (id: string) => {
     if (!id) return '';
@@ -67,7 +68,7 @@ const MiniCard: React.FC<{ emoji: string; label: string; value: React.ReactNode;
     <div className="sc-h" style={{ background: 'rgba(255,255,255,0.022)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '10px', padding: '8px 10px', display: 'flex', alignItems: 'center', gap: '8px', boxSizing: 'border-box', minWidth: 0 }}>
         <div style={{ width: '32px', height: '32px', borderRadius: '8px', flexShrink: 0, background: bg, border: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', lineHeight: 1 }}>{emoji}</div>
         <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: '8px', color: 'rgba(255,255,255,0.28)', fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase', marginBottom: '2px' }}>{label}</div>
+            <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.35)', fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase', marginBottom: '2px' }}>{label}</div>
             <div style={{ fontSize: '13px', fontWeight: 800, color: vc, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontFamily: "'Outfit', sans-serif", lineHeight: 1.2 }}>{value}</div>
         </div>
     </div>
@@ -130,14 +131,14 @@ export const PlayerInspectModal: React.FC = () => {
     let remoteHeroEquipment: any = null;
 
     if (isMe) {
-        name = store.name || 'Мастер'; avatar = resolveAvatarPath(myVkUser?.photo_200 || myVkUser?.photo || store.avatar);
+        name = store.name || 'Мастер'; avatar = myVkUser?.photo_200 || myVkUser?.photo || store.avatar || 'panda';
         level = store.level || 1; rating = store.rating || 0; vipLevel = store.vipLevel || 0; isVipActive = store.isVipActive || false;
         wins = store.wins || 0; totalBattles = store.totalBattles || 0; selectedHeroId = store.selectedHeroId || 'panda';
         heroLevel = store.heroes?.[selectedHeroId]?.level || 1; frame = store.frame || 'none'; title = store.title || 'Странник';
         clanName = store.clanData?.name || 'Отсутствует'; ownedHeroesCount = store.ownedHeroes?.length || 1; bpLevel = store.bpLevel || 1;
         heroTalents = store.heroTalents?.[selectedHeroId] || {}; inventory = store.inventory || [];
     } else if (playerData) {
-        name = playerData.name || playerData.имя || 'Мастер'; avatar = resolveAvatarPath(playerData.avatar || playerData.фото);
+        name = playerData.name || playerData.имя || 'Мастер'; avatar = playerData.avatar || playerData.фото || 'panda';
         level = playerData.level || playerData.уровень || 1; rating = playerData.rating || playerData.рейтинг || 0;
         vipLevel = playerData.vipLevel || 0; isVipActive = playerData.isVipActive || false;
         wins = playerData.wins || 0; totalBattles = playerData.totalBattles || 0; selectedHeroId = playerData.hero || 'panda'; heroLevel = level;
@@ -150,7 +151,7 @@ export const PlayerInspectModal: React.FC = () => {
                 selectedHeroId = p.selectedHeroId || selectedHeroId;
                 clanName = p.clanData?.name || (p.clanId ? 'В клане' : 'Отсутствует');
                 ownedHeroesCount = p.ownedHeroes?.length || 1; bpLevel = p.bpLevel || 1; inventory = p.inventory || inventory;
-                if (p.avatar) avatar = resolveAvatarPath(p.avatar);
+                if (p.avatar) avatar = p.avatar;
                 if (p.heroes?.[selectedHeroId]) heroLevel = p.heroes[selectedHeroId].level || heroLevel;
                 if (p.heroTalents?.[selectedHeroId]) heroTalents = p.heroTalents[selectedHeroId] || {};
                 if (p.heroEquipment?.[selectedHeroId]) remoteHeroEquipment = p.heroEquipment[selectedHeroId];
@@ -229,7 +230,16 @@ export const PlayerInspectModal: React.FC = () => {
         const iconBox = (
             <div className="d-slot" style={{ width: '68px', height: '68px', borderRadius: '8px', flexShrink: 0, background: item ? 'radial-gradient(circle at 40% 30%, rgba(50,36,20,0.98) 0%, rgba(10,7,4,1) 100%)' : 'rgba(0,0,0,0.42)', border: `2px solid ${rc ? rc + 'bb' : 'rgba(240,192,64,0.3)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: rc ? `0 0 12px ${rc}44, inset 0 0 8px rgba(0,0,0,0.5)` : 'inset 0 0 8px rgba(0,0,0,0.5)', position: 'relative', overflow: 'hidden' }}>
                 {rc && <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '2px', background: `linear-gradient(90deg, transparent, ${rc}, transparent)` }} />}
-                {item ? (item.spriteClass ? <div className={item.spriteClass} style={{ width: '56px', height: '56px' }} /> : <img src={resolveAssetPath(item.image)} style={{ width: '74%', height: '74%', objectFit: 'contain' }} alt="" />) : <img src={icons[slotKey] || ''} style={{ width: '50%', height: '50%', objectFit: 'contain', opacity: 0.18, filter: 'grayscale(1)' }} alt="" />}
+                {item ? (
+                    item.spriteClass ? (
+                        <div className={item.spriteClass} style={{ width: '56px', height: '56px' }} />
+                    ) : (() => {
+                        const atlasStyle = getItemAtlasStyle(item as any, 50, 50);
+                        return atlasStyle
+                            ? <div style={atlasStyle} />
+                            : <img src={resolveAssetPath(item.image)} style={{ width: '74%', height: '74%', objectFit: 'contain' }} alt="" />;
+                    })()
+                ) : <img src={icons[slotKey] || ''} style={{ width: '50%', height: '50%', objectFit: 'contain', opacity: 0.18, filter: 'grayscale(1)' }} alt="" />}
             </div>
         );
 
@@ -315,9 +325,9 @@ export const PlayerInspectModal: React.FC = () => {
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' }}>
                                     <span style={{ color: '#fff', fontSize: '26px', fontWeight: 900, fontFamily: "'Cinzel', serif", letterSpacing: '0.5px', textShadow: '0 2px 12px rgba(0,0,0,0.9)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '340px' }}>{name}</span>
                                     {effectiveVip && (
-                                        <div className="vip-a" style={{ position: 'relative', width: '48px', height: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                        <div className="vip-a" style={{ position: 'relative', width: '60px', height: '22px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                                             <img src={resolveAssetPath(AssetsMap.UI.VIP_PLAQUE)} style={{ position: 'absolute', width: '100%', height: '100%', objectFit: 'contain', filter: 'drop-shadow(0 1px 5px rgba(240,192,64,0.6))' }} alt="" />
-                                            <span style={{ position: 'relative', fontSize: '7.5px', fontWeight: 900, color: '#fff', fontFamily: "'Cinzel', serif", zIndex: 1 }}>VIP</span>
+                                            <span style={{ position: 'relative', fontSize: '9px', fontWeight: 900, color: '#fff', fontFamily: "'Cinzel', serif", zIndex: 1 }}>VIP</span>
                                         </div>
                                     )}
                                 </div>
@@ -388,7 +398,7 @@ export const PlayerInspectModal: React.FC = () => {
                                 {/* ════════════════ INFO TAB ═══════════════════ */}
                                 {activeTab === 'info' && (
                                     <motion.div key="info" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.18 }}
-                                        style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', gap: '10px', overflow: 'hidden' }}
+                                        style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', gap: '10px', overflowY: 'auto' }}
                                     >
                                         {/* Любимый персонаж */}
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '14px', background: 'linear-gradient(135deg, rgba(44,30,14,0.85) 0%, rgba(18,12,7,0.92) 100%)', borderRadius: '12px', border: '1px solid rgba(240,192,64,0.12)', padding: '9px 14px', boxSizing: 'border-box', flexShrink: 0 }}>
@@ -445,18 +455,18 @@ export const PlayerInspectModal: React.FC = () => {
                                                             <div key={c.label} className="sc-h" style={{ background: 'rgba(255,255,255,0.022)', border: '1px solid rgba(255,255,255,0.07)', borderTop: `2px solid ${c.top}`, borderRadius: '10px', padding: '8px 10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                                                                 <img src={c.img} style={{ width: '28px', height: '28px', objectFit: 'contain', flexShrink: 0, filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.6))' }} alt="" />
                                                                 <div style={{ minWidth: 0 }}>
-                                                                    <div style={{ fontSize: '8px', color: 'rgba(255,255,255,0.28)', fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase' }}>{c.label}</div>
+                                                                    <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.35)', fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase' }}>{c.label}</div>
                                                                     <div style={{ fontSize: '13px', fontWeight: 900, color: c.vc, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontFamily: "'Outfit', sans-serif" }}>{c.val}</div>
                                                                 </div>
                                                             </div>
                                                         ))}
                                                         <div className="sc-h" style={{ background: 'rgba(255,255,255,0.022)', border: '1px solid rgba(255,255,255,0.07)', borderTop: '2px solid rgba(96,165,250,0.4)', borderRadius: '10px', padding: '8px 10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                                                             <div style={{ width: '28px', height: '28px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px' }}>⚔️</div>
-                                                            <div><div style={{ fontSize: '8px', color: 'rgba(255,255,255,0.28)', fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase' }}>ВСЕГО БОЁВ</div><div style={{ fontSize: '13px', fontWeight: 900, color: '#e2e8f0', fontFamily: "'Outfit', sans-serif" }}>{totalBattles.toLocaleString()}</div></div>
+                                                            <div><div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.35)', fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase' }}>ВСЕГО БОЁВ</div><div style={{ fontSize: '13px', fontWeight: 900, color: '#e2e8f0', fontFamily: "'Outfit', sans-serif" }}>{totalBattles.toLocaleString()}</div></div>
                                                         </div>
                                                         <div className="sc-h" style={{ background: 'rgba(255,255,255,0.022)', border: '1px solid rgba(255,255,255,0.07)', borderTop: '2px solid rgba(74,222,128,0.4)', borderRadius: '10px', padding: '8px 10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                                                             <div style={{ width: '28px', height: '28px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px' }}>🏆</div>
-                                                            <div><div style={{ fontSize: '8px', color: 'rgba(255,255,255,0.28)', fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase' }}>ПОБЕДЫ</div><div style={{ fontSize: '13px', fontWeight: 900, color: '#4ade80', fontFamily: "'Outfit', sans-serif" }}>{winRate}%</div></div>
+                                                            <div><div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.35)', fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase' }}>ПОБЕДЫ</div><div style={{ fontSize: '13px', fontWeight: 900, color: '#4ade80', fontFamily: "'Outfit', sans-serif" }}>{winRate}%</div></div>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -477,7 +487,7 @@ export const PlayerInspectModal: React.FC = () => {
                                 {/* ════════════════ GEAR TAB ═══════════════════ */}
                                 {activeTab === 'gear' && (
                                     <motion.div key="gear" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.18 }}
-                                        style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', gap: '8px', overflow: 'hidden' }}
+                                        style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', gap: '8px', overflowY: 'auto' }}
                                     >
                                         {/* DIORAMA */}
                                         <div style={{ flex: 1, minHeight: 0, display: 'flex', alignItems: 'stretch' }}>

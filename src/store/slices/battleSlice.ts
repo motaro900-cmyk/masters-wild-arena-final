@@ -28,6 +28,7 @@ export const createBattleSlice = (set: any, get: any) => ({
     lossStreak: 0,
     activeMapId: 'forest',
     battleWeatherState: 'rain',
+    weatherSource: 'default',
 
     // --- Экшены ---
 

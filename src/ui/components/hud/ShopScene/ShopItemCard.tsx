@@ -6,6 +6,7 @@ import { rarityTranslation } from './shopHelpers';
 import { resolveAssetPath } from '../../../../utils/assetPath';
 import { useGameStore } from '../../../../store/useGameStore';
 import { useShallow } from 'zustand/react/shallow';
+import { getItemAtlasStyle } from '../../../../utils/itemAtlas';
 
 interface ShopItemCardProps {
     item: ShopItem;
@@ -241,6 +242,7 @@ export const ShopItemCard: React.FC<ShopItemCardProps> = React.memo(({
                 }}
             >
                 {item.spriteClass ? (
+                    // 1️⃣ CSS-спрайт (старый метод)
                     <div
                         className={item.spriteClass}
                         style={{
@@ -251,33 +253,52 @@ export const ShopItemCard: React.FC<ShopItemCardProps> = React.memo(({
                                 : `drop-shadow(0 2px 6px rgba(0,0,0,0.6)) drop-shadow(0 0 4px ${glow}66)`,
                         }}
                     />
-                ) : (
-                    <>
-                        {!imageLoaded && <div className="skeleton-placeholder" />}
-                        <img
-                            src={resolveAssetPath(item.image)}
-                            onLoad={() => setImageLoaded(true)}
-                            onError={(e) => {
-                                const currentSrc = e.currentTarget.src;
-                                if (currentSrc.endsWith('.webp')) {
-                                    e.currentTarget.src = currentSrc.replace(/_mobile\.webp$/i, '.png').replace(/\.webp$/i, '.png');
-                                } else {
-                                    e.currentTarget.src = AssetsMap.UI.ICON_DAILY_CHEST;
-                                }
-                            }}
-                            className={`image-fade-in ${imageLoaded ? 'loaded' : ''}`}
-                            style={{
-                                width: isMobile ? '60px' : '80px',
-                                height: isMobile ? '60px' : '80px',
-                                objectFit: 'contain',
-                                filter: isLocked
-                                    ? 'grayscale(1) brightness(0.4)'
-                                    : `drop-shadow(0 2px 6px rgba(0,0,0,0.6)) drop-shadow(0 0 4px ${glow}66)`,
-                            }}
-                            alt=""
-                        />
-                    </>
-                )}
+                ) : (() => {
+                    // 2️⃣ Рендеринг из единого WebP-атласа (atlasFrame)
+                    const renderSize = isMobile ? 60 : 80;
+                    const atlasStyle = getItemAtlasStyle(item as any, renderSize, renderSize);
+                    if (atlasStyle) {
+                        return (
+                            <div
+                                style={{
+                                    ...atlasStyle,
+                                    filter: isLocked
+                                        ? 'grayscale(1) brightness(0.4)'
+                                        : `drop-shadow(0 2px 6px rgba(0,0,0,0.6)) drop-shadow(0 0 4px ${glow}66)`,
+                                }}
+                            />
+                        );
+                    }
+                    // 3️⃣ Fallback — индивидуальный WebP-файл
+                    return (
+                        <>
+                            {!imageLoaded && <div className="skeleton-placeholder" />}
+                            <img
+                                src={resolveAssetPath(item.image)}
+                                onLoad={() => setImageLoaded(true)}
+                                onError={(e) => {
+                                    const currentSrc = e.currentTarget.src;
+                                    if (currentSrc.endsWith('.webp')) {
+                                        e.currentTarget.src = currentSrc.replace(/_mobile\.webp$/i, '.png').replace(/\.webp$/i, '.png');
+                                    } else {
+                                        e.currentTarget.src = AssetsMap.UI.ICON_DAILY_CHEST;
+                                    }
+                                }}
+                                className={`image-fade-in ${imageLoaded ? 'loaded' : ''}`}
+                                style={{
+                                    width: isMobile ? '60px' : '80px',
+                                    height: isMobile ? '60px' : '80px',
+                                    objectFit: 'contain',
+                                    filter: isLocked
+                                        ? 'grayscale(1) brightness(0.4)'
+                                        : `drop-shadow(0 2px 6px rgba(0,0,0,0.6)) drop-shadow(0 0 4px ${glow}66)`,
+                                }}
+                                alt=""
+                            />
+                        </>
+                    );
+                })()
+                }
             </div>
 
             {/* Tiny Item Name */}

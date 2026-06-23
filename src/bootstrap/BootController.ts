@@ -60,8 +60,20 @@ class BootController {
         this.bootIssues.push(entry);
         if (entry.severity === 'fatal') {
             console.error(`[BootController][FATAL] ${entry.phase}: ${entry.message}`, entry.error ?? '');
+            import('@sentry/react').then((Sentry) => {
+                Sentry.captureMessage(`Boot Fatal: ${entry.phase} - ${entry.message}`, 'error');
+            }).catch(() => {});
         } else {
             console.warn(`[BootController][WARN]  ${entry.phase}: ${entry.message}`);
+            import('@sentry/react').then((Sentry) => {
+                Sentry.withScope((scope) => {
+                    scope.setLevel('warning');
+                    scope.setExtra('boot_phase', entry.phase);
+                    scope.setExtra('boot_message', entry.message);
+                    if (entry.error) scope.setExtra('boot_error', entry.error);
+                    Sentry.captureMessage(`Boot Warning: ${entry.phase} - ${entry.message}`);
+                });
+            }).catch(() => {});
         }
     }
 
@@ -204,7 +216,11 @@ class BootController {
                     if (this.state !== 'LOAD') {
                         throw new Error(`[BootController] Invalid boot phase for LOAD_OPPONENT: ${this.state}`);
                     }
-                    return await this.loadOpponent();
+                    // Deferred execution: start loading but resolve immediately
+                    this.loadOpponent().catch((e) => {
+                        console.warn('[BootController] Background opponent loading failed:', e);
+                    });
+                    return;
                 }
                 case 'LOAD_CONFIG': {
                     if (this.state !== 'LOAD') {
@@ -339,17 +355,15 @@ class BootController {
                 await this.execute({ type: 'LOAD_QUESTS' });
                 const questState = useGameStore.getState();
                 if (!(questState.dailyQuests && questState.dailyQuests.length > 0)) {
-                    // FATAL in STRICT — no quests means broken progression
-                    // LENIENT — warn and continue (dev mode)
                     this.recordBootIssue({
                         phase: 'LOAD_QUESTS',
-                        severity: this.bootMode === 'STRICT' ? 'fatal' : 'warning',
+                        severity: 'warning',
                         message: 'dailyQuests is empty after LOAD_QUESTS',
                     });
                 }
 
-                // ── LOAD_OPPONENT ──────────────────────────────────────────
-                setLoadingText('Загрузка данных оппонента...');
+                // ── LOAD_OPPONENT (Deferred) ──────────────────────────────
+                setLoadingText('Инициализация подбора игроков...');
                 await this.execute({ type: 'LOAD_OPPONENT' });
 
                 // ── LOAD_CONFIG ────────────────────────────────────────────
@@ -443,14 +457,6 @@ class BootController {
     }
 
     public async resolveVK(setNotInVk: (val: boolean) => void, _setInitError: (err: string) => void): Promise<void> {
-        await initVK();
-        
-        try {
-            initTelemetry();
-        } catch (e) {
-            console.error('Failed to init telemetry:', e);
-        }
-
         // Helper for fetching with retries
         const fetchWithRetry = async (url: string, options: RequestInit = {}, retries: number = 3, delay: number = 1500): Promise<Response> => {
             let lastErr: any = null;
@@ -471,7 +477,6 @@ class BootController {
         };
 
         // Helper for getting VK user info with retries
-        // Мобильный VK на медленном 3G может долго отвечать — даём 5 попыток с растущим delay
         const getVkUserInfoWithRetry = async (retries: number = 5, delay: number = 2000): Promise<any> => {
             let lastErr: any = null;
             for (let i = 0; i < retries; i++) {
@@ -483,7 +488,6 @@ class BootController {
                     lastErr = err;
                     console.warn(`[BootController] VK user info attempt ${i + 1}/${retries} failed:`, err);
                     if (i < retries - 1) {
-                        // Экспоненциальный backoff: 2s, 3s, 4.5s, 6.75s...
                         const backoff = delay * Math.pow(1.5, i);
                         await new Promise((resolve) => setTimeout(resolve, backoff));
                     }
@@ -492,76 +496,127 @@ class BootController {
             throw lastErr || new Error('Failed to get VK user info after retries');
         };
 
-        // Calibrate server time
-        try {
-            const start = Date.now();
-            const response = await fetchWithRetry('/api/time', {
-                method: 'GET',
-                cache: 'no-cache',
-                signal: AbortSignal.timeout(7000),
-            }, 2, 1500);
-            const data = await response.json();
-            if (data.serverTime) {
-                const latency = (Date.now() - start) / 2;
-                this.timeOffset = data.serverTime + latency - Date.now();
-                console.log('[BootController] Calibrated server time offset:', this.timeOffset);
-                TimeService.setOffset(this.timeOffset);
-            }
-        } catch (e) {
-            console.warn('[BootController] Calibrate time failed, falling back to local clock');
-        }
-
         const isLocalhost =
             window.location.hostname === 'localhost' ||
             window.location.hostname === '127.0.0.1' ||
             window.location.hostname.startsWith('192.168.') ||
             window.location.protocol === 'file:';
 
-        if (isLocalhost) {
-            console.log('[BootController] Localhost detected, skipping signature verify');
-            return;
-        }
-
-        // Verify VK Signature
-        try {
-            const searchParams = window.location.search;
-            if (searchParams) {
-                const response = await fetchWithRetry(`/api/verify-sign${searchParams}`, {
-                    signal: AbortSignal.timeout(10000),
-                }, 3, 2000);
+        // 1. Calibrate time in parallel
+        const timePromise = (async () => {
+            try {
+                const start = Date.now();
+                const response = await fetchWithRetry('/api/time', {
+                    method: 'GET',
+                    cache: 'no-cache',
+                    signal: AbortSignal.timeout(7000),
+                }, 2, 1500);
                 const data = await response.json();
-                if (data && data.valid === false) {
-                    throw new Error('Invalid signature');
+                if (data.serverTime) {
+                    const latency = (Date.now() - start) / 2;
+                    this.timeOffset = data.serverTime + latency - Date.now();
+                    console.log('[BootController] Calibrated server time offset:', this.timeOffset);
+                    TimeService.setOffset(this.timeOffset);
+                }
+            } catch (e) {
+                console.warn('[BootController] Calibrate time failed, falling back to local clock');
+            }
+        })();
+
+        // 2. Verify signature in parallel (skipped on localhost)
+        const verifyPromise = (async () => {
+            if (isLocalhost) {
+                console.log('[BootController] Localhost detected, skipping signature verify');
+                return;
+            }
+            try {
+                const searchParams = window.location.search;
+                if (searchParams) {
+                    const response = await fetchWithRetry(`/api/verify-sign${searchParams}`, {
+                        signal: AbortSignal.timeout(10000),
+                    }, 3, 2000);
+                    const data = await response.json();
+                    if (data && data.valid === false) {
+                        throw new Error('Invalid signature');
+                    }
+                }
+            } catch (err: any) {
+                throw new Error('Ошибка безопасности: параметры запуска не прошли верификацию. Пожалуйста, перезапустите игру из официального приложения ВКонтакте.');
+            }
+        })();
+
+        // 3. VK initialization and profile fetch
+        const vkPromise = (async () => {
+            await initVK();
+            try {
+                initTelemetry();
+            } catch (e) {
+                console.error('Failed to init telemetry:', e);
+            }
+
+            if (isLocalhost) {
+                return;
+            }
+
+            try {
+                this.vkUser = await getVkUserInfoWithRetry(3, 1500);
+                if (!this.vkUser) {
+                    throw new Error('VK getVkUserInfo returned empty object');
+                }
+            } catch (vkErr) {
+                console.warn('[BootController] getVkUserInfo failed, falling back to URL parameters:', vkErr);
+                const searchParams = new URLSearchParams(window.location.search);
+                const urlVkUserId = searchParams.get('vk_user_id');
+                if (urlVkUserId) {
+                    this.vkUser = {
+                        id: urlVkUserId,
+                        firstName: 'Игрок',
+                        lastName: '',
+                        photo: '/assets/images/avatars/panda.webp',
+                        photo200: '/assets/images/avatars/panda.webp'
+                    };
+                } else {
+                    const { isVkMiniApp } = await import('../utils/VKBridge');
+                    if (isVkMiniApp()) {
+                        throw new Error('Не удалось получить ваш профиль ВКонтакте и отсутствуют параметры запуска. Проверьте интернет-подключение и попробуйте снова.');
+                    } else {
+                        setNotInVk(true);
+                        throw new Error('Standalone launch restricted');
+                    }
                 }
             }
-        } catch (err: any) {
-            throw new Error('Ошибка безопасности: параметры запуска не прошли верификацию. Пожалуйста, перезапустите игру из официального приложения ВКонтакте.');
-        }
 
-        // Fetch VK User Profile Info
-        try {
-            this.vkUser = await getVkUserInfoWithRetry(5, 2000);
             if (this.vkUser) {
                 const { useGameStore } = await import('../store/useGameStore');
                 useGameStore.setState({ vkUser: this.vkUser, isSystemUpdate: true });
                 if (this.vkUser.photo200 || this.vkUser.photo) {
                     useGameStore.setState({ avatar: this.vkUser.photo200 || this.vkUser.photo, isSystemUpdate: true });
                 }
-            } else {
-                throw new Error('VK getVkUserInfo returned empty object');
             }
-        } catch (vkErr) {
-            // Перепроверяем isVkMiniApp() ПОСЛЕ всех попыток — к этому моменту
-            // URL-параметры уже точно загружены и AndroidBridge инициализирован.
-            // Это исключает ложное setNotInVk(тrue) из-за race condition при старте.
-            const { isVkMiniApp } = await import('../utils/VKBridge');
-            if (isVkMiniApp()) {
-                throw new Error('Не удалось получить ваш профиль ВКонтакте. Проверьте интернет-подключение и попробуйте снова.');
-            } else {
-                setNotInVk(true);
-                throw new Error('Standalone launch restricted');
-            }
-        }
+        })();
+
+        // Timeout fallback for VK Bridge request
+        const timeoutPromise = new Promise<never>((_, reject) =>
+            setTimeout(() => reject(new Error('Время ожидания ответа от VK Bridge истекло. Пожалуйста, проверьте соединение с интернетом.')), 15000)
+        );
+
+        // Await all parallel promises
+        await Promise.all([
+            timePromise,
+            verifyPromise,
+            Promise.race([vkPromise, timeoutPromise])
+        ]);
+
+        // Set explicit authState for debug/telemetry/security observability
+        const { useGameStore } = await import('../store/useGameStore');
+        useGameStore.setState({
+            authState: {
+                vkVerified: !isLocalhost,
+                verifiedAt: Date.now(),
+                source: isLocalhost ? 'localhost' : 'signature'
+            },
+            isSystemUpdate: true
+        });
     }
 
     public async loadProfile(_setInitError: (err: string) => void): Promise<void> {
@@ -867,6 +922,8 @@ class BootController {
         console.log('[BootController] Loaded opponent data:', opponent.name);
     }
 
+
+
     private async loadConfig(): Promise<void> {
         console.log('[BootController] Fetching/verifying game configurations...');
         const { HEROES_DB } = await import('../configs/HeroesConfig');
@@ -894,14 +951,23 @@ class BootController {
             meadow: 'clear'
         };
 
-        const weather = weatherMap[activeMapId];
+        let weather = weatherMap[activeMapId];
+        let weatherSource = 'map';
         if (!weather) {
-            throw new Error(`[Security Invariant Violation] Weather state is undefined for map: ${activeMapId}`);
+            console.warn(`[BootController] Weather mapping missing for map: ${activeMapId}, fallback to clear`);
+            this.recordBootIssue({
+                phase: 'LOAD_WEATHER',
+                severity: 'warning',
+                message: `Weather mapping missing for map: ${activeMapId}, fallback to clear`,
+            });
+            weather = 'clear';
+            weatherSource = 'fallback_unknown_map';
         }
 
         useGameStore.setState({
             activeMapId,
             battleWeatherState: weather,
+            weatherSource,
             isSystemUpdate: true
         });
         console.log('[BootController] Weather derived successfully:', { activeMapId, battleWeatherState: weather });

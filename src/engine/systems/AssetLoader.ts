@@ -2,6 +2,25 @@ import * as PIXI from 'pixi.js';
 import { AssetsMap } from '../../configs/AssetsMap';
 import { useGameStore } from '../../store/useGameStore';
 import { resolveAssetPath } from '../../utils/assetPath';
+import { preloadItemsAtlas } from '../../utils/itemAtlas';
+
+function getOptimizedMobilePath(path: string): string {
+    const lowerPath = path.toLowerCase();
+    if (lowerPath.includes('_mobile.webp') || lowerPath.includes('_mobile.png') || lowerPath.includes('_mobile.jpg') || lowerPath.includes('_mobile.jpeg')) {
+        return path;
+    }
+    if (lowerPath.endsWith('.webp')) {
+        return path.substring(0, path.length - 5) + '_mobile.webp';
+    }
+    if (lowerPath.endsWith('.png') || lowerPath.endsWith('.jpg')) {
+        return path.substring(0, path.length - 4) + '_mobile.webp';
+    }
+    if (lowerPath.endsWith('.jpeg')) {
+        return path.substring(0, path.length - 5) + '_mobile.webp';
+    }
+    return path;
+}
+
 
 /**
  * AssetLoader — Системный загрузчик ресурсов.
@@ -30,6 +49,9 @@ export class AssetLoader {
         const isUltra = state.graphicsQuality === 'ULTRA';
         const isMobile = !isUltra && /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
+        // Предзагрузка JSON-атласа предметов (неблокирующая)
+        preloadItemsAtlas();
+
         const optimizedManifest = manifest.map((path) => {
             const normalized = path.replace(/\\/g, '/').toLowerCase();
             const isHeroOrSkin = normalized.includes('characters/') && !normalized.includes('characters/ancients/');
@@ -55,11 +77,7 @@ export class AssetLoader {
                     newPath.includes('avatars/') ||
                     newPath.includes('frames/'))
             ) {
-                if (newPath.endsWith('.webp')) {
-                    newPath = newPath.replace('.webp', '_mobile.webp');
-                } else if (newPath.endsWith('.png') || newPath.endsWith('.jpg') || newPath.endsWith('.jpeg')) {
-                    newPath = newPath.replace(/\.(png|jpg|jpeg)$/i, '_mobile.webp');
-                }
+                newPath = getOptimizedMobilePath(newPath);
             }
             return newPath;
         });
@@ -224,11 +242,7 @@ export class AssetLoader {
                         newPath.includes('avatars/') ||
                         newPath.includes('frames/'))
                 ) {
-                    if (newPath.endsWith('.webp')) {
-                        newPath = newPath.replace('.webp', '_mobile.webp');
-                    } else if (newPath.endsWith('.png') || newPath.endsWith('.jpg') || newPath.endsWith('.jpeg')) {
-                        newPath = newPath.replace(/\.(png|jpg|jpeg)$/i, '_mobile.webp');
-                    }
+                    newPath = getOptimizedMobilePath(newPath);
                 }
                 return newPath;
             }).filter(Boolean);
@@ -308,11 +322,7 @@ export class AssetLoader {
                         newPath.includes('avatars/') ||
                         newPath.includes('frames/'))
                 ) {
-                    if (newPath.endsWith('.webp')) {
-                        newPath = newPath.replace('.webp', '_mobile.webp');
-                    } else if (newPath.endsWith('.png') || newPath.endsWith('.jpg') || newPath.endsWith('.jpeg')) {
-                        newPath = newPath.replace(/\.(png|jpg|jpeg)$/i, '_mobile.webp');
-                    }
+                    newPath = getOptimizedMobilePath(newPath);
                 }
                 return newPath;
             }).filter(Boolean);

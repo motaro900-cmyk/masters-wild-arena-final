@@ -6,7 +6,6 @@ import { AssetsMap } from '../../configs/AssetsMap';
 import { audioService } from '../../services/AudioService';
 import { PixiApp } from './PixiApp';
 import { useGameStore } from '../../store/useGameStore';
-import { ITEMS_DATABASE } from '../../game/configs/ItemsConfig';
 import { ATB_THRESHOLD as ATB_THRESHOLD_CONST } from '../../game/configs/GameConstants';
 import {
     getAbilityConfig,
@@ -19,23 +18,8 @@ import {
 import * as BattleStatusSystem from './battle/BattleStatusSystem';
 import * as BattleAbilitySystem from './battle/BattleAbilitySystem';
 import * as BattleSimulation from './battle/BattleSimulation';
-
-function getWeaponArchetype(itemId: string | null): 'SWORD' | 'BOW' | 'STAFF' | 'DAGGER' | 'OTHER' {
-    if (!itemId) return 'OTHER';
-    const id = itemId.toLowerCase();
-    if (id.includes('bow')) return 'BOW';
-    if (
-        id.includes('staff') ||
-        id.includes('wand') ||
-        id.includes('stick') ||
-        id.includes('scepter') ||
-        id.includes('jezl')
-    )
-        return 'STAFF';
-    if (id.includes('dagger') || id.includes('claw')) return 'DAGGER';
-    if (id.includes('sword') || id.includes('katana') || id.includes('blade') || id.includes('sabre')) return 'SWORD';
-    return 'OTHER';
-}
+import * as BattleParticleSystem from './battle/BattleParticleSystem';
+import * as BattleAttackSystem from './battle/BattleAttackSystem';
 
 export interface BattleState {
     playerHP: number;
@@ -149,8 +133,6 @@ export class BattleEngine {
     private constructor() {}
 
     async init(_container: HTMLElement, heroId: string, enemyId: string, playerStats: any, enemyStats: any) {
-        // Если уже инициализирован — сбрасываем старое состояние перед повторным входом
-        // (исправляет баг с двойным тапом на кнопку запуска боя на мобильных)
         if (this.isInitialized) {
             console.warn('[BattleEngine] Already initialized, resetting before re-init...');
             this.isInitialized = false;
@@ -236,23 +218,6 @@ export class BattleEngine {
             await this.enemy.loadHero(enemyId);
             await this.enemy.updateEquipment({});
 
-            // 1. Determine particle types based on background file name
-            const lowerBg = randomBg.toLowerCase();
-            let particleType: 'frost' | 'rain' | 'lava' | 'snow' | 'leaves' | 'sandstorm' | 'dust' = 'dust';
-            if (lowerBg.includes('bg_1')) {
-                particleType = 'frost';
-            } else if (lowerBg.includes('bg_2')) {
-                particleType = 'rain';
-            } else if (lowerBg.includes('bg_3')) {
-                particleType = 'lava';
-            } else if (lowerBg.includes('bg_4')) {
-                particleType = 'snow';
-            } else if (lowerBg.includes('bg_5')) {
-                particleType = 'leaves';
-            } else if (lowerBg.includes('bg_6')) {
-                particleType = 'sandstorm';
-            }
-
             const q = state.graphicsQuality;
             let maxParticles = 20; // default for 'LOW'
             if (q === 'MEDIUM') {
@@ -264,172 +229,9 @@ export class BattleEngine {
             }
 
             // Create background particles container & array
-            interface IArenaParticle {
-                graphics: PIXI.Graphics;
-                x: number;
-                y: number;
-                vx: number;
-                vy: number;
-                alpha: number;
-                scale: number;
-                parallax: number;
-                type: string;
-                amplitude?: number;
-                phaseSpeed?: number;
-                phase?: number;
-                rotSpeed?: number;
-                pulseSpeed?: number;
-                baseAlpha?: number;
-                baseVy?: number;
-            }
-            const arenaParticles: IArenaParticle[] = [];
             const particleContainer = new PIXI.Container();
             pixiApp.backgroundLayer.addChild(particleContainer);
-
-            // Generate background particles based on quality
-            for (let i = 0; i < maxParticles; i++) {
-                const g = new PIXI.Graphics();
-                let color = 0xffffff;
-                let scale = 0.5 + Math.random() * 0.5;
-                let parallax = 0.3 + Math.random() * 0.7;
-                let alpha = 0.3 + Math.random() * 0.7;
-                let vx = 0;
-                let vy = 0;
-                
-                // Custom parameters
-                let amplitude = 0;
-                let phaseSpeed = 0;
-                let phase = Math.random() * Math.PI * 2;
-                let rotSpeed = 0;
-                let pulseSpeed = 0;
-                let baseAlpha = alpha;
-                let baseVy = 0;
-
-                const px = Math.random() * W;
-                const py = Math.random() * H;
-
-                if (particleType === 'frost') {
-                    // Ice Cave: Glowing cyan/blue/white diamonds
-                    color = Math.random() > 0.6 ? 0xafeeee : (Math.random() > 0.3 ? 0x00ffff : 0xffffff);
-                    const size = 3 + Math.random() * 4;
-                    g.poly([
-                        0, -size,
-                        size / 2, 0,
-                        0, size,
-                        -size / 2, 0
-                    ]);
-                    g.fill({ color, alpha: 0.8 });
-                    
-                    vx = (Math.random() - 0.5) * 0.8;
-                    vy = -Math.random() * 0.8 - 0.2; // float slowly up
-                    pulseSpeed = 0.02 + Math.random() * 0.03;
-                    baseAlpha = 0.4 + Math.random() * 0.6;
-                    alpha = baseAlpha;
-                } 
-                else if (particleType === 'rain') {
-                    // Rain: Slanted light blue/grey translucent lines
-                    color = 0xd2e5ff;
-                    const rWidth = 1 + Math.random() * 1.5;
-                    const rHeight = 12 + Math.random() * 12;
-                    g.rect(-rWidth/2, -rHeight/2, rWidth, rHeight);
-                    g.rotation = 0.15; // slanted fall
-                    g.fill({ color, alpha: 0.3 + Math.random() * 0.4 });
-                    
-                    vx = 2 + Math.random() * 1.5; 
-                    vy = 18 + Math.random() * 10;
-                    alpha = 0.3 + Math.random() * 0.45;
-                }
-                else if (particleType === 'lava') {
-                    // Fire/lava embers rising
-                    color = Math.random() > 0.6 ? 0xff4500 : (Math.random() > 0.3 ? 0xff8c00 : 0xffd700);
-                    const radius = 2 + Math.random() * 3.5;
-                    g.circle(0, 0, radius);
-                    g.fill({ color, alpha: 0.75 + Math.random() * 0.25 });
-                    
-                    vx = (Math.random() - 0.5) * 1.2;
-                    vy = -Math.random() * 2.2 - 0.8;
-                    amplitude = 0.5 + Math.random() * 1.5;
-                    phaseSpeed = 0.02 + Math.random() * 0.04;
-                    baseVy = vy;
-                    alpha = 0.6 + Math.random() * 0.4;
-                }
-                else if (particleType === 'snow') {
-                    // Snowy ruins: white fluffy snow circles
-                    color = 0xffffff;
-                    const radius = 1.5 + Math.random() * 3.5;
-                    g.circle(0, 0, radius);
-                    g.fill({ color: 0xffffff, alpha: 0.7 + Math.random() * 0.3 });
-                    
-                    vx = (Math.random() - 0.3) * 0.8 + 0.4;
-                    vy = Math.random() * 1.5 + 1.0;
-                    amplitude = 0.8 + Math.random() * 1.5;
-                    phaseSpeed = 0.01 + Math.random() * 0.02;
-                    baseVy = vy;
-                    alpha = 0.4 + Math.random() * 0.6;
-                }
-                else if (particleType === 'leaves') {
-                    // Stone ruins: fluttering greenish/orange leaves
-                    const leafColors = [0x556b2f, 0x8b4513, 0xcd853f, 0x228b22, 0xd2b48c];
-                    color = leafColors[Math.floor(Math.random() * leafColors.length)];
-                    const lw = 5 + Math.random() * 5;
-                    const lh = 3 + Math.random() * 3;
-                    g.ellipse(0, 0, lw, lh);
-                    g.fill({ color, alpha: 0.6 + Math.random() * 0.3 });
-                    
-                    vx = (Math.random() - 0.5) * 1.5 - 0.5;
-                    vy = Math.random() * 1.2 + 0.8;
-                    rotSpeed = (Math.random() - 0.5) * 0.06;
-                    amplitude = 1.0 + Math.random() * 2.0;
-                    phaseSpeed = 0.015 + Math.random() * 0.025;
-                    baseVy = vy;
-                    alpha = 0.5 + Math.random() * 0.5;
-                }
-                else if (particleType === 'sandstorm') {
-                    // Desert canyon: fast blowing horizontal sand lines
-                    color = Math.random() > 0.5 ? 0xdfb175 : 0xc29d66;
-                    const sw = 6 + Math.random() * 14;
-                    const sh = 1 + Math.random() * 1.5;
-                    g.rect(-sw/2, -sh/2, sw, sh);
-                    g.fill({ color, alpha: 0.25 + Math.random() * 0.35 });
-                    
-                    vx = -12 - Math.random() * 10;
-                    vy = 0.5 + Math.random() * 1.2;
-                    alpha = 0.3 + Math.random() * 0.4;
-                }
-                else {
-                    // General fallback dust
-                    color = Math.random() > 0.5 ? 0xa0c080 : 0xe0d8c0;
-                    const radius = 2 + Math.random() * 3;
-                    g.ellipse(0, 0, radius + 1.5, radius);
-                    g.fill({ color, alpha: 0.5 });
-                    
-                    vx = (Math.random() - 0.5) * 1.0;
-                    vy = Math.random() * 1.2 + 0.5;
-                    alpha = 0.3 + Math.random() * 0.5;
-                }
-
-                g.position.set(px, py);
-                particleContainer.addChild(g);
-
-                arenaParticles.push({
-                    graphics: g,
-                    x: px,
-                    y: py,
-                    vx,
-                    vy,
-                    alpha,
-                    scale,
-                    parallax,
-                    type: particleType,
-                    amplitude,
-                    phaseSpeed,
-                    phase,
-                    rotSpeed,
-                    pulseSpeed,
-                    baseAlpha,
-                    baseVy
-                });
-            }
+            const arenaParticles = BattleParticleSystem.initParticles(randomBg, particleContainer, W, H, maxParticles);
 
             // Spawn player outside screen (left: -200) and define default positions
             const targetPlayerX = W * 0.25;
@@ -494,109 +296,7 @@ export class BattleEngine {
 
                 // Update background particles (only if maxParticles > 0)
                 if (maxParticles > 0) {
-                    const d = Math.min(delta, 3.0);
-                    for (const p of arenaParticles) {
-                        p.phase = (p.phase || 0) + (p.phaseSpeed || 0) * d;
-                        
-                        // Apply movement based on type
-                        if (p.type === 'frost') {
-                            p.x += p.vx * d * p.parallax;
-                            p.y += p.vy * d * p.parallax;
-                            
-                            // Alpha pulse
-                            if (p.pulseSpeed && p.baseAlpha) {
-                                p.alpha = p.baseAlpha + Math.sin(p.phase) * 0.35;
-                                p.graphics.alpha = Math.max(0.1, Math.min(1.0, p.alpha));
-                            }
-                            
-                            // Boundary check (going up)
-                            if (p.y < -20) {
-                                p.y = H + 20;
-                                p.x = Math.random() * W;
-                                p.phase = Math.random() * Math.PI * 2;
-                            }
-                        }
-                        else if (p.type === 'rain') {
-                            p.x += p.vx * d * p.parallax;
-                            p.y += p.vy * d * p.parallax;
-                            
-                            // Boundary check (going down/right)
-                            if (p.y > H + 20) {
-                                p.y = -40;
-                                p.x = Math.random() * (W * 0.8);
-                            }
-                        }
-                        else if (p.type === 'lava') {
-                            const horizontalDrift = Math.sin(p.phase) * (p.amplitude || 0);
-                            p.x += (p.vx + horizontalDrift) * d * p.parallax;
-                            p.y += p.vy * d * p.parallax;
-                            
-                            const verticalProgress = Math.max(0, Math.min(1, p.y / H));
-                            p.graphics.alpha = p.alpha * (0.3 + 0.7 * verticalProgress);
-                            
-                            // Boundary check (going up)
-                            if (p.y < -20) {
-                                p.y = H + 20;
-                                p.x = Math.random() * W;
-                                p.phase = Math.random() * Math.PI * 2;
-                            }
-                        }
-                        else if (p.type === 'snow') {
-                            const drift = Math.sin(p.phase) * (p.amplitude || 0);
-                            p.x += (p.vx + drift) * d * p.parallax;
-                            p.y += p.vy * d * p.parallax;
-                            
-                            if (p.y > H + 20) {
-                                p.y = -20;
-                                p.x = Math.random() * W;
-                                p.phase = Math.random() * Math.PI * 2;
-                            }
-                        }
-                        else if (p.type === 'leaves') {
-                            const flutter = Math.sin(p.phase) * (p.amplitude || 0);
-                            p.x += (p.vx + flutter) * d * p.parallax;
-                            p.y += p.vy * d * p.parallax;
-                            
-                            if (p.rotSpeed) {
-                                p.graphics.rotation += p.rotSpeed * d;
-                            }
-                            
-                            if (p.y > H + 20) {
-                                p.y = -20;
-                                p.x = Math.random() * W;
-                                p.phase = Math.random() * Math.PI * 2;
-                            }
-                        }
-                        else if (p.type === 'sandstorm') {
-                            p.x += p.vx * d * p.parallax;
-                            p.y += p.vy * d * p.parallax;
-                            
-                            if (p.x < -40) {
-                                p.x = W + 40;
-                                p.y = Math.random() * H;
-                            }
-                        }
-                        else {
-                            p.x += p.vx * d * p.parallax;
-                            p.y += p.vy * d * p.parallax;
-                            
-                            if (p.y > H + 20) {
-                                p.y = -20;
-                                p.x = Math.random() * W;
-                            }
-                        }
-                        
-                        // Wrap horizontal bounds for non-sandstorm/rain
-                        if (p.type !== 'sandstorm' && p.type !== 'rain') {
-                            if (p.x > W + 20) {
-                                p.x = -20;
-                            } else if (p.x < -20) {
-                                p.x = W + 20;
-                            }
-                        }
-
-                        p.graphics.position.set(p.x, p.y);
-                    }
+                    BattleParticleSystem.updateParticles(arenaParticles, delta, W, H);
                 }
             };
             pixiApp.addUpdateLoop(this.updateCallback);
@@ -607,7 +307,7 @@ export class BattleEngine {
             }, 800);
         } catch (error) {
             console.error('BattleEngine initialization failed:', error);
-            this.isInitialized = false; // сброс флага чтобы разрешить повторную инициализацию
+            this.isInitialized = false;
             this.updateState({ log: 'ОШИБКА ЗАГРУЗКИ БОЯ' });
         }
     }
@@ -618,7 +318,7 @@ export class BattleEngine {
         const ATB_THRESHOLD = ATB_THRESHOLD_CONST;
         const getEffectiveSpeed = (unit: HeroUnit, stats: ICombatStats) => {
             const raw = unit.isFrozenStatus ? Math.ceil(stats.speed * 0.5) : stats.speed;
-            return Math.max(raw, 1); // guard: speed=0 вызвал бы бесконечный цикл ATB
+            return Math.max(raw, 1);
         };
 
         let playerTicks = 0;
@@ -635,7 +335,6 @@ export class BattleEngine {
         let isRageActive = false;
 
         while (this.isCombatRunning && this.state.playerHP > 0 && this.state.enemyHP > 0) {
-            // Накапливаем тики до тех пор, пока хотя бы один не превысит порог в 100
             while (playerTicks < ATB_THRESHOLD && enemyTicks < ATB_THRESHOLD) {
                 playerTicks += getEffectiveSpeed(this.player!, this.playerStats!);
                 enemyTicks += getEffectiveSpeed(this.enemy!, this.enemyStats!);
@@ -768,462 +467,7 @@ export class BattleEngine {
     }
 
     private async executeAttack(attacker: HeroUnit, victim: HeroUnit, isPlayer: boolean) {
-        if (!this.isCombatRunning) return;
-
-        const { timeScale } = useGameStore.getState();
-        const attackerEquipment = useGameStore.getState().heroEquipment[attacker.config?.id || ''] || {};
-        const attackerWeaponId = attackerEquipment.WEAPONS || null;
-        const attackerWeaponArchetype = getWeaponArchetype(attackerWeaponId);
-
-        if (isPlayer) {
-            const currentMana = this.state.playerMana;
-            const newMana = Math.min(100, currentMana + 25);
-            this.updateState({ playerMana: newMana });
-        }
-
-        await new Promise((r) => setTimeout(r, 100 / timeScale));
-
-        const startX = attacker.x;
-        const startY = attacker.y;
-
-        const inventoryItem = useGameStore
-            .getState()
-            .inventory.find((i: any) => i.id === attackerWeaponId || i.instanceId === attackerWeaponId);
-        const weaponBaseId = inventoryItem ? inventoryItem.id : attackerWeaponId;
-        const weaponData = weaponBaseId ? ITEMS_DATABASE[weaponBaseId] : null;
-        let specialChance = 0.08;
-        if (weaponData) {
-            const rarity = (weaponData.rarity || 'COMMON').toUpperCase();
-            if (rarity === 'UNCOMMON') specialChance += 0.05;
-            else if (rarity === 'RARE') specialChance += 0.1;
-            else if (rarity === 'EPIC') specialChance += 0.18;
-            else if (rarity === 'LEGENDARY') specialChance += 0.28;
-
-            const wLvl = inventoryItem?.level || 1;
-            specialChance += wLvl * 0.01;
-        }
-
-        const stats = isPlayer ? this.playerStats! : this.enemyStats!;
-        const isCrit = Math.random() < stats.critChance;
-        if (isCrit) specialChance += 0.12;
-        specialChance = Math.min(0.8, specialChance);
-
-        const isSpecialStrike = Math.random() < specialChance;
-        attacker.attackCounter = (attacker.attackCounter || 0) + 1;
-        const isAssassin = attacker.config?.role === 'ASSASSIN';
-        const isShadowStep = isAssassin && attacker.attackCounter % 3 === 0;
-
-        if (isShadowStep) {
-            const stepLog = `👤 ${attacker.config.name} уходит в тень (Shadow Step)!`;
-            this.updateState({ log: stepLog });
-            this.addCombatLog(stepLog);
-
-            await attacker.animateTeleportOut();
-            if (!this.isCombatRunning) return;
-
-            const targetX = isPlayer ? victim.x + 85 : victim.x - 85;
-            const faceScaleX = -attacker.parentDefaultScaleX;
-
-            await attacker.animateTeleportIn(targetX, faceScaleX);
-        } else if (isSpecialStrike) {
-            if (attacker.config?.role === 'TANK' && typeof attacker.jumpSlam === 'function') {
-                await attacker.jumpSlam(isPlayer ? victim.x - 85 : victim.x + 85);
-            } else {
-                await attacker.animateLungeForward(isPlayer, 6, victim.x);
-            }
-        } else {
-            await attacker.animateLungeForward(isPlayer, undefined, victim.x);
-        }
-
-        if (!this.isCombatRunning) return;
-
-        const isJumpStrikeCombo = isSpecialStrike && !isShadowStep;
-
-        if (isJumpStrikeCombo) {
-            const baseScale = attacker.config.baseScale || 1.0;
-
-            const tweenTo = (
-                obj: any,
-                props: Record<string, number>,
-                durationMs: number,
-                easeIn = false,
-            ): Promise<void> => {
-                return new Promise((resolve) => {
-                    const startVals: Record<string, number> = {};
-                    for (const k in props) startVals[k] = obj[k];
-                    const start = performance.now();
-                    let id: number;
-                    const tick = (now: number) => {
-                        if (this.tweensCancelled) {
-                            resolve();
-                            return;
-                        }
-                        const t = Math.min(1, (now - start) / durationMs);
-                        const ease = easeIn ? t * t : 1 - Math.pow(1 - t, 2);
-                        for (const k in props) obj[k] = startVals[k] + (props[k] - startVals[k]) * ease;
-                        if (t < 1) {
-                            this.activeRafIds = this.activeRafIds.filter(x => x !== id);
-                            id = requestAnimationFrame(tick);
-                            this.activeRafIds.push(id);
-                        } else {
-                            this.activeRafIds = this.activeRafIds.filter(x => x !== id);
-                            resolve();
-                        }
-                    };
-                    id = requestAnimationFrame(tick);
-                    this.activeRafIds.push(id);
-                });
-            };
-
-            const chargeDuration = Math.round(450 / timeScale);
-            tweenTo(attacker, { y: startY - 460 }, chargeDuration);
-            tweenTo(
-                attacker.scale,
-                {
-                    x: attacker.parentDefaultScaleX * 1.3,
-                    y: baseScale * 1.3,
-                },
-                chargeDuration,
-            );
-
-            EffectsManager.getInstance().particleBurst(attacker.x, attacker.y - 200, 12, 0x00ffff, 120);
-
-            await new Promise((r) => setTimeout(r, chargeDuration));
-            if (!this.isCombatRunning) return;
-
-            attacker.playAttackAnimation();
-
-            const smashDuration = Math.round(220 / timeScale);
-            tweenTo(attacker, { x: victim.x, y: victim.y }, smashDuration, true);
-            tweenTo(
-                attacker.scale,
-                {
-                    x: attacker.parentDefaultScaleX,
-                    y: baseScale,
-                },
-                smashDuration,
-                true,
-            );
-
-            await new Promise((r) => setTimeout(r, smashDuration));
-            if (!this.isCombatRunning) return;
-
-            EffectsManager.getInstance().screenShake(25, 0.9, 600);
-            audioService.playCritSFX();
-
-            const hitX = victim.x;
-            const hitY = victim.y - 120;
-            EffectsManager.getInstance().particleBurst(hitX, hitY, 35, 0xffea00, 320);
-            EffectsManager.getInstance().slashEffect(hitX, hitY, isPlayer, attacker.config?.role, true);
-
-            const targetStats = isPlayer ? this.enemyStats! : this.playerStats!;
-            const { isOneShot } = useGameStore.getState();
-
-            let damage = stats.attack * 2.5 * (0.9 + Math.random() * 0.2);
-            if (isPlayer && isOneShot) damage = 999999;
-            const finalDamage = Math.ceil(Math.max(1, damage - targetStats.defense * 0.5));
-
-            const hasStunImmunity = victim.statusEffects.some((s: any) => s.type === 'STUN_IMMUNITY');
-
-            if (!hasStunImmunity) {
-                victim.isStunnedStatus = true;
-                victim.showStunEffect();
-                victim.setFrame(0);
-                this.onCombatEvent({
-                    type: 'INSTINCT',
-                    damage: 0,
-                    target: isPlayer ? 'enemy' : 'player',
-                    label: '💫 ОГЛУШЕНИЕ!',
-                });
-            } else {
-                this.onCombatEvent({
-                    type: 'INSTINCT',
-                    damage: 0,
-                    target: isPlayer ? 'enemy' : 'player',
-                    label: '🛡️ ИММУНИТЕТ К СТАНУ',
-                });
-                this.addCombatLog(`🛡️ ${victim.config.name} защищен от оглушения иммунитетом!`);
-            }
-
-            victim.playHitEffect();
-            victim.animateHitReaction(true);
-
-            const comboMsg = `💥 [КОМБО] ${attacker.config.name} проводит Сокрушительный прыжок на ${finalDamage} урона с оглушением!`;
-            this.updateState({ log: comboMsg });
-            this.addCombatLog(comboMsg);
-
-            if (isPlayer) {
-                const nextHP = this.applyDamage('enemy', finalDamage);
-                if (nextHP <= 0) victim.animateDeath(false);
-            } else {
-                const nextHP = this.applyDamage('player', finalDamage);
-                if (nextHP <= 0) victim.animateDeath(true);
-            }
-
-            await new Promise((r) => setTimeout(r, 600 / timeScale));
-            await attacker.animateLungeReturn(startX, startY);
-            return;
-        }
-
-        attacker.playAttackAnimation();
-
-        const hitX = isPlayer ? attacker.x + 85 : attacker.x - 85;
-        const hitY = attacker.y - 120;
-
-        if (attackerWeaponArchetype === 'STAFF') {
-            const startX = attacker.x;
-            const startY = attacker.y - 120;
-            const targetX = victim.x;
-            const targetY = victim.y - 120;
-            if (isCrit) {
-                EffectsManager.getInstance().spawnLightningStrike(targetX, targetY);
-            } else {
-                EffectsManager.getInstance().spawnFireballProjectile(startX, startY, targetX, targetY, victim);
-            }
-        } else {
-            EffectsManager.getInstance().slashEffect(hitX, hitY, isPlayer, attacker.config?.role, isCrit);
-        }
-
-        const targetStats = isPlayer ? this.enemyStats! : this.playerStats!;
-        const { isGodMode, isOneShot } = useGameStore.getState();
-
-        let instinctEvent: { type: 'RAGE' | 'SHIELD' | 'COUNTER' | 'FOCUS'; label: string } | null = null;
-        if (Math.random() < 0.15 && !(isPlayer && isOneShot)) {
-            const instincts = [
-                { type: 'RAGE', label: 'ЯРОСТЬ (+50% Урон)' },
-                { type: 'FOCUS', label: 'КОНЦЕНТРАЦИЯ (Без промаха)' },
-                { type: 'SHIELD', label: 'КАМЕННАЯ КОЖА (-50% Урон)' },
-                { type: 'COUNTER', label: 'ОТВЕТНЫЙ УДАР' },
-            ] as const;
-            instinctEvent = instincts[Math.floor(Math.random() * instincts.length)];
-
-            this.onCombatEvent({
-                type: 'INSTINCT',
-                damage: 0,
-                target:
-                    instinctEvent.type === 'SHIELD' || instinctEvent.type === 'COUNTER'
-                        ? isPlayer
-                            ? 'enemy'
-                            : 'player'
-                        : isPlayer
-                          ? 'player'
-                          : 'enemy',
-                label: instinctEvent.label,
-            });
-            this.addCombatLog(`⚡ Сработал инстинкт: ${instinctEvent.label}!`);
-
-            await new Promise((r) => setTimeout(r, 400 / timeScale));
-        }
-
-        const victimEquipment = useGameStore.getState().heroEquipment[victim.config?.id || ''] || {};
-        const victimWeaponId = victimEquipment.WEAPONS || null;
-        const victimWeaponArchetype = getWeaponArchetype(victimWeaponId);
-
-        let extraDodge = 0;
-        if (victimWeaponArchetype === 'BOW') {
-            extraDodge = 0.15;
-        }
-
-        // Accuracy vs Dodge: each point of accuracy above 100 reduces effective dodge by 0.5%
-        const effectiveAccuracy = stats.accuracy || 100;
-        const effectiveDodge = Math.max(0, (targetStats.dodge || 0.05) - Math.max(0, effectiveAccuracy - 100) * 0.005);
-        const totalDodgeChance = Math.min(0.6, effectiveDodge + extraDodge);
-        let hasDodged = Math.random() < totalDodgeChance;
-        if (instinctEvent?.type === 'FOCUS') hasDodged = false;
-        if (victim.isStunnedStatus) hasDodged = false;
-
-        if (hasDodged && !(isPlayer && isOneShot)) {
-            attacker.playAttackAnimation();
-            await new Promise((r) => setTimeout(r, 150 / timeScale));
-
-            audioService.playSFX('/assets/audio/sfx/miss.mp3');
-            const dodgeTypeLabel = victimWeaponArchetype === 'BOW' ? ' (Благодаря луку!)' : '';
-            const logMsg = `[Раунд] ${isPlayer ? 'Враг' : 'Вы'} уклоняется от атаки! (УВОРОТ)${dodgeTypeLabel}`;
-            this.updateState({ log: logMsg });
-            this.addCombatLog(logMsg);
-            this.onCombatEvent({ type: 'DODGE', damage: 0, target: isPlayer ? 'enemy' : 'player' });
-
-            const dodgePromise = victim.animateDodge(!isPlayer);
-            EffectsManager.getInstance().dodgeEffect(victim);
-
-            await dodgePromise;
-
-            if (isShadowStep) {
-                await attacker.animateTeleportOut();
-                const originalFaceScaleX = attacker.parentDefaultScaleX;
-                await attacker.animateTeleportIn(startX, originalFaceScaleX);
-            } else {
-                await attacker.animateLungeReturn(startX, startY);
-            }
-            return;
-        }
-
-        let damage = stats.attack * (0.9 + Math.random() * 0.2);
-        const cappedCritDamage = Math.min(stats.critDamage || 1.5, 3.0);
-        if (isCrit) damage *= cappedCritDamage;
-        if (instinctEvent?.type === 'RAGE') damage *= 1.5;
-        if (isPlayer && isOneShot) damage = 999999;
-
-        // Penetration: flat reduction of target's defense (e.g. 20 penetration removes 20 def)
-        const effectiveDef = Math.max(0, targetStats.defense - (stats.penetration || 0));
-        let targetDefense = effectiveDef;
-        if (attackerWeaponArchetype === 'STAFF') {
-            targetDefense *= 0.5;
-            this.addCombatLog(`✨ [Магия] Атака посохом игнорирует 50% защиты цели!`);
-        }
-
-        const targetAvgItemLevel = targetStats.avgItemLevel || 1;
-        const divisor = 200 + (targetAvgItemLevel - 1) * 25;
-        const mitigation = targetDefense / (targetDefense + divisor);
-        let mitigated = damage * (1 - mitigation);
-        if (!isPlayer && isGodMode) mitigated = 0;
-        if (instinctEvent?.type === 'SHIELD') mitigated *= 0.5;
-
-        let finalDamage = Math.ceil(mitigated);
-        // Пассивный хук: может увеличить урон персонажа (SHADOW_MARK и др.)
-        finalDamage = this.triggerPassiveOnDealDamage(attacker, victim, finalDamage, isCrit, isPlayer);
-
-        if (instinctEvent?.type === 'COUNTER') {
-            const counterDamage = Math.max(1, Math.ceil(targetStats.attack * 0.5));
-            if (isPlayer) {
-                const nextP_HP = this.applyDamage('player', counterDamage);
-                this.totalDamageTaken += counterDamage;
-                this.onCombatEvent({ type: 'HIT', damage: counterDamage, target: 'player' });
-                if (nextP_HP <= 0) attacker.animateDeath(true);
-            } else {
-                const nextE_HP = this.applyDamage('enemy', counterDamage);
-                this.onCombatEvent({ type: 'HIT', damage: counterDamage, target: 'enemy' });
-                this.totalDamageDealt += counterDamage;
-                if (counterDamage > this.maxSingleHitDamage) {
-                    this.maxSingleHitDamage = counterDamage;
-                }
-                if (nextE_HP <= 0) attacker.animateDeath(false);
-            }
-        }
-
-        let hasBlocked = Math.random() < (targetStats.defense > 0 ? 0.15 : 0.05);
-        if (instinctEvent?.type === 'FOCUS') hasBlocked = false;
-        if (victim.isStunnedStatus) hasBlocked = false;
-
-        if (hasBlocked && !(isPlayer && isOneShot)) {
-            audioService.playSFX('/assets/audio/sfx/block.mp3');
-            const blockedDamage = Math.max(1, Math.ceil(finalDamage * 0.3));
-            if (isPlayer) {
-                this.totalDamageDealt += blockedDamage;
-                if (blockedDamage > this.maxSingleHitDamage) {
-                    this.maxSingleHitDamage = blockedDamage;
-                }
-            }
-            const logMsg = `[Раунд] ${isPlayer ? 'Враг' : 'Вы'} блокирует удар! Урон снижен до ${blockedDamage}.`;
-            this.updateState({ log: logMsg });
-            this.addCombatLog(logMsg);
-            this.onCombatEvent({ type: 'BLOCK', damage: blockedDamage, target: isPlayer ? 'enemy' : 'player' });
-
-            victim.animateDefend();
-            EffectsManager.getInstance().blockEffect(victim);
-            victim.playHitEffect();
-
-            if (isPlayer) {
-                const nextHP = this.applyDamage('enemy', blockedDamage);
-                if (nextHP <= 0) victim.animateDeath(false);
-            } else {
-                const nextHP = this.applyDamage('player', blockedDamage);
-                this.totalDamageTaken += blockedDamage;
-                if (nextHP <= 0) victim.animateDeath(true);
-            }
-
-            await new Promise((r) => setTimeout(r, 600 / timeScale));
-            await attacker.animateLungeReturn(startX, startY);
-            return;
-        }
-
-        let logMsg: string;
-        if (isPlayer) {
-            this.totalDamageDealt += finalDamage;
-            if (finalDamage > this.maxSingleHitDamage) {
-                this.maxSingleHitDamage = finalDamage;
-            }
-        } else {
-            this.totalDamageTaken += finalDamage;
-        }
-
-        let isStunnedThisHit = false;
-        if (isCrit && Math.random() < 0.35) {
-            isStunnedThisHit = true;
-            this.applyStatus(victim, 'STUN', 1, 0, !isPlayer);
-        }
-
-        const attackerId = attacker.config?.id;
-        const attackerRole = attacker.config?.role;
-
-        // Используем ABILITY_REGISTRY вместо хардкода ID/role
-        const abilityCfg = getAbilityConfig(attackerId) ?? getAbilityConfigByRole(attackerRole);
-        if (abilityCfg?.attackPassive) {
-            const { chance, status, duration, damagePercent, value } = abilityCfg.attackPassive;
-            if (Math.random() < chance) {
-                const avgItemLevel = stats.avgItemLevel || 1;
-                const itemLevelFactor = 1 - (avgItemLevel - 1) * 0.03;
-                let baseDmg = damagePercent ? (stats.attack * damagePercent) : (value ?? 0);
-                if (attackerId === 'raccoon' && status === 'POISON') {
-                    baseDmg = Math.max(15, baseDmg);
-                }
-                const dmgPerTurn = Math.ceil(baseDmg * itemLevelFactor);
-                this.applyStatus(victim, status, duration, dmgPerTurn, !isPlayer);
-            }
-        }
-
-        if (isCrit) {
-            audioService.playCritSFX();
-            logMsg = `[Раунд] ${isPlayer ? 'Вы наносите' : 'Враг наносит'} КРИТИЧЕСКИЙ УДАР на ${finalDamage}!${isStunnedThisHit ? ' (ОГЛУШЕНИЕ!)' : ''}`;
-            this.onCombatEvent({
-                type: 'CRIT',
-                damage: finalDamage,
-                target: isPlayer ? 'enemy' : 'player',
-            });
-
-            if (isStunnedThisHit) {
-                this.onCombatEvent({
-                    type: 'INSTINCT',
-                    damage: 0,
-                    target: isPlayer ? 'enemy' : 'player',
-                    label: '💫 ОГЛУШЕНИЕ!',
-                });
-            }
-
-            victim.animateHitReaction(true);
-            EffectsManager.getInstance().criticalHit(victim);
-            if (isStunnedThisHit) {
-                this.addCombatLog(`💫 ${isPlayer ? 'Враг' : 'Вы'} оглушен критическим ударом!`);
-            }
-        } else {
-            audioService.playStrikeSFX(attackerWeaponArchetype);
-            logMsg = `[Раунд] ${isPlayer ? 'Вы бьёте' : 'Враг бьёт'} на ${finalDamage}!`;
-            this.onCombatEvent({ type: 'HIT', damage: finalDamage, target: isPlayer ? 'enemy' : 'player' });
-
-            victim.animateHitReaction(false);
-            EffectsManager.getInstance().normalHit(victim);
-        }
-
-        victim.playHitEffect();
-        this.updateState({ log: logMsg });
-        this.addCombatLog(logMsg);
-
-        if (isPlayer) {
-            const nextHP = this.applyDamage('enemy', finalDamage);
-            if (nextHP <= 0) victim.animateDeath(false);
-        } else {
-            const nextHP = this.applyDamage('player', finalDamage);
-            if (nextHP <= 0) victim.animateDeath(true);
-        }
-
-        await new Promise((r) => setTimeout(r, 600 / timeScale));
-        if (isShadowStep) {
-            await attacker.animateTeleportOut();
-            const originalFaceScaleX = attacker.parentDefaultScaleX;
-            await attacker.animateTeleportIn(startX, originalFaceScaleX);
-        } else {
-            await attacker.animateLungeReturn(startX, startY);
-        }
+        await BattleAttackSystem.executeAttack(this, attacker, victim, isPlayer);
     }
 
     public triggerPassiveOnTurnStart(unit: HeroUnit, isPlayer: boolean) {
@@ -1246,15 +490,12 @@ export class BattleEngine {
     }
 
     public applyDamage(target: 'player' | 'enemy', damage: number): number {
-        // Пассивный хук: CRYSTAL_SHIELD может отразить часть урона
         const modifiedDamage = this.triggerPassiveOnTakeDamage(target, damage);
 
-        // Применяем вампиризм (lifesteal)
         const attackerStats = target === 'player' ? this.enemyStats : this.playerStats;
         const attackerUnit = target === 'player' ? this.enemy : this.player;
         const isAttackerPlayer = target === 'enemy';
 
-        // Lifesteal: stored as 0-1 fraction on items (e.g. 0.05 = 5%); multiply directly
         if (attackerStats && attackerStats.lifesteal && attackerStats.lifesteal > 0 && modifiedDamage > 0) {
             const healAmount = Math.ceil(modifiedDamage * attackerStats.lifesteal);
             if (healAmount > 0) {
@@ -1329,7 +570,6 @@ export class BattleEngine {
         BattleStatusSystem.applyStatus(this, unit, type, duration, damagePerTurn, isPlayer);
     }
 
-    // Пассивные хуки — вызываются из executeAttack и applyDamage
     public triggerPassiveOnDealDamage(
         attacker: HeroUnit,
         victim: HeroUnit,

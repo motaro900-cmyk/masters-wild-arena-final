@@ -10,14 +10,15 @@ import { ITEMS_DATABASE, calculateItemPower } from '../../../game/configs/ItemsC
 
 import { useShopScene } from './ShopScene/useShopScene';
 import { SubTabBtn } from './ShopScene/SubTabBtn';
-import { BankItemShowcase } from './ShopScene/BankItemShowcase';
-import { ShopItemCard } from './ShopScene/ShopItemCard';
 import { SidebarBtn } from './ShopScene/SidebarBtn';
 import { PurchaseConfirmOverlay } from './ShopScene/PurchaseConfirmOverlay';
 import { ShopDetailPanel } from './ShopScene/ShopDetailPanel';
 import { PurchaseSuccessModal } from './ShopScene/PurchaseSuccessModal';
+import { getSubTabs } from './ShopScene/shopHelpers';
 
-import { getSubTabs, getRarityColor } from './ShopScene/shopHelpers';
+// Import subcomponents
+import { ShopShowcasePanel } from './ShopScene/ShopShowcasePanel';
+import { ShopBottomShelf } from './ShopScene/ShopBottomShelf';
 
 export const ShopScene: React.FC = () => {
     const {
@@ -32,7 +33,6 @@ export const ShopScene: React.FC = () => {
         toastMessage,
         filteredItems,
         isMobile: isMobileFromStore,
-        dailyAdWatchesCount,
         playerLevel,
         shopDiscounts,
         exitShop,
@@ -41,6 +41,7 @@ export const ShopScene: React.FC = () => {
         confirmPurchase,
         successModal,
         setSuccessModal,
+        dailyAdWatchesCount,
     } = useShopScene();
 
     const [isMobile, setIsMobile] = React.useState(isMobileFromStore);
@@ -243,13 +244,6 @@ export const ShopScene: React.FC = () => {
                             image={AssetsMap.UI.TAB_ARSENAL}
                             isMobile={isMobile}
                         />
-{/* <SidebarBtn
-                            active={activeMainTab === 'ALCHEMY'}
-                            onClick={() => setActiveMainTab('ALCHEMY')}
-                            label="АЛХИМИЯ"
-                            image={AssetsMap.UI.TAB_ALCHEMY}
-                            isMobile={isMobile}
-                        /> */}
                         <SidebarBtn
                             active={activeMainTab === 'SKINS'}
                             onClick={() => setActiveMainTab('SKINS')}
@@ -336,236 +330,19 @@ export const ShopScene: React.FC = () => {
                             }}
                         >
                             {/* CENTRAL SHOWCASE PEDESTAL */}
-                            <motion.div
-                                drag={isMobile ? "x" : undefined}
-                                dragConstraints={{ left: 0, right: 0 }}
-                                dragElastic={0.2}
-                                onDragEnd={(_, info) => {
-                                    if (!isMobile) return;
-                                    const swipeThreshold = 50;
-                                    const selectedIndex = filteredItems.findIndex(i => i.id === selectedItem?.id);
-                                    if (selectedIndex === -1) return;
-
-                                    if (info.offset.x < -swipeThreshold) {
-                                        // Swipe Left -> Next Item
-                                        if (selectedIndex < filteredItems.length - 1) {
-                                            const nextItem = filteredItems[selectedIndex + 1];
-                                            handleItemClick(nextItem);
-                                            const nextItemPage = Math.floor((selectedIndex + 1) / ITEMS_PER_PAGE);
-                                            if (nextItemPage !== currentPage) {
-                                                setDirection(1);
-                                                setCurrentPage(nextItemPage);
-                                            }
-                                        }
-                                    } else if (info.offset.x > swipeThreshold) {
-                                        // Swipe Right -> Previous Item
-                                        if (selectedIndex > 0) {
-                                            const prevItem = filteredItems[selectedIndex - 1];
-                                            handleItemClick(prevItem);
-                                            const prevItemPage = Math.floor((selectedIndex - 1) / ITEMS_PER_PAGE);
-                                            if (prevItemPage !== currentPage) {
-                                                setDirection(-1);
-                                                setCurrentPage(prevItemPage);
-                                            }
-                                        }
-                                    }
-                                }}
-                                style={{
-                                    flex: 1.4,
-                                    background: 'rgba(15,12,12,0.6)',
-                                    border: '1px solid rgba(240,192,64,0.1)',
-                                    borderRadius: '16px',
-                                    padding: isMobile ? '10px 15px' : '25px',
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    alignItems: 'center',
-                                    justifyContent: 'space-between',
-                                    position: 'relative',
-                                    overflow: 'hidden',
-                                    touchAction: isMobile ? 'pan-y' : 'auto',
-                                }}
-                            >
-                                {/* Decorative Vignette */}
-                                <div
-                                    style={{
-                                        position: 'absolute',
-                                        inset: 0,
-                                        background:
-                                            'radial-gradient(circle at center, transparent 30%, rgba(0,0,0,0.7) 100%)',
-                                        pointerEvents: 'none',
-                                    }}
-                                />
-
-                                {/* MIDDLE ROW: FLOATING PEDESTAL & ITEM */}
-                                {selectedItem.mainTab === 'BANK' ? (
-                                    <BankItemShowcase
-                                        item={selectedItem}
-                                        rarityColor={getRarityColor(selectedItem.rarity)}
-                                        isMobile={isMobile}
-                                    />
-                                ) : (
-                                    <div
-                                        style={{
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            width: '100%',
-                                            position: 'relative',
-                                            flex: 1,
-                                            marginTop: isMobile ? '-10px' : '-15px',
-                                        }}
-                                    >
-                                        <div
-                                            style={{
-                                                position: 'relative',
-                                                width: isMobile ? '360px' : '380px',
-                                                height: isMobile ? '320px' : '340px',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                            }}
-                                        >
-                                            {/* Radial soft glow behind item */}
-                                            <div
-                                                style={{
-                                                    position: 'absolute',
-                                                    width: isMobile ? '320px' : '320px',
-                                                    height: isMobile ? '320px' : '320px',
-                                                    borderRadius: '50%',
-                                                    background:
-                                                        'radial-gradient(circle, ' +
-                                                        getRarityColor(selectedItem.rarity) +
-                                                        '22 0%, transparent 70%)',
-                                                    animation: 'pulse-glow 4s infinite ease-in-out',
-                                                }}
-                                            />
-
-                                            {/* Pedestal Platform Slab */}
-                                            <div
-                                                style={{
-                                                    position: 'absolute',
-                                                    bottom: isMobile ? '-12px' : '-15px',
-                                                    width: isMobile ? '340px' : '340px',
-                                                    height: isMobile ? '70px' : '76px',
-                                                    borderRadius: '50%',
-                                                    background:
-                                                        'linear-gradient(180deg, rgba(35,30,30,0.96) 0%, rgba(10,5,5,0.98) 100%)',
-                                                    border:
-                                                        (isMobile ? '1px solid ' : '2px solid ') +
-                                                        getRarityColor(selectedItem.rarity) +
-                                                        '88',
-                                                    boxShadow: isMobile
-                                                        ? '0 4px 10px rgba(0,0,0,0.8), 0 0 10px ' +
-                                                          getRarityColor(selectedItem.rarity) +
-                                                          '33'
-                                                        : '0 8px 25px rgba(0,0,0,0.8), 0 0 15px ' +
-                                                          getRarityColor(selectedItem.rarity) +
-                                                          '33, inset 0 2px 4px rgba(255,255,255,0.15)',
-                                                    transform: 'rotateX(65deg)',
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'center',
-                                                }}
-                                            >
-                                                {/* Inner spinning element */}
-                                                <div
-                                                    style={{
-                                                        width: isMobile ? '280px' : '280px',
-                                                        height: isMobile ? '280px' : '280px',
-                                                        borderRadius: '50%',
-                                                        border: `1.5px dashed ${getRarityColor(selectedItem.rarity)}77`,
-                                                        boxShadow: `inset 0 0 15px ${getRarityColor(selectedItem.rarity)}22`,
-                                                        animation: 'spin-slow-reverse 12s infinite linear',
-                                                    }}
-                                                />
-                                            </div>
-
-                                            {/* Floating Item Avatar (Large) */}
-                                            <div
-                                                style={{
-                                                    zIndex: 5,
-                                                    // Для скинов-персонажей — без левитации, ставим на пьедестал
-                                                    animation: selectedItem.mainTab === 'SKINS' ? undefined : 'float-item 4s infinite ease-in-out',
-                                                    display: 'flex',
-                                                    alignItems: 'flex-end',
-                                                    justifyContent: 'center',
-                                                    // Для скинов опускаем персонажа к пьедесталу
-                                                    marginBottom: selectedItem.mainTab === 'SKINS'
-                                                        ? (isMobile ? '10px' : '14px')
-                                                        : (isMobile ? '35px' : '45px'),
-                                                }}
-                                            >
-                                                {selectedItem.spriteClass ? (
-                                                    <div
-                                                        className={selectedItem.spriteClass}
-                                                        style={{
-                                                            width: isMobile ? '300px' : '260px',
-                                                            height: isMobile ? '300px' : '260px',
-                                                            filter: `contrast(1.2) brightness(1.2) drop-shadow(0 0 20px ${getRarityColor(selectedItem.rarity)}cc)`,
-                                                        }}
-                                                    />
-                                                ) : (
-                                                    <>
-                                                        {!selectedImageLoaded && <div className="skeleton-placeholder" />}
-                                                        <img
-                                                            src={selectedItem.image}
-                                                            onLoad={() => setSelectedImageLoaded(true)}
-                                                            onError={(e) =>
-                                                                (e.currentTarget.src = AssetsMap.UI.ICON_DAILY_CHEST)
-                                                            }
-                                                            className={`image-fade-in ${selectedImageLoaded ? 'loaded' : ''}`}
-                                                            style={{
-                                                                // Скины-персонажи рисуем крупнее и выравниваем по низу
-                                                                width: selectedItem.mainTab === 'SKINS'
-                                                                    ? (isMobile ? '340px' : '320px')
-                                                                    : (isMobile ? '300px' : '260px'),
-                                                                height: selectedItem.mainTab === 'SKINS'
-                                                                    ? (isMobile ? '340px' : '320px')
-                                                                    : (isMobile ? '300px' : '260px'),
-                                                                objectFit: 'contain',
-                                                                objectPosition: selectedItem.mainTab === 'SKINS' ? 'bottom center' : 'center',
-                                                                filter: `contrast(1.1) brightness(1.15) drop-shadow(0 0 25px ${getRarityColor(selectedItem.rarity)}cc)`,
-                                                            }}
-                                                            alt=""
-                                                        />
-                                                    </>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
-
-                                {/* Dot Indicators for Bottom Shelf items (usually 6) - Hidden on mobile to prevent layout clutter */}
-                                {!isMobile && (
-                                    <div style={{ display: 'flex', gap: '8px', zIndex: 10, margin: '5px 0' }}>
-                                        {filteredItems.map((item: ShopItem) => (
-                                            <button
-                                                key={item.id}
-                                                onClick={() => setSelectedItem(item)}
-                                                style={{
-                                                    width: '10px',
-                                                    height: '10px',
-                                                    minWidth: 'auto',
-                                                    minHeight: 'auto',
-                                                    borderRadius: '50%',
-                                                    backgroundColor:
-                                                        selectedItem.id === item.id
-                                                            ? '#f0c040'
-                                                            : 'rgba(255,255,255,0.2)',
-                                                    border: 'none',
-                                                    cursor: 'pointer',
-                                                    padding: 0,
-                                                    boxShadow:
-                                                        selectedItem.id === item.id
-                                                            ? '0 0 8px #f0c040, 0 0 3px #f0c040'
-                                                            : 'none',
-                                                    transition: 'all 0.2s',
-                                                }}
-                                            />
-                                        ))}
-                                    </div>
-                                )}
-                            </motion.div>
+                            <ShopShowcasePanel
+                                selectedItem={selectedItem}
+                                filteredItems={filteredItems}
+                                isMobile={isMobile}
+                                handleItemClick={handleItemClick}
+                                currentPage={currentPage}
+                                setCurrentPage={setCurrentPage}
+                                setDirection={setDirection}
+                                setSelectedItem={setSelectedItem}
+                                selectedImageLoaded={selectedImageLoaded}
+                                setSelectedImageLoaded={setSelectedImageLoaded}
+                                ITEMS_PER_PAGE={ITEMS_PER_PAGE}
+                            />
 
                             {/* RIGHT SIDE DETAILED INSPECTION CARD */}
                             <ShopDetailPanel
@@ -585,7 +362,7 @@ export const ShopScene: React.FC = () => {
                                 flex: 1,
                                 display: 'flex',
                                 alignItems: 'center',
-                                justifyContent: 'center',
+                                justifyCenter: 'center',
                                 color: 'rgba(255,255,255,0.4)',
                             }}
                         >
@@ -594,376 +371,27 @@ export const ShopScene: React.FC = () => {
                     )}
 
                     {/* BOTTOM SHELF (PAGINATED GRID OF ITEMS) */}
-                    {(() => {
-                        if (isMobile) {
-                            return (
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', width: '100%' }}>
-                                    <div
-                                        style={{
-                                            display: 'flex',
-                                            justifyContent: 'space-between',
-                                            alignItems: 'center',
-                                            padding: '8px 16px',
-                                            background:
-                                                'linear-gradient(90deg, rgba(30, 20, 15, 0.85) 0%, rgba(15, 10, 10, 0.6) 50%, rgba(30, 20, 15, 0.85) 100%)',
-                                            border: '1px solid rgba(240, 192, 64, 0.25)',
-                                            borderRadius: '8px',
-                                            fontSize: '13px',
-                                            fontFamily: "'Cinzel', serif",
-                                            fontWeight: 800,
-                                            textTransform: 'uppercase',
-                                            textShadow: '0 2px 4px rgba(0,0,0,1)',
-                                            boxShadow: '0 4px 15px rgba(0,0,0,0.4), inset 0 1px 2px rgba(255,255,255,0.05)',
-                                            backdropFilter: 'blur(4px)',
-                                        }}
-                                    >
-                                        <span style={{ color: '#f0c040', letterSpacing: '1px' }}>
-                                            КАТАЛОГ ТОВАРОВ{' '}
-                                            {(activeMainTab === 'ARSENAL' || activeMainTab === 'ALCHEMY') && (
-                                                <span
-                                                    style={{
-                                                        color: '#ffcc00',
-                                                        marginLeft: '15px',
-                                                        textShadow: '0 0 10px rgba(255,204,0,0.4), 0 2px 4px rgba(0,0,0,1)',
-                                                    }}
-                                                >
-                                                    ★ АКЦИИ И СКИДКИ
-                                                </span>
-                                            )}
-                                        </span>
-                                        <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: '11px', letterSpacing: '0.5px' }}>
-                                            ПРОВЕДИТЕ ПАЛЬЦЕМ ◀ ▶
-                                        </span>
-                                    </div>
-                                    <div
-                                        style={{
-                                            width: '100%',
-                                            height: '155px',
-                                            background: 'rgba(10,8,8,0.7)',
-                                            border: '1.5px solid rgba(240,192,64,0.2)',
-                                            borderRadius: '12px',
-                                            padding: '6px 12px',
-                                            display: 'flex',
-                                            gap: '16px',
-                                            alignItems: 'center',
-                                            justifyContent: 'flex-start',
-                                            overflowX: 'auto',
-                                            WebkitOverflowScrolling: 'touch',
-                                        }}
-                                        className="leaderboard-scroll"
-                                    >
-                                        {filteredItems.map((item: ShopItem) => (
-                                            <ShopItemCard
-                                                key={item.id}
-                                                item={item}
-                                                isSelected={selectedItem?.id === item.id}
-                                                playerLevel={playerLevel}
-                                                discount={shopDiscounts?.[item.id]}
-                                                onClick={() => handleItemClick(item)}
-                                                isMobile={isMobile}
-                                            />
-                                        ))}
-                                    </div>
-                                </div>
-                            );
-                        }
-
-                        const totalPages = Math.ceil(filteredItems.length / 5);
-                        const startIndex = currentPage * 5;
-                        const paginatedItems = filteredItems.slice(startIndex, startIndex + 5);
-
-                        return (
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', width: '100%' }}>
-                                <div
-                                    style={{
-                                        display: 'flex',
-                                        justifyContent: 'space-between',
-                                        alignItems: 'center',
-                                        padding: '8px 16px',
-                                        background:
-                                            'linear-gradient(90deg, rgba(30, 20, 15, 0.85) 0%, rgba(15, 10, 10, 0.6) 50%, rgba(30, 20, 15, 0.85) 100%)',
-                                        border: '1px solid rgba(240, 192, 64, 0.25)',
-                                        borderRadius: '8px',
-                                        fontSize: '13px',
-                                        fontFamily: "'Cinzel', serif",
-                                        fontWeight: 800,
-                                        textTransform: 'uppercase',
-                                        textShadow: '0 2px 4px rgba(0,0,0,1)',
-                                        boxShadow: '0 4px 15px rgba(0,0,0,0.4), inset 0 1px 2px rgba(255,255,255,0.05)',
-                                        backdropFilter: 'blur(4px)',
-                                    }}
-                                >
-                                    <span style={{ color: '#f0c040', letterSpacing: '1px' }}>
-                                        КАТАЛОГ ТОВАРОВ{' '}
-                                        {(activeMainTab === 'ARSENAL' || activeMainTab === 'ALCHEMY') && (
-                                            <span
-                                                style={{
-                                                    color: '#ffcc00',
-                                                    marginLeft: '15px',
-                                                    textShadow: '0 0 10px rgba(255,204,0,0.4), 0 2px 4px rgba(0,0,0,1)',
-                                                }}
-                                            >
-                                                ★ АКЦИИ И СКИДКИ ДНЯ ПОКАЗАНЫ ПЕРВЫМИ
-                                            </span>
-                                        )}
-                                    </span>
-                                    <span style={{ color: 'rgba(255,255,255,0.6)', letterSpacing: '0.5px' }}>
-                                        СТРАНИЦА {currentPage + 1} ИЗ {totalPages || 1}
-                                    </span>
-                                </div>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '15px', width: '100%' }}>
-                                    {/* LEFT ARROW */}
-                                    {totalPages > 1 && (
-                                        <motion.button
-                                            whileHover={
-                                                currentPage !== 0
-                                                    ? {
-                                                          scale: 1.1,
-                                                          borderColor: '#f0c040',
-                                                          boxShadow: '0 0 15px rgba(240,192,64,0.5)',
-                                                      }
-                                                    : {}
-                                            }
-                                            whileTap={currentPage !== 0 ? { scale: 0.95 } : {}}
-                                            onClick={() => {
-                                                setDirection(-1);
-                                                setCurrentPage((prev) => Math.max(0, prev - 1));
-                                            }}
-                                            disabled={currentPage === 0}
-                                            style={{
-                                                background:
-                                                    currentPage === 0
-                                                        ? 'rgba(255,255,255,0.01)'
-                                                        : 'linear-gradient(180deg, rgba(45,35,25,0.8) 0%, rgba(20,15,10,0.95) 100%)',
-                                                border:
-                                                    currentPage === 0
-                                                        ? '1.5px solid rgba(255,255,255,0.05)'
-                                                        : '2px solid rgba(240, 192, 64, 0.5)',
-                                                borderRadius: '50%',
-                                                width: '48px',
-                                                height: '48px',
-                                                minWidth: 'unset',
-                                                minHeight: 'unset',
-                                                color: currentPage === 0 ? 'rgba(255,255,255,0.15)' : '#f0c040',
-                                                fontSize: '20px',
-                                                cursor: currentPage === 0 ? 'default' : 'pointer',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                boxShadow:
-                                                    currentPage === 0
-                                                        ? 'none'
-                                                        : '0 4px 10px rgba(0,0,0,0.5), 0 0 10px rgba(240,192,64,0.2)',
-                                                transition: 'all 0.2s',
-                                                flexShrink: 0,
-                                            }}
-                                        >
-                                            <svg
-                                                width="16"
-                                                height="16"
-                                                viewBox="0 0 24 24"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                strokeWidth="3"
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                style={{ display: 'block', transform: 'translateX(-1px)' }}
-                                            >
-                                                <polyline points="15 18 9 12 15 6" />
-                                            </svg>
-                                        </motion.button>
-                                    )}
-
-                                    {/* ITEMS CONTAINER */}
-                                    <div
-                                        style={{
-                                            flex: 1,
-                                            height: '210px',
-                                            background: 'rgba(10,8,8,0.7)',
-                                            border: '1px solid rgba(240,192,64,0.1)',
-                                            borderRadius: '12px',
-                                            padding: '12px 20px',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            minWidth: 0,
-                                            overflow: 'hidden',
-                                            position: 'relative',
-                                        }}
-                                    >
-                                        <AnimatePresence initial={false} custom={direction} mode="wait">
-                                            <motion.div
-                                                key={currentPage}
-                                                custom={direction}
-                                                variants={{
-                                                    initial: (direction: number) => ({
-                                                        x: direction > 0 ? 100 : -100,
-                                                        opacity: 0,
-                                                    }),
-                                                    animate: {
-                                                        x: 0,
-                                                        opacity: 1,
-                                                    },
-                                                    exit: (direction: number) => ({
-                                                        x: direction > 0 ? -100 : 100,
-                                                        opacity: 0,
-                                                    }),
-                                                }}
-                                                initial="initial"
-                                                animate="animate"
-                                                exit="exit"
-                                                transition={{ type: 'spring', stiffness: 350, damping: 32 }}
-                                                style={{
-                                                    display: 'flex',
-                                                    gap: '12px',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'center',
-                                                    width: '100%',
-                                                    height: '100%',
-                                                }}
-                                            >
-                                                {paginatedItems.map((item: ShopItem) => (
-                                                    <ShopItemCard
-                                                        key={item.id}
-                                                        item={item}
-                                                        isSelected={selectedItem?.id === item.id}
-                                                        playerLevel={playerLevel}
-                                                        discount={shopDiscounts?.[item.id]}
-                                                        onClick={() => handleItemClick(item)}
-                                                        isMobile={isMobile}
-                                                    />
-                                                ))}
-                                            </motion.div>
-                                        </AnimatePresence>
-                                    </div>
-
-                                    {/* RIGHT ARROW */}
-                                    {totalPages > 1 && (
-                                        <motion.button
-                                            whileHover={
-                                                currentPage !== totalPages - 1
-                                                    ? {
-                                                          scale: 1.1,
-                                                          borderColor: '#f0c040',
-                                                          boxShadow: '0 0 15px rgba(240,192,64,0.5)',
-                                                      }
-                                                    : {}
-                                            }
-                                            whileTap={currentPage !== totalPages - 1 ? { scale: 0.95 } : {}}
-                                            onClick={() => {
-                                                setDirection(1);
-                                                setCurrentPage((prev) => Math.min(totalPages - 1, prev + 1));
-                                            }}
-                                            disabled={currentPage === totalPages - 1}
-                                            style={{
-                                                background:
-                                                    currentPage === totalPages - 1
-                                                        ? 'rgba(255,255,255,0.01)'
-                                                        : 'linear-gradient(180deg, rgba(45,35,25,0.8) 0%, rgba(20,15,10,0.95) 100%)',
-                                                border:
-                                                    currentPage === totalPages - 1
-                                                        ? '1.5px solid rgba(255,255,255,0.05)'
-                                                        : '2px solid rgba(240, 192, 64, 0.5)',
-                                                borderRadius: '50%',
-                                                width: '48px',
-                                                height: '48px',
-                                                minWidth: 'unset',
-                                                minHeight: 'unset',
-                                                color:
-                                                    currentPage === totalPages - 1
-                                                        ? 'rgba(255,255,255,0.15)'
-                                                        : '#f0c040',
-                                                fontSize: '20px',
-                                                cursor: currentPage === totalPages - 1 ? 'default' : 'pointer',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                boxShadow:
-                                                    currentPage === totalPages - 1
-                                                        ? 'none'
-                                                        : '0 4px 10px rgba(0,0,0,0.5), 0 0 10px rgba(240,192,64,0.2)',
-                                                transition: 'all 0.2s',
-                                                flexShrink: 0,
-                                            }}
-                                        >
-                                            <svg
-                                                width="16"
-                                                height="16"
-                                                viewBox="0 0 24 24"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                strokeWidth="3"
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                style={{ display: 'block', transform: 'translateX(1px)' }}
-                                            >
-                                                <polyline points="9 18 15 12 9 6" />
-                                            </svg>
-                                        </motion.button>
-                                    )}
-                                </div>
-
-                                {/* PAGE DOTS */}
-                                {totalPages > 1 && (
-                                    <div
-                                        style={{
-                                            display: 'flex',
-                                            justifyContent: 'center',
-                                            gap: '6px',
-                                            marginTop: '2px',
-                                        }}
-                                    >
-                                        {Array.from({ length: totalPages }).map((_, idx) => (
-                                            <button
-                                                key={idx}
-                                                onClick={() => {
-                                                    setDirection(idx > currentPage ? 1 : -1);
-                                                    setCurrentPage(idx);
-                                                }}
-                                                style={{
-                                                    width: '8px',
-                                                    height: '8px',
-                                                    minWidth: 'auto',
-                                                    minHeight: 'auto',
-                                                    borderRadius: '50%',
-                                                    border: 'none',
-                                                    cursor: 'pointer',
-                                                    padding: 0,
-                                                    backgroundColor:
-                                                        idx === currentPage ? '#f0c040' : 'rgba(255,255,255,0.2)',
-                                                    transition: 'all 0.2s',
-                                                    boxShadow: idx === currentPage ? '0 0 8px #f0c040' : 'none',
-                                                }}
-                                            />
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-                        );
-                    })()}
+                    {selectedItem && (
+                        <ShopBottomShelf
+                            isMobile={isMobile}
+                            activeMainTab={activeMainTab}
+                            activeSubTab={activeSubTab}
+                            filteredItems={filteredItems}
+                            selectedItem={selectedItem}
+                            playerLevel={playerLevel}
+                            shopDiscounts={shopDiscounts}
+                            handleItemClick={handleItemClick}
+                            currentPage={currentPage}
+                            setCurrentPage={setCurrentPage}
+                            direction={direction}
+                            setDirection={setDirection}
+                            ITEMS_PER_PAGE={ITEMS_PER_PAGE}
+                        />
+                    )}
                 </div>
             </div>
 
-            {/* BOTTOM BAR WITH REFRESH TIMER & FOOTER BANNERS */}
-            <div
-                style={{
-                    height: isMobile ? '40px' : '80px',
-                    borderTop: '1px solid rgba(240, 192, 64, 0.1)',
-                    background: 'rgba(5,5,5,0.9)',
-                    padding: isMobile ? '0 20px' : '0 80px',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    zIndex: 10,
-                }}
-            >
-                {/* Countdown timer & Manual Refresh Button */}
-                <div style={{ color: '#c8a870', fontSize: '13px', fontFamily: "'Nunito', sans-serif", fontWeight: 700, letterSpacing: '0.5px' }}>
-                    ✦ Желаем приятных покупок и великих побед на Арене! ⚔️
-                </div>
-            </div>
-
-            {/* CONFIRMATION OVERLAYS */}
+            {/* OVERLAYS & MODALS */}
             <AnimatePresence>
                 {showConfirm && selectedItem && (
                     <PurchaseConfirmOverlay
@@ -975,7 +403,6 @@ export const ShopScene: React.FC = () => {
                 )}
             </AnimatePresence>
 
-            {/* PURCHASE SUCCESS MODAL (голоса VK) */}
             <PurchaseSuccessModal
                 isOpen={!!successModal}
                 itemName={successModal?.itemName || ''}
@@ -1016,3 +443,5 @@ export const ShopScene: React.FC = () => {
         </motion.div>
     );
 };
+
+export default ShopScene;
