@@ -72,7 +72,7 @@ export const DailyCalendarTab: React.FC<DailyCalendarTabProps> = ({
                 className="daily-calendar-scroll-container"
                 style={{
                     width: '100%',
-                    maxHeight: isMobile ? '230px' : 'none',
+                    maxHeight: isMobile ? '260px' : 'none',
                     overflowY: isMobile ? 'auto' : 'visible',
                     paddingRight: isMobile ? '8px' : '0px',
                     boxSizing: 'border-box',
@@ -127,7 +127,7 @@ export const DailyCalendarTab: React.FC<DailyCalendarTabProps> = ({
                             style={{
                                 position: 'relative',
                                 width: '100%',
-                                height: isMobile ? '100px' : '170px',
+                                height: isMobile ? '145px' : '170px',
                                 gridColumn: isDay7 ? 'span 2' : 'auto',
                                 boxSizing: 'border-box',
                                 opacity: 1,
@@ -167,10 +167,10 @@ export const DailyCalendarTab: React.FC<DailyCalendarTabProps> = ({
                                     border: cardBorder,
                                     borderRadius: '14px',
                                     display: 'flex',
-                                    flexDirection: isMobile ? 'row' : 'column',
+                                    flexDirection: 'column',
                                     alignItems: 'center',
                                     justifyContent: 'space-between',
-                                    padding: isMobile ? '8px 16px' : '16px 12px 14px 12px',
+                                    padding: isMobile ? '12px 8px 10px 8px' : '16px 12px 14px 12px',
                                     boxSizing: 'border-box',
                                     zIndex: 2,
                                     overflow: 'visible',
@@ -186,17 +186,17 @@ export const DailyCalendarTab: React.FC<DailyCalendarTabProps> = ({
                                     <div
                                         style={{
                                             position: 'absolute',
-                                            top: '8px',
-                                            right: '8px',
-                                            width: '24px',
-                                            height: '24px',
+                                            top: isMobile ? '6px' : '8px',
+                                            right: isMobile ? '6px' : '8px',
+                                            width: isMobile ? '20px' : '24px',
+                                            height: isMobile ? '20px' : '24px',
                                             borderRadius: '50%',
                                             background: 'rgba(20, 10, 5, 0.9)',
                                             border: '1.5px solid rgba(251, 191, 36, 0.5)',
                                             display: 'flex',
                                             alignItems: 'center',
                                             justifyContent: 'center',
-                                            fontSize: '11px',
+                                            fontSize: isMobile ? '9px' : '11px',
                                             zIndex: 3,
                                             boxShadow: '0 2px 5px rgba(0,0,0,0.65)',
                                         }}
@@ -211,6 +211,8 @@ export const DailyCalendarTab: React.FC<DailyCalendarTabProps> = ({
                                         style={{
                                             position: 'absolute',
                                             top: '-9px',
+                                            left: '50%',
+                                            transform: 'translateX(-50%)',
                                             background: 'linear-gradient(180deg, #ffd700 0%, #d4af37 100%)',
                                             border: '1px solid #ffffff',
                                             borderRadius: '8px',
@@ -223,117 +225,65 @@ export const DailyCalendarTab: React.FC<DailyCalendarTabProps> = ({
                                             zIndex: 3,
                                             textTransform: 'uppercase',
                                             fontFamily: "'Cinzel', serif",
+                                            whiteSpace: 'nowrap',
                                         }}
                                     >
                                         ДОСТУПНО
                                     </div>
                                 )}
 
-                                {isMobile ? (
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px', width: '100%' }}>
-                                        <motion.img
-                                            src={getRewardIcon(rewardItem.type)}
-                                            alt={rewardItem.type}
-                                            animate={isCurrent || (isDay7 && !isClaimed) ? { y: [0, -4, 0] } : {}}
-                                            transition={
-                                                isCurrent || (isDay7 && !isClaimed)
-                                                    ? { duration: 2.2, repeat: Infinity, ease: 'easeInOut' }
-                                                    : {}
-                                            }
-                                            style={{
-                                                width: isDay7 ? '64px' : '54px',
-                                                height: isDay7 ? '64px' : '54px',
-                                                objectFit: 'contain',
-                                                filter: isLocked
-                                                    ? 'brightness(0.65) saturate(0.85)'
-                                                    : `drop-shadow(0 4px 8px rgba(0,0,0,0.5))`,
-                                            }}
-                                        />
-                                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '4px' }}>
-                                            <span
-                                                style={{
-                                                    fontFamily: "'Cinzel', serif",
-                                                    fontSize: '14px',
-                                                    color: titleColor,
-                                                    fontWeight: 900,
-                                                    letterSpacing: '1px',
-                                                    textShadow: '0 2px 4px rgba(0,0,0,0.95)',
-                                                }}
-                                            >
-                                                ДЕНЬ {rewardItem.day}
-                                            </span>
-                                            <span
-                                                style={{
-                                                    fontSize: '13px',
-                                                    color: isCurrent
-                                                        ? '#ffe259'
-                                                        : isDay7
-                                                          ? '#ffd700'
-                                                          : '#ffffff',
-                                                    fontWeight: isCurrent || isDay7 ? 900 : 700,
-                                                    textShadow: '0 2px 4px rgba(0,0,0,0.9)',
-                                                    fontFamily: "'Cinzel', 'Philosopher', serif",
-                                                }}
-                                            >
-                                                {rewardItem.label}
-                                            </span>
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <>
-                                        <span
-                                            style={{
-                                                fontFamily: "'Cinzel', serif",
-                                                fontSize: '13px',
-                                                color: titleColor,
-                                                fontWeight: 900,
-                                                letterSpacing: '1.2px',
-                                                textShadow: '0 2px 4px rgba(0,0,0,0.95), 0 0 5px rgba(0,0,0,0.8)',
-                                                zIndex: 2,
-                                            }}
-                                        >
-                                            ДЕНЬ {rewardItem.day}
-                                        </span>
-                                        <motion.img
-                                            src={getRewardIcon(rewardItem.type)}
-                                            alt={rewardItem.type}
-                                            animate={isCurrent || (isDay7 && !isClaimed) ? { y: [0, -5, 0] } : {}}
-                                            transition={
-                                                isCurrent || (isDay7 && !isClaimed)
-                                                    ? { duration: 2.2, repeat: Infinity, ease: 'easeInOut' }
-                                                    : {}
-                                            }
-                                            style={{
-                                                width: isDay7 ? '72px' : '48px',
-                                                height: isDay7 ? '72px' : '48px',
-                                                objectFit: 'contain',
-                                                filter: isLocked
-                                                    ? 'brightness(0.65) saturate(0.85)'
-                                                    : 'drop-shadow(0 4px 8px rgba(0,0,0,0.65))',
-                                                zIndex: 2,
-                                            }}
-                                        />
-                                        <span
-                                            style={{
-                                                fontSize: '12px',
-                                                color: isCurrent
-                                                    ? '#ffe259'
-                                                    : isDay7
-                                                      ? '#ffe259'
-                                                      : isLocked
-                                                        ? '#837a71'
-                                                        : '#d1c5b8',
-                                                fontWeight: 900,
-                                                textAlign: 'center',
-                                                letterSpacing: '0.8px',
-                                                textShadow: '0 2px 4px rgba(0,0,0,0.9)',
-                                                zIndex: 2,
-                                            }}
-                                        >
-                                            {rewardItem.label}
-                                        </span>
-                                    </>
-                                )}
+                                <span
+                                    style={{
+                                        fontFamily: "'Cinzel', serif",
+                                        fontSize: isMobile ? '11px' : '13px',
+                                        color: titleColor,
+                                        fontWeight: 900,
+                                        letterSpacing: isMobile ? '1px' : '1.2px',
+                                        textShadow: '0 2px 4px rgba(0,0,0,0.95), 0 0 5px rgba(0,0,0,0.8)',
+                                        zIndex: 2,
+                                    }}
+                                >
+                                    ДЕНЬ {rewardItem.day}
+                                </span>
+                                <motion.img
+                                    src={getRewardIcon(rewardItem.type)}
+                                    alt={rewardItem.type}
+                                    animate={isCurrent || (isDay7 && !isClaimed) ? { y: [0, -5, 0] } : {}}
+                                    transition={
+                                        isCurrent || (isDay7 && !isClaimed)
+                                            ? { duration: 2.2, repeat: Infinity, ease: 'easeInOut' }
+                                            : {}
+                                    }
+                                    style={{
+                                        width: isDay7 ? (isMobile ? '64px' : '72px') : (isMobile ? '40px' : '48px'),
+                                        height: isDay7 ? (isMobile ? '64px' : '72px') : (isMobile ? '40px' : '48px'),
+                                        objectFit: 'contain',
+                                        filter: isLocked
+                                            ? 'brightness(0.65) saturate(0.85)'
+                                            : 'drop-shadow(0 4px 8px rgba(0,0,0,0.65))',
+                                        zIndex: 2,
+                                    }}
+                                />
+                                <span
+                                    style={{
+                                        fontSize: isMobile ? '10.5px' : '12px',
+                                        color: isCurrent
+                                            ? '#ffe259'
+                                            : isDay7
+                                              ? '#ffe259'
+                                              : isLocked
+                                                ? '#837a71'
+                                                : '#d1c5b8',
+                                        fontWeight: 900,
+                                        textAlign: 'center',
+                                        letterSpacing: '0.8px',
+                                        textShadow: '0 2px 4px rgba(0,0,0,0.9)',
+                                        zIndex: 2,
+                                        padding: '0 4px',
+                                    }}
+                                >
+                                    {rewardItem.label}
+                                </span>
                             </div>
                             {isClaimed && (
                                 <div
