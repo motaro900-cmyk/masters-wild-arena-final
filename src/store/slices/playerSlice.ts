@@ -76,7 +76,8 @@ export const getExpNeeded = (level: number): number => {
 export const createPlayerSlice = (set: any, get: any) => {
     const isMobileVal =
         typeof navigator !== 'undefined' &&
-        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+            (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1));
     return {
         // --- СОСТОЯНИЕ ИГРОКА ---
         level: 1,
