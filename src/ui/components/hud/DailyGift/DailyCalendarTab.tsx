@@ -117,7 +117,7 @@ export const DailyCalendarTab: React.FC<DailyCalendarTabProps> = ({
                             style={{
                                 position: 'relative',
                                 width: '100%',
-                                height: '170px',
+                                height: isMobile ? '190px' : '170px',
                                 gridColumn: isDay7 ? 'span 2' : 'auto',
                                 boxSizing: 'border-box',
                                 opacity: 1,
@@ -222,7 +222,7 @@ export const DailyCalendarTab: React.FC<DailyCalendarTabProps> = ({
                                 <span
                                     style={{
                                         fontFamily: "'Cinzel', serif",
-                                        fontSize: '13px',
+                                        fontSize: isMobile ? '15px' : '13px',
                                         color: titleColor,
                                         fontWeight: 900,
                                         letterSpacing: '1.2px',
@@ -243,8 +243,8 @@ export const DailyCalendarTab: React.FC<DailyCalendarTabProps> = ({
                                             : {}
                                     }
                                     style={{
-                                        width: isDay7 ? '72px' : '48px',
-                                        height: isDay7 ? '72px' : '48px',
+                                        width: isMobile ? (isDay7 ? '84px' : '64px') : (isDay7 ? '72px' : '48px'),
+                                        height: isMobile ? (isDay7 ? '84px' : '64px') : (isDay7 ? '72px' : '48px'),
                                         objectFit: 'contain',
                                         filter: isLocked
                                             ? 'brightness(0.65) saturate(0.85)'
@@ -255,7 +255,7 @@ export const DailyCalendarTab: React.FC<DailyCalendarTabProps> = ({
 
                                 <span
                                     style={{
-                                        fontSize: '12px',
+                                        fontSize: isMobile ? '14px' : '12px',
                                         color: isCurrent
                                             ? '#ffe259'
                                             : isDay7

@@ -33,82 +33,17 @@ export const ShopBottomShelf: React.FC<ShopBottomShelfProps> = ({
     setDirection,
     ITEMS_PER_PAGE,
 }) => {
-    if (isMobile) {
-        return (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', width: '100%' }}>
-                <div
-                    style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        padding: '8px 16px',
-                        background:
-                            'linear-gradient(90deg, rgba(30, 20, 15, 0.85) 0%, rgba(15, 10, 10, 0.6) 50%, rgba(30, 20, 15, 0.85) 100%)',
-                        border: '1px solid rgba(240, 192, 64, 0.25)',
-                        borderRadius: '8px',
-                        fontSize: '13px',
-                        fontFamily: "'Cinzel', serif",
-                        fontWeight: 800,
-                        textTransform: 'uppercase',
-                        textShadow: '0 2px 4px rgba(0,0,0,1)',
-                        boxShadow: '0 4px 15px rgba(0,0,0,0.4), inset 0 1px 2px rgba(255,255,255,0.05)',
-                        backdropFilter: 'blur(4px)',
-                    }}
-                >
-                    <span style={{ color: '#f0c040', letterSpacing: '1px' }}>
-                        КАТАЛОГ ТОВАРОВ{' '}
-                        {(activeMainTab === 'ARSENAL' || activeMainTab === 'ALCHEMY') && (
-                            <span
-                                style={{
-                                    color: '#ffcc00',
-                                    marginLeft: '15px',
-                                    textShadow: '0 0 10px rgba(255,204,0,0.4), 0 2px 4px rgba(0,0,0,1)',
-                                }}
-                            >
-                                ★ АКЦИИ И СКИДКИ
-                            </span>
-                        )}
-                    </span>
-                    <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: '11px', letterSpacing: '0.5px' }}>
-                        ПРОВЕДИТЕ ПАЛЬЦЕМ ◀ ▶
-                    </span>
-                </div>
-                <div
-                    style={{
-                        width: '100%',
-                        height: '155px',
-                        background: 'rgba(10,8,8,0.7)',
-                        border: '1.5px solid rgba(240,192,64,0.2)',
-                        borderRadius: '12px',
-                        padding: '6px 12px',
-                        display: 'flex',
-                        gap: '16px',
-                        alignItems: 'center',
-                        justifyContent: 'flex-start',
-                        overflowX: 'auto',
-                        WebkitOverflowScrolling: 'touch',
-                    }}
-                    className="leaderboard-scroll"
-                >
-                    {filteredItems.map((item: ShopItem) => (
-                        <ShopItemCard
-                            key={item.id}
-                            item={item}
-                            isSelected={selectedItem?.id === item.id}
-                            playerLevel={playerLevel}
-                            discount={shopDiscounts?.[item.id]}
-                            onClick={() => handleItemClick(item)}
-                            isMobile={isMobile}
-                        />
-                    ))}
-                </div>
-            </div>
-        );
-    }
+    const itemsPerPage = isMobile ? 2 : ITEMS_PER_PAGE;
+    const totalPages = Math.ceil(filteredItems.length / itemsPerPage);
+    const startIndex = currentPage * itemsPerPage;
+    const paginatedItems = filteredItems.slice(startIndex, startIndex + itemsPerPage);
 
-    const totalPages = Math.ceil(filteredItems.length / ITEMS_PER_PAGE);
-    const startIndex = currentPage * ITEMS_PER_PAGE;
-    const paginatedItems = filteredItems.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+    // Reset page if it exceeds totalPages
+    React.useEffect(() => {
+        if (currentPage >= totalPages && totalPages > 0) {
+            setCurrentPage(0);
+        }
+    }, [totalPages, currentPage, setCurrentPage]);
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', width: '100%' }}>
@@ -141,7 +76,7 @@ export const ShopBottomShelf: React.FC<ShopBottomShelfProps> = ({
                                 textShadow: '0 0 10px rgba(255,204,0,0.4), 0 2px 4px rgba(0,0,0,1)',
                             }}
                         >
-                            ★ АКЦИИ И СКИДКИ ДНЯ ПОКАЗАНЫ ПЕРВЫМИ
+                            ★ АКЦИИ И СКИДКИ
                         </span>
                     )}
                 </span>
@@ -149,9 +84,9 @@ export const ShopBottomShelf: React.FC<ShopBottomShelfProps> = ({
                     СТРАНИЦА {currentPage + 1} ИЗ {totalPages || 1}
                 </span>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '15px', width: '100%' }}>
-                {/* LEFT ARROW */}
-                {totalPages > 1 && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '0px' : '15px', width: '100%' }}>
+                {/* LEFT ARROW (Desktop only) */}
+                {totalPages > 1 && !isMobile && (
                     <motion.button
                         whileHover={
                             currentPage !== 0
@@ -216,17 +151,19 @@ export const ShopBottomShelf: React.FC<ShopBottomShelfProps> = ({
                 <div
                     style={{
                         flex: 1,
-                        height: '210px',
+                        height: isMobile ? '165px' : '210px',
                         background: 'rgba(10,8,8,0.7)',
                         border: '1px solid rgba(240,192,64,0.1)',
                         borderRadius: '12px',
-                        padding: '12px 20px',
+                        padding: isMobile ? '6px 10px' : '12px 20px',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         minWidth: 0,
-                        overflow: 'hidden',
+                        overflowX: 'hidden',
+                        overflowY: 'hidden',
                         position: 'relative',
+                        touchAction: 'pan-x',
                     }}
                 >
                     <AnimatePresence initial={false} custom={direction} mode="wait">
@@ -254,12 +191,31 @@ export const ShopBottomShelf: React.FC<ShopBottomShelfProps> = ({
                                 x: { type: 'spring', stiffness: 300, damping: 30 },
                                 opacity: { duration: 0.2 },
                             }}
+                            drag={isMobile ? "x" : undefined}
+                            dragConstraints={{ left: 0, right: 0 }}
+                            dragElastic={0.2}
+                            onDragEnd={(_, info) => {
+                                if (!isMobile) return;
+                                const swipeThreshold = 40;
+                                if (info.offset.x < -swipeThreshold) {
+                                    if (currentPage < totalPages - 1) {
+                                        setDirection(1);
+                                        setCurrentPage((prev) => prev + 1);
+                                    }
+                                } else if (info.offset.x > swipeThreshold) {
+                                    if (currentPage > 0) {
+                                        setDirection(-1);
+                                        setCurrentPage((prev) => prev - 1);
+                                    }
+                                }
+                            }}
                             style={{
                                 width: '100%',
                                 display: 'flex',
                                 gap: '16px',
                                 alignItems: 'center',
                                 justifyContent: 'center',
+                                touchAction: 'pan-x',
                             }}
                         >
                             {paginatedItems.map((item: ShopItem) => (
@@ -277,8 +233,8 @@ export const ShopBottomShelf: React.FC<ShopBottomShelfProps> = ({
                     </AnimatePresence>
                 </div>
 
-                {/* RIGHT ARROW */}
-                {totalPages > 1 && (
+                {/* RIGHT ARROW (Desktop only) */}
+                {totalPages > 1 && !isMobile && (
                     <motion.button
                         whileHover={
                             currentPage !== totalPages - 1
@@ -342,4 +298,5 @@ export const ShopBottomShelf: React.FC<ShopBottomShelfProps> = ({
         </div>
     );
 };
+
 export default ShopBottomShelf;

@@ -129,68 +129,71 @@ const MiniCard: React.FC<{ emoji: string; label: string; value: React.ReactNode;
     value,
     vc,
     bg = 'rgba(255,255,255,0.02)',
-}) => (
-    <div
-        className="sc-h"
-        style={{
-            background: 'rgba(255,255,255,0.022)',
-            border: '1px solid rgba(255,255,255,0.07)',
-            borderRadius: '10px',
-            padding: '8px 10px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            boxSizing: 'border-box',
-            minWidth: 0,
-        }}
-    >
+}) => {
+    const isMobile = useGameStore((s) => s.isMobile);
+    return (
         <div
+            className="sc-h"
             style={{
-                width: '32px',
-                height: '32px',
-                borderRadius: '8px',
-                flexShrink: 0,
-                background: bg,
-                border: '1px solid rgba(255,255,255,0.06)',
+                background: 'rgba(255,255,255,0.022)',
+                border: '1px solid rgba(255,255,255,0.07)',
+                borderRadius: '10px',
+                padding: isMobile ? '10px 12px' : '8px 10px',
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '16px',
-                lineHeight: 1,
+                gap: '8px',
+                boxSizing: 'border-box',
+                minWidth: 0,
             }}
         >
-            {emoji}
-        </div>
-        <div style={{ flex: 1, minWidth: 0 }}>
             <div
                 style={{
-                    fontSize: '10px',
-                    color: 'rgba(255,255,255,0.35)',
-                    fontWeight: 700,
-                    letterSpacing: '0.5px',
-                    textTransform: 'uppercase',
-                    marginBottom: '2px',
+                    width: isMobile ? '38px' : '32px',
+                    height: isMobile ? '38px' : '32px',
+                    borderRadius: '8px',
+                    flexShrink: 0,
+                    background: bg,
+                    border: '1px solid rgba(255,255,255,0.06)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: isMobile ? '18px' : '16px',
+                    lineHeight: 1,
                 }}
             >
-                {label}
+                {emoji}
             </div>
-            <div
-                style={{
-                    fontSize: '13px',
-                    fontWeight: 800,
-                    color: vc,
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    fontFamily: "'Outfit', sans-serif",
-                    lineHeight: 1.2,
-                }}
-            >
-                {value}
+            <div style={{ flex: 1, minWidth: 0 }}>
+                <div
+                    style={{
+                        fontSize: isMobile ? '12px' : '10px',
+                        color: 'rgba(255,255,255,0.35)',
+                        fontWeight: 700,
+                        letterSpacing: '0.5px',
+                        textTransform: 'uppercase',
+                        marginBottom: '2px',
+                    }}
+                >
+                    {label}
+                </div>
+                <div
+                    style={{
+                        fontSize: isMobile ? '15px' : '13px',
+                        fontWeight: 800,
+                        color: vc,
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        fontFamily: "'Outfit', sans-serif",
+                        lineHeight: 1.2,
+                    }}
+                >
+                    {value}
+                </div>
             </div>
         </div>
-    </div>
-);
+    );
+};
 
 const Diamond: React.FC<{ size?: number; style?: React.CSSProperties }> = ({ size = 10, style }) => (
     <div
@@ -209,6 +212,7 @@ const Diamond: React.FC<{ size?: number; style?: React.CSSProperties }> = ({ siz
 /* ══════════════════════════════════════════════════════════════════════════ */
 export const PlayerInspectModal: React.FC = () => {
     const inspectPlayerId = useGameStore((s) => s.inspectPlayerId);
+    const isMobile = useGameStore((s) => s.isMobile);
     const inspectPlayerName = useGameStore((s) => s.inspectPlayerName);
     const myPlayerId = useGameStore((s) => s.playerId);
     const myVkUser = useGameStore((s) => s.vkUser);
@@ -712,10 +716,10 @@ export const PlayerInspectModal: React.FC = () => {
                 transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
                 onClick={(e) => e.stopPropagation()}
                 style={{
-                    width: '100%',
-                    maxWidth: '1020px',
+                    width: isMobile ? '96%' : '100%',
+                    maxWidth: isMobile ? '100%' : '1020px',
                     /* ★ ФИКСИРОВАННАЯ ВЫСОТА — окно не прыгает при смене вкладок */
-                    height: 'min(88vh, 700px)',
+                    height: isMobile ? '95vh' : 'min(88vh, 700px)',
                     background: 'linear-gradient(158deg, #231b0e 0%, #160f09 48%, #0e0804 100%)',
                     border: '2px solid rgba(240,192,64,0.42)',
                     borderRadius: '22px',
@@ -1329,11 +1333,19 @@ export const PlayerInspectModal: React.FC = () => {
                                         </div>
 
                                         {/* Двухколоночный блок — flex: 1 */}
-                                        <div style={{ display: 'flex', gap: '12px', flex: 1, minHeight: 0 }}>
+                                        <div
+                                            style={{
+                                                display: 'flex',
+                                                flexDirection: isMobile ? 'column' : 'row',
+                                                gap: '12px',
+                                                flex: isMobile ? 'none' : 1,
+                                                minHeight: 0,
+                                            }}
+                                        >
                                             {/* LEFT: Характеристики */}
                                             <div
                                                 style={{
-                                                    flex: 1,
+                                                    flex: isMobile ? 'none' : 1,
                                                     background: 'rgba(0,0,0,0.22)',
                                                     border: '1px solid rgba(240,192,64,0.09)',
                                                     borderRadius: '14px',
@@ -1432,7 +1444,7 @@ export const PlayerInspectModal: React.FC = () => {
                                             {/* RIGHT: Профиль */}
                                             <div
                                                 style={{
-                                                    flex: 1.12,
+                                                    flex: isMobile ? 'none' : 1.12,
                                                     display: 'flex',
                                                     flexDirection: 'column',
                                                     gap: '10px',
@@ -2093,13 +2105,22 @@ export const PlayerInspectModal: React.FC = () => {
                         {!isMe && (
                             <>
                                 <GoldDivider style={{ flexShrink: 0 }} />
-                                <div style={{ display: 'flex', gap: '10px', flexShrink: 0 }}>
+                                <div
+                                    style={{
+                                        display: 'flex',
+                                        flexDirection: isMobile ? 'column' : 'row',
+                                        gap: '10px',
+                                        flexShrink: 0,
+                                        width: '100%',
+                                    }}
+                                >
                                     <button
                                         onClick={handleAddFriend}
                                         disabled={isAlreadyFriend}
                                         className="act-btn"
                                         style={{
-                                            flex: 1,
+                                            flex: isMobile ? 'none' : 1,
+                                            width: isMobile ? '100%' : 'auto',
                                             height: '42px',
                                             background: isAlreadyFriend
                                                 ? 'rgba(255,255,255,0.02)'
@@ -2135,7 +2156,8 @@ export const PlayerInspectModal: React.FC = () => {
                                         onClick={handleWriteMsg}
                                         className="act-btn"
                                         style={{
-                                            flex: 1,
+                                            flex: isMobile ? 'none' : 1,
+                                            width: isMobile ? '100%' : 'auto',
                                             height: '42px',
                                             background: 'rgba(255,255,255,0.04)',
                                             border: '1px solid rgba(255,255,255,0.15)',
@@ -2164,7 +2186,8 @@ export const PlayerInspectModal: React.FC = () => {
                                         onClick={handleChallenge}
                                         className="act-btn"
                                         style={{
-                                            flex: 1.7,
+                                            flex: isMobile ? 'none' : 1.7,
+                                            width: isMobile ? '100%' : 'auto',
                                             height: '42px',
                                             background:
                                                 'linear-gradient(180deg, #ffe880 0%, #f0c040 50%, #9a6e10 100%)',

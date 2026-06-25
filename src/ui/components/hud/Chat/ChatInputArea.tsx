@@ -1,4 +1,5 @@
 import React from 'react';
+import { useGameStore } from '../../../../store/useGameStore';
 
 interface ChatInputAreaProps {
     inputText: string;
@@ -29,6 +30,8 @@ export const ChatInputArea: React.FC<ChatInputAreaProps> = ({
     handleSendMessage,
     handleKeyDown,
 }) => {
+    const isMobile = useGameStore((state) => state.isMobile);
+
     return (
         <div
             style={{
@@ -44,8 +47,8 @@ export const ChatInputArea: React.FC<ChatInputAreaProps> = ({
                     style={{
                         flex: 1,
                         height: 42,
-                        background: 'rgba(0,0,0,0.7)',
-                        border: '1.5px solid rgba(240, 192, 64, 0.45)',
+                        background: isMobile ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0,0,0,0.7)',
+                        border: isMobile ? '1.5px solid rgba(255, 255, 255, 0.35)' : '1.5px solid rgba(240, 192, 64, 0.45)',
                         borderRadius: '10px',
                         display: 'flex',
                         alignItems: 'center',
@@ -118,8 +121,8 @@ export const ChatInputArea: React.FC<ChatInputAreaProps> = ({
                             background: 'none',
                             border: 'none',
                             outline: 'none',
-                            color: '#fff',
-                            fontSize: 13,
+                            color: '#ffffff',
+                            fontSize: isMobile ? 14 : 13,
                             fontFamily: "'Cinzel', serif",
                         }}
                     />

@@ -787,48 +787,65 @@ h6 {
         0 0 5px rgba(0, 0, 0, 0.65);
 }
 
-/* Глобальное масштабирование мелких шрифтов в модальных окнах (.BaseWindow) для лучшей читаемости */
-.BaseWindow [style*='font-size: 8px'],
-.BaseWindow [style*='font-size:8px'] {
-    font-size: 11px !important;
-}
-.BaseWindow [style*='font-size: 9px'],
-.BaseWindow [style*='font-size:9px'] {
-    font-size: 12px !important;
-}
-.BaseWindow [style*='font-size: 10px'],
-.BaseWindow [style*='font-size:10px'] {
-    font-size: 13px !important;
-}
-.BaseWindow [style*='font-size: 11px'],
-.BaseWindow [style*='font-size:11px'] {
-    font-size: 13.5px !important;
-}
-.BaseWindow [style*='font-size: 11.5px'],
-.BaseWindow [style*='font-size:11.5px'] {
-    font-size: 14px !important;
-}
-.BaseWindow [style*='font-size: 12px'],
-.BaseWindow [style*='font-size:12px'] {
-    font-size: 14px !important;
-}
-.BaseWindow [style*='font-size: 12.5px'],
-.BaseWindow [style*='font-size:12.5px'] {
-    font-size: 14.5px !important;
-}
-.BaseWindow [style*='font-size: 13px'],
-.BaseWindow [style*='font-size:13px'] {
-    font-size: 15px !important;
-}
-.BaseWindow [style*='font-size: 13.5px'],
-.BaseWindow [style*='font-size:13.5px'] {
-    font-size: 15.5px !important;
-}
-.BaseWindow [style*='font-size: 14px'],
-.BaseWindow [style*='font-size:14px'] {
+/* ─── ISSUE 5: Global Mobile Typography Scale ──────────────────────────────── */
+
+/* Headers: minimum 16px */
+.is-mobile h1,
+.is-mobile h2,
+.is-mobile h3,
+.is-mobile h4,
+.is-mobile h5,
+.is-mobile h6,
+.is-mobile .header,
+.is-mobile .title,
+.is-mobile .modal-title,
+.is-mobile .window-title,
+.is-mobile [class*="Title"],
+.is-mobile [class*="Header"] {
     font-size: 16px !important;
 }
-.BaseWindow [style*='font-size: 15px'],
-.BaseWindow [style*='font-size:15px'] {
-    font-size: 17px !important;
+
+/* Override inline sizes for headers */
+.is-mobile h1[style*='font-size'],
+.is-mobile h2[style*='font-size'],
+.is-mobile h3[style*='font-size'],
+.is-mobile h4[style*='font-size'],
+.is-mobile h5[style*='font-size'],
+.is-mobile h6[style*='font-size'],
+.is-mobile .title[style*='font-size'],
+.is-mobile .header[style*='font-size'] {
+    font-size: 16px !important;
 }
+
+/* Scale up specific inline sizes globally on mobile */
+.is-mobile [style*='font-size: 5px'], .is-mobile [style*='font-size:5px'],
+.is-mobile [style*='font-size: 6px'], .is-mobile [style*='font-size:6px'],
+.is-mobile [style*='font-size: 7px'], .is-mobile [style*='font-size:7px'],
+.is-mobile [style*='font-size: 8px'], .is-mobile [style*='font-size:8px'],
+.is-mobile [style*='font-size: 8.5px'], .is-mobile [style*='font-size:8.5px'],
+.is-mobile [style*='font-size: 9px'], .is-mobile [style*='font-size:9px'],
+.is-mobile [style*='font-size: 9.5px'], .is-mobile [style*='font-size:9.5px'],
+.is-mobile [style*='font-size: 10px'], .is-mobile [style*='font-size:10px'],
+.is-mobile [style*='font-size: 10.5px'], .is-mobile [style*='font-size:10.5px'] {
+    font-size: 11px !important;
+}
+
+.is-mobile [style*='font-size: 11px'], .is-mobile [style*='font-size:11px'],
+.is-mobile [style*='font-size: 11.5px'], .is-mobile [style*='font-size:11.5px'],
+.is-mobile [style*='font-size: 12px'], .is-mobile [style*='font-size:12px'],
+.is-mobile [style*='font-size: 12.5px'], .is-mobile [style*='font-size:12.5px'] {
+    font-size: 13px !important;
+}
+
+/* For moderate font sizes, scale them slightly for better mobile readability */
+.is-mobile [style*='font-size: 13px'], .is-mobile [style*='font-size:13px'],
+.is-mobile [style*='font-size: 13.5px'], .is-mobile [style*='font-size:13.5px'] {
+    font-size: 14.5px !important;
+}
+
+.is-mobile [style*='font-size: 14px'], .is-mobile [style*='font-size:14px'],
+.is-mobile [style*='font-size: 14.5px'], .is-mobile [style*='font-size:14.5px'],
+.is-mobile [style*='font-size: 15px'], .is-mobile [style*='font-size:15px'] {
+    font-size: 16px !important;
+}
+

@@ -4,6 +4,60 @@ import { AssetsMap } from '../../../../configs/AssetsMap';
 import { ShopItem } from '../../../../configs/ShopConfig';
 import { BankItemShowcase } from './BankItemShowcase';
 import { getRarityColor } from './shopHelpers';
+import { resolveAssetPath } from '../../../../utils/assetPath';
+
+const ItemSilhouette: React.FC<{ color: string; width: number | string; height: number | string }> = ({ color, width, height }) => (
+    <div
+        style={{
+            width,
+            height,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            margin: 'auto',
+            pointerEvents: 'none',
+        }}
+    >
+        <svg
+            width="60%"
+            height="60%"
+            viewBox="0 0 64 64"
+            fill="none"
+            style={{
+                filter: `drop-shadow(0 0 15px ${color}88)`,
+                opacity: 0.7,
+                animation: 'pulse-silhouette-showcase 2s infinite ease-in-out',
+            }}
+        >
+            <style>{`
+                @keyframes pulse-silhouette-showcase {
+                    0%, 100% { opacity: 0.45; transform: scale(0.95); }
+                    50% { opacity: 0.85; transform: scale(1.05); }
+                }
+            `}</style>
+            <path
+                d="M32 6 L12 14 V32 C12 46.4 32 58 32 58 C32 58 52 46.4 52 32 V14 L32 6 Z"
+                stroke={color}
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                fill="rgba(255, 255, 255, 0.05)"
+            />
+            <path
+                d="M18 18 L46 46 M46 18 L18 46"
+                stroke={color}
+                strokeWidth="2"
+                strokeLinecap="round"
+            />
+            <circle cx="32" cy="32" r="6" stroke={color} strokeWidth="2" fill="#151210" />
+        </svg>
+    </div>
+);
 
 interface ShopShowcasePanelProps {
     selectedItem: ShopItem;
@@ -32,6 +86,31 @@ export const ShopShowcasePanel: React.FC<ShopShowcasePanelProps> = ({
     setSelectedImageLoaded,
     ITEMS_PER_PAGE,
 }) => {
+    const [localImageError, setLocalImageError] = React.useState(false);
+    const [retryCount, setRetryCount] = React.useState(0);
+    const [imgSrc, setImgSrc] = React.useState('');
+
+    React.useEffect(() => {
+        setSelectedImageLoaded(false);
+        setLocalImageError(false);
+        setRetryCount(0);
+        setImgSrc(resolveAssetPath(selectedItem.image));
+    }, [selectedItem.id, selectedItem.image, setSelectedImageLoaded]);
+
+    const handleImageError = () => {
+        if (retryCount < 2) {
+            setTimeout(() => {
+                setRetryCount((prev) => prev + 1);
+                setImgSrc(resolveAssetPath(selectedItem.image) + `?retry=${Date.now()}`);
+            }, 1000);
+        } else if (imgSrc.endsWith('.webp')) {
+            setImgSrc(resolveAssetPath(selectedItem.image).replace(/\.webp$/i, '.png'));
+            setRetryCount(3);
+        } else {
+            setLocalImageError(true);
+        }
+    };
+
     return (
         <motion.div
             drag={isMobile ? 'x' : undefined}
@@ -205,36 +284,61 @@ export const ShopShowcasePanel: React.FC<ShopShowcasePanelProps> = ({
                                 />
                             ) : (
                                 <>
-                                    {!selectedImageLoaded && <div className="skeleton-placeholder" />}
-                                    <img
-                                        src={selectedItem.image}
-                                        onLoad={() => setSelectedImageLoaded(true)}
-                                        onError={(e) => (e.currentTarget.src = AssetsMap.UI.ICON_DAILY_CHEST)}
-                                        className={`image-fade-in ${selectedImageLoaded ? 'loaded' : ''}`}
-                                        style={{
-                                            width:
+                                    {(!selectedImageLoaded || localImageError) && (
+                                        <ItemSilhouette
+                                            color={getRarityColor(selectedItem.rarity)}
+                                            width={
                                                 selectedItem.mainTab === 'SKINS'
                                                     ? isMobile
                                                         ? '340px'
                                                         : '320px'
                                                     : isMobile
                                                       ? '300px'
-                                                      : '260px',
-                                            height:
+                                                      : '260px'
+                                            }
+                                            height={
                                                 selectedItem.mainTab === 'SKINS'
                                                     ? isMobile
                                                         ? '340px'
                                                         : '320px'
                                                     : isMobile
                                                       ? '300px'
-                                                      : '260px',
-                                            objectFit: 'contain',
-                                            objectPosition:
-                                                selectedItem.mainTab === 'SKINS' ? 'bottom center' : 'center',
-                                            filter: `contrast(1.1) brightness(1.15) drop-shadow(0 0 25px ${getRarityColor(selectedItem.rarity)}cc)`,
-                                        }}
-                                        alt=""
-                                    />
+                                                      : '260px'
+                                            }
+                                        />
+                                    )}
+                                    {!localImageError && (
+                                        <img
+                                            src={imgSrc}
+                                            onLoad={() => setSelectedImageLoaded(true)}
+                                            onError={handleImageError}
+                                            className={`image-fade-in ${selectedImageLoaded ? 'loaded' : ''}`}
+                                            style={{
+                                                width:
+                                                    selectedItem.mainTab === 'SKINS'
+                                                        ? isMobile
+                                                            ? '340px'
+                                                            : '320px'
+                                                        : isMobile
+                                                          ? '300px'
+                                                          : '260px',
+                                                height:
+                                                    selectedItem.mainTab === 'SKINS'
+                                                        ? isMobile
+                                                            ? '340px'
+                                                            : '320px'
+                                                        : isMobile
+                                                          ? '300px'
+                                                          : '260px',
+                                                objectFit: 'contain',
+                                                objectPosition:
+                                                    selectedItem.mainTab === 'SKINS' ? 'bottom center' : 'center',
+                                                filter: `contrast(1.1) brightness(1.15) drop-shadow(0 0 25px ${getRarityColor(selectedItem.rarity)}cc)`,
+                                                display: selectedImageLoaded ? 'block' : 'none',
+                                            }}
+                                            alt=""
+                                        />
+                                    )}
                                 </>
                             )}
                         </div>

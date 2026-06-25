@@ -311,9 +311,9 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({
     const bagFill = inventory.length / MAX_SLOTS;
     const bagColor = bagFill > 0.9 ? '#ef4444' : bagFill > 0.75 ? '#f59e0b' : '#4ade80';
 
-    const cols = mode === 'FULL' ? (isMobile ? 5 : 5) : 3;
-    const rowHeight = mode === 'FULL' ? (isMobile ? 80 : 125) : isMobile ? 72 : 100;
-    const gapHeight = mode === 'FULL' ? (isMobile ? 6 : 14) : isMobile ? 5 : 10;
+    const cols = mode === 'FULL' ? (isMobile ? 3 : 5) : 3;
+    const rowHeight = mode === 'FULL' ? (isMobile ? 105 : 125) : isMobile ? 95 : 100;
+    const gapHeight = mode === 'FULL' ? (isMobile ? 8 : 14) : isMobile ? 8 : 10;
     const totalItems = useMemo(() => {
         type GridElement = { type: 'ITEM'; item: any; index: number } | { type: 'EMPTY'; index: number };
 
@@ -764,8 +764,9 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({
                                 <div
                                     key={'empty-' + emptyIndex + '-' + i}
                                     style={{
-                                        background:
-                                            'radial-gradient(circle, rgba(28, 22, 18, 0.4) 0%, rgba(18, 14, 11, 0.6) 100%)',
+                                        background: isMobile
+                                            ? 'radial-gradient(circle, #1c1612 0%, #120e0b 100%)'
+                                            : 'radial-gradient(circle, rgba(28, 22, 18, 0.4) 0%, rgba(18, 14, 11, 0.6) 100%)',
                                         borderRadius: '8px',
                                         border: '1.5px solid rgba(240, 192, 64, 0.08)',
                                         boxShadow: 'inset 0 0 10px rgba(0,0,0,0.85)',

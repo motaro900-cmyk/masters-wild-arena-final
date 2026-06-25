@@ -45,6 +45,59 @@ const getVotesPlural = (num: number) => {
     return 'голосов';
 };
 
+const ItemSilhouette: React.FC<{ color: string; width: number | string; height: number | string }> = ({ color, width, height }) => (
+    <div
+        style={{
+            width,
+            height,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            margin: 'auto',
+            pointerEvents: 'none',
+        }}
+    >
+        <svg
+            width="60%"
+            height="60%"
+            viewBox="0 0 64 64"
+            fill="none"
+            style={{
+                filter: `drop-shadow(0 0 8px ${color}88)`,
+                opacity: 0.65,
+                animation: 'pulse-silhouette-card 2s infinite ease-in-out',
+            }}
+        >
+            <style>{`
+                @keyframes pulse-silhouette-card {
+                    0%, 100% { opacity: 0.4; transform: scale(0.95); }
+                    50% { opacity: 0.8; transform: scale(1.05); }
+                }
+            `}</style>
+            <path
+                d="M32 6 L12 14 V32 C12 46.4 32 58 32 58 C32 58 52 46.4 52 32 V14 L32 6 Z"
+                stroke={color}
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                fill="rgba(255, 255, 255, 0.05)"
+            />
+            <path
+                d="M18 18 L46 46 M46 18 L18 46"
+                stroke={color}
+                strokeWidth="2"
+                strokeLinecap="round"
+            />
+            <circle cx="32" cy="32" r="6" stroke={color} strokeWidth="2" fill="#151210" />
+        </svg>
+    </div>
+);
+
 export const ShopItemCard: React.FC<ShopItemCardProps> = React.memo(
     ({ item, isSelected, playerLevel, discount = 0, onClick, isMobile = false }) => {
         const { ownedSkins, inventory, heroEquipment } = useGameStore(
@@ -77,10 +130,30 @@ export const ShopItemCard: React.FC<ShopItemCardProps> = React.memo(
                 : originalPrice;
 
         const [imageLoaded, setImageLoaded] = React.useState(false);
+        const [imageError, setImageError] = React.useState(false);
+        const [retryCount, setRetryCount] = React.useState(0);
+        const [imgSrc, setImgSrc] = React.useState('');
 
         React.useEffect(() => {
             setImageLoaded(false);
+            setImageError(false);
+            setRetryCount(0);
+            setImgSrc(resolveAssetPath(item.image));
         }, [item.id, item.image]);
+
+        const handleImageError = () => {
+            if (retryCount < 2) {
+                setTimeout(() => {
+                    setRetryCount((prev) => prev + 1);
+                    setImgSrc(resolveAssetPath(item.image) + `?retry=${Date.now()}`);
+                }, 1000);
+            } else if (imgSrc.endsWith('.webp')) {
+                setImgSrc(resolveAssetPath(item.image).replace(/\.webp$/i, '.png'));
+                setRetryCount(3);
+            } else {
+                setImageError(true);
+            }
+        };
 
         return (
             <motion.div
@@ -277,33 +350,30 @@ export const ShopItemCard: React.FC<ShopItemCardProps> = React.memo(
                                 );
                             }
                             // 3️⃣ Fallback — индивидуальный WebP-файл
+                            const size = isMobile ? '60px' : '80px';
                             return (
                                 <>
-                                    {!imageLoaded && <div className="skeleton-placeholder" />}
-                                    <img
-                                        src={resolveAssetPath(item.image)}
-                                        onLoad={() => setImageLoaded(true)}
-                                        onError={(e) => {
-                                            const currentSrc = e.currentTarget.src;
-                                            if (currentSrc.endsWith('.webp')) {
-                                                e.currentTarget.src = currentSrc
-                                                    .replace(/_mobile\.webp$/i, '.png')
-                                                    .replace(/\.webp$/i, '.png');
-                                            } else {
-                                                e.currentTarget.src = AssetsMap.UI.ICON_DAILY_CHEST;
-                                            }
-                                        }}
-                                        className={`image-fade-in ${imageLoaded ? 'loaded' : ''}`}
-                                        style={{
-                                            width: isMobile ? '60px' : '80px',
-                                            height: isMobile ? '60px' : '80px',
-                                            objectFit: 'contain',
-                                            filter: isLocked
-                                                ? 'grayscale(1) brightness(0.4)'
-                                                : `drop-shadow(0 2px 6px rgba(0,0,0,0.6)) drop-shadow(0 0 4px ${glow}66)`,
-                                        }}
-                                        alt=""
-                                    />
+                                    {(!imageLoaded || imageError) && (
+                                        <ItemSilhouette color={glow} width={size} height={size} />
+                                    )}
+                                    {!imageError && (
+                                        <img
+                                            src={imgSrc}
+                                            onLoad={() => setImageLoaded(true)}
+                                            onError={handleImageError}
+                                            className={`image-fade-in ${imageLoaded ? 'loaded' : ''}`}
+                                            style={{
+                                                width: size,
+                                                height: size,
+                                                objectFit: 'contain',
+                                                filter: isLocked
+                                                    ? 'grayscale(1) brightness(0.4)'
+                                                    : `drop-shadow(0 2px 6px rgba(0,0,0,0.6)) drop-shadow(0 0 4px ${glow}66)`,
+                                                display: imageLoaded ? 'block' : 'none',
+                                            }}
+                                            alt=""
+                                        />
+                                    )}
                                 </>
                             );
                         })()

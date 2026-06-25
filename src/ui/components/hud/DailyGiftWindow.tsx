@@ -95,15 +95,17 @@ export const DailyGiftWindow: React.FC<DailyGiftWindowProps> = ({ onClose }) => 
     // Tab control
     const [activeTab, setActiveTab] = useState<'CALENDAR' | 'WHEEL'>('CALENDAR');
 
-    const [isMobile, setIsMobile] = useState(false);
+    const storeIsMobile = useGameStore((state) => state.isMobile);
+    const [isMobile, setIsMobile] = useState(storeIsMobile);
+
     useEffect(() => {
         const checkLayout = () => {
-            setIsMobile(typeof window !== 'undefined' && window.innerWidth < 1024);
+            setIsMobile(storeIsMobile || (typeof window !== 'undefined' && window.innerWidth < 1024));
         };
         checkLayout();
         window.addEventListener('resize', checkLayout);
         return () => window.removeEventListener('resize', checkLayout);
-    }, []);
+    }, [storeIsMobile]);
 
     // Calendar states
     const initialGiftTime = useGameStore.getState().lastDailyGiftClaimedTime || 0;
