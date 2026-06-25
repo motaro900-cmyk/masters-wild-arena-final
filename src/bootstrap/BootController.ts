@@ -623,13 +623,10 @@ class BootController {
                     );
                 }
 
-                // If missing VK params (status 400), check environment and redirect if needed
+                // If missing VK params (status 400) -> always show NotInVkScreen
                 if (response.status === 400) {
-                    const { isVkMiniApp } = await import('../utils/VKBridge');
-                    if (!isVkMiniApp()) {
-                        setNotInVk(true);
-                        throw new Error('Standalone launch restricted');
-                    }
+                    setNotInVk(true);
+                    throw new Error('Standalone launch restricted');
                 }
 
                 // If not 400 but still not ok (e.g. 500, etc.), we retry
@@ -649,8 +646,12 @@ class BootController {
                     throw new Error('Invalid signature');
                 }
             } catch (err: any) {
-                if (err.message === 'Standalone launch restricted') {
-                    throw err;
+                if (
+                    err.message === 'Standalone launch restricted' ||
+                    err.message?.includes('status 400')
+                ) {
+                    setNotInVk(true);
+                    throw new Error('Standalone launch restricted');
                 }
                 throw new Error(
                     'Ошибка безопасности: параметры запуска не прошли верификацию. Пожалуйста, перезапустите игру из официального приложения ВКонтакте.',
