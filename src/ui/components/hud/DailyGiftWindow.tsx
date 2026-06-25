@@ -106,8 +106,39 @@ export const DailyGiftWindow: React.FC<DailyGiftWindowProps> = ({ onClose }) => 
     }, []);
 
     // Calendar states
-    const [streak, setStreak] = useState<number>(1);
-    const [claimedToday, setClaimedToday] = useState<boolean>(false);
+    const initialGiftTime = useGameStore.getState().lastDailyGiftClaimedTime || 0;
+    const initialWheelTime = useGameStore.getState().lastWheelSpinTime || 0;
+    const initialStreak = useGameStore.getState().loginStreak || 0;
+
+    // Compute initial values based on current store state to prevent layout flickering on mount
+    const computeInitialDailyState = () => {
+        const giftTime = initialGiftTime;
+        const streak = initialStreak;
+
+        if (!giftTime) {
+            return { streak: 1, claimedToday: false };
+        }
+
+        const nowSeconds = Math.floor(Date.now() / 1000);
+        const lastClaimedSeconds = Math.floor(giftTime / 1000);
+        const diffSeconds = nowSeconds - lastClaimedSeconds;
+        const hoursSinceLast = diffSeconds / 3600;
+
+        if (hoursSinceLast < 24) {
+            return { streak: streak || 1, claimedToday: true };
+        } else {
+            let currentStreak = streak || 0;
+            if (diffSeconds > 2 * 24 * 3600 || currentStreak >= 7) {
+                currentStreak = 0;
+            }
+            return { streak: currentStreak + 1, claimedToday: false };
+        }
+    };
+
+    const initialDaily = computeInitialDailyState();
+
+    const [streak, setStreak] = useState<number>(initialDaily.streak);
+    const [claimedToday, setClaimedToday] = useState<boolean>(initialDaily.claimedToday);
     const [rewardClaimed, setRewardClaimed] = useState<{
         type: string;
         amount: number;
@@ -120,16 +151,30 @@ export const DailyGiftWindow: React.FC<DailyGiftWindowProps> = ({ onClose }) => 
 
     const [isSpinning, setIsSpinning] = useState<boolean>(false);
     const [wheelRotation, setWheelRotation] = useState<number>(0);
-    const [isFreeSpinAvailable, setIsFreeSpinAvailable] = useState<boolean>(false);
+
+    const computeInitialWheelState = () => {
+        const wheelTime = initialWheelTime;
+        if (!wheelTime) return true;
+        const nowSeconds = Math.floor(Date.now() / 1000);
+        const lastSpinSeconds = Math.floor(wheelTime / 1000);
+        const diffSeconds = nowSeconds - lastSpinSeconds;
+        return diffSeconds >= 24 * 3600;
+    };
+
+    const [isFreeSpinAvailable, setIsFreeSpinAvailable] = useState<boolean>(computeInitialWheelState());
     const [wheelTimeLeft, setWheelTimeLeft] = useState<string>('');
 
     // Server time offset
     const [timeOffset, setTimeOffset] = useState<number>(0);
 
     // Firestore server dates
-    const [lastGiftClaimedTime, setLastGiftClaimedTime] = useState<Timestamp | null>(null);
-    const [lastWheelSpinTimeServer, setLastWheelSpinTimeServer] = useState<Timestamp | null>(null);
-    const [dbLoginStreak, setDbLoginStreak] = useState<number>(0);
+    const [lastGiftClaimedTime, setLastGiftClaimedTime] = useState<Timestamp | null>(
+        initialGiftTime ? Timestamp.fromMillis(initialGiftTime) : null
+    );
+    const [lastWheelSpinTimeServer, setLastWheelSpinTimeServer] = useState<Timestamp | null>(
+        initialWheelTime ? Timestamp.fromMillis(initialWheelTime) : null
+    );
+    const [dbLoginStreak, setDbLoginStreak] = useState<number>(initialStreak);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
@@ -145,19 +190,6 @@ export const DailyGiftWindow: React.FC<DailyGiftWindowProps> = ({ onClose }) => 
                 }
             } catch (timeError) {
                 console.warn('Failed to fetch server time offset, using local clock:', timeError);
-            }
-
-            try {
-                const state = useGameStore.getState();
-                const giftTime = state.lastDailyGiftClaimedTime || 0;
-                const wheelTime = state.lastWheelSpinTime || 0;
-                const streak = state.loginStreak || 0;
-
-                setLastGiftClaimedTime(giftTime ? Timestamp.fromMillis(giftTime) : null);
-                setLastWheelSpinTimeServer(wheelTime ? Timestamp.fromMillis(wheelTime) : null);
-                setDbLoginStreak(streak);
-            } catch (e) {
-                console.error('Failed to load daily gift data from store:', e);
             } finally {
                 setIsLoading(false);
             }
