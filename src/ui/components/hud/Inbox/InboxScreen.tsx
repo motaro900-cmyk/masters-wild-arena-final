@@ -97,9 +97,17 @@ export const InboxScreen: React.FC<InboxScreenProps> = ({ summary, onClose }) =>
                                             fontFamily: "'Montserrat', sans-serif",
                                             opacity: 0.5,
                                             marginTop: '2px',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '4px',
                                         }}
                                     >
-                                        Рейтинг нападавшего: {a.attackerRating} 🏆
+                                        Рейтинг нападавшего: {a.attackerRating}
+                                        <img
+                                            src={AssetsMap.UI.TROPHY_PREMIUM}
+                                            style={{ width: '12px', height: '12px', objectFit: 'contain' }}
+                                            alt="trophy"
+                                        />
                                     </div>
                                 </div>
                             </div>

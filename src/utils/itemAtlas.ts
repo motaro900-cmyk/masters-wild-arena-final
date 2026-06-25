@@ -12,16 +12,14 @@ import type { CSSProperties } from 'react';
 
 /** Определяет мобильное устройство по userAgent (аналогично AssetLoader.ts) */
 const isMobile = (): boolean =>
-    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-        navigator.userAgent,
-    );
+    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
 /** Размер атласа (ПК) */
-const ATLAS_PC_SIZE   = 4096;
+const ATLAS_PC_SIZE = 4096;
 /** Размер атласа (мобильный) */
-const ATLAS_MOB_SIZE  = 2048;
+const ATLAS_MOB_SIZE = 2048;
 /** Масштаб мобильного атласа относительно ПК */
-const MOBILE_SCALE    = ATLAS_MOB_SIZE / ATLAS_PC_SIZE;
+const MOBILE_SCALE = ATLAS_MOB_SIZE / ATLAS_PC_SIZE;
 
 /** Тип одного фрейма из JSON-атласа */
 interface AtlasFrame {
@@ -49,14 +47,14 @@ let _loadPromise: Promise<AtlasData> | null = null;
  */
 export async function loadItemsAtlas(): Promise<AtlasData> {
     if (_atlasData) return _atlasData;
-    if (_loadPromise)  return _loadPromise;
+    if (_loadPromise) return _loadPromise;
 
     const jsonPath = isMobile()
         ? '/assets/images/items/weapons/items_mobile.json'
         : '/assets/images/items/weapons/items.json';
 
     _loadPromise = fetch(jsonPath)
-        .then(r => r.json())
+        .then((r) => r.json())
         .then((data: AtlasData) => {
             _atlasData = data;
             return data;
@@ -86,11 +84,7 @@ export function preloadItemsAtlas(): void {
  * @param renderH   Желаемая высота рендера в px (по умолчанию 64)
  * @returns         Объект CSSProperties или null если фрейм не найден
  */
-export function getAtlasFrameStyle(
-    frameKey: string,
-    renderW = 64,
-    renderH = 64,
-): CSSProperties | null {
+export function getAtlasFrameStyle(frameKey: string, renderW = 64, renderH = 64): CSSProperties | null {
     const data = _atlasData;
     if (!data) return null;
 
@@ -125,10 +119,10 @@ export function getAtlasFrameStyle(
 
     return {
         backgroundImage: `url('${atlasUrl}')`,
-        backgroundSize:  `${bgW}px ${bgH}px`,
+        backgroundSize: `${bgW}px ${bgH}px`,
         backgroundPosition: `${bgX}px ${bgY}px`,
         backgroundRepeat: 'no-repeat',
-        width:  `${renderW}px`,
+        width: `${renderW}px`,
         height: `${renderH}px`,
         display: 'block',
     } as CSSProperties;
@@ -139,11 +133,7 @@ export function getAtlasFrameStyle(
  * Если atlasFrame не указан или атлас не загружен — возвращает null
  * (компонент должен использовать item.image как fallback).
  */
-export function getItemAtlasStyle(
-    item: { atlasFrame?: string },
-    renderW = 64,
-    renderH = 64,
-): CSSProperties | null {
+export function getItemAtlasStyle(item: { atlasFrame?: string }, renderW = 64, renderH = 64): CSSProperties | null {
     if (!item.atlasFrame) return null;
     return getAtlasFrameStyle(item.atlasFrame, renderW, renderH);
 }

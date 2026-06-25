@@ -1,4 +1,6 @@
 import puppeteer from 'puppeteer-core';
+import fs from 'fs';
+import path from 'path';
 
 const CHROME_PATH = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
 const GAME_URL = 'http://localhost:5173';
@@ -9,6 +11,12 @@ async function delay(ms) {
 
 async function runSmokeTest() {
     console.log('🎮 Starting Puppeteer Smoke Test...');
+
+    // Ensure the screenshots directory exists
+    const screenshotsDir = path.join('docs', 'reports', 'screenshots');
+    if (!fs.existsSync(screenshotsDir)) {
+        fs.mkdirSync(screenshotsDir, { recursive: true });
+    }
     const isHeaded = process.argv.includes('--headed');
     console.log(`👁️ Visual Mode: ${isHeaded ? 'ON (headed)' : 'OFF (headless)'}`);
 
@@ -94,13 +102,8 @@ async function runSmokeTest() {
 
         // Wait for BootController to finish booting completely (READY state)
         console.log('⏳ Waiting for bootController to transition to READY...');
-        await page.waitForFunction(async () => {
-            try {
-                const { bootController } = await import('/src/bootstrap/BootController.ts');
-                return bootController.getState() === 'READY';
-            } catch (e) {
-                return false;
-            }
+        await page.waitForFunction(() => {
+            return window.bootController && window.bootController.getState() === 'READY';
         }, { timeout: 35000 });
         console.log('✅ BootController is READY.');
 
@@ -217,8 +220,8 @@ async function runSmokeTest() {
             window.useGameStore.getState().setActiveScreen('MAIN_MENU');
         });
         await delay(2000);
-        await page.screenshot({ path: 'smoke-menu.png' });
-        console.log('✅ Saved smoke-menu.png');
+        await page.screenshot({ path: path.join(screenshotsDir, 'smoke-menu.png') });
+        console.log(`✅ Saved ${path.join(screenshotsDir, 'smoke-menu.png')}`);
 
         // --- 2. SHOP ---
         console.log('📸 Navigating to Shop...');
@@ -226,8 +229,8 @@ async function runSmokeTest() {
             window.useGameStore.getState().goToShop();
         });
         await delay(3000); // Wait for shop items to fetch/render
-        await page.screenshot({ path: 'smoke-shop.png' });
-        console.log('✅ Saved smoke-shop.png');
+        await page.screenshot({ path: path.join(screenshotsDir, 'smoke-shop.png') });
+        console.log(`✅ Saved ${path.join(screenshotsDir, 'smoke-shop.png')}`);
 
         // --- 3. ARENA (BATTLE) ---
         console.log('📸 Navigating to Arena (Battle)...');
@@ -235,8 +238,8 @@ async function runSmokeTest() {
             window.useGameStore.getState().startPveBattle(1);
         });
         await delay(3000); // Wait for PixiJS canvas initialization and textures loading
-        await page.screenshot({ path: 'smoke-arena.png' });
-        console.log('✅ Saved smoke-arena.png');
+        await page.screenshot({ path: path.join(screenshotsDir, 'smoke-arena.png') });
+        console.log(`✅ Saved ${path.join(screenshotsDir, 'smoke-arena.png')}`);
 
         // Restore main menu to clean up state
         await page.evaluate(() => {
@@ -250,8 +253,8 @@ async function runSmokeTest() {
             window.useGameStore.getState().goToHeroes();
         });
         await delay(2500);
-        await page.screenshot({ path: 'smoke-profile.png' });
-        console.log('✅ Saved smoke-profile.png');
+        await page.screenshot({ path: path.join(screenshotsDir, 'smoke-profile.png') });
+        console.log(`✅ Saved ${path.join(screenshotsDir, 'smoke-profile.png')}`);
 
         // --- FLUSH PENDING DOWNLOADS ---
         console.log('🔄 Temporarily disabling throttling to flush any pending network requests...');
@@ -391,8 +394,8 @@ async function runSmokeTest() {
         // We can't check goldDiff > price*1.5 since we don't know price from React state
         // Just report it
         console.log(`   ✅ Scenario 1 OK — no double-purchase detected (gold deducted: ${goldDiff}, items added: ${invDiff})`);
-        await page.screenshot({ path: 'smoke-shop-doubleclick.png' });
-        console.log('✅ Saved smoke-shop-doubleclick.png');
+        await page.screenshot({ path: path.join(screenshotsDir, 'smoke-shop-doubleclick.png') });
+        console.log(`✅ Saved ${path.join(screenshotsDir, 'smoke-shop-doubleclick.png')}`);
 
         // --- NEW SCENARIO 2: Network Disconnection during Battle ---
         console.log('\n🤖 Running Scenario 2 — Network Disconnection during Battle...');
@@ -458,8 +461,8 @@ async function runSmokeTest() {
         });
         await delay(1500);
 
-        await page.screenshot({ path: 'smoke-battle-offline.png' });
-        console.log('✅ Saved smoke-battle-offline.png');
+        await page.screenshot({ path: path.join(screenshotsDir, 'smoke-battle-offline.png') });
+        console.log(`✅ Saved ${path.join(screenshotsDir, 'smoke-battle-offline.png')}`);
 
         // Go back to main menu
         await page.evaluate(() => {
@@ -487,8 +490,8 @@ async function runSmokeTest() {
         }
         await delay(1000);
 
-        await page.screenshot({ path: 'smoke-fast-switch.png' });
-        console.log('✅ Saved smoke-fast-switch.png');
+        await page.screenshot({ path: path.join(screenshotsDir, 'smoke-fast-switch.png') });
+        console.log(`✅ Saved ${path.join(screenshotsDir, 'smoke-fast-switch.png')}`);
 
         // 6. Report console errors
         if (consoleErrors.length > 0) {

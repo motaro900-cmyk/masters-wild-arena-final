@@ -41,7 +41,7 @@ export const MailSupportTab: React.FC<MailSupportTabProps> = ({
             key="support"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            drag={isMobile ? "x" : undefined}
+            drag={isMobile ? 'x' : undefined}
             dragConstraints={{ left: 0, right: 0 }}
             dragElastic={0.15}
             onDragEnd={(_, info) => {
@@ -91,8 +91,8 @@ export const MailSupportTab: React.FC<MailSupportTabProps> = ({
                         margin: '0 auto',
                     }}
                 >
-                    Мудрый Филин доставит твое послание прямо к столу разработчиков. Нашли ошибку
-                    или есть идея? Мы ждем твоих вестей!
+                    Мудрый Филин доставит твое послание прямо к столу разработчиков. Нашли ошибку или есть идея? Мы ждем
+                    твоих вестей!
                 </p>
             </div>
 
@@ -110,8 +110,7 @@ export const MailSupportTab: React.FC<MailSupportTabProps> = ({
                             padding: '8px 15px',
                             borderRadius: '8px',
                             border: `1px solid ${feedbackCategory === cat.id ? cat.color : colors.border}`,
-                            background:
-                                feedbackCategory === cat.id ? `${cat.color}22` : 'transparent',
+                            background: feedbackCategory === cat.id ? `${cat.color}22` : 'transparent',
                             color: feedbackCategory === cat.id ? '#fff' : 'rgba(255,255,255,0.4)',
                             fontSize: '11px',
                             fontWeight: 800,

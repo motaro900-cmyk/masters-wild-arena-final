@@ -28,11 +28,7 @@ export const TopBar: React.FC<TopBarProps> = ({ onOpenWindow, mode }) => {
                 className="relative w-[450px] h-[150px] cursor-pointer group hover:scale-105 transition-transform"
                 onClick={() => onOpenWindow('PROFILE')}
             >
-                <img
-                    src={AssetsMap.UI.PANEL_PROFILE}
-                    className="w-full h-full object-contain"
-                    alt=""
-                />
+                <img src={AssetsMap.UI.PANEL_PROFILE} className="w-full h-full object-contain" alt="" />
 
                 {/* АВАТАР - сдвигаем внутрь рамки */}
                 <div className="absolute top-[28px] left-[42px] z-10">

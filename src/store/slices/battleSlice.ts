@@ -284,7 +284,6 @@ export const createBattleSlice = (set: any, get: any) => ({
 
             syncService.logPlayerAction(`Победа в бою (Этап PvE: ${pveStage})`);
         } else {
-
             set((state: any) => ({
                 winStreak: 0,
                 lossStreak: (state.lossStreak || 0) + 1,

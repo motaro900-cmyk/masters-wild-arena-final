@@ -9,7 +9,8 @@ export const Layout = {
      */
     vw(percent: number): number {
         const app = PixiApp.getInstance().getApp();
-        return (app.screen.width * percent) / 100;
+        const width = app?.screen.width ?? window.innerWidth;
+        return (width * percent) / 100;
     },
 
     /**
@@ -17,7 +18,8 @@ export const Layout = {
      */
     vh(percent: number): number {
         const app = PixiApp.getInstance().getApp();
-        return (app.screen.height * percent) / 100;
+        const height = app?.screen.height ?? window.innerHeight;
+        return (height * percent) / 100;
     },
 
     /**
@@ -25,7 +27,8 @@ export const Layout = {
      */
     center(container: any) {
         const app = PixiApp.getInstance().getApp();
-        container.x = app.screen.width / 2;
-        container.y = app.screen.height / 2;
+        container.x = (app?.screen.width ?? window.innerWidth) / 2;
+        container.y = (app?.screen.height ?? window.innerHeight) / 2;
     },
 };
+

@@ -64,7 +64,7 @@ export const SHOP_ITEMS: ShopItem[] = [
         name: 'ОСКОЛКИ ГЕРОЯ (x5)',
         description: '5 случайных осколков эпического героя.',
         price: 200,
-        icon: '💎',
+        icon: '/assets/images/ui/icons/almaz.webp',
         rarity: 'EPIC',
     },
     {
@@ -72,7 +72,7 @@ export const SHOP_ITEMS: ShopItem[] = [
         name: 'СУМКА ЗОЛОТА',
         description: 'Мгновенно дает 5,000 золота.',
         price: 300,
-        icon: '💰',
+        icon: '/assets/images/ui/icons/Gold.webp',
         rarity: 'COMMON',
     },
 ];

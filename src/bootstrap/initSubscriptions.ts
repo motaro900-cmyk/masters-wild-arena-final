@@ -10,67 +10,74 @@ interface SubscriptionsResult {
     unsubProfile: () => void;
 }
 
-export const initSubscriptions = async (
-    userId: string,
-    prefixedId: string
-): Promise<SubscriptionsResult> => {
+export const initSubscriptions = async (userId: string, prefixedId: string): Promise<SubscriptionsResult> => {
     const { syncService } = await import('../services/SyncService');
 
     let unsubClanChat: (() => void) | null = null;
 
     const unsubChat = syncService.subscribeToChat((messages) => {
-        bootController.execute({
-            type: 'MUTATE_STATE',
-            payload: {
-                patch: () => {
-                    useGameStore.getState().setMessages(messages);
-                }
-            }
-        }).catch(() => {});
+        bootController
+            .execute({
+                type: 'MUTATE_STATE',
+                payload: {
+                    patch: () => {
+                        useGameStore.getState().setMessages(messages);
+                    },
+                },
+            })
+            .catch(() => {});
     });
 
     const unsubLeaderboard = syncService.subscribeToGlobalLeaders(10, (leaders) => {
-        bootController.execute({
-            type: 'MUTATE_STATE',
-            payload: {
-                patch: () => {
-                    useGameStore.getState().setLeaderboard(leaders);
-                }
-            }
-        }).catch(() => {});
+        bootController
+            .execute({
+                type: 'MUTATE_STATE',
+                payload: {
+                    patch: () => {
+                        useGameStore.getState().setLeaderboard(leaders);
+                    },
+                },
+            })
+            .catch(() => {});
     });
 
     const unsubFriends = syncService.subscribeToFriendRequests(prefixedId, (requests) => {
-        bootController.execute({
-            type: 'MUTATE_STATE',
-            payload: {
-                patch: () => {
-                    useGameStore.getState().setFriendRequests(requests);
-                }
-            }
-        }).catch(() => {});
+        bootController
+            .execute({
+                type: 'MUTATE_STATE',
+                payload: {
+                    patch: () => {
+                        useGameStore.getState().setFriendRequests(requests);
+                    },
+                },
+            })
+            .catch(() => {});
     });
 
     const unsubMail = syncService.subscribeToMail(prefixedId, (mails) => {
-        bootController.execute({
-            type: 'MUTATE_STATE',
-            payload: {
-                patch: () => {
-                    useGameStore.getState().setMail(mails);
-                }
-            }
-        }).catch(() => {});
+        bootController
+            .execute({
+                type: 'MUTATE_STATE',
+                payload: {
+                    patch: () => {
+                        useGameStore.getState().setMail(mails);
+                    },
+                },
+            })
+            .catch(() => {});
     });
 
     const unsubPrivateChat = syncService.subscribeToPrivateMessages(prefixedId, (messages) => {
-        bootController.execute({
-            type: 'MUTATE_STATE',
-            payload: {
-                patch: () => {
-                    useGameStore.getState().setPrivateMessages(messages);
-                }
-            }
-        }).catch(() => {});
+        bootController
+            .execute({
+                type: 'MUTATE_STATE',
+                payload: {
+                    patch: () => {
+                        useGameStore.getState().setPrivateMessages(messages);
+                    },
+                },
+            })
+            .catch(() => {});
     });
 
     let lastAppliedAdminVersion: number | null = null;
@@ -89,16 +96,23 @@ export const initSubscriptions = async (
             sessionRegistered = true;
         }
 
-        if (sessionRegistered && dbData.activeSessionToken && localSessionToken && dbData.activeSessionToken !== localSessionToken) {
+        if (
+            sessionRegistered &&
+            dbData.activeSessionToken &&
+            localSessionToken &&
+            dbData.activeSessionToken !== localSessionToken
+        ) {
             // Only enforce kick if the mismatch persists beyond the initial 3-second grace period (settling cached snapshots/race conditions)
             if (Date.now() - subscriptionStartTime > 3000) {
                 console.warn('[SyncService] Session conflict detected: activeSessionToken in DB is different!');
-                bootController.execute({
-                    type: 'MUTATE_STATE',
-                    payload: {
-                        patch: { sessionConflict: true }
-                    }
-                }).catch(() => {});
+                bootController
+                    .execute({
+                        type: 'MUTATE_STATE',
+                        payload: {
+                            patch: { sessionConflict: true },
+                        },
+                    })
+                    .catch(() => {});
                 syncService.disableSync();
                 return;
             } else {
@@ -124,12 +138,14 @@ export const initSubscriptions = async (
                     hasGift: oldFriend ? !!oldFriend.hasGift : false,
                 };
             });
-            bootController.execute({
-                type: 'MUTATE_STATE',
-                payload: {
-                    patch: { friends: merged }
-                }
-            }).catch(() => {});
+            bootController
+                .execute({
+                    type: 'MUTATE_STATE',
+                    payload: {
+                        patch: { friends: merged },
+                    },
+                })
+                .catch(() => {});
             // Note: sync will be triggered by startAutoSync() after BootController reaches READY
         }
 
@@ -154,76 +170,88 @@ export const initSubscriptions = async (
                             resolvedClanData = store.clanData;
                         }
                     }
-                    bootController.execute({
-                        type: 'MUTATE_STATE',
-                        payload: {
-                            patch: {
-                                clanId: dbClanId,
-                                clanData: resolvedClanData
-                            }
-                        }
-                    }).catch(() => {});
+                    bootController
+                        .execute({
+                            type: 'MUTATE_STATE',
+                            payload: {
+                                patch: {
+                                    clanId: dbClanId,
+                                    clanData: resolvedClanData,
+                                },
+                            },
+                        })
+                        .catch(() => {});
                 });
             }
 
             if (dbClanId) {
                 unsubClanChat = syncService.subscribeToClanChat(dbClanId, (messages) => {
-                    bootController.execute({
+                    bootController
+                        .execute({
+                            type: 'MUTATE_STATE',
+                            payload: {
+                                patch: () => {
+                                    useGameStore.getState().setClanMessages(messages);
+                                },
+                            },
+                        })
+                        .catch(() => {});
+                });
+            } else {
+                bootController
+                    .execute({
                         type: 'MUTATE_STATE',
                         payload: {
                             patch: () => {
-                                useGameStore.getState().setClanMessages(messages);
-                            }
-                        }
-                    }).catch(() => {});
-                });
-            } else {
-                bootController.execute({
-                    type: 'MUTATE_STATE',
-                    payload: {
-                        patch: () => {
-                            useGameStore.getState().setClanMessages([]);
-                        }
-                    }
-                }).catch(() => {});
+                                useGameStore.getState().setClanMessages([]);
+                            },
+                        },
+                    })
+                    .catch(() => {});
             }
         }
 
         if (dbData.status === 'BANNED') {
-            bootController.execute({
-                type: 'MUTATE_STATE',
-                payload: {
-                    patch: {
-                        isBanned: true,
-                        banReason: dbData.banReason || 'Нарушение правил игры',
-                        banUntil: dbData.banUntil || '',
-                    }
-                }
-            }).catch(() => {});
+            bootController
+                .execute({
+                    type: 'MUTATE_STATE',
+                    payload: {
+                        patch: {
+                            isBanned: true,
+                            banReason: dbData.banReason || 'Нарушение правил игры',
+                            banUntil: dbData.banUntil || '',
+                        },
+                    },
+                })
+                .catch(() => {});
             return;
         } else {
-            bootController.execute({
-                type: 'MUTATE_STATE',
-                payload: {
-                    patch: { isBanned: false }
-                }
-            }).catch(() => {});
+            bootController
+                .execute({
+                    type: 'MUTATE_STATE',
+                    payload: {
+                        patch: { isBanned: false },
+                    },
+                })
+                .catch(() => {});
         }
 
         if (dbData.status === 'KICKED') {
             syncService.updateRemotePlayerData(userId, { status: 'OFFLINE' }).catch(() => {});
-            bootController.execute({
-                type: 'MUTATE_STATE',
-                payload: {
-                    patch: () => {
-                        useGameStore
-                            .getState()
-                            .showAlert('Соединение разорвано: Вы были отключены администратором (KICKED).', () => {
-                                window.location.reload();
-                            });
-                    }
-                }
-            }).catch(() => {});
+            bootController
+                .execute({
+                    type: 'MUTATE_STATE',
+                    payload: {
+                        patch: () => {
+                            useGameStore
+                                .getState()
+                                .showAlert('Соединение разорвано: Вы были отключены администратором (KICKED).', () => {
+                                    window.location.reload();
+                                });
+                        },
+                    },
+                })
+                .catch(() => {});
             return;
         }
 
@@ -314,16 +342,15 @@ export const initSubscriptions = async (
                 }
 
                 if (hasChanges) {
-                    console.log(
-                        '[SyncService] Admin updated player state, applying changes:',
-                        updatePayload,
-                    );
-                    bootController.execute({
-                        type: 'MUTATE_STATE',
-                        payload: {
-                            patch: updatePayload
-                        }
-                    }).catch(() => {});
+                    console.log('[SyncService] Admin updated player state, applying changes:', updatePayload);
+                    bootController
+                        .execute({
+                            type: 'MUTATE_STATE',
+                            payload: {
+                                patch: updatePayload,
+                            },
+                        })
+                        .catch(() => {});
                 }
             } catch (e) {
                 console.error('[SyncService] Error parsing own profile JSON update:', e);
@@ -342,6 +369,6 @@ export const initSubscriptions = async (
             if (unsubClanChat) {
                 unsubClanChat();
             }
-        }
+        },
     };
 };

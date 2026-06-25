@@ -1,4 +1,3 @@
-
 /**
  * Calculates the stat multiplier based on the hero level.
  * @param level Hero level

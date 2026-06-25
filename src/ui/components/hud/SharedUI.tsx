@@ -507,8 +507,8 @@ export const ConfirmDialog: React.FC<{
     isOpen: boolean;
     onClose: () => void;
     onConfirm: () => void;
-    title?: string;
-    message: string;
+    title?: React.ReactNode;
+    message: React.ReactNode;
     confirmLabel?: string;
     cancelLabel?: string;
     variant?: 'danger' | 'normal';
@@ -577,7 +577,7 @@ export const ConfirmDialog: React.FC<{
                             {title}
                         </h2>
 
-                        <p
+                        <div
                             style={{
                                 color: 'rgba(255,255,255,0.8)',
                                 fontSize: '16px',
@@ -586,7 +586,7 @@ export const ConfirmDialog: React.FC<{
                             }}
                         >
                             {message}
-                        </p>
+                        </div>
 
                         <div style={{ display: 'flex', gap: '15px', justifyContent: 'center' }}>
                             <button

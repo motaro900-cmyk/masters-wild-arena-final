@@ -51,7 +51,8 @@ export const GiftCongratsModal: React.FC<GiftCongratsModalProps> = ({ rewardClai
                     borderRadius: '24px',
                     padding: '36px 30px',
                     textAlign: 'center',
-                    boxShadow: '0 15px 45px rgba(0, 0, 0, 0.98), 0 0 30px rgba(240, 192, 64, 0.45), inset 0 0 20px rgba(240, 192, 64, 0.15)',
+                    boxShadow:
+                        '0 15px 45px rgba(0, 0, 0, 0.98), 0 0 30px rgba(240, 192, 64, 0.45), inset 0 0 20px rgba(240, 192, 64, 0.15)',
                     maxWidth: '420px',
                     width: '90%',
                     display: 'flex',
@@ -72,7 +73,8 @@ export const GiftCongratsModal: React.FC<GiftCongratsModalProps> = ({ rewardClai
                             height: '450px',
                             transformOrigin: '50% 50%',
                             transform: 'translate(-50%, -50%)',
-                            background: 'repeating-conic-gradient(from 0deg, rgba(255,215,0,0.06) 0deg 20deg, transparent 20deg 40deg)',
+                            background:
+                                'repeating-conic-gradient(from 0deg, rgba(255,215,0,0.06) 0deg 20deg, transparent 20deg 40deg)',
                             borderRadius: '50%',
                             animation: 'rotateModalRays 30s linear infinite',
                             pointerEvents: 'none',
@@ -95,15 +97,17 @@ export const GiftCongratsModal: React.FC<GiftCongratsModalProps> = ({ rewardClai
                 >
                     {rewardClaimed.isFromChest ? 'СУНДУК ОТКРЫТ!' : 'ПОЗДРАВЛЯЕМ!'}
                 </h3>
-                
-                <p style={{ 
-                    color: '#dfc08a', 
-                    fontSize: '14.5px', 
-                    margin: '0 0 24px 0',
-                    fontWeight: 700,
-                    textShadow: '0 1.5px 3px rgba(0,0,0,0.95)',
-                    zIndex: 2,
-                }}>
+
+                <p
+                    style={{
+                        color: '#dfc08a',
+                        fontSize: '14.5px',
+                        margin: '0 0 24px 0',
+                        fontWeight: 700,
+                        textShadow: '0 1.5px 3px rgba(0,0,0,0.95)',
+                        zIndex: 2,
+                    }}
+                >
                     {rewardClaimed.isFromChest
                         ? 'Внутри сундука оказалась случайная награда:'
                         : 'Вы успешно получили награду:'}
@@ -124,9 +128,9 @@ export const GiftCongratsModal: React.FC<GiftCongratsModalProps> = ({ rewardClai
                         alt={rewardClaimed.type}
                         animate={{ y: [0, -6, 0] }}
                         transition={{ duration: 2.2, repeat: Infinity, ease: 'easeInOut' }}
-                        style={{ 
-                            width: '84px', 
-                            height: '84px', 
+                        style={{
+                            width: '84px',
+                            height: '84px',
                             objectFit: 'contain',
                             filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.8)) drop-shadow(0 0 15px rgba(255,215,0,0.45))',
                         }}

@@ -417,7 +417,7 @@ export async function executeAttack(engine: BattleEngine, attacker: HeroUnit, vi
         if (Math.random() < chance) {
             const avgItemLevel = stats.avgItemLevel || 1;
             const itemLevelFactor = 1 - (avgItemLevel - 1) * 0.03;
-            let baseDmg = damagePercent ? (stats.attack * damagePercent) : (value ?? 0);
+            let baseDmg = damagePercent ? stats.attack * damagePercent : (value ?? 0);
             if (attackerId === 'raccoon' && status === 'POISON') {
                 baseDmg = Math.max(15, baseDmg);
             }

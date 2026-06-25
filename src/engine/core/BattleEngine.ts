@@ -193,8 +193,11 @@ export class BattleEngine {
 
             const state = useGameStore.getState();
             const isUltra = state.graphicsQuality === 'ULTRA';
-            const arenaBgQuality = isUltra ? 'HIGH' : (state.arenaBgQuality || (state.isMobile ? 'LOW' : 'HIGH'));
-            const arenas = arenaBgQuality === 'LOW' ? AssetsMap.BACKGROUNDS.BATTLE_ARENAS_MOBILE : AssetsMap.BACKGROUNDS.BATTLE_ARENAS;
+            const arenaBgQuality = isUltra ? 'HIGH' : state.arenaBgQuality || (state.isMobile ? 'LOW' : 'HIGH');
+            const arenas =
+                arenaBgQuality === 'LOW'
+                    ? AssetsMap.BACKGROUNDS.BATTLE_ARENAS_MOBILE
+                    : AssetsMap.BACKGROUNDS.BATTLE_ARENAS;
             const randomBg = arenas[Math.floor(Math.random() * arenas.length)];
             this.currentArenaBgUrl = randomBg;
             const bgTex = await PIXI.Assets.load(randomBg).catch(() => PIXI.Texture.WHITE);
@@ -255,12 +258,12 @@ export class BattleEngine {
                 enemyY = H * 0.88;
                 enemyScaleX = enemyBaseScale;
             }
-            
+
             const targetEnemyX = W * 0.75;
             this.enemy.position.set(W + 200, enemyY);
             this.enemy.defaultX = targetEnemyX;
             this.enemy.defaultY = enemyY;
-            
+
             this.enemy.parentDefaultScaleX = enemyScaleX;
             this.enemy.parentDefaultScaleY = enemyBaseScale;
             this.enemy.scale.set(enemyScaleX, enemyBaseScale);
@@ -454,9 +457,7 @@ export class BattleEngine {
         const store = useGameStore.getState();
         this.localCombatLogs.push(isWin ? '🏁 БОЙ ЗАВЕРШЕН: ПОБЕДА' : '🏁 БОЙ ЗАВЕРШЕН: ПОРАЖЕНИЕ');
 
-        const formattedLogs = this.localCombatLogs.map(
-            (msg) => `${new Date().toLocaleTimeString()} - ${msg}`
-        );
+        const formattedLogs = this.localCombatLogs.map((msg) => `${new Date().toLocaleTimeString()} - ${msg}`);
         useGameStore.setState((state: any) => ({
             combatLogs: [...state.combatLogs, ...formattedLogs].slice(-50),
         }));
@@ -518,7 +519,9 @@ export class BattleEngine {
 
                 if (attackerUnit) {
                     const lifestealPct = Math.round(attackerStats.lifesteal * 100);
-                    this.addCombatLog(`💚 [ВАМПИРИЗМ] ${attackerUnit.config.name} исцеляется на +${healAmount} HP (Вампиризм: ${lifestealPct}%)`);
+                    this.addCombatLog(
+                        `💚 [ВАМПИРИЗМ] ${attackerUnit.config.name} исцеляется на +${healAmount} HP (Вампиризм: ${lifestealPct}%)`,
+                    );
                 }
             }
         }

@@ -53,7 +53,8 @@ const calcCupsChange = (rating: number, opponentRating: number, won: boolean): n
         } else {
             return isStrongOpponent ? -13 : -18;
         }
-    } else { // >= 9000
+    } else {
+        // >= 9000
         if (won) {
             return isWeakOpponent ? 10 : 15;
         } else {
@@ -66,15 +67,15 @@ function getGoldReward(level: number, won: boolean): number {
     let base: number;
 
     if (level <= 10) {
-        base = won ? 70 + Math.random() * 50 : 20 + Math.random() * 20;
+        base = won ? 90 + Math.random() * 60 : 20 + Math.random() * 20;
     } else if (level <= 20) {
-        base = won ? 150 + Math.random() * 100 : 40 + Math.random() * 30;
+        base = won ? 200 + Math.random() * 100 : 40 + Math.random() * 30;
     } else if (level <= 40) {
-        base = won ? 300 + Math.random() * 150 : 80 + Math.random() * 50;
+        base = won ? 320 + Math.random() * 160 : 80 + Math.random() * 50;
     } else if (level <= 60) {
-        base = won ? 400 + Math.random() * 100 : 100 + Math.random() * 50;
+        base = won ? 450 + Math.random() * 50 : 100 + Math.random() * 50;
     } else {
-        base = won ? 450 + Math.random() * 50 : 120 + Math.random() * 30;
+        base = won ? 475 + Math.random() * 50 : 120 + Math.random() * 30;
     }
 
     const cap = won ? 500 : 150;
@@ -104,13 +105,7 @@ class BattleResultServiceClass {
         attackerWon: boolean;
         winStreak?: number;
     }): Promise<{ myCupsChange: number; myGoldChange: number; myExpChange: number; serverResult?: 'win' | 'lose' }> {
-        const {
-            myUserId,
-            opponentUserId,
-            opponentRating,
-            isOpponentBot,
-            attackerWon,
-        } = params;
+        const { myUserId, opponentUserId, opponentRating, isOpponentBot, attackerWon } = params;
 
         // ⚔️ Call resolveBattle Cloud Function (Server Authoritative)
         let serverResult: 'win' | 'lose' = attackerWon ? 'win' : 'lose';
@@ -121,14 +116,16 @@ class BattleResultServiceClass {
 
         // Fallback to client calculation to ensure game stays playable
         myGoldChange = getGoldReward(params.myLevel, attackerWon);
-        myExpChange = Math.round(getXPReward(attackerWon, params.myLevel) * (useGameStore.getState().isPremium ? 1.25 : 1.0));
+        myExpChange = Math.round(
+            getXPReward(attackerWon, params.myLevel) * (useGameStore.getState().isPremium ? 1.25 : 1.0),
+        );
 
         const serverAttackerWon = serverResult === 'win';
         let myCupsChange = calcCupsChange(params.myRating, opponentRating, serverAttackerWon);
 
         // Применяем Catch-up множитель (до 3000 кубков)
         if (serverAttackerWon && params.myRating < 3000) {
-            const expectedLevel = params.myRating < 1000 ? 1 : (params.myRating < 2000 ? 10 : 20);
+            const expectedLevel = params.myRating < 1000 ? 1 : params.myRating < 2000 ? 10 : 20;
             const levelDiff = params.myLevel - expectedLevel;
             if (levelDiff >= 20) {
                 const multiplier = Math.min(3, 1 + levelDiff / 30);

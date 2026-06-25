@@ -136,7 +136,8 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({ isLoading, loading
                                         textShadow: '0 0 8px rgba(255, 224, 130, 0.2)',
                                     }}
                                 >
-                                    Обнаружено медленное соединение. Загрузка ресурсов продолжается, пожалуйста подождите...
+                                    Обнаружено медленное соединение. Загрузка ресурсов продолжается, пожалуйста
+                                    подождите...
                                 </motion.div>
                             )}
                         </AnimatePresence>

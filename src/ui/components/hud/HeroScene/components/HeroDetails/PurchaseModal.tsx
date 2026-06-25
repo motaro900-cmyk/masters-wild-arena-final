@@ -15,21 +15,24 @@ export const PurchaseModal = ({ hero, onClose, rarityColors }: any) => {
             unlockHero: state.unlockHero,
             spendGold: state.spendGold,
             spendDiamonds: state.spendDiamonds,
-        }))
+        })),
     );
     const color = rarityColors[hero.rarity];
 
     const priceDiamonds = hero.unlockCost || 0;
-    const priceGold     = hero.unlockGoldCost || 0;
+    const priceGold = hero.unlockGoldCost || 0;
 
-    const hasEnoughGold     = priceGold > 0 && gold >= priceGold;
+    const hasEnoughGold = priceGold > 0 && gold >= priceGold;
     const hasEnoughDiamonds = priceDiamonds > 0 && crystals >= priceDiamonds;
     const hasEnoughTrophies = !hero.requiredTrophies || rating >= hero.requiredTrophies;
 
     const buyWith = (currency: 'gold' | 'diamonds') => {
-        if (!hasEnoughTrophies) { audioService.playSFX('SFX_ERROR'); return; }
+        if (!hasEnoughTrophies) {
+            audioService.playSFX('SFX_ERROR');
+            return;
+        }
         unlockHero(hero.id);
-        if (currency === 'gold')     spendGold(priceGold);
+        if (currency === 'gold') spendGold(priceGold);
         if (currency === 'diamonds') spendDiamonds(priceDiamonds);
         audioService.playSFX('SFX_BUY');
         useGameStore.setState({ selectedHeroId: hero.id, heroGalleryId: hero.id });
@@ -42,10 +45,14 @@ export const PurchaseModal = ({ hero, onClose, rarityColors }: any) => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             style={{
-                position: 'fixed', inset: 0, zIndex: 20000,
+                position: 'fixed',
+                inset: 0,
+                zIndex: 20000,
                 background: 'rgba(0,0,0,0.85)',
                 backdropFilter: 'blur(10px)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
             }}
             onClick={onClose}
         >
@@ -68,7 +75,15 @@ export const PurchaseModal = ({ hero, onClose, rarityColors }: any) => {
             >
                 {/* ── Заголовок ── */}
                 <div style={{ textAlign: 'center' }}>
-                    <div style={{ color: color, fontSize: '11px', fontWeight: 900, letterSpacing: '4px', marginBottom: '8px' }}>
+                    <div
+                        style={{
+                            color: color,
+                            fontSize: '11px',
+                            fontWeight: 900,
+                            letterSpacing: '4px',
+                            marginBottom: '8px',
+                        }}
+                    >
                         ПОДТВЕРЖДЕНИЕ ПОКУПКИ
                     </div>
                     <div style={{ color: '#fff', fontSize: '30px', fontWeight: 900, fontFamily: "'Cinzel', serif" }}>
@@ -85,21 +100,46 @@ export const PurchaseModal = ({ hero, onClose, rarityColors }: any) => {
 
                 {/* ── Требование кубков ── */}
                 {hero.requiredTrophies && (
-                    <div style={{
-                        display: 'flex', alignItems: 'center', gap: '8px',
-                        background: hasEnoughTrophies ? 'rgba(34,197,94,0.07)' : 'rgba(239,68,68,0.07)',
-                        border: `1px solid ${hasEnoughTrophies ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.35)'}`,
-                        borderRadius: '10px', padding: '8px 16px', width: '100%',
-                    }}>
+                    <div
+                        style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            background: hasEnoughTrophies ? 'rgba(34,197,94,0.07)' : 'rgba(239,68,68,0.07)',
+                            border: `1px solid ${hasEnoughTrophies ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.35)'}`,
+                            borderRadius: '10px',
+                            padding: '8px 16px',
+                            width: '100%',
+                        }}
+                    >
                         <img
                             src={resolveAssetPath(AssetsMap.UI.TROPHY_PREMIUM)}
                             style={{ width: '18px', height: '18px', objectFit: 'contain' }}
                             alt="trophy"
                         />
-                        <span style={{ color: hasEnoughTrophies ? 'rgba(255,255,255,0.6)' : '#f87171', fontSize: '11px', fontWeight: 700, flex: 1 }}>
-                            Требуется ранг <strong style={{ color: hasEnoughTrophies ? '#4ade80' : '#f87171' }}>{getRankInfo(hero.requiredTrophies).name}</strong>
+                        <span
+                            style={{
+                                color: hasEnoughTrophies ? 'rgba(255,255,255,0.6)' : '#f87171',
+                                fontSize: '11px',
+                                fontWeight: 700,
+                                flex: 1,
+                            }}
+                        >
+                            Требуется ранг{' '}
+                            <strong style={{ color: hasEnoughTrophies ? '#4ade80' : '#f87171' }}>
+                                {getRankInfo(hero.requiredTrophies).name}
+                            </strong>
                         </span>
-                        <span style={{ fontSize: '11px', fontWeight: 900, color: hasEnoughTrophies ? '#4ade80' : '#f87171', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                        <span
+                            style={{
+                                fontSize: '11px',
+                                fontWeight: 900,
+                                color: hasEnoughTrophies ? '#4ade80' : '#f87171',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '4px',
+                            }}
+                        >
                             {rating} / {hero.requiredTrophies}
                             <img
                                 src={resolveAssetPath(AssetsMap.UI.TROPHY_PREMIUM)}
@@ -111,25 +151,37 @@ export const PurchaseModal = ({ hero, onClose, rarityColors }: any) => {
                 )}
 
                 {/* ── Постоянство ── */}
-                <div style={{
-                    display: 'flex', alignItems: 'center', gap: '6px',
-                    background: 'rgba(34,197,94,0.06)',
-                    border: '1px solid rgba(34,197,94,0.2)',
-                    borderRadius: '10px', padding: '7px 14px', width: '100%',
-                }}>
+                <div
+                    style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        background: 'rgba(34,197,94,0.06)',
+                        border: '1px solid rgba(34,197,94,0.2)',
+                        borderRadius: '10px',
+                        padding: '7px 14px',
+                        width: '100%',
+                    }}
+                >
                     <span style={{ fontSize: '14px' }}>🔓</span>
-                    <span style={{ color: 'rgba(255,255,255,0.45)', fontSize: '10px', fontWeight: 700, lineHeight: 1.4 }}>
-                        Герой <strong style={{ color: '#4ade80' }}>навсегда</strong> — не блокируется после сброса кубков
+                    <span
+                        style={{ color: 'rgba(255,255,255,0.45)', fontSize: '10px', fontWeight: 700, lineHeight: 1.4 }}
+                    >
+                        Герой <strong style={{ color: '#4ade80' }}>навсегда</strong> — не блокируется после сброса
+                        кубков
                     </span>
                 </div>
 
                 {/* ── Кнопки покупки ── */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', width: '100%' }}>
-
                     {/* За золото */}
                     {priceGold > 0 && (
                         <motion.button
-                            whileHover={hasEnoughTrophies && hasEnoughGold ? { scale: 1.03, boxShadow: '0 0 24px rgba(241,196,15,0.35)' } : {}}
+                            whileHover={
+                                hasEnoughTrophies && hasEnoughGold
+                                    ? { scale: 1.03, boxShadow: '0 0 24px rgba(241,196,15,0.35)' }
+                                    : {}
+                            }
                             whileTap={hasEnoughTrophies && hasEnoughGold ? { scale: 0.96 } : {}}
                             onClick={() => hasEnoughGold && buyWith('gold')}
                             disabled={!hasEnoughGold || !hasEnoughTrophies}
@@ -140,12 +192,14 @@ export const PurchaseModal = ({ hero, onClose, rarityColors }: any) => {
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'space-between',
-                                background: hasEnoughGold && hasEnoughTrophies
-                                    ? 'linear-gradient(135deg, rgba(241,196,15,0.15) 0%, rgba(243,156,18,0.08) 100%)'
-                                    : 'rgba(255,255,255,0.02)',
-                                border: hasEnoughGold && hasEnoughTrophies
-                                    ? '1.5px solid rgba(241,196,15,0.5)'
-                                    : '1.5px solid rgba(255,255,255,0.07)',
+                                background:
+                                    hasEnoughGold && hasEnoughTrophies
+                                        ? 'linear-gradient(135deg, rgba(241,196,15,0.15) 0%, rgba(243,156,18,0.08) 100%)'
+                                        : 'rgba(255,255,255,0.02)',
+                                border:
+                                    hasEnoughGold && hasEnoughTrophies
+                                        ? '1.5px solid rgba(241,196,15,0.5)'
+                                        : '1.5px solid rgba(255,255,255,0.07)',
                                 cursor: hasEnoughGold && hasEnoughTrophies ? 'pointer' : 'not-allowed',
                                 transition: 'all 0.2s',
                             }}
@@ -157,22 +211,26 @@ export const PurchaseModal = ({ hero, onClose, rarityColors }: any) => {
                                     style={{ width: '28px', height: '28px', objectFit: 'contain' }}
                                     alt=""
                                 />
-                                <span style={{
-                                    fontSize: '22px',
-                                    fontWeight: 900,
-                                    fontFamily: "'Nunito', sans-serif",
-                                    color: hasEnoughGold && hasEnoughTrophies ? '#f1c40f' : 'rgba(255,255,255,0.2)',
-                                }}>
+                                <span
+                                    style={{
+                                        fontSize: '22px',
+                                        fontWeight: 900,
+                                        fontFamily: "'Nunito', sans-serif",
+                                        color: hasEnoughGold && hasEnoughTrophies ? '#f1c40f' : 'rgba(255,255,255,0.2)',
+                                    }}
+                                >
                                     {priceGold.toLocaleString('ru-RU')}
                                 </span>
                             </div>
                             {/* Правая часть — статус */}
-                            <span style={{
-                                fontSize: '11px',
-                                fontWeight: 900,
-                                color: hasEnoughGold ? '#4ade80' : '#f87171',
-                                letterSpacing: '0.5px',
-                            }}>
+                            <span
+                                style={{
+                                    fontSize: '11px',
+                                    fontWeight: 900,
+                                    color: hasEnoughGold ? '#4ade80' : '#f87171',
+                                    letterSpacing: '0.5px',
+                                }}
+                            >
                                 {hasEnoughGold ? '✓ ХВАТАЕТ' : '✗ МАЛО'}
                             </span>
                         </motion.button>
@@ -182,7 +240,16 @@ export const PurchaseModal = ({ hero, onClose, rarityColors }: any) => {
                     {priceGold > 0 && priceDiamonds > 0 && (
                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                             <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.07)' }} />
-                            <span style={{ color: 'rgba(255,255,255,0.25)', fontSize: '11px', fontWeight: 700, letterSpacing: '1px' }}>ИЛИ</span>
+                            <span
+                                style={{
+                                    color: 'rgba(255,255,255,0.25)',
+                                    fontSize: '11px',
+                                    fontWeight: 700,
+                                    letterSpacing: '1px',
+                                }}
+                            >
+                                ИЛИ
+                            </span>
                             <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.07)' }} />
                         </div>
                     )}
@@ -190,7 +257,11 @@ export const PurchaseModal = ({ hero, onClose, rarityColors }: any) => {
                     {/* За алмазы */}
                     {priceDiamonds > 0 && (
                         <motion.button
-                            whileHover={hasEnoughTrophies && hasEnoughDiamonds ? { scale: 1.03, boxShadow: '0 0 24px rgba(168,85,247,0.35)' } : {}}
+                            whileHover={
+                                hasEnoughTrophies && hasEnoughDiamonds
+                                    ? { scale: 1.03, boxShadow: '0 0 24px rgba(168,85,247,0.35)' }
+                                    : {}
+                            }
                             whileTap={hasEnoughTrophies && hasEnoughDiamonds ? { scale: 0.96 } : {}}
                             onClick={() => hasEnoughDiamonds && buyWith('diamonds')}
                             disabled={!hasEnoughDiamonds || !hasEnoughTrophies}
@@ -201,12 +272,14 @@ export const PurchaseModal = ({ hero, onClose, rarityColors }: any) => {
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'space-between',
-                                background: hasEnoughDiamonds && hasEnoughTrophies
-                                    ? 'linear-gradient(135deg, rgba(168,85,247,0.15) 0%, rgba(124,58,237,0.08) 100%)'
-                                    : 'rgba(255,255,255,0.02)',
-                                border: hasEnoughDiamonds && hasEnoughTrophies
-                                    ? '1.5px solid rgba(168,85,247,0.5)'
-                                    : '1.5px solid rgba(255,255,255,0.07)',
+                                background:
+                                    hasEnoughDiamonds && hasEnoughTrophies
+                                        ? 'linear-gradient(135deg, rgba(168,85,247,0.15) 0%, rgba(124,58,237,0.08) 100%)'
+                                        : 'rgba(255,255,255,0.02)',
+                                border:
+                                    hasEnoughDiamonds && hasEnoughTrophies
+                                        ? '1.5px solid rgba(168,85,247,0.5)'
+                                        : '1.5px solid rgba(255,255,255,0.07)',
                                 cursor: hasEnoughDiamonds && hasEnoughTrophies ? 'pointer' : 'not-allowed',
                                 transition: 'all 0.2s',
                             }}
@@ -218,22 +291,29 @@ export const PurchaseModal = ({ hero, onClose, rarityColors }: any) => {
                                     style={{ width: '28px', height: '28px', objectFit: 'contain' }}
                                     alt=""
                                 />
-                                <span style={{
-                                    fontSize: '22px',
-                                    fontWeight: 900,
-                                    fontFamily: "'Nunito', sans-serif",
-                                    color: hasEnoughDiamonds && hasEnoughTrophies ? '#c084fc' : 'rgba(255,255,255,0.2)',
-                                }}>
+                                <span
+                                    style={{
+                                        fontSize: '22px',
+                                        fontWeight: 900,
+                                        fontFamily: "'Nunito', sans-serif",
+                                        color:
+                                            hasEnoughDiamonds && hasEnoughTrophies
+                                                ? '#c084fc'
+                                                : 'rgba(255,255,255,0.2)',
+                                    }}
+                                >
                                     {priceDiamonds}
                                 </span>
                             </div>
                             {/* Правая — статус */}
-                            <span style={{
-                                fontSize: '11px',
-                                fontWeight: 900,
-                                color: hasEnoughDiamonds ? '#4ade80' : '#f87171',
-                                letterSpacing: '0.5px',
-                            }}>
+                            <span
+                                style={{
+                                    fontSize: '11px',
+                                    fontWeight: 900,
+                                    color: hasEnoughDiamonds ? '#4ade80' : '#f87171',
+                                    letterSpacing: '0.5px',
+                                }}
+                            >
                                 {hasEnoughDiamonds ? '✓ ХВАТАЕТ' : '✗ МАЛО'}
                             </span>
                         </motion.button>

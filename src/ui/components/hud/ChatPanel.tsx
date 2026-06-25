@@ -170,7 +170,13 @@ export const ChatPanel = React.memo(() => {
         }
     };
 
-    const openContextMenu = (e: React.MouseEvent, author: string, text?: string, timestamp?: number, senderId?: string) => {
+    const openContextMenu = (
+        e: React.MouseEvent,
+        author: string,
+        text?: string,
+        timestamp?: number,
+        senderId?: string,
+    ) => {
         e.preventDefault();
 
         setContextMenu({
@@ -220,7 +226,9 @@ export const ChatPanel = React.memo(() => {
                                 timestamp: serverTimestamp(),
                                 status: 'pending',
                             });
-                            useGameStore.getState().showAlert('Жалоба принята. Модерация рассмотрит её в течение 48 часов.');
+                            useGameStore
+                                .getState()
+                                .showAlert('Жалоба принята. Модерация рассмотрит её в течение 48 часов.');
                         } catch (error) {
                             console.error('Failed to send report:', error);
                             useGameStore.getState().showAlert('Не удалось отправить жалобу. Попробуйте позже.');
@@ -357,7 +365,8 @@ export const ChatPanel = React.memo(() => {
                             fontWeight: 750,
                             fontFamily: "'Philosopher', 'Cinzel', serif",
                             color: activeChatTab === tab.id ? '#ffd700' : '#c5b49f',
-                            textShadow: activeChatTab === tab.id ? '0 1px 1.5px rgba(0,0,0,0.9)' : '0 1px 1px rgba(0,0,0,0.7)',
+                            textShadow:
+                                activeChatTab === tab.id ? '0 1px 1.5px rgba(0,0,0,0.9)' : '0 1px 1px rgba(0,0,0,0.7)',
                             cursor: 'pointer',
                             transition: 'all 0.2s',
                             borderRadius: '8px 8px 0 0',

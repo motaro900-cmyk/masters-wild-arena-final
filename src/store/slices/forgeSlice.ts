@@ -58,34 +58,62 @@ export const createForgeSlice = (set: any, get: any) => ({
                 steelCost = Math.round(8 * rarityMultiplier);
                 shardCost = rarity === 'LEGENDARY' || rarity === 'EPIC' ? 2 : 0;
                 goldCost = Math.round(2000 * rarityMultiplier);
-                if (rarity === 'RARE') { rareType = 'ancient_compass'; rareCost = 1; }
-                else if (rarity === 'EPIC') { rareType = 'astral_crystal'; rareCost = 1; }
-                else if (rarity === 'LEGENDARY' || rarity === 'MYTHIC') { rareType = 'void_sphere'; rareCost = 1; }
+                if (rarity === 'RARE') {
+                    rareType = 'ancient_compass';
+                    rareCost = 1;
+                } else if (rarity === 'EPIC') {
+                    rareType = 'astral_crystal';
+                    rareCost = 1;
+                } else if (rarity === 'LEGENDARY' || rarity === 'MYTHIC') {
+                    rareType = 'void_sphere';
+                    rareCost = 1;
+                }
             } else if (level === 3) {
                 coalCost = Math.round(25 * rarityMultiplier);
                 steelCost = Math.round(15 * rarityMultiplier);
                 shardCost = rarity === 'LEGENDARY' || rarity === 'EPIC' ? 4 : 1;
                 goldCost = Math.round(4000 * rarityMultiplier);
-                if (rarity === 'RARE') { rareType = 'ancient_compass'; rareCost = 2; }
-                else if (rarity === 'EPIC') { rareType = 'astral_crystal'; rareCost = 2; }
-                else if (rarity === 'LEGENDARY' || rarity === 'MYTHIC') { rareType = 'void_sphere'; rareCost = 2; }
+                if (rarity === 'RARE') {
+                    rareType = 'ancient_compass';
+                    rareCost = 2;
+                } else if (rarity === 'EPIC') {
+                    rareType = 'astral_crystal';
+                    rareCost = 2;
+                } else if (rarity === 'LEGENDARY' || rarity === 'MYTHIC') {
+                    rareType = 'void_sphere';
+                    rareCost = 2;
+                }
             } else if (level === 4) {
                 coalCost = Math.round(40 * rarityMultiplier);
                 steelCost = Math.round(25 * rarityMultiplier);
                 shardCost = rarity === 'LEGENDARY' || rarity === 'EPIC' ? 8 : 3;
                 goldCost = Math.round(8000 * rarityMultiplier);
-                if (rarity === 'RARE') { rareType = 'golden_sprout'; rareCost = 2; }
-                else if (rarity === 'EPIC') { rareType = 'dragon_scale'; rareCost = 2; }
-                else if (rarity === 'LEGENDARY' || rarity === 'MYTHIC') { rareType = 'lava_heart'; rareCost = 2; }
+                if (rarity === 'RARE') {
+                    rareType = 'golden_sprout';
+                    rareCost = 2;
+                } else if (rarity === 'EPIC') {
+                    rareType = 'dragon_scale';
+                    rareCost = 2;
+                } else if (rarity === 'LEGENDARY' || rarity === 'MYTHIC') {
+                    rareType = 'lava_heart';
+                    rareCost = 2;
+                }
             } else {
                 const scale = level - 3;
                 coalCost = Math.round(30 * scale * rarityMultiplier);
                 steelCost = Math.round(18 * scale * rarityMultiplier);
                 shardCost = Math.round(3 * scale * rarityMultiplier);
                 goldCost = Math.round(8000 * Math.pow(1.5, scale - 1) * rarityMultiplier);
-                if (rarity === 'RARE') { rareType = 'golden_sprout'; rareCost = Math.min(5, scale); }
-                else if (rarity === 'EPIC') { rareType = 'dragon_scale'; rareCost = Math.min(5, scale); }
-                else if (rarity === 'LEGENDARY' || rarity === 'MYTHIC') { rareType = 'lava_heart'; rareCost = Math.min(5, scale); }
+                if (rarity === 'RARE') {
+                    rareType = 'golden_sprout';
+                    rareCost = Math.min(5, scale);
+                } else if (rarity === 'EPIC') {
+                    rareType = 'dragon_scale';
+                    rareCost = Math.min(5, scale);
+                } else if (rarity === 'LEGENDARY' || rarity === 'MYTHIC') {
+                    rareType = 'lava_heart';
+                    rareCost = Math.min(5, scale);
+                }
             }
 
             return { coalCost, steelCost, shardCost, goldCost, rareType, rareCost };
@@ -204,15 +232,23 @@ export const createForgeSlice = (set: any, get: any) => ({
         let shardGained = 0;
 
         if (rarity === 'COMMON') {
-            goldGained = 200; coalGained = 5 + Math.floor(Math.random() * 5); steelGained = 1 + Math.floor(Math.random() * 2);
+            goldGained = 200;
+            coalGained = 5 + Math.floor(Math.random() * 5);
+            steelGained = 1 + Math.floor(Math.random() * 2);
         } else if (rarity === 'UNCOMMON' || rarity === 'RARE') {
-            goldGained = 500; coalGained = 8 + Math.floor(Math.random() * 6); steelGained = 3 + Math.floor(Math.random() * 4);
+            goldGained = 500;
+            coalGained = 8 + Math.floor(Math.random() * 6);
+            steelGained = 3 + Math.floor(Math.random() * 4);
             shardGained = Math.random() < 0.3 ? 1 : 0;
         } else if (rarity === 'EPIC') {
-            goldGained = 1200; coalGained = 12 + Math.floor(Math.random() * 8); steelGained = 6 + Math.floor(Math.random() * 6);
+            goldGained = 1200;
+            coalGained = 12 + Math.floor(Math.random() * 8);
+            steelGained = 6 + Math.floor(Math.random() * 6);
             shardGained = 1 + Math.floor(Math.random() * 2);
         } else if (rarity === 'LEGENDARY' || rarity === 'MYTHIC') {
-            goldGained = 3000; coalGained = 20 + Math.floor(Math.random() * 15); steelGained = 12 + Math.floor(Math.random() * 10);
+            goldGained = 3000;
+            coalGained = 20 + Math.floor(Math.random() * 15);
+            steelGained = 12 + Math.floor(Math.random() * 10);
             shardGained = 3 + Math.floor(Math.random() * 4);
         }
 

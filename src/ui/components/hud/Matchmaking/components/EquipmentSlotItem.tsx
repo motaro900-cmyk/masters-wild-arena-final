@@ -99,7 +99,9 @@ export const EquipmentSlotItem: React.FC<EquipmentSlotItemProps> = ({
                     onError={(e) => {
                         const currentSrc = e.currentTarget.src;
                         if (currentSrc.endsWith('.webp')) {
-                            e.currentTarget.src = currentSrc.replace(/_mobile\.webp$/i, '.png').replace(/\.webp$/i, '.png');
+                            e.currentTarget.src = currentSrc
+                                .replace(/_mobile\.webp$/i, '.png')
+                                .replace(/\.webp$/i, '.png');
                         }
                     }}
                     alt={item.name}

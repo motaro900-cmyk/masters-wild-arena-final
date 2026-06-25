@@ -80,7 +80,7 @@ export const AlertDialog: React.FC = () => {
 };
 
 export const ConfirmDialog: React.FC = () => {
-    const activeConfirm = useGameStore(state => state.activeConfirm);
+    const activeConfirm = useGameStore((state) => state.activeConfirm);
 
     if (!activeConfirm) return null;
 

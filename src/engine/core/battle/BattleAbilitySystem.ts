@@ -78,7 +78,7 @@ export async function castActiveAbility(engine: BattleEngine) {
             let baseDmg = onCastStatus.damagePerTurn
                 ? onCastStatus.damagePerTurn > 1
                     ? onCastStatus.damagePerTurn
-                    : (anyEngine.playerStats!.attack * onCastStatus.damagePerTurn)
+                    : anyEngine.playerStats!.attack * onCastStatus.damagePerTurn
                 : 0;
             if (heroId === 'raccoon' && onCastStatus.type === 'POISON') {
                 baseDmg = Math.max(15, baseDmg);

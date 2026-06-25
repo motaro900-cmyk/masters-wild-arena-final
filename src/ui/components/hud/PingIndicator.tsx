@@ -32,8 +32,18 @@ export const PingIndicator: React.FC = () => {
     }, []);
 
     const color = status === 'good' ? '#2ecc71' : status === 'medium' ? '#f1c40f' : '#e74c3c';
-    const bgColor = status === 'good' ? 'rgba(46, 204, 113, 0.08)' : status === 'medium' ? 'rgba(241, 196, 15, 0.08)' : 'rgba(231, 76, 60, 0.08)';
-    const borderColor = status === 'good' ? 'rgba(46, 204, 113, 0.2)' : status === 'medium' ? 'rgba(241, 196, 15, 0.2)' : 'rgba(231, 76, 60, 0.2)';
+    const bgColor =
+        status === 'good'
+            ? 'rgba(46, 204, 113, 0.08)'
+            : status === 'medium'
+              ? 'rgba(241, 196, 15, 0.08)'
+              : 'rgba(231, 76, 60, 0.08)';
+    const borderColor =
+        status === 'good'
+            ? 'rgba(46, 204, 113, 0.2)'
+            : status === 'medium'
+              ? 'rgba(241, 196, 15, 0.2)'
+              : 'rgba(231, 76, 60, 0.2)';
 
     return (
         <div

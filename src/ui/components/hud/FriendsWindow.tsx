@@ -286,7 +286,7 @@ export const FriendsWindow: React.FC<FriendsWindowProps> = () => {
             {/* СПИСОК ДРУЗЕЙ ИЛИ БОНУСЫ */}
             <motion.div
                 className="custom-scrollbar"
-                drag={isMobile ? "x" : undefined}
+                drag={isMobile ? 'x' : undefined}
                 dragConstraints={{ left: 0, right: 0 }}
                 dragElastic={0.15}
                 onDragEnd={(_, info) => {

@@ -69,7 +69,7 @@ export const AncientsSanctuaryScreen: React.FC = () => {
             selectedHeroId: state.selectedHeroId,
             getCalculatedStats: state.getCalculatedStats,
             isMobile: state.isMobile,
-        }))
+        })),
     );
 
     const [adLoading, setAdLoading] = useState(false);

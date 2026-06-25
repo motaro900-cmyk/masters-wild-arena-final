@@ -9,12 +9,7 @@ interface BattleVSPanelProps {
     formatTime: (seconds: number) => string;
 }
 
-export const BattleVSPanel = React.memo<BattleVSPanelProps>(({
-    timeLeft,
-    lastLog,
-    scale,
-    formatTime,
-}) => {
+export const BattleVSPanel = React.memo<BattleVSPanelProps>(({ timeLeft, lastLog, scale, formatTime }) => {
     return (
         <div
             style={{

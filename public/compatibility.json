@@ -7,19 +7,19 @@
       "reason": "Android WebView rendering issues"
     },
     {
-      "match": "mali-g68",
+      "match": "mali",
       "disable": ["webgpu"],
-      "reason": "Unstable WebGPU drivers"
+      "reason": "Unstable Mali WebGPU drivers"
     },
     {
-      "match": "mali-g78",
+      "match": "adreno",
       "disable": ["webgpu"],
-      "reason": "Unstable WebGPU drivers"
+      "reason": "Unstable Adreno WebGPU drivers"
     },
     {
-      "match": "mali-g57",
+      "match": "powervr",
       "disable": ["webgpu"],
-      "reason": "Unstable WebGPU drivers"
+      "reason": "Unstable PowerVR WebGPU drivers"
     }
   ]
 }

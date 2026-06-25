@@ -189,10 +189,10 @@ export const LevelUpOverlay: React.FC = () => {
                         {(() => {
                             const lvl = latestLevelUp.newLevel;
                             let unlockText: string | null = null;
-                            if (lvl === 10) unlockText = "ОТКРЫТ 2-Й СЛОТ ТАЛАНТОВ (ТИР II)";
-                            else if (lvl === 20) unlockText = "ОТКРЫТ ОСОБЫЙ СКИН РАМКИ (ИЗУМРУДНЫЙ ДРАКОН)";
-                            else if (lvl === 40) unlockText = "ОТКРЫТ ЭКСКЛЮЗИВНЫЙ ЭФФЕКТ УДАРА (УЛЬТИМЕЙТ ТАЛАНТ)";
-                            else if (lvl === 60) unlockText = "ОТКРЫТ УНИКАЛЬНЫЙ ЭФФЕКТ ФИНИШЕРА";
+                            if (lvl === 10) unlockText = 'ОТКРЫТ 2-Й СЛОТ ТАЛАНТОВ (ТИР II)';
+                            else if (lvl === 20) unlockText = 'ОТКРЫТ ОСОБЫЙ СКИН РАМКИ (ИЗУМРУДНЫЙ ДРАКОН)';
+                            else if (lvl === 40) unlockText = 'ОТКРЫТ ЭКСКЛЮЗИВНЫЙ ЭФФЕКТ УДАРА (УЛЬТИМЕЙТ ТАЛАНТ)';
+                            else if (lvl === 60) unlockText = 'ОТКРЫТ УНИКАЛЬНЫЙ ЭФФЕКТ ФИНИШЕРА';
                             else if (lvl === 80) unlockText = "ТИТУЛ 'МАСТЕР ДИКОЙ ПРИРОДЫ' + ЗОЛОТАЯ РАМКА";
                             else if (latestLevelUp.unlockedTier) {
                                 unlockText = `ОТКРЫТ НОВЫЙ ТИР ТАЛАНТОВ (${

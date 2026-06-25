@@ -17,7 +17,6 @@ export const RewardsTab: React.FC<RewardsTabProps> = ({
     claimFavoriteReward,
     claimGroupReward,
 }) => {
-    
     // Russian grammar helper for friend counts
     const getFriendLabel = (count: number): string => {
         if (count === 1) return '1 ДРУГ';
@@ -50,14 +49,24 @@ export const RewardsTab: React.FC<RewardsTabProps> = ({
             >
                 НАГРАДЫ ЗА ДРУЗЕЙ
             </div>
-            <p style={{ fontSize: 13, opacity: 0.8, marginBottom: 25, fontWeight: 600, color: '#fef3c7', textShadow: '0 1px 2px rgba(0,0,0,0.8)' }}>
+            <p
+                style={{
+                    fontSize: 13,
+                    opacity: 0.8,
+                    marginBottom: 25,
+                    fontWeight: 600,
+                    color: '#fef3c7',
+                    textShadow: '0 1px 2px rgba(0,0,0,0.8)',
+                }}
+            >
                 Приглашайте друзей в игру и получайте ценные призы!
             </p>
 
             <div
                 style={{
                     width: '100%',
-                    background: 'radial-gradient(circle at center, rgba(30, 20, 10, 0.5) 0%, rgba(10, 5, 2, 0.85) 100%)',
+                    background:
+                        'radial-gradient(circle at center, rgba(30, 20, 10, 0.5) 0%, rgba(10, 5, 2, 0.85) 100%)',
                     borderRadius: 15,
                     padding: '25px 20px',
                     border: '1.5px solid rgba(240, 192, 64, 0.35)',
@@ -112,9 +121,9 @@ export const RewardsTab: React.FC<RewardsTabProps> = ({
                         >
                             <img
                                 src={step.icon}
-                                style={{ 
-                                    width: '100%', 
-                                    height: '100%', 
+                                style={{
+                                    width: '100%',
+                                    height: '100%',
                                     objectFit: 'contain',
                                     transform: step.label === 'Опыт' ? 'scale(1.35)' : 'none',
                                     filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.6))',
@@ -136,7 +145,7 @@ export const RewardsTab: React.FC<RewardsTabProps> = ({
                                     boxShadow: '0 2px 8px rgba(0,0,0,0.8), 0 0 5px rgba(251, 191, 36, 0.2)',
                                     fontFamily: "'Outfit', sans-serif",
                                 }}
-                              >
+                            >
                                 x{step.reward}
                             </div>
                         </div>
@@ -149,7 +158,8 @@ export const RewardsTab: React.FC<RewardsTabProps> = ({
                         left: '15%',
                         right: '15%',
                         height: 2,
-                        background: 'linear-gradient(90deg, transparent 0%, rgba(240, 192, 64, 0.45) 50%, transparent 100%)',
+                        background:
+                            'linear-gradient(90deg, transparent 0%, rgba(240, 192, 64, 0.45) 50%, transparent 100%)',
                         zIndex: 0,
                     }}
                 />
@@ -204,13 +214,14 @@ export const RewardsTab: React.FC<RewardsTabProps> = ({
                                     claimFavoriteReward(true);
                                     useGameStore
                                         .getState()
-                                        .showAlert('Награда за добавление в избранное: 50 кристаллов! 💎');
+                                        .showAlert('Награда за добавление в избранное: 50 кристаллов!');
                                 }
                             }}
                             style={{
                                 flex: 1,
                                 padding: '16px',
-                                background: 'linear-gradient(180deg, rgba(240, 192, 64, 0.12) 0%, rgba(240, 192, 64, 0.03) 100%)',
+                                background:
+                                    'linear-gradient(180deg, rgba(240, 192, 64, 0.12) 0%, rgba(240, 192, 64, 0.03) 100%)',
                                 border: '2px solid rgba(240, 192, 64, 0.5)',
                                 borderRadius: 12,
                                 color: colors.accent,
@@ -246,13 +257,14 @@ export const RewardsTab: React.FC<RewardsTabProps> = ({
                                     claimGroupReward(true);
                                     useGameStore
                                         .getState()
-                                        .showAlert('Награда за вступление в группу: 50 кристаллов! 💎');
+                                        .showAlert('Награда за вступление в группу: 50 кристаллов!');
                                 }
                             }}
                             style={{
                                 flex: 1,
                                 padding: '16px',
-                                background: 'linear-gradient(180deg, rgba(0, 119, 255, 0.12) 0%, rgba(0, 119, 255, 0.03) 100%)',
+                                background:
+                                    'linear-gradient(180deg, rgba(0, 119, 255, 0.12) 0%, rgba(0, 119, 255, 0.03) 100%)',
                                 border: '2px solid rgba(0, 119, 255, 0.5)',
                                 borderRadius: 12,
                                 color: '#38bdf8',

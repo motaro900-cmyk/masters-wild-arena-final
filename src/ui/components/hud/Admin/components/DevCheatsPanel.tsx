@@ -136,7 +136,12 @@ export const DevCheatsPanel: React.FC<DevCheatsPanelProps> = ({ selectedPlayer, 
                         e.currentTarget.style.boxShadow = '0 0 10px rgba(234, 179, 8, 0.15)';
                     }}
                 >
-                    💰 +100к, 💎 +5к
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '3px', justifyContent: 'center', width: '100%' }}>
+                        <img src={AssetsMap.UI.ICON_GOLD_FULL} alt="gold" style={{ width: '12px', height: '12px', objectFit: 'contain' }} />
+                        +100к, 
+                        <img src={AssetsMap.UI.ICON_ALMAZ_FULL} alt="gems" style={{ width: '12px', height: '12px', objectFit: 'contain', marginLeft: '2px' }} />
+                        +5к
+                    </span>
                 </button>
 
                 <button
@@ -162,6 +167,10 @@ export const DevCheatsPanel: React.FC<DevCheatsPanelProps> = ({ selectedPlayer, 
                         fontWeight: 'bold',
                         boxShadow: '0 0 10px rgba(14, 165, 233, 0.15)',
                         transition: 'all 0.2s ease',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '4px',
                     }}
                     onMouseEnter={(e) => {
                         e.currentTarget.style.transform = 'scale(1.03)';
@@ -172,7 +181,8 @@ export const DevCheatsPanel: React.FC<DevCheatsPanelProps> = ({ selectedPlayer, 
                         e.currentTarget.style.boxShadow = '0 0 10px rgba(14, 165, 233, 0.15)';
                     }}
                 >
-                    ⚡ 9999 ЭНЕРГИИ
+                    <img src={AssetsMap.UI.ICON_ENERGY_FULL} style={{ width: '12px', height: '12px', objectFit: 'contain' }} alt="energy" />
+                    9999 ЭНЕРГИИ
                 </button>
 
                 <button
@@ -197,6 +207,10 @@ export const DevCheatsPanel: React.FC<DevCheatsPanelProps> = ({ selectedPlayer, 
                         fontWeight: 'bold',
                         boxShadow: '0 0 10px rgba(139, 92, 246, 0.15)',
                         transition: 'all 0.2s ease',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '4px',
                     }}
                     onMouseEnter={(e) => {
                         e.currentTarget.style.transform = 'scale(1.03)';
@@ -207,7 +221,8 @@ export const DevCheatsPanel: React.FC<DevCheatsPanelProps> = ({ selectedPlayer, 
                         e.currentTarget.style.boxShadow = '0 0 10px rgba(139, 92, 246, 0.15)';
                     }}
                 >
-                    🌟 УРОВЕНЬ 100
+                    <img src={AssetsMap.UI.ICON_XP} style={{ width: '12px', height: '12px', objectFit: 'contain' }} alt="xp" />
+                    УРОВЕНЬ 100
                 </button>
             </div>
         </Section>

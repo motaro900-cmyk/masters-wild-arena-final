@@ -1,6 +1,7 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { ItemPreview, ItemPreviewData } from './ItemPreview';
 import { rawItemsDatabase } from '../../game/configs/items/index';
+import * as Sentry from '@sentry/react';
 
 interface RarityRule {
     minLvl: number;
@@ -38,6 +39,17 @@ const RARITY_RULES: Record<'COMMON' | 'RARE' | 'EPIC' | 'LEGENDARY' | 'MYTHIC', 
 };
 
 export const ItemBuilder: React.FC<{ onClose?: () => void }> = ({ onClose }) => {
+    useEffect(() => {
+        console.warn('[DEPRECATED IMPORT] ItemBuilder legacy component is mounted.');
+        try {
+            Sentry.withScope((scope) => {
+                scope.setTag('migration_phase', 'deprecation_stage');
+                scope.setExtra('legacy_component', 'ItemBuilder');
+                Sentry.captureMessage('Legacy Component Access: ItemBuilder', 'warning');
+            });
+        } catch (e) {}
+    }, []);
+
     // Form fields
     const [id, setId] = useState('weapon_sword_shadow');
     const [name, setName] = useState('Теневой Клинок');

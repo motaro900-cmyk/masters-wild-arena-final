@@ -154,12 +154,12 @@ export async function resolvePeriodicDamage(engine: BattleEngine, unit: HeroUnit
             const { timeScale } = useGameStore.getState();
 
             const tickDamage = status.type === 'BURN' ? status.damagePerTurn : status.damagePerTurn * status.stacks;
-            
+
             const targetStats = isPlayer ? engine.playerStats : engine.enemyStats;
             const targetDefense = targetStats ? targetStats.defense : 0;
             const defMultiplier = status.type === 'POISON' ? 0.5 : 0.25;
             const effectiveDef = targetDefense * defMultiplier;
-            const targetAvgItemLevel = targetStats ? (targetStats.avgItemLevel || 1) : 1;
+            const targetAvgItemLevel = targetStats ? targetStats.avgItemLevel || 1 : 1;
             const divisor = 200 + (targetAvgItemLevel - 1) * 25;
             const mitigation = effectiveDef / (effectiveDef + divisor);
             const finalDamage = Math.max(1, Math.ceil(tickDamage * (1 - mitigation)));
@@ -193,7 +193,7 @@ export async function resolvePeriodicDamage(engine: BattleEngine, unit: HeroUnit
             const maxHP = isPlayer ? anyEngine.playerStats!.hp : anyEngine.enemyStats!.hp;
             const heroId = isPlayer ? anyEngine.player?.config?.id : anyEngine.enemy?.config?.id;
             const targetStats = isPlayer ? engine.playerStats : engine.enemyStats;
-            const targetAvgItemLevel = targetStats ? (targetStats.avgItemLevel || 1) : 1;
+            const targetAvgItemLevel = targetStats ? targetStats.avgItemLevel || 1 : 1;
             const itemLevelFactor = 1 - (targetAvgItemLevel - 1) * 0.03;
             const regenPercent = (heroId === 'lion_knight' ? 0.04 : 0.05) * itemLevelFactor;
 

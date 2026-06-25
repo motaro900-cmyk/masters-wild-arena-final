@@ -82,7 +82,7 @@ const generateShopRotation = (playerLevel: number = 1) => {
 
 const generateShopDiscounts = (rotation: Record<string, string[]>) => {
     const discounts: Record<string, number> = {};
-    const possibleDiscounts = [10, 15, 20, 25, 30, 40, 50];
+    const possibleDiscounts = [5, 10, 15, 20];
 
     Object.entries(rotation).forEach(([, itemIds]) => {
         if (itemIds.length > 0) {
@@ -136,10 +136,7 @@ export const createShopSlice = (set: any, get: any) => ({
                         try {
                             const sceneManager = SceneManager.getInstance();
                             const currentScene = sceneManager.getCurrentScene();
-                            if (
-                                currentScene &&
-                                currentScene.label === 'ShopScreen'
-                            ) {
+                            if (currentScene && currentScene.label === 'ShopScreen') {
                                 console.log('[ShopSlice] exitShop: Switching PIXI scene back to MainScreen');
                                 sceneManager.switchScene(new MainScreen());
                             }
@@ -235,11 +232,14 @@ export const createShopSlice = (set: any, get: any) => ({
             if (packId === 'starter_pack') amount = 200;
 
             if (typeof window !== 'undefined' && amount > 0) {
-                localStorage.setItem('pendingPurchase', JSON.stringify({
-                    item: packId,
-                    amount: amount,
-                    timestamp: Date.now()
-                }));
+                localStorage.setItem(
+                    'pendingPurchase',
+                    JSON.stringify({
+                        item: packId,
+                        amount: amount,
+                        timestamp: Date.now(),
+                    }),
+                );
             }
 
             if (packId === 'starter_pack') {
@@ -331,10 +331,7 @@ export const createShopSlice = (set: any, get: any) => ({
                         return false;
                     }
                     const maxEnergy = state.maxEnergy || 50;
-                    const newEnergy = Math.min(
-                        state.energy + amount,
-                        maxEnergy
-                    );
+                    const newEnergy = Math.min(state.energy + amount, maxEnergy);
                     set({
                         [newBalanceKey]: balance - price,
                         energy: newEnergy,

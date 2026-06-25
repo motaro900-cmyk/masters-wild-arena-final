@@ -679,7 +679,8 @@ canvas {
 
 /* Skeleton loading style with pulse animation */
 @keyframes skeleton-pulse {
-    0%, 100% {
+    0%,
+    100% {
         background-color: rgba(60, 60, 65, 0.4);
     }
     50% {
@@ -716,70 +717,118 @@ canvas {
 }
 
 @keyframes pulseStatus {
-    0% { opacity: 0.4; }
-    50% { opacity: 1; }
-    100% { opacity: 0.4; }
+    0% {
+        opacity: 0.4;
+    }
+    50% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0.4;
+    }
 }
 
 /* Icon buttons с hitbox expansion (базовый для ПК / Desktop) */
 .mobile-hit-area {
-  position: absolute;
-  inset: -6px; /* Небольшое расширение зоны клика на ПК */
-  cursor: pointer;
-  z-index: 1;
+    position: absolute;
+    inset: -6px; /* Небольшое расширение зоны клика на ПК */
+    cursor: pointer;
+    z-index: 1;
 }
 
 /* Mobile touch targets — только для телефонов */
 @media (max-width: 768px) {
-  /* Увеличенное расширение для мобильных touch-таргетов */
-  .mobile-hit-area {
-    inset: -20px;
-  }
-  
-  /* Navigation tabs */
-  .nav-tab-mobile {
-    min-height: 80px !important;
-  }
-  
-  /* Primary action buttons */  
-  .action-btn-mobile {
-    min-height: 120px !important;
-  }
+    /* Увеличенное расширение для мобильных touch-таргетов */
+    .mobile-hit-area {
+        inset: -20px;
+    }
+
+    /* Navigation tabs */
+    .nav-tab-mobile {
+        min-height: 80px !important;
+    }
+
+    /* Primary action buttons */
+    .action-btn-mobile {
+        min-height: 120px !important;
+    }
 }
 
 /* Pixel-perfect rendering for all UI sprites and panels */
-img, 
-div[style*="background-image"],
-button[style*="background-image"] {
+img,
+div[style*='background-image'],
+button[style*='background-image'] {
     image-rendering: -webkit-optimize-contrast;
     image-rendering: crisp-edges;
 }
 
 /* Улучшение рендеринга и контрастности всех текстов */
-body, button, span, div, h1, h2, h3, h4, h5, h6 {
-  -webkit-font-smoothing: subpixel-antialiased;
-  -moz-osx-font-smoothing: auto;
-  text-rendering: auto;
+body,
+button,
+span,
+div,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    -webkit-font-smoothing: subpixel-antialiased;
+    -moz-osx-font-smoothing: auto;
+    text-rendering: auto;
 }
 
 /* Эффект жесткой выдавливающей тени для шрифтов на темном фоне */
-.font-header, .font-ui, .shadow-dark-ui {
-  text-shadow: 0 2px 0 rgba(0,0,0,0.95), 0 0 5px rgba(0,0,0,0.65);
+.font-header,
+.font-ui,
+.shadow-dark-ui {
+    text-shadow:
+        0 2px 0 rgba(0, 0, 0, 0.95),
+        0 0 5px rgba(0, 0, 0, 0.65);
 }
 
 /* Глобальное масштабирование мелких шрифтов в модальных окнах (.BaseWindow) для лучшей читаемости */
-.BaseWindow [style*="font-size: 8px"], .BaseWindow [style*="font-size:8px"] { font-size: 11px !important; }
-.BaseWindow [style*="font-size: 9px"], .BaseWindow [style*="font-size:9px"] { font-size: 12px !important; }
-.BaseWindow [style*="font-size: 10px"], .BaseWindow [style*="font-size:10px"] { font-size: 13px !important; }
-.BaseWindow [style*="font-size: 11px"], .BaseWindow [style*="font-size:11px"] { font-size: 13.5px !important; }
-.BaseWindow [style*="font-size: 11.5px"], .BaseWindow [style*="font-size:11.5px"] { font-size: 14px !important; }
-.BaseWindow [style*="font-size: 12px"], .BaseWindow [style*="font-size:12px"] { font-size: 14px !important; }
-.BaseWindow [style*="font-size: 12.5px"], .BaseWindow [style*="font-size:12.5px"] { font-size: 14.5px !important; }
-.BaseWindow [style*="font-size: 13px"], .BaseWindow [style*="font-size:13px"] { font-size: 15px !important; }
-.BaseWindow [style*="font-size: 13.5px"], .BaseWindow [style*="font-size:13.5px"] { font-size: 15.5px !important; }
-.BaseWindow [style*="font-size: 14px"], .BaseWindow [style*="font-size:14px"] { font-size: 16px !important; }
-.BaseWindow [style*="font-size: 15px"], .BaseWindow [style*="font-size:15px"] { font-size: 17px !important; }
-
-
-
-
+.BaseWindow [style*='font-size: 8px'],
+.BaseWindow [style*='font-size:8px'] {
+    font-size: 11px !important;
+}
+.BaseWindow [style*='font-size: 9px'],
+.BaseWindow [style*='font-size:9px'] {
+    font-size: 12px !important;
+}
+.BaseWindow [style*='font-size: 10px'],
+.BaseWindow [style*='font-size:10px'] {
+    font-size: 13px !important;
+}
+.BaseWindow [style*='font-size: 11px'],
+.BaseWindow [style*='font-size:11px'] {
+    font-size: 13.5px !important;
+}
+.BaseWindow [style*='font-size: 11.5px'],
+.BaseWindow [style*='font-size:11.5px'] {
+    font-size: 14px !important;
+}
+.BaseWindow [style*='font-size: 12px'],
+.BaseWindow [style*='font-size:12px'] {
+    font-size: 14px !important;
+}
+.BaseWindow [style*='font-size: 12.5px'],
+.BaseWindow [style*='font-size:12.5px'] {
+    font-size: 14.5px !important;
+}
+.BaseWindow [style*='font-size: 13px'],
+.BaseWindow [style*='font-size:13px'] {
+    font-size: 15px !important;
+}
+.BaseWindow [style*='font-size: 13.5px'],
+.BaseWindow [style*='font-size:13.5px'] {
+    font-size: 15.5px !important;
+}
+.BaseWindow [style*='font-size: 14px'],
+.BaseWindow [style*='font-size:14px'] {
+    font-size: 16px !important;
+}
+.BaseWindow [style*='font-size: 15px'],
+.BaseWindow [style*='font-size:15px'] {
+    font-size: 17px !important;
+}

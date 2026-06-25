@@ -1,3 +1,8 @@
+/**
+ * @owner: @Motaro900 / QA Team
+ * @purpose: Основной скрипт оптимизации ассетов и копирования атласов. Вызывается при запуске npm run build и npm run optimize.
+ */
+
 import sharp from 'sharp';
 import fs from 'fs';
 import path from 'path';

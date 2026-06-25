@@ -37,9 +37,7 @@ export const TalentNode = ({
                         ? 'radial-gradient(circle, rgba(45, 45, 60, 0.95) 0%, rgba(20, 20, 25, 0.98) 100%)'
                         : 'rgba(20, 20, 20, 0.85)',
                     border: `2px solid ${isUnlocked ? (isMax ? '#ffd700' : branchColor) : '#444'}`,
-                    boxShadow: isUnlocked
-                        ? `0 0 15px ${branchColor}66, inset 0 0 10px rgba(255,255,255,0.05)`
-                        : 'none',
+                    boxShadow: isUnlocked ? `0 0 15px ${branchColor}66, inset 0 0 10px rgba(255,255,255,0.05)` : 'none',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',

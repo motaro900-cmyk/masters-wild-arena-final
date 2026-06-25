@@ -50,7 +50,7 @@ export const ProfileCustomizeWindow: React.FC<ProfileCustomizeWindowProps> = () 
             setTitle: state.setTitle,
             setAvatar: state.setAvatar,
             claimedRewards: state.claimedRewards,
-        }))
+        })),
     );
 
     // Tab state: 'AVATARS' | 'FRAMES' | 'TITLES'
@@ -186,7 +186,7 @@ export const ProfileCustomizeWindow: React.FC<ProfileCustomizeWindowProps> = () 
                 {/* СПИСОК ЭЛЕМЕНТОВ (SCROLLABLE - 3 COLUMNS) */}
                 <motion.div
                     className="leaderboard-scroll"
-                    drag={isMobile ? "x" : undefined}
+                    drag={isMobile ? 'x' : undefined}
                     dragConstraints={{ left: 0, right: 0 }}
                     dragElastic={0.15}
                     onDragEnd={(_, info) => {

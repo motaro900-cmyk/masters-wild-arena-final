@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { AssetsMap } from '../../../../configs/AssetsMap';
 
 export const QuestSection: React.FC<{
     title: string;
@@ -63,7 +64,25 @@ export const QuestSection: React.FC<{
                         filter: quest.isClaimed ? 'grayscale(1)' : 'drop-shadow(0 2px 5px rgba(0,0,0,0.5))',
                     }}
                 >
-                    {quest.icon.startsWith('sprite-') ? (
+                    {quest.icon === '💰' ? (
+                        <img
+                            src={AssetsMap.UI.ICON_GOLD_FULL}
+                            style={{ width: '36px', height: '36px', objectFit: 'contain' }}
+                            alt="золото"
+                        />
+                    ) : quest.icon === '🏆' ? (
+                        <img
+                            src={AssetsMap.UI.TROPHY_PREMIUM}
+                            style={{ width: '36px', height: '36px', objectFit: 'contain' }}
+                            alt="рейтинг"
+                        />
+                    ) : quest.icon === '💎' ? (
+                        <img
+                            src={AssetsMap.UI.ICON_ALMAZ_FULL}
+                            style={{ width: '36px', height: '36px', objectFit: 'contain' }}
+                            alt="кристаллы"
+                        />
+                    ) : quest.icon.startsWith('sprite-') ? (
                         <div
                             className={quest.icon}
                             style={{ width: '40px', height: '40px', backgroundSize: '300% 100%' }}

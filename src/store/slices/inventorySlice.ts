@@ -170,8 +170,24 @@ export const createInventorySlice = (set: any, get: any) => ({
         set({
             inventory: [],
             heroEquipment: {
-                panda: { WEAPONS: null, HELMETS: null, ARMOR: null, SHIELDS: null, SHOULDERS: null, BOOTS: null, PANTS: null },
-                wolf_knight: { WEAPONS: null, HELMETS: null, ARMOR: null, SHIELDS: null, SHOULDERS: null, BOOTS: null, PANTS: null },
+                panda: {
+                    WEAPONS: null,
+                    HELMETS: null,
+                    ARMOR: null,
+                    SHIELDS: null,
+                    SHOULDERS: null,
+                    BOOTS: null,
+                    PANTS: null,
+                },
+                wolf_knight: {
+                    WEAPONS: null,
+                    HELMETS: null,
+                    ARMOR: null,
+                    SHIELDS: null,
+                    SHOULDERS: null,
+                    BOOTS: null,
+                    PANTS: null,
+                },
             },
             equippedWeaponId: null,
             equippedHelmId: null,
@@ -262,9 +278,9 @@ export const createInventorySlice = (set: any, get: any) => ({
             set({
                 combatPower: Math.floor(
                     newStats.attack * 12 +
-                    effectiveEHP * 0.08 +
-                    (newStats.critChance || 0) * 8 +
-                    (newStats.speed || 1) * 200
+                        effectiveEHP * 0.08 +
+                        (newStats.critChance || 0) * 8 +
+                        (newStats.speed || 1) * 200,
                 ),
             });
         }
@@ -312,9 +328,9 @@ export const createInventorySlice = (set: any, get: any) => ({
             set({
                 combatPower: Math.floor(
                     newStatsAfterUnequip.attack * 12 +
-                    effectiveEHP * 0.08 +
-                    (newStatsAfterUnequip.critChance || 0) * 8 +
-                    (newStatsAfterUnequip.speed || 1) * 200
+                        effectiveEHP * 0.08 +
+                        (newStatsAfterUnequip.critChance || 0) * 8 +
+                        (newStatsAfterUnequip.speed || 1) * 200,
                 ),
             });
         }
@@ -373,7 +389,10 @@ export const createInventorySlice = (set: any, get: any) => ({
             const updatedGear = { ...gear };
             let changed = false;
             Object.keys(updatedGear).forEach((slot) => {
-                if (instancesToEquip.includes(updatedGear[slot])) { delete updatedGear[slot]; changed = true; }
+                if (instancesToEquip.includes(updatedGear[slot])) {
+                    delete updatedGear[slot];
+                    changed = true;
+                }
             });
             if (changed) newHeroEquipment[hId] = updatedGear;
         });

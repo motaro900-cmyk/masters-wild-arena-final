@@ -41,7 +41,7 @@ export class GameApp {
                     autoParticles = 'LOW';
                     autoGlow = false;
                 } else {
-                    const memory = typeof navigator !== 'undefined' ? ((navigator as any).deviceMemory || 4) : 4;
+                    const memory = typeof navigator !== 'undefined' ? (navigator as any).deviceMemory || 4 : 4;
                     if (memory >= 8) {
                         autoGraphics = 'ULTRA';
                         autoParticles = 'HIGH';
@@ -65,12 +65,15 @@ export class GameApp {
                 });
 
                 state = useGameStore.getState();
-                console.log(`🤖 Auto-detected graphics for ${isMobile ? 'mobile' : 'desktop'} (memory: ${typeof navigator !== 'undefined' ? (navigator as any).deviceMemory : 'unknown'}GB):`, {
-                    graphicsQuality: autoGraphics,
-                    isPowerSaving: autoPowerSaving,
-                    particlesQuality: autoParticles,
-                    glowEnabled: autoGlow
-                });
+                console.log(
+                    `🤖 Auto-detected graphics for ${isMobile ? 'mobile' : 'desktop'} (memory: ${typeof navigator !== 'undefined' ? (navigator as any).deviceMemory : 'unknown'}GB):`,
+                    {
+                        graphicsQuality: autoGraphics,
+                        isPowerSaving: autoPowerSaving,
+                        particlesQuality: autoParticles,
+                        glowEnabled: autoGlow,
+                    },
+                );
             }
 
             const quality = state.graphicsQuality;
@@ -209,8 +212,9 @@ export class GameApp {
                         if (this.stressTestSamples.length >= 10) {
                             this.isStressTestDone = true;
                             localStorage.setItem('firstLaunchStressTested', 'true');
-                            
-                            const avgStressFps = this.stressTestSamples.reduce((a, b) => a + b, 0) / this.stressTestSamples.length;
+
+                            const avgStressFps =
+                                this.stressTestSamples.reduce((a, b) => a + b, 0) / this.stressTestSamples.length;
                             let autoGraphics = 'MEDIUM';
                             let autoParticles: 'LOW' | 'HIGH' = 'HIGH';
                             let autoGlow = true;
@@ -233,12 +237,14 @@ export class GameApp {
                                 autoArenaBg = 'LOW';
                             }
 
-                            console.log(`📊 First Launch Stress Test Result: Avg FPS: ${avgStressFps.toFixed(1)} -> Setting quality to ${autoGraphics}`);
+                            console.log(
+                                `📊 First Launch Stress Test Result: Avg FPS: ${avgStressFps.toFixed(1)} -> Setting quality to ${autoGraphics}`,
+                            );
                             useGameStore.setState({
                                 graphicsQuality: autoGraphics,
                                 particlesQuality: autoParticles,
                                 glowEnabled: autoGlow,
-                                arenaBgQuality: autoArenaBg
+                                arenaBgQuality: autoArenaBg,
                             });
                         }
                     }
@@ -247,20 +253,22 @@ export class GameApp {
                     const secondsElapsed = Math.floor((Date.now() - this.performanceStartTime) / 1000);
                     if (secondsElapsed >= 45 && !this.performanceReportSent) {
                         this.performanceReportSent = true;
-                        
-                        const avgFPS = Math.round(this.performanceSamples.reduce((a, b) => a + b, 0) / this.performanceSamples.length);
+
+                        const avgFPS = Math.round(
+                            this.performanceSamples.reduce((a, b) => a + b, 0) / this.performanceSamples.length,
+                        );
                         const minFPS = Math.round(Math.min(...this.performanceSamples));
-                        
+
                         // Count frame drops (FPS < 40 in our case)
-                        const frameDrops = this.performanceSamples.filter(fps => fps < 40).length;
-                        
+                        const frameDrops = this.performanceSamples.filter((fps) => fps < 40).length;
+
                         // Check memory pressure
                         let memoryPressure = false;
                         let memoryUsedMb = 0;
                         const perfMem = (window.performance as any)?.memory;
                         if (perfMem) {
                             memoryUsedMb = Math.round(perfMem.usedJSHeapSize / 1024 / 1024);
-                            memoryPressure = (perfMem.usedJSHeapSize / perfMem.jsHeapSizeLimit) > 0.8;
+                            memoryPressure = perfMem.usedJSHeapSize / perfMem.jsHeapSizeLimit > 0.8;
                         }
 
                         sendPerformanceReport({
@@ -268,31 +276,35 @@ export class GameApp {
                             minFPS,
                             frameDrops,
                             memoryPressure,
-                            memoryUsedMb
+                            memoryUsedMb,
                         });
                     }
 
                     // 3. Performance Watchdog at 60 seconds
                     if (secondsElapsed >= 60 && !this.performanceWatchdogChecked) {
                         this.performanceWatchdogChecked = true;
-                        
-                        const avgWatchdogFps = this.performanceSamples.reduce((a, b) => a + b, 0) / this.performanceSamples.length;
+
+                        const avgWatchdogFps =
+                            this.performanceSamples.reduce((a, b) => a + b, 0) / this.performanceSamples.length;
                         const state = useGameStore.getState();
 
                         if (!state.hasCustomSettings && avgWatchdogFps < 25) {
-                            console.warn(`⚠️ Performance Watchdog: Avg FPS ${avgWatchdogFps.toFixed(1)} < 25 over first 60s. Forcing LOW quality.`);
-                            
+                            console.warn(
+                                `⚠️ Performance Watchdog: Avg FPS ${avgWatchdogFps.toFixed(1)} < 25 over first 60s. Forcing LOW quality.`,
+                            );
+
                             useGameStore.setState({
                                 graphicsQuality: 'LOW',
                                 particlesQuality: 'LOW',
                                 glowEnabled: false,
-                                arenaBgQuality: 'LOW'
+                                arenaBgQuality: 'LOW',
                             });
 
                             const lang = state.language || 'RU';
-                            const msg = lang === 'RU'
-                                ? 'Производительность вашего устройства оказалась ниже ожидаемой. Настройки графики оптимизированы для плавности.'
-                                : 'Your device performance is lower than expected. Graphics settings optimized for smoothness.';
+                            const msg =
+                                lang === 'RU'
+                                    ? 'Производительность вашего устройства оказалась ниже ожидаемой. Настройки графики оптимизированы для плавности.'
+                                    : 'Your device performance is lower than expected. Graphics settings optimized for smoothness.';
                             state.showAlert(msg);
                         }
                     }
@@ -313,13 +325,16 @@ export class GameApp {
                             }
 
                             if (nextQuality) {
-                                console.log(`📉 Auto-degrading graphics quality from ${currentQuality} to ${nextQuality} due to low average FPS: ${avgFps.toFixed(1)}`);
+                                console.log(
+                                    `📉 Auto-degrading graphics quality from ${currentQuality} to ${nextQuality} due to low average FPS: ${avgFps.toFixed(1)}`,
+                                );
                                 useGameStore.setState({ graphicsQuality: nextQuality });
 
                                 const lang = state.language || 'RU';
-                                const msg = lang === 'RU'
-                                    ? 'Качество графики снижено для стабильной работы'
-                                    : 'Graphics quality lowered for stable performance';
+                                const msg =
+                                    lang === 'RU'
+                                        ? 'Качество графики снижено для стабильной работы'
+                                        : 'Graphics quality lowered for stable performance';
                                 state.showAlert(msg);
                             }
                         }
@@ -385,12 +400,14 @@ export class GameApp {
             console.error('❌ Background item sprite preloading failed:', err);
         });
 
-        // Background preload next-scene textures and arena assets
-        try {
-            this.assetLoader.startBackgroundPreload();
-        } catch (err) {
-            console.error('❌ Background general asset preloading failed:', err);
-        }
+        // Background preload next-scene textures and arena assets (delayed to prevent network bottleneck at startup)
+        setTimeout(() => {
+            try {
+                this.assetLoader.startBackgroundPreload();
+            } catch (err) {
+                console.error('❌ Background general asset preloading failed:', err);
+            }
+        }, 5000);
     }
 
     private applyPerformanceSettings(isPowerSaving: boolean, isMobile: boolean = false): void {

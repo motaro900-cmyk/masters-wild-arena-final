@@ -33,22 +33,22 @@ export function calculateWinRewards(
 ): { goldRange: string; xp: number; trophies: string } {
     const pLevel = playerLevel || 1;
 
-    let goldMin = 70;
-    let goldMax = 120;
+    let goldMin = 90;
+    let goldMax = 150;
     if (pLevel <= 10) {
-        goldMin = 70;
-        goldMax = 120;
+        goldMin = 90;
+        goldMax = 150;
     } else if (pLevel <= 20) {
-        goldMin = 150;
-        goldMax = 250;
+        goldMin = 200;
+        goldMax = 300;
     } else if (pLevel <= 40) {
-        goldMin = 300;
-        goldMax = 450;
+        goldMin = 320;
+        goldMax = 480;
     } else if (pLevel <= 60) {
-        goldMin = 400;
+        goldMin = 450;
         goldMax = 500;
     } else {
-        goldMin = 450;
+        goldMin = 475;
         goldMax = 500;
     }
 
@@ -97,7 +97,7 @@ export function calculateWinRewards(
 
     // Применяем Catch-up множитель (до 3000 кубков) как в BattleResultService
     if (playerRating < 3000) {
-        const expectedLevel = playerRating < 1000 ? 1 : (playerRating < 2000 ? 10 : 20);
+        const expectedLevel = playerRating < 1000 ? 1 : playerRating < 2000 ? 10 : 20;
         const levelDiff = pLevel - expectedLevel;
         if (levelDiff >= 20) {
             const multiplier = Math.min(5, 1 + levelDiff / 20);
@@ -106,7 +106,7 @@ export function calculateWinRewards(
         }
     }
 
-    let trophiesStr = "";
+    let trophiesStr = '';
     if (minTrophies !== maxTrophies) {
         trophiesStr = `+${minTrophies}-${maxTrophies}`;
     } else {

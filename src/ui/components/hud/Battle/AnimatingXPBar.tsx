@@ -58,13 +58,13 @@ export const AnimatingXPBar: React.FC<AnimatingXPBarProps> = ({
             }
             return { level: l, exp: remaining, maxExp: needed };
         },
-        [getExpNeededFunc]
+        [getExpNeededFunc],
     );
 
     const [displayLevel, setDisplayLevel] = React.useState(startLevel);
     const [displayExp, setDisplayExp] = React.useState(startExp);
     const [displayMaxExp, setDisplayMaxExp] = React.useState(getExpNeededFunc(startLevel));
-    
+
     const [isLevelUp, setIsLevelUp] = React.useState(false);
     const levelRef = React.useRef(startLevel);
 
@@ -81,7 +81,7 @@ export const AnimatingXPBar: React.FC<AnimatingXPBarProps> = ({
                 setDisplayLevel(currentLvl);
                 setDisplayExp(Math.round(currentXp));
                 setDisplayMaxExp(currentMax);
-                
+
                 if (currentLvl > levelRef.current) {
                     levelRef.current = currentLvl;
                     setIsLevelUp(true);
@@ -100,7 +100,9 @@ export const AnimatingXPBar: React.FC<AnimatingXPBarProps> = ({
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+            <div
+                style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}
+            >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     {icon}
                     <span
@@ -170,7 +172,7 @@ export const AnimatingXPBar: React.FC<AnimatingXPBarProps> = ({
                         transition: 'width 0.05s linear',
                     }}
                 />
-                
+
                 {progressPercent > 0 && progressPercent < 100 && (
                     <div
                         style={{

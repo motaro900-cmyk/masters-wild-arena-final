@@ -56,16 +56,16 @@ const generateOpponentEquipment = (
         BOOTS: null,
     };
     const slots = ['WEAPONS', 'HELMETS', 'ARMOR', 'SHIELDS', 'SHOULDERS', 'PANTS', 'BOOTS'];
-    
+
     let slotsToEquip = [...slots];
     if (maxEquippedSlots < slots.length) {
         // Prioritize WEAPONS, then ARMOR, then other slots
         const prioritySlots = ['WEAPONS', 'ARMOR'];
         const otherSlots = slots.filter((s) => !prioritySlots.includes(s));
-        
+
         const shuffledPriority = prioritySlots.sort(() => Math.random() - 0.5);
         const shuffledOthers = otherSlots.sort(() => Math.random() - 0.5);
-        
+
         const orderedSlots = [...shuffledPriority, ...shuffledOthers];
         slotsToEquip = orderedSlots.slice(0, maxEquippedSlots);
     }
@@ -126,7 +126,7 @@ export const buildStatsFromEquipment = (
     equipment: Record<string, string | null>,
     avgItemLevel: number = 1,
     inventory: any[] = [],
-    talents: Record<string, number> = {}
+    talents: Record<string, number> = {},
 ) => {
     const heroData = HEROES_DB.find((h) => h.id === heroId) || HEROES_DB[0];
     const levelMult = getLevelMultiplier(level);
@@ -196,7 +196,7 @@ export const buildStatsFromEquipment = (
 
         const rawSpeed = item.attackSpeed || item.speedBonus || 0;
         if (rawSpeed) total.speed += rawSpeed * mult;
-        
+
         if (item.evasion) total.evasion += item.evasion * mult;
     });
 
@@ -206,7 +206,10 @@ export const buildStatsFromEquipment = (
 };
 
 export const calculateCombatPower = (
-    stats: { attack?: number; hp?: number; defense?: number; critChance?: number; speed?: number; avgItemLevel?: number } | undefined | null,
+    stats:
+        | { attack?: number; hp?: number; defense?: number; critChance?: number; speed?: number; avgItemLevel?: number }
+        | undefined
+        | null,
 ): number => {
     if (!stats) return 1000;
     const attack = stats.attack ?? 10;
@@ -249,7 +252,7 @@ class MatchmakingServiceClass {
             // First 5 consecutive wins are guaranteed (newbie honeymoon)
             const newbieWins = useGameStore.getState().newbieWins || 0;
             const isHoneymoon = newbieWins < 5;
-            const botChance = 0.90;
+            const botChance = 0.9;
             const forceBot = isHoneymoon || Math.random() < botChance;
             if (forceBot) {
                 return this.generateBot(myRating, myLevel, myStats, winStreak, lossStreak);
@@ -261,7 +264,7 @@ class MatchmakingServiceClass {
 
         // ── TIER 2: 700–1200 cups ───────────────────────────────────────────
         if (myRating < 1200) {
-            if (Math.random() < 0.70) {
+            if (Math.random() < 0.7) {
                 return this.generateBot(myRating, myLevel, myStats, winStreak, lossStreak);
             }
             const real = await this.searchRealPlayer(myUserId, myRating, myWinRate, myLevel, myStats, 7000);
@@ -270,7 +273,7 @@ class MatchmakingServiceClass {
 
         // ── TIER 3: 1200–1500 cups ──────────────────────────────────────────
         if (myRating < 1500) {
-            if (Math.random() < 0.50) {
+            if (Math.random() < 0.5) {
                 return this.generateBot(myRating, myLevel, myStats, winStreak, lossStreak);
             }
             const real = await this.searchRealPlayer(myUserId, myRating, myWinRate, myLevel, myStats, 8000);
@@ -530,13 +533,14 @@ class MatchmakingServiceClass {
     ): MatchOpponent {
         // 1. Определение рейтинга и вилки кубков противника на основе серии побед/поражений
         let ratingVariance = 0;
-        
+
         if (winStreak > 0) {
             if (winStreak === 1) {
                 ratingVariance = Math.floor(Math.random() * 30); // [0, 30]
             } else if (winStreak === 2) {
                 ratingVariance = Math.floor(Math.random() * 40) + 15; // [15, 55]
-            } else { // winStreak >= 3 (Босс-волна для проверки сил)
+            } else {
+                // winStreak >= 3 (Босс-волна для проверки сил)
                 ratingVariance = Math.floor(Math.random() * 60) + 50; // [50, 110]
             }
         } else if (lossStreak > 0) {
@@ -561,7 +565,8 @@ class MatchmakingServiceClass {
                 botLevel = myLevel + Math.floor(Math.random() * 2); // level +0 to +1
             } else if (winStreak === 2) {
                 botLevel = myLevel + 1 + Math.floor(Math.random() * 2); // level +1 to +2
-            } else { // winStreak >= 3
+            } else {
+                // winStreak >= 3
                 botLevel = myLevel + 2 + Math.floor(Math.random() * 3); // level +2 to +4
             }
         } else if (lossStreak > 0) {
@@ -681,14 +686,15 @@ class MatchmakingServiceClass {
         const avatar = randomAvatarObj.path;
 
         // Случайная рамка (исключая разработчика, с 30% шансом на отсутствие рамки)
-        const allowedFrames = AVATAR_FRAMES.filter(f => f.id !== 'storm_lightning_frame.webp');
-        const randomFrameObj = Math.random() < 0.3
-            ? (AVATAR_FRAMES.find(f => f.id === 'none') || AVATAR_FRAMES[0])
-            : allowedFrames[Math.floor(Math.random() * allowedFrames.length)];
+        const allowedFrames = AVATAR_FRAMES.filter((f) => f.id !== 'storm_lightning_frame.webp');
+        const randomFrameObj =
+            Math.random() < 0.3
+                ? AVATAR_FRAMES.find((f) => f.id === 'none') || AVATAR_FRAMES[0]
+                : allowedFrames[Math.floor(Math.random() * allowedFrames.length)];
         const avatarFrame = randomFrameObj.id;
 
         // Случайный титул (исключая разработчика)
-        const allowedTitles = TITLES.filter(t => t.name !== 'Разработчик');
+        const allowedTitles = TITLES.filter((t) => t.name !== 'Разработчик');
         const randomTitleObj = allowedTitles[Math.floor(Math.random() * allowedTitles.length)];
         const title = randomTitleObj.name;
 

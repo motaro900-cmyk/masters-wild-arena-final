@@ -1,7 +1,6 @@
 /**
- * generate-items-atlas.js
- *
- * Скрипт для генерации WebP-атласов из PNG-атласа, экспортированного Free Texture Packer.
+ * @owner: @Motaro900 / Asset Pipeline
+ * @purpose: Скрипт для генерации WebP-атласов оружия из исходников Free Texture Packer.
  * Создаёт:
  *   1. public/assets/images/items/items.webp        — атлас полного качества (ПК)
  *   2. public/assets/images/items/items_mobile.webp — атлас уменьшенный вдвое (мобильный)

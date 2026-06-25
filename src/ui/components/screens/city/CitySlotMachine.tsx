@@ -47,7 +47,6 @@ export const CitySlotMachine: React.FC<CitySlotMachineProps> = ({
     setAutoSpin,
     handleSummon,
 }) => {
-
     const renderReelSymbols = (symbols: SlotSymbol[]) => {
         return symbols.map((sym, idx) => {
             const isCenterSymbol = symbols.length === 3 ? idx === 1 : false;
@@ -233,8 +232,7 @@ export const CitySlotMachine: React.FC<CitySlotMachineProps> = ({
                                 right: '10px',
                                 top: 'calc(50% - 2px)',
                                 height: '4px',
-                                background:
-                                    'linear-gradient(90deg, transparent, #f0c040, #fff, #f0c040, transparent)',
+                                background: 'linear-gradient(90deg, transparent, #f0c040, #fff, #f0c040, transparent)',
                                 boxShadow: '0 0 15px #f0c040, 0 0 30px #f0c040',
                                 zIndex: 8,
                                 pointerEvents: 'none',
@@ -585,9 +583,7 @@ export const CitySlotMachine: React.FC<CitySlotMachineProps> = ({
                         disabled={isSpinning}
                         style={{
                             padding: '18px 45px',
-                            background: isSpinning
-                                ? '#333'
-                                : 'linear-gradient(135deg, #f0c040 0%, #c8a870 100%)',
+                            background: isSpinning ? '#333' : 'linear-gradient(135deg, #f0c040 0%, #c8a870 100%)',
                             color: '#000',
                             border: 'none',
                             borderRadius: '14px',
@@ -600,9 +596,7 @@ export const CitySlotMachine: React.FC<CitySlotMachineProps> = ({
                             transition: 'all 0.3s',
                             opacity: isSpinning ? 0.7 : 1,
                         }}
-                        onMouseEnter={(e) =>
-                            !isSpinning && (e.currentTarget.style.transform = 'translateY(-3px)')
-                        }
+                        onMouseEnter={(e) => !isSpinning && (e.currentTarget.style.transform = 'translateY(-3px)')}
                         onMouseLeave={(e) => !isSpinning && (e.currentTarget.style.transform = 'translateY(0)')}
                     >
                         {isSpinning && lastSummonType === 'SINGLE' ? (
@@ -625,9 +619,7 @@ export const CitySlotMachine: React.FC<CitySlotMachineProps> = ({
                         disabled={isSpinning}
                         style={{
                             padding: '18px 45px',
-                            background: isSpinning
-                                ? '#222'
-                                : 'linear-gradient(135deg, #1f1a10 0%, #0a0500 100%)',
+                            background: isSpinning ? '#222' : 'linear-gradient(135deg, #1f1a10 0%, #0a0500 100%)',
                             color: '#f0c040',
                             border: '2px solid #f0c040',
                             borderRadius: '14px',
@@ -650,8 +642,7 @@ export const CitySlotMachine: React.FC<CitySlotMachineProps> = ({
                         onMouseLeave={(e) => {
                             if (!isSpinning) {
                                 e.currentTarget.style.transform = 'translateY(0)';
-                                e.currentTarget.style.background =
-                                    'linear-gradient(135deg, #1f1a10 0%, #0a0500 100%)';
+                                e.currentTarget.style.background = 'linear-gradient(135deg, #1f1a10 0%, #0a0500 100%)';
                             }
                         }}
                     >

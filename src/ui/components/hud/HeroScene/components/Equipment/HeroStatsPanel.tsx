@@ -6,10 +6,7 @@ interface HeroStatsPanelProps {
     baseStats: any;
 }
 
-export const HeroStatsPanel: React.FC<HeroStatsPanelProps> = ({
-    currentStats,
-    baseStats,
-}) => {
+export const HeroStatsPanel: React.FC<HeroStatsPanelProps> = ({ currentStats, baseStats }) => {
     return (
         <div
             style={{

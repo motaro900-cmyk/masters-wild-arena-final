@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { AssetsMap } from '../../../../configs/AssetsMap';
 
 interface RefreshConfirmOverlayProps {
     dailyAdWatchesCount: number;
@@ -101,7 +102,12 @@ export const RefreshConfirmOverlay: React.FC<RefreshConfirmOverlayProps> = ({
                             gap: '8px',
                         }}
                     >
-                        500 Золота 💰
+                        <span>500 Золота</span>
+                        <img
+                            src={AssetsMap.UI.ICON_GOLD_FULL}
+                            alt="Золото"
+                            style={{ width: '20px', height: '20px', objectFit: 'contain' }}
+                        />
                     </button>
                     <button
                         onClick={() => onConfirm('gem')}
@@ -121,7 +127,12 @@ export const RefreshConfirmOverlay: React.FC<RefreshConfirmOverlayProps> = ({
                             gap: '8px',
                         }}
                     >
-                        10 Кристаллов 💎
+                        <span>10 Кристаллов</span>
+                        <img
+                            src={AssetsMap.UI.ICON_ALMAZ_FULL}
+                            alt="Кристаллы"
+                            style={{ width: '20px', height: '20px', objectFit: 'contain' }}
+                        />
                     </button>
                     <button
                         onClick={() => onConfirm('ad')}

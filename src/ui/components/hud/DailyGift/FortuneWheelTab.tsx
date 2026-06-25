@@ -29,15 +29,17 @@ export const FortuneWheelTab: React.FC<FortuneWheelTabProps> = ({
                 gap: '16px',
             }}
         >
-            <p style={{
-                color: '#dfc08a',
-                fontSize: '14.5px',
-                margin: 0,
-                textAlign: 'center',
-                fontWeight: 800,
-                textShadow: '0 2px 4px rgba(0,0,0,0.95)',
-                letterSpacing: '0.5px'
-            }}>
+            <p
+                style={{
+                    color: '#dfc08a',
+                    fontSize: '14.5px',
+                    margin: 0,
+                    textAlign: 'center',
+                    fontWeight: 800,
+                    textShadow: '0 2px 4px rgba(0,0,0,0.95)',
+                    letterSpacing: '0.5px',
+                }}
+            >
                 Испытай свою удачу! Раз в сутки вращение абсолютно бесплатно.
             </p>
 
@@ -53,7 +55,8 @@ export const FortuneWheelTab: React.FC<FortuneWheelTabProps> = ({
                     background: 'radial-gradient(circle, #3d2719 50%, #1c0f08 100%)',
                     border: '6px solid #ffd700',
                     borderRadius: '50%',
-                    boxShadow: '0 12px 35px rgba(0,0,0,0.95), 0 0 25px rgba(212, 175, 55, 0.4), inset 0 0 15px rgba(0,0,0,0.6)',
+                    boxShadow:
+                        '0 12px 35px rgba(0,0,0,0.95), 0 0 25px rgba(212, 175, 55, 0.4), inset 0 0 15px rgba(0,0,0,0.6)',
                     boxSizing: 'border-box',
                 }}
             >
@@ -86,14 +89,22 @@ export const FortuneWheelTab: React.FC<FortuneWheelTabProps> = ({
 
                 {/* Wiggling Pointer pin at the top */}
                 <motion.div
-                    animate={isSpinning ? {
-                        rotate: [0, -14, 12, -9, 6, -3, 0],
-                    } : { rotate: 0 }}
-                    transition={isSpinning ? {
-                        duration: 0.32,
-                        repeat: 12,
-                        ease: 'easeOut',
-                    } : {}}
+                    animate={
+                        isSpinning
+                            ? {
+                                  rotate: [0, -14, 12, -9, 6, -3, 0],
+                              }
+                            : { rotate: 0 }
+                    }
+                    transition={
+                        isSpinning
+                            ? {
+                                  duration: 0.32,
+                                  repeat: 12,
+                                  ease: 'easeOut',
+                              }
+                            : {}
+                    }
                     style={{
                         position: 'absolute',
                         top: '-14px',
@@ -199,7 +210,11 @@ export const FortuneWheelTab: React.FC<FortuneWheelTabProps> = ({
                                         textTransform: 'uppercase',
                                     }}
                                 >
-                                    {reward.type === 'GOLD' ? 'золото' : reward.type === 'CRYSTAL' ? 'алмазы' : 'энергия'}
+                                    {reward.type === 'GOLD'
+                                        ? 'золото'
+                                        : reward.type === 'CRYSTAL'
+                                          ? 'алмазы'
+                                          : 'энергия'}
                                 </span>
                             </div>
                         );
@@ -242,7 +257,15 @@ export const FortuneWheelTab: React.FC<FortuneWheelTabProps> = ({
             </div>
 
             {/* Wheel Info & Manual Spin button */}
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', marginTop: '4px' }}>
+            <div
+                style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: '10px',
+                    marginTop: '4px',
+                }}
+            >
                 {isFreeSpinAvailable ? (
                     <motion.button
                         whileHover={{ scale: 1.05, y: -1, boxShadow: '0 8px 25px rgba(240,192,64,0.45)' }}
@@ -268,14 +291,23 @@ export const FortuneWheelTab: React.FC<FortuneWheelTabProps> = ({
                     </motion.button>
                 ) : (
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
-                        <p style={{ color: '#b5a695', fontSize: '13.5px', margin: 0, fontWeight: 800, textShadow: '0 2px 4px rgba(0,0,0,0.9)' }}>
+                        <p
+                            style={{
+                                color: '#b5a695',
+                                fontSize: '13.5px',
+                                margin: 0,
+                                fontWeight: 800,
+                                textShadow: '0 2px 4px rgba(0,0,0,0.9)',
+                            }}
+                        >
                             Вы уже крутили колесо сегодня!
                         </p>
                         {wheelTimeLeft && (
                             <div
                                 style={{
                                     padding: '8px 28px',
-                                    background: 'linear-gradient(180deg, rgba(30, 20, 10, 0.95) 0%, rgba(15, 10, 5, 0.99) 100%)',
+                                    background:
+                                        'linear-gradient(180deg, rgba(30, 20, 10, 0.95) 0%, rgba(15, 10, 5, 0.99) 100%)',
                                     borderRadius: '10px',
                                     border: '1.5px solid rgba(240,192,64,0.35)',
                                     display: 'inline-flex',
@@ -284,7 +316,16 @@ export const FortuneWheelTab: React.FC<FortuneWheelTabProps> = ({
                                     boxShadow: 'inset 0 0 12px rgba(0,0,0,0.85)',
                                 }}
                             >
-                                <span style={{ fontSize: '10px', color: '#dfc08a', fontWeight: 900, opacity: 0.9, letterSpacing: '0.8px', textShadow: '0 1px 2px #000' }}>
+                                <span
+                                    style={{
+                                        fontSize: '10px',
+                                        color: '#dfc08a',
+                                        fontWeight: 900,
+                                        opacity: 0.9,
+                                        letterSpacing: '0.8px',
+                                        textShadow: '0 1px 2px #000',
+                                    }}
+                                >
                                     БЕСПЛАТНЫЙ СПИН ЧЕРЕЗ:
                                 </span>
                                 <span

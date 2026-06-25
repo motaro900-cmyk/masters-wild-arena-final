@@ -138,36 +138,43 @@ export const ServerPlayersList: React.FC<ServerPlayersListProps> = ({
     const finalPlayers = showSelf ? [selfPlayer, ...filteredBase] : filteredBase;
 
     return (
-        <div style={{
-            background: '#0a0a0a',
-            border: '1px solid #1e1e1e',
-            borderRadius: '14px',
-            display: 'flex',
-            flexDirection: 'column',
-            overflow: 'hidden',
-            height: '100%',
-        }}>
-            {/* ── Search header ── */}
-            <div style={{
-                padding: '14px',
-                borderBottom: '1px solid #161616',
-                background: 'linear-gradient(180deg, #111 0%, #0c0c0c 100%)',
+        <div
+            style={{
+                background: '#0a0a0a',
+                border: '1px solid #1e1e1e',
+                borderRadius: '14px',
                 display: 'flex',
                 flexDirection: 'column',
-                gap: '10px',
-            }}>
-
+                overflow: 'hidden',
+                height: '100%',
+            }}
+        >
+            {/* ── Search header ── */}
+            <div
+                style={{
+                    padding: '14px',
+                    borderBottom: '1px solid #161616',
+                    background: 'linear-gradient(180deg, #111 0%, #0c0c0c 100%)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '10px',
+                }}
+            >
                 {/* Search input row */}
                 <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-                    <span style={{
-                        position: 'absolute',
-                        left: '13px',
-                        fontSize: '15px',
-                        color: searchQuery ? '#ff4d4d' : '#444',
-                        pointerEvents: 'none',
-                        transition: 'color 0.2s',
-                        lineHeight: 1,
-                    }}>🔍</span>
+                    <span
+                        style={{
+                            position: 'absolute',
+                            left: '13px',
+                            fontSize: '15px',
+                            color: searchQuery ? '#ff4d4d' : '#444',
+                            pointerEvents: 'none',
+                            transition: 'color 0.2s',
+                            lineHeight: 1,
+                        }}
+                    >
+                        🔍
+                    </span>
                     <input
                         type="text"
                         placeholder="Поиск по имени, ID, VK..."
@@ -192,23 +199,34 @@ export const ServerPlayersList: React.FC<ServerPlayersListProps> = ({
                         <button
                             onClick={() => setSearchQuery('')}
                             style={{
-                                position: 'absolute', right: '10px',
-                                background: 'none', border: 'none',
-                                color: '#555', cursor: 'pointer',
-                                fontSize: '16px', lineHeight: 1, padding: '4px',
+                                position: 'absolute',
+                                right: '10px',
+                                background: 'none',
+                                border: 'none',
+                                color: '#555',
+                                cursor: 'pointer',
+                                fontSize: '16px',
+                                lineHeight: 1,
+                                padding: '4px',
                             }}
-                        >✕</button>
+                        >
+                            ✕
+                        </button>
                     ) : (
                         <button
                             onClick={onRefresh}
                             disabled={isLoadingPlayers || isSearching}
                             title="Обновить список"
                             style={{
-                                position: 'absolute', right: '10px',
-                                background: 'none', border: 'none',
+                                position: 'absolute',
+                                right: '10px',
+                                background: 'none',
+                                border: 'none',
                                 color: isLoadingPlayers ? '#2a2a2a' : '#444',
                                 cursor: isLoadingPlayers ? 'not-allowed' : 'pointer',
-                                fontSize: '15px', lineHeight: 1, padding: '4px',
+                                fontSize: '15px',
+                                lineHeight: 1,
+                                padding: '4px',
                                 transition: 'color 0.2s',
                             }}
                         >
@@ -249,22 +267,40 @@ export const ServerPlayersList: React.FC<ServerPlayersListProps> = ({
                 </div>
 
                 {/* Account type label */}
-                <div style={{
-                    fontSize: '9px', color: '#383838',
-                    letterSpacing: '1px', fontWeight: 700,
-                    textTransform: 'uppercase',
-                }}>
+                <div
+                    style={{
+                        fontSize: '9px',
+                        color: '#383838',
+                        letterSpacing: '1px',
+                        fontWeight: 700,
+                        textTransform: 'uppercase',
+                    }}
+                >
                     Тип аккаунта
                 </div>
 
                 {/* Account type grid */}
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '5px' }}>
-                    {([
-                        { key: 'VK_REAL', label: '👥 ВК Игроки', aColor: '#4dff4d', aBg: '#0f2d1e', aBorder: '#4dff4d' },
-                        { key: 'VK_TEST', label: '🧪 Тест ВК',   aColor: '#60a5fa', aBg: '#0f1d3a', aBorder: '#3b82f6' },
-                        { key: 'GUEST',   label: '🤖 Гости',      aColor: '#fdba74', aBg: '#2a1005', aBorder: '#f97316' },
-                        { key: 'ALL',     label: '🌐 Все типы',   aColor: '#fff',    aBg: '#1e1e1e', aBorder: '#555' },
-                    ] as const).map(({ key, label, aColor, aBg, aBorder }) => {
+                    {(
+                        [
+                            {
+                                key: 'VK_REAL',
+                                label: '👥 ВК Игроки',
+                                aColor: '#4dff4d',
+                                aBg: '#0f2d1e',
+                                aBorder: '#4dff4d',
+                            },
+                            {
+                                key: 'VK_TEST',
+                                label: '🧪 Тест ВК',
+                                aColor: '#60a5fa',
+                                aBg: '#0f1d3a',
+                                aBorder: '#3b82f6',
+                            },
+                            { key: 'GUEST', label: '🤖 Гости', aColor: '#fdba74', aBg: '#2a1005', aBorder: '#f97316' },
+                            { key: 'ALL', label: '🌐 Все типы', aColor: '#fff', aBg: '#1e1e1e', aBorder: '#555' },
+                        ] as const
+                    ).map(({ key, label, aColor, aBg, aBorder }) => {
                         const active = filterType === key;
                         return (
                             <button
@@ -302,93 +338,149 @@ export const ServerPlayersList: React.FC<ServerPlayersListProps> = ({
                         Никого не найдено
                     </div>
                 )}
-                {!isSearching && finalPlayers.map((p) => {
-                    const isSelf = p.id === localPlayerId;
-                    const isSelected = selectedPlayerId === p.id;
-                    return (
-                        <div
-                            key={p.id}
-                            onClick={() => onSelectPlayer(p.id)}
-                            style={{
-                                padding: '11px 14px',
-                                borderBottom: '1px solid #0d0d0d',
-                                cursor: 'pointer',
-                                background: isSelected
-                                    ? 'rgba(255,77,77,0.07)'
-                                    : isSelf
-                                      ? 'rgba(240,192,64,0.04)'
-                                      : 'transparent',
-                                display: 'flex',
-                                gap: '10px',
-                                alignItems: 'center',
-                                borderLeft: isSelected
-                                    ? '3px solid #ff4d4d'
-                                    : isSelf
-                                      ? '3px solid #f0c040'
-                                      : '3px solid transparent',
-                                transition: 'background 0.15s',
-                            }}
-                        >
-                            {/* Status dot */}
-                            <div style={{
-                                width: '7px', height: '7px',
-                                borderRadius: '50%', flexShrink: 0,
-                                background:
-                                    p.status === 'ONLINE' ? '#4dff4d'
-                                    : p.status === 'BATTLE' ? '#3b82f6'
-                                    : '#1e1e1e',
-                                boxShadow: p.status === 'ONLINE' ? '0 0 5px #4dff4d88' : 'none',
-                            }} />
-
-                            {/* Avatar */}
-                            <img
-                                src={p.photo}
+                {!isSearching &&
+                    finalPlayers.map((p) => {
+                        const isSelf = p.id === localPlayerId;
+                        const isSelected = selectedPlayerId === p.id;
+                        return (
+                            <div
+                                key={p.id}
+                                onClick={() => onSelectPlayer(p.id)}
                                 style={{
-                                    width: '36px', height: '36px',
-                                    borderRadius: '50%', flexShrink: 0,
-                                    border: `2px solid ${isSelf ? '#f0c040' : isSelected ? '#ff4d4d' : '#1e1e1e'}`,
-                                    objectFit: 'cover',
+                                    padding: '11px 14px',
+                                    borderBottom: '1px solid #0d0d0d',
+                                    cursor: 'pointer',
+                                    background: isSelected
+                                        ? 'rgba(255,77,77,0.07)'
+                                        : isSelf
+                                          ? 'rgba(240,192,64,0.04)'
+                                          : 'transparent',
+                                    display: 'flex',
+                                    gap: '10px',
+                                    alignItems: 'center',
+                                    borderLeft: isSelected
+                                        ? '3px solid #ff4d4d'
+                                        : isSelf
+                                          ? '3px solid #f0c040'
+                                          : '3px solid transparent',
+                                    transition: 'background 0.15s',
                                 }}
-                                alt=""
-                            />
+                            >
+                                {/* Status dot */}
+                                <div
+                                    style={{
+                                        width: '7px',
+                                        height: '7px',
+                                        borderRadius: '50%',
+                                        flexShrink: 0,
+                                        background:
+                                            p.status === 'ONLINE'
+                                                ? '#4dff4d'
+                                                : p.status === 'BATTLE'
+                                                  ? '#3b82f6'
+                                                  : '#1e1e1e',
+                                        boxShadow: p.status === 'ONLINE' ? '0 0 5px #4dff4d88' : 'none',
+                                    }}
+                                />
 
-                            {/* Info */}
-                            <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                                <div style={{
-                                    fontSize: '13px', fontWeight: 700,
-                                    color: isSelf ? '#f0c040' : '#e8e8e8',
-                                    whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-                                }}>
-                                    {p.name}
-                                    {isSelf && <span style={{ fontSize: '9px', fontWeight: 400, opacity: 0.5, marginLeft: '6px' }}>(Вы)</span>}
+                                {/* Avatar */}
+                                <img
+                                    src={p.photo}
+                                    style={{
+                                        width: '36px',
+                                        height: '36px',
+                                        borderRadius: '50%',
+                                        flexShrink: 0,
+                                        border: `2px solid ${isSelf ? '#f0c040' : isSelected ? '#ff4d4d' : '#1e1e1e'}`,
+                                        objectFit: 'cover',
+                                    }}
+                                    alt=""
+                                />
+
+                                {/* Info */}
+                                <div
+                                    style={{
+                                        flex: 1,
+                                        minWidth: 0,
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        gap: '2px',
+                                    }}
+                                >
+                                    <div
+                                        style={{
+                                            fontSize: '13px',
+                                            fontWeight: 700,
+                                            color: isSelf ? '#f0c040' : '#e8e8e8',
+                                            whiteSpace: 'nowrap',
+                                            overflow: 'hidden',
+                                            textOverflow: 'ellipsis',
+                                        }}
+                                    >
+                                        {p.name}
+                                        {isSelf && (
+                                            <span
+                                                style={{
+                                                    fontSize: '9px',
+                                                    fontWeight: 400,
+                                                    opacity: 0.5,
+                                                    marginLeft: '6px',
+                                                }}
+                                            >
+                                                (Вы)
+                                            </span>
+                                        )}
+                                    </div>
+                                    <div
+                                        style={{
+                                            fontSize: '9px',
+                                            color: '#3a3a3a',
+                                            fontFamily: 'monospace',
+                                            letterSpacing: '0.3px',
+                                        }}
+                                    >
+                                        {p.id}
+                                    </div>
+                                    <div
+                                        style={{
+                                            fontSize: '10px',
+                                            color:
+                                                p.status === 'ONLINE'
+                                                    ? '#4dff4d'
+                                                    : p.status === 'BATTLE'
+                                                      ? '#60a5fa'
+                                                      : '#333',
+                                        }}
+                                    >
+                                        {p.status === 'ONLINE'
+                                            ? 'В сети'
+                                            : p.status === 'BATTLE'
+                                              ? 'В бою ⚔️'
+                                              : p.status === 'BANNED'
+                                                ? '🚫 Забанен'
+                                                : `Был(а): ${p.lastSeenTime}`}
+                                    </div>
                                 </div>
-                                <div style={{ fontSize: '9px', color: '#3a3a3a', fontFamily: 'monospace', letterSpacing: '0.3px' }}>
-                                    {p.id}
-                                </div>
-                                <div style={{
-                                    fontSize: '10px',
-                                    color: p.status === 'ONLINE' ? '#4dff4d' : p.status === 'BATTLE' ? '#60a5fa' : '#333',
-                                }}>
-                                    {p.status === 'ONLINE' ? 'В сети'
-                                        : p.status === 'BATTLE' ? 'В бою ⚔️'
-                                        : p.status === 'BANNED' ? '🚫 Забанен'
-                                        : `Был(а): ${p.lastSeenTime}`}
-                                </div>
+
+                                {/* Report badge */}
+                                {p.reports > 0 && (
+                                    <div
+                                        style={{
+                                            background: '#ff4d4d',
+                                            color: '#fff',
+                                            fontSize: '9px',
+                                            fontWeight: 900,
+                                            padding: '2px 6px',
+                                            borderRadius: '10px',
+                                            flexShrink: 0,
+                                        }}
+                                    >
+                                        {p.reports}!
+                                    </div>
+                                )}
                             </div>
-
-                            {/* Report badge */}
-                            {p.reports > 0 && (
-                                <div style={{
-                                    background: '#ff4d4d', color: '#fff',
-                                    fontSize: '9px', fontWeight: 900,
-                                    padding: '2px 6px', borderRadius: '10px', flexShrink: 0,
-                                }}>
-                                    {p.reports}!
-                                </div>
-                            )}
-                        </div>
-                    );
-                })}
+                        );
+                    })}
             </div>
         </div>
     );

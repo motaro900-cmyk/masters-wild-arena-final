@@ -15,7 +15,7 @@ interface ItemTooltipPortalProps {
 export const ItemTooltipPortal: React.FC<ItemTooltipPortalProps> = ({ hoveredItem, heroEquipment, selectedHeroId }) => {
     const inventory = useGameStore((s: any) => s.inventory) || [];
     const invItem = hoveredItem ? inventory.find((i: any) => (i.instanceId || i.id) === hoveredItem.id) : null;
-    const templateId = invItem ? invItem.id : (hoveredItem?.id || '');
+    const templateId = invItem ? invItem.id : hoveredItem?.id || '';
 
     if (!hoveredItem || !ITEMS_DATABASE[templateId]) return null;
 
@@ -31,7 +31,8 @@ export const ItemTooltipPortal: React.FC<ItemTooltipPortalProps> = ({ hoveredIte
     const leftAbsolute = Math.max(10, localX + tooltipWidth + 20 > 1920 ? localX - tooltipWidth - 20 : localX + 20);
     const topAbsolute = Math.max(10, Math.min(1080 - 450, localY - 100));
 
-    const leftFixed = hoveredItem.x + tooltipWidth + 20 > window.innerWidth ? hoveredItem.x - tooltipWidth - 20 : hoveredItem.x + 20;
+    const leftFixed =
+        hoveredItem.x + tooltipWidth + 20 > window.innerWidth ? hoveredItem.x - tooltipWidth - 20 : hoveredItem.x + 20;
     const topFixed = Math.max(10, Math.min(window.innerHeight - 450, hoveredItem.y - 100));
 
     const portalTarget = wrapper || document.body;

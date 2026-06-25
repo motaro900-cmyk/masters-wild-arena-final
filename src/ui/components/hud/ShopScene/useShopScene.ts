@@ -71,28 +71,35 @@ export const useShopScene = () => {
         }
     }, [toastMessage]);
 
+    // 1. Listen to external deep-links (Zustand shopInitialTab/shopInitialSubTab)
     useEffect(() => {
         if (shopInitialTab) {
-            const timer = setTimeout(() => {
-                setActiveMainTab(shopInitialTab as MainTab);
-            }, 0);
-            return () => clearTimeout(timer);
-        }
-    }, [shopInitialTab]);
+            setActiveMainTab(shopInitialTab as MainTab);
+            const newSubTabs = getSubTabs(shopInitialTab as MainTab);
+            if (shopInitialSubTab) {
+                setActiveSubTab(shopInitialSubTab);
+            } else if (newSubTabs.length > 0) {
+                setActiveSubTab(newSubTabs[0].id);
+            }
 
-    useEffect(() => {
-        const newSubTabs = getSubTabs(activeMainTab);
-        if (newSubTabs.length > 0) {
-            const timer = setTimeout(() => {
-                if (shopInitialSubTab) {
-                    setActiveSubTab(shopInitialSubTab);
-                } else {
-                    setActiveSubTab(newSubTabs[0].id);
-                }
-            }, 0);
-            return () => clearTimeout(timer);
+            // Reset the store values immediately so they don't persist
+            useGameStore.setState({
+                shopInitialTab: null,
+                shopInitialSubTab: null,
+            });
         }
-    }, [activeMainTab, shopInitialSubTab]);
+    }, [shopInitialTab, shopInitialSubTab]);
+
+    // 2. Automatically switch to the first sub-tab when the main tab is changed manually
+    useEffect(() => {
+        // Only run this if we are not in the middle of processing a store deep link
+        if (!useGameStore.getState().shopInitialTab) {
+            const newSubTabs = getSubTabs(activeMainTab);
+            if (newSubTabs.length > 0) {
+                setActiveSubTab(newSubTabs[0].id);
+            }
+        }
+    }, [activeMainTab]);
 
     const allItems = useMemo(() => getAllShopItems(), []);
 

@@ -56,7 +56,7 @@ export const MailInboxTab: React.FC<MailInboxTabProps> = ({
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    drag={isMobile ? "x" : undefined}
+                    drag={isMobile ? 'x' : undefined}
                     dragConstraints={{ left: 0, right: 0 }}
                     dragElastic={0.15}
                     onDragEnd={(_, info) => {
@@ -102,9 +102,7 @@ export const MailInboxTab: React.FC<MailInboxTabProps> = ({
                                     opacity: m.isRead ? 0.6 : 1,
                                 }}
                             >
-                                <div style={{ fontSize: '24px' }}>
-                                    {m.rewards ? '🎁' : m.isRead ? '📖' : '✉️'}
-                                </div>
+                                <div style={{ fontSize: '24px' }}>{m.rewards ? '🎁' : m.isRead ? '📖' : '✉️'}</div>
                                 <div style={{ flex: 1 }}>
                                     <div
                                         style={{
@@ -238,10 +236,7 @@ export const MailInboxTab: React.FC<MailInboxTabProps> = ({
                         >
                             <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap' }}>
                                 {selectedMail.rewards.map((r: any, idx: number) => (
-                                    <div
-                                        key={idx}
-                                        style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
-                                    >
+                                    <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                         <img
                                             src={
                                                 r.type === 'GOLD'
@@ -249,7 +244,8 @@ export const MailInboxTab: React.FC<MailInboxTabProps> = ({
                                                     : r.type === 'ENERGY'
                                                       ? AssetsMap.UI.ICON_ENERGY_FULL
                                                       : r.type === 'ITEM'
-                                                        ? (ITEMS_DATABASE[r.itemId]?.image || AssetsMap.UI.ICON_DAILY_CHEST)
+                                                        ? ITEMS_DATABASE[r.itemId]?.image ||
+                                                          AssetsMap.UI.ICON_DAILY_CHEST
                                                         : AssetsMap.UI.ICON_ALMAZ_FULL
                                             }
                                             style={{ width: 28, height: 28, objectFit: 'contain' }}

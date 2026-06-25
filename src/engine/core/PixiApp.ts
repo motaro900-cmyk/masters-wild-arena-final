@@ -3,19 +3,12 @@ import { gsap } from 'gsap';
 import { PixiPlugin } from 'gsap/PixiPlugin';
 import { AppConfig } from '@/configs/AppConfig';
 import { useGameStore } from '../../store/useGameStore';
-import {
-    fetchCompatibilityRules,
-    checkWebGPUDisabled,
-    getNextRetryVersion
-} from '../../configs/GraphicsCompatibility';
-import {
-    getDeviceProfile,
-    updateActiveRenderer
-} from '../../services/TelemetryService';
+import { fetchCompatibilityRules, checkWebGPUDisabled, getNextRetryVersion } from '../../configs/GraphicsCompatibility';
+import { getDeviceProfile, updateActiveRenderer } from '../../services/TelemetryService';
 
 function isVersionLessThan(v1: string, v2: string): boolean {
-    const parts1 = v1.split('.').map(p => parseInt(p, 10));
-    const parts2 = v2.split('.').map(p => parseInt(p, 10));
+    const parts1 = v1.split('.').map((p) => parseInt(p, 10));
+    const parts2 = v2.split('.').map((p) => parseInt(p, 10));
     for (let i = 0; i < Math.max(parts1.length, parts2.length); i++) {
         const p1 = parts1[i] || 0;
         const p2 = parts2[i] || 0;
@@ -121,6 +114,16 @@ export class PixiApp {
     }
 
     public static getInstance(): PixiApp {
+        if (typeof window !== 'undefined') {
+            const globalApp = (window as any).__PIXI_APP_INSTANCE_SINGLETON__;
+            if (globalApp) {
+                return globalApp;
+            }
+            const instance = new PixiApp();
+            (window as any).__PIXI_APP_INSTANCE_SINGLETON__ = instance;
+            PixiApp.instance = instance;
+            return instance;
+        }
         if (!PixiApp.instance) PixiApp.instance = new PixiApp();
         return PixiApp.instance;
     }
@@ -158,6 +161,9 @@ export class PixiApp {
             this.pixiApp = null;
             PixiApp.canvas = null;
             PixiApp.instance = null;
+            if (typeof window !== 'undefined') {
+                (window as any).__PIXI_APP_INSTANCE_SINGLETON__ = null;
+            }
         }
     }
 
@@ -198,37 +204,46 @@ export class PixiApp {
                     }
                 }
 
-                const isMobile = useGameStore.getState().isMobile || (typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent));
+                const isMobile =
+                    useGameStore.getState().isMobile ||
+                    isIOS ||
+                    (typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent));
                 const resolution = isMobile
                     ? 1
                     : this.config.resolution === ResolutionType.HIGH
-                        ? Math.min(window.devicePixelRatio || 1, 3)
-                        : this.config.resolution === ResolutionType.MEDIUM
-                          ? Math.min(window.devicePixelRatio || 1, 2)
-                          : 1;
+                      ? Math.min(window.devicePixelRatio || 1, 3)
+                      : this.config.resolution === ResolutionType.MEDIUM
+                        ? Math.min(window.devicePixelRatio || 1, 2)
+                        : 1;
 
                 // Load compatibility rules dynamically
                 await fetchCompatibilityRules();
 
                 const state = useGameStore.getState();
                 const rendererPref = state.rendererPreference || 'auto';
-                
+
                 let forceWebGL = false;
                 const forceUntil = localStorage.getItem('forceWebGLUntilVersion');
                 if (forceUntil) {
                     if (isVersionLessThan(AppConfig.VERSION, forceUntil)) {
                         forceWebGL = true;
-                        console.log(`[PixiApp] WebGPU is blocked via forceWebGLUntilVersion (${forceUntil} > current ${AppConfig.VERSION})`);
+                        console.log(
+                            `[PixiApp] WebGPU is blocked via forceWebGLUntilVersion (${forceUntil} > current ${AppConfig.VERSION})`,
+                        );
                     } else {
                         localStorage.removeItem('forceWebGLUntilVersion');
-                        console.log(`[PixiApp] forceWebGLUntilVersion (${forceUntil}) expired (current ${AppConfig.VERSION}). Retrying WebGPU.`);
+                        console.log(
+                            `[PixiApp] forceWebGLUntilVersion (${forceUntil}) expired (current ${AppConfig.VERSION}). Retrying WebGPU.`,
+                        );
                     }
                 }
 
                 const profile = await getDeviceProfile();
                 const compatCheck = checkWebGPUDisabled(profile.gpuRenderer);
                 if (compatCheck.disabled) {
-                    console.log(`[PixiApp] WebGPU disabled for blacklisted GPU: ${profile.gpuRenderer}. Reason: ${compatCheck.reason}`);
+                    console.log(
+                        `[PixiApp] WebGPU disabled for blacklisted GPU: ${profile.gpuRenderer}. Reason: ${compatCheck.reason}`,
+                    );
                 }
 
                 let preference: 'webgl' | 'webgpu' = 'webgl';
@@ -242,14 +257,14 @@ export class PixiApp {
                         preference = 'webgl';
                     } else {
                         // Default: WebGL on mobile, WebGPU on desktop
-                        preference = isMobile ? 'webgl' : (preferWebGL1 ? 'webgl' : 'webgpu');
+                        preference = isMobile ? 'webgl' : preferWebGL1 ? 'webgl' : 'webgpu';
                     }
                 }
 
                 console.log(`[PixiApp] Selected renderer preference: ${preference} (User pref: ${rendererPref})`);
 
                 this.pixiApp = new PIXI.Application();
-                
+
                 try {
                     await this.pixiApp.init({
                         width: this.config.width,
@@ -262,19 +277,23 @@ export class PixiApp {
                         preference,
                         webgl: preferWebGL1 ? { preferWebGLVersion: 1 as 1 | 2 } : undefined,
                         roundPixels: true,
-                        powerPreference: isIOS ? undefined : (this.config.powerPreference === 'default' ? undefined : this.config.powerPreference as any),
+                        powerPreference: isIOS
+                            ? undefined
+                            : this.config.powerPreference === 'default'
+                              ? undefined
+                              : (this.config.powerPreference as any),
                     });
                 } catch (initError) {
                     if (preference === 'webgpu') {
                         console.error('❌ WebGPU PixiApp initialization failed, falling back to WebGL:', initError);
-                        
+
                         // Report crash to Sentry
                         import('@sentry/react').then((Sentry) => {
                             Sentry.captureException(initError, {
                                 tags: {
                                     webgpu_crash: 'true',
-                                    gpu_renderer: profile.gpuRenderer
-                                }
+                                    gpu_renderer: profile.gpuRenderer,
+                                },
                             });
                         });
 
@@ -304,7 +323,11 @@ export class PixiApp {
                             preference,
                             webgl: preferWebGL1 ? { preferWebGLVersion: 1 as 1 | 2 } : undefined,
                             roundPixels: true,
-                            powerPreference: isIOS ? undefined : (this.config.powerPreference === 'default' ? undefined : this.config.powerPreference as any),
+                            powerPreference: isIOS
+                                ? undefined
+                                : this.config.powerPreference === 'default'
+                                  ? undefined
+                                  : (this.config.powerPreference as any),
                         });
                     } else {
                         throw initError;
@@ -319,7 +342,8 @@ export class PixiApp {
                         const canvas = this.pixiApp?.canvas;
                         if (!canvas) return originalMapPositionToPoint.call(events, point, x, y);
 
-                        const isPortraitMobile = useGameStore.getState()?.isMobile && window.innerWidth < window.innerHeight;
+                        const isPortraitMobile =
+                            useGameStore.getState()?.isMobile && window.innerWidth < window.innerHeight;
                         if (isPortraitMobile) {
                             const rect = canvas.getBoundingClientRect();
                             const nx = rect.width > 0 ? (x - rect.left) / rect.width : 0;
@@ -403,7 +427,7 @@ export class PixiApp {
         canvas.style.top = '0';
         canvas.style.left = '0';
         canvas.style.zIndex = '1';
-        
+
         // [Architect]: Filter is now applied to the root wrapper in SafeGameLayout.tsx,
         // so we keep canvas filter clean to avoid double filtering.
         canvas.style.filter = 'none';
@@ -503,7 +527,7 @@ export class PixiApp {
         }
 
         const filter = new PIXI.ColorMatrixFilter();
-        
+
         switch (normalizedQuality) {
             case 'ULTRA':
                 filter.contrast(0.04, false);
@@ -542,14 +566,16 @@ export class PixiApp {
     public setResolution(type: ResolutionType): void {
         if (!this.pixiApp) return;
         this.config.resolution = type;
-        const isMobile = useGameStore.getState().isMobile || (typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent));
+        const isMobile =
+            useGameStore.getState().isMobile ||
+            (typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent));
         const resolution = isMobile
             ? 1
             : type === ResolutionType.HIGH
-                ? Math.min(window.devicePixelRatio || 1, 3)
-                : type === ResolutionType.MEDIUM
-                  ? Math.min(window.devicePixelRatio || 1, 2)
-                  : 1;
+              ? Math.min(window.devicePixelRatio || 1, 3)
+              : type === ResolutionType.MEDIUM
+                ? Math.min(window.devicePixelRatio || 1, 2)
+                : 1;
 
         this.pixiApp.renderer.resolution = resolution;
         // Temporarily resize to force PixiJS to reallocate canvas buffers at new resolution, then restore 1920x1080
@@ -566,13 +592,13 @@ export class PixiApp {
         return PixiApp.canvas;
     }
 
-    public getApp(): PIXI.Application {
-        if (!this.pixiApp) throw new Error('PixiApp not initialized');
-        return this.pixiApp;
+    public getApp(): PIXI.Application | null {
+        return this.pixiApp ?? null;
     }
 
     public get stage(): PIXI.Container {
-        return this.getApp().stage;
+        if (!this.pixiApp) throw new Error('PixiApp not initialized: stage accessed before init');
+        return this.pixiApp.stage;
     }
 
     get backgroundLayer(): PIXI.Container {
@@ -593,7 +619,7 @@ export class PixiApp {
 
     public clearBattleLayers(): void {
         const textureUsage = new Map<string, number>();
-        
+
         const countSpriteTextures = (container: PIXI.Container) => {
             if (container instanceof PIXI.Sprite && container.texture) {
                 const cacheIds: string[] = (container.texture as any).textureCacheIds || [];
@@ -618,26 +644,28 @@ export class PixiApp {
                 let shouldDestroyTex = false;
                 const cacheIds: string[] = (container.texture as any).textureCacheIds || [];
 
-                const isHeroOrUI = cacheIds.some((id: string) => 
-                    id.includes('poses') || 
-                    id.includes('background') || 
-                    id.includes('ui/') || 
-                    id.includes('hud/') || 
-                    id.includes('avatar')
+                const isHeroOrUI = cacheIds.some(
+                    (id: string) =>
+                        id.includes('poses') ||
+                        id.includes('background') ||
+                        id.includes('ui/') ||
+                        id.includes('hud/') ||
+                        id.includes('avatar'),
                 );
 
                 if (!isHeroOrUI) {
-                    const isDynamic = cacheIds.some((id: string) => 
-                        id.includes('weapons') || 
-                        id.includes('items') || 
-                        id.includes('effects') || 
-                        id.includes('particles') ||
-                        id.includes('combat') ||
-                        id.includes('smoke') ||
-                        id.includes('spark') ||
-                        id.includes('dust') ||
-                        id.includes('monster') ||
-                        id.includes('enemy')
+                    const isDynamic = cacheIds.some(
+                        (id: string) =>
+                            id.includes('weapons') ||
+                            id.includes('items') ||
+                            id.includes('effects') ||
+                            id.includes('particles') ||
+                            id.includes('combat') ||
+                            id.includes('smoke') ||
+                            id.includes('spark') ||
+                            id.includes('dust') ||
+                            id.includes('monster') ||
+                            id.includes('enemy'),
                     );
 
                     if (isDynamic) {
@@ -684,7 +712,7 @@ export class PixiApp {
     /** Полная очистка всех слоёв включая фон (используется только при переинициализации) */
     public clearAllLayers(): void {
         const textureUsage = new Map<string, number>();
-        
+
         const countSpriteTextures = (container: PIXI.Container) => {
             if (container instanceof PIXI.Sprite && container.texture) {
                 const cacheIds: string[] = (container.texture as any).textureCacheIds || [];
@@ -697,7 +725,9 @@ export class PixiApp {
             }
         };
 
-        [this.backgroundLayer, this.gameLayer, this.effectsLayer, this.uiLayer, this.debugLayer].forEach(countSpriteTextures);
+        [this.backgroundLayer, this.gameLayer, this.effectsLayer, this.uiLayer, this.debugLayer].forEach(
+            countSpriteTextures,
+        );
 
         const destroyWithCheck = (container: PIXI.Container) => {
             if (container.children && container.children.length > 0) {
@@ -709,26 +739,28 @@ export class PixiApp {
                 let shouldDestroyTex = false;
                 const cacheIds: string[] = (container.texture as any).textureCacheIds || [];
 
-                const isHeroOrUI = cacheIds.some((id: string) => 
-                    id.includes('poses') || 
-                    id.includes('background') || 
-                    id.includes('ui/') || 
-                    id.includes('hud/') || 
-                    id.includes('avatar')
+                const isHeroOrUI = cacheIds.some(
+                    (id: string) =>
+                        id.includes('poses') ||
+                        id.includes('background') ||
+                        id.includes('ui/') ||
+                        id.includes('hud/') ||
+                        id.includes('avatar'),
                 );
 
                 if (!isHeroOrUI) {
-                    const isDynamic = cacheIds.some((id: string) => 
-                        id.includes('weapons') || 
-                        id.includes('items') || 
-                        id.includes('effects') || 
-                        id.includes('particles') ||
-                        id.includes('combat') ||
-                        id.includes('smoke') ||
-                        id.includes('spark') ||
-                        id.includes('dust') ||
-                        id.includes('monster') ||
-                        id.includes('enemy')
+                    const isDynamic = cacheIds.some(
+                        (id: string) =>
+                            id.includes('weapons') ||
+                            id.includes('items') ||
+                            id.includes('effects') ||
+                            id.includes('particles') ||
+                            id.includes('combat') ||
+                            id.includes('smoke') ||
+                            id.includes('spark') ||
+                            id.includes('dust') ||
+                            id.includes('monster') ||
+                            id.includes('enemy'),
                     );
 
                     if (isDynamic) {
@@ -819,9 +851,9 @@ export class PixiApp {
             animation: 'spin-recover 1s linear infinite',
             marginBottom: '20px',
         });
-        
+
         // CSS animation style
-        const styleSheet = document.createElement("style");
+        const styleSheet = document.createElement('style');
         styleSheet.id = 'webgl-recovery-style';
         styleSheet.innerText = `
             @keyframes spin-recover {
@@ -831,7 +863,8 @@ export class PixiApp {
         document.head.appendChild(styleSheet);
 
         const text = document.createElement('div');
-        const activeScreenText = useGameStore.getState().language === 'EN' ? 'Restarting graphics...' : 'Перезапуск графики...';
+        const activeScreenText =
+            useGameStore.getState().language === 'EN' ? 'Restarting graphics...' : 'Перезапуск графики...';
         text.innerText = activeScreenText;
         Object.assign(text.style, {
             fontSize: '18px',
@@ -879,7 +912,7 @@ export class PixiApp {
                 // Switch scene to MainScreen via SceneManager
                 const [{ SceneManager }, { MainScreen }] = await Promise.all([
                     import('./SceneManager'),
-                    import('../../ui/screens/MainScreen')
+                    import('../../ui/screens/MainScreen'),
                 ]);
                 SceneManager.getInstance().switchScene(new MainScreen());
             }

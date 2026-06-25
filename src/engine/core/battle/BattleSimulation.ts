@@ -74,7 +74,7 @@ export function skipToEndOfBattle(engine: BattleEngine) {
             if (Math.random() < chance) {
                 const avgItemLevel = attStats.avgItemLevel || 1;
                 const itemLevelFactor = 1 - (avgItemLevel - 1) * 0.03;
-                let baseDmg = damagePercent ? (attStats.attack * damagePercent) : 0;
+                let baseDmg = damagePercent ? attStats.attack * damagePercent : 0;
                 if (attacker.config?.id === 'raccoon' && status === 'POISON') {
                     baseDmg = Math.max(15, baseDmg);
                 }
@@ -188,14 +188,20 @@ export function skipToEndOfBattle(engine: BattleEngine) {
                     engine.state.playerMana = 0;
                     const hero = HEROES_DB.find((h) => h.id === playerHeroId) || HEROES_DB[0];
                     const role = hero.role;
-                    
+
                     const abilityCfg = getAbilityConfig(playerHeroId) ?? getAbilityConfigByRole(role);
                     const { damageMultiplier, healPercent, shieldPercent, onCastStatus } = abilityCfg.activeAbility;
 
                     const rawDmg = pStats.attack * damageMultiplier * (0.9 + Math.random() * 0.2);
                     const finalActiveDmg = Math.ceil(Math.max(1, rawDmg - eStats.defense * 0.25));
-                    
-                    let finalDmg = engine.triggerPassiveOnDealDamage(anyEngine.player!, anyEngine.enemy!, finalActiveDmg, true, true);
+
+                    let finalDmg = engine.triggerPassiveOnDealDamage(
+                        anyEngine.player!,
+                        anyEngine.enemy!,
+                        finalActiveDmg,
+                        true,
+                        true,
+                    );
                     finalDmg = engine.triggerPassiveOnTakeDamage('enemy', finalDmg, true);
 
                     eHP = Math.max(0, eHP - finalDmg);
@@ -226,7 +232,7 @@ export function skipToEndOfBattle(engine: BattleEngine) {
                         let baseDmg = onCastStatus.damagePerTurn
                             ? onCastStatus.damagePerTurn > 1
                                 ? onCastStatus.damagePerTurn
-                                : (pStats.attack * onCastStatus.damagePerTurn)
+                                : pStats.attack * onCastStatus.damagePerTurn
                             : 0;
                         if (playerHeroId === 'raccoon' && onCastStatus.type === 'POISON') {
                             baseDmg = Math.max(15, baseDmg);
@@ -234,7 +240,13 @@ export function skipToEndOfBattle(engine: BattleEngine) {
                         const dmgPerTurn = Math.ceil(baseDmg * itemLevelFactor);
                         const targetUnit = onCastStatus.target === 'enemy' ? anyEngine.enemy! : anyEngine.player!;
                         const isTargetPlayer = onCastStatus.target === 'player';
-                        engine.applyStatus(targetUnit, onCastStatus.type, onCastStatus.duration, dmgPerTurn, isTargetPlayer);
+                        engine.applyStatus(
+                            targetUnit,
+                            onCastStatus.type,
+                            onCastStatus.duration,
+                            dmgPerTurn,
+                            isTargetPlayer,
+                        );
                     }
                 } else {
                     const finalEvasion = Math.max(0, eStats.dodge - ((pStats.accuracy || 100) - 100) / 100);
@@ -259,7 +271,13 @@ export function skipToEndOfBattle(engine: BattleEngine) {
                             finalDmg = Math.max(1, Math.ceil(mitigated * 0.3));
                         }
 
-                        finalDmg = engine.triggerPassiveOnDealDamage(anyEngine.player!, anyEngine.enemy!, finalDmg, isCrit, true);
+                        finalDmg = engine.triggerPassiveOnDealDamage(
+                            anyEngine.player!,
+                            anyEngine.enemy!,
+                            finalDmg,
+                            isCrit,
+                            true,
+                        );
                         finalDmg = engine.triggerPassiveOnTakeDamage('enemy', finalDmg, isCrit);
 
                         // Вампиризм (lifesteal)
@@ -354,7 +372,13 @@ export function skipToEndOfBattle(engine: BattleEngine) {
                             finalDmg = Math.max(1, Math.ceil(mitigated * 0.3));
                         }
 
-                        finalDmg = engine.triggerPassiveOnDealDamage(anyEngine.enemy!, anyEngine.player!, finalDmg, isCrit, false);
+                        finalDmg = engine.triggerPassiveOnDealDamage(
+                            anyEngine.enemy!,
+                            anyEngine.player!,
+                            finalDmg,
+                            isCrit,
+                            false,
+                        );
                         finalDmg = engine.triggerPassiveOnTakeDamage('player', finalDmg, isCrit);
 
                         // Вампиризм (lifesteal)

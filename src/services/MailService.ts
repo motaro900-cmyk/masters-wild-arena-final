@@ -2,17 +2,7 @@
  * MailService — работа с почтой игроков (отправка, обновление, подписки)
  */
 import { db, USERS_COLLECTION } from '../utils/firebase';
-import {
-    doc,
-    setDoc,
-    deleteDoc,
-    collection,
-    query,
-    orderBy,
-    limit,
-    onSnapshot,
-    writeBatch,
-} from 'firebase/firestore';
+import { doc, setDoc, deleteDoc, collection, query, orderBy, limit, onSnapshot, writeBatch } from 'firebase/firestore';
 
 type TrackFn = (unsub: () => void) => () => void;
 
@@ -31,11 +21,7 @@ export async function sendMail(userId: string, mailData: any): Promise<void> {
     }
 }
 
-export async function updateMail(
-    userId: string,
-    mailId: string,
-    updates: Partial<any>,
-): Promise<void> {
+export async function updateMail(userId: string, mailId: string, updates: Partial<any>): Promise<void> {
     try {
         const mailRef = doc(db, USERS_COLLECTION, userId, 'почта', mailId);
         await setDoc(mailRef, updates, { merge: true });
@@ -55,11 +41,7 @@ export async function deleteMail(userId: string, mailId: string): Promise<void> 
     }
 }
 
-export async function updateMultipleMails(
-    userId: string,
-    mailIds: string[],
-    updates: Partial<any>,
-): Promise<void> {
+export async function updateMultipleMails(userId: string, mailIds: string[], updates: Partial<any>): Promise<void> {
     try {
         const batch = writeBatch(db);
         mailIds.forEach((mailId) => {
@@ -73,11 +55,7 @@ export async function updateMultipleMails(
     }
 }
 
-export function subscribeToMail(
-    track: TrackFn,
-    userId: string,
-    callback: (mails: any[]) => void,
-): () => void {
+export function subscribeToMail(track: TrackFn, userId: string, callback: (mails: any[]) => void): () => void {
     const mailRef = collection(db, USERS_COLLECTION, userId, 'почта');
     const q = query(mailRef, orderBy('timestamp', 'desc'), limit(50));
     return track(

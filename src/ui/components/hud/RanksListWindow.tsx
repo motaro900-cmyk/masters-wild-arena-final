@@ -6,7 +6,7 @@ import { AssetsMap } from '../../../configs/AssetsMap';
 import { resolveAssetPath } from '../../../utils/assetPath';
 
 export const RanksListWindow: React.FC = () => {
-    const playerTrophies = useGameStore(state => state.rating);
+    const playerTrophies = useGameStore((state) => state.rating);
     const currentRank = getRankInfo(playerTrophies);
 
     return (
@@ -132,34 +132,97 @@ export const RanksListWindow: React.FC = () => {
                                                 color: '#d1d5db',
                                             }}
                                         >
-                                                                            <span style={{ color: 'rgba(255,255,255,0.4)', fontWeight: 'bold' }}>НАГРАДА:</span>
+                                            <span style={{ color: 'rgba(255,255,255,0.4)', fontWeight: 'bold' }}>
+                                                НАГРАДА:
+                                            </span>
                                             {(() => {
-                                                const rankRewards: Record<string, { crystals: number; gold: number; chest?: string }> = {
-                                                    'ВОИН': { crystals: 150, gold: 2000, chest: 'Случайный предмет' },
-                                                    'ВЕТЕРАН': { crystals: 300, gold: 5000, chest: 'Случайный предмет' },
-                                                    'МАСТЕР': { crystals: 600, gold: 10000, chest: 'Случайный предмет' },
-                                                    'ГЕРОЙ': { crystals: 1000, gold: 15000, chest: 'Случайный предмет' },
-                                                    'ЭЛИТА': { crystals: 1500, gold: 20000, chest: 'Случайный предмет' },
-                                                    'ЧЕМПИОН': { crystals: 2000, gold: 25000, chest: 'Случайный предмет' },
-                                                    'МАГИСТР': { crystals: 3000, gold: 40000, chest: 'Случайный предмет' },
-                                                    'ВЛАСТЕЛИН': { crystals: 4000, gold: 50000, chest: 'Случайный предмет' },
-                                                    'ЛЕГЕНДА': { crystals: 6000, gold: 100000, chest: 'Случайный предмет' },
+                                                const rankRewards: Record<
+                                                    string,
+                                                    { crystals: number; gold: number; chest?: string }
+                                                > = {
+                                                    ВОИН: { crystals: 75, gold: 1000, chest: 'Случайный предмет' },
+                                                    ВЕТЕРАН: { crystals: 150, gold: 2500, chest: 'Случайный предмет' },
+                                                    МАСТЕР: { crystals: 300, gold: 5000, chest: 'Случайный предмет' },
+                                                    ГЕРОЙ: { crystals: 500, gold: 7500, chest: 'Случайный предмет' },
+                                                    ЭЛИТА: { crystals: 750, gold: 10000, chest: 'Случайный предмет' },
+                                                    ЧЕМПИОН: {
+                                                        crystals: 1000,
+                                                        gold: 12500,
+                                                        chest: 'Случайный предмет',
+                                                    },
+                                                    МАГИСТР: {
+                                                        crystals: 1500,
+                                                        gold: 20000,
+                                                        chest: 'Случайный предмет',
+                                                    },
+                                                    ВЛАСТЕЛИН: {
+                                                        crystals: 2000,
+                                                        gold: 25000,
+                                                        chest: 'Случайный предмет',
+                                                    },
+                                                    ЛЕГЕНДА: {
+                                                        crystals: 3000,
+                                                        gold: 50000,
+                                                        chest: 'Случайный предмет',
+                                                    },
                                                 };
                                                 const reward = rankRewards[rank.name];
                                                 if (!reward) return null;
                                                 return (
                                                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                                        <span style={{ display: 'flex', alignItems: 'center', gap: '5px', fontWeight: 900, color: '#f0c040' }}>
-                                                            <img src={resolveAssetPath(AssetsMap.UI.ICON_ALMAZ_FULL)} style={{ width: 18, height: 18, objectFit: 'contain' }} alt="crystals" />
+                                                        <span
+                                                            style={{
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                gap: '5px',
+                                                                fontWeight: 900,
+                                                                color: '#f0c040',
+                                                            }}
+                                                        >
+                                                            <img
+                                                                src={resolveAssetPath(AssetsMap.UI.ICON_ALMAZ_FULL)}
+                                                                style={{ width: 18, height: 18, objectFit: 'contain' }}
+                                                                alt="crystals"
+                                                            />
                                                             {reward.crystals}
                                                         </span>
-                                                        <span style={{ display: 'flex', alignItems: 'center', gap: '5px', fontWeight: 900, color: '#e5e7eb' }}>
-                                                            <img src={resolveAssetPath(AssetsMap.UI.ICON_GOLD_FULL)} style={{ width: 18, height: 18, objectFit: 'contain' }} alt="gold" />
+                                                        <span
+                                                            style={{
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                gap: '5px',
+                                                                fontWeight: 900,
+                                                                color: '#e5e7eb',
+                                                            }}
+                                                        >
+                                                            <img
+                                                                src={resolveAssetPath(AssetsMap.UI.ICON_GOLD_FULL)}
+                                                                style={{ width: 18, height: 18, objectFit: 'contain' }}
+                                                                alt="gold"
+                                                            />
                                                             {reward.gold.toLocaleString()}
                                                         </span>
                                                         {reward.chest && (
-                                                            <span style={{ display: 'flex', alignItems: 'center', gap: '5px', fontWeight: 900, color: '#4ade80' }}>
-                                                                <img src={resolveAssetPath(AssetsMap.UI.ICON_DAILY_CHEST)} style={{ width: 18, height: 18, objectFit: 'contain' }} alt="item" />
+                                                            <span
+                                                                style={{
+                                                                    display: 'flex',
+                                                                    alignItems: 'center',
+                                                                    gap: '5px',
+                                                                    fontWeight: 900,
+                                                                    color: '#4ade80',
+                                                                }}
+                                                            >
+                                                                <img
+                                                                    src={resolveAssetPath(
+                                                                        AssetsMap.UI.ICON_DAILY_CHEST,
+                                                                    )}
+                                                                    style={{
+                                                                        width: 18,
+                                                                        height: 18,
+                                                                        objectFit: 'contain',
+                                                                    }}
+                                                                    alt="item"
+                                                                />
                                                                 {reward.chest}
                                                             </span>
                                                         )}

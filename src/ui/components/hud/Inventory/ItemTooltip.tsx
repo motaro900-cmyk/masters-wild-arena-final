@@ -5,13 +5,33 @@ import { useGameStore } from '../../../../store/useGameStore';
 import { useShallow } from 'zustand/react/shallow';
 import { ITEMS_DATABASE, calculateItemPower } from '../../../../game/configs/ItemsConfig';
 import { RARITY_COLORS, rarityTranslation } from '../../../../configs/RarityConfig';
+import { AssetsMap } from '../../../../configs/AssetsMap';
 
 interface ItemTooltipProps {
     item: { id: string; x: number; y: number };
 }
 
-const StatRow = ({ label, value, icon, color, isMobile }: { label: string; value: string; icon: string; color: string; isMobile: boolean }) => (
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: isMobile ? '13px' : '15px' }}>
+const StatRow = ({
+    label,
+    value,
+    icon,
+    color,
+    isMobile,
+}: {
+    label: string;
+    value: string;
+    icon: string;
+    color: string;
+    isMobile: boolean;
+}) => (
+    <div
+        style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            fontSize: isMobile ? '13px' : '15px',
+        }}
+    >
         <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '6px' : '10px' }}>
             <span style={{ fontSize: isMobile ? '14px' : '18px' }}>{icon}</span>
             <span style={{ color: 'rgba(255,255,255,0.6)', fontWeight: 700 }}>{label}</span>
@@ -33,7 +53,7 @@ export const ItemTooltip: React.FC<ItemTooltipProps> = ({ item }) => {
             golden_sprout: state.golden_sprout,
             dragon_scale: state.dragon_scale,
             lava_heart: state.lava_heart,
-        }))
+        })),
     );
     const invItem = store.inventory.find((i: any) => (i.instanceId || i.id) === item.id);
     const currentLevel = invItem?.level || 1;
@@ -95,7 +115,8 @@ export const ItemTooltip: React.FC<ItemTooltipProps> = ({ item }) => {
     const leftAbsolute = localX + tooltipWidth + 25 > 1920 ? Math.max(10, localX - tooltipWidth - 25) : localX + 25;
     const topAbsolute = Math.max(10, Math.min(1080 - 420, localY - 120));
 
-    const leftFixed = item.x + tooltipWidth + 25 > window.innerWidth ? Math.max(10, item.x - tooltipWidth - 25) : item.x + 25;
+    const leftFixed =
+        item.x + tooltipWidth + 25 > window.innerWidth ? Math.max(10, item.x - tooltipWidth - 25) : item.x + 25;
     const topFixed = Math.max(10, Math.min(window.innerHeight - 420, item.y - 120));
 
     const portalTarget = wrapper || document.body;
@@ -237,13 +258,18 @@ export const ItemTooltip: React.FC<ItemTooltipProps> = ({ item }) => {
                                     gap: '6px',
                                 }}
                             >
-                                ЦЕНА: {data.priceGold} 🪙
+                                ЦЕНА: {data.priceGold}
+                                <img
+                                    src={AssetsMap.UI.ICON_GOLD_FULL}
+                                    alt="Золото"
+                                    style={{ width: '14px', height: '14px', objectFit: 'contain' }}
+                                />
                             </div>
                         )}
                     </>
                 )}
             </div>
         </motion.div>,
-        portalTarget
+        portalTarget,
     );
 };

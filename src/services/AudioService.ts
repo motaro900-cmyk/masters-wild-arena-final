@@ -24,6 +24,15 @@ class AudioService {
             const safeMute = (muted: boolean) => {
                 try {
                     Howler.mute(muted);
+                    if (muted) {
+                        if (Howler.ctx && Howler.ctx.state === 'running') {
+                            Howler.ctx.suspend().catch((err) => console.warn('Ctx suspend failed:', err));
+                        }
+                    } else {
+                        if (Howler.ctx && Howler.ctx.state === 'suspended') {
+                            Howler.ctx.resume().catch((err) => console.warn('Ctx resume failed:', err));
+                        }
+                    }
                 } catch (err) {
                     console.warn('Howler.mute failed safely:', err);
                 }
@@ -131,7 +140,8 @@ class AudioService {
     public resumeContext() {
         try {
             if (Howler.ctx && typeof Howler.ctx.resume === 'function' && Howler.ctx.state === 'suspended') {
-                Howler.ctx.resume()
+                Howler.ctx
+                    .resume()
                     .then(() => {
                         console.log('🔊 AudioContext Resumed Successfully');
                     })
@@ -539,6 +549,15 @@ class AudioService {
     public setMuted(muted: boolean) {
         try {
             Howler.mute(muted);
+            if (muted) {
+                if (Howler.ctx && Howler.ctx.state === 'running') {
+                    Howler.ctx.suspend().catch(() => {});
+                }
+            } else {
+                if (Howler.ctx && Howler.ctx.state === 'suspended') {
+                    Howler.ctx.resume().catch(() => {});
+                }
+            }
         } catch (err) {
             console.warn('Howler.mute failed safely in setMuted:', err);
         }

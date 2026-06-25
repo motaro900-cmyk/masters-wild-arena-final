@@ -23,61 +23,71 @@ import {
 
 // ─── Local style helpers ───────────────────────────────────────────────────────
 const hint = (text: string) => (
-    <div style={{
-        fontSize: '10px',
-        color: 'rgba(255,255,255,0.28)',
-        lineHeight: 1.5,
-        marginTop: '-8px',
-        marginBottom: '10px',
-        paddingLeft: '2px',
-    }}>
+    <div
+        style={{
+            fontSize: '10px',
+            color: 'rgba(255,255,255,0.28)',
+            lineHeight: 1.5,
+            marginTop: '-8px',
+            marginBottom: '10px',
+            paddingLeft: '2px',
+        }}
+    >
         {text}
     </div>
 );
 
-const subTitle = (text: string) => (
-    <div style={{
-        fontSize: '10px',
-        color: 'rgba(255,255,255,0.45)',
-        fontWeight: 900,
-        letterSpacing: '1.2px',
-        textTransform: 'uppercase',
-        marginBottom: '6px',
-        marginTop: '4px',
-        borderLeft: '2px solid rgba(255,255,255,0.15)',
-        paddingLeft: '7px',
-    }}>
+const subTitle = (text: React.ReactNode) => (
+    <div
+        style={{
+            fontSize: '10px',
+            color: 'rgba(255,255,255,0.45)',
+            fontWeight: 900,
+            letterSpacing: '1.2px',
+            textTransform: 'uppercase',
+            marginBottom: '6px',
+            marginTop: '4px',
+            borderLeft: '2px solid rgba(255,255,255,0.15)',
+            paddingLeft: '7px',
+        }}
+    >
         {text}
     </div>
 );
 
 const Divider = () => (
-    <div style={{
-        width: '100%',
-        height: '1px',
-        background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.07), transparent)',
-        margin: '14px 0',
-    }} />
+    <div
+        style={{
+            width: '100%',
+            height: '1px',
+            background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.07), transparent)',
+            margin: '14px 0',
+        }}
+    />
 );
 
 const RankBadge = ({ name, rating }: { name: string; rating: number }) => (
-    <div style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: '8px',
-        background: 'rgba(240,192,64,0.10)',
-        border: '1px solid rgba(240,192,64,0.35)',
-        borderRadius: '8px',
-        padding: '6px 14px',
-        color: '#f0c040',
-        fontWeight: 900,
-        fontSize: '12px',
-        letterSpacing: '0.5px',
-        marginBottom: '12px',
-        width: '100%',
-    }}>
-        <span>🏆</span>
-        <span style={{ flex: 1 }}>Текущий ранг: <strong>{name}</strong></span>
+    <div
+        style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '8px',
+            background: 'rgba(240,192,64,0.10)',
+            border: '1px solid rgba(240,192,64,0.35)',
+            borderRadius: '8px',
+            padding: '6px 14px',
+            color: '#f0c040',
+            fontWeight: 900,
+            fontSize: '12px',
+            letterSpacing: '0.5px',
+            marginBottom: '12px',
+            width: '100%',
+        }}
+    >
+        <img src={AssetsMap.UI.TROPHY_PREMIUM} style={{ width: '16px', height: '16px', objectFit: 'contain' }} alt="trophy" />
+        <span style={{ flex: 1 }}>
+            Текущий ранг: <strong>{name}</strong>
+        </span>
         <span style={{ opacity: 0.65 }}>{rating} куб.</span>
     </div>
 );
@@ -260,7 +270,14 @@ export const AdminPlayersTab: React.FC<AdminPlayersTabProps> = ({
             setCustomPoints(String(selectedPlayer.talentPoints || 0));
             setCustomRating(String(selectedPlayer.rating || 0));
         }
-    }, [selectedPlayerId, selectedPlayer?.gold, selectedPlayer?.crystals, selectedPlayer?.level, selectedPlayer?.talentPoints, selectedPlayer?.rating]);
+    }, [
+        selectedPlayerId,
+        selectedPlayer?.gold,
+        selectedPlayer?.crystals,
+        selectedPlayer?.level,
+        selectedPlayer?.talentPoints,
+        selectedPlayer?.rating,
+    ]);
 
     const sfx = () => audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
 
@@ -272,7 +289,7 @@ export const AdminPlayersTab: React.FC<AdminPlayersTabProps> = ({
             // 1. If self, update local Zustand state so UI reactive binding updates instantly
             if (selectedPlayerId === localPlayerId) {
                 const store = useGameStore.getState();
-                
+
                 if (fields.gold !== undefined) store.setGold(Number(fields.gold));
                 if (fields.crystals !== undefined) store.setCrystals(Number(fields.crystals));
                 if (fields.level !== undefined) store.setLevel(Number(fields.level));
@@ -302,7 +319,7 @@ export const AdminPlayersTab: React.FC<AdminPlayersTabProps> = ({
             gold: Number(customGold),
             crystals: Number(customCrystals),
             level: Number(customLevel),
-            talentPoints: Number(customPoints)
+            talentPoints: Number(customPoints),
         });
         setBatchFlash(true);
         setTimeout(() => setBatchFlash(false), 600);
@@ -349,7 +366,7 @@ export const AdminPlayersTab: React.FC<AdminPlayersTabProps> = ({
                     padding: '20px',
                     display: 'flex',
                     flexDirection: 'column',
-                    gap: '20px'
+                    gap: '20px',
                 }}
             >
                 {selectedPlayer ? (
@@ -367,10 +384,26 @@ export const AdminPlayersTab: React.FC<AdminPlayersTabProps> = ({
                                 alt=""
                             />
                             <div style={{ flex: 1 }}>
-                                <h2 style={{ margin: 0, color: selectedPlayer.id === localPlayerId ? '#f0c040' : '#ffffff', fontSize: '24px' }}>
-                                    {selectedPlayer.name} {selectedPlayer.id === localPlayerId && <span style={{ fontSize: '12px', color: '#ff4d4d' }}>(Я)</span>}
+                                <h2
+                                    style={{
+                                        margin: 0,
+                                        color: selectedPlayer.id === localPlayerId ? '#f0c040' : '#ffffff',
+                                        fontSize: '24px',
+                                    }}
+                                >
+                                    {selectedPlayer.name}{' '}
+                                    {selectedPlayer.id === localPlayerId && (
+                                        <span style={{ fontSize: '12px', color: '#ff4d4d' }}>(Я)</span>
+                                    )}
                                 </h2>
-                                <div style={{ fontSize: '11px', color: '#666', fontFamily: 'monospace', marginTop: '4px' }}>
+                                <div
+                                    style={{
+                                        fontSize: '11px',
+                                        color: '#666',
+                                        fontFamily: 'monospace',
+                                        marginTop: '4px',
+                                    }}
+                                >
                                     ID: {selectedPlayer.id} | VK ID: {selectedPlayer.vkId || 'Нет'}
                                 </div>
                                 <div style={{ display: 'flex', gap: '15px', marginTop: '10px' }}>
@@ -379,14 +412,27 @@ export const AdminPlayersTab: React.FC<AdminPlayersTabProps> = ({
                                             href={`https://vk.com/id${selectedPlayer.vkId}`}
                                             target="_blank"
                                             rel="noreferrer"
-                                            style={{ fontSize: '11px', color: '#3b82f6', textDecoration: 'none', fontWeight: 'bold' }}
+                                            style={{
+                                                fontSize: '11px',
+                                                color: '#3b82f6',
+                                                textDecoration: 'none',
+                                                fontWeight: 'bold',
+                                            }}
                                         >
                                             ПРОФИЛЬ ВК 🔗
                                         </a>
                                     )}
                                     <button
                                         onClick={() => setIsSpectating(true)}
-                                        style={{ background: 'none', border: 'none', color: '#60a5fa', fontSize: '11px', cursor: 'pointer', padding: 0, fontWeight: 'bold' }}
+                                        style={{
+                                            background: 'none',
+                                            border: 'none',
+                                            color: '#60a5fa',
+                                            fontSize: '11px',
+                                            cursor: 'pointer',
+                                            padding: 0,
+                                            fontWeight: 'bold',
+                                        }}
                                     >
                                         СМОТРЕТЬ БОЙ 👁️
                                     </button>
@@ -394,13 +440,37 @@ export const AdminPlayersTab: React.FC<AdminPlayersTabProps> = ({
                             </div>
                         </div>
 
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px' }}>
-                            
+                        <div
+                            style={{
+                                display: 'grid',
+                                gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+                                gap: '20px',
+                            }}
+                        >
                             {/* СТОЛБЕЦ A: РЕДАКТОР РЕСУРСОВ */}
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                                
-                                <Section title="🪙 Баланс и Ресурсы">
-                                    {subTitle('🪙 Золото')}
+                                <Section
+                                    title={
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                            <img
+                                                src={AssetsMap.UI.ICON_GOLD_FULL}
+                                                alt=""
+                                                style={{ width: '16px', height: '16px', objectFit: 'contain' }}
+                                            />
+                                            <span>Баланс и Ресурсы</span>
+                                        </div>
+                                    }
+                                >
+                                    {subTitle(
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                            <img
+                                                src={AssetsMap.UI.ICON_GOLD_FULL}
+                                                alt=""
+                                                style={{ width: '12px', height: '12px', objectFit: 'contain' }}
+                                            />
+                                            <span>Золото</span>
+                                        </div>
+                                    )}
                                     {hint('Тратится на снаряжение и клановые постройки')}
                                     <div style={editRow}>
                                         <input
@@ -409,10 +479,21 @@ export const AdminPlayersTab: React.FC<AdminPlayersTabProps> = ({
                                             value={customGold}
                                             onChange={(e) => setCustomGold(e.target.value)}
                                         />
-                                        <button onClick={() => handleUpdate({ gold: customGold })} style={applyBtn}>ОК</button>
+                                        <button onClick={() => handleUpdate({ gold: customGold })} style={applyBtn}>
+                                            ОК
+                                        </button>
                                     </div>
 
-                                    {subTitle('💎 Алмазы')}
+                                    {subTitle(
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                            <img
+                                                src={AssetsMap.UI.ICON_ALMAZ_FULL}
+                                                alt=""
+                                                style={{ width: '12px', height: '12px', objectFit: 'contain' }}
+                                            />
+                                            <span>Алмазы</span>
+                                        </div>
+                                    )}
                                     {hint('Премиум-валюта магазина')}
                                     <div style={editRow}>
                                         <input
@@ -421,10 +502,20 @@ export const AdminPlayersTab: React.FC<AdminPlayersTabProps> = ({
                                             value={customCrystals}
                                             onChange={(e) => setCustomCrystals(e.target.value)}
                                         />
-                                        <button onClick={() => handleUpdate({ crystals: customCrystals })} style={applyBtn}>ОК</button>
+                                        <button
+                                            onClick={() => handleUpdate({ crystals: customCrystals })}
+                                            style={applyBtn}
+                                        >
+                                            ОК
+                                        </button>
                                     </div>
 
-                                    {subTitle('🌟 Уровень игрока')}
+                                    {subTitle(
+                                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                                            <img src={AssetsMap.UI.ICON_XP} style={{ width: '14px', height: '14px', objectFit: 'contain' }} alt="xp" />
+                                            Уровень игрока
+                                        </span>
+                                    )}
                                     <div style={editRow}>
                                         <input
                                             type="number"
@@ -432,7 +523,9 @@ export const AdminPlayersTab: React.FC<AdminPlayersTabProps> = ({
                                             value={customLevel}
                                             onChange={(e) => setCustomLevel(e.target.value)}
                                         />
-                                        <button onClick={() => handleUpdate({ level: customLevel })} style={applyBtn}>ОК</button>
+                                        <button onClick={() => handleUpdate({ level: customLevel })} style={applyBtn}>
+                                            ОК
+                                        </button>
                                     </div>
 
                                     {subTitle('🎯 Очки талантов')}
@@ -443,25 +536,46 @@ export const AdminPlayersTab: React.FC<AdminPlayersTabProps> = ({
                                             value={customPoints}
                                             onChange={(e) => setCustomPoints(e.target.value)}
                                         />
-                                        <button onClick={() => handleUpdate({ talentPoints: customPoints })} style={applyBtn}>ОК</button>
+                                        <button
+                                            onClick={() => handleUpdate({ talentPoints: customPoints })}
+                                            style={applyBtn}
+                                        >
+                                            ОК
+                                        </button>
                                     </div>
 
                                     <BigApplyBtn onClick={applyAll} flash={batchFlash} />
-                                    
+
                                     <Divider />
-                                    
-                                    {subTitle('⚡ Быстрый левел-ап')}
+
+                                    {subTitle(
+                                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                                            <img src={AssetsMap.UI.ICON_ENERGY_FULL} style={{ width: '14px', height: '14px', objectFit: 'contain' }} alt="energy" />
+                                            Быстрый левел-ап
+                                        </span>
+                                    )}
                                     <div style={{ display: 'flex', gap: '8px' }}>
-                                        <button onClick={() => handleUpdate({ level: selectedPlayer.level + 1 })} style={{ ...smallBtnStyle, flex: 1 }}>
+                                        <button
+                                            onClick={() => handleUpdate({ level: selectedPlayer.level + 1 })}
+                                            style={{ ...smallBtnStyle, flex: 1 }}
+                                        >
                                             LVL +1
                                         </button>
-                                        <button onClick={() => handleUpdate({ level: selectedPlayer.level + 10 })} style={{ ...smallBtnStyle, flex: 1, color: '#f0c040' }}>
+                                        <button
+                                            onClick={() => handleUpdate({ level: selectedPlayer.level + 10 })}
+                                            style={{ ...smallBtnStyle, flex: 1, color: '#f0c040' }}
+                                        >
                                             LVL +10
                                         </button>
                                     </div>
                                 </Section>
 
-                                <Section title="🏆 Арена и Ранг PvP">
+                                <Section title={
+                                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                                        <img src={AssetsMap.UI.TROPHY_PREMIUM} style={{ width: '16px', height: '16px', objectFit: 'contain' }} alt="trophy" />
+                                        Арена и Ранг PvP
+                                    </span>
+                                }>
                                     <RankBadge name={rankInfo.name} rating={rating} />
 
                                     {subTitle('🎯 Точное число кубков')}
@@ -472,7 +586,9 @@ export const AdminPlayersTab: React.FC<AdminPlayersTabProps> = ({
                                             value={customRating}
                                             onChange={(e) => setCustomRating(e.target.value)}
                                         />
-                                        <button onClick={() => handleUpdate({ rating: customRating })} style={applyBtn}>ОК</button>
+                                        <button onClick={() => handleUpdate({ rating: customRating })} style={applyBtn}>
+                                            ОК
+                                        </button>
                                     </div>
 
                                     <Divider />
@@ -487,7 +603,9 @@ export const AdminPlayersTab: React.FC<AdminPlayersTabProps> = ({
                                     <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
                                         <TrophyBtn
                                             label={`− ${trophyDelta}`}
-                                            onClick={() => handleUpdate({ rating: Math.max(0, rating - Number(trophyDelta)) })}
+                                            onClick={() =>
+                                                handleUpdate({ rating: Math.max(0, rating - Number(trophyDelta)) })
+                                            }
                                             positive={false}
                                         />
                                         <TrophyBtn
@@ -498,7 +616,14 @@ export const AdminPlayersTab: React.FC<AdminPlayersTabProps> = ({
                                     </div>
 
                                     {subTitle('🚀 Прыжки по пресетам')}
-                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '6px', marginBottom: '12px' }}>
+                                    <div
+                                        style={{
+                                            display: 'grid',
+                                            gridTemplateColumns: 'repeat(3,1fr)',
+                                            gap: '6px',
+                                            marginBottom: '12px',
+                                        }}
+                                    >
                                         {RANK_PRESETS.map((preset) => (
                                             <button
                                                 key={preset.label}
@@ -508,7 +633,7 @@ export const AdminPlayersTab: React.FC<AdminPlayersTabProps> = ({
                                                     fontSize: '9px',
                                                     padding: '6px 2px',
                                                     borderColor: rating >= preset.value ? '#f0c040' : '#222',
-                                                    color: rating >= preset.value ? '#f0c040' : '#888'
+                                                    color: rating >= preset.value ? '#f0c040' : '#888',
                                                 }}
                                             >
                                                 {preset.label}
@@ -518,17 +643,22 @@ export const AdminPlayersTab: React.FC<AdminPlayersTabProps> = ({
 
                                     <button
                                         onClick={() => handleUpdate({ rating: 0 })}
-                                        style={{ ...bigBtnStyle, background: '#1c0808', color: '#f87171', border: '1px solid rgba(248,113,113,0.3)', fontSize: '11px', padding: '10px' }}
+                                        style={{
+                                            ...bigBtnStyle,
+                                            background: '#1c0808',
+                                            color: '#f87171',
+                                            border: '1px solid rgba(248,113,113,0.3)',
+                                            fontSize: '11px',
+                                            padding: '10px',
+                                        }}
                                     >
                                         🔄 Обнулить рейтинг PvP
                                     </button>
                                 </Section>
-
                             </div>
 
                             {/* СТОЛБЕЦ B: ИНВЕНТАРЬ И МОДЕРАЦИЯ */}
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-
                                 <Section title="📦 Инвентарь и Предметы">
                                     {subTitle('Генератор предметов')}
                                     <select
@@ -538,27 +668,49 @@ export const AdminPlayersTab: React.FC<AdminPlayersTabProps> = ({
                                     >
                                         <option value="">— Выбрать предмет —</option>
                                         {Object.keys(ITEMS_DATABASE).map((id) => (
-                                            <option key={id} value={id}>{id}</option>
+                                            <option key={id} value={id}>
+                                                {id}
+                                            </option>
                                         ))}
                                     </select>
                                     <button
                                         onClick={() => {
                                             if (selectedItemId) {
-                                                const updated = addItemToInventoryList(selectedPlayer.inventory, { id: selectedItemId, level: 1 });
+                                                const updated = addItemToInventoryList(selectedPlayer.inventory, {
+                                                    id: selectedItemId,
+                                                    level: 1,
+                                                });
                                                 handleUpdate({ inventory: updated });
                                             }
                                         }}
-                                        style={{ ...bigBtnStyle, marginBottom: '6px', fontSize: '11px', padding: '10px 12px' }}
+                                        style={{
+                                            ...bigBtnStyle,
+                                            marginBottom: '6px',
+                                            fontSize: '11px',
+                                            padding: '10px 12px',
+                                        }}
                                     >
                                         ➕ Добавить в инвентарь
                                     </button>
 
                                     <button
                                         onClick={() => {
-                                            const updated = addItemToInventoryList(selectedPlayer.inventory, { id: 'season_chest', level: 1, amount: 1 });
+                                            const updated = addItemToInventoryList(selectedPlayer.inventory, {
+                                                id: 'season_chest',
+                                                level: 1,
+                                                amount: 1,
+                                            });
                                             handleUpdate({ inventory: updated });
                                         }}
-                                        style={{ ...bigBtnStyle, marginBottom: '6px', background: '#d4af37', color: '#000', fontWeight: 'bold', fontSize: '11px', padding: '10px 12px' }}
+                                        style={{
+                                            ...bigBtnStyle,
+                                            marginBottom: '6px',
+                                            background: '#d4af37',
+                                            color: '#000',
+                                            fontWeight: 'bold',
+                                            fontSize: '11px',
+                                            padding: '10px 12px',
+                                        }}
                                     >
                                         🎁 Выдать сундук сезона
                                     </button>
@@ -570,20 +722,37 @@ export const AdminPlayersTab: React.FC<AdminPlayersTabProps> = ({
                                                     handleUpdate({ inventory: [] });
                                                 });
                                             }}
-                                            style={{ ...btnStyle, flex: 1, background: '#2a0808', color: '#ff6b6b', fontSize: '10px', padding: '8px' }}
+                                            style={{
+                                                ...btnStyle,
+                                                flex: 1,
+                                                background: '#2a0808',
+                                                color: '#ff6b6b',
+                                                fontSize: '10px',
+                                                padding: '8px',
+                                            }}
                                         >
                                             🗑️ Очистить
                                         </button>
                                         <button
                                             onClick={() => {
-                                                const items = Object.keys(ITEMS_DATABASE).map((id) => ({ id, level: 1 }));
+                                                const items = Object.keys(ITEMS_DATABASE).map((id) => ({
+                                                    id,
+                                                    level: 1,
+                                                }));
                                                 let updated = [...selectedPlayer.inventory];
                                                 items.forEach((item) => {
                                                     updated = addItemToInventoryList(updated, item);
                                                 });
                                                 handleUpdate({ inventory: updated });
                                             }}
-                                            style={{ ...btnStyle, flex: 1, background: '#0d0d2e', color: '#9b9bff', fontSize: '10px', padding: '8px' }}
+                                            style={{
+                                                ...btnStyle,
+                                                flex: 1,
+                                                background: '#0d0d2e',
+                                                color: '#9b9bff',
+                                                fontSize: '10px',
+                                                padding: '8px',
+                                            }}
                                         >
                                             🔓 Разблокировать всё
                                         </button>
@@ -599,7 +768,14 @@ export const AdminPlayersTab: React.FC<AdminPlayersTabProps> = ({
                                         onChange={(e) => setModReason(e.target.value)}
                                     />
 
-                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '10px' }}>
+                                    <div
+                                        style={{
+                                            display: 'grid',
+                                            gridTemplateColumns: '1fr 1fr',
+                                            gap: '8px',
+                                            marginBottom: '10px',
+                                        }}
+                                    >
                                         <div style={{ display: 'flex', gap: '4px' }}>
                                             <select
                                                 value={banDuration}
@@ -612,8 +788,20 @@ export const AdminPlayersTab: React.FC<AdminPlayersTabProps> = ({
                                                 <option value="perm">Перманент</option>
                                             </select>
                                             <button
-                                                onClick={() => handleUpdate({ status: 'BANNED', banReason: modReason, banUntil: banDuration })}
-                                                style={{ ...btnStyle, background: '#431b1b', color: '#ff4d4d', padding: '0 10px', fontSize: '11px' }}
+                                                onClick={() =>
+                                                    handleUpdate({
+                                                        status: 'BANNED',
+                                                        banReason: modReason,
+                                                        banUntil: banDuration,
+                                                    })
+                                                }
+                                                style={{
+                                                    ...btnStyle,
+                                                    background: '#431b1b',
+                                                    color: '#ff4d4d',
+                                                    padding: '0 10px',
+                                                    fontSize: '11px',
+                                                }}
                                             >
                                                 БАН
                                             </button>
@@ -628,7 +816,13 @@ export const AdminPlayersTab: React.FC<AdminPlayersTabProps> = ({
                                                 <option value="24h">1 День</option>
                                             </select>
                                             <button
-                                                onClick={() => handleUpdate({ isMuted: true, muteReason: modReason, muteUntil: muteDuration })}
+                                                onClick={() =>
+                                                    handleUpdate({
+                                                        isMuted: true,
+                                                        muteReason: modReason,
+                                                        muteUntil: muteDuration,
+                                                    })
+                                                }
                                                 style={{ ...btnStyle, padding: '0 10px', fontSize: '11px' }}
                                             >
                                                 МУТ
@@ -639,25 +833,43 @@ export const AdminPlayersTab: React.FC<AdminPlayersTabProps> = ({
                                     <div style={{ display: 'flex', gap: '6px', marginBottom: '10px' }}>
                                         <button
                                             onClick={() => {
-                                                useGameStore.getState().showConfirm(`Кикнуть игрока ${selectedPlayer.name}?`, () => {
-                                                    handleUpdate({ status: 'KICKED' });
-                                                });
+                                                useGameStore
+                                                    .getState()
+                                                    .showConfirm(`Кикнуть игрока ${selectedPlayer.name}?`, () => {
+                                                        handleUpdate({ status: 'KICKED' });
+                                                    });
                                             }}
-                                            style={{ ...btnStyle, flex: 1, background: '#301010', color: '#fff', fontSize: '10px', padding: '8px' }}
+                                            style={{
+                                                ...btnStyle,
+                                                flex: 1,
+                                                background: '#301010',
+                                                color: '#fff',
+                                                fontSize: '10px',
+                                                padding: '8px',
+                                            }}
                                         >
                                             КИКНУТЬ
                                         </button>
                                         <button
                                             onClick={() => {
-                                                useGameStore.getState().showConfirm('Выполнить мягкий сброс сезона?', () => {
-                                                    let newRating = 0;
-                                                    if (rating >= 10500) newRating = 7500;
-                                                    else if (rating >= 9000) newRating = 6000;
-                                                    else if (rating >= 6000) newRating = 4500;
-                                                    handleUpdate({ rating: newRating, trophies: newRating });
-                                                });
+                                                useGameStore
+                                                    .getState()
+                                                    .showConfirm('Выполнить мягкий сброс сезона?', () => {
+                                                        let newRating = 0;
+                                                        if (rating >= 10500) newRating = 7500;
+                                                        else if (rating >= 9000) newRating = 6000;
+                                                        else if (rating >= 6000) newRating = 4500;
+                                                        handleUpdate({ rating: newRating, trophies: newRating });
+                                                    });
                                             }}
-                                            style={{ ...btnStyle, flex: 1, background: '#2d3748', color: '#fff', fontSize: '10px', padding: '8px' }}
+                                            style={{
+                                                ...btnStyle,
+                                                flex: 1,
+                                                background: '#2d3748',
+                                                color: '#fff',
+                                                fontSize: '10px',
+                                                padding: '8px',
+                                            }}
                                         >
                                             СБРОС СЕЗОНА
                                         </button>
@@ -666,28 +878,41 @@ export const AdminPlayersTab: React.FC<AdminPlayersTabProps> = ({
                                     <div style={{ display: 'flex', gap: '6px' }}>
                                         <button
                                             onClick={() => {
-                                                useGameStore.getState().showConfirm(`СБРОСИТЬ ВЕСЬ ПРОГРЕСС ИГРОКА ${selectedPlayer.name}?`, () => {
-                                                    handleUpdate({
-                                                        gold: 0,
-                                                        crystals: 0,
-                                                        level: 1,
-                                                        rating: 0,
-                                                        talentPoints: 0,
-                                                        inventory: [],
-                                                        equipment: {
-                                                            WEAPONS: null,
-                                                            HELMETS: null,
-                                                            ARMOR: null,
-                                                            SHIELDS: null,
-                                                            SHOULDERS: null,
-                                                            PANTS: null,
-                                                            BOOTS: null,
+                                                useGameStore
+                                                    .getState()
+                                                    .showConfirm(
+                                                        `СБРОСИТЬ ВЕСЬ ПРОГРЕСС ИГРОКА ${selectedPlayer.name}?`,
+                                                        () => {
+                                                            handleUpdate({
+                                                                gold: 0,
+                                                                crystals: 0,
+                                                                level: 1,
+                                                                rating: 0,
+                                                                talentPoints: 0,
+                                                                inventory: [],
+                                                                equipment: {
+                                                                    WEAPONS: null,
+                                                                    HELMETS: null,
+                                                                    ARMOR: null,
+                                                                    SHIELDS: null,
+                                                                    SHOULDERS: null,
+                                                                    PANTS: null,
+                                                                    BOOTS: null,
+                                                                },
+                                                                fullStateJSON: '',
+                                                            });
                                                         },
-                                                        fullStateJSON: '',
-                                                    });
-                                                });
+                                                    );
                                             }}
-                                            style={{ ...btnStyle, flex: 1.5, background: '#601010', color: '#fff', fontWeight: 'bold', fontSize: '10px', padding: '10px' }}
+                                            style={{
+                                                ...btnStyle,
+                                                flex: 1.5,
+                                                background: '#601010',
+                                                color: '#fff',
+                                                fontWeight: 'bold',
+                                                fontSize: '10px',
+                                                padding: '10px',
+                                            }}
                                         >
                                             ПОЛНЫЙ ВАЙП 🔥
                                         </button>
@@ -696,7 +921,14 @@ export const AdminPlayersTab: React.FC<AdminPlayersTabProps> = ({
                                                 setMailRecipient(selectedPlayer.id);
                                                 setActiveTab('ПОЧТА');
                                             }}
-                                            style={{ ...btnStyle, flex: 1, background: '#1b4332', color: '#4dff4d', fontSize: '10px', padding: '10px' }}
+                                            style={{
+                                                ...btnStyle,
+                                                flex: 1,
+                                                background: '#1b4332',
+                                                color: '#4dff4d',
+                                                fontSize: '10px',
+                                                padding: '10px',
+                                            }}
                                         >
                                             ПИСЬМО ✉️
                                         </button>
@@ -706,70 +938,149 @@ export const AdminPlayersTab: React.FC<AdminPlayersTabProps> = ({
                                 <Section title="🔧 Читы разработчика">
                                     <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
                                         <button
-                                            onClick={() => handleUpdate({ ownedSkins: ['default', 'panda_frost', 'raccoon_default', 'skin_lava_golem'] })}
-                                            style={{ ...btnStyle, flex: 1, background: 'linear-gradient(135deg, #d97706 0%, #b45309 100%)', borderColor: '#f59e0b', fontSize: '10px', padding: '8px' }}
+                                            onClick={() =>
+                                                handleUpdate({
+                                                    ownedSkins: [
+                                                        'default',
+                                                        'panda_frost',
+                                                        'raccoon_default',
+                                                        'skin_lava_golem',
+                                                    ],
+                                                })
+                                            }
+                                            style={{
+                                                ...btnStyle,
+                                                flex: 1,
+                                                background: 'linear-gradient(135deg, #d97706 0%, #b45309 100%)',
+                                                borderColor: '#f59e0b',
+                                                fontSize: '10px',
+                                                padding: '8px',
+                                            }}
                                         >
                                             👑 Все скины
                                         </button>
                                         <button
                                             onClick={() => handleUpdate({ ownedHeroes: ['panda', 'raccoon'] })}
-                                            style={{ ...btnStyle, flex: 1, background: 'linear-gradient(135deg, #059669 0%, #047857 100%)', borderColor: '#10b981', fontSize: '10px', padding: '8px' }}
+                                            style={{
+                                                ...btnStyle,
+                                                flex: 1,
+                                                background: 'linear-gradient(135deg, #059669 0%, #047857 100%)',
+                                                borderColor: '#10b981',
+                                                fontSize: '10px',
+                                                padding: '8px',
+                                            }}
                                         >
                                             👥 Все герои
                                         </button>
                                     </div>
                                     <div style={{ display: 'flex', gap: '8px' }}>
                                         <button
-                                            onClick={() => handleUpdate({ gold: selectedPlayer.gold + 100000, crystals: selectedPlayer.crystals + 5000 })}
-                                            style={{ ...btnStyle, flex: 1, background: 'linear-gradient(135deg, #ca8a04 0%, #a16207 100%)', borderColor: '#eab308', fontSize: '10px', padding: '8px' }}
+                                            onClick={() =>
+                                                handleUpdate({
+                                                    gold: selectedPlayer.gold + 100000,
+                                                    crystals: selectedPlayer.crystals + 5000,
+                                                })
+                                            }
+                                            style={{
+                                                ...btnStyle,
+                                                flex: 1,
+                                                background: 'linear-gradient(135deg, #ca8a04 0%, #a16207 100%)',
+                                                borderColor: '#eab308',
+                                                fontSize: '10px',
+                                                padding: '8px',
+                                            }}
                                         >
-                                            💰 +100к, 💎 +5к
+                                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', width: '100%' }}>
+                                                <img
+                                                    src={AssetsMap.UI.ICON_GOLD_FULL}
+                                                    alt=""
+                                                    style={{ width: '12px', height: '12px', objectFit: 'contain' }}
+                                                />
+                                                <span>+100к,</span>
+                                                <img
+                                                    src={AssetsMap.UI.ICON_ALMAZ_FULL}
+                                                    alt=""
+                                                    style={{ width: '12px', height: '12px', objectFit: 'contain' }}
+                                                />
+                                                <span>+5к</span>
+                                            </div>
                                         </button>
                                         <button
                                             onClick={() => handleUpdate({ energy: 9999, maxEnergy: 9999 })}
-                                            style={{ ...btnStyle, flex: 1, background: 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)', borderColor: '#0ea5e9', fontSize: '10px', padding: '8px' }}
+                                            style={{
+                                                ...btnStyle,
+                                                flex: 1,
+                                                background: 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)',
+                                                borderColor: '#0ea5e9',
+                                                fontSize: '10px',
+                                                padding: '8px',
+                                                display: 'inline-flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                gap: '4px',
+                                            }}
                                         >
-                                            ⚡ 9999 энергии
+                                            <img src={AssetsMap.UI.ICON_ENERGY_FULL} style={{ width: '12px', height: '12px', objectFit: 'contain' }} alt="energy" />
+                                            9999 энергии
                                         </button>
                                     </div>
                                     <div style={{ marginTop: '12px' }}>
                                         <ToggleRow
                                             label="♾️ БЕСКОНЕЧНАЯ ЭНЕРГИЯ"
                                             active={selectedPlayer.hasInfiniteEnergy}
-                                            onToggle={() => handleUpdate({ hasInfiniteEnergy: !selectedPlayer.hasInfiniteEnergy })}
+                                            onToggle={() =>
+                                                handleUpdate({ hasInfiniteEnergy: !selectedPlayer.hasInfiniteEnergy })
+                                            }
                                         />
                                     </div>
                                 </Section>
-
                             </div>
-
                         </div>
 
                         {/* 2. ДЕТАЛИ И СПИСКИ ПРЕДМЕТОВ */}
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
                             <Section title="🔎 Логи жалоб">
-                                <div style={{ background: '#050505', padding: '12px', borderRadius: '6px', fontSize: '11px', color: '#888', maxHeight: '100px', overflowY: 'auto' }}>
-                                    {selectedPlayer.reportLogs && selectedPlayer.reportLogs.length > 0 ? (
-                                        selectedPlayer.reportLogs.map((log, i) => (
-                                            <div key={i} style={{ padding: '3px 0', borderBottom: '1px solid #111' }}>
-                                                • {log}
-                                            </div>
-                                        ))
-                                    ) : (
-                                        'История жалоб пуста'
-                                    )}
+                                <div
+                                    style={{
+                                        background: '#050505',
+                                        padding: '12px',
+                                        borderRadius: '6px',
+                                        fontSize: '11px',
+                                        color: '#888',
+                                        maxHeight: '100px',
+                                        overflowY: 'auto',
+                                    }}
+                                >
+                                    {selectedPlayer.reportLogs && selectedPlayer.reportLogs.length > 0
+                                        ? selectedPlayer.reportLogs.map((log, i) => (
+                                              <div key={i} style={{ padding: '3px 0', borderBottom: '1px solid #111' }}>
+                                                  • {log}
+                                              </div>
+                                          ))
+                                        : 'История жалоб пуста'}
                                 </div>
                             </Section>
 
                             <Section title="📱 Метаданные устройства">
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: '10px', fontSize: '11px' }}>
+                                <div
+                                    style={{
+                                        display: 'grid',
+                                        gridTemplateColumns: 'repeat(2,1fr)',
+                                        gap: '10px',
+                                        fontSize: '11px',
+                                    }}
+                                >
                                     <div style={statBox}>
                                         <div style={statLabel}>Разрешение экрана</div>
-                                        <span style={{ color: '#10b981', fontWeight: 'bold' }}>🖥️ {selectedPlayer.screen}</span>
+                                        <span style={{ color: '#10b981', fontWeight: 'bold' }}>
+                                            🖥️ {selectedPlayer.screen}
+                                        </span>
                                     </div>
                                     <div style={statBox}>
                                         <div style={statLabel}>Регистрация (Был в сети)</div>
-                                        <span style={{ color: '#fff', fontWeight: 'bold', fontSize: '10px' }}>🕒 {selectedPlayer.regDate}</span>
+                                        <span style={{ color: '#fff', fontWeight: 'bold', fontSize: '10px' }}>
+                                            🕒 {selectedPlayer.regDate}
+                                        </span>
                                     </div>
                                 </div>
                             </Section>
@@ -777,7 +1088,8 @@ export const AdminPlayersTab: React.FC<AdminPlayersTabProps> = ({
                     </>
                 ) : (
                     <div style={{ color: '#888', textAlign: 'center', marginTop: '140px', fontSize: '14px' }}>
-                        Выберите игрока в списке слева для детального управления балансом, инвентарем, читами и санкциями
+                        Выберите игрока в списке слева для детального управления балансом, инвентарем, читами и
+                        санкциями
                     </div>
                 )}
             </div>

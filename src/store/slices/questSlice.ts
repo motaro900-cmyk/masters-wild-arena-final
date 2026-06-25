@@ -177,7 +177,13 @@ export const createQuestSlice = (set: any, get: any) => ({
                 // (happens when fullStateJSON had empty dailyQuests or bpDailyQuests saved)
                 const existingQuests = data.dailyQuests;
                 const existingBpQuests = data.bpDailyQuests;
-                if (!shouldReset && (!existingQuests || existingQuests.length === 0 || !existingBpQuests || existingBpQuests.length === 0)) {
+                if (
+                    !shouldReset &&
+                    (!existingQuests ||
+                        existingQuests.length === 0 ||
+                        !existingBpQuests ||
+                        existingBpQuests.length === 0)
+                ) {
                     console.log('[questSlice] dailyQuests or bpDailyQuests empty in Firebase — forcing reset');
                     shouldReset = true;
                 }

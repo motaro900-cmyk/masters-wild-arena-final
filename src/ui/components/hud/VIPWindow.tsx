@@ -98,10 +98,10 @@ const ChatIcon = () => (
 );
 
 export const VIPWindow: React.FC<VIPWindowProps> = () => {
-    const vipLevel = useGameStore(state => state.vipLevel);
-const isPremium = useGameStore(state => state.isPremium);
-const vipEndTime = useGameStore(state => state.vipEndTime);
-const isMobile = useGameStore(state => state.isMobile);
+    const vipLevel = useGameStore((state) => state.vipLevel);
+    const isPremium = useGameStore((state) => state.isPremium);
+    const vipEndTime = useGameStore((state) => state.vipEndTime);
+    const isMobile = useGameStore((state) => state.isMobile);
 
     // Вычисляем оставшиеся дни на основе vipEndTime из стора
     const getDaysLeft = React.useCallback((endTime: number) => {
@@ -234,9 +234,7 @@ const isMobile = useGameStore(state => state.isMobile);
                         : 'linear-gradient(135deg, rgba(30, 30, 30, 0.95) 0%, rgba(12, 12, 12, 0.99) 100%)',
                     padding: isMobile ? '14px 18px 12px' : '24px 28px 20px',
                     borderRadius: '16px',
-                    border: isActive 
-                        ? '2px solid #ffd700' 
-                        : '1.5px solid rgba(255,255,255,0.08)',
+                    border: isActive ? '2px solid #ffd700' : '1.5px solid rgba(255,255,255,0.08)',
                     boxShadow: isActive
                         ? '0 0 35px rgba(240, 192, 64, 0.3), inset 0 0 20px rgba(240, 192, 64, 0.15)'
                         : '0 8px 25px rgba(0,0,0,0.85)',
@@ -257,7 +255,8 @@ const isMobile = useGameStore(state => state.isMobile);
                             left: 0,
                             right: 0,
                             height: '100%',
-                            background: 'radial-gradient(circle at 50% 0%, rgba(240, 192, 64, 0.35) 0%, transparent 75%)',
+                            background:
+                                'radial-gradient(circle at 50% 0%, rgba(240, 192, 64, 0.35) 0%, transparent 75%)',
                             pointerEvents: 'none',
                         }}
                     />
@@ -341,12 +340,14 @@ const isMobile = useGameStore(state => state.isMobile);
                                     boxShadow: '0 0 6px #10b981',
                                 }}
                             />
-                            <span style={{ 
-                                color: '#ffffff', 
-                                fontSize: '13.5px', 
-                                fontWeight: 900,
-                                textShadow: '0 1.5px 3px #000'
-                            }}>
+                            <span
+                                style={{
+                                    color: '#ffffff',
+                                    fontSize: '13.5px',
+                                    fontWeight: 900,
+                                    textShadow: '0 1.5px 3px #000',
+                                }}
+                            >
                                 Осталось:{' '}
                                 <span
                                     style={{
@@ -544,31 +545,35 @@ const isMobile = useGameStore(state => state.isMobile);
                         let cardBorder = '';
                         let cardGlow = '';
 
-                        if (pkg.days === 1) { // Bronze card
-                            cardBg = isHov 
+                        if (pkg.days === 1) {
+                            // Bronze card
+                            cardBg = isHov
                                 ? 'linear-gradient(135deg, rgba(92, 53, 33, 0.98) 0%, rgba(35, 20, 10, 1) 100%)'
                                 : 'linear-gradient(135deg, rgba(66, 36, 20, 0.95) 0%, rgba(22, 12, 6, 0.98) 100%)';
                             cardBorder = isHov ? '2px solid #cd7f32' : '1.5px solid rgba(205, 127, 50, 0.35)';
                             cardGlow = isHov ? '0 8px 20px rgba(205, 127, 50, 0.22)' : '0 3px 8px rgba(0,0,0,0.45)';
-                        } else if (pkg.days === 3) { // Silver card
-                            cardBg = isHov 
+                        } else if (pkg.days === 3) {
+                            // Silver card
+                            cardBg = isHov
                                 ? 'linear-gradient(135deg, rgba(62, 64, 70, 0.98) 0%, rgba(27, 28, 30, 1) 100%)'
                                 : 'linear-gradient(135deg, rgba(46, 48, 54, 0.95) 0%, rgba(18, 19, 21, 0.98) 100%)';
                             cardBorder = isHov ? '2px solid #e2e2e2' : '1.5px solid rgba(192, 192, 192, 0.3)';
                             cardGlow = isHov ? '0 8px 20px rgba(192, 192, 192, 0.16)' : '0 3px 8px rgba(0,0,0,0.45)';
-                        } else if (pkg.days === 7) { // Gold card
-                            cardBg = isHov 
+                        } else if (pkg.days === 7) {
+                            // Gold card
+                            cardBg = isHov
                                 ? 'linear-gradient(135deg, rgba(90, 72, 28, 0.98) 0%, rgba(30, 24, 6, 1) 100%)'
                                 : 'linear-gradient(135deg, rgba(68, 54, 18, 0.95) 0%, rgba(22, 17, 4, 0.98) 100%)';
                             cardBorder = isHov ? '2px solid #ffd700' : '1.5px solid rgba(255, 215, 0, 0.35)';
                             cardGlow = isHov ? '0 10px 22px rgba(255, 215, 0, 0.22)' : '0 3px 8px rgba(0,0,0,0.45)';
-                        } else { // 30 days - Amethyst Royal choice
-                            cardBg = isHov 
+                        } else {
+                            // 30 days - Amethyst Royal choice
+                            cardBg = isHov
                                 ? 'linear-gradient(135deg, rgba(90, 50, 148, 0.98) 0%, rgba(30, 12, 58, 1) 100%)'
                                 : 'linear-gradient(135deg, rgba(62, 32, 108, 0.95) 0%, rgba(20, 8, 40, 0.98) 100%)';
                             cardBorder = isHov ? '2.5px solid #d8b4fe' : '2.5px solid rgba(168, 85, 247, 0.65)';
-                            cardGlow = isHov 
-                                ? '0 12px 30px rgba(168, 85, 247, 0.45), inset 0 1px 0 rgba(255,255,255,0.15)' 
+                            cardGlow = isHov
+                                ? '0 12px 30px rgba(168, 85, 247, 0.45), inset 0 1px 0 rgba(255,255,255,0.15)'
                                 : '0 6px 20px rgba(168, 85, 247, 0.25), inset 0 1px 0 rgba(255,255,255,0.06)';
                         }
 
@@ -627,9 +632,7 @@ const isMobile = useGameStore(state => state.isMobile);
                                             borderRadius: '0 0 8px 8px',
                                             letterSpacing: '0.6px',
                                             boxShadow: '0 2px 8px rgba(0,0,0,0.5)',
-                                            border: isBest 
-                                                ? '1px solid rgba(168,85,247,0.5)' 
-                                                : '1px solid #ffd700',
+                                            border: isBest ? '1px solid rgba(168,85,247,0.5)' : '1px solid #ffd700',
                                             borderTop: 'none',
                                             fontFamily: "'Cinzel', serif",
                                         }}
@@ -650,9 +653,9 @@ const isMobile = useGameStore(state => state.isMobile);
                                             : pkg.days === 7
                                               ? 'linear-gradient(to bottom, #fffdf0 0%, #ffd700 55%, #c87800 100%)'
                                               : 'none',
-                                        WebkitBackgroundClip: (isBest || pkg.days === 7) ? 'text' : 'initial',
-                                        WebkitTextFillColor: (isBest || pkg.days === 7) ? 'transparent' : 'initial',
-                                        color: (isBest || pkg.days === 7) ? undefined : isHov ? '#ffe259' : '#dfc08a',
+                                        WebkitBackgroundClip: isBest || pkg.days === 7 ? 'text' : 'initial',
+                                        WebkitTextFillColor: isBest || pkg.days === 7 ? 'transparent' : 'initial',
+                                        color: isBest || pkg.days === 7 ? undefined : isHov ? '#ffe259' : '#dfc08a',
                                         filter: 'drop-shadow(0 2px 3px rgba(0,0,0,0.85))',
                                     }}
                                 >

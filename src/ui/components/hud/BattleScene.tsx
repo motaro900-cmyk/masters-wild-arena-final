@@ -144,25 +144,30 @@ export const BattleScene: React.FC = () => {
     }, [rawEnemy, getCalculatedStats, battleMode, activeRankedOpponent]);
 
     // Refund logic in case of battle errors
-    const refundEnergyIfDeducted = useCallback((errorDetail: string) => {
-        if (energyDeductedRef.current && !energyRefundedRef.current) {
-            energyRefundedRef.current = true;
-            const store = useGameStore.getState() as any;
-            const refundAmount = 10;
-            store.addEnergy(refundAmount);
-            store.updateProfile({
-                dailyBattles: Math.max(0, store.dailyBattles - 1),
-            });
+    const refundEnergyIfDeducted = useCallback(
+        (errorDetail: string) => {
+            if (energyDeductedRef.current && !energyRefundedRef.current) {
+                energyRefundedRef.current = true;
+                const store = useGameStore.getState() as any;
+                const refundAmount = 10;
+                store.addEnergy(refundAmount);
+                store.updateProfile({
+                    dailyBattles: Math.max(0, store.dailyBattles - 1),
+                });
 
-            import('../../../services/SyncService').then(({ syncService }) => {
-                syncService.logPlayerAction(`Возврат энергии (${refundAmount}): бой завершен с ошибкой (${errorDetail})`);
-                syncService.syncPlayerData().catch(() => {});
-            });
+                import('../../../services/SyncService').then(({ syncService }) => {
+                    syncService.logPlayerAction(
+                        `Возврат энергии (${refundAmount}): бой завершен с ошибкой (${errorDetail})`,
+                    );
+                    syncService.syncPlayerData().catch(() => {});
+                });
 
-            store.showAlert('Произошла ошибка в бою. Энергия возвращена.');
-            goToMainMenu();
-        }
-    }, [goToMainMenu]);
+                store.showAlert('Произошла ошибка в бою. Энергия возвращена.');
+                goToMainMenu();
+            }
+        },
+        [goToMainMenu],
+    );
 
     // [Sound] Switch to battle music on mount
     useEffect(() => {
@@ -203,22 +208,22 @@ export const BattleScene: React.FC = () => {
             originalFromTo = gsap.fromTo;
             originalTimeline = gsap.timeline;
 
-            (gsap as any).to = function(...args: any[]) {
+            (gsap as any).to = function (...args: any[]) {
                 const tween = originalTo.apply(this, args as any);
                 activeTweens.push(tween);
                 return tween;
             };
-            (gsap as any).from = function(...args: any[]) {
+            (gsap as any).from = function (...args: any[]) {
                 const tween = originalFrom.apply(this, args as any);
                 activeTweens.push(tween);
                 return tween;
             };
-            (gsap as any).fromTo = function(...args: any[]) {
+            (gsap as any).fromTo = function (...args: any[]) {
                 const tween = originalFromTo.apply(this, args as any);
                 activeTweens.push(tween);
                 return tween;
             };
-            (gsap as any).timeline = function(...args: any[]) {
+            (gsap as any).timeline = function (...args: any[]) {
                 const tl = originalTimeline.apply(this, args as any);
                 activeTweens.push(tl);
                 return tl;
@@ -291,20 +296,22 @@ export const BattleScene: React.FC = () => {
                                     const myRating = store.rating || 0;
                                     const myLevel = store.level || 1;
 
-                                    const { battleResultService } = await import('../../../services/BattleResultService');
-                                    const { myCupsChange, myGoldChange, myExpChange, serverResult } = await battleResultService.recordResult({
-                                        myUserId,
-                                        myName,
-                                        myRating,
-                                        myLevel,
-                                        opponentUserId: opponent?.realUserId,
-                                        opponentName: opponent?.name || 'Противник',
-                                        opponentRating: opponent?.rating || 0,
-                                        opponentLevel: opponent?.level || 1,
-                                        isOpponentBot: opponent?.isBot ?? true,
-                                        attackerWon: isVictory,
-                                        winStreak: store.winStreak || 0,
-                                    });
+                                    const { battleResultService } =
+                                        await import('../../../services/BattleResultService');
+                                    const { myCupsChange, myGoldChange, myExpChange, serverResult } =
+                                        await battleResultService.recordResult({
+                                            myUserId,
+                                            myName,
+                                            myRating,
+                                            myLevel,
+                                            opponentUserId: opponent?.realUserId,
+                                            opponentName: opponent?.name || 'Противник',
+                                            opponentRating: opponent?.rating || 0,
+                                            opponentLevel: opponent?.level || 1,
+                                            isOpponentBot: opponent?.isBot ?? true,
+                                            attackerWon: isVictory,
+                                            winStreak: store.winStreak || 0,
+                                        });
 
                                     if (serverResult) {
                                         isVictory = serverResult === 'win';
@@ -331,7 +338,9 @@ export const BattleScene: React.FC = () => {
                                 );
 
                                 const { RANK_SYSTEM } = await import('../../../configs/RankSystem');
-                                const currentRank = RANK_SYSTEM.find((rank) => (store.trophies || 0) >= rank.minTrophies - 50) || RANK_SYSTEM[RANK_SYSTEM.length - 1];
+                                const currentRank =
+                                    RANK_SYSTEM.find((rank) => (store.trophies || 0) >= rank.minTrophies - 50) ||
+                                    RANK_SYSTEM[RANK_SYSTEM.length - 1];
                                 const minAllowed = Math.max(0, currentRank.minTrophies - 50);
                                 const newTrophies = Math.max(minAllowed, store.trophies + trophies);
                                 const newStreak = isVictory ? store.winStreak + 1 : 0;
@@ -366,8 +375,12 @@ export const BattleScene: React.FC = () => {
                                 xpEarned: xp,
                                 trophiesChange: trophies,
                                 crystalsEarned: crystals,
-                                damageDealt: engineRef.current?.totalDamageDealt || Math.round((playerStats?.attack || 50) * (isVictory ? 1.5 : 0.8)),
-                                damageTaken: engineRef.current?.totalDamageTaken || Math.round((enemyStats?.attack || 30) * (isVictory ? 0.7 : 1.5)),
+                                damageDealt:
+                                    engineRef.current?.totalDamageDealt ||
+                                    Math.round((playerStats?.attack || 50) * (isVictory ? 1.5 : 0.8)),
+                                damageTaken:
+                                    engineRef.current?.totalDamageTaken ||
+                                    Math.round((enemyStats?.attack || 30) * (isVictory ? 0.7 : 1.5)),
                                 turnsPlayed: engineRef.current?.totalTurnsPlayed || turnCountRef.current || 5,
                                 enemyName: isPve && activePveEnemy ? activePveEnemy.name : enemyData.name,
                                 playerStats: playerStats
@@ -380,12 +393,16 @@ export const BattleScene: React.FC = () => {
                                     : undefined,
                                 enemyStats: {
                                     hp: isPve && activePveEnemy ? activePveEnemy.hp : enemyData.baseStats.hp,
-                                    attack: isPve && activePveEnemy ? activePveEnemy.attack : enemyData.baseStats.attack,
-                                    defense: isPve && activePveEnemy ? activePveEnemy.defense : enemyData.baseStats.defense,
+                                    attack:
+                                        isPve && activePveEnemy ? activePveEnemy.attack : enemyData.baseStats.attack,
+                                    defense:
+                                        isPve && activePveEnemy ? activePveEnemy.defense : enemyData.baseStats.defense,
                                     speed: enemyData.baseStats.speed,
                                 },
                                 battleDurationSeconds: engineRef.current ? engineRef.current.battleTime / 60 : 0,
-                                maxSingleHitDamage: engineRef.current?.maxSingleHitDamage || Math.round((playerStats?.attack || 50) * (isVictory ? 1.1 : 0.5)),
+                                maxSingleHitDamage:
+                                    engineRef.current?.maxSingleHitDamage ||
+                                    Math.round((playerStats?.attack || 50) * (isVictory ? 1.1 : 0.5)),
                             });
 
                             setTimeout(() => setShowResult(true), 1500);

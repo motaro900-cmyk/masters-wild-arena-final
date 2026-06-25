@@ -38,7 +38,7 @@ export const MailPromoTab: React.FC<MailPromoTabProps> = ({
             key="promo"
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            drag={isMobile ? "x" : undefined}
+            drag={isMobile ? 'x' : undefined}
             dragConstraints={{ left: 0, right: 0 }}
             dragElastic={0.15}
             onDragEnd={(_, info) => {
@@ -141,10 +141,7 @@ export const MailPromoTab: React.FC<MailPromoTabProps> = ({
                                     textAlign: 'center',
                                     fontSize: '11px',
                                     fontWeight: 900,
-                                    color:
-                                        promoStatus.type === 'SUCCESS'
-                                            ? colors.success
-                                            : colors.danger,
+                                    color: promoStatus.type === 'SUCCESS' ? colors.success : colors.danger,
                                 }}
                             >
                                 {promoStatus.msg}

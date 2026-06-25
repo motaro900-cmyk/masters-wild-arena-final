@@ -36,3 +36,6 @@ temp/
 
 # Build output folder for assets
 build/
+
+# QA Reports and generated smoke test screenshots
+docs/reports/

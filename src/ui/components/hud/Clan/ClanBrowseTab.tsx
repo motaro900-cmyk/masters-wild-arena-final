@@ -66,11 +66,11 @@ const ClanCard: React.FC<ClanCardProps> = ({ clan, onJoin, onInspect, colors, pl
 
     return (
         <motion.div
-            whileHover={{ 
-                x: 4, 
+            whileHover={{
+                x: 4,
                 backgroundColor: 'rgba(240, 192, 64, 0.05)',
                 borderColor: colors.accent,
-                boxShadow: '0 4px 15px rgba(240, 192, 64, 0.12)'
+                boxShadow: '0 4px 15px rgba(240, 192, 64, 0.12)',
             }}
             transition={{ type: 'spring', stiffness: 400, damping: 25 }}
             onClick={onInspect}
@@ -127,7 +127,7 @@ const ClanCard: React.FC<ClanCardProps> = ({ clan, onJoin, onInspect, colors, pl
                         Ур. {clan.level}
                     </span>
                 </div>
-                
+
                 <div style={{ fontSize: '13px', opacity: 0.7, marginTop: '4px', fontStyle: 'italic' }}>
                     «{clan.motto}»
                 </div>
@@ -212,40 +212,56 @@ const ClanCard: React.FC<ClanCardProps> = ({ clan, onJoin, onInspect, colors, pl
             <motion.button
                 whileHover={canJoin ? { scale: 1.05, backgroundColor: colors.accent, color: '#000' } : {}}
                 whileTap={canJoin ? { scale: 0.95 } : {}}
-                onClick={canJoin ? (e) => { e.stopPropagation(); onJoin(); } : (e) => e.stopPropagation()}
+                onClick={
+                    canJoin
+                        ? (e) => {
+                              e.stopPropagation();
+                              onJoin();
+                          }
+                        : (e) => e.stopPropagation()
+                }
                 style={{
                     padding: '10px 18px',
                     background: canJoin ? 'rgba(240,192,64,0.08)' : 'rgba(255,255,255,0.02)',
-                    border: `1.5px solid ${canJoin ? colors.accent : (isAlreadyApplied ? '#d97706' : colors.border)}`,
-                    color: canJoin ? colors.accent : (isAlreadyApplied ? '#fbbf24' : colors.border),
+                    border: `1.5px solid ${canJoin ? colors.accent : isAlreadyApplied ? '#d97706' : colors.border}`,
+                    color: canJoin ? colors.accent : isAlreadyApplied ? '#fbbf24' : colors.border,
                     borderRadius: '10px',
                     fontWeight: 900,
                     fontSize: '13px',
-                    cursor: canJoin ? 'pointer' : (isAlreadyApplied ? 'default' : 'not-allowed'),
+                    cursor: canJoin ? 'pointer' : isAlreadyApplied ? 'default' : 'not-allowed',
                     display: 'flex',
                     alignItems: 'center',
                     gap: '6px',
                     transition: 'all 0.15s ease',
-                    opacity: (canJoin || isAlreadyApplied) ? 1 : 0.5,
+                    opacity: canJoin || isAlreadyApplied ? 1 : 0.5,
                     minWidth: '110px',
                     justifyContent: 'center',
                 }}
             >
                 {!canJoin && !isAlreadyApplied && (
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                    <svg
+                        width="12"
+                        height="12"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="3"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                    >
                         <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
                         <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
                     </svg>
                 )}
-                {isFull 
-                    ? 'ПОЛОН' 
-                    : isAlreadyApplied 
-                        ? 'ОТПРАВЛЕНО' 
-                        : clan.type === 'INVITE' 
-                            ? 'ЗАЯВКА' 
-                            : clan.type === 'CLOSED' 
-                                ? 'ЗАКРЫТ' 
-                                : 'ВСТУПИТЬ'}
+                {isFull
+                    ? 'ПОЛОН'
+                    : isAlreadyApplied
+                      ? 'ОТПРАВЛЕНО'
+                      : clan.type === 'INVITE'
+                        ? 'ЗАЯВКА'
+                        : clan.type === 'CLOSED'
+                          ? 'ЗАКРЫТ'
+                          : 'ВСТУПИТЬ'}
             </motion.button>
         </motion.div>
     );
@@ -260,10 +276,10 @@ interface ClanBrowseTabProps {
     onApply: (clan: ClanData) => void;
 }
 
-export const ClanBrowseTab: React.FC<ClanBrowseTabProps> = ({ 
-    colors, 
-    playerTrophies, 
-    onJoin, 
+export const ClanBrowseTab: React.FC<ClanBrowseTabProps> = ({
+    colors,
+    playerTrophies,
+    onJoin,
     onCreateClick,
     appliedClans,
     onApply,
@@ -292,8 +308,6 @@ export const ClanBrowseTab: React.FC<ClanBrowseTabProps> = ({
             return 0;
         });
     }, [searchQuery, sortBy, hideFull, onlyOpen, compatibleTrophies, playerTrophies]);
-
-
 
     return (
         <motion.div
@@ -325,7 +339,17 @@ export const ClanBrowseTab: React.FC<ClanBrowseTabProps> = ({
                         e.currentTarget.style.borderColor = colors.border;
                     }}
                 >
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={colors.accent} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.8 }}>
+                    <svg
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke={colors.accent}
+                        strokeWidth="2.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        style={{ opacity: 0.8 }}
+                    >
                         <circle cx="11" cy="11" r="8"></circle>
                         <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                     </svg>
@@ -465,19 +489,9 @@ export const ClanBrowseTab: React.FC<ClanBrowseTabProps> = ({
 
             {/* Ряд с интерактивными фильтрами */}
             <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap', alignItems: 'center', padding: '0 4px' }}>
-                <CustomCheckbox
-                    checked={hideFull}
-                    onChange={setHideFull}
-                    label="Скрыть полные"
-                    colors={colors}
-                />
+                <CustomCheckbox checked={hideFull} onChange={setHideFull} label="Скрыть полные" colors={colors} />
 
-                <CustomCheckbox
-                    checked={onlyOpen}
-                    onChange={setOnlyOpen}
-                    label="Только открытые"
-                    colors={colors}
-                />
+                <CustomCheckbox checked={onlyOpen} onChange={setOnlyOpen} label="Только открытые" colors={colors} />
 
                 <CustomCheckbox
                     checked={compatibleTrophies}
@@ -511,16 +525,42 @@ export const ClanBrowseTab: React.FC<ClanBrowseTabProps> = ({
                                 boxShadow: 'inset 0 0 20px rgba(0,0,0,0.6)',
                             }}
                         >
-                            <svg width="72" height="72" viewBox="0 0 24 24" fill="none" stroke={colors.border} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.6 }}>
-                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-                                <line x1="9" y1="9" x2="15" y2="15"/>
-                                <line x1="15" y1="9" x2="9" y2="15"/>
+                            <svg
+                                width="72"
+                                height="72"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke={colors.border}
+                                strokeWidth="1.5"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                style={{ opacity: 0.6 }}
+                            >
+                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                                <line x1="9" y1="9" x2="15" y2="15" />
+                                <line x1="15" y1="9" x2="9" y2="15" />
                             </svg>
                             <div>
-                                <div style={{ fontSize: '18px', fontWeight: 900, color: colors.accent, fontFamily: "'Cinzel', serif", letterSpacing: '1px' }}>
+                                <div
+                                    style={{
+                                        fontSize: '18px',
+                                        fontWeight: 900,
+                                        color: colors.accent,
+                                        fontFamily: "'Cinzel', serif",
+                                        letterSpacing: '1px',
+                                    }}
+                                >
                                     КЛАНЫ НЕ НАЙДЕНЫ
                                 </div>
-                                <div style={{ fontSize: '13px', opacity: 0.6, marginTop: '6px', maxWidth: '320px', lineHeight: '1.4' }}>
+                                <div
+                                    style={{
+                                        fontSize: '13px',
+                                        opacity: 0.6,
+                                        marginTop: '6px',
+                                        maxWidth: '320px',
+                                        lineHeight: '1.4',
+                                    }}
+                                >
                                     Попробуйте изменить поисковый запрос или сбросить активные фильтры поиска.
                                 </div>
                             </div>
@@ -580,4 +620,3 @@ export const ClanBrowseTab: React.FC<ClanBrowseTabProps> = ({
         </motion.div>
     );
 };
-

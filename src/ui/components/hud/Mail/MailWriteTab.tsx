@@ -70,9 +70,7 @@ export const MailWriteTab: React.FC<MailWriteTabProps> = ({
             </h3>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <label style={{ fontSize: '11px', fontWeight: 800, color: 'rgba(255,255,255,0.4)' }}>
-                    КОМУ:
-                </label>
+                <label style={{ fontSize: '11px', fontWeight: 800, color: 'rgba(255,255,255,0.4)' }}>КОМУ:</label>
                 {friends && friends.length > 0 ? (
                     <div ref={dropdownRef} style={{ position: 'relative', width: '100%' }}>
                         <div
@@ -96,35 +94,39 @@ export const MailWriteTab: React.FC<MailWriteTabProps> = ({
                                 {recipientId === 'custom'
                                     ? 'Указать ID вручную...'
                                     : recipientId
-                                    ? ((friends || []).find((f: any) => f.id === recipientId)?.name ||
-                                       (friends || []).find((f: any) => f.id === recipientId)?.username ||
-                                       recipientId) + ` (${recipientId})`
-                                    : '-- Выберите друга --'}
+                                      ? ((friends || []).find((f: any) => f.id === recipientId)?.name ||
+                                            (friends || []).find((f: any) => f.id === recipientId)?.username ||
+                                            recipientId) + ` (${recipientId})`
+                                      : '-- Выберите друга --'}
                             </span>
-                            <span style={{
-                                fontSize: '10px',
-                                color: colors.accent,
-                                transform: isDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-                                transition: 'transform 0.2s',
-                            }}>
+                            <span
+                                style={{
+                                    fontSize: '10px',
+                                    color: colors.accent,
+                                    transform: isDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                                    transition: 'transform 0.2s',
+                                }}
+                            >
                                 ▼
                             </span>
                         </div>
 
                         {isDropdownOpen && (
-                            <div style={{
-                                position: 'absolute',
-                                top: 'calc(100% + 4px)',
-                                left: 0,
-                                width: '100%',
-                                maxHeight: '220px',
-                                overflowY: 'auto',
-                                background: 'rgba(25, 20, 15, 0.98)',
-                                border: `1.5px solid ${colors.border}`,
-                                borderRadius: '8px',
-                                boxShadow: '0 8px 24px rgba(0,0,0,0.85), 0 0 15px rgba(240,192,64,0.1)',
-                                zIndex: 9999,
-                            }}>
+                            <div
+                                style={{
+                                    position: 'absolute',
+                                    top: 'calc(100% + 4px)',
+                                    left: 0,
+                                    width: '100%',
+                                    maxHeight: '220px',
+                                    overflowY: 'auto',
+                                    background: 'rgba(25, 20, 15, 0.98)',
+                                    border: `1.5px solid ${colors.border}`,
+                                    borderRadius: '8px',
+                                    boxShadow: '0 8px 24px rgba(0,0,0,0.85), 0 0 15px rgba(240,192,64,0.1)',
+                                    zIndex: 9999,
+                                }}
+                            >
                                 {friends.map((f: any) => (
                                     <div
                                         key={f.id}
@@ -210,9 +212,7 @@ export const MailWriteTab: React.FC<MailWriteTabProps> = ({
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <label style={{ fontSize: '11px', fontWeight: 800, color: 'rgba(255,255,255,0.4)' }}>
-                    ТЕМА:
-                </label>
+                <label style={{ fontSize: '11px', fontWeight: 800, color: 'rgba(255,255,255,0.4)' }}>ТЕМА:</label>
                 <input
                     type="text"
                     value={writeSubject}
@@ -231,9 +231,7 @@ export const MailWriteTab: React.FC<MailWriteTabProps> = ({
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <label style={{ fontSize: '11px', fontWeight: 800, color: 'rgba(255,255,255,0.4)' }}>
-                    СООБЩЕНИЕ:
-                </label>
+                <label style={{ fontSize: '11px', fontWeight: 800, color: 'rgba(255,255,255,0.4)' }}>СООБЩЕНИЕ:</label>
                 <textarea
                     value={writeBody}
                     onChange={(e) => setWriteBody(e.target.value)}

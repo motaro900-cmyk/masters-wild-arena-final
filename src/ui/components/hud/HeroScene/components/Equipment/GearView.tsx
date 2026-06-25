@@ -59,20 +59,23 @@ export const GearView = ({
     const gfx = useGraphicsConfig();
 
     // Memoised particles — random positions fixed on mount, not re-randomised on re-render
-    const particles = useMemo(() => [
-        { id: 0,  left: '28%', bottom: '160px', dur: '5.2s', delay: '0.0s', drift:  '18px' },
-        { id: 1,  left: '35%', bottom: '165px', dur: '6.8s', delay: '1.3s', drift: '-12px' },
-        { id: 2,  left: '42%', bottom: '158px', dur: '4.9s', delay: '0.7s', drift:  '22px' },
-        { id: 3,  left: '50%', bottom: '162px', dur: '7.1s', delay: '2.1s', drift:  '-8px' },
-        { id: 4,  left: '57%', bottom: '170px', dur: '5.5s', delay: '0.4s', drift:  '15px' },
-        { id: 5,  left: '63%', bottom: '155px', dur: '6.2s', delay: '1.8s', drift: '-20px' },
-        { id: 6,  left: '70%', bottom: '163px', dur: '4.7s', delay: '0.9s', drift:  '10px' },
-        { id: 7,  left: '33%', bottom: '168px', dur: '8.0s', delay: '3.0s', drift: '-16px' },
-        { id: 8,  left: '46%', bottom: '157px', dur: '5.8s', delay: '1.5s', drift:  '25px' },
-        { id: 9,  left: '54%', bottom: '172px', dur: '6.4s', delay: '2.6s', drift:  '-9px' },
-        { id: 10, left: '38%', bottom: '161px', dur: '7.3s', delay: '0.2s', drift:  '13px' },
-        { id: 11, left: '61%', bottom: '166px', dur: '5.0s', delay: '1.1s', drift: '-24px' },
-    ], []);
+    const particles = useMemo(
+        () => [
+            { id: 0, left: '28%', bottom: '160px', dur: '5.2s', delay: '0.0s', drift: '18px' },
+            { id: 1, left: '35%', bottom: '165px', dur: '6.8s', delay: '1.3s', drift: '-12px' },
+            { id: 2, left: '42%', bottom: '158px', dur: '4.9s', delay: '0.7s', drift: '22px' },
+            { id: 3, left: '50%', bottom: '162px', dur: '7.1s', delay: '2.1s', drift: '-8px' },
+            { id: 4, left: '57%', bottom: '170px', dur: '5.5s', delay: '0.4s', drift: '15px' },
+            { id: 5, left: '63%', bottom: '155px', dur: '6.2s', delay: '1.8s', drift: '-20px' },
+            { id: 6, left: '70%', bottom: '163px', dur: '4.7s', delay: '0.9s', drift: '10px' },
+            { id: 7, left: '33%', bottom: '168px', dur: '8.0s', delay: '3.0s', drift: '-16px' },
+            { id: 8, left: '46%', bottom: '157px', dur: '5.8s', delay: '1.5s', drift: '25px' },
+            { id: 9, left: '54%', bottom: '172px', dur: '6.4s', delay: '2.6s', drift: '-9px' },
+            { id: 10, left: '38%', bottom: '161px', dur: '7.3s', delay: '0.2s', drift: '13px' },
+            { id: 11, left: '61%', bottom: '166px', dur: '5.0s', delay: '1.1s', drift: '-24px' },
+        ],
+        [],
+    );
 
     const diffs: any = { hp: 0, attack: 0, defense: 0 };
     const [localSelectedId, setLocalSelectedId] = useState<string | null>(null);
@@ -83,7 +86,7 @@ export const GearView = ({
     const [showSpeedTooltip, setShowSpeedTooltip] = useState(false);
     const [showCritTooltip, setShowCritTooltip] = useState(false);
 
-    const rawInventory = useGameStore(state => state.inventory);
+    const rawInventory = useGameStore((state) => state.inventory);
     const inventory = rawInventory || [];
 
     const gearPower = Object.values(equippedIds).reduce((acc: number, itemId: any) => {
@@ -179,7 +182,7 @@ export const GearView = ({
                 <div
                     className="symmetrical-hero-card"
                     style={{
-                        background: `${stoneBrickPattern}, linear-gradient(180deg, rgba(24, 18, 15, 0.98) 0%, rgba(12, 9, 8, 1.0) 100%)`
+                        background: `${stoneBrickPattern}, linear-gradient(180deg, rgba(24, 18, 15, 0.98) 0%, rgba(12, 9, 8, 1.0) 100%)`,
                     }}
                 >
                     <div
@@ -194,7 +197,6 @@ export const GearView = ({
                     />
                     <CornerDecoration />
 
-
                     {/* ── Atmospheric inner fog (MEDIUM+) ── */}
                     {!gfx.isLow && <div className="frame-atmosphere" />}
 
@@ -208,19 +210,23 @@ export const GearView = ({
                     {gfx.isUltra && <div className="frame-scan-line" />}
 
                     {/* ── Floating particles (ULTRA only) ── */}
-                    {gfx.showParticles && gfx.isUltra && particles.map((p) => (
-                        <div
-                            key={p.id}
-                            className="gear-particle"
-                            style={{
-                                left: p.left,
-                                bottom: p.bottom,
-                                '--dur': p.dur,
-                                '--delay': p.delay,
-                                '--drift': p.drift,
-                            } as React.CSSProperties}
-                        />
-                    ))}
+                    {gfx.showParticles &&
+                        gfx.isUltra &&
+                        particles.map((p) => (
+                            <div
+                                key={p.id}
+                                className="gear-particle"
+                                style={
+                                    {
+                                        left: p.left,
+                                        bottom: p.bottom,
+                                        '--dur': p.dur,
+                                        '--delay': p.delay,
+                                        '--drift': p.drift,
+                                    } as React.CSSProperties
+                                }
+                            />
+                        ))}
 
                     {/* ── Rectangular ornate frame around character ── */}
                     <div className="character-frame-rect">
@@ -241,7 +247,6 @@ export const GearView = ({
                         <div className="frame-side-gem frame-side-gem-bottom" />
                     </div>
 
-
                     {/* ── Connector lines LEFT (slot right edge → frame left edge) ── */}
                     <div className={`slot-connector-left conn-helm ${gfx.isUltra ? 'with-pulse' : ''}`} />
                     <div className={`slot-connector-left conn-shoulders ${gfx.isUltra ? 'with-pulse' : ''}`} />
@@ -259,7 +264,9 @@ export const GearView = ({
                             id="HELMETS"
                             itemId={equippedIds.HELMETS}
                             activeDraggingId={activeDraggingId}
-                            onClick={() => { if (equippedIds.HELMETS) handleUnequip(equippedIds.HELMETS); }}
+                            onClick={() => {
+                                if (equippedIds.HELMETS) handleUnequip(equippedIds.HELMETS);
+                            }}
                             setGlobalHoveredItem={setGlobalHoveredItem}
                         />
                         <div className="slot-wrapper-label">ШЛЕМ</div>
@@ -269,7 +276,9 @@ export const GearView = ({
                             id="SHOULDERS"
                             itemId={equippedIds.SHOULDERS}
                             activeDraggingId={activeDraggingId}
-                            onClick={() => { if (equippedIds.SHOULDERS) handleUnequip(equippedIds.SHOULDERS); }}
+                            onClick={() => {
+                                if (equippedIds.SHOULDERS) handleUnequip(equippedIds.SHOULDERS);
+                            }}
                             setGlobalHoveredItem={setGlobalHoveredItem}
                         />
                         <div className="slot-wrapper-label">ПЛЕЧИ</div>
@@ -279,7 +288,9 @@ export const GearView = ({
                             id="ARMOR"
                             itemId={equippedIds.ARMOR}
                             activeDraggingId={activeDraggingId}
-                            onClick={() => { if (equippedIds.ARMOR) handleUnequip(equippedIds.ARMOR); }}
+                            onClick={() => {
+                                if (equippedIds.ARMOR) handleUnequip(equippedIds.ARMOR);
+                            }}
                             setGlobalHoveredItem={setGlobalHoveredItem}
                         />
                         <div className="slot-wrapper-label">ДОСПЕХ</div>
@@ -289,7 +300,9 @@ export const GearView = ({
                             id="PANTS"
                             itemId={equippedIds.PANTS}
                             activeDraggingId={activeDraggingId}
-                            onClick={() => { if (equippedIds.PANTS) handleUnequip(equippedIds.PANTS); }}
+                            onClick={() => {
+                                if (equippedIds.PANTS) handleUnequip(equippedIds.PANTS);
+                            }}
                             setGlobalHoveredItem={setGlobalHoveredItem}
                         />
                         <div className="slot-wrapper-label">ПОНОЖИ</div>
@@ -301,7 +314,9 @@ export const GearView = ({
                             id="WEAPONS"
                             itemId={equippedIds.WEAPONS}
                             activeDraggingId={activeDraggingId}
-                            onClick={() => { if (equippedIds.WEAPONS) handleUnequip(equippedIds.WEAPONS); }}
+                            onClick={() => {
+                                if (equippedIds.WEAPONS) handleUnequip(equippedIds.WEAPONS);
+                            }}
                             setGlobalHoveredItem={setGlobalHoveredItem}
                         />
                         <div className="slot-wrapper-label">ОРУЖИЕ</div>
@@ -311,7 +326,9 @@ export const GearView = ({
                             id="SHIELDS"
                             itemId={equippedIds.SHIELDS}
                             activeDraggingId={activeDraggingId}
-                            onClick={() => { if (equippedIds.SHIELDS) handleUnequip(equippedIds.SHIELDS); }}
+                            onClick={() => {
+                                if (equippedIds.SHIELDS) handleUnequip(equippedIds.SHIELDS);
+                            }}
                             setGlobalHoveredItem={setGlobalHoveredItem}
                         />
                         <div className="slot-wrapper-label">ЩИТ</div>
@@ -321,7 +338,9 @@ export const GearView = ({
                             id="BOOTS"
                             itemId={equippedIds.BOOTS}
                             activeDraggingId={activeDraggingId}
-                            onClick={() => { if (equippedIds.BOOTS) handleUnequip(equippedIds.BOOTS); }}
+                            onClick={() => {
+                                if (equippedIds.BOOTS) handleUnequip(equippedIds.BOOTS);
+                            }}
                             setGlobalHoveredItem={setGlobalHoveredItem}
                         />
                         <div className="slot-wrapper-label">САПОГИ</div>
@@ -330,10 +349,12 @@ export const GearView = ({
                     {/* Dynamic Breathing Backlight Halo */}
                     <div
                         className="breathing-backlight"
-                        style={{
-                            background: `radial-gradient(circle, ${activeRarityColor}66 0%, transparent 70%)`,
-                            '--glow-color': `${activeRarityColor}33`,
-                        } as any}
+                        style={
+                            {
+                                background: `radial-gradient(circle, ${activeRarityColor}66 0%, transparent 70%)`,
+                                '--glow-color': `${activeRarityColor}33`,
+                            } as any
+                        }
                     />
 
                     {/* Pedestal */}
@@ -402,7 +423,14 @@ export const GearView = ({
                                         fontFamily: "'Philosopher', 'Inter', sans-serif",
                                     }}
                                 >
-                                    <div style={{ color: '#f5be38', fontWeight: 900, marginBottom: '5px', letterSpacing: '1px' }}>
+                                    <div
+                                        style={{
+                                            color: '#f5be38',
+                                            fontWeight: 900,
+                                            marginBottom: '5px',
+                                            letterSpacing: '1px',
+                                        }}
+                                    >
                                         ОБЩАЯ МОЩЬ
                                     </div>
                                     <div style={{ color: '#dddddd', fontSize: '11px', lineHeight: '1.4' }}>
@@ -410,16 +438,24 @@ export const GearView = ({
                                     </div>
                                 </div>
                             )}
-                            <div className="mockup-stat-label" style={{ color: '#f0c040', textShadow: '0 0 5px rgba(240, 192, 64, 0.3)' }}>МОЩЬ</div>
-                            <div className="mockup-stat-value power" style={{
-                                background: 'linear-gradient(180deg, #ffffff 0%, #f0c040 100%)',
-                                WebkitBackgroundClip: 'text',
-                                WebkitTextFillColor: 'transparent',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '6px',
-                                textShadow: '0 2px 4px rgba(0,0,0,0.5)',
-                            }}>
+                            <div
+                                className="mockup-stat-label"
+                                style={{ color: '#f0c040', textShadow: '0 0 5px rgba(240, 192, 64, 0.3)' }}
+                            >
+                                МОЩЬ
+                            </div>
+                            <div
+                                className="mockup-stat-value power"
+                                style={{
+                                    background: 'linear-gradient(180deg, #ffffff 0%, #f0c040 100%)',
+                                    WebkitBackgroundClip: 'text',
+                                    WebkitTextFillColor: 'transparent',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '6px',
+                                    textShadow: '0 2px 4px rgba(0,0,0,0.5)',
+                                }}
+                            >
                                 <img
                                     src="/assets/images/ui/mosh.png"
                                     style={{
@@ -459,10 +495,23 @@ export const GearView = ({
                                         fontFamily: "'Philosopher', 'Inter', sans-serif",
                                     }}
                                 >
-                                    <div style={{ color: '#f43f5e', fontWeight: 900, marginBottom: '5px', letterSpacing: '1px' }}>
+                                    <div
+                                        style={{
+                                            color: '#f43f5e',
+                                            fontWeight: 900,
+                                            marginBottom: '5px',
+                                            letterSpacing: '1px',
+                                        }}
+                                    >
                                         МАКСИМАЛЬНОЕ ЗДОРОВЬЕ
                                     </div>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '3px' }}>
+                                    <div
+                                        style={{
+                                            display: 'flex',
+                                            justifyContent: 'space-between',
+                                            marginBottom: '3px',
+                                        }}
+                                    >
                                         <span>Базовое:</span>
                                         <span>{baseStats.hp}</span>
                                     </div>
@@ -502,10 +551,23 @@ export const GearView = ({
                                         fontFamily: "'Philosopher', 'Inter', sans-serif",
                                     }}
                                 >
-                                    <div style={{ color: '#3b82f6', fontWeight: 900, marginBottom: '5px', letterSpacing: '1px' }}>
+                                    <div
+                                        style={{
+                                            color: '#3b82f6',
+                                            fontWeight: 900,
+                                            marginBottom: '5px',
+                                            letterSpacing: '1px',
+                                        }}
+                                    >
                                         СИЛА АТАКИ
                                     </div>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '3px' }}>
+                                    <div
+                                        style={{
+                                            display: 'flex',
+                                            justifyContent: 'space-between',
+                                            marginBottom: '3px',
+                                        }}
+                                    >
                                         <span>Базовая:</span>
                                         <span>{baseStats.attack}</span>
                                     </div>
@@ -545,10 +607,23 @@ export const GearView = ({
                                         fontFamily: "'Philosopher', 'Inter', sans-serif",
                                     }}
                                 >
-                                    <div style={{ color: '#10b981', fontWeight: 900, marginBottom: '5px', letterSpacing: '1px' }}>
+                                    <div
+                                        style={{
+                                            color: '#10b981',
+                                            fontWeight: 900,
+                                            marginBottom: '5px',
+                                            letterSpacing: '1px',
+                                        }}
+                                    >
                                         ПОКАЗАТЕЛЬ ЗАЩИТЫ
                                     </div>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '3px' }}>
+                                    <div
+                                        style={{
+                                            display: 'flex',
+                                            justifyContent: 'space-between',
+                                            marginBottom: '3px',
+                                        }}
+                                    >
                                         <span>Базовая:</span>
                                         <span>{baseStats.defense}</span>
                                     </div>
@@ -588,21 +663,39 @@ export const GearView = ({
                                         fontFamily: "'Philosopher', 'Inter', sans-serif",
                                     }}
                                 >
-                                    <div style={{ color: '#22c55e', fontWeight: 900, marginBottom: '5px', letterSpacing: '1px' }}>
+                                    <div
+                                        style={{
+                                            color: '#22c55e',
+                                            fontWeight: 900,
+                                            marginBottom: '5px',
+                                            letterSpacing: '1px',
+                                        }}
+                                    >
                                         СКОРОСТЬ ПЕРСОНАЖА
                                     </div>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '3px' }}>
+                                    <div
+                                        style={{
+                                            display: 'flex',
+                                            justifyContent: 'space-between',
+                                            marginBottom: '3px',
+                                        }}
+                                    >
                                         <span>Базовая:</span>
                                         <span>{(baseStats.speed ?? 0).toFixed(2)}</span>
                                     </div>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', color: '#10b981' }}>
                                         <span>Бонус экипировки:</span>
-                                        <span>+{Math.max(0, (currentStats.speed ?? 0) - (baseStats.speed ?? 0)).toFixed(2)}</span>
+                                        <span>
+                                            +
+                                            {Math.max(0, (currentStats.speed ?? 0) - (baseStats.speed ?? 0)).toFixed(2)}
+                                        </span>
                                     </div>
                                 </div>
                             )}
                             <div className="mockup-stat-label">СКОРОСТЬ</div>
-                            <div className="mockup-stat-value speed" style={{ color: '#22c55e' }}>💨 {(currentStats.speed ?? 0).toFixed(2)}</div>
+                            <div className="mockup-stat-value speed" style={{ color: '#22c55e' }}>
+                                💨 {(currentStats.speed ?? 0).toFixed(2)}
+                            </div>
                         </div>
 
                         <div
@@ -631,27 +724,43 @@ export const GearView = ({
                                         fontFamily: "'Philosopher', 'Inter', sans-serif",
                                     }}
                                 >
-                                    <div style={{ color: '#a855f7', fontWeight: 900, marginBottom: '5px', letterSpacing: '1px' }}>
+                                    <div
+                                        style={{
+                                            color: '#a855f7',
+                                            fontWeight: 900,
+                                            marginBottom: '5px',
+                                            letterSpacing: '1px',
+                                        }}
+                                    >
                                         КРИТ. ШАНС
                                     </div>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '3px' }}>
+                                    <div
+                                        style={{
+                                            display: 'flex',
+                                            justifyContent: 'space-between',
+                                            marginBottom: '3px',
+                                        }}
+                                    >
                                         <span>Базовый:</span>
                                         <span>{Math.round(baseStats.critChance ?? 0)}%</span>
                                     </div>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', color: '#10b981' }}>
                                         <span>Бонус экипировки:</span>
-                                        <span>+{Math.round((currentStats.critChance ?? 0) - (baseStats.critChance ?? 0))}%</span>
+                                        <span>
+                                            +{Math.round((currentStats.critChance ?? 0) - (baseStats.critChance ?? 0))}%
+                                        </span>
                                     </div>
                                 </div>
                             )}
                             <div className="mockup-stat-label">КРИТ. ШАНС</div>
-                            <div className="mockup-stat-value crit" style={{ color: '#a855f7' }}>💥 {Math.round(currentStats.critChance ?? 0)}%</div>
+                            <div className="mockup-stat-value crit" style={{ color: '#a855f7' }}>
+                                💥 {Math.round(currentStats.critChance ?? 0)}%
+                            </div>
                         </div>
                     </div>
 
                     {/* Bottom XP Progress Bar & unified Nameplate */}
                     <div className="mockup-xp-panel">
-
                         <div className="mockup-xp-name-row">
                             <span className="mockup-xp-hero-name">{displayHeroName}</span>
                             <span className="mockup-xp-level-badge">ур. {heroLevel}</span>
@@ -659,9 +768,7 @@ export const GearView = ({
 
                         <div className="mockup-xp-title-row">
                             <div className="title-divider-line" />
-                            <div className="mockup-xp-hero-title">
-                                {!isDefaultSkin ? activeSkin.name : hero.title}
-                            </div>
+                            <div className="mockup-xp-hero-title">{!isDefaultSkin ? activeSkin.name : hero.title}</div>
                             <div className="title-divider-line" />
                         </div>
 
@@ -677,13 +784,12 @@ export const GearView = ({
                             <div className="mockup-xp-labels-row">
                                 <span className="mockup-xp-label">ОПЫТ ГЕРОЯ</span>
                                 <span className="mockup-xp-value">
-                                    {heroExp} <span style={{ color: 'rgba(255, 255, 255, 0.3)' }}>/</span> {xpNeeded} ({Math.round(xpPercentage)}%)
+                                    {heroExp} <span style={{ color: 'rgba(255, 255, 255, 0.3)' }}>/</span> {xpNeeded} (
+                                    {Math.round(xpPercentage)}%)
                                 </span>
                             </div>
                         </div>
                     </div>
-
-
                 </div>
             </div>
 
@@ -731,11 +837,7 @@ export const GearView = ({
                                     transition: 'all 0.2s ease',
                                 }}
                             >
-                                {tab === 'INVENTORY'
-                                    ? 'ИНВЕНТАРЬ'
-                                    : tab === 'TALENTS'
-                                      ? 'ТАЛАНТЫ'
-                                      : 'ЛЕГЕНДА'}
+                                {tab === 'INVENTORY' ? 'ИНВЕНТАРЬ' : tab === 'TALENTS' ? 'ТАЛАНТЫ' : 'ЛЕГЕНДА'}
                             </button>
                         );
                     })}
@@ -773,10 +875,7 @@ export const GearView = ({
                             setGlobalHoveredItem={setGlobalHoveredItem}
                         />
                     ) : detailSubTab === 'STATS' ? (
-                        <HeroStatsPanel
-                            currentStats={currentStats}
-                            baseStats={baseStats}
-                        />
+                        <HeroStatsPanel currentStats={currentStats} baseStats={baseStats} />
                     ) : (
                         <div
                             style={{

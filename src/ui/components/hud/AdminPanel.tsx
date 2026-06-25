@@ -23,7 +23,6 @@ import {
     mapRawPlayerToRealPlayer,
 } from './Admin/AdminShared';
 
-
 type AdminTab = 'ИГРОК' | 'БОЙ' | 'СЕРВЕР' | 'ПОЧТА' | 'ЧАТ' | 'ОТЗЫВЫ' | 'СИСТЕМА';
 
 // ─── Feedback Tab ─────────────────────────────────────────────────────────────
@@ -37,9 +36,27 @@ interface FeedbackTabProps {
 }
 
 const FEEDBACK_COLUMNS = [
-    { key: 'BUG',      label: '🐞 БАГИ',              color: '#ef4444', dimColor: 'rgba(239,68,68,0.08)',   border: 'rgba(239,68,68,0.25)' },
-    { key: 'IDEA',     label: '💡 ПРЕДЛОЖЕНИЯ',        color: '#f59e0b', dimColor: 'rgba(245,158,11,0.08)',  border: 'rgba(245,158,11,0.25)' },
-    { key: 'QUESTION', label: '💬 ВОПРОСЫ / ДРУГОЕ',   color: '#3b82f6', dimColor: 'rgba(59,130,246,0.08)',  border: 'rgba(59,130,246,0.25)' },
+    {
+        key: 'BUG',
+        label: '🐞 БАГИ',
+        color: '#ef4444',
+        dimColor: 'rgba(239,68,68,0.08)',
+        border: 'rgba(239,68,68,0.25)',
+    },
+    {
+        key: 'IDEA',
+        label: '💡 ПРЕДЛОЖЕНИЯ',
+        color: '#f59e0b',
+        dimColor: 'rgba(245,158,11,0.08)',
+        border: 'rgba(245,158,11,0.25)',
+    },
+    {
+        key: 'QUESTION',
+        label: '💬 ВОПРОСЫ / ДРУГОЕ',
+        color: '#3b82f6',
+        dimColor: 'rgba(59,130,246,0.08)',
+        border: 'rgba(59,130,246,0.25)',
+    },
 ] as const;
 
 const formatFeedbackTime = (ts: number) => {
@@ -48,7 +65,13 @@ const formatFeedbackTime = (ts: number) => {
     return d.toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
 };
 
-const FeedbackTab: React.FC<FeedbackTabProps> = ({ feedbackList, isLoadingFeedback, onRefresh, onDelete, onGoToPlayer }) => (
+const FeedbackTab: React.FC<FeedbackTabProps> = ({
+    feedbackList,
+    isLoadingFeedback,
+    onRefresh,
+    onDelete,
+    onGoToPlayer,
+}) => (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', height: 'auto' }}>
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -91,26 +114,32 @@ const FeedbackTab: React.FC<FeedbackTabProps> = ({ feedbackList, isLoadingFeedba
                         }}
                     >
                         {/* Column header */}
-                        <div style={{
-                            padding: '12px 14px',
-                            borderBottom: `1px solid ${col.border}`,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'space-between',
-                        }}>
-                            <span style={{ fontSize: '12px', fontWeight: 900, color: col.color, letterSpacing: '0.5px' }}>
+                        <div
+                            style={{
+                                padding: '12px 14px',
+                                borderBottom: `1px solid ${col.border}`,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                            }}
+                        >
+                            <span
+                                style={{ fontSize: '12px', fontWeight: 900, color: col.color, letterSpacing: '0.5px' }}
+                            >
                                 {col.label}
                             </span>
-                            <span style={{
-                                background: col.color,
-                                color: '#000',
-                                fontWeight: 900,
-                                fontSize: '10px',
-                                borderRadius: '20px',
-                                padding: '1px 8px',
-                                minWidth: '22px',
-                                textAlign: 'center',
-                            }}>
+                            <span
+                                style={{
+                                    background: col.color,
+                                    color: '#000',
+                                    fontWeight: 900,
+                                    fontSize: '10px',
+                                    borderRadius: '20px',
+                                    padding: '1px 8px',
+                                    minWidth: '22px',
+                                    textAlign: 'center',
+                                }}
+                            >
                                 {items.length}
                             </span>
                         </div>
@@ -118,7 +147,14 @@ const FeedbackTab: React.FC<FeedbackTabProps> = ({ feedbackList, isLoadingFeedba
                         {/* Cards list */}
                         <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '0' }}>
                             {items.length === 0 ? (
-                                <div style={{ padding: '30px 14px', textAlign: 'center', color: '#444', fontSize: '12px' }}>
+                                <div
+                                    style={{
+                                        padding: '30px 14px',
+                                        textAlign: 'center',
+                                        color: '#444',
+                                        fontSize: '12px',
+                                    }}
+                                >
                                     Отзывов нет
                                 </div>
                             ) : (
@@ -134,9 +170,33 @@ const FeedbackTab: React.FC<FeedbackTabProps> = ({ feedbackList, isLoadingFeedba
                                         }}
                                     >
                                         {/* Sender row */}
-                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '6px' }}>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flex: 1, minWidth: 0 }}>
-                                                <span style={{ fontSize: '11px', fontWeight: 700, color: '#e2e2e2', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                        <div
+                                            style={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'space-between',
+                                                gap: '6px',
+                                            }}
+                                        >
+                                            <div
+                                                style={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: '6px',
+                                                    flex: 1,
+                                                    minWidth: 0,
+                                                }}
+                                            >
+                                                <span
+                                                    style={{
+                                                        fontSize: '11px',
+                                                        fontWeight: 700,
+                                                        color: '#e2e2e2',
+                                                        overflow: 'hidden',
+                                                        textOverflow: 'ellipsis',
+                                                        whiteSpace: 'nowrap',
+                                                    }}
+                                                >
                                                     {f.userName || 'Игрок'}
                                                 </span>
                                                 {f.level > 0 && (
@@ -153,27 +213,45 @@ const FeedbackTab: React.FC<FeedbackTabProps> = ({ feedbackList, isLoadingFeedba
                                         {/* Platform / version */}
                                         <div style={{ display: 'flex', gap: '6px' }}>
                                             {f.platform && (
-                                                <span style={{ fontSize: '9px', color: '#666', background: 'rgba(255,255,255,0.04)', padding: '1px 6px', borderRadius: '4px' }}>
+                                                <span
+                                                    style={{
+                                                        fontSize: '9px',
+                                                        color: '#666',
+                                                        background: 'rgba(255,255,255,0.04)',
+                                                        padding: '1px 6px',
+                                                        borderRadius: '4px',
+                                                    }}
+                                                >
                                                     {f.platform}
                                                 </span>
                                             )}
                                             {f.version && (
-                                                <span style={{ fontSize: '9px', color: '#666', background: 'rgba(255,255,255,0.04)', padding: '1px 6px', borderRadius: '4px' }}>
+                                                <span
+                                                    style={{
+                                                        fontSize: '9px',
+                                                        color: '#666',
+                                                        background: 'rgba(255,255,255,0.04)',
+                                                        padding: '1px 6px',
+                                                        borderRadius: '4px',
+                                                    }}
+                                                >
                                                     {f.version}
                                                 </span>
                                             )}
                                         </div>
 
                                         {/* Feedback text */}
-                                        <div style={{
-                                            fontSize: '12px',
-                                            color: '#ccc',
-                                            lineHeight: '1.5',
-                                            background: 'rgba(0,0,0,0.25)',
-                                            padding: '8px 10px',
-                                            borderRadius: '7px',
-                                            wordBreak: 'break-word',
-                                        }}>
+                                        <div
+                                            style={{
+                                                fontSize: '12px',
+                                                color: '#ccc',
+                                                lineHeight: '1.5',
+                                                background: 'rgba(0,0,0,0.25)',
+                                                padding: '8px 10px',
+                                                borderRadius: '7px',
+                                                wordBreak: 'break-word',
+                                            }}
+                                        >
                                             {f.text}
                                         </div>
 
@@ -702,13 +780,15 @@ const AdminPanelContent: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                     </div>
                 );
             case 'ОТЗЫВЫ':
-                return <FeedbackTab
-                    feedbackList={feedbackList}
-                    isLoadingFeedback={isLoadingFeedback}
-                    onRefresh={refreshFeedback}
-                    onDelete={handleDeleteFeedback}
-                    onGoToPlayer={handleGoToPlayer}
-                />;
+                return (
+                    <FeedbackTab
+                        feedbackList={feedbackList}
+                        isLoadingFeedback={isLoadingFeedback}
+                        onRefresh={refreshFeedback}
+                        onDelete={handleDeleteFeedback}
+                        onGoToPlayer={handleGoToPlayer}
+                    />
+                );
         }
     };
 

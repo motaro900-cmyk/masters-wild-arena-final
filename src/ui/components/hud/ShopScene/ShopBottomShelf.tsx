@@ -22,7 +22,6 @@ interface ShopBottomShelfProps {
 export const ShopBottomShelf: React.FC<ShopBottomShelfProps> = ({
     isMobile,
     activeMainTab,
-    activeSubTab,
     filteredItems,
     selectedItem,
     playerLevel,
@@ -260,7 +259,7 @@ export const ShopBottomShelf: React.FC<ShopBottomShelfProps> = ({
                                 display: 'flex',
                                 gap: '16px',
                                 alignItems: 'center',
-                                justifyContent: 'flex-start',
+                                justifyContent: 'center',
                             }}
                         >
                             {paginatedItems.map((item: ShopItem) => (

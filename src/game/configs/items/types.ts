@@ -46,8 +46,6 @@ export interface IEquipmentStats extends IBaseItem {
     defenseBonus?: number;
     hpBonus?: number;
 
-
-
     // Технические поля
     textureKey?: string;
     visualSocket?: 'MainHand' | 'OffHand' | 'Head' | 'Chest';

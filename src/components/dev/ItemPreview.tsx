@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
+import * as Sentry from '@sentry/react';
 
 export interface ItemPreviewData {
     id: string;
@@ -51,6 +52,17 @@ const getRarityGradient = (rarity: string) => {
 };
 
 export const ItemPreview: React.FC<ItemPreviewProps> = ({ item }) => {
+    useEffect(() => {
+        console.warn('[DEPRECATED IMPORT] ItemPreview legacy component is mounted.');
+        try {
+            Sentry.withScope((scope) => {
+                scope.setTag('migration_phase', 'deprecation_stage');
+                scope.setExtra('legacy_component', 'ItemPreview');
+                Sentry.captureMessage('Legacy Component Access: ItemPreview', 'warning');
+            });
+        } catch (e) {}
+    }, []);
+
     const glow = getRarityColor(item.rarity);
     const borderStyle =
         item.rarity === 'MYTHIC'

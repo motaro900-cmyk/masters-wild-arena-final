@@ -44,11 +44,7 @@ export const EquipmentSlot = ({ id, itemId, activeDraggingId, onClick, setGlobal
     return (
         <motion.div
             className={`equipment-slot-circle ${itemData ? 'has-item' : 'empty-slot'} ${
-                activeDraggingId
-                    ? isCompatible
-                        ? 'drag-compatible'
-                        : 'drag-incompatible'
-                    : ''
+                activeDraggingId ? (isCompatible ? 'drag-compatible' : 'drag-incompatible') : ''
             } ${isOver ? 'drag-over' : ''}`}
             whileHover={itemId ? { scale: 1.05, zIndex: 10 } : { background: 'rgba(240,192,64,0.1)' }}
             onMouseEnter={(e: any) => itemId && setGlobalHoveredItem(itemId, e.clientX, e.clientY)}
@@ -64,7 +60,7 @@ export const EquipmentSlot = ({ id, itemId, activeDraggingId, onClick, setGlobal
             transition={isCompatible ? { duration: 1.2, repeat: Infinity, ease: 'easeInOut' } : {}}
             onClick={onClick}
             ref={setNodeRef}
-        style={{
+            style={{
                 width: '104px',
                 height: '104px',
                 background: isOver
@@ -95,31 +91,51 @@ export const EquipmentSlot = ({ id, itemId, activeDraggingId, onClick, setGlobal
             }}
         >
             {/* Outer corner accents */}
-            {['tl','tr','bl','br'].map((pos) => (
-                <div key={pos} style={{
-                    position: 'absolute',
-                    width: '10px', height: '10px',
-                    ...(pos === 'tl' ? { top: 3, left: 3 } : {}),
-                    ...(pos === 'tr' ? { top: 3, right: 3 } : {}),
-                    ...(pos === 'bl' ? { bottom: 3, left: 3 } : {}),
-                    ...(pos === 'br' ? { bottom: 3, right: 3 } : {}),
-                    borderTop: ['tl','tr'].includes(pos) ? `1.5px solid ${isCompatible ? '#f0c040' : 'rgba(240,192,64,0.4)'}` : 'none',
-                    borderBottom: ['bl','br'].includes(pos) ? `1.5px solid ${isCompatible ? '#f0c040' : 'rgba(240,192,64,0.4)'}` : 'none',
-                    borderLeft: ['tl','bl'].includes(pos) ? `1.5px solid ${isCompatible ? '#f0c040' : 'rgba(240,192,64,0.4)'}` : 'none',
-                    borderRight: ['tr','br'].includes(pos) ? `1.5px solid ${isCompatible ? '#f0c040' : 'rgba(240,192,64,0.4)'}` : 'none',
-                    pointerEvents: 'none',
-                    zIndex: 3,
-                }} />
+            {['tl', 'tr', 'bl', 'br'].map((pos) => (
+                <div
+                    key={pos}
+                    style={{
+                        position: 'absolute',
+                        width: '10px',
+                        height: '10px',
+                        ...(pos === 'tl' ? { top: 3, left: 3 } : {}),
+                        ...(pos === 'tr' ? { top: 3, right: 3 } : {}),
+                        ...(pos === 'bl' ? { bottom: 3, left: 3 } : {}),
+                        ...(pos === 'br' ? { bottom: 3, right: 3 } : {}),
+                        borderTop: ['tl', 'tr'].includes(pos)
+                            ? `1.5px solid ${isCompatible ? '#f0c040' : 'rgba(240,192,64,0.4)'}`
+                            : 'none',
+                        borderBottom: ['bl', 'br'].includes(pos)
+                            ? `1.5px solid ${isCompatible ? '#f0c040' : 'rgba(240,192,64,0.4)'}`
+                            : 'none',
+                        borderLeft: ['tl', 'bl'].includes(pos)
+                            ? `1.5px solid ${isCompatible ? '#f0c040' : 'rgba(240,192,64,0.4)'}`
+                            : 'none',
+                        borderRight: ['tr', 'br'].includes(pos)
+                            ? `1.5px solid ${isCompatible ? '#f0c040' : 'rgba(240,192,64,0.4)'}`
+                            : 'none',
+                        pointerEvents: 'none',
+                        zIndex: 3,
+                    }}
+                />
             ))}
 
             {itemData ? (
                 itemData.spriteClass ? (
-                    <div className={itemData.spriteClass} style={{ width: '72px', height: '72px', zIndex: 2, borderRadius: '12px' }} />
+                    <div
+                        className={itemData.spriteClass}
+                        style={{ width: '72px', height: '72px', zIndex: 2, borderRadius: '12px' }}
+                    />
                 ) : (
                     <img
                         src={resolveAssetPath(itemData.image)}
-                        style={{ width: '68%', height: '68%', objectFit: 'contain', zIndex: 2,
-                            filter: `drop-shadow(0 2px 6px rgba(0,0,0,0.8)) drop-shadow(0 0 8px ${rarityColor}55)` }}
+                        style={{
+                            width: '68%',
+                            height: '68%',
+                            objectFit: 'contain',
+                            zIndex: 2,
+                            filter: `drop-shadow(0 2px 6px rgba(0,0,0,0.8)) drop-shadow(0 0 8px ${rarityColor}55)`,
+                        }}
                         alt=""
                     />
                 )

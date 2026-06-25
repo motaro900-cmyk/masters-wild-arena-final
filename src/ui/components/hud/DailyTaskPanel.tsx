@@ -35,7 +35,7 @@ export const DailyTaskPanel = React.memo(() => {
         return () => window.removeEventListener('resize', checkLayout);
     }, [isMobileFromStore]);
 
-    const [floatingRewards, setFloatingRewards] = useState<{ id: number; text: string; x: number; y: number }[]>([]);
+    const [floatingRewards, setFloatingRewards] = useState<{ id: number; amount: number; type: string; x: number; y: number }[]>([]);
 
     const handleClaimReward = (dq: IDailyQuest, qData: any, e: React.MouseEvent) => {
         e.stopPropagation();
@@ -48,9 +48,9 @@ export const DailyTaskPanel = React.memo(() => {
         const y = rect.top - (parentRect?.top || 0) - 10;
 
         const newRewards = [
-            { id: Date.now(), text: `+${qData.rewardGold} 💰`, x: x - 40, y: y },
-            { id: Date.now() + 1, text: `+${qData.rewardGems} 💎`, x: x, y: y - 15 },
-            { id: Date.now() + 2, text: `+${qData.rewardExp} ⭐`, x: x + 40, y: y },
+            { id: Date.now(), amount: qData.rewardGold, type: 'GOLD', x: x - 40, y: y },
+            { id: Date.now() + 1, amount: qData.rewardGems, type: 'GEM', x: x, y: y - 15 },
+            { id: Date.now() + 2, amount: qData.rewardExp, type: 'EXP', x: x + 40, y: y },
         ];
 
         setFloatingRewards((prev) => [...prev, ...newRewards]);
@@ -362,64 +362,76 @@ export const DailyTaskPanel = React.memo(() => {
                                                     ЗАБРАТЬ
                                                 </button>
                                             ) : (
-                                                 <div style={{ display: 'flex', alignItems: 'center', gap: isMobileLayout ? '5px' : '8px' }}>
-                                                     {/* Шкала прогресса */}
-                                                     <div
-                                                         style={{
-                                                             width: (hasVip && canInstantPass)
-                                                                 ? (isMobileLayout ? '50px' : '60px')
-                                                                 : (isMobileLayout ? '100px' : '120px'),
-                                                             height: '8px',
-                                                             background: 'rgba(0,0,0,0.1)',
-                                                             borderRadius: '4px',
-                                                             overflow: 'hidden',
-                                                         }}
-                                                     >
-                                                         <div
-                                                             style={{
-                                                                 width: `${(dq.progress / qData.target) * 100}%`,
-                                                                 height: '100%',
-                                                                 background: '#7a5828',
-                                                                 transition: 'width 0.3s',
-                                                             }}
-                                                         />
-                                                     </div>
+                                                <div
+                                                    style={{
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        gap: isMobileLayout ? '5px' : '8px',
+                                                    }}
+                                                >
+                                                    {/* Шкала прогресса */}
+                                                    <div
+                                                        style={{
+                                                            width:
+                                                                hasVip && canInstantPass
+                                                                    ? isMobileLayout
+                                                                        ? '50px'
+                                                                        : '60px'
+                                                                    : isMobileLayout
+                                                                      ? '100px'
+                                                                      : '120px',
+                                                            height: '8px',
+                                                            background: 'rgba(0,0,0,0.1)',
+                                                            borderRadius: '4px',
+                                                            overflow: 'hidden',
+                                                        }}
+                                                    >
+                                                        <div
+                                                            style={{
+                                                                width: `${(dq.progress / qData.target) * 100}%`,
+                                                                height: '100%',
+                                                                background: '#7a5828',
+                                                                transition: 'width 0.3s',
+                                                            }}
+                                                        />
+                                                    </div>
 
-                                                     {/* Кнопка VIP Пройти (показывается только при наличии VIP и возможности прохождения) */}
-                                                     {hasVip && canInstantPass && (
-                                                         <button
-                                                             onClick={(e) => {
-                                                                 e.stopPropagation();
-                                                                 handleInstantPassQuest(dq.questId);
-                                                             }}
-                                                             style={{
-                                                                 minWidth: 'unset',
-                                                                 minHeight: 'unset',
-                                                                 padding: isMobileLayout ? '2.5px 6px' : '3.5px 7px',
-                                                                 background: 'linear-gradient(180deg, #8b5cf6 0%, #6d28d9 100%)', // Фиолетовый градиент VIP
-                                                                 border: '1.2px solid #c084fc',
-                                                                 borderRadius: '4px',
-                                                                 color: '#ffffff',
-                                                                 fontWeight: 900,
-                                                                 fontSize: '9.5px',
-                                                                 cursor: 'pointer',
-                                                                 boxShadow: '0 0 8px rgba(139, 92, 246, 0.45)',
-                                                                 fontFamily: "'Montserrat', sans-serif",
-                                                                 display: 'flex',
-                                                                 alignItems: 'center',
-                                                                 justifyContent: 'center',
-                                                                 gap: '2px',
-                                                                 transition: 'all 0.2s',
-                                                                 pointerEvents: 'auto',
-                                                                 zIndex: 10,
-                                                             }}
-                                                             title="Авто-прохождение задания (1 раз в день для VIP)"
-                                                         >
-                                                             <span style={{ fontSize: '8.5px' }}>★</span>
-                                                             <span>{isMobileLayout ? 'АВТО' : 'VIP АВТО'}</span>
-                                                         </button>
-                                                     )}
-                                                 </div>
+                                                    {/* Кнопка VIP Пройти (показывается только при наличии VIP и возможности прохождения) */}
+                                                    {hasVip && canInstantPass && (
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                handleInstantPassQuest(dq.questId);
+                                                            }}
+                                                            style={{
+                                                                minWidth: 'unset',
+                                                                minHeight: 'unset',
+                                                                padding: isMobileLayout ? '2.5px 6px' : '3.5px 7px',
+                                                                background:
+                                                                    'linear-gradient(180deg, #8b5cf6 0%, #6d28d9 100%)', // Фиолетовый градиент VIP
+                                                                border: '1.2px solid #c084fc',
+                                                                borderRadius: '4px',
+                                                                color: '#ffffff',
+                                                                fontWeight: 900,
+                                                                fontSize: '9.5px',
+                                                                cursor: 'pointer',
+                                                                boxShadow: '0 0 8px rgba(139, 92, 246, 0.45)',
+                                                                fontFamily: "'Montserrat', sans-serif",
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                justifyContent: 'center',
+                                                                gap: '2px',
+                                                                transition: 'all 0.2s',
+                                                                pointerEvents: 'auto',
+                                                                zIndex: 10,
+                                                            }}
+                                                            title="Авто-прохождение задания (1 раз в день для VIP)"
+                                                        >
+                                                            <span style={{ fontSize: '8.5px' }}>★</span>
+                                                            <span>{isMobileLayout ? 'АВТО' : 'VIP АВТО'}</span>
+                                                        </button>
+                                                    )}
+                                                </div>
                                             )}
                                         </div>
                                     </div>
@@ -456,9 +468,9 @@ export const DailyTaskPanel = React.memo(() => {
                         style={{
                             position: 'absolute',
                             left: reward.x,
-                            color: reward.text.includes('💰')
+                            color: reward.type === 'GOLD'
                                 ? '#f1c40f'
-                                : reward.text.includes('💎')
+                                : reward.type === 'GEM'
                                   ? '#00ffff'
                                   : '#38bdf8',
                             fontWeight: 900,
@@ -467,9 +479,33 @@ export const DailyTaskPanel = React.memo(() => {
                             textShadow: '0 2px 6px #000, 0 0 10px rgba(0,0,0,0.8)',
                             pointerEvents: 'none',
                             zIndex: 1000,
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px',
                         }}
                     >
-                        {reward.text}
+                        <span>+{reward.amount}</span>
+                        {reward.type === 'GOLD' && (
+                            <img
+                                src={AssetsMap.UI.ICON_GOLD_FULL}
+                                alt=""
+                                style={{ width: '16px', height: '16px', objectFit: 'contain' }}
+                            />
+                        )}
+                        {reward.type === 'GEM' && (
+                            <img
+                                src={AssetsMap.UI.ICON_ALMAZ_FULL}
+                                alt=""
+                                style={{ width: '16px', height: '16px', objectFit: 'contain' }}
+                            />
+                        )}
+                        {reward.type === 'EXP' && (
+                            <img
+                                src={AssetsMap.UI.ICON_XP}
+                                alt="xp"
+                                style={{ width: '16px', height: '16px', objectFit: 'contain' }}
+                            />
+                        )}
                     </motion.div>
                 ))}
             </AnimatePresence>

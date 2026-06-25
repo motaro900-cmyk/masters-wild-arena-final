@@ -47,7 +47,15 @@ export const ClanStoreTab: React.FC<ClanStoreTabProps> = ({ colors, onBuyItem })
                             fontSize: '32px',
                         }}
                     >
-                        {item.icon}
+                        {item.icon.startsWith('/') ? (
+                            <img
+                                src={item.icon}
+                                alt=""
+                                style={{ width: '28px', height: '28px', objectFit: 'contain' }}
+                            />
+                        ) : (
+                            item.icon
+                        )}
                     </div>
                     <div style={{ flex: 1 }}>
                         <div style={{ fontSize: '14px', fontWeight: 900, color: colors.accent }}>{item.name}</div>

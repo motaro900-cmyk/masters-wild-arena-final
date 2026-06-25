@@ -97,7 +97,7 @@ export const smallBtnStyle: React.CSSProperties = {
 };
 
 // --- BASE COMPONENTS ---
-export const Section: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
+export const Section: React.FC<{ title: React.ReactNode; children: React.ReactNode }> = ({ title, children }) => (
     <div style={sectionStyle}>
         <div
             style={{
@@ -297,6 +297,7 @@ export const mapRawPlayerToRealPlayer = (p: any): RealPlayer => {
         maxEnergy: maxEnergyVal,
         inventory: inventoryVal,
         talentPoints: p.talentPoints !== undefined ? p.talentPoints : parsedState.talentPoints || 0,
-        hasInfiniteEnergy: p.hasInfiniteEnergy !== undefined ? p.hasInfiniteEnergy : parsedState.hasInfiniteEnergy || false,
+        hasInfiniteEnergy:
+            p.hasInfiniteEnergy !== undefined ? p.hasInfiniteEnergy : parsedState.hasInfiniteEnergy || false,
     };
 };

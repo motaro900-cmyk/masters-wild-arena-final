@@ -199,7 +199,7 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({ onStartBattle, onW
                 >
                     {/* ЛЕВАЯ КНОПКА (Синяя) */}
                     <motion.button
-                        className={isMobile ? "action-btn-mobile" : ""}
+                        className={isMobile ? 'action-btn-mobile' : ''}
                         whileTap={{ scale: 0.92 }}
                         onClick={(e) => {
                             e.stopPropagation();
@@ -263,9 +263,17 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({ onStartBattle, onW
                                         color: '#a0c0ff',
                                         fontWeight: 800,
                                         letterSpacing: '1px',
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        gap: '2px',
                                     }}
                                 >
-                                    0 ⚡
+                                    0
+                                    <img
+                                        src={AssetsMap.UI.ICON_ENERGY_FULL}
+                                        alt="energy"
+                                        style={{ width: '10px', height: '10px', objectFit: 'contain' }}
+                                    />
                                 </span>
                             </div>
                         </div>
@@ -273,7 +281,7 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({ onStartBattle, onW
 
                     {/* ПРАВАЯ КНОПКА (Красная) */}
                     <motion.button
-                        className={isMobile ? "action-btn-mobile" : ""}
+                        className={isMobile ? 'action-btn-mobile' : ''}
                         whileTap={{ scale: 0.92 }}
                         onClick={(e) => {
                             e.stopPropagation();
@@ -311,7 +319,14 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({ onStartBattle, onW
                     >
                         {energyError ? (
                             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
-                                <div style={{ fontSize: '22px', fontWeight: 950 }}>НУЖНО 10 ⚡</div>
+                                <div style={{ fontSize: '22px', fontWeight: 950, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                    <span>НУЖНО 10</span>
+                                    <img
+                                        src={AssetsMap.UI.ICON_ENERGY_FULL}
+                                        alt="energy"
+                                        style={{ width: '22px', height: '22px', objectFit: 'contain', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))' }}
+                                    />
+                                </div>
                             </div>
                         ) : (
                             <>

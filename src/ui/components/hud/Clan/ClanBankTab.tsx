@@ -43,7 +43,7 @@ export const ClanBankTab: React.FC<ClanBankTabProps> = ({
 }) => {
     const [donateCurrency, setDonateCurrency] = useState<'GOLD' | 'ALMAZ'>('GOLD');
     const [withdrawCurrency, setWithdrawCurrency] = useState<'GOLD' | 'ALMAZ'>('GOLD');
-    
+
     const [donateAmount, setDonateAmount] = useState<number>(100);
     const [withdrawAmount, setWithdrawAmount] = useState<number>(1000);
 
@@ -68,17 +68,19 @@ export const ClanBankTab: React.FC<ClanBankTabProps> = ({
     };
 
     const handleQuickPreset = (amount: number) => {
-        const remainingLimit = donateCurrency === 'GOLD' 
-            ? maxDailyGold - dailyGoldContributed 
-            : maxDailyCrystals - dailyCrystalsContributed;
+        const remainingLimit =
+            donateCurrency === 'GOLD'
+                ? maxDailyGold - dailyGoldContributed
+                : maxDailyCrystals - dailyCrystalsContributed;
         setDonateAmount(Math.max(0, Math.min(amount, remainingLimit)));
     };
 
     const handleLocalDonate = () => {
-        const remainingLimit = donateCurrency === 'GOLD' 
-            ? maxDailyGold - dailyGoldContributed 
-            : maxDailyCrystals - dailyCrystalsContributed;
-        
+        const remainingLimit =
+            donateCurrency === 'GOLD'
+                ? maxDailyGold - dailyGoldContributed
+                : maxDailyCrystals - dailyCrystalsContributed;
+
         if (donateAmount > remainingLimit) {
             useGameStore.getState().showAlert(`Превышен дневной лимит взноса! Доступно сегодня: ${remainingLimit}`);
             return;
@@ -149,10 +151,10 @@ export const ClanBankTab: React.FC<ClanBankTabProps> = ({
 
     // Перки разблокируются при достижении каждого уровня казны (1–5)
     const perks = [
-        { lvl: 1, reqClanLvl: 1,  desc: 'Ставка: +0.10% золота / +0.05% алмазов в час.', cost: 15000 },
-        { lvl: 2, reqClanLvl: 3,  desc: 'Ставка: +0.20% золота / +0.10% алмазов в час.', cost: 30000 },
-        { lvl: 3, reqClanLvl: 6,  desc: 'Ставка: +0.30% золота / +0.15% алмазов в час.', cost: 50000 },
-        { lvl: 4, reqClanLvl: 9,  desc: 'Ставка: +0.40% золота / +0.20% алмазов в час.', cost: 75000 },
+        { lvl: 1, reqClanLvl: 1, desc: 'Ставка: +0.10% золота / +0.05% алмазов в час.', cost: 15000 },
+        { lvl: 2, reqClanLvl: 3, desc: 'Ставка: +0.20% золота / +0.10% алмазов в час.', cost: 30000 },
+        { lvl: 3, reqClanLvl: 6, desc: 'Ставка: +0.30% золота / +0.15% алмазов в час.', cost: 50000 },
+        { lvl: 4, reqClanLvl: 9, desc: 'Ставка: +0.40% золота / +0.20% алмазов в час.', cost: 75000 },
         { lvl: 5, reqClanLvl: 12, desc: 'Ставка: +0.50% золота / +0.25% алмазов в час.', cost: 100000 },
     ];
 
@@ -183,7 +185,15 @@ export const ClanBankTab: React.FC<ClanBankTabProps> = ({
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                     <div style={{ fontSize: '24px' }}>🛡️</div>
                     <div>
-                        <div style={{ fontSize: '15px', fontWeight: 900, color: colors.accent, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                        <div
+                            style={{
+                                fontSize: '15px',
+                                fontWeight: 900,
+                                color: colors.accent,
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.5px',
+                            }}
+                        >
                             Казна Клана (Ур. {bankLevel})
                         </div>
                         <div style={{ fontSize: '11px', opacity: 0.6 }}>
@@ -205,7 +215,15 @@ export const ClanBankTab: React.FC<ClanBankTabProps> = ({
                     }}
                 >
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <span style={{ fontSize: '12px', fontWeight: 900, color: colors.accent, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                        <span
+                            style={{
+                                fontSize: '12px',
+                                fontWeight: 900,
+                                color: colors.accent,
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.5px',
+                            }}
+                        >
                             Уровень Клана: {clanLevelData?.level || 1}
                         </span>
                         <span style={{ fontSize: '11px', fontWeight: 800, color: '#4ade80' }}>
@@ -213,7 +231,15 @@ export const ClanBankTab: React.FC<ClanBankTabProps> = ({
                         </span>
                     </div>
                     {/* XP Progress Bar */}
-                    <div style={{ width: '100%', height: '8px', background: 'rgba(0,0,0,0.5)', borderRadius: '4px', overflow: 'hidden' }}>
+                    <div
+                        style={{
+                            width: '100%',
+                            height: '8px',
+                            background: 'rgba(0,0,0,0.5)',
+                            borderRadius: '4px',
+                            overflow: 'hidden',
+                        }}
+                    >
                         <div
                             style={{
                                 width: `${Math.min(100, ((clanLevelData?.xp || 0) / (clanLevelData?.maxXp || 1000)) * 100)}%`,
@@ -243,24 +269,73 @@ export const ClanBankTab: React.FC<ClanBankTabProps> = ({
                     <div style={{ display: 'flex', justifyContent: 'space-around', alignItems: 'center' }}>
                         {/* Gold Reserve */}
                         <div style={{ textAlign: 'center', flex: 1 }}>
-                            <div style={{ fontSize: '10px', fontWeight: 800, opacity: 0.5, textTransform: 'uppercase', letterSpacing: '1px' }}>
+                            <div
+                                style={{
+                                    fontSize: '10px',
+                                    fontWeight: 800,
+                                    opacity: 0.5,
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '1px',
+                                }}
+                            >
                                 ЗОЛОТОЙ ЗАПАС
                             </div>
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', marginTop: '6px' }}>
+                            <div
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '6px',
+                                    marginTop: '6px',
+                                }}
+                            >
                                 <CurrencyIcon type="GOLD" size={20} />
-                                <span style={{ fontSize: '24px', fontWeight: 900, color: '#f0c040', textShadow: '0 0 10px rgba(240,192,64,0.2)' }}>
+                                <span
+                                    style={{
+                                        fontSize: '24px',
+                                        fontWeight: 900,
+                                        color: '#f0c040',
+                                        textShadow: '0 0 10px rgba(240,192,64,0.2)',
+                                    }}
+                                >
                                     {goldBank.toLocaleString()}
                                 </span>
                             </div>
-                            <div style={{ fontSize: '11px', color: '#4ade80', fontWeight: 800, marginTop: '6px', textShadow: '0 0 4px rgba(74,222,128,0.2)' }}>
+                            <div
+                                style={{
+                                    fontSize: '11px',
+                                    color: '#4ade80',
+                                    fontWeight: 800,
+                                    marginTop: '6px',
+                                    textShadow: '0 0 4px rgba(74,222,128,0.2)',
+                                }}
+                            >
                                 +{(goldRate * 100).toFixed(2)}% в час
                             </div>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', marginTop: '6px', background: 'rgba(0,0,0,0.3)', padding: '6px 8px', borderRadius: '6px' }}>
+                            <div
+                                style={{
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    gap: '3px',
+                                    marginTop: '6px',
+                                    background: 'rgba(0,0,0,0.3)',
+                                    padding: '6px 8px',
+                                    borderRadius: '6px',
+                                }}
+                            >
                                 <div style={{ fontSize: '11px', color: '#ccc', fontWeight: 800 }}>
-                                    Доход: <span style={{ color: '#4ade80', fontWeight: 900 }}>+{formatIncome(goldHourlyIncomeVal)}</span> 🪙/ч
+                                    Доход:{' '}
+                                    <span style={{ color: '#4ade80', fontWeight: 900 }}>
+                                        +{formatIncome(goldHourlyIncomeVal)}
+                                    </span>{' '}
+                                    <CurrencyIcon type="GOLD" size={11} />/ч
                                 </div>
                                 <div style={{ fontSize: '11px', color: '#ccc', fontWeight: 800 }}>
-                                    В сутки: <span style={{ color: '#4ade80', fontWeight: 900 }}>+{formatIncome(goldDailyIncomeVal)}</span> 🪙
+                                    В сутки:{' '}
+                                    <span style={{ color: '#4ade80', fontWeight: 900 }}>
+                                        +{formatIncome(goldDailyIncomeVal)}
+                                    </span>{' '}
+                                    <CurrencyIcon type="GOLD" size={11} />
                                 </div>
                             </div>
                         </div>
@@ -270,24 +345,73 @@ export const ClanBankTab: React.FC<ClanBankTabProps> = ({
 
                         {/* Crystals Reserve */}
                         <div style={{ textAlign: 'center', flex: 1 }}>
-                            <div style={{ fontSize: '10px', fontWeight: 800, opacity: 0.5, textTransform: 'uppercase', letterSpacing: '1px' }}>
+                            <div
+                                style={{
+                                    fontSize: '10px',
+                                    fontWeight: 800,
+                                    opacity: 0.5,
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '1px',
+                                }}
+                            >
                                 АЛМАЗНЫЙ ФОНД
                             </div>
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', marginTop: '6px' }}>
+                            <div
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '6px',
+                                    marginTop: '6px',
+                                }}
+                            >
                                 <CurrencyIcon type="ALMAZ" size={20} />
-                                <span style={{ fontSize: '24px', fontWeight: 900, color: '#60a5fa', textShadow: '0 0 10px rgba(96,165,250,0.2)' }}>
+                                <span
+                                    style={{
+                                        fontSize: '24px',
+                                        fontWeight: 900,
+                                        color: '#60a5fa',
+                                        textShadow: '0 0 10px rgba(96,165,250,0.2)',
+                                    }}
+                                >
                                     {crystalsBank.toLocaleString()}
                                 </span>
                             </div>
-                            <div style={{ fontSize: '11px', color: '#60a5fa', fontWeight: 800, marginTop: '6px', textShadow: '0 0 4px rgba(96,165,250,0.2)' }}>
+                            <div
+                                style={{
+                                    fontSize: '11px',
+                                    color: '#60a5fa',
+                                    fontWeight: 800,
+                                    marginTop: '6px',
+                                    textShadow: '0 0 4px rgba(96,165,250,0.2)',
+                                }}
+                            >
                                 +{(crystalsRate * 100).toFixed(2)}% в час
                             </div>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', marginTop: '6px', background: 'rgba(0,0,0,0.3)', padding: '6px 8px', borderRadius: '6px' }}>
+                            <div
+                                style={{
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    gap: '3px',
+                                    marginTop: '6px',
+                                    background: 'rgba(0,0,0,0.3)',
+                                    padding: '6px 8px',
+                                    borderRadius: '6px',
+                                }}
+                            >
                                 <div style={{ fontSize: '11px', color: '#ccc', fontWeight: 800 }}>
-                                    Доход: <span style={{ color: '#60a5fa', fontWeight: 900 }}>+{formatIncome(crystalsHourlyIncomeVal)}</span> 💎/ч
+                                    Доход:{' '}
+                                    <span style={{ color: '#60a5fa', fontWeight: 900 }}>
+                                        +{formatIncome(crystalsHourlyIncomeVal)}
+                                    </span>{' '}
+                                    <CurrencyIcon type="ALMAZ" size={11} />/ч
                                 </div>
                                 <div style={{ fontSize: '11px', color: '#ccc', fontWeight: 800 }}>
-                                    В сутки: <span style={{ color: '#60a5fa', fontWeight: 900 }}>+{formatIncome(crystalsDailyIncomeVal)}</span> 💎
+                                    В сутки:{' '}
+                                    <span style={{ color: '#60a5fa', fontWeight: 900 }}>
+                                        +{formatIncome(crystalsDailyIncomeVal)}
+                                    </span>{' '}
+                                    <CurrencyIcon type="ALMAZ" size={11} />
                                 </div>
                             </div>
                         </div>
@@ -307,12 +431,17 @@ export const ClanBankTab: React.FC<ClanBankTabProps> = ({
                     }}
                 >
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <span style={{ fontSize: '12px', fontWeight: 800, color: colors.accent, textTransform: 'uppercase' }}>
+                        <span
+                            style={{
+                                fontSize: '12px',
+                                fontWeight: 800,
+                                color: colors.accent,
+                                textTransform: 'uppercase',
+                            }}
+                        >
                             Улучшения Казны
                         </span>
-                        <span style={{ fontSize: '11px', opacity: 0.6 }}>
-                            Уровень {bankLevel} / 5
-                        </span>
+                        <span style={{ fontSize: '11px', opacity: 0.6 }}>Уровень {bankLevel} / 5</span>
                     </div>
 
                     {/* Perks List */}
@@ -334,29 +463,41 @@ export const ClanBankTab: React.FC<ClanBankTabProps> = ({
                                     }}
                                 >
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                        <div style={{
-                                            width: '20px',
-                                            height: '20px',
-                                            borderRadius: '50%',
-                                            background: isUnlocked ? '#4ade80' : 'rgba(255,255,255,0.1)',
-                                            color: '#000',
-                                            fontSize: '11px',
-                                            fontWeight: 900,
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                        }}>
+                                        <div
+                                            style={{
+                                                width: '20px',
+                                                height: '20px',
+                                                borderRadius: '50%',
+                                                background: isUnlocked ? '#4ade80' : 'rgba(255,255,255,0.1)',
+                                                color: '#000',
+                                                fontSize: '11px',
+                                                fontWeight: 900,
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                            }}
+                                        >
                                             {p.lvl}
                                         </div>
                                         <span style={{ fontSize: '11px', color: isUnlocked ? '#fff' : '#ccc' }}>
                                             {p.desc}
                                         </span>
                                     </div>
-                                    
+
                                     {!isUnlocked && (
-                                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', fontSize: '9px', fontWeight: 800 }}>
+                                        <div
+                                            style={{
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                alignItems: 'flex-end',
+                                                fontSize: '9px',
+                                                fontWeight: 800,
+                                            }}
+                                        >
                                             <span style={{ color: '#ef4444' }}>Ур. Клана: {p.reqClanLvl}</span>
-                                            <span style={{ color: '#f0c040', marginTop: '1px' }}>Цена: {p.cost.toLocaleString()} 🪙</span>
+                                            <span style={{ color: '#f0c040', marginTop: '1px', display: 'flex', alignItems: 'center', gap: '3px' }}>
+                                                Цена: {p.cost.toLocaleString()} <CurrencyIcon type="GOLD" size={10} />
+                                            </span>
                                         </div>
                                     )}
                                 </div>
@@ -366,27 +507,49 @@ export const ClanBankTab: React.FC<ClanBankTabProps> = ({
 
                     {/* Upgrade trigger */}
                     {bankLevel < 5 && (
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '4px', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '10px' }}>
+                        <div
+                            style={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                                marginTop: '4px',
+                                borderTop: '1px solid rgba(255,255,255,0.05)',
+                                paddingTop: '10px',
+                            }}
+                        >
                             <div>
                                 <div style={{ fontSize: '10px', opacity: 0.5 }}>Стоимость улучшения:</div>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '13px', fontWeight: 900, color: '#f0c040' }}>
+                                <div
+                                    style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '4px',
+                                        fontSize: '13px',
+                                        fontWeight: 900,
+                                        color: '#f0c040',
+                                    }}
+                                >
                                     <CurrencyIcon type="GOLD" size={14} />
                                     {upgradeCost.toLocaleString()}
                                 </div>
                                 {!isClanLevelMet && (
-                                    <div style={{ fontSize: '9px', color: '#ef4444', fontWeight: 800, marginTop: '2px' }}>
+                                    <div
+                                        style={{ fontSize: '9px', color: '#ef4444', fontWeight: 800, marginTop: '2px' }}
+                                    >
                                         Требуется ур. клана: {requiredClanLevel}
                                     </div>
                                 )}
                             </div>
 
-                            {(playerRole === 'LEADER' || playerRole === 'OFFICER') ? (
+                            {playerRole === 'LEADER' || playerRole === 'OFFICER' ? (
                                 <button
                                     onClick={onUpgradeBank}
                                     disabled={!canUpgrade}
                                     style={{
                                         padding: '8px 16px',
-                                        background: canUpgrade ? 'linear-gradient(180deg, #f0c040 0%, #a88020 100%)' : 'rgba(255,255,255,0.05)',
+                                        background: canUpgrade
+                                            ? 'linear-gradient(180deg, #f0c040 0%, #a88020 100%)'
+                                            : 'rgba(255,255,255,0.05)',
                                         border: 'none',
                                         borderRadius: '6px',
                                         color: canUpgrade ? '#000' : 'rgba(255,255,255,0.3)',
@@ -435,9 +598,16 @@ export const ClanBankTab: React.FC<ClanBankTabProps> = ({
                         <span style={{ fontSize: '12px', fontWeight: 800, color: '#fff', textTransform: 'uppercase' }}>
                             Сделать Взнос
                         </span>
-                        
+
                         {/* Currency switcher */}
-                        <div style={{ display: 'flex', background: 'rgba(0,0,0,0.4)', borderRadius: '6px', padding: '2px' }}>
+                        <div
+                            style={{
+                                display: 'flex',
+                                background: 'rgba(0,0,0,0.4)',
+                                borderRadius: '6px',
+                                padding: '2px',
+                            }}
+                        >
                             <button
                                 onClick={() => {
                                     setDonateCurrency('GOLD');
@@ -477,10 +647,16 @@ export const ClanBankTab: React.FC<ClanBankTabProps> = ({
                         </div>
                     </div>
 
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px', opacity: 0.6 }}>
-                        <span>
-                            Взнос {donateCurrency === 'GOLD' ? 'золота (1-500)' : 'алмазов (1-100)'}
-                        </span>
+                    <div
+                        style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            fontSize: '11px',
+                            opacity: 0.6,
+                        }}
+                    >
+                        <span>Взнос {donateCurrency === 'GOLD' ? 'золота (1-500)' : 'алмазов (1-100)'}</span>
                         <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
                             У вас: {donateCurrency === 'GOLD' ? gold.toLocaleString() : crystals.toLocaleString()}
                             <CurrencyIcon type={donateCurrency} size={11} />
@@ -488,24 +664,36 @@ export const ClanBankTab: React.FC<ClanBankTabProps> = ({
                     </div>
 
                     {/* Дневной лимит взносов */}
-                    <div style={{ 
-                        background: 'rgba(0,0,0,0.2)', 
-                        padding: '6px 12px', 
-                        borderRadius: '6px', 
-                        fontSize: '11px',
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        border: '1px solid rgba(255,255,255,0.05)',
-                        marginTop: '-4px'
-                    }}>
+                    <div
+                        style={{
+                            background: 'rgba(0,0,0,0.2)',
+                            padding: '6px 12px',
+                            borderRadius: '6px',
+                            fontSize: '11px',
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            border: '1px solid rgba(255,255,255,0.05)',
+                            marginTop: '-4px',
+                        }}
+                    >
                         <span style={{ color: '#ccc', fontWeight: 700 }}>Лимит сегодня:</span>
-                        <span style={{ fontWeight: 900, color: (donateCurrency === 'GOLD' ? dailyGoldContributed >= maxDailyGold : dailyCrystalsContributed >= maxDailyCrystals) ? '#ef4444' : colors.accent }}>
-                            {donateCurrency === 'GOLD' 
-                                ? `${dailyGoldContributed} / ${maxDailyGold}` 
-                                : `${dailyCrystalsContributed} / ${maxDailyCrystals}`}
-                            {' '}
-                            {donateCurrency === 'GOLD' ? '🪙' : '💎'}
+                        <span
+                            style={{
+                                fontWeight: 900,
+                                color: (
+                                    donateCurrency === 'GOLD'
+                                        ? dailyGoldContributed >= maxDailyGold
+                                        : dailyCrystalsContributed >= maxDailyCrystals
+                                )
+                                    ? '#ef4444'
+                                    : colors.accent,
+                            }}
+                        >
+                            {donateCurrency === 'GOLD'
+                                ? `${dailyGoldContributed} / ${maxDailyGold}`
+                                : `${dailyCrystalsContributed} / ${maxDailyCrystals}`}{' '}
+                            <CurrencyIcon type={donateCurrency} size={14} />
                         </span>
                     </div>
 
@@ -519,9 +707,10 @@ export const ClanBankTab: React.FC<ClanBankTabProps> = ({
                                 onChange={(e) => {
                                     const val = parseInt(e.target.value);
                                     const maxVal = donateCurrency === 'GOLD' ? 500 : 100;
-                                    const remainingLimit = donateCurrency === 'GOLD' 
-                                        ? maxDailyGold - dailyGoldContributed 
-                                        : maxDailyCrystals - dailyCrystalsContributed;
+                                    const remainingLimit =
+                                        donateCurrency === 'GOLD'
+                                            ? maxDailyGold - dailyGoldContributed
+                                            : maxDailyCrystals - dailyCrystalsContributed;
                                     if (isNaN(val)) {
                                         setDonateAmount(0);
                                     } else {
@@ -565,14 +754,20 @@ export const ClanBankTab: React.FC<ClanBankTabProps> = ({
                             onClick={handleLocalDonate}
                             style={{
                                 padding: '10px 24px',
-                                background: donateCurrency === 'GOLD' ? 'linear-gradient(180deg, #f0c040 0%, #a88020 100%)' : 'linear-gradient(180deg, #60a5fa 0%, #2563eb 100%)',
+                                background:
+                                    donateCurrency === 'GOLD'
+                                        ? 'linear-gradient(180deg, #f0c040 0%, #a88020 100%)'
+                                        : 'linear-gradient(180deg, #60a5fa 0%, #2563eb 100%)',
                                 border: 'none',
                                 borderRadius: '8px',
                                 color: donateCurrency === 'GOLD' ? '#000' : '#fff',
                                 fontWeight: 900,
                                 fontSize: '13px',
                                 cursor: 'pointer',
-                                boxShadow: donateCurrency === 'GOLD' ? '0 2px 8px rgba(240,192,64,0.25)' : '0 2px 8px rgba(96,165,250,0.25)',
+                                boxShadow:
+                                    donateCurrency === 'GOLD'
+                                        ? '0 2px 8px rgba(240,192,64,0.25)'
+                                        : '0 2px 8px rgba(96,165,250,0.25)',
                                 textTransform: 'uppercase',
                             }}
                         >
@@ -581,7 +776,14 @@ export const ClanBankTab: React.FC<ClanBankTabProps> = ({
                     </div>
 
                     {/* Presets and details */}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '2px' }}>
+                    <div
+                        style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            marginTop: '2px',
+                        }}
+                    >
                         <div style={{ display: 'flex', gap: '6px' }}>
                             {(donateCurrency === 'GOLD' ? [50, 100, 250, 500] : [10, 25, 50, 100]).map((preset) => (
                                 <button
@@ -589,10 +791,20 @@ export const ClanBankTab: React.FC<ClanBankTabProps> = ({
                                     onClick={() => handleQuickPreset(preset)}
                                     style={{
                                         padding: '4px 8px',
-                                        background: donateAmount === preset ? (donateCurrency === 'GOLD' ? 'rgba(240,192,64,0.15)' : 'rgba(96,165,250,0.15)') : 'rgba(0,0,0,0.3)',
+                                        background:
+                                            donateAmount === preset
+                                                ? donateCurrency === 'GOLD'
+                                                    ? 'rgba(240,192,64,0.15)'
+                                                    : 'rgba(96,165,250,0.15)'
+                                                : 'rgba(0,0,0,0.3)',
                                         border: `1px solid ${donateAmount === preset ? (donateCurrency === 'GOLD' ? '#f0c040' : '#60a5fa') : 'rgba(255,255,255,0.1)'}`,
                                         borderRadius: '6px',
-                                        color: donateAmount === preset ? (donateCurrency === 'GOLD' ? '#f0c040' : '#60a5fa') : '#fff',
+                                        color:
+                                            donateAmount === preset
+                                                ? donateCurrency === 'GOLD'
+                                                    ? '#f0c040'
+                                                    : '#60a5fa'
+                                                : '#fff',
                                         fontSize: '11px',
                                         cursor: 'pointer',
                                         transition: 'all 0.15s ease',
@@ -603,12 +815,18 @@ export const ClanBankTab: React.FC<ClanBankTabProps> = ({
                             ))}
                         </div>
                         {donateAmount > 0 && (
-                            <span style={{ fontSize: '10px', color: '#4ade80', fontWeight: 800, textAlign: 'right', display: 'inline-block' }}>
-                                {donateCurrency === 'GOLD' ? (
-                                    `Награда: +${Math.floor(donateAmount / 10)} монет • +${Math.floor(donateAmount / 20)} XP клана`
-                                ) : (
-                                    `Награда: +${donateAmount * 2} монет • +${donateAmount} XP клана`
-                                )}
+                            <span
+                                style={{
+                                    fontSize: '10px',
+                                    color: '#4ade80',
+                                    fontWeight: 800,
+                                    textAlign: 'right',
+                                    display: 'inline-block',
+                                }}
+                            >
+                                {donateCurrency === 'GOLD'
+                                    ? `Награда: +${Math.floor(donateAmount / 10)} монет • +${Math.floor(donateAmount / 20)} XP клана`
+                                    : `Награда: +${donateAmount * 2} монет • +${donateAmount} XP клана`}
                             </span>
                         )}
                     </div>
@@ -627,13 +845,28 @@ export const ClanBankTab: React.FC<ClanBankTabProps> = ({
                     }}
                 >
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <span style={{ fontSize: '12px', fontWeight: 800, color: colors.danger, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                        <span
+                            style={{
+                                fontSize: '12px',
+                                fontWeight: 800,
+                                color: colors.danger,
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.5px',
+                            }}
+                        >
                             💸 Снятие Средств
                         </span>
 
                         {hasWithdrawPermission && (
                             /* Currency switcher */
-                            <div style={{ display: 'flex', background: 'rgba(0,0,0,0.4)', borderRadius: '6px', padding: '2px' }}>
+                            <div
+                                style={{
+                                    display: 'flex',
+                                    background: 'rgba(0,0,0,0.4)',
+                                    borderRadius: '6px',
+                                    padding: '2px',
+                                }}
+                            >
                                 <button
                                     onClick={() => {
                                         setWithdrawCurrency('GOLD');
@@ -675,7 +908,16 @@ export const ClanBankTab: React.FC<ClanBankTabProps> = ({
                     </div>
 
                     {playerRole === 'LEADER' && (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px', paddingBottom: '8px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                        <div
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                                marginBottom: '4px',
+                                paddingBottom: '8px',
+                                borderBottom: '1px solid rgba(255,255,255,0.05)',
+                            }}
+                        >
                             <input
                                 type="checkbox"
                                 id="toggle-officers"
@@ -683,7 +925,10 @@ export const ClanBankTab: React.FC<ClanBankTabProps> = ({
                                 onChange={(e) => onToggleOfficersWithdraw(e.target.checked)}
                                 style={{ cursor: 'pointer' }}
                             />
-                            <label htmlFor="toggle-officers" style={{ fontSize: '11px', color: '#fff', cursor: 'pointer', fontWeight: 800 }}>
+                            <label
+                                htmlFor="toggle-officers"
+                                style={{ fontSize: '11px', color: '#fff', cursor: 'pointer', fontWeight: 800 }}
+                            >
                                 Разрешить заместителям (офицерам) снимать средства
                             </label>
                         </div>
@@ -713,7 +958,14 @@ export const ClanBankTab: React.FC<ClanBankTabProps> = ({
                                             fontWeight: 900,
                                         }}
                                     />
-                                    <div style={{ position: 'absolute', right: '10px', display: 'flex', alignItems: 'center' }}>
+                                    <div
+                                        style={{
+                                            position: 'absolute',
+                                            right: '10px',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                        }}
+                                    >
                                         <CurrencyIcon type={withdrawCurrency} size={14} />
                                     </div>
                                 </div>
@@ -746,7 +998,15 @@ export const ClanBankTab: React.FC<ClanBankTabProps> = ({
                             </div>
                         </div>
                     ) : (
-                        <div style={{ fontSize: '11px', opacity: 0.5, fontStyle: 'italic', textAlign: 'center', padding: '10px 0' }}>
+                        <div
+                            style={{
+                                fontSize: '11px',
+                                opacity: 0.5,
+                                fontStyle: 'italic',
+                                textAlign: 'center',
+                                padding: '10px 0',
+                            }}
+                        >
                             Снятие средств доступно только Главе и уполномоченным Офицерам.
                         </div>
                     )}
@@ -766,7 +1026,16 @@ export const ClanBankTab: React.FC<ClanBankTabProps> = ({
                         overflow: 'hidden',
                     }}
                 >
-                    <div style={{ fontSize: '12px', fontWeight: 800, color: colors.accent, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '12px' }}>
+                    <div
+                        style={{
+                            fontSize: '12px',
+                            fontWeight: 800,
+                            color: colors.accent,
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.5px',
+                            marginBottom: '12px',
+                        }}
+                    >
                         История Операций
                     </div>
 
@@ -796,35 +1065,65 @@ export const ClanBankTab: React.FC<ClanBankTabProps> = ({
                                     }}
                                 >
                                     <div>
-                                        <div style={{ fontSize: '13px', fontWeight: 800, color: '#fff', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                        <div
+                                            style={{
+                                                fontSize: '13px',
+                                                fontWeight: 800,
+                                                color: '#fff',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: '6px',
+                                            }}
+                                        >
                                             {tx.author}
                                             {tx.type === 'UPGRADE' && (
-                                                <span style={{ fontSize: '9px', background: 'rgba(96,165,250,0.15)', color: '#60a5fa', padding: '2px 6px', borderRadius: '4px', fontWeight: 900 }}>
+                                                <span
+                                                    style={{
+                                                        fontSize: '9px',
+                                                        background: 'rgba(96,165,250,0.15)',
+                                                        color: '#60a5fa',
+                                                        padding: '2px 6px',
+                                                        borderRadius: '4px',
+                                                        fontWeight: 900,
+                                                    }}
+                                                >
                                                     УЛУЧШЕНИЕ
                                                 </span>
                                             )}
                                         </div>
-                                        <div style={{ fontSize: '10px', opacity: 0.5 }}>
-                                            {tx.time}
-                                        </div>
+                                        <div style={{ fontSize: '10px', opacity: 0.5 }}>{tx.time}</div>
                                     </div>
                                     <div
                                         style={{
                                             fontSize: '13px',
                                             fontWeight: 900,
-                                            color: tx.type === 'DEPOSIT' ? '#4ade80' : (tx.type === 'WITHDRAW' ? '#ef4444' : '#3b82f6'),
+                                            color:
+                                                tx.type === 'DEPOSIT'
+                                                    ? '#4ade80'
+                                                    : tx.type === 'WITHDRAW'
+                                                      ? '#ef4444'
+                                                      : '#3b82f6',
                                             display: 'flex',
                                             alignItems: 'center',
                                             gap: '4px',
                                         }}
                                     >
-                                        {tx.type === 'DEPOSIT' ? '+' : '-'}{tx.amount}
+                                        {tx.type === 'DEPOSIT' ? '+' : '-'}
+                                        {tx.amount}
                                         <CurrencyIcon type={tx.currency || 'GOLD'} size={12} />
                                     </div>
                                 </div>
                             ))
                         ) : (
-                            <div style={{ fontSize: '11px', opacity: 0.4, textAlign: 'center', marginTop: '40px', fontStyle: 'italic' }}>
+                            <div
+                                style={{
+                                    fontSize: '11px',
+                                    opacity: 0.4,
+                                    textAlign: 'center',
+                                    marginTop: '40px',
+                                    fontStyle: 'italic',
+                                }}
+                            >
                                 История операций пуста. Сделайте первый вклад!
                             </div>
                         )}
@@ -834,20 +1133,22 @@ export const ClanBankTab: React.FC<ClanBankTabProps> = ({
 
             {/* Error message global */}
             {error && (
-                <div style={{
-                    position: 'absolute',
-                    bottom: '24px',
-                    left: '50%',
-                    transform: 'translateX(-50%)',
-                    background: 'rgba(239, 68, 68, 0.95)',
-                    border: '1.5px solid #ef4444',
-                    borderRadius: '8px',
-                    color: '#fff',
-                    padding: '8px 24px',
-                    fontSize: '12px',
-                    fontWeight: 900,
-                    zIndex: 999,
-                }}>
+                <div
+                    style={{
+                        position: 'absolute',
+                        bottom: '24px',
+                        left: '50%',
+                        transform: 'translateX(-50%)',
+                        background: 'rgba(239, 68, 68, 0.95)',
+                        border: '1.5px solid #ef4444',
+                        borderRadius: '8px',
+                        color: '#fff',
+                        padding: '8px 24px',
+                        fontSize: '12px',
+                        fontWeight: 900,
+                        zIndex: 999,
+                    }}
+                >
                     ⚠️ {error}
                 </div>
             )}

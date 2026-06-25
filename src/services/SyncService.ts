@@ -17,12 +17,7 @@
  */
 
 import { db, USERS_COLLECTION } from '../utils/firebase';
-import {
-    doc,
-    setDoc,
-    getDoc,
-    serverTimestamp,
-} from 'firebase/firestore';
+import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import { useGameStore } from '../store/useGameStore';
 import { getVkUserInfo } from '../utils/VKBridge';
 import { TimeService } from '../utils/TimeService';
@@ -37,8 +32,12 @@ import { resolveFriendProfiles } from './SocialService';
 
 export class SyncService {
     // Anchor to window so HMR module reloads reuse the same instance
-    private static get instance(): SyncService { return (window as any).__SYNC_SERVICE__; }
-    private static set instance(v: SyncService) { (window as any).__SYNC_SERVICE__ = v; }
+    private static get instance(): SyncService {
+        return (window as any).__SYNC_SERVICE__;
+    }
+    private static set instance(v: SyncService) {
+        (window as any).__SYNC_SERVICE__ = v;
+    }
     private syncInterval: any = null;
     private syncTimeout: ReturnType<typeof setTimeout> | null = null;
     private writeChain: Promise<any> = Promise.resolve();
@@ -259,9 +258,7 @@ export class SyncService {
 
             const vipEndTime = state.vipEndTime || 0;
             const isVipActive = state.vipLevel > 0 && vipEndTime > Date.now();
-            const vipDaysRemaining = isVipActive
-                ? Math.ceil((vipEndTime - Date.now()) / (24 * 60 * 60 * 1000))
-                : 0;
+            const vipDaysRemaining = isVipActive ? Math.ceil((vipEndTime - Date.now()) / (24 * 60 * 60 * 1000)) : 0;
 
             const equipmentSlice = {
                 WEAPONS: state.heroEquipment?.[selectedHeroId]?.WEAPONS || null,
@@ -301,9 +298,7 @@ export class SyncService {
                 isNewPlayer: !state.onboardingCompleted,
                 energy: state.energy || 0,
                 maxEnergy: state.maxEnergy || 0,
-                winRate: state.wins && state.totalBattles
-                    ? Math.round((state.wins / state.totalBattles) * 100)
-                    : 50,
+                winRate: state.wins && state.totalBattles ? Math.round((state.wins / state.totalBattles) * 100) : 50,
                 // Russian legacy keys
                 золото: state.gold || 0,
                 кристаллы: state.crystals || 0,
@@ -378,7 +373,11 @@ export class SyncService {
             this.syncInterval = null;
         }
         this.activeUnsubscribes.forEach((unsub) => {
-            try { unsub(); } catch (e) { console.error('[SyncService] Unsubscribe error:', e); }
+            try {
+                unsub();
+            } catch (e) {
+                console.error('[SyncService] Unsubscribe error:', e);
+            }
         });
         this.activeUnsubscribes = [];
     }
@@ -388,7 +387,7 @@ export class SyncService {
     public async loadPlayerData(userId: string): Promise<{ data: any; isNew: boolean } | null> {
         try {
             const playerRef = doc(db, USERS_COLLECTION, userId);
-            
+
             // Задаем таймаут 10 секунд на получение документа из Firebase
             let profileTimeoutId: any;
             const profileTimeout = new Promise<never>((_, reject) => {
@@ -423,7 +422,10 @@ export class SyncService {
                     if (dbFriendIds.length > 0) {
                         let friendTimeoutId: any;
                         const friendTimeout = new Promise<never>((_, reject) => {
-                            friendTimeoutId = setTimeout(() => reject(new Error('Firebase friends fetch timeout')), 3000);
+                            friendTimeoutId = setTimeout(
+                                () => reject(new Error('Firebase friends fetch timeout')),
+                                3000,
+                            );
                         });
                         try {
                             resolvedFriends = await Promise.race([resolveFriendProfiles(dbFriendIds), friendTimeout]);
@@ -478,14 +480,16 @@ export class SyncService {
                             processedData.loginStreak = data.loginStreak;
                         }
                         if (parsed.lastDailyGiftClaimedTime === undefined && data.lastDailyGiftClaimed) {
-                            processedData.lastDailyGiftClaimedTime = typeof data.lastDailyGiftClaimed.toMillis === 'function'
-                                ? data.lastDailyGiftClaimed.toMillis()
-                                : data.lastDailyGiftClaimed.seconds * 1000;
+                            processedData.lastDailyGiftClaimedTime =
+                                typeof data.lastDailyGiftClaimed.toMillis === 'function'
+                                    ? data.lastDailyGiftClaimed.toMillis()
+                                    : data.lastDailyGiftClaimed.seconds * 1000;
                         }
                         if (parsed.lastWheelSpinTime === undefined && data.lastWheelSpinTimeServer) {
-                            processedData.lastWheelSpinTime = typeof data.lastWheelSpinTimeServer.toMillis === 'function'
-                                ? data.lastWheelSpinTimeServer.toMillis()
-                                : data.lastWheelSpinTimeServer.seconds * 1000;
+                            processedData.lastWheelSpinTime =
+                                typeof data.lastWheelSpinTimeServer.toMillis === 'function'
+                                    ? data.lastWheelSpinTimeServer.toMillis()
+                                    : data.lastWheelSpinTimeServer.seconds * 1000;
                         }
                     } catch (e) {
                         console.error('[SyncService] Failed to parse полноеСостояниеJSON:', e);
@@ -513,22 +517,33 @@ export class SyncService {
                             processedData.loginStreak = data.loginStreak;
                         }
                         if (parsed.lastDailyGiftClaimedTime === undefined && data.lastDailyGiftClaimed) {
-                            processedData.lastDailyGiftClaimedTime = typeof data.lastDailyGiftClaimed.toMillis === 'function'
-                                ? data.lastDailyGiftClaimed.toMillis()
-                                : data.lastDailyGiftClaimed.seconds * 1000;
+                            processedData.lastDailyGiftClaimedTime =
+                                typeof data.lastDailyGiftClaimed.toMillis === 'function'
+                                    ? data.lastDailyGiftClaimed.toMillis()
+                                    : data.lastDailyGiftClaimed.seconds * 1000;
                         }
                         if (parsed.lastWheelSpinTime === undefined && data.lastWheelSpinTimeServer) {
-                            processedData.lastWheelSpinTime = typeof data.lastWheelSpinTimeServer.toMillis === 'function'
-                                ? data.lastWheelSpinTimeServer.toMillis()
-                                : data.lastWheelSpinTimeServer.seconds * 1000;
+                            processedData.lastWheelSpinTime =
+                                typeof data.lastWheelSpinTimeServer.toMillis === 'function'
+                                    ? data.lastWheelSpinTimeServer.toMillis()
+                                    : data.lastWheelSpinTimeServer.seconds * 1000;
                         }
-                        if ((!processedData.dailyQuests || processedData.dailyQuests.length === 0) && data.dailyQuests?.length > 0) {
+                        if (
+                            (!processedData.dailyQuests || processedData.dailyQuests.length === 0) &&
+                            data.dailyQuests?.length > 0
+                        ) {
                             processedData.dailyQuests = data.dailyQuests;
                         }
-                        if ((!processedData.bpDailyQuests || processedData.bpDailyQuests.length === 0) && data.bpDailyQuests?.length > 0) {
+                        if (
+                            (!processedData.bpDailyQuests || processedData.bpDailyQuests.length === 0) &&
+                            data.bpDailyQuests?.length > 0
+                        ) {
                             processedData.bpDailyQuests = data.bpDailyQuests;
                         }
-                        if ((!processedData.weeklyQuests || processedData.weeklyQuests.length === 0) && data.weeklyQuests?.length > 0) {
+                        if (
+                            (!processedData.weeklyQuests || processedData.weeklyQuests.length === 0) &&
+                            data.weeklyQuests?.length > 0
+                        ) {
                             processedData.weeklyQuests = data.weeklyQuests;
                         }
                     } catch (e) {

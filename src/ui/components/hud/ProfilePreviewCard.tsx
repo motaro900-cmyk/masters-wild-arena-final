@@ -157,7 +157,14 @@ export const ProfilePreviewCard: React.FC<ProfilePreviewCardProps> = ({
                     />
                     <img
                         src={AssetsMap.UI.LVL_BADGE}
-                        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', zIndex: 2 }}
+                        style={{
+                            position: 'absolute',
+                            inset: 0,
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'contain',
+                            zIndex: 2,
+                        }}
                         alt="lvl-bg"
                     />
                     <span

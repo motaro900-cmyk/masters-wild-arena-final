@@ -28,7 +28,7 @@ export const PlayerProfile: React.FC<PlayerProfileProps> = ({ onOpenProfile }) =
             exp: state.exp,
             vkUser: state.vkUser,
             name: state.name,
-        }))
+        })),
     );
     const selectedHeroId = store.selectedHeroId || 'panda_warrior';
     const avatar = store.avatar || 'панда.png';

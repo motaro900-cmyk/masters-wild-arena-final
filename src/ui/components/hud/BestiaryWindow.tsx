@@ -271,7 +271,12 @@ export const BestiaryWindow: React.FC = () => {
                                 border: '2px solid #f0c040',
                             }}
                         >
-                            <span style={{ fontSize: isMobile ? '28px' : '38px', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))' }}>
+                            <span
+                                style={{
+                                    fontSize: isMobile ? '28px' : '38px',
+                                    filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))',
+                                }}
+                            >
                                 🎁
                             </span>
                         </motion.div>
@@ -463,8 +468,13 @@ export const BestiaryWindow: React.FC = () => {
                                 ДАР ОТ ПИТОМЦА! 🐉
                             </h3>
                             <p style={{ color: '#d1a873', fontSize: '15px', margin: '0 0 10px 0', lineHeight: 1.5 }}>
-                                Ваш дракон <b>{pet?.name && pet.name !== 'undefined' && pet.name !== 'null' ? pet.name : 'Дракоша'}</b> вернулся из ежедневного путешествия по Великому Лесу и
-                                принес вам добычу!
+                                Ваш дракон{' '}
+                                <b>
+                                    {pet?.name && pet.name !== 'undefined' && pet.name !== 'null'
+                                        ? pet.name
+                                        : 'Дракоша'}
+                                </b>{' '}
+                                вернулся из ежедневного путешествия по Великому Лесу и принес вам добычу!
                             </p>
 
                             {/* Rewards List */}
@@ -478,7 +488,11 @@ export const BestiaryWindow: React.FC = () => {
                                         gap: '6px',
                                     }}
                                 >
-                                    <span style={{ fontSize: '32px' }}>💰</span>
+                                    <img
+                                        src={AssetsMap.UI.ICON_GOLD_FULL}
+                                        alt="Золото"
+                                        style={{ width: '32px', height: '32px', objectFit: 'contain' }}
+                                    />
                                     <span style={{ color: '#fff', fontWeight: 800 }}>+{claimedReward.gold}</span>
                                     <span style={{ color: '#9ca3af', fontSize: '12px' }}>Золото</span>
                                 </div>
@@ -492,7 +506,11 @@ export const BestiaryWindow: React.FC = () => {
                                         gap: '6px',
                                     }}
                                 >
-                                    <span style={{ fontSize: '32px' }}>💎</span>
+                                    <img
+                                        src={AssetsMap.UI.ICON_ALMAZ_FULL}
+                                        alt="Кристаллы"
+                                        style={{ width: '32px', height: '32px', objectFit: 'contain' }}
+                                    />
                                     <span style={{ color: '#fff', fontWeight: 800 }}>+{claimedReward.crystals}</span>
                                     <span style={{ color: '#9ca3af', fontSize: '12px' }}>Кристаллы</span>
                                 </div>

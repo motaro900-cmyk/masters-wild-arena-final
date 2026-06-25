@@ -60,20 +60,24 @@ class BootController {
         this.bootIssues.push(entry);
         if (entry.severity === 'fatal') {
             console.error(`[BootController][FATAL] ${entry.phase}: ${entry.message}`, entry.error ?? '');
-            import('@sentry/react').then((Sentry) => {
-                Sentry.captureMessage(`Boot Fatal: ${entry.phase} - ${entry.message}`, 'error');
-            }).catch(() => {});
+            import('@sentry/react')
+                .then((Sentry) => {
+                    Sentry.captureMessage(`Boot Fatal: ${entry.phase} - ${entry.message}`, 'error');
+                })
+                .catch(() => {});
         } else {
             console.warn(`[BootController][WARN]  ${entry.phase}: ${entry.message}`);
-            import('@sentry/react').then((Sentry) => {
-                Sentry.withScope((scope) => {
-                    scope.setLevel('warning');
-                    scope.setExtra('boot_phase', entry.phase);
-                    scope.setExtra('boot_message', entry.message);
-                    if (entry.error) scope.setExtra('boot_error', entry.error);
-                    Sentry.captureMessage(`Boot Warning: ${entry.phase} - ${entry.message}`);
-                });
-            }).catch(() => {});
+            import('@sentry/react')
+                .then((Sentry) => {
+                    Sentry.withScope((scope) => {
+                        scope.setLevel('warning');
+                        scope.setExtra('boot_phase', entry.phase);
+                        scope.setExtra('boot_message', entry.message);
+                        if (entry.error) scope.setExtra('boot_error', entry.error);
+                        Sentry.captureMessage(`Boot Warning: ${entry.phase} - ${entry.message}`);
+                    });
+                })
+                .catch(() => {});
         }
     }
 
@@ -82,7 +86,7 @@ class BootController {
     }
 
     public hasFatalIssues(): boolean {
-        return this.bootIssues.some(i => i.severity === 'fatal');
+        return this.bootIssues.some((i) => i.severity === 'fatal');
     }
 
     private constructor() {}
@@ -145,7 +149,7 @@ class BootController {
     private transition(newState: BootState) {
         console.log(`[BootController] Transition: ${this.state} ➔ ${newState}`);
         this.state = newState;
-        this.subscribers.forEach(cb => cb(this.state));
+        this.subscribers.forEach((cb) => cb(this.state));
     }
 
     public execute(action: BootAction): Promise<any> {
@@ -165,7 +169,7 @@ class BootController {
 
     private async runAction(action: BootAction): Promise<any> {
         console.log(`[BootController] Kernel Executing Action: ${action.type}`);
-        
+
         const runWithKernelLock = async (fn: () => Promise<any> | any) => {
             const previousLock = this.internalMutationAllowed;
             this.internalMutationAllowed = true;
@@ -271,7 +275,7 @@ class BootController {
         container: HTMLElement,
         setLoadingText: (t: string) => void,
         setInitError: (err: string) => void,
-        setNotInVk: (val: boolean) => void
+        setNotInVk: (val: boolean) => void,
     ): Promise<void> {
         if (this.initPromise) {
             return this.initPromise;
@@ -318,17 +322,33 @@ class BootController {
 
                 // FATAL: no player identity — game cannot run without this
                 if (!profileState.playerId) {
-                    this.recordBootIssue({ phase: 'LOAD_PROFILE', severity: 'fatal', message: 'playerId is missing — player identity undefined' });
+                    this.recordBootIssue({
+                        phase: 'LOAD_PROFILE',
+                        severity: 'fatal',
+                        message: 'playerId is missing — player identity undefined',
+                    });
                 }
                 // WARNING: cosmetic / non-critical fields
                 if (!profileState.name) {
-                    this.recordBootIssue({ phase: 'LOAD_PROFILE', severity: 'warning', message: 'name is missing — will use fallback' });
+                    this.recordBootIssue({
+                        phase: 'LOAD_PROFILE',
+                        severity: 'warning',
+                        message: 'name is missing — will use fallback',
+                    });
                 }
                 if (!profileState.avatar) {
-                    this.recordBootIssue({ phase: 'LOAD_PROFILE', severity: 'warning', message: 'avatar is missing — will use fallback' });
+                    this.recordBootIssue({
+                        phase: 'LOAD_PROFILE',
+                        severity: 'warning',
+                        message: 'avatar is missing — will use fallback',
+                    });
                 }
                 if (!profileState.level) {
-                    this.recordBootIssue({ phase: 'LOAD_PROFILE', severity: 'warning', message: 'level is 0/missing — defaulting to 1' });
+                    this.recordBootIssue({
+                        phase: 'LOAD_PROFILE',
+                        severity: 'warning',
+                        message: 'level is 0/missing — defaulting to 1',
+                    });
                 }
 
                 // ── LOAD_TELEMETRY ─────────────────────────────────────────
@@ -336,13 +356,16 @@ class BootController {
                 const { getDeviceProfile } = await import('../services/TelemetryService');
                 try {
                     const profile = await getDeviceProfile();
-                    console.log(`[BootController] Device Profile loaded. OS: ${profile.os}, Refresh Rate: ${profile.refreshRate}Hz`);
+                    console.log(
+                        `[BootController] Device Profile loaded. OS: ${profile.os}, Refresh Rate: ${profile.refreshRate}Hz`,
+                    );
                     if (!profileState.hasCustomSettings) {
-                        const isMobileOrTablet = profile.touchDevice || /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
-                        const recommendedFpsCap = isMobileOrTablet ? 60 : (profile.refreshRate || 60);
+                        const isMobileOrTablet =
+                            profile.touchDevice || /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
+                        const recommendedFpsCap = isMobileOrTablet ? 60 : profile.refreshRate || 60;
                         useGameStore.setState({
                             fpsCap: recommendedFpsCap,
-                            isSystemUpdate: true
+                            isSystemUpdate: true,
                         });
                         console.log(`[BootController] Auto-configured recommended FPS: ${recommendedFpsCap}`);
                     }
@@ -375,12 +398,25 @@ class BootController {
                 await this.execute({ type: 'LOAD_WEATHER' });
                 const weatherState = useGameStore.getState();
                 const weatherMap: Record<string, string> = {
-                    forest: 'rain', desert: 'sandstorm',
-                    lava: 'ashfall', snow: 'blizzard', meadow: 'clear',
+                    forest: 'rain',
+                    desert: 'sandstorm',
+                    lava: 'ashfall',
+                    snow: 'blizzard',
+                    meadow: 'clear',
                 };
-                if (!(weatherState.activeMapId && weatherState.battleWeatherState && weatherMap[weatherState.activeMapId] === weatherState.battleWeatherState)) {
+                if (
+                    !(
+                        weatherState.activeMapId &&
+                        weatherState.battleWeatherState &&
+                        weatherMap[weatherState.activeMapId] === weatherState.battleWeatherState
+                    )
+                ) {
                     // WARNING only — weather is non-critical cosmetic state
-                    this.recordBootIssue({ phase: 'LOAD_WEATHER', severity: 'warning', message: `Weather mismatch: map=${weatherState.activeMapId}, got=${weatherState.battleWeatherState}` });
+                    this.recordBootIssue({
+                        phase: 'LOAD_WEATHER',
+                        severity: 'warning',
+                        message: `Weather mismatch: map=${weatherState.activeMapId}, got=${weatherState.battleWeatherState}`,
+                    });
                 }
 
                 // ── PRECOMPUTE_HUD ─────────────────────────────────────────
@@ -389,25 +425,44 @@ class BootController {
                 const hudState = useGameStore.getState();
                 const { getRankInfo } = await import('../configs/RankSystem');
                 const rankInfo = getRankInfo(hudState.rating || hudState.trophies || 0);
-                const avatarMatches = hudState.hudPlayerAvatar === hudState.avatar || (hudState.avatar && hudState.avatar.startsWith('sprite:') && hudState.hudPlayerAvatar === (hudState.vkUser?.photo200 || hudState.vkUser?.photo_200 || hudState.vkUser?.photo || '/assets/images/avatars/panda.webp'));
+                const avatarMatches =
+                    hudState.hudPlayerAvatar === hudState.avatar ||
+                    (hudState.avatar &&
+                        hudState.avatar.startsWith('sprite:') &&
+                        hudState.hudPlayerAvatar ===
+                            (hudState.vkUser?.photo200 ||
+                                hudState.vkUser?.photo_200 ||
+                                hudState.vkUser?.photo ||
+                                '/assets/images/avatars/panda.webp'));
                 const rankMatches = hudState.hudPlayerRank && hudState.hudPlayerRank.name === rankInfo.name;
-                const opponentResolved = !hudState.activeRankedOpponent || (hudState.hudEnemyLevel === hudState.activeRankedOpponent.level && hudState.hudEnemyRating === hudState.activeRankedOpponent.rating);
+                const opponentResolved =
+                    !hudState.activeRankedOpponent ||
+                    (hudState.hudEnemyLevel === hudState.activeRankedOpponent.level &&
+                        hudState.hudEnemyRating === hudState.activeRankedOpponent.rating);
                 if (!(avatarMatches && rankMatches && opponentResolved)) {
                     // WARNING only — HUD values are cosmetic, game can recover them
-                    this.recordBootIssue({ phase: 'PRECOMPUTE_HUD', severity: 'warning', message: 'HUD derived values have inconsistencies' });
+                    this.recordBootIssue({
+                        phase: 'PRECOMPUTE_HUD',
+                        severity: 'warning',
+                        message: 'HUD derived values have inconsistencies',
+                    });
                 }
 
                 // ── SESSION CHECK ──────────────────────────────────────────
                 const finalState = useGameStore.getState();
                 if (!finalState.sessionToken) {
                     // FATAL — session is required for sync and security
-                    this.recordBootIssue({ phase: 'CREATE_SESSION', severity: 'fatal', message: 'sessionToken is missing — session was not created' });
+                    this.recordBootIssue({
+                        phase: 'CREATE_SESSION',
+                        severity: 'fatal',
+                        message: 'sessionToken is missing — session was not created',
+                    });
                 }
 
                 // ── READY GATE ─────────────────────────────────────────────
                 // READY is only allowed if no fatal issues were recorded
                 if (this.hasFatalIssues()) {
-                    const fatalIssues = this.bootIssues.filter(i => i.severity === 'fatal');
+                    const fatalIssues = this.bootIssues.filter((i) => i.severity === 'fatal');
                     const rootCause = {
                         phase: fatalIssues[0].phase,
                         error: fatalIssues[0].message,
@@ -421,13 +476,14 @@ class BootController {
                         },
                     };
                     console.error('BOOT FAILURE ROOT CAUSE:', rootCause);
-                    throw new Error(`[BootController] Boot blocked by ${fatalIssues.length} fatal issue(s): ${fatalIssues.map(i => i.message).join(' | ')}`);
+                    throw new Error(
+                        `[BootController] Boot blocked by ${fatalIssues.length} fatal issue(s): ${fatalIssues.map((i) => i.message).join(' | ')}`,
+                    );
                 }
 
                 // All non-fatal — proceed to READY
                 setLoadingText('Инициализация игровых систем...');
                 await this.execute({ type: 'INITIALIZE_SYSTEMS', payload: { container } });
-
             } catch (err: any) {
                 console.error('[BootController] Fatal boot error:', err);
                 this.initPromise = null;
@@ -437,7 +493,13 @@ class BootController {
                 try {
                     const { useGameStore } = await import('../store/useGameStore');
                     const s = useGameStore.getState();
-                    snap = { playerId: s.playerId, name: s.name, level: s.level, sessionToken: s.sessionToken, dailyQuestsCount: s.dailyQuests?.length ?? 0 };
+                    snap = {
+                        playerId: s.playerId,
+                        name: s.name,
+                        level: s.level,
+                        sessionToken: s.sessionToken,
+                        dailyQuestsCount: s.dailyQuests?.length ?? 0,
+                    };
                 } catch (_) {}
                 const rootCause = {
                     phase: this.state,
@@ -458,7 +520,12 @@ class BootController {
 
     public async resolveVK(setNotInVk: (val: boolean) => void, _setInitError: (err: string) => void): Promise<void> {
         // Helper for fetching with retries
-        const fetchWithRetry = async (url: string, options: RequestInit = {}, retries: number = 3, delay: number = 1500): Promise<Response> => {
+        const fetchWithRetry = async (
+            url: string,
+            options: RequestInit = {},
+            retries: number = 3,
+            delay: number = 1500,
+        ): Promise<Response> => {
             let lastErr: any = null;
             for (let i = 0; i < retries; i++) {
                 try {
@@ -506,11 +573,16 @@ class BootController {
         const timePromise = (async () => {
             try {
                 const start = Date.now();
-                const response = await fetchWithRetry('/api/time', {
-                    method: 'GET',
-                    cache: 'no-cache',
-                    signal: AbortSignal.timeout(7000),
-                }, 2, 1500);
+                const response = await fetchWithRetry(
+                    '/api/time',
+                    {
+                        method: 'GET',
+                        cache: 'no-cache',
+                        signal: AbortSignal.timeout(7000),
+                    },
+                    2,
+                    1500,
+                );
                 const data = await response.json();
                 if (data.serverTime) {
                     const latency = (Date.now() - start) / 2;
@@ -531,17 +603,58 @@ class BootController {
             }
             try {
                 const searchParams = window.location.search;
-                if (searchParams) {
-                    const response = await fetchWithRetry(`/api/verify-sign${searchParams}`, {
+                const url = `/api/verify-sign${searchParams}`;
+
+                // Perform first fetch attempt manually to inspect the status code
+                let response: Response;
+                try {
+                    response = await fetch(url, {
                         signal: AbortSignal.timeout(10000),
-                    }, 3, 2000);
-                    const data = await response.json();
-                    if (data && data.valid === false) {
-                        throw new Error('Invalid signature');
+                    });
+                } catch (fetchErr) {
+                    // If network error, we can retry using fetchWithRetry
+                    response = await fetchWithRetry(
+                        url,
+                        {
+                            signal: AbortSignal.timeout(10000),
+                        },
+                        2, // 2 retries left
+                        2000,
+                    );
+                }
+
+                // If missing VK params (status 400), check environment and redirect if needed
+                if (response.status === 400) {
+                    const { isVkMiniApp } = await import('../utils/VKBridge');
+                    if (!isVkMiniApp()) {
+                        setNotInVk(true);
+                        throw new Error('Standalone launch restricted');
                     }
                 }
+
+                // If not 400 but still not ok (e.g. 500, etc.), we retry
+                if (!response.ok) {
+                    response = await fetchWithRetry(
+                        url,
+                        {
+                            signal: AbortSignal.timeout(10000),
+                        },
+                        2,
+                        2000,
+                    );
+                }
+
+                const data = await response.json();
+                if (data && data.valid === false) {
+                    throw new Error('Invalid signature');
+                }
             } catch (err: any) {
-                throw new Error('Ошибка безопасности: параметры запуска не прошли верификацию. Пожалуйста, перезапустите игру из официального приложения ВКонтакте.');
+                if (err.message === 'Standalone launch restricted') {
+                    throw err;
+                }
+                throw new Error(
+                    'Ошибка безопасности: параметры запуска не прошли верификацию. Пожалуйста, перезапустите игру из официального приложения ВКонтакте.',
+                );
             }
         })();
 
@@ -573,12 +686,14 @@ class BootController {
                         firstName: 'Игрок',
                         lastName: '',
                         photo: '/assets/images/avatars/panda.webp',
-                        photo200: '/assets/images/avatars/panda.webp'
+                        photo200: '/assets/images/avatars/panda.webp',
                     };
                 } else {
                     const { isVkMiniApp } = await import('../utils/VKBridge');
                     if (isVkMiniApp()) {
-                        throw new Error('Не удалось получить ваш профиль ВКонтакте и отсутствуют параметры запуска. Проверьте интернет-подключение и попробуйте снова.');
+                        throw new Error(
+                            'Не удалось получить ваш профиль ВКонтакте и отсутствуют параметры запуска. Проверьте интернет-подключение и попробуйте снова.',
+                        );
                     } else {
                         setNotInVk(true);
                         throw new Error('Standalone launch restricted');
@@ -597,15 +712,19 @@ class BootController {
 
         // Timeout fallback for VK Bridge request
         const timeoutPromise = new Promise<never>((_, reject) =>
-            setTimeout(() => reject(new Error('Время ожидания ответа от VK Bridge истекло. Пожалуйста, проверьте соединение с интернетом.')), 15000)
+            setTimeout(
+                () =>
+                    reject(
+                        new Error(
+                            'Время ожидания ответа от VK Bridge истекло. Пожалуйста, проверьте соединение с интернетом.',
+                        ),
+                    ),
+                15000,
+            ),
         );
 
         // Await all parallel promises
-        await Promise.all([
-            timePromise,
-            verifyPromise,
-            Promise.race([vkPromise, timeoutPromise])
-        ]);
+        await Promise.all([timePromise, verifyPromise, Promise.race([vkPromise, timeoutPromise])]);
 
         // Set explicit authState for debug/telemetry/security observability
         const { useGameStore } = await import('../store/useGameStore');
@@ -613,9 +732,9 @@ class BootController {
             authState: {
                 vkVerified: !isLocalhost,
                 verifiedAt: Date.now(),
-                source: isLocalhost ? 'localhost' : 'signature'
+                source: isLocalhost ? 'localhost' : 'signature',
             },
-            isSystemUpdate: true
+            isSystemUpdate: true,
         });
     }
 
@@ -623,13 +742,13 @@ class BootController {
         const { syncService, SyncService } = await import('../services/SyncService');
         const { useGameStore } = await import('../store/useGameStore');
         const state = useGameStore.getState();
-        
+
         let playerId = state.playerId;
         if (!playerId || playerId === 'undefined' || playerId === 'null' || playerId.includes('undefined')) {
             playerId = `GUEST-${TimeService.now()}-${Math.random().toString(36).substr(2, 9)}`;
             useGameStore.setState({ playerId, isSystemUpdate: true });
         }
-        
+
         this.userId = SyncService.getPrefixedUserId(this.vkUser, playerId);
 
         const cacheRaw = typeof window !== 'undefined' ? localStorage.getItem('game-storage') : null;
@@ -655,7 +774,7 @@ class BootController {
             if (!remoteResult && loadError) {
                 throw loadError;
             }
-            
+
             // Read raw local storage cache
             const cacheRaw = localStorage.getItem('game-storage');
             let cacheState: any = null;
@@ -675,7 +794,7 @@ class BootController {
                 this.remoteProfileData = fbProfile;
                 const stateToRestore = { ...fbProfile };
                 stateToRestore.lastSavedTimestamp = fbProfile.lastSavedTimestamp || fbProfile.wasOnlineMs || 0;
-                
+
                 if (stateToRestore.status === 'BANNED') {
                     stateToRestore.isBanned = true;
                 }
@@ -704,14 +823,15 @@ class BootController {
             } else {
                 console.log('[BootController] New player profile creation.');
                 useGameStore.getState().resetStore();
-                const fallbackName = this.vkUser?.firstName || this.vkUser?.first_name || `Игрок_${this.userId.slice(-4)}`;
+                const fallbackName =
+                    this.vkUser?.firstName || this.vkUser?.first_name || `Игрок_${this.userId.slice(-4)}`;
                 useGameStore.setState({
                     name: fallbackName,
                     onboardingCompleted: false,
                     tutorialStep: 0,
                     activeScreen: 'INTRO',
                     vkUser: this.vkUser,
-                    isSystemUpdate: true
+                    isSystemUpdate: true,
                 });
             }
         } catch (error) {
@@ -731,7 +851,9 @@ class BootController {
                 cacheState.isSystemUpdate = true;
                 useGameStore.setState(cacheState);
             } else {
-                throw new Error('Критическая ошибка: не удалось получить данные профиля из сети и отсутствует локальное сохранение.');
+                throw new Error(
+                    'Критическая ошибка: не удалось получить данные профиля из сети и отсутствует локальное сохранение.',
+                );
             }
         }
 
@@ -744,7 +866,7 @@ class BootController {
         useGameStore.setState({
             isAdmin,
             isDeveloper: isAdmin,
-            isSystemUpdate: true
+            isSystemUpdate: true,
         });
 
         useGameStore.setState({ profileStatus: 'loaded', isSystemUpdate: true });
@@ -768,7 +890,7 @@ class BootController {
 
         const { useGameStore } = await import('../store/useGameStore');
         const state = useGameStore.getState();
-        
+
         // 2. Hardcoded VK ID bypass
         const userVkId = this.vkUser?.id || this.vkUser?.uid || state.vkUser?.id || state.vkUser?.uid;
         if (userVkId && Number(userVkId) === 212359386) {
@@ -810,7 +932,9 @@ class BootController {
 
         let playerId = state.playerId;
         if (!playerId || playerId === 'undefined' || playerId === 'null' || playerId.includes('undefined')) {
-            playerId = vkUser?.id ? `VK-${vkUser.id}` : `GUEST-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+            playerId = vkUser?.id
+                ? `VK-${vkUser.id}`
+                : `GUEST-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
         }
 
         let name = state.name;
@@ -833,7 +957,7 @@ class BootController {
             name,
             avatar,
             level,
-            isSystemUpdate: true
+            isSystemUpdate: true,
         });
         console.log('[BootController] Profile fallbacks applied:', { playerId, name, avatar, level });
     }
@@ -854,7 +978,7 @@ class BootController {
                 weeklyQuests: fbWeekly || [],
                 lastDailyRefresh: this.remoteProfileData.lastDailyRefresh || Date.now(),
                 lastWeeklyQuestReset: this.remoteProfileData.lastWeeklyQuestReset || Date.now(),
-                isSystemUpdate: true
+                isSystemUpdate: true,
             });
 
             // Verify local state consistency
@@ -866,7 +990,7 @@ class BootController {
             console.log('[BootController] Generating quests in memory (Guest/New/Offline).');
             const { QUESTS_POOL, BP_DAILY_QUESTS_POOL } = await import('../configs/QuestsConfig');
             const { WEEKLY_QUESTS_POOL } = await import('../store/slices/questSlice');
-            
+
             const shuffled = [...QUESTS_POOL].sort(() => 0.5 - Math.random());
             const selected = shuffled.slice(0, 4).map((q) => ({
                 questId: q.id,
@@ -893,7 +1017,7 @@ class BootController {
                 weeklyQuests: weekly,
                 lastDailyRefresh: Date.now(),
                 lastWeeklyQuestReset: Date.now(),
-                isSystemUpdate: true
+                isSystemUpdate: true,
             });
         }
     }
@@ -912,17 +1036,15 @@ class BootController {
             null,
             state.winStreak || 0,
             state.lossStreak || 0,
-            true // forceBot = true during startup to load immediately without network delay
+            true, // forceBot = true during startup to load immediately without network delay
         );
 
         useGameStore.setState({
             activeRankedOpponent: opponent,
-            isSystemUpdate: true
+            isSystemUpdate: true,
         });
         console.log('[BootController] Loaded opponent data:', opponent.name);
     }
-
-
 
     private async loadConfig(): Promise<void> {
         console.log('[BootController] Fetching/verifying game configurations...');
@@ -930,7 +1052,7 @@ class BootController {
         const { MOBS_DB } = await import('../configs/MobsConfig');
         const { ITEMS_DATABASE } = await import('../game/configs/ItemsConfig');
         const { RANK_SYSTEM } = await import('../configs/RankSystem');
-        
+
         if (!HEROES_DB || !MOBS_DB || !ITEMS_DATABASE || !RANK_SYSTEM) {
             throw new Error('[Security Invariant Violation] Game configuration database failed to load.');
         }
@@ -942,13 +1064,13 @@ class BootController {
         const state = useGameStore.getState();
 
         const activeMapId = state.activeMapId || 'forest';
-        
+
         const weatherMap: Record<string, string> = {
             forest: 'rain',
             desert: 'sandstorm',
             lava: 'ashfall',
             snow: 'blizzard',
-            meadow: 'clear'
+            meadow: 'clear',
         };
 
         let weather = weatherMap[activeMapId];
@@ -968,7 +1090,7 @@ class BootController {
             activeMapId,
             battleWeatherState: weather,
             weatherSource,
-            isSystemUpdate: true
+            isSystemUpdate: true,
         });
         console.log('[BootController] Weather derived successfully:', { activeMapId, battleWeatherState: weather });
     }
@@ -986,9 +1108,10 @@ class BootController {
         const rawAvatar = state.avatar;
         const vkUser = state.vkUser;
 
-        const playerAvatar = (rawAvatar && !rawAvatar.startsWith('sprite:')) 
-            ? rawAvatar 
-            : (vkUser?.photo200 || vkUser?.photo_200 || vkUser?.photo || '/assets/images/avatars/panda.webp');
+        const playerAvatar =
+            rawAvatar && !rawAvatar.startsWith('sprite:')
+                ? rawAvatar
+                : vkUser?.photo200 || vkUser?.photo_200 || vkUser?.photo || '/assets/images/avatars/panda.webp';
 
         const activeRankedOpponent = state.activeRankedOpponent;
 
@@ -1021,7 +1144,7 @@ class BootController {
             hudEnemyRank: enemyRank,
             hudEnemyAvatar: enemyAvatar,
             hudPrecomputed: true,
-            isSystemUpdate: true
+            isSystemUpdate: true,
         });
         console.log('[BootController] HUD derived values precomputed successfully.');
     }
@@ -1052,7 +1175,7 @@ class BootController {
 
         // Transition to READY status
         this.transition('READY');
-        
+
         // NOW, since we are READY, direct writes are allowed.
         // Save seen welcome messages flag
         const welcomeKey = `seen_welcome_msgs_${state.playerId}`;
@@ -1060,7 +1183,7 @@ class BootController {
 
         // Start auto-synchronization
         const { syncService } = await import('../services/SyncService');
-        
+
         // Always perform an initial sync on startup to register the active session token and set online status
         console.log('[BootController] Performing initial startup session sync...');
         syncService.syncPlayerData().catch((err) => {
@@ -1076,3 +1199,6 @@ class BootController {
 }
 
 export const bootController = BootController.getInstance();
+if (typeof window !== 'undefined') {
+    (window as any).bootController = bootController;
+}

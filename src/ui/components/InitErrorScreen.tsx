@@ -39,7 +39,7 @@ export const InitErrorScreen: React.FC<InitErrorScreenProps> = ({ error, onRetry
             >
                 <code style={{ fontSize: '14px', color: '#ff7777', wordBreak: 'break-all' }}>{error}</code>
             </div>
-            
+
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', alignItems: 'center' }}>
                 {onRetry && (
                     <button
@@ -61,7 +61,7 @@ export const InitErrorScreen: React.FC<InitErrorScreenProps> = ({ error, onRetry
                         ПОВТОРИТЬ ПОПЫТКУ
                     </button>
                 )}
-                
+
                 <button
                     onClick={() => window.location.reload()}
                     style={{
@@ -81,7 +81,7 @@ export const InitErrorScreen: React.FC<InitErrorScreenProps> = ({ error, onRetry
                     {onRetry ? 'ПОЛНАЯ ПЕРЕЗАГРУЗКА СТРАНИЦЫ' : 'ПОПРОБОВАТЬ СНОВА'}
                 </button>
             </div>
-            
+
             <div style={{ marginTop: '20px', color: '#666', fontSize: '12px' }}>
                 Если ошибка повторяется, проверьте интернет-соединение или попробуйте позже.
             </div>

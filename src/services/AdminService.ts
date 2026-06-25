@@ -33,10 +33,7 @@ export async function getAllPlayers(): Promise<any[]> {
     }
 }
 
-export function subscribeToAllPlayers(
-    track: TrackFn,
-    callback: (players: any[]) => void,
-): () => void {
+export function subscribeToAllPlayers(track: TrackFn, callback: (players: any[]) => void): () => void {
     try {
         const playersRef = collection(db, USERS_COLLECTION);
         const q = query(playersRef, orderBy('былВСети', 'desc'), limit(100));
@@ -46,8 +43,7 @@ export function subscribeToAllPlayers(
                 (snapshot: any) => {
                     callback(snapshot.docs.map((d: any) => ({ ...d.data(), id: d.id })));
                 },
-                (error: any) =>
-                    console.error('[AdminService] All players subscription error:', error),
+                (error: any) => console.error('[AdminService] All players subscription error:', error),
             ),
         );
     } catch (error) {
@@ -86,12 +82,7 @@ export async function searchPlayerById(playerId: string): Promise<any | null> {
         let playerRef = doc(db, USERS_COLLECTION, id);
         let playerSnap = await getDoc(playerRef);
 
-        if (
-            !playerSnap.exists() &&
-            !id.startsWith('VK-') &&
-            !id.startsWith('GUEST-') &&
-            !id.startsWith('ГОСТЬ-')
-        ) {
+        if (!playerSnap.exists() && !id.startsWith('VK-') && !id.startsWith('GUEST-') && !id.startsWith('ГОСТЬ-')) {
             playerRef = doc(db, USERS_COLLECTION, `GUEST-${id}`);
             playerSnap = await getDoc(playerRef);
             if (!playerSnap.exists()) {
@@ -126,9 +117,7 @@ export async function getGlobalPlayers(limitCount: number = 20): Promise<any[]> 
         return raw
             .filter((p: any) => {
                 const name = (p.name || p.имя || '').toLowerCase();
-                const isMe =
-                    p.id === state.playerId ||
-                    (p.vkId && String(p.vkId) === String(state.vkUser?.id));
+                const isMe = p.id === state.playerId || (p.vkId && String(p.vkId) === String(state.vkUser?.id));
                 if (isMe) return true;
                 if (['разработчик', 'test'].some((w) => name.includes(w))) return false;
                 if (p.тестовый || p.разработчик) return false;
@@ -159,19 +148,16 @@ export function subscribeToGlobalLeaders(
                         .filter((p: any) => {
                             const name = (p.name || p.имя || '').toLowerCase();
                             const isMe =
-                                p.id === state.playerId ||
-                                (p.vkId && String(p.vkId) === String(state.vkUser?.id));
+                                p.id === state.playerId || (p.vkId && String(p.vkId) === String(state.vkUser?.id));
                             if (isMe) return true;
-                            if (['разработчик', 'test'].some((w) => name.includes(w)))
-                                return false;
+                            if (['разработчик', 'test'].some((w) => name.includes(w))) return false;
                             if (p.тестовый || p.разработчик) return false;
                             return true;
                         })
                         .slice(0, limitCount);
                     callback(filtered);
                 },
-                (error: any) =>
-                    console.error('[AdminService] Global leaders subscription error:', error),
+                (error: any) => console.error('[AdminService] Global leaders subscription error:', error),
             ),
         );
     } catch (error) {
@@ -277,22 +263,22 @@ export async function distributeSeasonRewards(): Promise<number> {
             const player = filtered[i];
             const rank = i + 1;
             let rewards: any[] = [];
-            
+
             if (rank >= 1 && rank <= 3) {
                 rewards = [
                     { type: 'CRYSTALS', amount: 500 },
                     { type: 'GOLD', amount: 25000 },
-                    { type: 'ITEM', itemId: 'season_chest', amount: 1 }
+                    { type: 'ITEM', itemId: 'season_chest', amount: 1 },
                 ];
             } else if (rank >= 4 && rank <= 10) {
                 rewards = [
                     { type: 'CRYSTALS', amount: 250 },
-                    { type: 'GOLD', amount: 10000 }
+                    { type: 'GOLD', amount: 10000 },
                 ];
             } else if (rank >= 11 && rank <= 100) {
                 rewards = [
                     { type: 'CRYSTALS', amount: 100 },
-                    { type: 'GOLD', amount: 3000 }
+                    { type: 'GOLD', amount: 3000 },
                 ];
             }
 
@@ -307,7 +293,7 @@ export async function distributeSeasonRewards(): Promise<number> {
                 isRead: false,
                 isStarred: false,
                 rewards,
-                timestamp
+                timestamp,
             };
 
             await sendMail(player.id, mailData);
@@ -349,7 +335,7 @@ export async function searchPlayersGlobal(searchTerm: string): Promise<any[]> {
             playersRef,
             where('name', '>=', cleanTerm),
             where('name', '<=', cleanTerm + '\uf8ff'),
-            limit(20)
+            limit(20),
         );
         const snapName = await getDocs(qName);
         snapName.forEach((d) => {
@@ -363,7 +349,7 @@ export async function searchPlayersGlobal(searchTerm: string): Promise<any[]> {
             playersRef,
             where('имя', '>=', cleanTerm),
             where('имя', '<=', cleanTerm + '\uf8ff'),
-            limit(20)
+            limit(20),
         );
         const snapImya = await getDocs(qImya);
         snapImya.forEach((d) => {

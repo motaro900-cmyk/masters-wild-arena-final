@@ -110,6 +110,7 @@ export default defineConfig({
     open: true,
   },
   build: {
+    target: ['es2020', 'edge88', 'firefox78', 'chrome87', 'safari14'],
     outDir: 'dist',
     sourcemap: false,
     rollupOptions: {

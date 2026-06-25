@@ -23,68 +23,78 @@ const UpdateModal: React.FC = () => {
     };
 
     return (
-        <div style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            width: '100vw',
-            height: '100vh',
-            background: 'rgba(5, 4, 3, 0.85)',
-            backdropFilter: 'blur(10px)',
-            zIndex: 999999,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontFamily: "'Outfit', 'Cinzel', sans-serif",
-        }}>
-            <div style={{
-                width: 'min(420px, 94vw)',
-                padding: '35px 25px',
-                background: 'linear-gradient(135deg, rgba(30, 20, 10, 0.95) 0%, rgba(15, 10, 5, 0.98) 100%)',
-                border: '2px solid #d4af37',
-                borderRadius: '16px',
-                boxShadow: '0 0 40px rgba(212, 175, 55, 0.25), inset 0 0 20px rgba(0,0,0,0.8)',
-                textAlign: 'center',
+        <div
+            style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                width: '100vw',
+                height: '100vh',
+                background: 'rgba(5, 4, 3, 0.85)',
+                backdropFilter: 'blur(10px)',
+                zIndex: 999999,
                 display: 'flex',
-                flexDirection: 'column',
                 alignItems: 'center',
-                animation: 'fadeInScale 0.3s ease-out forwards',
-            }}>
-                <div style={{
-                    width: '70px',
-                    height: '70px',
-                    borderRadius: '50%',
-                    background: 'radial-gradient(circle, rgba(212, 175, 55, 0.2) 0%, rgba(0,0,0,0) 70%)',
+                justifyContent: 'center',
+                fontFamily: "'Outfit', 'Cinzel', sans-serif",
+            }}
+        >
+            <div
+                style={{
+                    width: 'min(420px, 94vw)',
+                    padding: '35px 25px',
+                    background: 'linear-gradient(135deg, rgba(30, 20, 10, 0.95) 0%, rgba(15, 10, 5, 0.98) 100%)',
+                    border: '2px solid #d4af37',
+                    borderRadius: '16px',
+                    boxShadow: '0 0 40px rgba(212, 175, 55, 0.25), inset 0 0 20px rgba(0,0,0,0.8)',
+                    textAlign: 'center',
                     display: 'flex',
+                    flexDirection: 'column',
                     alignItems: 'center',
-                    justifyContent: 'center',
-                    marginBottom: '20px',
-                    border: '1px solid rgba(212, 175, 55, 0.3)',
-                    boxShadow: '0 0 15px rgba(212, 175, 55, 0.2)',
-                }}>
+                    animation: 'fadeInScale 0.3s ease-out forwards',
+                }}
+            >
+                <div
+                    style={{
+                        width: '70px',
+                        height: '70px',
+                        borderRadius: '50%',
+                        background: 'radial-gradient(circle, rgba(212, 175, 55, 0.2) 0%, rgba(0,0,0,0) 70%)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        marginBottom: '20px',
+                        border: '1px solid rgba(212, 175, 55, 0.3)',
+                        boxShadow: '0 0 15px rgba(212, 175, 55, 0.2)',
+                    }}
+                >
                     <span style={{ fontSize: '32px', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))' }}>🛡️</span>
                 </div>
 
-                <h2 style={{
-                    margin: '0 0 12px 0',
-                    fontSize: '22px',
-                    fontWeight: 900,
-                    color: '#FFE07D',
-                    textTransform: 'uppercase',
-                    letterSpacing: '2px',
-                    textShadow: '0 2px 4px rgba(0,0,0,0.8)',
-                    fontFamily: "'Cinzel', serif",
-                }}>
+                <h2
+                    style={{
+                        margin: '0 0 12px 0',
+                        fontSize: '22px',
+                        fontWeight: 900,
+                        color: '#FFE07D',
+                        textTransform: 'uppercase',
+                        letterSpacing: '2px',
+                        textShadow: '0 2px 4px rgba(0,0,0,0.8)',
+                        fontFamily: "'Cinzel', serif",
+                    }}
+                >
                     Обновление игры
                 </h2>
 
-                <p style={{
-                    margin: '0 0 25px 0',
-                    fontSize: '14px',
-                    lineHeight: '1.6',
-                    color: '#b5a695',
-                    textShadow: '0 1px 2px rgba(0,0,0,0.5)',
-                }}>
+                <p
+                    style={{
+                        margin: '0 0 25px 0',
+                        fontSize: '14px',
+                        lineHeight: '1.6',
+                        color: '#b5a695',
+                        textShadow: '0 1px 2px rgba(0,0,0,0.5)',
+                    }}
+                >
                     Выпущена новая версия <b>Masters of the Wild</b>!<br />
                     Пожалуйста, обновите игру, чтобы получить последние изменения и продолжить играть.
                 </p>
@@ -147,10 +157,29 @@ export const Root = () => {
     const [loadingText, setLoadingText] = React.useState('Инициализация приложения...');
     const [showUpdateModal, setShowUpdateModal] = React.useState(false);
     const isUpdatePendingRef = React.useRef(false);
-        const [scale, setScale] = React.useState(1);
+    const [scale, setScale] = React.useState(1);
     const [rotated, setRotated] = React.useState(false);
-    const isMobile = useGameStore((state: any) => state.isMobile) || (typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent));
+    const isMobile =
+        useGameStore((state: any) => state.isMobile) ||
+        (typeof navigator !== 'undefined' && /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) ||
+        (typeof navigator !== 'undefined' && navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    const isAndroidOrIOS =
+        typeof navigator !== 'undefined' &&
+        (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent) ||
+            (navigator.maxTouchPoints > 0 && /Linux|Macintosh/i.test(navigator.platform)));
     const graphicsQuality = useGameStore((state: any) => state.graphicsQuality) || 'ULTRA';
+
+    // Toggle is-mobile body class for global CSS adaptations
+    React.useEffect(() => {
+        if (typeof document !== 'undefined') {
+            document.body.classList.toggle('is-mobile', isMobile);
+        }
+        return () => {
+            if (typeof document !== 'undefined') {
+                document.body.classList.remove('is-mobile');
+            }
+        };
+    }, [isMobile]);
 
     // Subscribe to boot controller changes
     React.useEffect(() => {
@@ -170,7 +199,9 @@ export const Root = () => {
             const gw = AppConfig.GAME_WIDTH;
             const gh = AppConfig.GAME_HEIGHT;
             const portrait = sw < sh;
-            const isMobileDevice = typeof navigator !== 'undefined' && /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            const isMobileDevice =
+                typeof navigator !== 'undefined' &&
+                /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
             let s: number;
             let isRotated = false;
@@ -210,7 +241,9 @@ export const Root = () => {
             const data = await res.json();
 
             if (data && typeof data.buildTime === 'number' && data.buildTime > clientBuildTime) {
-                console.log(`[Update Checker] New version detected on server: ${data.buildTime} (Client: ${clientBuildTime})`);
+                console.log(
+                    `[Update Checker] New version detected on server: ${data.buildTime} (Client: ${clientBuildTime})`,
+                );
                 const isReady = bootController.isReady();
                 const currentScreen = isReady ? useGameStore.getState().activeScreen : 'INTRO';
                 if (currentScreen === 'BATTLE') {
@@ -291,27 +324,30 @@ export const Root = () => {
     }, []);
 
     if (notInVk) return <NotInVkScreen />;
-    if (initError || bootState === 'FAILED') return <InitErrorScreen error={initError || 'Ошибка инициализации игры'} onRetry={handleRetry} />;
+    if (initError || bootState === 'FAILED')
+        return <InitErrorScreen error={initError || 'Ошибка инициализации игры'} onRetry={handleRetry} />;
 
     const isAppLoading = bootState !== 'READY';
 
     return (
         <ErrorBoundary>
-            <div style={{
-                position: 'fixed',
-                top: 0,
-                left: 0,
-                width: '100vw',
-                height: '100vh',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: '#050403',
-                overflow: 'hidden',
-                userSelect: 'none',
-                WebkitUserSelect: 'none',
-                zIndex: 1,
-            }}>
+            <div
+                style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    width: '100vw',
+                    height: '100vh',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backgroundColor: '#050403',
+                    overflow: 'hidden',
+                    userSelect: 'none',
+                    WebkitUserSelect: 'none',
+                    zIndex: 1,
+                }}
+            >
                 <div
                     className="game-scale-wrapper"
                     style={{
@@ -335,9 +371,9 @@ export const Root = () => {
                         borderRadius: '12px',
                         overflow: 'hidden',
                         filter:
-                            !isMobile && graphicsQuality === 'ULTRA'
+                            !isMobile && !isAndroidOrIOS && graphicsQuality === 'ULTRA'
                                 ? 'contrast(1.08) saturate(1.15) brightness(1.02)'
-                                : !isMobile && graphicsQuality === 'MEDIUM'
+                                : !isMobile && !isAndroidOrIOS && graphicsQuality === 'MEDIUM'
                                   ? 'contrast(1.04) saturate(1.06) brightness(1.01)'
                                   : 'none',
                     }}
@@ -346,7 +382,7 @@ export const Root = () => {
                     <div ref={containerRef} style={{ position: 'absolute', inset: 0, pointerEvents: 'auto' }} />
 
                     {/* React HUD layer mounts ONLY when BootController is READY */}
-                    {bootState === 'READY' && <SafeGameLayout />}
+                    {bootState === 'READY' && <SafeGameLayout isMobile={isMobile} isPortrait={rotated} />}
                 </div>
             </div>
 

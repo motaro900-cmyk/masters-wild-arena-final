@@ -112,7 +112,9 @@ export const PurchaseConfirmOverlay: React.FC<PurchaseConfirmOverlayProps> = ({
                                 onError={(e) => {
                                     const currentSrc = e.currentTarget.src;
                                     if (currentSrc.endsWith('.webp')) {
-                                        e.currentTarget.src = currentSrc.replace(/_mobile\.webp$/i, '.png').replace(/\.webp$/i, '.png');
+                                        e.currentTarget.src = currentSrc
+                                            .replace(/_mobile\.webp$/i, '.png')
+                                            .replace(/\.webp$/i, '.png');
                                     }
                                 }}
                                 className={`image-fade-in ${imageLoaded ? 'loaded' : ''}`}
@@ -269,7 +271,13 @@ export const PurchaseConfirmOverlay: React.FC<PurchaseConfirmOverlayProps> = ({
                                 <span style={{ fontSize: '22px', animation: 'spin 1s linear infinite' }}>⏳</span>
                             ) : (
                                 <>
-                                    <span style={{ fontSize: isMobile ? '11px' : '12px', opacity: 0.85, letterSpacing: '0.1em' }}>
+                                    <span
+                                        style={{
+                                            fontSize: isMobile ? '11px' : '12px',
+                                            opacity: 0.85,
+                                            letterSpacing: '0.1em',
+                                        }}
+                                    >
                                         КУПИТЬ
                                     </span>
                                     <span style={{ fontSize: isMobile ? '15px' : '17px', fontWeight: 900 }}>
@@ -287,9 +295,10 @@ export const PurchaseConfirmOverlay: React.FC<PurchaseConfirmOverlayProps> = ({
                             style={{
                                 flex: 1.5,
                                 height: '50px',
-                                background: isProcessing || dailyAdWatchesCount >= 2
-                                    ? 'linear-gradient(180deg, #4b5563 0%, #1f2937 100%)'
-                                    : 'linear-gradient(180deg, #4ade80 0%, #166534 100%)',
+                                background:
+                                    isProcessing || dailyAdWatchesCount >= 2
+                                        ? 'linear-gradient(180deg, #4b5563 0%, #1f2937 100%)'
+                                        : 'linear-gradient(180deg, #4ade80 0%, #166534 100%)',
                                 border: 'none',
                                 borderRadius: '8px',
                                 color: isProcessing || dailyAdWatchesCount >= 2 ? '#9ca3af' : '#fff',

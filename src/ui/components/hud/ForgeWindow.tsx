@@ -104,7 +104,13 @@ export const ForgeWindow: React.FC = () => {
             >
                 <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '6px' : '10px' }}>
                     <span style={{ fontSize: isMobile ? '15px' : '18px' }}>{icon}</span>
-                    <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: isMobile ? '12px' : '14px', fontWeight: 600 }}>
+                    <span
+                        style={{
+                            color: 'rgba(255,255,255,0.6)',
+                            fontSize: isMobile ? '12px' : '14px',
+                            fontWeight: 600,
+                        }}
+                    >
                         {label.toUpperCase()}
                     </span>
                 </div>
@@ -117,7 +123,9 @@ export const ForgeWindow: React.FC = () => {
                             style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '8px' : '12px' }}
                         >
                             <span style={{ color: '#f0c040', fontWeight: 900 }}>→</span>
-                            <span style={{ color: color, fontWeight: 900, fontSize: isMobile ? '15px' : '18px' }}>{nextVal}</span>
+                            <span style={{ color: color, fontWeight: 900, fontSize: isMobile ? '15px' : '18px' }}>
+                                {nextVal}
+                            </span>
                         </motion.div>
                     )}
                 </div>
@@ -156,7 +164,14 @@ export const ForgeWindow: React.FC = () => {
                         marginBottom: isMobile ? '12px' : '20px',
                     }}
                 >
-                    <h3 style={{ fontFamily: "'Cinzel', serif", color: '#f0c040', fontSize: isMobile ? '16px' : '18px', margin: 0 }}>
+                    <h3
+                        style={{
+                            fontFamily: "'Cinzel', serif",
+                            color: '#f0c040',
+                            fontSize: isMobile ? '16px' : '18px',
+                            margin: 0,
+                        }}
+                    >
                         АРСЕНАЛ
                     </h3>
                     <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)' }}>{inventory.length} ПРЕДМЕТОВ</div>
@@ -246,7 +261,14 @@ export const ForgeWindow: React.FC = () => {
 
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: isMobile ? '12px' : '20px' }}>
                 {itemData ? (
-                    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: isMobile ? '15px' : '25px' }}>
+                    <div
+                        style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            height: '100%',
+                            gap: isMobile ? '15px' : '25px',
+                        }}
+                    >
                         <div
                             style={{
                                 flex: 1,
@@ -339,7 +361,14 @@ export const ForgeWindow: React.FC = () => {
                                 />
                             </motion.div>
 
-                            <div style={{ position: 'absolute', bottom: isMobile ? '10px' : '30px', textAlign: 'center', zIndex: 3 }}>
+                            <div
+                                style={{
+                                    position: 'absolute',
+                                    bottom: isMobile ? '10px' : '30px',
+                                    textAlign: 'center',
+                                    zIndex: 3,
+                                }}
+                            >
                                 <h2
                                     style={{
                                         fontFamily: "'Cinzel', serif",
@@ -473,18 +502,34 @@ export const ForgeWindow: React.FC = () => {
                                                     <span
                                                         style={{
                                                             color: gold >= upgradeCostGold ? '#fcd34d' : '#ef4444',
+                                                            display: 'inline-flex',
+                                                            alignItems: 'center',
+                                                            gap: '4px',
                                                         }}
                                                     >
-                                                        {upgradeCostGold.toLocaleString()} 🟡
+                                                        {upgradeCostGold.toLocaleString()}
+                                                        <img
+                                                            src={AssetsMap.UI.ICON_GOLD_FULL}
+                                                            alt="Золото"
+                                                            style={{ width: '16px', height: '16px', objectFit: 'contain', display: 'inline-block' }}
+                                                        />
                                                     </span>
                                                 )}
                                                 {upgradeCostGem > 0 && (
                                                     <span
                                                         style={{
                                                             color: crystals >= upgradeCostGem ? '#00e5ff' : '#ef4444',
+                                                            display: 'inline-flex',
+                                                            alignItems: 'center',
+                                                            gap: '4px',
                                                         }}
                                                     >
-                                                        {upgradeCostGem.toLocaleString()} 💎
+                                                        {upgradeCostGem.toLocaleString()}
+                                                        <img
+                                                            src={AssetsMap.UI.ICON_ALMAZ_FULL}
+                                                            alt="Кристаллы"
+                                                            style={{ width: '16px', height: '16px', objectFit: 'contain', display: 'inline-block' }}
+                                                        />
                                                     </span>
                                                 )}
                                             </div>

@@ -111,14 +111,15 @@ export async function getDeviceProfile(): Promise<DeviceProfile> {
 
     if (typeof window !== 'undefined') {
         const ua = navigator.userAgent;
-        
+
         // 1. OS & Device parsing
         if (/Android/i.test(ua)) {
             platform = 'Android';
             const match = ua.match(/Android\s+([0-9.]+)/i);
             os = match ? `Android ${match[1]}` : 'Android';
-            
-            const modelMatch = ua.match(/Android.*;\s+([^;)]+)\s+Build/i) || ua.match(/Linux;\s+Android.*;\s+([^;)]+)\)/i);
+
+            const modelMatch =
+                ua.match(/Android.*;\s+([^;)]+)\s+Build/i) || ua.match(/Linux;\s+Android.*;\s+([^;)]+)\)/i);
             device = modelMatch ? modelMatch[1].trim() : 'Android Device';
         } else if (/iPhone|iPad|iPod/i.test(ua)) {
             platform = /iPad/i.test(ua) ? 'iPadOS' : 'iOS';
@@ -191,10 +192,11 @@ export async function getDeviceProfile(): Promise<DeviceProfile> {
             browser = 'Firefox';
         }
 
-        isVK = ua.toLowerCase().includes('vkapp') || 
-               ua.toLowerCase().includes('messenger') || 
-               ua.toLowerCase().includes('vkwebview') || 
-               (window as any).VK_BRIDGE_VERSION !== undefined;
+        isVK =
+            ua.toLowerCase().includes('vkapp') ||
+            ua.toLowerCase().includes('messenger') ||
+            ua.toLowerCase().includes('vkwebview') ||
+            (window as any).VK_BRIDGE_VERSION !== undefined;
 
         if (isVK) {
             const vkMatch = ua.match(/VKWebView\/([0-9.]+)/i) || ua.match(/vkapp\/([0-9.]+)/i);
@@ -204,11 +206,14 @@ export async function getDeviceProfile(): Promise<DeviceProfile> {
         // 3. WebGL details
         try {
             const canvas = document.createElement('canvas');
-            let gl: WebGL2RenderingContext | WebGLRenderingContext | null = canvas.getContext('webgl2') as WebGL2RenderingContext | null;
+            let gl: WebGL2RenderingContext | WebGLRenderingContext | null = canvas.getContext(
+                'webgl2',
+            ) as WebGL2RenderingContext | null;
             if (gl) {
                 webglVersion = 'WebGL2';
             } else {
-                gl = (canvas.getContext('webgl') || canvas.getContext('experimental-webgl')) as WebGLRenderingContext | null;
+                gl = (canvas.getContext('webgl') ||
+                    canvas.getContext('experimental-webgl')) as WebGLRenderingContext | null;
                 if (gl) {
                     webglVersion = 'WebGL1';
                 }
@@ -221,7 +226,7 @@ export async function getDeviceProfile(): Promise<DeviceProfile> {
                     gpuRenderer = gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) || 'unknown';
                 }
                 maxTextureSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
-                
+
                 const precisionFormat = gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.HIGH_FLOAT);
                 if (precisionFormat && precisionFormat.precision > 0) {
                     shaderPrecision = 'highp';
@@ -251,7 +256,8 @@ export async function getDeviceProfile(): Promise<DeviceProfile> {
     const dpr = typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1;
     const webgpuSupported = typeof navigator !== 'undefined' && 'gpu' in navigator;
     const touchDevice = typeof navigator !== 'undefined' && (navigator.maxTouchPoints > 0 || 'ontouchstart' in window);
-    const orientation = typeof window !== 'undefined' && window.innerWidth < window.innerHeight ? 'portrait' : 'landscape';
+    const orientation =
+        typeof window !== 'undefined' && window.innerWidth < window.innerHeight ? 'portrait' : 'landscape';
     const buildHash = typeof __BUILD_TIME__ !== 'undefined' ? `build_${__BUILD_TIME__}` : 'dev';
 
     const profile: DeviceProfile = {
@@ -275,7 +281,7 @@ export async function getDeviceProfile(): Promise<DeviceProfile> {
         buildHash,
         vkWebView: isVK,
         touchDevice,
-        orientation
+        orientation,
     };
 
     // Cache the profile globally only if the document is visible,
@@ -349,20 +355,20 @@ export function sendPerformanceReport(stats: {
 
     Sentry.withScope((scope) => {
         scope.setTags({
-            'perf_avg_fps': stats.avgFPS.toString(),
-            'perf_min_fps': stats.minFPS.toString(),
-            'perf_frame_drops': stats.frameDrops.toString(),
-            'perf_memory_pressure': stats.memoryPressure.toString(),
-            'device_model': deviceProfile?.device || 'unknown',
-            'renderer_active': deviceProfile?.renderer || 'unknown',
+            perf_avg_fps: stats.avgFPS.toString(),
+            perf_min_fps: stats.minFPS.toString(),
+            perf_frame_drops: stats.frameDrops.toString(),
+            perf_memory_pressure: stats.memoryPressure.toString(),
+            device_model: deviceProfile?.device || 'unknown',
+            renderer_active: deviceProfile?.renderer || 'unknown',
         });
-        
+
         scope.setExtra('stats', stats);
         scope.setExtra('profile', deviceProfile);
 
         Sentry.captureMessage(
             `Device Performance Report: ${deviceProfile?.device} (${deviceProfile?.renderer}) - Avg FPS: ${stats.avgFPS}`,
-            'info'
+            'info',
         );
     });
 }

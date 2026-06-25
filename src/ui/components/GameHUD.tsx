@@ -101,9 +101,12 @@ export const GameHUD: React.FC = () => {
     const fpsLastTimeRef = useRef<number>(0);
     const fpsLastUpdateRef = useRef<number>(0);
 
-    const displayFps = (activeScreen === 'BATTLE' && currentFps !== null)
-        ? currentFps
-        : (fpsValue !== null ? Math.min(fpsValue, fpsCap) : null);
+    const displayFps =
+        activeScreen === 'BATTLE' && currentFps !== null
+            ? currentFps
+            : fpsValue !== null
+              ? Math.min(fpsValue, fpsCap)
+              : null;
 
     // requestAnimationFrame-based FPS — always shows real rendering rate (including power saving cap)
     useEffect(() => {
@@ -344,10 +347,14 @@ export const GameHUD: React.FC = () => {
                                         fontFamily: 'monospace',
                                         minWidth: '30px',
                                         textAlign: 'center',
-                                        color: displayFps === null ? '#888'
-                                            : displayFps < 25 ? '#ff4444'
-                                            : displayFps < 50 ? '#ffcc00'
-                                            : '#44ff44',
+                                        color:
+                                            displayFps === null
+                                                ? '#888'
+                                                : displayFps < 25
+                                                  ? '#ff4444'
+                                                  : displayFps < 50
+                                                    ? '#ffcc00'
+                                                    : '#44ff44',
                                         transition: 'color 0.3s',
                                     }}
                                 >

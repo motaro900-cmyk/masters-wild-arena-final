@@ -18,16 +18,22 @@
 @keyframes slot-compatible-glow {
     0% {
         border-color: rgba(240, 192, 64, 0.4);
-        box-shadow: 0 0 10px rgba(240, 192, 64, 0.25), inset 0 0 8px rgba(240, 192, 64, 0.2);
+        box-shadow:
+            0 0 10px rgba(240, 192, 64, 0.25),
+            inset 0 0 8px rgba(240, 192, 64, 0.2);
     }
     50% {
         border-color: rgba(255, 255, 255, 0.95);
-        box-shadow: 0 0 25px rgba(240, 192, 64, 0.75), inset 0 0 15px rgba(240, 192, 64, 0.4);
+        box-shadow:
+            0 0 25px rgba(240, 192, 64, 0.75),
+            inset 0 0 15px rgba(240, 192, 64, 0.4);
         transform: scale(1.03);
     }
     100% {
         border-color: rgba(240, 192, 64, 0.4);
-        box-shadow: 0 0 10px rgba(240, 192, 64, 0.25), inset 0 0 8px rgba(240, 192, 64, 0.2);
+        box-shadow:
+            0 0 10px rgba(240, 192, 64, 0.25),
+            inset 0 0 8px rgba(240, 192, 64, 0.2);
     }
 }
 
@@ -44,63 +50,139 @@
 }
 
 @keyframes frame-pulse {
-    0%   { box-shadow: inset 0 0 40px rgba(240,192,64,0.03), 0 0 15px rgba(240,192,64,0.05); }
-    50%  { box-shadow: inset 0 0 60px rgba(240,192,64,0.07), 0 0 28px rgba(240,192,64,0.10); }
-    100% { box-shadow: inset 0 0 40px rgba(240,192,64,0.03), 0 0 15px rgba(240,192,64,0.05); }
+    0% {
+        box-shadow:
+            inset 0 0 40px rgba(240, 192, 64, 0.03),
+            0 0 15px rgba(240, 192, 64, 0.05);
+    }
+    50% {
+        box-shadow:
+            inset 0 0 60px rgba(240, 192, 64, 0.07),
+            0 0 28px rgba(240, 192, 64, 0.1);
+    }
+    100% {
+        box-shadow:
+            inset 0 0 40px rgba(240, 192, 64, 0.03),
+            0 0 15px rgba(240, 192, 64, 0.05);
+    }
 }
 
 @keyframes corner-shimmer {
-    0%   { opacity: 0.65; }
-    50%  { opacity: 1.0;  }
-    100% { opacity: 0.65; }
+    0% {
+        opacity: 0.65;
+    }
+    50% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0.65;
+    }
 }
 
 /* === PARTICLE FLOAT — lightweight GPU-only (transform + opacity) === */
 @keyframes particle-float {
-    0%   { transform: translateY(0px) translateX(0px) scale(1);   opacity: 0; }
-    15%  { opacity: 0.7; }
-    85%  { opacity: 0.4; }
-    100% { transform: translateY(-220px) translateX(var(--drift, 20px)) scale(0.4); opacity: 0; }
+    0% {
+        transform: translateY(0px) translateX(0px) scale(1);
+        opacity: 0;
+    }
+    15% {
+        opacity: 0.7;
+    }
+    85% {
+        opacity: 0.4;
+    }
+    100% {
+        transform: translateY(-220px) translateX(var(--drift, 20px)) scale(0.4);
+        opacity: 0;
+    }
 }
 
 /* === CONNECTOR PULSE — dot travels along the line === */
 @keyframes conn-pulse-left {
-    0%   { transform: translateX(0px);   opacity: 0; }
-    10%  { opacity: 1; }
-    90%  { opacity: 0.8; }
-    100% { transform: translateX(82px); opacity: 0; }
+    0% {
+        transform: translateX(0px);
+        opacity: 0;
+    }
+    10% {
+        opacity: 1;
+    }
+    90% {
+        opacity: 0.8;
+    }
+    100% {
+        transform: translateX(82px);
+        opacity: 0;
+    }
 }
 @keyframes conn-pulse-right {
-    0%   { transform: translateX(0px);   opacity: 0; }
-    10%  { opacity: 1; }
-    90%  { opacity: 0.8; }
-    100% { transform: translateX(-82px); opacity: 0; }
+    0% {
+        transform: translateX(0px);
+        opacity: 0;
+    }
+    10% {
+        opacity: 1;
+    }
+    90% {
+        opacity: 0.8;
+    }
+    100% {
+        transform: translateX(-82px);
+        opacity: 0;
+    }
 }
 
 /* === SPOTLIGHT BREATHE — gentle ground light pulse === */
 @keyframes spotlight-breathe {
-    0%   { opacity: 0.30; transform: translateX(-50%) scaleX(0.85); }
-    50%  { opacity: 0.55; transform: translateX(-50%) scaleX(1.05); }
-    100% { opacity: 0.30; transform: translateX(-50%) scaleX(0.85); }
+    0% {
+        opacity: 0.3;
+        transform: translateX(-50%) scaleX(0.85);
+    }
+    50% {
+        opacity: 0.55;
+        transform: translateX(-50%) scaleX(1.05);
+    }
+    100% {
+        opacity: 0.3;
+        transform: translateX(-50%) scaleX(0.85);
+    }
 }
 
 /* === RIMLIGHT FLICKER — very subtle character edge light === */
 @keyframes rimlight-flicker {
-    0%   { opacity: 0.18; }
-    30%  { opacity: 0.28; }
-    60%  { opacity: 0.15; }
-    80%  { opacity: 0.25; }
-    100% { opacity: 0.18; }
+    0% {
+        opacity: 0.18;
+    }
+    30% {
+        opacity: 0.28;
+    }
+    60% {
+        opacity: 0.15;
+    }
+    80% {
+        opacity: 0.25;
+    }
+    100% {
+        opacity: 0.18;
+    }
 }
 
 /* === SCAN LINE — single scan across frame top-to-bottom === */
 @keyframes scan-line {
-    0%   { top: 0%;   opacity: 0; }
-    5%   { opacity: 0.4; }
-    95%  { opacity: 0.2; }
-    100% { top: 100%; opacity: 0; }
+    0% {
+        top: 0%;
+        opacity: 0;
+    }
+    5% {
+        opacity: 0.4;
+    }
+    95% {
+        opacity: 0.2;
+    }
+    100% {
+        top: 100%;
+        opacity: 0;
+    }
 }
-
 
 .breathing-backlight {
     position: absolute;
@@ -127,7 +209,9 @@
     justify-content: flex-end;
     padding-bottom: 20px;
     position: relative;
-    box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.95), 0 20px 45px rgba(0, 0, 0, 0.75);
+    box-shadow:
+        inset 0 0 50px rgba(0, 0, 0, 0.95),
+        0 20px 45px rgba(0, 0, 0, 0.75);
     z-index: 5;
     overflow: visible;
 }
@@ -138,7 +222,6 @@
 .mockup-bg-circle-orbital {
     display: none;
 }
-
 
 /* ════════════════════════════════════════════════════
    RECTANGULAR CHARACTER FRAME  (card = 940px wide)
@@ -173,7 +256,7 @@
     content: '';
     position: absolute;
     inset: 10px;
-    border: 1px solid rgba(240, 192, 64, 0.20);
+    border: 1px solid rgba(240, 192, 64, 0.2);
     border-radius: 3px;
 }
 
@@ -199,7 +282,7 @@
     width: 30px;
     top: 0;
     left: 0;
-    box-shadow: 0 0 6px rgba(240,192,64,0.6);
+    box-shadow: 0 0 6px rgba(240, 192, 64, 0.6);
 }
 
 /* Vertical */
@@ -208,13 +291,28 @@
     height: 30px;
     top: 0;
     left: 0;
-    box-shadow: 0 0 6px rgba(240,192,64,0.6);
+    box-shadow: 0 0 6px rgba(240, 192, 64, 0.6);
 }
 
-.frame-corner-tl { top: -1px; left: -1px; }
-.frame-corner-tr { top: -1px; right: -1px; transform: scaleX(-1); }
-.frame-corner-bl { bottom: -1px; left: -1px; transform: scaleY(-1); }
-.frame-corner-br { bottom: -1px; right: -1px; transform: scale(-1); }
+.frame-corner-tl {
+    top: -1px;
+    left: -1px;
+}
+.frame-corner-tr {
+    top: -1px;
+    right: -1px;
+    transform: scaleX(-1);
+}
+.frame-corner-bl {
+    bottom: -1px;
+    left: -1px;
+    transform: scaleY(-1);
+}
+.frame-corner-br {
+    bottom: -1px;
+    right: -1px;
+    transform: scale(-1);
+}
 
 /* === Corner diamonds (larger) === */
 .frame-corner-diamond {
@@ -224,13 +322,25 @@
     background: #f0c040;
     transform: rotate(45deg);
     pointer-events: none;
-    box-shadow: 0 0 8px rgba(240,192,64,0.9);
+    box-shadow: 0 0 8px rgba(240, 192, 64, 0.9);
 }
 
-.frame-corner-diamond-tl { top: -4px; left: -4px; }
-.frame-corner-diamond-tr { top: -4px; right: -4px; }
-.frame-corner-diamond-bl { bottom: -4px; left: -4px; }
-.frame-corner-diamond-br { bottom: -4px; right: -4px; }
+.frame-corner-diamond-tl {
+    top: -4px;
+    left: -4px;
+}
+.frame-corner-diamond-tr {
+    top: -4px;
+    right: -4px;
+}
+.frame-corner-diamond-bl {
+    bottom: -4px;
+    left: -4px;
+}
+.frame-corner-diamond-br {
+    bottom: -4px;
+    right: -4px;
+}
 
 /* === Side-edge diamonds (mid of each side) === */
 .frame-side-gem {
@@ -241,13 +351,29 @@
     transform: rotate(45deg);
     background: rgba(240, 192, 64, 0.25);
     pointer-events: none;
-    box-shadow: 0 0 6px rgba(240,192,64,0.4);
+    box-shadow: 0 0 6px rgba(240, 192, 64, 0.4);
 }
 
-.frame-side-gem-left   { left: -5px;  top: 50%; margin-top: -5px; }
-.frame-side-gem-right  { right: -5px; top: 50%; margin-top: -5px; }
-.frame-side-gem-top    { top: -5px;   left: 50%; margin-left: -5px; }
-.frame-side-gem-bottom { bottom: -5px; left: 50%; margin-left: -5px; }
+.frame-side-gem-left {
+    left: -5px;
+    top: 50%;
+    margin-top: -5px;
+}
+.frame-side-gem-right {
+    right: -5px;
+    top: 50%;
+    margin-top: -5px;
+}
+.frame-side-gem-top {
+    top: -5px;
+    left: 50%;
+    margin-left: -5px;
+}
+.frame-side-gem-bottom {
+    bottom: -5px;
+    left: 50%;
+    margin-left: -5px;
+}
 
 /* ════════════════════════════════════════════════════
    EQUIPMENT SLOT WRAPPERS
@@ -269,16 +395,37 @@
 
 /* LEFT COLUMN — 4 slots, evenly spaced inside frame range (48px–638px) */
 /* Step = 590 / 3 = ~147px */
-.slot-helm      { left: 68px; top:  62px; }
-.slot-shoulders { left: 68px; top: 208px; }
-.slot-armor     { left: 68px; top: 354px; }
-.slot-pants     { left: 68px; top: 500px; }
+.slot-helm {
+    left: 68px;
+    top: 62px;
+}
+.slot-shoulders {
+    left: 68px;
+    top: 208px;
+}
+.slot-armor {
+    left: 68px;
+    top: 354px;
+}
+.slot-pants {
+    left: 68px;
+    top: 500px;
+}
 
 /* RIGHT COLUMN — 3 slots */
 /* Step = 590 / 2 = 195px */
-.slot-weapons { right: 68px; top: 135px; }
-.slot-shields { right: 68px; top: 330px; }
-.slot-boots   { right: 68px; top: 525px; }
+.slot-weapons {
+    right: 68px;
+    top: 135px;
+}
+.slot-shields {
+    right: 68px;
+    top: 330px;
+}
+.slot-boots {
+    right: 68px;
+    top: 525px;
+}
 
 /* === Connector lines (horizontal, from slot edge to frame) === */
 /* Left connectors: slot right edge at left+104=172px; frame at 255px → width=83 */
@@ -287,10 +434,12 @@
     height: 1px;
     width: 82px;
     left: 172px;
-    background: linear-gradient(90deg,
-        rgba(240,192,64,0.0) 0%,
-        rgba(240,192,64,0.5) 50%,
-        rgba(240,192,64,0.9) 100%);
+    background: linear-gradient(
+        90deg,
+        rgba(240, 192, 64, 0) 0%,
+        rgba(240, 192, 64, 0.5) 50%,
+        rgba(240, 192, 64, 0.9) 100%
+    );
     pointer-events: none;
     z-index: 5;
 }
@@ -301,22 +450,38 @@
     height: 1px;
     width: 82px;
     left: 685px;
-    background: linear-gradient(90deg,
-        rgba(240,192,64,0.9) 0%,
-        rgba(240,192,64,0.5) 50%,
-        rgba(240,192,64,0.0) 100%);
+    background: linear-gradient(
+        90deg,
+        rgba(240, 192, 64, 0.9) 0%,
+        rgba(240, 192, 64, 0.5) 50%,
+        rgba(240, 192, 64, 0) 100%
+    );
     pointer-events: none;
     z-index: 5;
 }
 
 /* Connector Y positions = slot top + 52px (slot center) */
-.conn-helm      { top: 114px; }
-.conn-shoulders { top: 260px; }
-.conn-armor     { top: 406px; }
-.conn-pants     { top: 552px; }
-.conn-weapons   { top: 187px; }
-.conn-shields   { top: 382px; }
-.conn-boots     { top: 577px; }
+.conn-helm {
+    top: 114px;
+}
+.conn-shoulders {
+    top: 260px;
+}
+.conn-armor {
+    top: 406px;
+}
+.conn-pants {
+    top: 552px;
+}
+.conn-weapons {
+    top: 187px;
+}
+.conn-shields {
+    top: 382px;
+}
+.conn-boots {
+    top: 577px;
+}
 
 /* === Connector pulse dot (travels from slot → frame on left, frame → slot on right) === */
 .slot-connector-left.with-pulse::after,
@@ -327,8 +492,10 @@
     width: 6px;
     height: 6px;
     border-radius: 50%;
-    background: radial-gradient(circle, rgba(255,255,200,1) 0%, rgba(240,192,64,0.8) 60%, transparent 100%);
-    box-shadow: 0 0 6px rgba(240,192,64,0.9), 0 0 12px rgba(240,192,64,0.4);
+    background: radial-gradient(circle, rgba(255, 255, 200, 1) 0%, rgba(240, 192, 64, 0.8) 60%, transparent 100%);
+    box-shadow:
+        0 0 6px rgba(240, 192, 64, 0.9),
+        0 0 12px rgba(240, 192, 64, 0.4);
     pointer-events: none;
 }
 .slot-connector-left.with-pulse::after {
@@ -340,13 +507,27 @@
     animation: conn-pulse-right 3.5s ease-in-out infinite;
 }
 /* Stagger each connector's delay */
-.conn-helm::after        { animation-delay: 0.0s; }
-.conn-shoulders::after   { animation-delay: 0.5s; }
-.conn-armor::after       { animation-delay: 1.0s; }
-.conn-pants::after       { animation-delay: 1.5s; }
-.conn-weapons::after     { animation-delay: 0.25s; }
-.conn-shields::after     { animation-delay: 0.75s; }
-.conn-boots::after       { animation-delay: 1.25s; }
+.conn-helm::after {
+    animation-delay: 0s;
+}
+.conn-shoulders::after {
+    animation-delay: 0.5s;
+}
+.conn-armor::after {
+    animation-delay: 1s;
+}
+.conn-pants::after {
+    animation-delay: 1.5s;
+}
+.conn-weapons::after {
+    animation-delay: 0.25s;
+}
+.conn-shields::after {
+    animation-delay: 0.75s;
+}
+.conn-boots::after {
+    animation-delay: 1.25s;
+}
 
 /* === Frame atmospheric inner fog === */
 .frame-atmosphere {
@@ -358,11 +539,12 @@
     height: 590px;
     pointer-events: none;
     z-index: 1;
-    background:
-        radial-gradient(ellipse 60% 55% at 50% 40%,
-            rgba(30, 50, 80, 0.22) 0%,
-            rgba(10, 20, 40, 0.35) 55%,
-            rgba(0, 0, 0, 0.6) 100%);
+    background: radial-gradient(
+        ellipse 60% 55% at 50% 40%,
+        rgba(30, 50, 80, 0.22) 0%,
+        rgba(10, 20, 40, 0.35) 55%,
+        rgba(0, 0, 0, 0.6) 100%
+    );
     border-radius: 4px;
 }
 
@@ -375,10 +557,12 @@
     height: 60px;
     pointer-events: none;
     z-index: 3;
-    background: radial-gradient(ellipse at 50% 100%,
+    background: radial-gradient(
+        ellipse at 50% 100%,
         rgba(240, 200, 100, 0.28) 0%,
-        rgba(200, 150, 50,  0.12) 45%,
-        transparent 75%);
+        rgba(200, 150, 50, 0.12) 45%,
+        transparent 75%
+    );
     animation: spotlight-breathe 4s ease-in-out infinite;
     border-radius: 50%;
     filter: blur(4px);
@@ -395,9 +579,9 @@
     pointer-events: none;
     z-index: 4;
     background:
-        radial-gradient(ellipse 50% 100% at 0%   50%, rgba(240,192,64,0.12) 0%, transparent 70%),
-        radial-gradient(ellipse 50% 100% at 100% 50%, rgba(240,192,64,0.12) 0%, transparent 70%),
-        radial-gradient(ellipse 100% 20% at 50%  0%,  rgba(180,220,255,0.06) 0%, transparent 70%);
+        radial-gradient(ellipse 50% 100% at 0% 50%, rgba(240, 192, 64, 0.12) 0%, transparent 70%),
+        radial-gradient(ellipse 50% 100% at 100% 50%, rgba(240, 192, 64, 0.12) 0%, transparent 70%),
+        radial-gradient(ellipse 100% 20% at 50% 0%, rgba(180, 220, 255, 0.06) 0%, transparent 70%);
     animation: rimlight-flicker 6s ease-in-out infinite;
 }
 
@@ -407,7 +591,7 @@
     width: 3px;
     height: 3px;
     border-radius: 50%;
-    background: radial-gradient(circle, rgba(255,220,100,0.9) 0%, rgba(240,192,64,0.4) 60%, transparent 100%);
+    background: radial-gradient(circle, rgba(255, 220, 100, 0.9) 0%, rgba(240, 192, 64, 0.4) 60%, transparent 100%);
     pointer-events: none;
     z-index: 6;
     animation: particle-float var(--dur, 5s) ease-in var(--delay, 0s) infinite;
@@ -423,17 +607,18 @@
     height: 2px;
     pointer-events: none;
     z-index: 7;
-    background: linear-gradient(90deg,
+    background: linear-gradient(
+        90deg,
         transparent 0%,
-        rgba(200,230,255,0.15) 20%,
-        rgba(220,240,255,0.35) 50%,
-        rgba(200,230,255,0.15) 80%,
-        transparent 100%);
+        rgba(200, 230, 255, 0.15) 20%,
+        rgba(220, 240, 255, 0.35) 50%,
+        rgba(200, 230, 255, 0.15) 80%,
+        transparent 100%
+    );
     filter: blur(1px);
     animation: scan-line 8s linear infinite;
     animation-delay: 2s;
 }
-
 
 /* Slot Circle Medallions */
 .equipment-slot-circle {
@@ -446,13 +631,19 @@
 }
 
 @keyframes empty-slot-pulse {
-    0%   { border-color: rgba(240,192,64,0.18); }
-    50%  { border-color: rgba(240,192,64,0.38); }
-    100% { border-color: rgba(240,192,64,0.18); }
+    0% {
+        border-color: rgba(240, 192, 64, 0.18);
+    }
+    50% {
+        border-color: rgba(240, 192, 64, 0.38);
+    }
+    100% {
+        border-color: rgba(240, 192, 64, 0.18);
+    }
 }
 
 .equipment-slot-circle.empty-slot img {
-    filter: sepia(0.8) brightness(0.8) saturate(1.1) drop-shadow(0 0 6px rgba(240,192,64,0.35));
+    filter: sepia(0.8) brightness(0.8) saturate(1.1) drop-shadow(0 0 6px rgba(240, 192, 64, 0.35));
     animation: blueprint-pulse 4s ease-in-out infinite;
 }
 
@@ -465,19 +656,23 @@
 .equipment-slot-circle.drag-incompatible {
     opacity: 0.22 !important;
     filter: grayscale(0.8) blur(0.5px) !important;
-    transform: scale(0.90) !important;
+    transform: scale(0.9) !important;
     pointer-events: none !important;
     box-shadow: none !important;
 }
 
 .equipment-slot-circle.drag-over {
     border-color: #ffffff !important;
-    box-shadow: 0 0 35px rgba(255,255,255,0.7), inset 0 0 20px rgba(240,192,64,0.4) !important;
+    box-shadow:
+        0 0 35px rgba(255, 255, 255, 0.7),
+        inset 0 0 20px rgba(240, 192, 64, 0.4) !important;
     transform: scale(1.09) !important;
 }
 
 .equipment-slot-circle.has-item:hover {
-    box-shadow: 0 14px 32px rgba(0,0,0,0.9), 0 0 30px rgba(240,192,64,0.35) !important;
+    box-shadow:
+        0 14px 32px rgba(0, 0, 0, 0.9),
+        0 0 30px rgba(240, 192, 64, 0.35) !important;
     transform: scale(1.06) !important;
 }
 
@@ -496,8 +691,8 @@
     border-radius: 4px;
     padding: 3px 8px;
     white-space: nowrap;
-    text-shadow: 0 0 6px rgba(240,192,64,0.4);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.7);
+    text-shadow: 0 0 6px rgba(240, 192, 64, 0.4);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.7);
     backdrop-filter: blur(4px);
 }
 
@@ -505,7 +700,6 @@
     backdrop-filter: none !important;
     background: rgba(8, 5, 2, 0.95) !important;
 }
-
 
 /* Left column labels: positioned to the RIGHT, centered vertically, in the gap before frame */
 .slot-helm .slot-wrapper-label,
@@ -548,7 +742,9 @@
     color: #fffdf5;
     font-family: 'Philosopher', 'Cinzel', serif;
     letter-spacing: 1.5px;
-    text-shadow: 0 2px 5px rgba(0, 0, 0, 0.9), 0 0 10px rgba(240, 192, 64, 0.3);
+    text-shadow:
+        0 2px 5px rgba(0, 0, 0, 0.9),
+        0 0 10px rgba(240, 192, 64, 0.3);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -591,15 +787,15 @@
     border: 1.5px solid rgba(240, 192, 64, 0.45);
     border-radius: 16px;
     padding: 14px 22px;
-    box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.95), 0 12px 30px rgba(0, 0, 0, 0.75);
+    box-shadow:
+        inset 0 0 20px rgba(0, 0, 0, 0.95),
+        0 12px 30px rgba(0, 0, 0, 0.75);
     z-index: 10;
     display: flex;
     flex-direction: column;
     gap: 12px;
     overflow: visible;
 }
-
-
 
 .mockup-xp-name-row {
     display: flex;
@@ -630,7 +826,7 @@
     font-family: 'Philosopher', 'Inter', sans-serif;
     letter-spacing: 0.5px;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
-    box-shadow: inset 0 1px 3px rgba(0,0,0,0.5);
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.5);
 }
 
 .mockup-xp-title-row {
@@ -716,14 +912,14 @@
     left: 50%;
     transform: translateX(-50%);
     width: 88%;
-    background: linear-gradient(180deg, rgba(30, 24, 20, 0.98) 0%, rgba(18, 14, 11, 1.0) 50%, rgba(10, 8, 7, 1.0) 100%);
+    background: linear-gradient(180deg, rgba(30, 24, 20, 0.98) 0%, rgba(18, 14, 11, 1) 50%, rgba(10, 8, 7, 1) 100%);
     border: 1.5px solid rgba(240, 192, 64, 0.45);
     border-radius: 16px;
     padding: 12px 20px;
     display: flex;
     justify-content: space-around;
     align-items: center;
-    box-shadow: 
+    box-shadow:
         inset 0 0 25px rgba(0, 0, 0, 0.95),
         0 12px 30px rgba(0, 0, 0, 0.7),
         0 0 20px rgba(240, 192, 64, 0.05);
@@ -739,8 +935,6 @@
     pointer-events: none;
     z-index: 1;
 }
-
-
 
 .mockup-stat-item {
     position: relative;
@@ -819,5 +1013,3 @@
 .mockup-stat-value.crit {
     color: #b86eff;
 }
-
-

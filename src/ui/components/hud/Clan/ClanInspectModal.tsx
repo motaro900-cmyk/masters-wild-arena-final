@@ -19,10 +19,35 @@ interface ClanInspectModalProps {
 }
 
 const MOCK_NAMES = [
-    'Рагнар', 'Сильвана', 'Геральт', 'Джайна', 'Тралл', 'Иллидан', 'Лирой',
-    'Утер', 'Андуин', 'Валира', 'Гаррош', 'Малфурион', 'Тиранда', 'Артас',
-    'Кэрн', 'Волджин', 'Регар', 'Чэнь', 'Ли Ли', 'Мурадин', 'Фалстад',
-    'Джараксус', 'Гулдан', 'Клэр', 'Леон', 'Ада', 'Джилл', 'Крис', 'Альберт'
+    'Рагнар',
+    'Сильвана',
+    'Геральт',
+    'Джайна',
+    'Тралл',
+    'Иллидан',
+    'Лирой',
+    'Утер',
+    'Андуин',
+    'Валира',
+    'Гаррош',
+    'Малфурион',
+    'Тиранда',
+    'Артас',
+    'Кэрн',
+    'Волджин',
+    'Регар',
+    'Чэнь',
+    'Ли Ли',
+    'Мурадин',
+    'Фалстад',
+    'Джараксус',
+    'Гулдан',
+    'Клэр',
+    'Леон',
+    'Ада',
+    'Джилл',
+    'Крис',
+    'Альберт',
 ];
 
 interface InspectMember {
@@ -37,37 +62,36 @@ interface InspectMember {
     frame?: string;
 }
 
-
 const RoleBadge: React.FC<{ role: 'LEADER' | 'OFFICER' | 'MEMBER'; colors: any }> = ({ role, colors }) => {
     const text = role === 'LEADER' ? 'Глава' : role === 'OFFICER' ? 'Офицер' : 'Рядовой';
-    const bg = role === 'LEADER' 
-        ? 'rgba(240, 192, 64, 0.12)' 
-        : role === 'OFFICER' 
-            ? 'rgba(59, 130, 246, 0.12)' 
-            : 'rgba(255, 255, 255, 0.03)';
-    const color = role === 'LEADER' 
-        ? colors.accent 
-        : role === 'OFFICER' 
-            ? '#60a5fa' 
-            : 'rgba(255,255,255,0.5)';
-    const border = role === 'LEADER' 
-        ? `1px solid ${colors.accent}44` 
-        : role === 'OFFICER' 
-            ? '1px solid #60a5fa44' 
-            : '1px solid rgba(255,255,255,0.1)';
+    const bg =
+        role === 'LEADER'
+            ? 'rgba(240, 192, 64, 0.12)'
+            : role === 'OFFICER'
+              ? 'rgba(59, 130, 246, 0.12)'
+              : 'rgba(255, 255, 255, 0.03)';
+    const color = role === 'LEADER' ? colors.accent : role === 'OFFICER' ? '#60a5fa' : 'rgba(255,255,255,0.5)';
+    const border =
+        role === 'LEADER'
+            ? `1px solid ${colors.accent}44`
+            : role === 'OFFICER'
+              ? '1px solid #60a5fa44'
+              : '1px solid rgba(255,255,255,0.1)';
 
     return (
-        <span style={{
-            fontSize: '8px',
-            fontWeight: 800,
-            padding: '1px 5px',
-            borderRadius: '3px',
-            background: bg,
-            color: color,
-            border: border,
-            textTransform: 'uppercase',
-            letterSpacing: '0.5px'
-        }}>
+        <span
+            style={{
+                fontSize: '8px',
+                fontWeight: 800,
+                padding: '1px 5px',
+                borderRadius: '3px',
+                background: bg,
+                color: color,
+                border: border,
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px',
+            }}
+        >
             {text}
         </span>
     );
@@ -85,10 +109,10 @@ export const ClanInspectModal: React.FC<ClanInspectModalProps> = ({
 }) => {
     const inspectMembers = useMemo(() => {
         if (!clan) return [];
-        
+
         const count = clan.membersCount;
         const members: InspectMember[] = [];
-        
+
         // Лидер клана
         const leaderTrophies = Math.max(clan.minTrophies + 500, Math.floor(clan.totalTrophies * 0.12));
         members.push({
@@ -112,7 +136,10 @@ export const ClanInspectModal: React.FC<ClanInspectModalProps> = ({
             members.push({
                 name,
                 role: 'OFFICER',
-                trophies: Math.max(clan.minTrophies, Math.floor(leaderTrophies * 0.85) - i * 250 - Math.floor(Math.random() * 150)),
+                trophies: Math.max(
+                    clan.minTrophies,
+                    Math.floor(leaderTrophies * 0.85) - i * 250 - Math.floor(Math.random() * 150),
+                ),
                 lastSeen: isOnline ? 'В сети' : `${Math.floor(Math.random() * 23) + 1}ч назад`,
                 isOnline,
                 avatar: `sprite:sprite-avatar avatar-pos-${(i + 2) % 9}`,
@@ -124,7 +151,10 @@ export const ClanInspectModal: React.FC<ClanInspectModalProps> = ({
         // Рядовые
         for (let i = 0; i < regularCount; i++) {
             const nameIdx = (officersCount + i) % MOCK_NAMES.length;
-            const name = i >= MOCK_NAMES.length ? `${MOCK_NAMES[nameIdx]} ${Math.floor(i / MOCK_NAMES.length) + 1}` : MOCK_NAMES[nameIdx];
+            const name =
+                i >= MOCK_NAMES.length
+                    ? `${MOCK_NAMES[nameIdx]} ${Math.floor(i / MOCK_NAMES.length) + 1}`
+                    : MOCK_NAMES[nameIdx];
             const isOnline = Math.random() > 0.75;
             const minT = clan.minTrophies;
             const baseT = Math.floor(clan.totalTrophies / count);
@@ -202,29 +232,48 @@ export const ClanInspectModal: React.FC<ClanInspectModalProps> = ({
                         fontWeight: 'bold',
                         transition: 'opacity 0.2s',
                     }}
-                    onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
-                    onMouseLeave={(e) => e.currentTarget.style.opacity = '0.8'}
+                    onMouseEnter={(e) => (e.currentTarget.style.opacity = '1')}
+                    onMouseLeave={(e) => (e.currentTarget.style.opacity = '0.8')}
                 >
                     ✖
                 </button>
 
                 {/* Шапка осмотра */}
-                <div style={{ display: 'flex', gap: '20px', alignItems: 'center', borderBottom: '1px solid rgba(240, 192, 64, 0.15)', paddingBottom: '16px', marginBottom: '16px' }}>
+                <div
+                    style={{
+                        display: 'flex',
+                        gap: '20px',
+                        alignItems: 'center',
+                        borderBottom: '1px solid rgba(240, 192, 64, 0.15)',
+                        paddingBottom: '16px',
+                        marginBottom: '16px',
+                    }}
+                >
                     <ClanEmblemIcon emblem={clan.emblem} size={72} />
                     <div style={{ flex: 1 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                            <h3 style={{ margin: 0, fontFamily: "'Cinzel', serif", fontSize: '26px', color: colors.accent, fontWeight: 900 }}>
+                            <h3
+                                style={{
+                                    margin: 0,
+                                    fontFamily: "'Cinzel', serif",
+                                    fontSize: '26px',
+                                    color: colors.accent,
+                                    fontWeight: 900,
+                                }}
+                            >
                                 {clan.name}
                             </h3>
-                            <span style={{
-                                fontSize: '10px',
-                                fontWeight: 900,
-                                padding: '2px 8px',
-                                borderRadius: '6px',
-                                background: 'linear-gradient(180deg, #f0c040 0%, #a88020 100%)',
-                                color: '#000',
-                                textTransform: 'uppercase',
-                            }}>
+                            <span
+                                style={{
+                                    fontSize: '10px',
+                                    fontWeight: 900,
+                                    padding: '2px 8px',
+                                    borderRadius: '6px',
+                                    background: 'linear-gradient(180deg, #f0c040 0%, #a88020 100%)',
+                                    color: '#000',
+                                    textTransform: 'uppercase',
+                                }}
+                            >
                                 Ур. {clan.level}
                             </span>
                         </div>
@@ -235,30 +284,82 @@ export const ClanInspectModal: React.FC<ClanInspectModalProps> = ({
                 </div>
 
                 {/* Основные статы клана */}
-                <div style={{ display: 'flex', gap: '15px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '12px 20px', marginBottom: '16px' }}>
-                    <StatItem label="Трофеи" value={(clan.totalTrophies).toLocaleString()} />
+                <div
+                    style={{
+                        display: 'flex',
+                        gap: '15px',
+                        background: 'rgba(255,255,255,0.02)',
+                        border: '1px solid rgba(255,255,255,0.05)',
+                        borderRadius: '12px',
+                        padding: '12px 20px',
+                        marginBottom: '16px',
+                    }}
+                >
+                    <StatItem label="Трофеи" value={clan.totalTrophies.toLocaleString()} />
                     <div style={{ width: '1px', background: 'rgba(255,255,255,0.1)' }} />
                     <StatItem label="Участники" value={`${clan.membersCount}/${clan.maxMembers}`} />
                     <div style={{ width: '1px', background: 'rgba(255,255,255,0.1)' }} />
                     <StatItem label="Требование" value={`${clan.minTrophies} кубков`} />
                     <div style={{ width: '1px', background: 'rgba(255,255,255,0.1)' }} />
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                        <div style={{ fontSize: '10px', opacity: 0.5, fontWeight: 800, textTransform: 'uppercase' }}>Тип доступа</div>
-                        <div style={{ fontSize: '15px', fontWeight: 900, color: clan.type === 'OPEN' ? colors.success : clan.type === 'INVITE' ? '#f59e0b' : colors.danger }}>
+                        <div style={{ fontSize: '10px', opacity: 0.5, fontWeight: 800, textTransform: 'uppercase' }}>
+                            Тип доступа
+                        </div>
+                        <div
+                            style={{
+                                fontSize: '15px',
+                                fontWeight: 900,
+                                color:
+                                    clan.type === 'OPEN'
+                                        ? colors.success
+                                        : clan.type === 'INVITE'
+                                          ? '#f59e0b'
+                                          : colors.danger,
+                            }}
+                        >
                             {clan.type === 'OPEN' ? 'ОТКРЫТЫЙ' : clan.type === 'INVITE' ? 'ПО ЗАЯВКЕ' : 'ЗАКРЫТЫЙ'}
                         </div>
                     </div>
                 </div>
 
                 {/* Заголовок списка участников */}
-                <h4 style={{ margin: '0 0 10px 0', fontFamily: "'Cinzel', serif", color: colors.accent, fontSize: '16px', letterSpacing: '0.5px' }}>
+                <h4
+                    style={{
+                        margin: '0 0 10px 0',
+                        fontFamily: "'Cinzel', serif",
+                        color: colors.accent,
+                        fontSize: '16px',
+                        letterSpacing: '0.5px',
+                    }}
+                >
                     УЧАСТНИКИ КЛАНА ({clan.membersCount})
                 </h4>
 
                 {/* Список участников */}
-                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px', overflow: 'hidden', minHeight: 0 }}>
+                <div
+                    style={{
+                        flex: 1,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '8px',
+                        overflow: 'hidden',
+                        minHeight: 0,
+                    }}
+                >
                     {/* Шапка таблицы */}
-                    <div style={{ display: 'flex', padding: '0 16px', color: colors.accent, fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', opacity: 0.6, letterSpacing: '0.5px', marginBottom: '4px' }}>
+                    <div
+                        style={{
+                            display: 'flex',
+                            padding: '0 16px',
+                            color: colors.accent,
+                            fontSize: '10px',
+                            fontWeight: 800,
+                            textTransform: 'uppercase',
+                            opacity: 0.6,
+                            letterSpacing: '0.5px',
+                            marginBottom: '4px',
+                        }}
+                    >
                         <span style={{ flex: 1 }}>Участники</span>
                         <span style={{ width: '60px', textAlign: 'center' }}>Уровень</span>
                         <span style={{ width: '100px', textAlign: 'center' }}>Вклад (всего)</span>
@@ -267,9 +368,26 @@ export const ClanInspectModal: React.FC<ClanInspectModalProps> = ({
                     </div>
 
                     {/* Скролл участников */}
-                    <div className="leaderboard-scroll" style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '6px', paddingRight: '4px', minHeight: 0 }}>
+                    <div
+                        className="leaderboard-scroll"
+                        style={{
+                            flex: 1,
+                            overflowY: 'auto',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '6px',
+                            paddingRight: '4px',
+                            minHeight: 0,
+                        }}
+                    >
                         {inspectMembers.map((member, index) => {
-                            const frame = member.frame || (member.role === 'LEADER' ? 'emerald_dragon_frame.webp' : member.role === 'OFFICER' ? 'frost_ice_frame.webp' : 'none');
+                            const frame =
+                                member.frame ||
+                                (member.role === 'LEADER'
+                                    ? 'emerald_dragon_frame.webp'
+                                    : member.role === 'OFFICER'
+                                      ? 'frost_ice_frame.webp'
+                                      : 'none');
                             return (
                                 <div
                                     key={index}
@@ -289,57 +407,111 @@ export const ClanInspectModal: React.FC<ClanInspectModalProps> = ({
                                             size={38}
                                         />
                                         <div>
-                                            <div style={{ color: '#fff', fontWeight: 800, fontSize: '15px' }}>{member.name}</div>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginTop: '1px' }}>
-                                        <img 
-                                            src={resolveAssetPath(getRankInfo(member.trophies).icon)} 
-                                            style={{ width: '13px', height: '13px', objectFit: 'contain' }} 
-                                            alt="" 
-                                        />
-                                        <span style={{ fontSize: '9px', textTransform: 'uppercase', fontWeight: 800, color: getRankInfo(member.trophies).color }}>
-                                            {getRankInfo(member.trophies).name}
-                                        </span>
-                                        <span style={{ opacity: 0.3, fontSize: '8px', color: '#fff' }}>•</span>
-                                        <RoleBadge role={member.role} colors={colors} />
+                                            <div style={{ color: '#fff', fontWeight: 800, fontSize: '15px' }}>
+                                                {member.name}
+                                            </div>
+                                            <div
+                                                style={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: '5px',
+                                                    marginTop: '1px',
+                                                }}
+                                            >
+                                                <img
+                                                    src={resolveAssetPath(getRankInfo(member.trophies).icon)}
+                                                    style={{ width: '13px', height: '13px', objectFit: 'contain' }}
+                                                    alt=""
+                                                />
+                                                <span
+                                                    style={{
+                                                        fontSize: '9px',
+                                                        textTransform: 'uppercase',
+                                                        fontWeight: 800,
+                                                        color: getRankInfo(member.trophies).color,
+                                                    }}
+                                                >
+                                                    {getRankInfo(member.trophies).name}
+                                                </span>
+                                                <span style={{ opacity: 0.3, fontSize: '8px', color: '#fff' }}>•</span>
+                                                <RoleBadge role={member.role} colors={colors} />
+                                            </div>
+                                        </div>
+                                        <div
+                                            style={{
+                                                width: '60px',
+                                                textAlign: 'center',
+                                                fontWeight: 900,
+                                                color: '#fff',
+                                                fontSize: '13px',
+                                            }}
+                                        >
+                                            {member.level}
+                                        </div>
+                                        <div
+                                            style={{
+                                                width: '100px',
+                                                textAlign: 'center',
+                                                color: colors.accent,
+                                                fontWeight: 900,
+                                                fontSize: '13px',
+                                            }}
+                                        >
+                                            {member.contribution}
+                                        </div>
+                                        <div style={{ width: '90px', textAlign: 'center' }}>
+                                            <div
+                                                style={{
+                                                    display: 'inline-block',
+                                                    padding: '2px 8px',
+                                                    borderRadius: '6px',
+                                                    fontSize: '9px',
+                                                    fontWeight: 800,
+                                                    background: member.isOnline
+                                                        ? 'rgba(74, 222, 128, 0.08)'
+                                                        : 'rgba(255,255,255,0.02)',
+                                                    color: member.isOnline ? '#4ade80' : 'rgba(255,255,255,0.4)',
+                                                    border: `1px solid ${member.isOnline ? '#4ade8022' : 'rgba(255,255,255,0.05)'}`,
+                                                }}
+                                            >
+                                                {member.isOnline ? 'В сети' : member.lastSeen}
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
-                                <div style={{ width: '60px', textAlign: 'center', fontWeight: 900, color: '#fff', fontSize: '13px' }}>
-                                    {member.level}
-                                </div>
-                                <div style={{ width: '100px', textAlign: 'center', color: colors.accent, fontWeight: 900, fontSize: '13px' }}>
-                                    {member.contribution}
-                                </div>
-                                <div style={{ width: '90px', textAlign: 'center' }}>
                                     <div
                                         style={{
-                                            display: 'inline-block',
-                                            padding: '2px 8px',
-                                            borderRadius: '6px',
-                                            fontSize: '9px',
-                                            fontWeight: 800,
-                                            background: member.isOnline ? 'rgba(74, 222, 128, 0.08)' : 'rgba(255,255,255,0.02)',
-                                            color: member.isOnline ? '#4ade80' : 'rgba(255,255,255,0.4)',
-                                            border: `1px solid ${member.isOnline ? '#4ade8022' : 'rgba(255,255,255,0.05)'}`,
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '6px',
+                                            width: '110px',
+                                            justifyContent: 'flex-end',
                                         }}
                                     >
-                                        {member.isOnline ? 'В сети' : member.lastSeen}
+                                        <span style={{ color: '#fff', fontSize: '14px', fontWeight: 900 }}>
+                                            {member.trophies.toLocaleString()}
+                                        </span>
+                                        <img
+                                            src={resolveAssetPath(AssetsMap.UI.TROPHY_PREMIUM)}
+                                            style={{ width: '20px', height: '20px', objectFit: 'contain' }}
+                                            alt=""
+                                        />
                                     </div>
-                                </div></div>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', width: '110px', justifyContent: 'flex-end' }}>
-                                    <span style={{ color: '#fff', fontSize: '14px', fontWeight: 900 }}>{member.trophies.toLocaleString()}</span>
-                                    <img
-                                        src={resolveAssetPath(AssetsMap.UI.TROPHY_PREMIUM)}
-                                        style={{ width: '20px', height: '20px', objectFit: 'contain' }}
-                                        alt=""
-                                    />
                                 </div>
-                            </div>
-                        )})}
+                            );
+                        })}
                     </div>
                 </div>
 
                 {/* Действия внизу */}
-                <div style={{ display: 'flex', gap: '12px', marginTop: '16px', borderTop: '1px solid rgba(240, 192, 64, 0.15)', paddingTop: '16px' }}>
+                <div
+                    style={{
+                        display: 'flex',
+                        gap: '12px',
+                        marginTop: '16px',
+                        borderTop: '1px solid rgba(240, 192, 64, 0.15)',
+                        paddingTop: '16px',
+                    }}
+                >
                     <motion.button
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
@@ -410,14 +582,20 @@ export const ClanInspectModal: React.FC<ClanInspectModalProps> = ({
                         </motion.button>
                     ) : (
                         <motion.button
-                            whileHover={canJoin ? { scale: 1.02, background: 'linear-gradient(180deg, #f0c040 0%, #d9a21b 100%)' } : {}}
+                            whileHover={
+                                canJoin
+                                    ? { scale: 1.02, background: 'linear-gradient(180deg, #f0c040 0%, #d9a21b 100%)' }
+                                    : {}
+                            }
                             whileTap={canJoin ? { scale: 0.98 } : {}}
                             onClick={() => canJoin && onJoin(clan)}
                             disabled={!canJoin}
                             style={{
                                 flex: 2,
                                 padding: '12px',
-                                background: canJoin ? 'linear-gradient(180deg, #f0c040 0%, #a88020 100%)' : 'rgba(255,255,255,0.02)',
+                                background: canJoin
+                                    ? 'linear-gradient(180deg, #f0c040 0%, #a88020 100%)'
+                                    : 'rgba(255,255,255,0.02)',
                                 border: `1.5px solid ${canJoin ? colors.accent : colors.border}`,
                                 borderRadius: '12px',
                                 color: canJoin ? '#000' : 'rgba(255,255,255,0.3)',

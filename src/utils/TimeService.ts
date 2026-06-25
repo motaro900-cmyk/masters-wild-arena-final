@@ -10,5 +10,5 @@ export const TimeService = {
     },
     now(): number {
         return Date.now() + timeOffset;
-    }
+    },
 };

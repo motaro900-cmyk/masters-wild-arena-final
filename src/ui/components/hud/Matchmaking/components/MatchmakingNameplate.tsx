@@ -116,7 +116,18 @@ const Nameplate: React.FC<{
                             lineHeight: 1.1,
                         }}
                     >
-                        {displayName} <span style={{ fontSize: '13px', color: '#a1a1aa', fontWeight: 'bold', fontFamily: "'Montserrat', sans-serif", textTransform: 'uppercase' }}>• {titleText}</span>
+                        {displayName}{' '}
+                        <span
+                            style={{
+                                fontSize: '13px',
+                                color: '#a1a1aa',
+                                fontWeight: 'bold',
+                                fontFamily: "'Montserrat', sans-serif",
+                                textTransform: 'uppercase',
+                            }}
+                        >
+                            • {titleText}
+                        </span>
                     </span>
                     {vipLevel > 0 && (
                         <div

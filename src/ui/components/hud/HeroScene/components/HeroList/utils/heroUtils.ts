@@ -30,7 +30,10 @@ export const SOURCE_ICONS: Record<string, string> = {
 /**
  * Вычисляет производные боевые характеристики из базовых статов героя.
  */
-export function deriveStats(stats: { strength: number; agility: number; stamina: number; intelligence: number }, _heroId?: string) {
+export function deriveStats(
+    stats: { strength: number; agility: number; stamina: number; intelligence: number },
+    _heroId?: string,
+) {
     return {
         hp: stats.stamina * 10,
         attack: stats.strength * 2,

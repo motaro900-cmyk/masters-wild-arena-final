@@ -235,8 +235,10 @@ export const RewardCard: React.FC<RewardCardProps> = ({
                         src={imgUrl}
                         alt={item.name}
                         style={{
-                            width: item.type === 'GOLD' || item.type === 'GEMS' || item.type === 'ENERGY' ? '45%' : '100%',
-                            height: item.type === 'GOLD' || item.type === 'GEMS' || item.type === 'ENERGY' ? '45%' : '100%',
+                            width:
+                                item.type === 'GOLD' || item.type === 'GEMS' || item.type === 'ENERGY' ? '45%' : '100%',
+                            height:
+                                item.type === 'GOLD' || item.type === 'GEMS' || item.type === 'ENERGY' ? '45%' : '100%',
                             objectFit: 'contain',
                             filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.4))',
                         }}

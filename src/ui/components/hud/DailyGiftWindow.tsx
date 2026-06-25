@@ -56,41 +56,41 @@ export interface WheelReward {
 }
 
 export const WHEEL_REWARDS: WheelReward[] = [
-    { type: 'GOLD', amount: 500, label: '500 Золота', icon: '/assets/images/ui/icons/Gold.webp', color: '#2c1d11' },
-    { type: 'CRYSTAL', amount: 10, label: '10 Алмазов', icon: '/assets/images/ui/icons/almaz.webp', color: '#1e293b' },
+    { type: 'GOLD', amount: 1000, label: '1000 Золота', icon: '/assets/images/ui/icons/Gold.webp', color: '#2c1d11' },
+    { type: 'CRYSTAL', amount: 4, label: '4 Алмаза', icon: '/assets/images/ui/icons/almaz.webp', color: '#1e293b' },
     { type: 'ENERGY', amount: 15, label: '15 Энергии', icon: '/assets/images/ui/icons/energy.webp', color: '#0f172a' },
     { type: 'ENERGY', amount: 20, label: '20 Энергии', icon: '/assets/images/ui/icons/energy.webp', color: '#14532d' },
-    { type: 'GOLD', amount: 1000, label: '1000 Золота', icon: '/assets/images/ui/icons/Gold.webp', color: '#3a2818' },
-    { type: 'CRYSTAL', amount: 25, label: '25 Алмазов', icon: '/assets/images/ui/icons/almaz.webp', color: '#334155' },
+    { type: 'GOLD', amount: 2500, label: '2500 Золота', icon: '/assets/images/ui/icons/Gold.webp', color: '#3a2818' },
+    { type: 'CRYSTAL', amount: 10, label: '10 Алмазов', icon: '/assets/images/ui/icons/almaz.webp', color: '#334155' },
     { type: 'ENERGY', amount: 30, label: '30 Энергии', icon: '/assets/images/ui/icons/energy.webp', color: '#1e293b' },
-    { type: 'CRYSTAL', amount: 15, label: '15 Алмазов', icon: '/assets/images/ui/icons/almaz.webp', color: '#581c87' },
+    { type: 'CRYSTAL', amount: 6, label: '6 Алмазов', icon: '/assets/images/ui/icons/almaz.webp', color: '#581c87' },
 ];
 
 export const getSectorBg = (type: RewardType, index: number) => {
     const isEven = index % 2 === 0;
     switch (type) {
         case 'GOLD':
-            return isEven 
-            ? 'linear-gradient(135deg, #2e1d0c 0%, #1a0f05 100%)' 
-            : 'linear-gradient(135deg, #3d2712 0%, #251608 100%)';
+            return isEven
+                ? 'linear-gradient(135deg, #2e1d0c 0%, #1a0f05 100%)'
+                : 'linear-gradient(135deg, #3d2712 0%, #251608 100%)';
         case 'CRYSTAL':
-            return isEven 
-            ? 'linear-gradient(135deg, #101c30 0%, #080e1b 100%)' 
-            : 'linear-gradient(135deg, #1a273d 0%, #0d1628 100%)';
+            return isEven
+                ? 'linear-gradient(135deg, #101c30 0%, #080e1b 100%)'
+                : 'linear-gradient(135deg, #1a273d 0%, #0d1628 100%)';
         case 'ENERGY':
-            return isEven 
-            ? 'linear-gradient(135deg, #0d2a1a 0%, #05140b 100%)' 
-            : 'linear-gradient(135deg, #143d26 0%, #0a2113 100%)';
+            return isEven
+                ? 'linear-gradient(135deg, #0d2a1a 0%, #05140b 100%)'
+                : 'linear-gradient(135deg, #143d26 0%, #0a2113 100%)';
         default:
             return isEven ? '#111' : '#222';
     }
 };
 
 export const DailyGiftWindow: React.FC<DailyGiftWindowProps> = ({ onClose }) => {
-    const addGold = useGameStore(state => state.addGold);
-    const addCrystals = useGameStore(state => state.addCrystals);
-    const addEnergy = useGameStore(state => state.addEnergy);
-    const setCanClaimDailyGift = useGameStore(state => state.setCanClaimDailyGift);
+    const addGold = useGameStore((state) => state.addGold);
+    const addCrystals = useGameStore((state) => state.addCrystals);
+    const addEnergy = useGameStore((state) => state.addEnergy);
+    const setCanClaimDailyGift = useGameStore((state) => state.setCanClaimDailyGift);
 
     // Tab control
     const [activeTab, setActiveTab] = useState<'CALENDAR' | 'WHEEL'>('CALENDAR');
@@ -243,7 +243,9 @@ export const DailyGiftWindow: React.FC<DailyGiftWindowProps> = ({ onClose }) => 
             if (!success) {
                 // Ad failed or closed early
                 setIsClaiming(false);
-                alert('Не удалось посмотреть рекламу до конца или видео недоступно. Попробуйте еще раз или заберите обычную награду.');
+                alert(
+                    'Не удалось посмотреть рекламу до конца или видео недоступно. Попробуйте еще раз или заберите обычную награду.',
+                );
                 return;
             }
         }
@@ -457,10 +459,7 @@ export const DailyGiftWindow: React.FC<DailyGiftWindowProps> = ({ onClose }) => 
                             activeTab === 'CALENDAR'
                                 ? 'linear-gradient(180deg, #ffe57f 0%, #e5a910 40%, #8c6300 100%)'
                                 : 'rgba(255, 255, 255, 0.03)',
-                        border:
-                            activeTab === 'CALENDAR'
-                                ? '2px solid #ffd700'
-                                : '1.5px solid rgba(240, 192, 64, 0.2)',
+                        border: activeTab === 'CALENDAR' ? '2px solid #ffd700' : '1.5px solid rgba(240, 192, 64, 0.2)',
                         borderRadius: '12px',
                         color: activeTab === 'CALENDAR' ? '#1c1002' : '#c8a870',
                         fontFamily: "'Cinzel', serif",
@@ -469,7 +468,8 @@ export const DailyGiftWindow: React.FC<DailyGiftWindowProps> = ({ onClose }) => 
                         cursor: 'pointer',
                         transition: 'all 0.25s ease',
                         letterSpacing: '1.5px',
-                        textShadow: activeTab === 'CALENDAR' ? '0 1px 1px rgba(255,255,255,0.2)' : '0 2px 4px rgba(0,0,0,0.8)',
+                        textShadow:
+                            activeTab === 'CALENDAR' ? '0 1px 1px rgba(255,255,255,0.2)' : '0 2px 4px rgba(0,0,0,0.8)',
                         boxShadow:
                             activeTab === 'CALENDAR'
                                 ? '0 0 20px rgba(240, 192, 64, 0.35), inset 0 1px 0 rgba(255,255,255,0.35)'
@@ -505,10 +505,7 @@ export const DailyGiftWindow: React.FC<DailyGiftWindowProps> = ({ onClose }) => 
                             activeTab === 'WHEEL'
                                 ? 'linear-gradient(180deg, #ffe57f 0%, #e5a910 40%, #8c6300 100%)'
                                 : 'rgba(255, 255, 255, 0.03)',
-                        border:
-                            activeTab === 'WHEEL'
-                                ? '2px solid #ffd700'
-                                : '1.5px solid rgba(240, 192, 64, 0.2)',
+                        border: activeTab === 'WHEEL' ? '2px solid #ffd700' : '1.5px solid rgba(240, 192, 64, 0.2)',
                         borderRadius: '12px',
                         color: activeTab === 'WHEEL' ? '#1c1002' : '#c8a870',
                         fontFamily: "'Cinzel', serif",
@@ -517,7 +514,8 @@ export const DailyGiftWindow: React.FC<DailyGiftWindowProps> = ({ onClose }) => 
                         cursor: 'pointer',
                         transition: 'all 0.25s ease',
                         letterSpacing: '1.5px',
-                        textShadow: activeTab === 'WHEEL' ? '0 1px 1px rgba(255,255,255,0.2)' : '0 2px 4px rgba(0,0,0,0.8)',
+                        textShadow:
+                            activeTab === 'WHEEL' ? '0 1px 1px rgba(255,255,255,0.2)' : '0 2px 4px rgba(0,0,0,0.8)',
                         boxShadow:
                             activeTab === 'WHEEL'
                                 ? '0 0 20px rgba(240, 192, 64, 0.35), inset 0 1px 0 rgba(255,255,255,0.35)'
@@ -529,7 +527,7 @@ export const DailyGiftWindow: React.FC<DailyGiftWindowProps> = ({ onClose }) => 
             </div>
 
             <motion.div
-                drag={isMobile ? "x" : undefined}
+                drag={isMobile ? 'x' : undefined}
                 dragConstraints={{ left: 0, right: 0 }}
                 dragElastic={0.15}
                 onDragEnd={(_, info) => {

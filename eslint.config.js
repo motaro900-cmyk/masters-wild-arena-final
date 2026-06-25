@@ -26,6 +26,25 @@ export default tseslint.config(
             'prettier/prettier': 'warn',
             '@typescript-eslint/no-explicit-any': 'off',
             '@typescript-eslint/no-unused-vars': ['warn'],
+            'no-restricted-imports': [
+                'warn',
+                {
+                    patterns: [
+                        {
+                            group: ['**/src/assets/**', '**/src/assets'],
+                            message: 'Importing from src/assets is deprecated. Use assets-src or public/assets.'
+                        },
+                        {
+                            group: ['**/src/components/**', '**/src/components'],
+                            message: 'Importing from src/components is deprecated. Real React components should be in src/ui/components.'
+                        },
+                        {
+                            group: ['**/api/**', '**/api', '**/server/**', '**/server'],
+                            message: 'Backend code in api/ or server/ must not be imported in client-side code.'
+                        }
+                    ]
+                }
+            ],
         },
     },
     eslintConfigPrettier,

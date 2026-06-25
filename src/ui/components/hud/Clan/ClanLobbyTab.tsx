@@ -31,7 +31,7 @@ export const ClanLobbyTab: React.FC<ClanLobbyTabProps> = ({
 }) => {
     const clanId = useGameStore((state) => state.clanId);
     const isMock = clanId?.startsWith('clan_');
-    const defaultMOTD = isMock 
+    const defaultMOTD = isMock
         ? 'Внимание, Мастера! Завтра в 20:00 стартует Клановая Осада.'
         : 'Приветствуем в нашем клане! Будьте вежливы и помогайте соратникам.';
     const [clanMOTD, setClanMOTD] = useState(defaultMOTD);
@@ -46,14 +46,13 @@ export const ClanLobbyTab: React.FC<ClanLobbyTabProps> = ({
         : rawClanMessages.filter((m: any) => !m.id?.toString().startsWith('mock-'));
     const addMessage = useGameStore((state) => state.addMessage);
 
-    const currentUserName = name && name !== 'Мастер' 
-        ? name 
-        : (vkUser?.firstName ? `${vkUser.firstName} ${vkUser.lastName}` : 'Воин');
-    
+    const currentUserName =
+        name && name !== 'Мастер' ? name : vkUser?.firstName ? `${vkUser.firstName} ${vkUser.lastName}` : 'Воин';
+
     const playerMember = members.find((m) => m.name === currentUserName);
     const playerRole = playerMember ? playerMember.role : 'MEMBER';
     const isLeaderOrOfficer = playerRole === 'LEADER' || playerRole === 'OFFICER';
-    const onlineCount = members.filter(m => m.isOnline).length;
+    const onlineCount = members.filter((m) => m.isOnline).length;
 
     const [newMessageText, setNewMessageText] = useState('');
 
@@ -282,10 +281,18 @@ export const ClanLobbyTab: React.FC<ClanLobbyTabProps> = ({
                         minHeight: '280px',
                     }}
                 >
-                    <div style={{ fontSize: '12px', fontWeight: 800, color: colors.accent, textTransform: 'uppercase', marginBottom: '10px' }}>
+                    <div
+                        style={{
+                            fontSize: '12px',
+                            fontWeight: 800,
+                            color: colors.accent,
+                            textTransform: 'uppercase',
+                            marginBottom: '10px',
+                        }}
+                    >
                         Чат клана
                     </div>
-                    
+
                     {/* Messages scroll */}
                     <div
                         className="leaderboard-scroll"
@@ -316,21 +323,50 @@ export const ClanLobbyTab: React.FC<ClanLobbyTabProps> = ({
                                         alignSelf: 'stretch',
                                     }}
                                 >
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2px' }}>
+                                    <div
+                                        style={{
+                                            display: 'flex',
+                                            justifyContent: 'space-between',
+                                            alignItems: 'center',
+                                            marginBottom: '2px',
+                                        }}
+                                    >
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                            <span style={{ fontSize: '13px', fontWeight: 800, color: isUser ? colors.accent : '#60a5fa' }}>
+                                            <span
+                                                style={{
+                                                    fontSize: '13px',
+                                                    fontWeight: 800,
+                                                    color: isUser ? colors.accent : '#60a5fa',
+                                                }}
+                                            >
                                                 {msg.author}
                                             </span>
-                                            <span style={{
-                                                fontSize: '7px',
-                                                fontWeight: 800,
-                                                padding: '1px 4px',
-                                                borderRadius: '2px',
-                                                background: msgRole === 'LEADER' ? 'rgba(240,192,64,0.15)' : msgRole === 'OFFICER' ? 'rgba(59,130,246,0.15)' : 'rgba(255,255,255,0.03)',
-                                                color: msgRole === 'LEADER' ? colors.accent : msgRole === 'OFFICER' ? '#60a5fa' : 'rgba(255,255,255,0.4)',
-                                                textTransform: 'uppercase',
-                                            }}>
-                                                {msgRole === 'LEADER' ? 'Глава' : msgRole === 'OFFICER' ? 'Офицер' : 'Рядовой'}
+                                            <span
+                                                style={{
+                                                    fontSize: '7px',
+                                                    fontWeight: 800,
+                                                    padding: '1px 4px',
+                                                    borderRadius: '2px',
+                                                    background:
+                                                        msgRole === 'LEADER'
+                                                            ? 'rgba(240,192,64,0.15)'
+                                                            : msgRole === 'OFFICER'
+                                                              ? 'rgba(59,130,246,0.15)'
+                                                              : 'rgba(255,255,255,0.03)',
+                                                    color:
+                                                        msgRole === 'LEADER'
+                                                            ? colors.accent
+                                                            : msgRole === 'OFFICER'
+                                                              ? '#60a5fa'
+                                                              : 'rgba(255,255,255,0.4)',
+                                                    textTransform: 'uppercase',
+                                                }}
+                                            >
+                                                {msgRole === 'LEADER'
+                                                    ? 'Глава'
+                                                    : msgRole === 'OFFICER'
+                                                      ? 'Офицер'
+                                                      : 'Рядовой'}
                                             </span>
                                         </div>
                                         <span style={{ fontSize: '10px', opacity: 0.4 }}>{timestampStr}</span>
@@ -363,8 +399,8 @@ export const ClanLobbyTab: React.FC<ClanLobbyTabProps> = ({
                                 fontWeight: 500,
                                 transition: 'border-color 0.2s',
                             }}
-                            onFocus={(e) => e.target.style.borderColor = colors.accent}
-                            onBlur={(e) => e.target.style.borderColor = colors.border}
+                            onFocus={(e) => (e.target.style.borderColor = colors.accent)}
+                            onBlur={(e) => (e.target.style.borderColor = colors.border)}
                         />
                         <button
                             onClick={handleSendMessage}

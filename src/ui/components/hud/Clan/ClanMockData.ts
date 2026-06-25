@@ -52,5 +52,5 @@ export const DEFAULT_MOCK_MEMBERS = [
         avatar: 'sprite:sprite-avatar avatar-pos-9',
         contribution: 180,
         level: 12,
-    }
+    },
 ];

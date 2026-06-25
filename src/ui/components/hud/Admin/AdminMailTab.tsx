@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { AssetsMap } from '../../../../configs/AssetsMap';
 import { syncService } from '../../../../services/SyncService';
 import { ITEMS_DATABASE } from '../../../../game/configs/ItemsConfig';
 import { useGameStore } from '../../../../store/useGameStore';
@@ -173,8 +174,9 @@ export const AdminMailTab: React.FC<AdminMailTabProps> = ({ mailRecipient, setMa
                         <button onClick={() => applyMailTemplate('LAG')} style={smallBtnStyle}>
                             ⚙️ Шаблон: Лаги
                         </button>
-                        <button onClick={() => applyMailTemplate('REWARD')} style={smallBtnStyle}>
-                            🏆 Шаблон: Награда
+                        <button onClick={() => applyMailTemplate('REWARD')} style={{ ...smallBtnStyle, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                            <img src={AssetsMap.UI.TROPHY_PREMIUM} style={{ width: '12px', height: '12px', objectFit: 'contain' }} alt="trophy" />
+                            Шаблон: Награда
                         </button>
                         <button onClick={() => applyMailTemplate('WELCOME')} style={smallBtnStyle}>
                             🐼 Шаблон: Welcome
@@ -214,7 +216,7 @@ export const AdminMailTab: React.FC<AdminMailTabProps> = ({ mailRecipient, setMa
                                     {
                                         id: 'G' + Date.now(),
                                         name: 'Gold',
-                                        icon: '🪙',
+                                        icon: AssetsMap.UI.ICON_GOLD_FULL,
                                         amount: Number(mailAmount),
                                     },
                                 ])
@@ -230,7 +232,7 @@ export const AdminMailTab: React.FC<AdminMailTabProps> = ({ mailRecipient, setMa
                                     {
                                         id: 'C' + Date.now(),
                                         name: 'Gems',
-                                        icon: '💎',
+                                        icon: AssetsMap.UI.ICON_ALMAZ_FULL,
                                         amount: Number(mailAmount),
                                     },
                                 ])
@@ -246,7 +248,7 @@ export const AdminMailTab: React.FC<AdminMailTabProps> = ({ mailRecipient, setMa
                                     {
                                         id: 'E' + Date.now(),
                                         name: 'Energy',
-                                        icon: '⚡',
+                                        icon: AssetsMap.UI.ICON_ENERGY_FULL,
                                         amount: Number(mailAmount),
                                     },
                                 ])
@@ -300,8 +302,13 @@ export const AdminMailTab: React.FC<AdminMailTabProps> = ({ mailRecipient, setMa
                                         alignItems: 'center',
                                     }}
                                 >
-                                    <span>
-                                        {a.icon} {a.name} x{a.amount}
+                                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                                        {a.icon && (a.icon.includes('/assets/') || a.icon.endsWith('.webp')) ? (
+                                            <img src={a.icon} alt="" style={{ width: '16px', height: '16px', objectFit: 'contain' }} />
+                                        ) : (
+                                            a.icon
+                                        )}
+                                        <span>{a.name} x{a.amount}</span>
                                     </span>
                                     <span
                                         onClick={() => setMailAttachments(mailAttachments.filter((x) => x.id !== a.id))}
@@ -354,7 +361,11 @@ export const AdminMailTab: React.FC<AdminMailTabProps> = ({ mailRecipient, setMa
                                         fontSize: '14px',
                                     }}
                                 >
-                                    {a.icon}
+                                    {a.icon && (a.icon.includes('/assets/') || a.icon.endsWith('.webp')) ? (
+                                        <img src={a.icon} alt="" style={{ width: '20px', height: '20px', objectFit: 'contain' }} />
+                                    ) : (
+                                        a.icon
+                                    )}
                                 </div>
                             ))}
                         </div>

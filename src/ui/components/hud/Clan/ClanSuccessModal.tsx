@@ -121,9 +121,7 @@ export const ClanSuccessModal: React.FC<ClanSuccessModalProps> = ({
                                 style={{ color: '#fff', fontSize: '18px', opacity: 0.8, marginTop: '10px' }}
                             >
                                 Да начнется великая история клана{' '}
-                                <span style={{ color: colors.accent, fontWeight: 900 }}>
-                                    {createdClanName}
-                                </span>
+                                <span style={{ color: colors.accent, fontWeight: 900 }}>{createdClanName}</span>
                             </motion.p>
                         </div>
 

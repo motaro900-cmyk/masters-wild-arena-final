@@ -28,7 +28,7 @@ export const MatchmakingSearching: React.FC<MatchmakingSearchingProps> = ({
     searchRange,
     onCancel,
 }) => {
-    const frame = useGameStore(state => state.frame);
+    const frame = useGameStore((state) => state.frame);
     const activeFrameStyle = getAvatarFrameStyle(frame);
 
     return (
@@ -51,7 +51,8 @@ export const MatchmakingSearching: React.FC<MatchmakingSearchingProps> = ({
                 backdropFilter: 'blur(20px)',
                 border: '2px solid rgba(251, 191, 36, 0.35)',
                 borderRadius: '32px',
-                boxShadow: '0 30px 80px rgba(0, 0, 0, 0.95), 0 0 40px rgba(251, 191, 36, 0.1), inset 0 0 25px rgba(255, 255, 255, 0.04)',
+                boxShadow:
+                    '0 30px 80px rgba(0, 0, 0, 0.95), 0 0 40px rgba(251, 191, 36, 0.1), inset 0 0 25px rgba(255, 255, 255, 0.04)',
                 padding: '40px',
             }}
         >
@@ -270,7 +271,12 @@ export const MatchmakingSearching: React.FC<MatchmakingSearchingProps> = ({
                         <img
                             key="searching-trophy-rating"
                             src="/assets/images/ui/trophy_premium.webp"
-                            style={{ width: '24px', height: '24px', objectFit: 'contain', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))' }}
+                            style={{
+                                width: '24px',
+                                height: '24px',
+                                objectFit: 'contain',
+                                filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))',
+                            }}
                             alt="trophy"
                         />
                     </span>{' '}
@@ -344,7 +350,14 @@ export const MatchmakingSearching: React.FC<MatchmakingSearchingProps> = ({
                         }}
                     >
                         ВРЕМЯ В ОЧЕРЕДИ:{' '}
-                        <span style={{ color: '#ffd700', fontSize: '24px', fontWeight: 950, textShadow: '0 0 12px rgba(255, 215, 0, 0.5), 0 2px 4px rgba(0,0,0,0.9)' }}>
+                        <span
+                            style={{
+                                color: '#ffd700',
+                                fontSize: '24px',
+                                fontWeight: 950,
+                                textShadow: '0 0 12px rgba(255, 215, 0, 0.5), 0 2px 4px rgba(0,0,0,0.9)',
+                            }}
+                        >
                             {Math.floor(seconds / 60)
                                 .toString()
                                 .padStart(2, '0')}
@@ -365,15 +378,34 @@ export const MatchmakingSearching: React.FC<MatchmakingSearchingProps> = ({
                         }}
                     >
                         ДИАПАЗОН КУБКОВ:{' '}
-                        <span style={{ color: '#ffd700', fontWeight: 950, fontSize: '24px', textShadow: '0 0 12px rgba(255, 215, 0, 0.5), 0 2px 4px rgba(0,0,0,0.9)' }}>
-                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', verticalAlign: 'middle' }}>
+                        <span
+                            style={{
+                                color: '#ffd700',
+                                fontWeight: 950,
+                                fontSize: '24px',
+                                textShadow: '0 0 12px rgba(255, 215, 0, 0.5), 0 2px 4px rgba(0,0,0,0.9)',
+                            }}
+                        >
+                            <span
+                                style={{
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '6px',
+                                    verticalAlign: 'middle',
+                                }}
+                            >
                                 <span>
                                     {Math.max(0, rating - searchRange)} - {rating + searchRange}
                                 </span>
                                 <img
                                     key="searching-trophy-range"
                                     src="/assets/images/ui/trophy_premium.webp"
-                                    style={{ width: '24px', height: '24px', objectFit: 'contain', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))' }}
+                                    style={{
+                                        width: '24px',
+                                        height: '24px',
+                                        objectFit: 'contain',
+                                        filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))',
+                                    }}
                                     alt="trophy"
                                 />
                             </span>
@@ -383,11 +415,11 @@ export const MatchmakingSearching: React.FC<MatchmakingSearchingProps> = ({
 
                 {/* Кнопка отмены */}
                 <motion.button
-                    whileHover={{ 
-                        scale: 1.05, 
-                        background: 'linear-gradient(180deg, #8b0000 0%, #4a0000 100%)', 
-                        borderColor: '#ffd700', 
-                        boxShadow: '0 0 20px rgba(255, 215, 0, 0.3), 0 8px 25px rgba(139, 0, 0, 0.5)' 
+                    whileHover={{
+                        scale: 1.05,
+                        background: 'linear-gradient(180deg, #8b0000 0%, #4a0000 100%)',
+                        borderColor: '#ffd700',
+                        boxShadow: '0 0 20px rgba(255, 215, 0, 0.3), 0 8px 25px rgba(139, 0, 0, 0.5)',
                     }}
                     whileTap={{ scale: 0.95 }}
                     onClick={onCancel}

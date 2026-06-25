@@ -71,15 +71,17 @@ export const FriendRow: React.FC<FriendRowProps> = ({
         const hh = pad(date.getHours());
         const mm = pad(date.getMinutes());
 
-        const isToday = now.getDate() === date.getDate() &&
-                        now.getMonth() === date.getMonth() &&
-                        now.getFullYear() === date.getFullYear();
+        const isToday =
+            now.getDate() === date.getDate() &&
+            now.getMonth() === date.getMonth() &&
+            now.getFullYear() === date.getFullYear();
 
         const yesterday = new Date(now);
         yesterday.setDate(now.getDate() - 1);
-        const isYesterday = yesterday.getDate() === date.getDate() &&
-                            yesterday.getMonth() === date.getMonth() &&
-                            yesterday.getFullYear() === date.getFullYear();
+        const isYesterday =
+            yesterday.getDate() === date.getDate() &&
+            yesterday.getMonth() === date.getMonth() &&
+            yesterday.getFullYear() === date.getFullYear();
 
         if (isToday) {
             return `СЕГОДНЯ В ${hh}:${mm}`;
@@ -149,7 +151,7 @@ export const FriendRow: React.FC<FriendRowProps> = ({
                     to { transform: rotate(360deg); }
                 }
             `}</style>
-            
+
             <div style={{ position: 'relative' }}>
                 <div
                     style={{
@@ -208,7 +210,10 @@ export const FriendRow: React.FC<FriendRowProps> = ({
                             <span
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    const newNote = prompt(`Введите заметку/прозвище для ${displayName}:`, friendNote || '');
+                                    const newNote = prompt(
+                                        `Введите заметку/прозвище для ${displayName}:`,
+                                        friendNote || '',
+                                    );
                                     if (newNote !== null) {
                                         setFriendNote(friend.id, newNote.trim());
                                     }
@@ -222,8 +227,8 @@ export const FriendRow: React.FC<FriendRowProps> = ({
                                     userSelect: 'none',
                                 }}
                                 title="Редактировать заметку"
-                                onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
-                                onMouseLeave={(e) => e.currentTarget.style.opacity = '0.5'}
+                                onMouseEnter={(e) => (e.currentTarget.style.opacity = '1')}
+                                onMouseLeave={(e) => (e.currentTarget.style.opacity = '0.5')}
                             >
                                 ✏️
                             </span>
@@ -323,15 +328,15 @@ export const FriendRow: React.FC<FriendRowProps> = ({
                             }}
                         >
                             {isSending ? (
-                                <div 
-                                    style={{ 
-                                        width: '16px', 
-                                        height: '16px', 
-                                        border: '2px solid rgba(255,255,255,0.3)', 
-                                        borderTopColor: colors.accent, 
-                                        borderRadius: '50%', 
-                                        animation: 'spin 1s linear infinite' 
-                                    }} 
+                                <div
+                                    style={{
+                                        width: '16px',
+                                        height: '16px',
+                                        border: '2px solid rgba(255,255,255,0.3)',
+                                        borderTopColor: colors.accent,
+                                        borderRadius: '50%',
+                                        animation: 'spin 1s linear infinite',
+                                    }}
                                 />
                             ) : (
                                 <img

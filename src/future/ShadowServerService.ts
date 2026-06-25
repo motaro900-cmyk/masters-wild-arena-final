@@ -42,13 +42,18 @@ const simulateCupsChange = (rating: number, opponentRating: number, won: boolean
     } else if (rating < 9000) {
         if (won) return isWeakOpponent ? 10 : 18;
         return isStrongOpponent ? -13 : -18;
-    } else { // >= 9000
+    } else {
+        // >= 9000
         if (won) return isWeakOpponent ? 10 : 15;
         return isStrongOpponent ? -18 : -25;
     }
 };
 
-const simulateGoldReward = (level: number, won: boolean, clientGoldClaimed: number): { expectedBase: number; isWithinLimits: boolean } => {
+const simulateGoldReward = (
+    level: number,
+    won: boolean,
+    clientGoldClaimed: number,
+): { expectedBase: number; isWithinLimits: boolean } => {
     // Since client rewards have a random element:
     // e.g. base = won ? 70 + Math.random() * 50 : 20 + Math.random() * 20;
     // We check if the client reward falls within the mathematical bounds of the formula.
@@ -93,7 +98,10 @@ export class ShadowServerService {
      * Shadow validates the battle results by simulating server-side validation rules.
      * Logs anomalies to Firestore `securityLogs` collection.
      */
-    public static async validateBattleResultShadow(userId: string, report: BattleResultReport): Promise<{
+    public static async validateBattleResultShadow(
+        userId: string,
+        report: BattleResultReport,
+    ): Promise<{
         isValid: boolean;
         anomalies: string[];
     }> {
@@ -104,7 +112,7 @@ export class ShadowServerService {
 
         // Apply catch-up multiplier (simulated)
         if (report.attackerWon && report.myRating < 3000) {
-            const expectedLevel = report.myRating < 1000 ? 1 : (report.myRating < 2000 ? 10 : 20);
+            const expectedLevel = report.myRating < 1000 ? 1 : report.myRating < 2000 ? 10 : 20;
             const levelDiff = report.myLevel - expectedLevel;
             if (levelDiff >= 20) {
                 const multiplier = Math.min(5, 1 + levelDiff / 20);
@@ -127,19 +135,25 @@ export class ShadowServerService {
         }
 
         if (report.clientCalculated.cupsChange !== expectedCups) {
-            anomalies.push(`Cups mismatch: client claimed ${report.clientCalculated.cupsChange}, server expected ${expectedCups}`);
+            anomalies.push(
+                `Cups mismatch: client claimed ${report.clientCalculated.cupsChange}, server expected ${expectedCups}`,
+            );
         }
 
         // 2. Validate Gold
         const goldCheck = simulateGoldReward(report.myLevel, report.attackerWon, report.clientCalculated.goldChange);
         if (!goldCheck.isWithinLimits) {
-            anomalies.push(`Gold mismatch: client claimed ${report.clientCalculated.goldChange}, server expects range up to ${goldCheck.expectedBase}`);
+            anomalies.push(
+                `Gold mismatch: client claimed ${report.clientCalculated.goldChange}, server expects range up to ${goldCheck.expectedBase}`,
+            );
         }
 
         // 3. Validate XP
         const expectedXP = simulateXPReward(report.attackerWon, report.myLevel, report.hasPremiumBP);
         if (Math.abs(report.clientCalculated.expChange - expectedXP) > 2) {
-            anomalies.push(`XP mismatch: client claimed ${report.clientCalculated.expChange}, server expected ${expectedXP}`);
+            anomalies.push(
+                `XP mismatch: client claimed ${report.clientCalculated.expChange}, server expected ${expectedXP}`,
+            );
         }
 
         const isValid = anomalies.length === 0;

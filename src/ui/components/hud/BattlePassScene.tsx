@@ -47,7 +47,7 @@ export const BattlePassScene: React.FC<{ onClose: () => void }> = ({ onClose }) 
             showBpLevelUpOverlay: state.showBpLevelUpOverlay,
             hideBpLevelUpOverlay: state.hideBpLevelUpOverlay,
             isMobile: state.isMobile,
-        }))
+        })),
     );
 
     const [activeTab, setActiveTab] = useState<'REWARDS' | 'QUESTS'>('REWARDS');
@@ -322,7 +322,8 @@ export const BattlePassScene: React.FC<{ onClose: () => void }> = ({ onClose }) 
                                                             ? 'rgba(25, 17, 12, 0.4)'
                                                             : 'linear-gradient(180deg, #4a2f1b 0%, #2b180a 100%)',
                                                     border: '2px solid #b8860b',
-                                                    borderColor: currentPage === 0 ? 'rgba(184, 134, 11, 0.2)' : '#b8860b',
+                                                    borderColor:
+                                                        currentPage === 0 ? 'rgba(184, 134, 11, 0.2)' : '#b8860b',
                                                     borderRadius: '8px',
                                                     color: currentPage === 0 ? 'rgba(200, 168, 112, 0.3)' : '#ffd700',
                                                     fontSize: '22px',
@@ -332,7 +333,8 @@ export const BattlePassScene: React.FC<{ onClose: () => void }> = ({ onClose }) 
                                                     alignItems: 'center',
                                                     justifyContent: 'center',
                                                     opacity: currentPage === 0 ? 0.45 : 1,
-                                                    boxShadow: currentPage === 0 ? 'none' : '0 4px 10px rgba(0,0,0,0.5)',
+                                                    boxShadow:
+                                                        currentPage === 0 ? 'none' : '0 4px 10px rgba(0,0,0,0.5)',
                                                     transition: 'all 0.2s ease',
                                                 }}
                                             >
@@ -342,7 +344,7 @@ export const BattlePassScene: React.FC<{ onClose: () => void }> = ({ onClose }) 
 
                                         {/* КОЛОНКИ НАГРАД ТЕКУЩЕЙ СТРАНИЦЫ */}
                                         <motion.div
-                                            drag={isMobile ? "x" : undefined}
+                                            drag={isMobile ? 'x' : undefined}
                                             dragConstraints={{ left: 0, right: 0 }}
                                             dragElastic={0.15}
                                             onDragEnd={(_, info) => {
@@ -409,7 +411,8 @@ export const BattlePassScene: React.FC<{ onClose: () => void }> = ({ onClose }) 
                                                             ? 'rgba(25, 17, 12, 0.4)'
                                                             : 'linear-gradient(180deg, #4a2f1b 0%, #2b180a 100%)',
                                                     border: '2px solid #b8860b',
-                                                    borderColor: currentPage === 2 ? 'rgba(184, 134, 11, 0.2)' : '#b8860b',
+                                                    borderColor:
+                                                        currentPage === 2 ? 'rgba(184, 134, 11, 0.2)' : '#b8860b',
                                                     borderRadius: '8px',
                                                     color: currentPage === 2 ? 'rgba(200, 168, 112, 0.3)' : '#ffd700',
                                                     fontSize: '22px',
@@ -419,7 +422,8 @@ export const BattlePassScene: React.FC<{ onClose: () => void }> = ({ onClose }) 
                                                     alignItems: 'center',
                                                     justifyContent: 'center',
                                                     opacity: currentPage === 2 ? 0.45 : 1,
-                                                    boxShadow: currentPage === 2 ? 'none' : '0 4px 10px rgba(0,0,0,0.5)',
+                                                    boxShadow:
+                                                        currentPage === 2 ? 'none' : '0 4px 10px rgba(0,0,0,0.5)',
                                                     transition: 'all 0.2s ease',
                                                 }}
                                             >

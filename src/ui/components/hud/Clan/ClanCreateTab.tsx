@@ -233,7 +233,13 @@ export const ClanCreateTab: React.FC<ClanCreateTabProps> = ({ colors, error, set
                             opacity: isSubmitting ? 0.6 : 1,
                         }}
                     >
-                        {isSubmitting ? 'ЗАГРУЗКА...' : <>ОСНОВАТЬ КЛАН (200 <CurrencyIcon type="ALMAZ" />)</>}
+                        {isSubmitting ? (
+                            'ЗАГРУЗКА...'
+                        ) : (
+                            <>
+                                ОСНОВАТЬ КЛАН (200 <CurrencyIcon type="ALMAZ" />)
+                            </>
+                        )}
                     </button>
                 </div>
             </div>

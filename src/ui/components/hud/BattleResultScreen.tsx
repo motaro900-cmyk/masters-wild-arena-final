@@ -98,7 +98,7 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
         return { level: startLvl, exp: startXp };
     }, [level, exp, data.xpEarned]);
 
-    const heroConfig = HEROES_DB.find(h => h.id === selectedHeroId) || HEROES_DB[0];
+    const heroConfig = HEROES_DB.find((h) => h.id === selectedHeroId) || HEROES_DB[0];
 
     const isVictory = data.isVictory;
 
@@ -730,18 +730,24 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
                 <button
                     onClick={() => {
                         const playerName = useGameStore.getState().name || 'Игрок';
-                        const durationText = data.battleDurationSeconds ? ` за ${data.battleDurationSeconds.toFixed(1)} сек.` : '';
-                        const crystalsLine = data.crystalsEarned && data.crystalsEarned > 0 ? `+${data.crystalsEarned} Кристалла 💎\n` : '';
-                        const trophiesLine = (data.trophiesChange || 0) > 0
-                            ? `+${data.trophiesChange} Кубков 🏆\n`
-                            : (data.trophiesChange || 0) < 0
-                            ? `${data.trophiesChange} Кубков 📉\n`
+                        const durationText = data.battleDurationSeconds
+                            ? ` за ${data.battleDurationSeconds.toFixed(1)} сек.`
                             : '';
+                        const crystalsLine =
+                            data.crystalsEarned && data.crystalsEarned > 0
+                                ? `+${data.crystalsEarned} Кристалла 💎\n`
+                                : '';
+                        const trophiesLine =
+                            (data.trophiesChange || 0) > 0
+                                ? `+${data.trophiesChange} Кубков 🏆\n`
+                                : (data.trophiesChange || 0) < 0
+                                  ? `${data.trophiesChange} Кубков 📉\n`
+                                  : '';
                         const appId = import.meta.env.VITE_VK_APP_ID || '54585995';
                         const generatedText = data.isVictory
-                            ? `⚔️ Я победил в Masters of the Wild!\n\n🏆 Результат боя:\n${playerName} vs ${(data.enemyName || 'Враг')}\nПобеда${durationText}\n\n+${(data.xpEarned ?? 0)} XP 🛡️\n+${(data.goldEarned ?? 0)} Золота 💰\n${crystalsLine}${trophiesLine}\nСыграть: https://vk.com/app${appId}`
-                            : `⚔️ Masters of the Wild\nБой с ${(data.enemyName || 'Враг')} оказался тяжелым испытанием...\n\n🛡️ Результат боя:\n${playerName} vs ${(data.enemyName || 'Враг')}\nНанесено урона: ${(data.damageDealt ?? 0).toLocaleString()} ед. 💥\n${trophiesLine}\n🎮 Бросить вызов: https://vk.com/app${appId}`;
-                        
+                            ? `⚔️ Я победил в Masters of the Wild!\n\n🏆 Результат боя:\n${playerName} vs ${data.enemyName || 'Враг'}\nПобеда${durationText}\n\n+${data.xpEarned ?? 0} XP 🛡️\n+${data.goldEarned ?? 0} Золота 💰\n${crystalsLine}${trophiesLine}\nСыграть: https://vk.com/app${appId}`
+                            : `⚔️ Masters of the Wild\nБой с ${data.enemyName || 'Враг'} оказался тяжелым испытанием...\n\n🛡️ Результат боя:\n${playerName} vs ${data.enemyName || 'Враг'}\nНанесено урона: ${(data.damageDealt ?? 0).toLocaleString()} ед. 💥\n${trophiesLine}\n🎮 Бросить вызов: https://vk.com/app${appId}`;
+
                         copyToClipboard(generatedText);
                         setShareText(generatedText);
                         setShareNotice('copied');
@@ -817,7 +823,12 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
             {/* SHARE PREVIEW MODAL */}
             {showShareModal && (
                 <div
-                    onClick={(e) => { if (e.target === e.currentTarget) { setShowShareModal(false); setShareNotice('idle'); } }}
+                    onClick={(e) => {
+                        if (e.target === e.currentTarget) {
+                            setShowShareModal(false);
+                            setShareNotice('idle');
+                        }
+                    }}
                     style={{
                         position: 'fixed',
                         inset: 0,
@@ -847,11 +858,31 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
                         }}
                     >
                         {/* Заголовок */}
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', borderBottom: '1px solid rgba(251,191,36,0.15)', paddingBottom: '14px' }}>
+                        <div
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '10px',
+                                borderBottom: '1px solid rgba(251,191,36,0.15)',
+                                paddingBottom: '14px',
+                            }}
+                        >
                             <span style={{ fontSize: '26px' }}>⚔️</span>
                             <div>
-                                <div style={{ color: '#fbbf24', fontFamily: "'Cinzel', serif", fontSize: '16px', fontWeight: 900, letterSpacing: '0.05em' }}>ПОДЕЛИТЬСЯ РЕЗУЛЬТАТОМ</div>
-                                <div style={{ color: 'rgba(255,255,255,0.45)', fontSize: '12px', marginTop: '2px' }}>Расскажи друзьям о своём бое</div>
+                                <div
+                                    style={{
+                                        color: '#fbbf24',
+                                        fontFamily: "'Cinzel', serif",
+                                        fontSize: '16px',
+                                        fontWeight: 900,
+                                        letterSpacing: '0.05em',
+                                    }}
+                                >
+                                    ПОДЕЛИТЬСЯ РЕЗУЛЬТАТОМ
+                                </div>
+                                <div style={{ color: 'rgba(255,255,255,0.45)', fontSize: '12px', marginTop: '2px' }}>
+                                    Расскажи друзьям о своём бое
+                                </div>
                             </div>
                         </div>
 
@@ -878,20 +909,42 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
                                 display: 'flex',
                                 alignItems: 'center',
                                 gap: '8px',
-                                background: shareNotice === 'copied' ? 'rgba(34,197,94,0.12)' : shareNotice === 'story_ok' ? 'rgba(59,130,246,0.12)' : 'rgba(239,68,68,0.10)',
+                                background:
+                                    shareNotice === 'copied'
+                                        ? 'rgba(34,197,94,0.12)'
+                                        : shareNotice === 'story_ok'
+                                          ? 'rgba(59,130,246,0.12)'
+                                          : 'rgba(239,68,68,0.10)',
                                 border: `1px solid ${shareNotice === 'copied' ? 'rgba(34,197,94,0.30)' : shareNotice === 'story_ok' ? 'rgba(59,130,246,0.30)' : 'rgba(239,68,68,0.20)'}`,
                                 borderRadius: '10px',
                                 padding: '10px 14px',
-                                color: shareNotice === 'copied' ? '#86efac' : shareNotice === 'story_ok' ? '#93c5fd' : '#fca5a5',
+                                color:
+                                    shareNotice === 'copied'
+                                        ? '#86efac'
+                                        : shareNotice === 'story_ok'
+                                          ? '#93c5fd'
+                                          : '#fca5a5',
                                 fontSize: '13px',
                                 fontWeight: 600,
                                 transition: 'all 0.3s',
                                 opacity: shareNotice === 'idle' ? 0 : 1,
                             }}
                         >
-                            {shareNotice === 'copied' && <><span>📋</span> Текст скопирован в буфер обмена!</>}
-                            {shareNotice === 'story_ok' && <><span>✅</span> Редактор Историй ВК открыт!</>}
-                            {shareNotice === 'story_fail' && <><span>⚠️</span> Истории недоступны — только копирование</>}
+                            {shareNotice === 'copied' && (
+                                <>
+                                    <span>📋</span> Текст скопирован в буфер обмена!
+                                </>
+                            )}
+                            {shareNotice === 'story_ok' && (
+                                <>
+                                    <span>✅</span> Редактор Историй ВК открыт!
+                                </>
+                            )}
+                            {shareNotice === 'story_fail' && (
+                                <>
+                                    <span>⚠️</span> Истории недоступны — только копирование
+                                </>
+                            )}
                         </div>
 
                         {/* Кнопки действий */}
@@ -919,7 +972,9 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
                                 style={{
                                     width: '100%',
                                     padding: '13px',
-                                    background: storyLoading ? 'rgba(59,130,246,0.15)' : 'linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 100%)',
+                                    background: storyLoading
+                                        ? 'rgba(59,130,246,0.15)'
+                                        : 'linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 100%)',
                                     border: '1.5px solid rgba(59,130,246,0.5)',
                                     borderRadius: '12px',
                                     color: '#bfdbfe',
@@ -935,8 +990,12 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
                                     transition: 'all 0.2s',
                                     opacity: storyLoading ? 0.7 : 1,
                                 }}
-                                onMouseEnter={(e) => { if (!storyLoading) e.currentTarget.style.transform = 'scale(1.02)'; }}
-                                onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)'; }}
+                                onMouseEnter={(e) => {
+                                    if (!storyLoading) e.currentTarget.style.transform = 'scale(1.02)';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.transform = 'scale(1)';
+                                }}
                             >
                                 <span style={{ fontSize: '18px' }}>📸</span>
                                 {storyLoading ? 'Открываем...' : 'ОПУБЛИКОВАТЬ ИСТОРИЮ'}
@@ -958,7 +1017,9 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
                                 style={{
                                     width: '100%',
                                     padding: '13px',
-                                    background: friendLoading ? 'rgba(251,191,36,0.08)' : 'linear-gradient(135deg, rgba(40,24,8,0.95) 0%, rgba(28,15,5,0.98) 100%)',
+                                    background: friendLoading
+                                        ? 'rgba(251,191,36,0.08)'
+                                        : 'linear-gradient(135deg, rgba(40,24,8,0.95) 0%, rgba(28,15,5,0.98) 100%)',
                                     border: '1.5px solid rgba(251,191,36,0.35)',
                                     borderRadius: '12px',
                                     color: '#fbbf24',
@@ -974,8 +1035,12 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
                                     transition: 'all 0.2s',
                                     opacity: friendLoading ? 0.7 : 1,
                                 }}
-                                onMouseEnter={(e) => { if (!friendLoading) e.currentTarget.style.transform = 'scale(1.02)'; }}
-                                onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)'; }}
+                                onMouseEnter={(e) => {
+                                    if (!friendLoading) e.currentTarget.style.transform = 'scale(1.02)';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.transform = 'scale(1)';
+                                }}
                             >
                                 <span style={{ fontSize: '18px' }}>💬</span>
                                 {friendLoading ? 'Открываем...' : 'ОТПРАВИТЬ ДРУЗЬЯМ'}
@@ -1004,15 +1069,24 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
                                     gap: '6px',
                                     transition: 'all 0.2s',
                                 }}
-                                onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.25)'; e.currentTarget.style.color = 'rgba(255,255,255,0.75)'; }}
-                                onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)'; e.currentTarget.style.color = 'rgba(255,255,255,0.55)'; }}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.borderColor = 'rgba(255,255,255,0.25)';
+                                    e.currentTarget.style.color = 'rgba(255,255,255,0.75)';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)';
+                                    e.currentTarget.style.color = 'rgba(255,255,255,0.55)';
+                                }}
                             >
                                 <span>📋</span> Скопировать текст ещё раз
                             </button>
 
                             {/* Закрыть */}
                             <button
-                                onClick={() => { setShowShareModal(false); setShareNotice('idle'); }}
+                                onClick={() => {
+                                    setShowShareModal(false);
+                                    setShareNotice('idle');
+                                }}
                                 style={{
                                     width: '100%',
                                     padding: '9px',
@@ -1026,8 +1100,12 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
                                     fontFamily: "'Outfit', sans-serif",
                                     transition: 'color 0.2s',
                                 }}
-                                onMouseEnter={(e) => { e.currentTarget.style.color = 'rgba(255,255,255,0.6)'; }}
-                                onMouseLeave={(e) => { e.currentTarget.style.color = 'rgba(255,255,255,0.30)'; }}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.color = 'rgba(255,255,255,0.6)';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.color = 'rgba(255,255,255,0.30)';
+                                }}
                             >
                                 ✕ Закрыть
                             </button>

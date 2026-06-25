@@ -152,11 +152,11 @@ export const ClanSettingsModal: React.FC<ClanSettingsModalProps> = ({
                                                 onClick={() => setSelectedEmblem(e)}
                                                 style={{
                                                     aspectRatio: '1',
-                                                    background: isSelected 
-                                                        ? 'radial-gradient(circle, rgba(240,192,64,0.3) 0%, rgba(200,149,42,0.1) 100%)' 
+                                                    background: isSelected
+                                                        ? 'radial-gradient(circle, rgba(240,192,64,0.3) 0%, rgba(200,149,42,0.1) 100%)'
                                                         : 'rgba(0,0,0,0.3)',
-                                                    border: isSelected 
-                                                        ? `2px solid ${colors.accent}` 
+                                                    border: isSelected
+                                                        ? `2px solid ${colors.accent}`
                                                         : `1.5px solid rgba(255,255,255,0.1)`,
                                                     borderRadius: '50%',
                                                     cursor: 'pointer',

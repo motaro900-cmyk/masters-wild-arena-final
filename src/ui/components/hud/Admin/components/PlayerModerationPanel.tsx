@@ -178,25 +178,27 @@ export const PlayerModerationPanel: React.FC<PlayerModerationPanelProps> = ({
                     <button
                         onClick={async () => {
                             audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
-                            useGameStore.getState().showConfirm('Выполнить мягкий сброс сезона для игрока?', async () => {
-                                try {
-                                    const rating = selectedPlayer.rating || 0;
-                                    let newRating = 0;
-                                    if (rating >= 10500) newRating = 7500;
-                                    else if (rating >= 9000) newRating = 6000;
-                                    else if (rating >= 6000) newRating = 4500;
-                                    else newRating = 0;
+                            useGameStore
+                                .getState()
+                                .showConfirm('Выполнить мягкий сброс сезона для игрока?', async () => {
+                                    try {
+                                        const rating = selectedPlayer.rating || 0;
+                                        let newRating = 0;
+                                        if (rating >= 10500) newRating = 7500;
+                                        else if (rating >= 9000) newRating = 6000;
+                                        else if (rating >= 6000) newRating = 4500;
+                                        else newRating = 0;
 
-                                    await syncService.updateRemotePlayerData(selectedPlayer.id, {
-                                        rating: newRating,
-                                        trophies: newRating,
-                                    });
-                                    useGameStore.getState().showAlert(`Сезон сброшен. Новый рейтинг: ${newRating}`);
-                                    onRefresh();
-                                } catch {
-                                    useGameStore.getState().showAlert('Ошибка сброса сезона');
-                                }
-                            });
+                                        await syncService.updateRemotePlayerData(selectedPlayer.id, {
+                                            rating: newRating,
+                                            trophies: newRating,
+                                        });
+                                        useGameStore.getState().showAlert(`Сезон сброшен. Новый рейтинг: ${newRating}`);
+                                        onRefresh();
+                                    } catch {
+                                        useGameStore.getState().showAlert('Ошибка сброса сезона');
+                                    }
+                                });
                         }}
                         style={{ ...btnStyle, flex: 1, background: '#2d3748', color: '#fff' }}
                     >

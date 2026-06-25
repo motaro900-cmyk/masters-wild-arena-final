@@ -5,6 +5,21 @@ import { audioService } from '../../services/AudioService';
 import { EffectsManager } from '../systems/EffectsManager';
 import type { HeroUnit } from './HeroUnit';
 
+function createTimeline(unit: HeroUnit, vars?: gsap.TimelineVars): gsap.core.Timeline {
+    const tl = gsap.timeline(vars);
+    const anyUnit = unit as any;
+    if (anyUnit.activeTimelines) {
+        anyUnit.activeTimelines.push(tl);
+        const origOnComplete = tl.vars.onComplete;
+        tl.eventCallback('onComplete', (...args: any[]) => {
+            const idx = anyUnit.activeTimelines?.indexOf(tl) ?? -1;
+            if (idx !== -1) anyUnit.activeTimelines.splice(idx, 1);
+            if (origOnComplete) origOnComplete.apply(tl, args);
+        });
+    }
+    return tl;
+}
+
 /**
  * Телепортация персонажа с эффектом тумана
  */
@@ -147,7 +162,7 @@ export function animateLungeForward(
     return new Promise((resolve) => {
         // Safety timeout: resolve after 2s max to prevent freeze
         const safetyTimer = setTimeout(() => {
-            if (unit.isLunging) {
+            if (!unit.destroyed && unit.isLunging) {
                 unit.isLunging = false;
                 resolve();
             }
@@ -199,7 +214,7 @@ export function animateLungeForward(
             }, 40);
         }
 
-        const tl = gsap.timeline({
+        const tl = createTimeline(unit, {
             onComplete: () => {
                 if (anyUnit.trailInterval) {
                     clearInterval(anyUnit.trailInterval);
@@ -265,7 +280,7 @@ export function animateLungeReturn(unit: HeroUnit, startX: number, startY: numbe
     return new Promise((resolve) => {
         // Safety timeout: resolve after 2s max to prevent freeze
         const safetyTimer = setTimeout(() => {
-            if (unit.isLunging) {
+            if (!unit.destroyed && unit.isLunging) {
                 unit.isLunging = false;
                 unit.x = startX;
                 unit.y = startY;
@@ -301,7 +316,7 @@ export function animateLungeReturn(unit: HeroUnit, startX: number, startY: numbe
             }, 40);
         }
 
-        const tl = gsap.timeline({
+        const tl = createTimeline(unit, {
             onComplete: () => {
                 if (anyUnit.trailInterval) {
                     clearInterval(anyUnit.trailInterval);
@@ -339,7 +354,7 @@ export function animateTeleportOut(unit: HeroUnit): Promise<void> {
         const timeScale = useGameStore.getState().timeScale || 1;
 
         gsap.killTweensOf(unit);
-        if (unit.bodyContainer) {
+        if (unit.bodyContainer && !unit.bodyContainer.destroyed && unit.bodyContainer.scale) {
             gsap.killTweensOf(unit.bodyContainer.scale);
             gsap.killTweensOf(unit.bodyContainer);
         }
@@ -350,7 +365,7 @@ export function animateTeleportOut(unit: HeroUnit): Promise<void> {
         // Небольшой взрыв частиц в месте исчезновения
         EffectsManager.getInstance().particleBurst(unit.x, unit.y - 80, 8, 0x5a189a, 120);
 
-        const tl = gsap.timeline({
+        const tl = createTimeline(unit, {
             onComplete: () => {
                 unit.alpha = 0;
                 if (anyUnit.currentResolve === resolve) {
@@ -362,7 +377,7 @@ export function animateTeleportOut(unit: HeroUnit): Promise<void> {
         tl.timeScale(timeScale);
 
         // Эффект растягивания по вертикали (Distortion)
-        if (unit.bodyContainer) {
+        if (unit.bodyContainer && !unit.bodyContainer.destroyed && unit.bodyContainer.scale) {
             tl.to(unit.bodyContainer.scale, {
                 x: unit.defaultScaleX * 0.4,
                 y: unit.defaultScaleY * 1.8,
@@ -398,17 +413,17 @@ export function animateTeleportIn(unit: HeroUnit, targetX: number, faceScaleX: n
         unit.scale.x = faceScaleX;
         unit.alpha = 0;
 
-        if (unit.bodyContainer) {
+        if (unit.bodyContainer && !unit.bodyContainer.destroyed && unit.bodyContainer.scale) {
             unit.bodyContainer.scale.set(unit.defaultScaleX * 0.4, unit.defaultScaleY * 1.8);
         }
 
         // Кольцо теневой энергии (Arrival Burst) в точке появления
         EffectsManager.getInstance().particleBurst(unit.x, unit.y - 80, 6, 0xbd00ff, 100);
 
-        const tl = gsap.timeline({
+        const tl = createTimeline(unit, {
             onComplete: () => {
                 unit.alpha = 1;
-                if (unit.bodyContainer) {
+                if (unit.bodyContainer && !unit.bodyContainer.destroyed && unit.bodyContainer.scale) {
                     unit.bodyContainer.scale.set(unit.defaultScaleX, unit.defaultScaleY);
                 }
                 if (anyUnit.currentResolve === resolve) {
@@ -420,7 +435,7 @@ export function animateTeleportIn(unit: HeroUnit, targetX: number, faceScaleX: n
         tl.timeScale(timeScale);
 
         // Восстановление нормального масштаба
-        if (unit.bodyContainer) {
+        if (unit.bodyContainer && !unit.bodyContainer.destroyed && unit.bodyContainer.scale) {
             tl.to(unit.bodyContainer.scale, {
                 x: unit.defaultScaleX,
                 y: unit.defaultScaleY,
@@ -454,18 +469,18 @@ export function animateDeath(unit: HeroUnit, isPlayer: boolean): Promise<void> {
         // Bug fix: safety timer prevents BattleEngine from hanging if GSAP timeline
         // is killed externally (e.g. scene reset during death animation)
         const safetyTimer = setTimeout(() => {
-            if (anyUnit.currentResolve === resolve) {
+            if (!unit.destroyed && anyUnit.currentResolve === resolve) {
                 anyUnit.currentResolve = null;
                 resolve();
             }
         }, 3000);
 
         gsap.killTweensOf(unit);
-        if (unit.bodyContainer) gsap.killTweensOf(unit.bodyContainer);
+        if (unit.bodyContainer && !unit.bodyContainer.destroyed) gsap.killTweensOf(unit.bodyContainer);
         if (unit.bodySprite) gsap.killTweensOf(unit.bodySprite);
         if (unit.weaponSocketContainer) gsap.killTweensOf(unit.weaponSocketContainer);
 
-        const tl = gsap.timeline({
+        const tl = createTimeline(unit, {
             onComplete: () => {
                 clearTimeout(safetyTimer);
                 if (anyUnit.currentResolve === resolve) {
@@ -533,7 +548,7 @@ export function animateDefend(unit: HeroUnit): Promise<void> {
             unit.setFrame(unit.defendFrameIdx); // Defend stance
         }
 
-        const tl = gsap.timeline({
+        const tl = createTimeline(unit, {
             onComplete: () => {
                 unit.x = startX;
                 if (hasPoses) {
@@ -588,7 +603,7 @@ export function animateHitReaction(unit: HeroUnit, isCrit: boolean): Promise<voi
             unit.setFrame(bracingPose); // Bracing (hit) or laydown (death frame if custom)
         }
 
-        const tl = gsap.timeline({
+        const tl = createTimeline(unit, {
             onComplete: () => {
                 unit.x = startX;
                 if (hasPoses) {
@@ -616,13 +631,13 @@ export function animateHitReaction(unit: HeroUnit, isCrit: boolean): Promise<voi
             ease: 'power2.inOut',
         });
 
-        if (isCrit && unit.bodyContainer) {
+        if (isCrit && unit.bodyContainer && !unit.bodyContainer.destroyed && unit.bodyContainer.scale) {
             const baseScaleY = unit.bodyContainer.scale.y;
             const baseScaleX = unit.bodyContainer.scale.x;
 
             gsap.killTweensOf(unit.bodyContainer.scale);
 
-            const scaleTl = gsap.timeline();
+            const scaleTl = createTimeline(unit);
             scaleTl.timeScale(timeScale);
 
             // Деформация сжатия по вертикали и растяжения по горизонтали (Slower, subtle)
@@ -664,7 +679,7 @@ export function animateDodge(unit: HeroUnit, isPlayer: boolean): Promise<void> {
             unit.setFrame(1); // Defend stance (1)
         }
 
-        const tl = gsap.timeline({
+        const tl = createTimeline(unit, {
             onComplete: () => {
                 unit.angle = startAngle;
                 unit.x = startX;

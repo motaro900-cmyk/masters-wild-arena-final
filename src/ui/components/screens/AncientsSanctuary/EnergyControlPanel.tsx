@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { AssetsMap } from '../../../../configs/AssetsMap';
 
 interface MobData {
     id: string;
@@ -61,7 +62,7 @@ export const EnergyControlPanel: React.FC<EnergyControlPanelProps> = ({
                             ВАША ЭНЕРГИЯ
                         </span>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px' }}>
-                            <span style={{ fontSize: '18px' }}>⚡</span>
+                            <img src={AssetsMap.UI.ICON_ENERGY_FULL} style={{ width: '18px', height: '18px', objectFit: 'contain' }} alt="energy" />
                             <span style={{ fontSize: '20px', fontWeight: 900, color: '#fff', fontFamily: 'monospace' }}>
                                 {energy}
                             </span>
@@ -181,7 +182,10 @@ export const EnergyControlPanel: React.FC<EnergyControlPanelProps> = ({
                 }}
             >
                 <span>{currentMob.isBoss ? `БОСС: ЭТАЖ ${pveStage}` : `В БОЙ: ЭТАЖ ${pveStage}`}</span>
-                <span style={{ fontSize: '13px', opacity: 0.8 }}>⚡ 10</span>
+                <span style={{ fontSize: '13px', opacity: 0.8, display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                    <img src={AssetsMap.UI.ICON_ENERGY_FULL} style={{ width: '13px', height: '13px', objectFit: 'contain' }} alt="energy" />
+                    10
+                </span>
             </motion.button>
         </div>
     );

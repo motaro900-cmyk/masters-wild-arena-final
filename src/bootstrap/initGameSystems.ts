@@ -62,11 +62,7 @@ export const initGameSystems = (timeOffset: number): void => {
         finalState.checkPetDailyReward();
     }
 
-    if (
-        !finalState.dailyQuests ||
-        finalState.dailyQuests.length === 0 ||
-        isNewDayMSK(finalState.lastDailyRefresh)
-    ) {
+    if (!finalState.dailyQuests || finalState.dailyQuests.length === 0 || isNewDayMSK(finalState.lastDailyRefresh)) {
         finalState.refreshDailyQuests();
     }
     if (!finalState.weeklyQuests || finalState.weeklyQuests.length === 0) {

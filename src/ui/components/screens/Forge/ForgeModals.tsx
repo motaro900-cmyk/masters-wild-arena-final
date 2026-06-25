@@ -1,6 +1,8 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { styles } from './ForgeStyles';
+import { AssetsMap } from '../../../../configs/AssetsMap';
+import { resolveAssetPath } from '../../../../utils/assetPath';
 
 interface DismantleConfirmModalProps {
     isOpen: boolean;
@@ -35,7 +37,12 @@ export const DismantleConfirmModal: React.FC<DismantleConfirmModalProps> = ({
 
                         <div style={{ display: 'flex', gap: 15, justifyContent: 'center', margin: '20px 0' }}>
                             <div style={styles.resourceReqItem}>
-                                <span>🪙 Золото</span>
+                                <img
+                                    src={AssetsMap.UI.ICON_GOLD_FULL}
+                                    alt=""
+                                    style={{ width: '16px', height: '16px', objectFit: 'contain' }}
+                                />
+                                <span>Золото</span>
                             </div>
                             <div style={styles.resourceReqItem}>
                                 <span>🪵 Уголь</span>
@@ -129,7 +136,12 @@ export const ReforgeConfirmModal: React.FC<ReforgeConfirmModalProps> = ({
 
                         <div style={{ display: 'flex', gap: 20, justifyContent: 'center', marginBottom: 20 }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                                <span>🪙 500</span>
+                                <img
+                                    src={AssetsMap.UI.ICON_GOLD_FULL}
+                                    alt=""
+                                    style={{ width: '16px', height: '16px', objectFit: 'contain' }}
+                                />
+                                <span>500</span>
                             </div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                                 <span>🔩 4</span>
@@ -251,7 +263,11 @@ export const ForgeStatusModal: React.FC<ForgeStatusModalProps> = ({
                                 }}
                             >
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px' }}>
-                                    <span>🪙</span>
+                                    <img
+                                        src={AssetsMap.UI.ICON_GOLD_FULL}
+                                        alt=""
+                                        style={{ width: '16px', height: '16px', objectFit: 'contain' }}
+                                    />
                                     <span>
                                         Золото: <strong>+{rewards.goldGained}</strong>
                                     </span>
@@ -269,7 +285,11 @@ export const ForgeStatusModal: React.FC<ForgeStatusModalProps> = ({
                                     </span>
                                 </div>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px' }}>
-                                    <span>💎</span>
+                                    <img
+                                        src={resolveAssetPath('/assets/images/resources/runic_shard.webp')}
+                                        alt=""
+                                        style={{ width: '16px', height: '16px', objectFit: 'contain' }}
+                                    />
                                     <span>
                                         Осколки: <strong>+{rewards.shardGained}</strong>
                                     </span>

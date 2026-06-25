@@ -61,7 +61,8 @@
 
 /* 6. VIP PREMIUM GLOW */
 @keyframes vipGlow {
-    0%, 100% {
+    0%,
+    100% {
         opacity: 0.4;
     }
     50% {
@@ -84,7 +85,8 @@
 
 /* CUSTOM FRAME GLOWS */
 @keyframes bronzeGlow {
-    0%, 100% {
+    0%,
+    100% {
         opacity: 0.4;
     }
     50% {
@@ -108,7 +110,8 @@
 }
 
 @keyframes silverGlow {
-    0%, 100% {
+    0%,
+    100% {
         opacity: 0.4;
     }
     50% {
@@ -132,7 +135,8 @@
 }
 
 @keyframes emeraldGlow {
-    0%, 100% {
+    0%,
+    100% {
         opacity: 0.4;
     }
     50% {
@@ -156,7 +160,8 @@
 }
 
 @keyframes sapphireGlow {
-    0%, 100% {
+    0%,
+    100% {
         opacity: 0.4;
     }
     50% {
@@ -180,7 +185,8 @@
 }
 
 @keyframes vipGlowPremium {
-    0%, 100% {
+    0%,
+    100% {
         opacity: 0.4;
     }
     50% {
@@ -206,7 +212,8 @@
 }
 
 @keyframes crimsonGlow {
-    0%, 100% {
+    0%,
+    100% {
         opacity: 0.4;
     }
     50% {

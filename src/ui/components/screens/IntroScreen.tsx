@@ -296,11 +296,17 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
                                         textAlign: 'justify',
                                     }}
                                 >
-                                    Перед тобой простираются Дикие Земли — древний мир, где гармония природы и сила тотемов веками оберегали жизнь от тьмы. Но пришел час испытаний: Скверна проникает в некогда священные леса, оскверняя разум диких зверей и разрушая древние алтари. <br />
+                                    Перед тобой простираются Дикие Земли — древний мир, где гармония природы и сила
+                                    тотемов веками оберегали жизнь от тьмы. Но пришел час испытаний: Скверна проникает в
+                                    некогда священные леса, оскверняя разум диких зверей и разрушая древние алтари.{' '}
                                     <br />
-                                    Мастера Дикой Природы должны объединиться, чтобы противостоять этой угрозе. Тебе предстоит пробудить силу древних тотемов, призвать могучих чемпионов и повести их на Арену, чтобы доказать право называться истинным Хранителем Диких Земель. <br />
                                     <br />
-                                    Собери свою волю в кулак, выбери верную тактику снаряжения и впиши свое имя в летопись побед Арены!
+                                    Мастера Дикой Природы должны объединиться, чтобы противостоять этой угрозе. Тебе
+                                    предстоит пробудить силу древних тотемов, призвать могучих чемпионов и повести их на
+                                    Арену, чтобы доказать право называться истинным Хранителем Диких Земель. <br />
+                                    <br />
+                                    Собери свою волю в кулак, выбери верную тактику снаряжения и впиши свое имя в
+                                    летопись побед Арены!
                                 </p>
                             </motion.div>
                         )}
@@ -334,11 +340,22 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
                                 >
                                     Основы Мастерства
                                 </div>
-                                <h2 style={{ fontSize: isMobile ? '26px' : '48px', marginBottom: isMobile ? '15px' : '30px', color: 'white' }}>
+                                <h2
+                                    style={{
+                                        fontSize: isMobile ? '26px' : '48px',
+                                        marginBottom: isMobile ? '15px' : '30px',
+                                        color: 'white',
+                                    }}
+                                >
                                     Что нужно знать?
                                 </h2>
                                 <div
-                                    style={{ textAlign: 'left', display: 'flex', flexDirection: 'column', gap: isMobile ? '12px' : '20px' }}
+                                    style={{
+                                        textAlign: 'left',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        gap: isMobile ? '12px' : '20px',
+                                    }}
                                 >
                                     <div
                                         style={{
@@ -419,7 +436,13 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
                                 >
                                     Путеводитель Мастера
                                 </h2>
-                                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: isMobile ? '12px' : '30px' }}>
+                                <div
+                                    style={{
+                                        display: 'grid',
+                                        gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr',
+                                        gap: isMobile ? '12px' : '30px',
+                                    }}
+                                >
                                     <GuideItem
                                         title="ГЕРОИ"
                                         desc="Твой чемпион. Нанимай и повышай уровень могучих воинов: от верного Панды Фэн Луна до благородного Льва Аурелиуса и свирепого Минотавра Громма."
@@ -524,7 +547,12 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
                                         >
                                             📜 УНИКАЛЬНОСТЬ
                                         </div>
-                                        <div style={{ fontSize: isMobile ? '11px' : '12px', color: 'rgba(255,255,255,0.5)' }}>
+                                        <div
+                                            style={{
+                                                fontSize: isMobile ? '11px' : '12px',
+                                                color: 'rgba(255,255,255,0.5)',
+                                            }}
+                                        >
                                             Двух одинаковых Мастеров не существует.
                                         </div>
                                     </div>
@@ -546,7 +574,12 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
                                         >
                                             🛡️ ЧЕСТЬ
                                         </div>
-                                        <div style={{ fontSize: isMobile ? '11px' : '12px', color: 'rgba(255,255,255,0.5)' }}>
+                                        <div
+                                            style={{
+                                                fontSize: isMobile ? '11px' : '12px',
+                                                color: 'rgba(255,255,255,0.5)',
+                                            }}
+                                        >
                                             Без нецензурной лексики. Соблюдай правила Арены.
                                         </div>
                                     </div>
@@ -564,11 +597,20 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
                                                 fontSize: isMobile ? '12px' : '14px',
                                                 fontWeight: 'bold',
                                                 marginBottom: '5px',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: '6px',
                                             }}
                                         >
-                                            🏆 СЛАВА
+                                            <img src={AssetsMap.UI.TROPHY_PREMIUM} style={{ width: '16px', height: '16px', objectFit: 'contain' }} alt="trophy" />
+                                            <span>СЛАВА</span>
                                         </div>
-                                        <div style={{ fontSize: isMobile ? '11px' : '12px', color: 'rgba(255,255,255,0.5)' }}>
+                                        <div
+                                            style={{
+                                                fontSize: isMobile ? '11px' : '12px',
+                                                color: 'rgba(255,255,255,0.5)',
+                                            }}
+                                        >
                                             Это имя увидят все соперники в таблице лидеров.
                                         </div>
                                     </div>
@@ -654,39 +696,61 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
                                         cursor: 'pointer',
                                         transition: 'all 0.2s',
                                     }}
-                                    onClick={() => { setLegalAccepted(!legalAccepted); setError(''); }}
+                                    onClick={() => {
+                                        setLegalAccepted(!legalAccepted);
+                                        setError('');
+                                    }}
                                 >
-                                    <div style={{
-                                        width: '22px',
-                                        height: '22px',
-                                        borderRadius: '6px',
-                                        border: `2px solid ${legalAccepted ? '#f0c040' : 'rgba(255,255,255,0.3)'}`,
-                                        background: legalAccepted ? '#f0c040' : 'transparent',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        flexShrink: 0,
-                                        marginTop: '1px',
-                                        transition: 'all 0.2s',
-                                    }}>
-                                        {legalAccepted && <span style={{ color: '#1a0e05', fontSize: '14px', fontWeight: 900 }}>✓</span>}
+                                    <div
+                                        style={{
+                                            width: '22px',
+                                            height: '22px',
+                                            borderRadius: '6px',
+                                            border: `2px solid ${legalAccepted ? '#f0c040' : 'rgba(255,255,255,0.3)'}`,
+                                            background: legalAccepted ? '#f0c040' : 'transparent',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            flexShrink: 0,
+                                            marginTop: '1px',
+                                            transition: 'all 0.2s',
+                                        }}
+                                    >
+                                        {legalAccepted && (
+                                            <span style={{ color: '#1a0e05', fontSize: '14px', fontWeight: 900 }}>
+                                                ✓
+                                            </span>
+                                        )}
                                     </div>
-                                    <div style={{ fontSize: isMobile ? '12px' : '13px', color: 'rgba(255,255,255,0.65)', lineHeight: 1.5, textAlign: 'left' }}>
+                                    <div
+                                        style={{
+                                            fontSize: isMobile ? '12px' : '13px',
+                                            color: 'rgba(255,255,255,0.65)',
+                                            lineHeight: 1.5,
+                                            textAlign: 'left',
+                                        }}
+                                    >
                                         Я прочитал(а) и принимаю{' '}
                                         <span
-                                            onClick={(e) => { e.stopPropagation(); setOpenDoc('terms'); }}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setOpenDoc('terms');
+                                            }}
                                             style={{ color: '#f0c040', textDecoration: 'underline', cursor: 'pointer' }}
                                         >
                                             Пользовательское соглашение
-                                        </span>
-                                        {' '}и{' '}
+                                        </span>{' '}
+                                        и{' '}
                                         <span
-                                            onClick={(e) => { e.stopPropagation(); setOpenDoc('privacy'); }}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setOpenDoc('privacy');
+                                            }}
                                             style={{ color: '#f0c040', textDecoration: 'underline', cursor: 'pointer' }}
                                         >
                                             Политику конфиденциальности
-                                        </span>
-                                        {' '}игры Masters of the Wild.
+                                        </span>{' '}
+                                        игры Masters of the Wild.
                                     </div>
                                 </div>
 
@@ -705,7 +769,15 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
                         )}
                     </AnimatePresence>
 
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '30px', paddingBottom: isMobile ? '60px' : '20px' }}>
+                    <div
+                        style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            marginTop: '30px',
+                            paddingBottom: isMobile ? '60px' : '20px',
+                        }}
+                    >
                         <motion.button
                             whileHover={{ scale: 1.05, boxShadow: '0 0 50px rgba(200,149,42,0.7)' }}
                             whileTap={{ scale: 0.95 }}
@@ -755,7 +827,25 @@ const GuideItem = ({ title, desc, isMobile }: { title: string; desc: string; isM
             boxShadow: '0 10px 20px rgba(0,0,0,0.2)',
         }}
     >
-        <h4 style={{ margin: '0 0 10px 0', color: '#ffd700', fontSize: isMobile ? '18px' : '26px', letterSpacing: '0.05em' }}>{title}</h4>
-        <p style={{ margin: 0, fontSize: isMobile ? '14px' : '20px', lineHeight: 1.6, color: 'rgba(255,255,255,0.85)' }}>{desc}</p>
+        <h4
+            style={{
+                margin: '0 0 10px 0',
+                color: '#ffd700',
+                fontSize: isMobile ? '18px' : '26px',
+                letterSpacing: '0.05em',
+            }}
+        >
+            {title}
+        </h4>
+        <p
+            style={{
+                margin: 0,
+                fontSize: isMobile ? '14px' : '20px',
+                lineHeight: 1.6,
+                color: 'rgba(255,255,255,0.85)',
+            }}
+        >
+            {desc}
+        </p>
     </div>
 );

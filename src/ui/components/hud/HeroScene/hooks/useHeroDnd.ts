@@ -58,14 +58,20 @@ export class ScaledPointerSensor extends PointerSensor {
                                         get(t, p) {
                                             if (p === 'clientX') {
                                                 if (info.isRotated && info.rect) {
-                                                    const ny = info.rect.height > 0 ? (t.clientY - info.top) / info.rect.height : 0;
+                                                    const ny =
+                                                        info.rect.height > 0
+                                                            ? (t.clientY - info.top) / info.rect.height
+                                                            : 0;
                                                     return ny * 1920;
                                                 }
                                                 return (t.clientX - info.left) / info.scale;
                                             }
                                             if (p === 'clientY') {
                                                 if (info.isRotated && info.rect) {
-                                                    const nx = info.rect.width > 0 ? (t.clientX - info.left) / info.rect.width : 0;
+                                                    const nx =
+                                                        info.rect.width > 0
+                                                            ? (t.clientX - info.left) / info.rect.width
+                                                            : 0;
                                                     return (1 - nx) * 1080;
                                                 }
                                                 return (t.clientY - info.top) / info.scale;
@@ -82,14 +88,20 @@ export class ScaledPointerSensor extends PointerSensor {
                                         get(t, p) {
                                             if (p === 'clientX') {
                                                 if (info.isRotated && info.rect) {
-                                                    const ny = info.rect.height > 0 ? (t.clientY - info.top) / info.rect.height : 0;
+                                                    const ny =
+                                                        info.rect.height > 0
+                                                            ? (t.clientY - info.top) / info.rect.height
+                                                            : 0;
                                                     return ny * 1920;
                                                 }
                                                 return (t.clientX - info.left) / info.scale;
                                             }
                                             if (p === 'clientY') {
                                                 if (info.isRotated && info.rect) {
-                                                    const nx = info.rect.width > 0 ? (t.clientX - info.left) / info.rect.width : 0;
+                                                    const nx =
+                                                        info.rect.width > 0
+                                                            ? (t.clientX - info.left) / info.rect.width
+                                                            : 0;
                                                     return (1 - nx) * 1080;
                                                 }
                                                 return (t.clientY - info.top) / info.scale;

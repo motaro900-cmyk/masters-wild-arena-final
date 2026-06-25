@@ -13,17 +13,17 @@ import { LeaderItem, type LeaderboardEntry } from './Ranking/LeaderItem';
 import { SeasonRewardsModal } from './Ranking/SeasonRewardsModal';
 
 export const RankingWindow: React.FC = () => {
-    const rating = useGameStore(state => state.rating);
-    const vkUser = useGameStore(state => state.vkUser);
-    const playerAvatar = useGameStore(state => state.avatar);
-    const playerName = useGameStore(state => state.name);
-    const playerId = useGameStore(state => state.playerId);
-    const friends = useGameStore(state => state.friends) || [];
-    const heroes = useGameStore(state => state.heroes) || {};
-    const selectedHeroId = useGameStore(state => state.selectedHeroId) || 'panda';
+    const rating = useGameStore((state) => state.rating);
+    const vkUser = useGameStore((state) => state.vkUser);
+    const playerAvatar = useGameStore((state) => state.avatar);
+    const playerName = useGameStore((state) => state.name);
+    const playerId = useGameStore((state) => state.playerId);
+    const friends = useGameStore((state) => state.friends) || [];
+    const heroes = useGameStore((state) => state.heroes) || {};
+    const selectedHeroId = useGameStore((state) => state.selectedHeroId) || 'panda';
     const playerLevel = heroes[selectedHeroId]?.level || 1;
-    const playerVipLevel = useGameStore(state => state.vipLevel) || 0;
-    const clanId = useGameStore(state => state.clanId);
+    const playerVipLevel = useGameStore((state) => state.vipLevel) || 0;
+    const clanId = useGameStore((state) => state.clanId);
 
     const [activeTab, setActiveTab] = React.useState<'GLOBAL' | 'CLAN' | 'FRIENDS'>('GLOBAL');
 
@@ -120,9 +120,12 @@ export const RankingWindow: React.FC = () => {
             return;
         }
 
-        const currentUserName = playerName && playerName !== 'Мастер'
-            ? playerName
-            : (vkUser?.firstName ? `${vkUser.firstName} ${vkUser.lastName}` : 'Воин');
+        const currentUserName =
+            playerName && playerName !== 'Мастер'
+                ? playerName
+                : vkUser?.firstName
+                  ? `${vkUser.firstName} ${vkUser.lastName}`
+                  : 'Воин';
 
         const playerMember: LeaderboardEntry = {
             id: playerId || 'me',
@@ -138,7 +141,7 @@ export const RankingWindow: React.FC = () => {
 
         let membersList: any[] = [];
         if (clanId.startsWith('clan_')) {
-            const clan = MOCK_CLANS.find(c => c.id === clanId);
+            const clan = MOCK_CLANS.find((c) => c.id === clanId);
             const clanLeaderName = clan ? `${clan.name.split(' ')[0]}Глава` : 'Глава Клана';
             const clanLeaderEntry = {
                 id: 'clan_leader',
@@ -193,11 +196,8 @@ export const RankingWindow: React.FC = () => {
 
     const TABS = ['GLOBAL', 'CLAN', 'FRIENDS'] as const;
 
-    const activeLeaders = activeTab === 'GLOBAL'
-        ? globalLeaders
-        : activeTab === 'FRIENDS'
-        ? friendsLeaders
-        : clanLeaders;
+    const activeLeaders =
+        activeTab === 'GLOBAL' ? globalLeaders : activeTab === 'FRIENDS' ? friendsLeaders : clanLeaders;
 
     const myLeaderboardEntry = activeLeaders.find((l) => l.isMe);
     const myRank = myLeaderboardEntry ? `#${myLeaderboardEntry.rank}` : '50+';
@@ -350,7 +350,8 @@ export const RankingWindow: React.FC = () => {
                         whileTap={{ scale: 0.95 }}
                         onClick={() => setShowRewards(true)}
                         style={{
-                            background: 'linear-gradient(180deg, rgba(240, 192, 64, 0.18) 0%, rgba(240, 192, 64, 0.05) 100%)',
+                            background:
+                                'linear-gradient(180deg, rgba(240, 192, 64, 0.18) 0%, rgba(240, 192, 64, 0.05) 100%)',
                             border: '1px solid rgba(240, 192, 64, 0.45)',
                             borderRadius: '12px',
                             padding: '6px 12px 6px 16px',
@@ -365,17 +366,21 @@ export const RankingWindow: React.FC = () => {
                         }}
                         title="Награды сезона"
                     >
-                        <span style={{
-                            color: '#FFE07D',
-                            fontSize: '11px',
-                            fontWeight: 900,
-                            textTransform: 'uppercase',
-                            letterSpacing: '1px',
-                            textAlign: 'right',
-                            lineHeight: 1.3,
-                            textShadow: '0 1px 2px rgba(0,0,0,0.8)'
-                        }}>
-                            Награды<br/>сезона
+                        <span
+                            style={{
+                                color: '#FFE07D',
+                                fontSize: '11px',
+                                fontWeight: 900,
+                                textTransform: 'uppercase',
+                                letterSpacing: '1px',
+                                textAlign: 'right',
+                                lineHeight: 1.3,
+                                textShadow: '0 1px 2px rgba(0,0,0,0.8)',
+                            }}
+                        >
+                            Награды
+                            <br />
+                            сезона
                         </span>
                         <img
                             src={AssetsMap.UI.ICON_SEASON_RATE}
@@ -395,7 +400,7 @@ export const RankingWindow: React.FC = () => {
             <motion.div
                 ref={scrollRef}
                 className="leaderboard-scroll"
-                drag={isMobile ? "x" : undefined}
+                drag={isMobile ? 'x' : undefined}
                 dragConstraints={{ left: 0, right: 0 }}
                 dragElastic={0.15}
                 onDragEnd={(_, info) => {
@@ -437,12 +442,20 @@ export const RankingWindow: React.FC = () => {
                 ) : activeTab === 'CLAN' ? (
                     clanId ? (
                         clanLeaders.map((player) => (
-                            <LeaderItem key={player.rank} player={player} onClick={() => {
-                                const setInspect = useGameStore.getState().setInspectPlayerId;
-                                if (setInspect && player.id !== 'clan_leader' && !player.id.startsWith('mock_member_')) {
-                                    setInspect(player.id);
-                                }
-                            }} />
+                            <LeaderItem
+                                key={player.rank}
+                                player={player}
+                                onClick={() => {
+                                    const setInspect = useGameStore.getState().setInspectPlayerId;
+                                    if (
+                                        setInspect &&
+                                        player.id !== 'clan_leader' &&
+                                        !player.id.startsWith('mock_member_')
+                                    ) {
+                                        setInspect(player.id);
+                                    }
+                                }}
+                            />
                         ))
                     ) : (
                         <div
@@ -480,33 +493,44 @@ export const RankingWindow: React.FC = () => {
                         </div>
                     ) : (
                         friendsLeaders.map((player) => (
-                            <LeaderItem key={player.rank} player={player} onClick={() => {
-                                const setInspect = useGameStore.getState().setInspectPlayerId;
-                                if (setInspect) setInspect(player.id);
-                            }} />
+                            <LeaderItem
+                                key={player.rank}
+                                player={player}
+                                onClick={() => {
+                                    const setInspect = useGameStore.getState().setInspectPlayerId;
+                                    if (setInspect) setInspect(player.id);
+                                }}
+                            />
                         ))
                     )
                 ) : (
                     globalLeaders.map((player) => (
-                        <LeaderItem key={player.rank} player={player} onClick={() => {
-                            const setInspect = useGameStore.getState().setInspectPlayerId;
-                            if (setInspect) setInspect(player.id);
-                        }} />
+                        <LeaderItem
+                            key={player.rank}
+                            player={player}
+                            onClick={() => {
+                                const setInspect = useGameStore.getState().setInspectPlayerId;
+                                if (setInspect) setInspect(player.id);
+                            }}
+                        />
                     ))
                 )}
             </motion.div>
 
             {/* Apple Disclaimer */}
-            <div style={{
-                textAlign: 'center',
-                fontSize: '9px',
-                color: 'rgba(255,255,255,0.3)',
-                fontFamily: "'Inter', sans-serif",
-                margin: '6px 0 2px 0',
-                lineHeight: 1.3,
-                flexShrink: 0,
-            }}>
-                Apple Inc. не является спонсором и не имеет отношения к внутриигровым конкурсам и активностям. Apple is not a sponsor nor is involved in the activity in any manner.
+            <div
+                style={{
+                    textAlign: 'center',
+                    fontSize: '9px',
+                    color: 'rgba(255,255,255,0.3)',
+                    fontFamily: "'Inter', sans-serif",
+                    margin: '6px 0 2px 0',
+                    lineHeight: 1.3,
+                    flexShrink: 0,
+                }}
+            >
+                Apple Inc. не является спонсором и не имеет отношения к внутриигровым конкурсам и активностям. Apple is
+                not a sponsor nor is involved in the activity in any manner.
             </div>
 
             {/* ВАША ПОЗИЦИЯ (ALWAYS VISIBLE FOOTER) */}

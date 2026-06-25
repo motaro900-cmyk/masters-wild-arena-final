@@ -34,13 +34,13 @@ export const ShopShowcasePanel: React.FC<ShopShowcasePanelProps> = ({
 }) => {
     return (
         <motion.div
-            drag={isMobile ? "x" : undefined}
+            drag={isMobile ? 'x' : undefined}
             dragConstraints={{ left: 0, right: 0 }}
             dragElastic={0.2}
             onDragEnd={(_, info) => {
                 if (!isMobile) return;
                 const swipeThreshold = 50;
-                const selectedIndex = filteredItems.findIndex(i => i.id === selectedItem?.id);
+                const selectedIndex = filteredItems.findIndex((i) => i.id === selectedItem?.id);
                 if (selectedIndex === -1) return;
 
                 if (info.offset.x < -swipeThreshold) {
@@ -87,8 +87,7 @@ export const ShopShowcasePanel: React.FC<ShopShowcasePanelProps> = ({
                 style={{
                     position: 'absolute',
                     inset: 0,
-                    background:
-                        'radial-gradient(circle at center, transparent 30%, rgba(0,0,0,0.7) 100%)',
+                    background: 'radial-gradient(circle at center, transparent 30%, rgba(0,0,0,0.7) 100%)',
                     pointerEvents: 'none',
                 }}
             />
@@ -145,8 +144,7 @@ export const ShopShowcasePanel: React.FC<ShopShowcasePanelProps> = ({
                                 width: isMobile ? '340px' : '340px',
                                 height: isMobile ? '70px' : '76px',
                                 borderRadius: '50%',
-                                background:
-                                    'linear-gradient(180deg, rgba(35,30,30,0.96) 0%, rgba(10,5,5,0.98) 100%)',
+                                background: 'linear-gradient(180deg, rgba(35,30,30,0.96) 0%, rgba(10,5,5,0.98) 100%)',
                                 border:
                                     (isMobile ? '1px solid ' : '2px solid ') +
                                     getRarityColor(selectedItem.rarity) +
@@ -181,13 +179,19 @@ export const ShopShowcasePanel: React.FC<ShopShowcasePanelProps> = ({
                         <div
                             style={{
                                 zIndex: 5,
-                                animation: selectedItem.mainTab === 'SKINS' ? undefined : 'float-item 4s infinite ease-in-out',
+                                animation:
+                                    selectedItem.mainTab === 'SKINS' ? undefined : 'float-item 4s infinite ease-in-out',
                                 display: 'flex',
                                 alignItems: 'flex-end',
                                 justifyContent: 'center',
-                                marginBottom: selectedItem.mainTab === 'SKINS'
-                                    ? (isMobile ? '10px' : '14px')
-                                    : (isMobile ? '35px' : '45px'),
+                                marginBottom:
+                                    selectedItem.mainTab === 'SKINS'
+                                        ? isMobile
+                                            ? '10px'
+                                            : '14px'
+                                        : isMobile
+                                          ? '35px'
+                                          : '45px',
                             }}
                         >
                             {selectedItem.spriteClass ? (
@@ -205,19 +209,28 @@ export const ShopShowcasePanel: React.FC<ShopShowcasePanelProps> = ({
                                     <img
                                         src={selectedItem.image}
                                         onLoad={() => setSelectedImageLoaded(true)}
-                                        onError={(e) =>
-                                            (e.currentTarget.src = AssetsMap.UI.ICON_DAILY_CHEST)
-                                        }
+                                        onError={(e) => (e.currentTarget.src = AssetsMap.UI.ICON_DAILY_CHEST)}
                                         className={`image-fade-in ${selectedImageLoaded ? 'loaded' : ''}`}
                                         style={{
-                                            width: selectedItem.mainTab === 'SKINS'
-                                                ? (isMobile ? '340px' : '320px')
-                                                : (isMobile ? '300px' : '260px'),
-                                            height: selectedItem.mainTab === 'SKINS'
-                                                ? (isMobile ? '340px' : '320px')
-                                                : (isMobile ? '300px' : '260px'),
+                                            width:
+                                                selectedItem.mainTab === 'SKINS'
+                                                    ? isMobile
+                                                        ? '340px'
+                                                        : '320px'
+                                                    : isMobile
+                                                      ? '300px'
+                                                      : '260px',
+                                            height:
+                                                selectedItem.mainTab === 'SKINS'
+                                                    ? isMobile
+                                                        ? '340px'
+                                                        : '320px'
+                                                    : isMobile
+                                                      ? '300px'
+                                                      : '260px',
                                             objectFit: 'contain',
-                                            objectPosition: selectedItem.mainTab === 'SKINS' ? 'bottom center' : 'center',
+                                            objectPosition:
+                                                selectedItem.mainTab === 'SKINS' ? 'bottom center' : 'center',
                                             filter: `contrast(1.1) brightness(1.15) drop-shadow(0 0 25px ${getRarityColor(selectedItem.rarity)}cc)`,
                                         }}
                                         alt=""
@@ -242,17 +255,11 @@ export const ShopShowcasePanel: React.FC<ShopShowcasePanelProps> = ({
                                 minWidth: 'auto',
                                 minHeight: 'auto',
                                 borderRadius: '50%',
-                                backgroundColor:
-                                    selectedItem.id === item.id
-                                        ? '#f0c040'
-                                        : 'rgba(255,255,255,0.2)',
+                                backgroundColor: selectedItem.id === item.id ? '#f0c040' : 'rgba(255,255,255,0.2)',
                                 border: 'none',
                                 cursor: 'pointer',
                                 padding: 0,
-                                boxShadow:
-                                    selectedItem.id === item.id
-                                        ? '0 0 8px #f0c040, 0 0 3px #f0c040'
-                                        : 'none',
+                                boxShadow: selectedItem.id === item.id ? '0 0 8px #f0c040, 0 0 3px #f0c040' : 'none',
                                 transition: 'all 0.2s',
                             }}
                         />

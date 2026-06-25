@@ -651,7 +651,9 @@ export const HeroDetailPanel = memo(function HeroDetailPanel({
                                             style={{ width: '13px', height: '13px', objectFit: 'contain' }}
                                             alt=""
                                         />
-                                        <span>{requiredRank?.name} ({hero.requiredTrophies})</span>
+                                        <span>
+                                            {requiredRank?.name} ({hero.requiredTrophies})
+                                        </span>
                                     </span>
                                 )}
                                 {hero.unlockGoldCost && (
@@ -709,9 +711,7 @@ export const HeroDetailPanel = memo(function HeroDetailPanel({
                                     : hero.unlockType === 'diamonds'
                                       ? 'linear-gradient(180deg, #a855f7 0%, #7c3aed 100%)'
                                       : 'linear-gradient(180deg, #f0c040 0%, #c8960a 100%)',
-                                border: !hasEnoughTrophies
-                                    ? '1.5px solid rgba(239, 68, 68, 0.3)'
-                                    : 'none',
+                                border: !hasEnoughTrophies ? '1.5px solid rgba(239, 68, 68, 0.3)' : 'none',
                                 borderRadius: '10px',
                                 color: !hasEnoughTrophies
                                     ? '#ef4444'

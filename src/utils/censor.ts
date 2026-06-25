@@ -20,18 +20,21 @@ export function censorText(text: string): string {
         /залуп/i,
         /манда/i,
         /член/i,
-        /охуе/i
+        /охуе/i,
     ];
 
     // Разделяем строку на слова и знаки препинания, цензурируем слова
-    return text.split(/(\s+|[,.!?;:()])/).map(part => {
-        const cleanPart = part.trim();
-        if (!cleanPart) return part;
+    return text
+        .split(/(\s+|[,.!?;:()])/)
+        .map((part) => {
+            const cleanPart = part.trim();
+            if (!cleanPart) return part;
 
-        const hasSwear = patterns.some(pattern => pattern.test(cleanPart));
-        if (hasSwear) {
-            return '*'.repeat(cleanPart.length);
-        }
-        return part;
-    }).join('');
+            const hasSwear = patterns.some((pattern) => pattern.test(cleanPart));
+            if (hasSwear) {
+                return '*'.repeat(cleanPart.length);
+            }
+            return part;
+        })
+        .join('');
 }

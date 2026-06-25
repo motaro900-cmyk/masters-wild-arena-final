@@ -1,4 +1,5 @@
 import React from 'react';
+import { AssetsMap } from '../../../../configs/AssetsMap';
 import { PetProgressBar } from './PetProgressBar';
 import {
     HUNGER_DECAY_INTERVAL_MS,
@@ -182,7 +183,10 @@ export const PetStatsCard: React.FC<PetStatsCardProps> = ({ pet, currentTime }) 
                         letterSpacing: '1px',
                     }}
                 >
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#bfdbfe' }}>⭐ ОПЫТ</span>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#bfdbfe' }}>
+                        <img src={AssetsMap.UI.ICON_XP} style={{ width: '16px', height: '16px', objectFit: 'contain' }} alt="xp" />
+                        ОПЫТ
+                    </span>
                     <span style={{ color: '#3b82f6', fontWeight: 900 }}>{pet.exp} / 100</span>
                 </div>
                 <PetProgressBar value={pet.exp} max={100} color="#3b82f6" />

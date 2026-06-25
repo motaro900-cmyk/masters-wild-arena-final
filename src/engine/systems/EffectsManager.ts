@@ -209,6 +209,8 @@ export class EffectsManager {
             const effectId = `slowmo_${this.effectCounter++}`;
 
             const pixiApp = this.pixiApp.getApp();
+            if (!pixiApp) return;
+
             const originalSpeed = pixiApp.ticker.speed;
 
             const timeline = gsap.timeline({
@@ -239,6 +241,7 @@ export class EffectsManager {
         }
     }
 
+
     /**
      * Стоп-кадр (Freeze Frame)
      */
@@ -260,7 +263,8 @@ export class EffectsManager {
             });
 
             this.activeEffects.set(effectId, tween);
-            if (import.meta.env.DEV) console.log(`❄️ Freeze Frame active: speed=${speedMultiplier} for ${durationMs}ms`);
+            if (import.meta.env.DEV)
+                console.log(`❄️ Freeze Frame active: speed=${speedMultiplier} for ${durationMs}ms`);
         } catch (error) {
             console.error('❌ Freeze frame error:', error);
         }

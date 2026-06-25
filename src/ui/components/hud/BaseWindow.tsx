@@ -71,31 +71,31 @@ export const BaseWindow: React.FC<BaseWindowProps> = ({
 
     const windowTranslations: Record<string, Record<string, string>> = {
         RU: {
-            'НАСТРОЙКИ': 'НАСТРОЙКИ',
-            'ДРУЗЬЯ': 'ДРУЗЬЯ',
-            'ПОЧТА': 'ПОЧТА',
+            НАСТРОЙКИ: 'НАСТРОЙКИ',
+            ДРУЗЬЯ: 'ДРУЗЬЯ',
+            ПОЧТА: 'ПОЧТА',
             'VIP СТАТУС': 'VIP СТАТУС',
             'НАСТРОЙКА ПРОФИЛЯ': 'НАСТРОЙКА ПРОФИЛЯ',
             'КАЛЕНДАРЬ НАГРАД': 'КАЛЕНДАРЬ НАГРАД',
-            'РЕЙТИНГ': 'РЕЙТИНГ',
+            РЕЙТИНГ: 'РЕЙТИНГ',
             'ИНФОРМАЦИЯ О КЛАНЕ': 'ИНФОРМАЦИЯ О КЛАНЕ',
             'ПУТЬ МАСТЕРА': 'ПУТЬ МАСТЕРА',
-            'ИНВЕНТАРЬ': 'ИНВЕНТАРЬ',
-            'ЗВЕРИНЕЦ': 'ЗВЕРИНЕЦ',
+            ИНВЕНТАРЬ: 'ИНВЕНТАРЬ',
+            ЗВЕРИНЕЦ: 'ЗВЕРИНЕЦ',
         },
         EN: {
-            'НАСТРОЙКИ': 'SETTINGS',
-            'ДРУЗЬЯ': 'FRIENDS',
-            'ПОЧТА': 'MAIL',
+            НАСТРОЙКИ: 'SETTINGS',
+            ДРУЗЬЯ: 'FRIENDS',
+            ПОЧТА: 'MAIL',
             'VIP СТАТУС': 'VIP STATUS',
             'НАСТРОЙКА ПРОФИЛЯ': 'PROFILE CUSTOMIZE',
             'КАЛЕНДАРЬ НАГРАД': 'DAILY REWARDS',
-            'РЕЙТИНГ': 'RANKING',
+            РЕЙТИНГ: 'RANKING',
             'ИНФОРМАЦИЯ О КЛАНЕ': 'CLAN INFO',
             'ПУТЬ МАСТЕРА': 'PATH OF THE MASTER',
-            'ИНВЕНТАРЬ': 'INVENTORY',
-            'ЗВЕРИНЕЦ': 'BESTIARY',
-        }
+            ИНВЕНТАРЬ: 'INVENTORY',
+            ЗВЕРИНЕЦ: 'BESTIARY',
+        },
     };
 
     const displayTitle = windowTranslations[language]?.[title] || title;
@@ -170,9 +170,7 @@ export const BaseWindow: React.FC<BaseWindowProps> = ({
                         }}
                     >
                         {/* Слева: дополнительные виджеты (например, время) */}
-                        <div style={{ display: 'flex', alignItems: 'center', zIndex: 16 }}>
-                            {headerExtra}
-                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', zIndex: 16 }}>{headerExtra}</div>
 
                         {/* По центру: заголовок окна */}
                         <div
@@ -202,7 +200,7 @@ export const BaseWindow: React.FC<BaseWindowProps> = ({
                                 }}
                             >
                                 {displayTitle}
-                        </h2>
+                            </h2>
                         </div>
 
                         {/* Справа: доп. виджет (например, пинг) и кнопка закрытия */}
@@ -237,18 +235,17 @@ export const BaseWindow: React.FC<BaseWindowProps> = ({
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'center',
-                                        width: '30px',
-                                        height: '30px',
-                                        boxSizing: 'content-box',
-                                        padding: isMobile ? '24px' : '12px',
-                                        margin: isMobile ? '-24px' : '-12px',
+                                        width: isMobile ? '44px' : '30px',
+                                        height: isMobile ? '44px' : '30px',
                                     }}
                                     onMouseEnter={(e) => (e.currentTarget.style.opacity = '1')}
                                     onMouseLeave={(e) => (e.currentTarget.style.opacity = '0.8')}
                                 >
                                     <X
                                         size={30}
-                                        style={{ filter: isLight ? 'none' : 'drop-shadow(0 0 4px rgba(251,191,36,0.3))' }}
+                                        style={{
+                                            filter: isLight ? 'none' : 'drop-shadow(0 0 4px rgba(251,191,36,0.3))',
+                                        }}
                                     />
                                 </motion.button>
                             </div>

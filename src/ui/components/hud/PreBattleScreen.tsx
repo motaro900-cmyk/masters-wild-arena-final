@@ -192,7 +192,9 @@ const GearSlot: React.FC<{
                     onError={(e) => {
                         const currentSrc = e.currentTarget.src;
                         if (currentSrc.endsWith('.webp')) {
-                            e.currentTarget.src = currentSrc.replace(/_mobile\.webp$/i, '.png').replace(/\.webp$/i, '.png');
+                            e.currentTarget.src = currentSrc
+                                .replace(/_mobile\.webp$/i, '.png')
+                                .replace(/\.webp$/i, '.png');
                         }
                     }}
                     alt={item.name}
@@ -414,15 +416,6 @@ export const PreBattleScreen: React.FC<PreBattleScreenProps> = ({
         };
     }, []);
 
-    // Вычисляем «силу» для шанса победы
-    const playerPower =
-        playerStats.hp * 0.4 + playerStats.attack * 2 + playerStats.defense * 1.5 + playerStats.speed * 10;
-    const enemyPower = enemyStats.hp * 0.4 + enemyStats.attack * 2 + enemyStats.defense * 1.5 + enemyStats.speed * 10;
-    const rawWinChance = (playerPower / (playerPower + enemyPower)) * 100;
-    // Округляем до 5%
-    const winChance = Math.round(rawWinChance / 5) * 5;
-
-    const winChanceLabel = winChance >= 70 ? 'Уверенная победа' : winChance >= 45 ? 'Равный бой' : 'Высокий риск';
 
     return (
         <div
@@ -763,47 +756,10 @@ export const PreBattleScreen: React.FC<PreBattleScreenProps> = ({
                     <StatCompareRow label="ЗДОРОВЬЕ" playerVal={playerStats.hp} enemyVal={enemyStats.hp} />
                     <StatCompareRow label="АТАКА" playerVal={playerStats.attack} enemyVal={enemyStats.attack} />
                     <StatCompareRow label="ЗАЩИТА" playerVal={playerStats.defense} enemyVal={enemyStats.defense} />
-                    <StatCompareRow
-                        label="СКОРОСТЬ"
-                        playerVal={playerStats.speed}
-                        enemyVal={enemyStats.speed}
-                    />
+                    <StatCompareRow label="СКОРОСТЬ" playerVal={playerStats.speed} enemyVal={enemyStats.speed} />
                 </div>
 
-                {/* Шанс победы (Прогноз) */}
-                <div
-                    style={{
-                        background: 'rgba(0,0,0,0.2)',
-                        padding: '10px 40px',
-                        borderRadius: '16px',
-                        marginBottom: '20px',
-                        textAlign: 'center',
-                        border: '1px solid rgba(240, 192, 64, 0.2)',
-                        boxShadow: 'inset 0 0 20px rgba(0,0,0,0.5)',
-                    }}
-                >
-                    <div
-                        style={{
-                            color: '#fef3c7',
-                            fontSize: '12px',
-                            fontWeight: 'bold',
-                            marginBottom: '4px',
-                            letterSpacing: '1px',
-                        }}
-                    >
-                        ПРОГНОЗ
-                    </div>
-                    <div
-                        style={{
-                            color: '#fbbf24',
-                            fontSize: '20px',
-                            fontWeight: 900,
-                            fontFamily: "'Montserrat', sans-serif",
-                        }}
-                    >
-                        {winChanceLabel} ~{winChance}%
-                    </div>
-                </div>
+
 
                 {/* Кнопки */}
                 <div

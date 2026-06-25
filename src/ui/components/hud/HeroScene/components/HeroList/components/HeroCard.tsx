@@ -19,7 +19,14 @@ interface HeroCardProps {
     onClick: () => void;
 }
 
-export const HeroCard = memo(function HeroCard({ hero, isOwned, isActive, isSelected, activeSkin, onClick }: HeroCardProps) {
+export const HeroCard = memo(function HeroCard({
+    hero,
+    isOwned,
+    isActive,
+    isSelected,
+    activeSkin,
+    onClick,
+}: HeroCardProps) {
     const [isHovered, setIsHovered] = useState(false);
     const [imageLoaded, setImageLoaded] = useState(false);
 
@@ -177,7 +184,8 @@ export const HeroCard = memo(function HeroCard({ hero, isOwned, isActive, isSele
                         userSelect: 'none',
                         filter: isOwned ? 'none' : 'brightness(0.2) grayscale(1.0)',
                         transform: isHovered ? 'scale(1.04) translateY(-2px)' : 'scale(1) translateY(0)',
-                        transition: 'transform 0.25s cubic-bezier(0.25, 0.8, 0.25, 1), filter 0.25s, opacity 0.2s ease-in-out',
+                        transition:
+                            'transform 0.25s cubic-bezier(0.25, 0.8, 0.25, 1), filter 0.25s, opacity 0.2s ease-in-out',
                         opacity: imageLoaded ? 1 : 0,
                     }}
                     alt={activeName}
@@ -223,14 +231,7 @@ export const HeroCard = memo(function HeroCard({ hero, isOwned, isActive, isSele
                                         strokeWidth="1.5"
                                         strokeLinecap="round"
                                     />
-                                    <rect 
-                                        x="2" 
-                                        y="5.5" 
-                                        width="8" 
-                                        height="6.5" 
-                                        rx="1.5" 
-                                        fill="#f0c040" 
-                                    />
+                                    <rect x="2" y="5.5" width="8" height="6.5" rx="1.5" fill="#f0c040" />
                                     <circle cx="6" cy="8.2" r="0.8" fill="#1c1612" />
                                     <path d="M6 9V10.5" stroke="#1c1612" strokeWidth="1" strokeLinecap="round" />
                                 </svg>
@@ -323,12 +324,14 @@ export const HeroCard = memo(function HeroCard({ hero, isOwned, isActive, isSele
                                         </div>
                                     )}
                                     {hero.unlockGoldCost > 0 && hero.unlockCost > 0 && (
-                                        <span style={{
-                                            fontSize: '8px',
-                                            fontWeight: 900,
-                                            color: 'rgba(255,255,255,0.3)',
-                                            letterSpacing: '0.5px',
-                                        }}>
+                                        <span
+                                            style={{
+                                                fontSize: '8px',
+                                                fontWeight: 900,
+                                                color: 'rgba(255,255,255,0.3)',
+                                                letterSpacing: '0.5px',
+                                            }}
+                                        >
                                             ИЛИ
                                         </span>
                                     )}

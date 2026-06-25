@@ -217,7 +217,12 @@ export const TITLES: TitleOption[] = [
     { id: 'seer', name: 'Провидец', description: 'Видящий суть вещей.', requiredLevel: 56 },
     { id: 'elder', name: 'Старейшина', description: 'Почтенный и мудрый предводитель.', requiredLevel: 64 },
     { id: 'guardian', name: 'Хранитель Равновесия', description: 'Защитник порядка Диких Земель.', requiredLevel: 72 },
-    { id: 'master_wild', name: 'Мастер Дикой Природы', description: 'Преодолевший весь Легендарный путь.', requiredLevel: 80 },
+    {
+        id: 'master_wild',
+        name: 'Мастер Дикой Природы',
+        description: 'Преодолевший весь Легендарный путь.',
+        requiredLevel: 80,
+    },
     { id: 'arena_king', name: 'Король Арены', description: 'Величайший боец среди равных.', requiredLevel: 50 },
     { id: 'vip', name: 'VIP Персона', description: 'Особо важный гость Диких Земель.', requiredVip: 1 },
     { id: 'developer', name: 'Разработчик', description: 'Создатель этой вселенной.', requiredVip: 5 },

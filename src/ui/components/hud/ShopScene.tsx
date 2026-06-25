@@ -200,11 +200,9 @@ export const ShopScene: React.FC = () => {
 
                 <ResourceBar
                     onOpenShop={(tab: string) => {
-                        if (tab === 'ENERGY') {
-                            setActiveMainTab('BANK');
-                            setActiveSubTab('ENERGY');
-                        } else {
-                            setActiveMainTab('BANK');
+                        setActiveMainTab('BANK');
+                        if (tab === 'ENERGY' || tab === 'GOLD' || tab === 'GEMS') {
+                            setActiveSubTab(tab);
                         }
                     }}
                 />
@@ -305,16 +303,18 @@ export const ShopScene: React.FC = () => {
                             ))}
                         </div>
                         {isMobile && (
-                            <div style={{
-                                position: 'absolute',
-                                right: 0,
-                                top: 0,
-                                bottom: '6px',
-                                width: '35px',
-                                background: 'linear-gradient(to right, rgba(10,8,8,0) 0%, rgba(10,8,8,0.95) 100%)',
-                                pointerEvents: 'none',
-                                zIndex: 10,
-                            }} />
+                            <div
+                                style={{
+                                    position: 'absolute',
+                                    right: 0,
+                                    top: 0,
+                                    bottom: '6px',
+                                    width: '35px',
+                                    background: 'linear-gradient(to right, rgba(10,8,8,0) 0%, rgba(10,8,8,0.95) 100%)',
+                                    pointerEvents: 'none',
+                                    zIndex: 10,
+                                }}
+                            />
                         )}
                     </div>
 
@@ -362,7 +362,7 @@ export const ShopScene: React.FC = () => {
                                 flex: 1,
                                 display: 'flex',
                                 alignItems: 'center',
-                                justifyCenter: 'center',
+                                justifyContent: 'center',
                                 color: 'rgba(255,255,255,0.4)',
                             }}
                         >

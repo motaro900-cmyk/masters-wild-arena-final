@@ -4,8 +4,6 @@ import { getStorage } from '../utils/SafeStorage';
 import { ENERGY_CONFIG } from '../game/configs/constants';
 import { TimeService } from '../utils/TimeService';
 
-
-
 import { createPlayerSlice } from './slices/playerSlice';
 import { createShopSlice } from './slices/shopSlice';
 import { createInventorySlice } from './slices/inventorySlice';
@@ -44,7 +42,7 @@ type GameStoreState = {
     setInspectPlayerName?: (name: string | null) => void;
     pvpCooldowns?: Record<string, number>;
     recordAttack?: (targetId: string) => void;
-    
+
     // Precomputed HUD values
     hudPlayerRank?: any;
     hudPlayerAvatar?: string;
@@ -399,7 +397,7 @@ const store = create<GameStoreState>()(
                             persistedState.heroes.panda.level = persistedState.heroes.panda.level || 1;
                             persistedState.heroes.panda.exp = persistedState.heroes.panda.exp || 0;
                         } else {
-                             persistedState.heroes.panda = { level: 1, exp: 0, strength: 16, agility: 19, stamina: 21 };
+                            persistedState.heroes.panda = { level: 1, exp: 0, strength: 16, agility: 19, stamina: 21 };
                         }
                         if (persistedState.heroes.wolf_knight) {
                             persistedState.heroes.wolf_knight.level = persistedState.heroes.wolf_knight.level || 1;
@@ -475,10 +473,7 @@ store.setState = (partial: any, replace?: boolean) => {
     const patch = typeof partial === 'function' ? (partial as any)(currentState) : partial;
 
     // Check if crystals decreased (spent) — trigger sync (only after READY to avoid boot-time storms)
-    const crystalsSpent =
-        patch &&
-        patch.crystals !== undefined &&
-        patch.crystals < (currentState.crystals || 0);
+    const crystalsSpent = patch && patch.crystals !== undefined && patch.crystals < (currentState.crystals || 0);
 
     const isSystemUpdate = patch && patch.isSystemUpdate;
 
@@ -503,4 +498,3 @@ export const useGameStore = store;
 if (typeof window !== 'undefined') {
     (window as any).useGameStore = store;
 }
-

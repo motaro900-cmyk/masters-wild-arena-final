@@ -165,8 +165,8 @@ export const consumables: Record<string, IEquipmentStats> = {
         rarity: 'COMMON',
         mainTab: 'BANK',
         subTab: 'GEMS',
-        desc: 'Смотрите рекламу, чтобы получить 25 алмазов.',
-        amount: 25,
+        desc: 'Смотрите рекламу, чтобы получить 8 алмазов.',
+        amount: 8,
     },
     '40': {
         id: '40',

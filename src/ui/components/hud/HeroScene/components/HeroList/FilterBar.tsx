@@ -65,7 +65,13 @@ export const FilterBar = ({ activeFilter, onSelect }: any) => {
                             position: 'relative',
                         }}
                     >
-                        {f.id === 'gold' && <span style={{ marginRight: '5px' }}>🪙</span>}
+                        {f.id === 'gold' && (
+                            <img
+                                src={AssetsMap.UI.ICON_GOLD_FULL}
+                                style={{ width: '18px', height: '18px', marginRight: '5px' }}
+                                alt=""
+                            />
+                        )}
                         {f.id === 'diamonds' && (
                             <img
                                 src={AssetsMap.UI.ICON_ALMAZ_FULL}
@@ -73,7 +79,13 @@ export const FilterBar = ({ activeFilter, onSelect }: any) => {
                                 alt=""
                             />
                         )}
-                        {f.id === 'achievement' && <span style={{ marginRight: '5px' }}>🏆</span>}
+                        {f.id === 'achievement' && (
+                            <img
+                                src={AssetsMap.UI.TROPHY_PREMIUM}
+                                style={{ width: '18px', height: '18px', marginRight: '5px', objectFit: 'contain' }}
+                                alt=""
+                            />
+                        )}
                         {f.label}
                         {f.badge > 0 && (
                             <motion.div

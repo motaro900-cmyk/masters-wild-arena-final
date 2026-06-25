@@ -2,16 +2,7 @@
  * SocialService — запросы в друзья, профили друзей, ник-проверка
  */
 import { db, USERS_COLLECTION } from '../utils/firebase';
-import {
-    doc,
-    setDoc,
-    deleteDoc,
-    getDocs,
-    collection,
-    query,
-    where,
-    onSnapshot,
-} from 'firebase/firestore';
+import { doc, setDoc, deleteDoc, getDocs, collection, query, where, onSnapshot } from 'firebase/firestore';
 
 type TrackFn = (unsub: () => void) => () => void;
 
@@ -39,8 +30,7 @@ export function subscribeToFriendRequests(
             (snapshot: any) => {
                 callback(snapshot.docs.map((d: any) => ({ ...d.data(), id: d.id })));
             },
-            (error: any) =>
-                console.error('[SocialService] Friend requests subscription error:', error),
+            (error: any) => console.error('[SocialService] Friend requests subscription error:', error),
         ),
     );
 }
@@ -54,11 +44,7 @@ export async function deleteFriendRequest(userId: string, requestId: string): Pr
     }
 }
 
-export function subscribeToOwnProfile(
-    track: TrackFn,
-    userId: string,
-    callback: (data: any) => void,
-): () => void {
+export function subscribeToOwnProfile(track: TrackFn, userId: string, callback: (data: any) => void): () => void {
     const playerRef = doc(db, USERS_COLLECTION, userId);
     return track(
         onSnapshot(
@@ -66,17 +52,12 @@ export function subscribeToOwnProfile(
             (snapshot: any) => {
                 if (snapshot.exists()) callback(snapshot.data());
             },
-            (error: any) =>
-                console.error('[SocialService] Own profile subscription error:', error),
+            (error: any) => console.error('[SocialService] Own profile subscription error:', error),
         ),
     );
 }
 
-export async function isNicknameUnique(
-    name: string,
-    currentUserId?: string,
-    guestUserId?: string,
-): Promise<boolean> {
+export async function isNicknameUnique(name: string, currentUserId?: string, guestUserId?: string): Promise<boolean> {
     try {
         const playersRef = collection(db, USERS_COLLECTION);
         const qName = query(playersRef, where('name', '==', name));
@@ -121,9 +102,7 @@ export async function getPlayerIdByName(name: string): Promise<string | null> {
 export async function resolveFriendProfiles(friendIds: string[]): Promise<any[]> {
     if (!friendIds || friendIds.length === 0) return [];
     try {
-        const sanitizedIds = friendIds
-            .map((id: any) => (typeof id === 'object' ? id.id : id))
-            .filter(Boolean);
+        const sanitizedIds = friendIds.map((id: any) => (typeof id === 'object' ? id.id : id)).filter(Boolean);
 
         const chunks: string[][] = [];
         for (let i = 0; i < sanitizedIds.length; i += 10) {
@@ -131,22 +110,15 @@ export async function resolveFriendProfiles(friendIds: string[]): Promise<any[]>
         }
 
         const querySnapshots = await Promise.all(
-            chunks.map(chunk =>
-                getDocs(query(
-                    collection(db, USERS_COLLECTION),
-                    where('__name__', 'in', chunk)
-                ))
-            )
+            chunks.map((chunk) => getDocs(query(collection(db, USERS_COLLECTION), where('__name__', 'in', chunk)))),
         );
 
         const profiles: any[] = [];
         for (const snap of querySnapshots) {
-            snap.forEach(docSnap => {
+            snap.forEach((docSnap) => {
                 const data = docSnap.data();
                 const wasOnlineVal = data.wasOnline || data.былВСети;
-                const lastSeenTime = wasOnlineVal?.toMillis
-                    ? wasOnlineVal.toMillis()
-                    : wasOnlineVal || 0;
+                const lastSeenTime = wasOnlineVal?.toMillis ? wasOnlineVal.toMillis() : wasOnlineVal || 0;
 
                 profiles.push({
                     id: docSnap.id,

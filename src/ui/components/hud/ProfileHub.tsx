@@ -19,7 +19,7 @@ export const ProfileHub: React.FC = () => {
             frame: state.frame,
             glowEnabled: state.glowEnabled,
             uiAnimations: state.uiAnimations,
-        }))
+        })),
     );
     const activeFrameStyle = getAvatarFrameStyle(frame);
 
@@ -94,21 +94,10 @@ export const ProfileHub: React.FC = () => {
                     </div>
 
                     {/* VIP / Custom Аура (Свечение) */}
-                    {glowEnabled && (activeFrameStyle.glowClass ? (
-                        <div
-                            className={activeFrameStyle.glowClass}
-                            style={{
-                                width: '110px',
-                                height: '110px',
-                                borderRadius: '50%',
-                                transform: 'translateY(1px)',
-                                pointerEvents: 'none',
-                            }}
-                        />
-                    ) : (
-                        vipLevel > 0 && (
+                    {glowEnabled &&
+                        (activeFrameStyle.glowClass ? (
                             <div
-                                className="vip-avatar-glow absolute z-15"
+                                className={activeFrameStyle.glowClass}
                                 style={{
                                     width: '110px',
                                     height: '110px',
@@ -117,8 +106,20 @@ export const ProfileHub: React.FC = () => {
                                     pointerEvents: 'none',
                                 }}
                             />
-                        )
-                    ))}
+                        ) : (
+                            vipLevel > 0 && (
+                                <div
+                                    className="vip-avatar-glow absolute z-15"
+                                    style={{
+                                        width: '110px',
+                                        height: '110px',
+                                        borderRadius: '50%',
+                                        transform: 'translateY(1px)',
+                                        pointerEvents: 'none',
+                                    }}
+                                />
+                            )
+                        ))}
 
                     <img
                         src={getAvatarFramePath(frame)}

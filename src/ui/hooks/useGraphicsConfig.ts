@@ -81,7 +81,7 @@ export const useGraphicsConfig = (): GraphicsConfig => {
                 showParticles: true,
                 decorOpacity: 0.85,
             };
- 
+
         case 'ULTRA':
         default:
             return {
@@ -96,8 +96,7 @@ export const useGraphicsConfig = (): GraphicsConfig => {
                 panelBorder: '1px solid rgba(240,192,64,0.35)',
                 spriteFilter: 'contrast(1.1) saturate(1.2) brightness(1.05)',
                 iconGlow: 'drop-shadow(0 0 8px rgba(240,192,64,0.5)) drop-shadow(0 2px 4px rgba(0,0,0,0.8))',
-                vignetteOverlay:
-                    'radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.55) 100%)',
+                vignetteOverlay: 'radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.55) 100%)',
                 showParticles: true,
                 decorOpacity: 1.0,
             };

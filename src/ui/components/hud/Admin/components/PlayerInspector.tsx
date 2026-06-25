@@ -1,5 +1,6 @@
 import React from 'react';
 import { RealPlayer, Section, statBox, statLabel } from '../AdminShared';
+import { AssetsMap } from '../../../../../configs/AssetsMap';
 
 interface PlayerInspectorProps {
     selectedPlayer: RealPlayer;
@@ -19,28 +20,37 @@ export const PlayerInspector: React.FC<PlayerInspectorProps> = ({ selectedPlayer
                 >
                     <div style={statBox}>
                         <div style={statLabel}>Уровень (LVL)</div>
-                        <span style={{ color: '#a78bfa', fontWeight: 'bold' }}>🌟 {selectedPlayer.level}</span>
+                        <span style={{ color: '#a78bfa', fontWeight: 'bold', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                            <img src={AssetsMap.UI.ICON_XP} alt="xp" style={{ width: '16px', height: '16px', objectFit: 'contain' }} />
+                            {selectedPlayer.level}
+                        </span>
                     </div>
                     <div style={statBox}>
                         <div style={statLabel}>Кубки (Cups)</div>
-                        <span style={{ color: '#fbbf24', fontWeight: 'bold' }}>🏆 {selectedPlayer.rating || 0}</span>
+                        <span style={{ color: '#fbbf24', fontWeight: 'bold', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                            <img src={AssetsMap.UI.TROPHY_PREMIUM} alt="trophy" style={{ width: '16px', height: '16px', objectFit: 'contain' }} />
+                            {selectedPlayer.rating || 0}
+                        </span>
                     </div>
                     <div style={statBox}>
                         <div style={statLabel}>Золото (Gold)</div>
-                        <span style={{ color: '#ffd700', fontWeight: 'bold' }}>
-                            💰 {selectedPlayer.gold.toLocaleString()}
+                        <span style={{ color: '#ffd700', fontWeight: 'bold', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                            <img src={AssetsMap.UI.ICON_GOLD_FULL} alt="gold" style={{ width: '16px', height: '16px', objectFit: 'contain' }} />
+                            {selectedPlayer.gold.toLocaleString()}
                         </span>
                     </div>
                     <div style={statBox}>
                         <div style={statLabel}>Кристаллы (Gems)</div>
-                        <span style={{ color: '#00ffff', fontWeight: 'bold' }}>
-                            💎 {selectedPlayer.crystals.toLocaleString()}
+                        <span style={{ color: '#00ffff', fontWeight: 'bold', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                            <img src={AssetsMap.UI.ICON_ALMAZ_FULL} alt="crystals" style={{ width: '16px', height: '16px', objectFit: 'contain' }} />
+                            {selectedPlayer.crystals.toLocaleString()}
                         </span>
                     </div>
                     <div style={statBox}>
                         <div style={statLabel}>Энергия (Energy)</div>
-                        <span style={{ color: '#38bdf8', fontWeight: 'bold' }}>
-                            ⚡ {selectedPlayer.energy ?? 0} / {selectedPlayer.maxEnergy ?? 0}
+                        <span style={{ color: '#38bdf8', fontWeight: 'bold', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                            <img src={AssetsMap.UI.ICON_ENERGY_FULL} alt="energy" style={{ width: '16px', height: '16px', objectFit: 'contain' }} />
+                            {selectedPlayer.energy ?? 0} / {selectedPlayer.maxEnergy ?? 0}
                         </span>
                     </div>
                     <div style={statBox}>
@@ -135,19 +145,24 @@ export const PlayerInspector: React.FC<PlayerInspectorProps> = ({ selectedPlayer
                 >
                     <div style={statBox}>
                         <div style={statLabel}>GOLD</div>
-                        <span style={{ color: '#ffd700', fontWeight: 'bold' }}>
-                            💰 {selectedPlayer.gold.toLocaleString()}
+                        <span style={{ color: '#ffd700', fontWeight: 'bold', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                            <img src={AssetsMap.UI.ICON_GOLD_FULL} alt="gold" style={{ width: '16px', height: '16px', objectFit: 'contain' }} />
+                            {selectedPlayer.gold.toLocaleString()}
                         </span>
                     </div>
                     <div style={statBox}>
                         <div style={statLabel}>GEMS</div>
-                        <span style={{ color: '#00ffff', fontWeight: 'bold' }}>
-                            💎 {selectedPlayer.crystals.toLocaleString()}
+                        <span style={{ color: '#00ffff', fontWeight: 'bold', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                            <img src={AssetsMap.UI.ICON_ALMAZ_FULL} alt="gems" style={{ width: '16px', height: '16px', objectFit: 'contain' }} />
+                            {selectedPlayer.crystals.toLocaleString()}
                         </span>
                     </div>
                     <div style={statBox}>
                         <div style={statLabel}>LVL</div>
-                        <span style={{ color: '#a78bfa', fontWeight: 'bold' }}>🌟 {selectedPlayer.level}</span>
+                        <span style={{ color: '#a78bfa', fontWeight: 'bold', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                            <img src={AssetsMap.UI.ICON_XP} alt="xp" style={{ width: '16px', height: '16px', objectFit: 'contain' }} />
+                            {selectedPlayer.level}
+                        </span>
                     </div>
                     <div style={statBox}>
                         <div style={statLabel}>LOCATION</div>

@@ -12,7 +12,7 @@ export const initFirebaseProfile = async (
     timeoutId: any,
     setInitError: (err: string) => void,
     setNotInVk: (val: boolean) => void,
-    setLoadingText: (text: string) => void
+    setLoadingText: (text: string) => void,
 ): Promise<FirebaseProfileResult | null> => {
     const { syncService, SyncService } = await import('../services/SyncService');
     const { bootController } = await import('./BootController');
@@ -70,7 +70,7 @@ export const initFirebaseProfile = async (
     console.log('🔍 Checking Firebase profile for:', userId);
     try {
         const result = await syncService.loadPlayerData(userId);
-        
+
         if (result === null) {
             console.warn('⚠️ Failed to load remote profile. Falling back to local cache/offline mode.');
             const localState = useGameStore.getState();
@@ -83,7 +83,8 @@ export const initFirebaseProfile = async (
             } else {
                 console.log('👶 No local state found. Initializing new player offline.');
                 useGameStore.getState().resetStore();
-                const fallbackName1 = state.vkUser?.firstName || state.vkUser?.first_name || `Игрок_${userId.slice(-4)}`;
+                const fallbackName1 =
+                    state.vkUser?.firstName || state.vkUser?.first_name || `Игрок_${userId.slice(-4)}`;
                 useGameStore.setState({
                     name: fallbackName1,
                     onboardingCompleted: false,
@@ -180,7 +181,13 @@ export const initFirebaseProfile = async (
                 }
 
                 // Auto-correct default avatar if we have VK user photo and current is default/missing/sprite
-                if ((!stateToRestore.avatar || stateToRestore.avatar === 'none' || stateToRestore.avatar === '' || stateToRestore.avatar.startsWith('sprite:')) && state.vkUser) {
+                if (
+                    (!stateToRestore.avatar ||
+                        stateToRestore.avatar === 'none' ||
+                        stateToRestore.avatar === '' ||
+                        stateToRestore.avatar.startsWith('sprite:')) &&
+                    state.vkUser
+                ) {
                     const realVkPhoto = state.vkUser.photo200 || state.vkUser.photo;
                     if (realVkPhoto) {
                         console.log('🔄 Autocorrecting empty/sprite avatar to VK photo:', realVkPhoto);

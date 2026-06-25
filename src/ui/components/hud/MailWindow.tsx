@@ -113,7 +113,7 @@ export const MailWindow: React.FC<MailWindowProps> = () => {
             await syncService.sendMail(target, mailData);
             useGameStore.getState().updateQuestProgress('SEND_GIFT', 1);
             useGameStore.getState().showAlert('Письмо успешно отправлено!');
-            
+
             setRecipientId('');
             setManualRecipientId('');
             setWriteSubject('');
@@ -185,7 +185,14 @@ export const MailWindow: React.FC<MailWindowProps> = () => {
         >
             {/* ВКЛАДКИ */}
             <div
-                style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', width: '100%', overflow: 'hidden' }}
+                style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: '20px',
+                    width: '100%',
+                    overflow: 'hidden',
+                }}
             >
                 <div style={{ position: 'relative', flex: 1, overflow: 'hidden', marginRight: '10px' }}>
                     <div
@@ -265,16 +272,18 @@ export const MailWindow: React.FC<MailWindowProps> = () => {
                     </div>
                     {/* Right fade indicator on mobile to suggest swipeability */}
                     {isMobile && (
-                        <div style={{
-                            position: 'absolute',
-                            right: 0,
-                            top: 0,
-                            bottom: '6px',
-                            width: '35px',
-                            background: 'linear-gradient(to right, rgba(26,16,8,0) 0%, rgba(26,16,8,0.95) 100%)',
-                            pointerEvents: 'none',
-                            zIndex: 10,
-                        }} />
+                        <div
+                            style={{
+                                position: 'absolute',
+                                right: 0,
+                                top: 0,
+                                bottom: '6px',
+                                width: '35px',
+                                background: 'linear-gradient(to right, rgba(26,16,8,0) 0%, rgba(26,16,8,0.95) 100%)',
+                                pointerEvents: 'none',
+                                zIndex: 10,
+                            }}
+                        />
                     )}
                 </div>
 
@@ -395,7 +404,9 @@ export const MailWindow: React.FC<MailWindowProps> = () => {
                             </button>
                             <button
                                 onClick={() => {
-                                    const toDelete = mails.filter((m: any) => m.tab === 'INBOX' && !m.rewards && m.id !== 'welcome-mail');
+                                    const toDelete = mails.filter(
+                                        (m: any) => m.tab === 'INBOX' && !m.rewards && m.id !== 'welcome-mail',
+                                    );
                                     toDelete.forEach((m: any) => deleteMail(m.id));
                                     useGameStore.getState().showAlert(`Удалено писем без наград: ${toDelete.length}`);
                                 }}

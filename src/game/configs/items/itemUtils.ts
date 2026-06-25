@@ -6,8 +6,8 @@ import { resolveAssetPath } from '../../../utils/assetPath';
  */
 export const calculateItemPower = (item: any): number => {
     if (!item) return 0;
-    
-    const power = 
+
+    const power =
         (item.attackBonus || 0) * 2.0 +
         (item.defenseBonus || 0) * 1.5 +
         (item.hpBonus || 0) * 0.1 +

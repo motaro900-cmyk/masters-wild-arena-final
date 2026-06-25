@@ -8,10 +8,10 @@ import { TalentTooltip } from './TalentTooltip';
 import { audioService } from '../../../../../../services/AudioService';
 
 export const TalentsView = ({ hero, isCompact = false }: any) => {
-    const heroTalents = useGameStore(state => state.heroTalents);
-const upgradeTalent = useGameStore(state => state.upgradeTalent);
-const resetTalents = useGameStore(state => state.resetTalents);
-const talentPoints = useGameStore(state => state.talentPoints);
+    const heroTalents = useGameStore((state) => state.heroTalents);
+    const upgradeTalent = useGameStore((state) => state.upgradeTalent);
+    const resetTalents = useGameStore((state) => state.resetTalents);
+    const talentPoints = useGameStore((state) => state.talentPoints);
     const talents = heroTalents[hero.id] || {};
     const availablePoints = talentPoints;
 

@@ -15,23 +15,23 @@ export const DEFAULT_COMPATIBILITY_RULES: GPURule[] = [
     {
         match: 'xclipse',
         disable: ['webgpu'],
-        reason: 'Android WebView rendering issues'
+        reason: 'Android WebView rendering issues',
     },
     {
-        match: 'mali-g68',
+        match: 'mali',
         disable: ['webgpu'],
-        reason: 'Unstable WebGPU drivers'
+        reason: 'Unstable Mali WebGPU drivers',
     },
     {
-        match: 'mali-g78',
+        match: 'adreno',
         disable: ['webgpu'],
-        reason: 'Unstable WebGPU drivers'
+        reason: 'Unstable Adreno WebGPU drivers',
     },
     {
-        match: 'mali-g57',
+        match: 'powervr',
         disable: ['webgpu'],
-        reason: 'Unstable WebGPU drivers'
-    }
+        reason: 'Unstable PowerVR WebGPU drivers',
+    },
 ];
 
 let cachedRules: GPURule[] = DEFAULT_COMPATIBILITY_RULES;
@@ -70,7 +70,7 @@ export async function fetchCompatibilityRules(): Promise<GPURule[]> {
  */
 export function checkWebGPUDisabled(gpuRenderer: string): { disabled: boolean; reason?: string } {
     const cleanGPU = (gpuRenderer || '').toLowerCase();
-    
+
     for (const rule of cachedRules) {
         const matchPattern = (rule.match || rule.contains || '').toLowerCase();
         if (matchPattern && cleanGPU.includes(matchPattern)) {
@@ -78,7 +78,7 @@ export function checkWebGPUDisabled(gpuRenderer: string): { disabled: boolean; r
             if (disableWebGPU) {
                 return {
                     disabled: true,
-                    reason: rule.reason || 'Dynamic compatibility rule match'
+                    reason: rule.reason || 'Dynamic compatibility rule match',
                 };
             }
         }

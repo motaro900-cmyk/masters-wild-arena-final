@@ -208,21 +208,25 @@ export const LegalModal: React.FC<LegalDocumentsProps> = ({ open, onClose }) => 
                         }}
                     >
                         {/* Header */}
-                        <div style={{
-                            padding: '20px 28px',
-                            borderBottom: '1px solid rgba(200,149,42,0.2)',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'space-between',
-                            flexShrink: 0,
-                        }}>
-                            <div style={{
-                                fontFamily: "'Cinzel', serif",
-                                fontSize: '16px',
-                                fontWeight: 800,
-                                color: '#f0c040',
-                                letterSpacing: '0.05em',
-                            }}>
+                        <div
+                            style={{
+                                padding: '20px 28px',
+                                borderBottom: '1px solid rgba(200,149,42,0.2)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                flexShrink: 0,
+                            }}
+                        >
+                            <div
+                                style={{
+                                    fontFamily: "'Cinzel', serif",
+                                    fontSize: '16px',
+                                    fontWeight: 800,
+                                    color: '#f0c040',
+                                    letterSpacing: '0.05em',
+                                }}
+                            >
                                 📜 {title}
                             </div>
                             <motion.button
@@ -255,25 +259,29 @@ export const LegalModal: React.FC<LegalDocumentsProps> = ({ open, onClose }) => 
                                 flex: 1,
                             }}
                         >
-                            <pre style={{
-                                fontFamily: "'Inter', sans-serif",
-                                fontSize: '13px',
-                                lineHeight: 1.7,
-                                color: 'rgba(255,255,255,0.75)',
-                                whiteSpace: 'pre-wrap',
-                                wordBreak: 'break-word',
-                                margin: 0,
-                            }}>
+                            <pre
+                                style={{
+                                    fontFamily: "'Inter', sans-serif",
+                                    fontSize: '13px',
+                                    lineHeight: 1.7,
+                                    color: 'rgba(255,255,255,0.75)',
+                                    whiteSpace: 'pre-wrap',
+                                    wordBreak: 'break-word',
+                                    margin: 0,
+                                }}
+                            >
                                 {content}
                             </pre>
                         </div>
 
                         {/* Footer */}
-                        <div style={{
-                            padding: '16px 28px',
-                            borderTop: '1px solid rgba(200,149,42,0.15)',
-                            flexShrink: 0,
-                        }}>
+                        <div
+                            style={{
+                                padding: '16px 28px',
+                                borderTop: '1px solid rgba(200,149,42,0.15)',
+                                flexShrink: 0,
+                            }}
+                        >
                             <motion.button
                                 whileTap={{ scale: 0.97 }}
                                 onClick={onClose}

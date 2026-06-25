@@ -6,7 +6,12 @@ import { preloadItemsAtlas } from '../../utils/itemAtlas';
 
 function getOptimizedMobilePath(path: string): string {
     const lowerPath = path.toLowerCase();
-    if (lowerPath.includes('_mobile.webp') || lowerPath.includes('_mobile.png') || lowerPath.includes('_mobile.jpg') || lowerPath.includes('_mobile.jpeg')) {
+    if (
+        lowerPath.includes('_mobile.webp') ||
+        lowerPath.includes('_mobile.png') ||
+        lowerPath.includes('_mobile.jpg') ||
+        lowerPath.includes('_mobile.jpeg')
+    ) {
         return path;
     }
     if (lowerPath.endsWith('.webp')) {
@@ -20,7 +25,6 @@ function getOptimizedMobilePath(path: string): string {
     }
     return path;
 }
-
 
 /**
  * AssetLoader — Системный загрузчик ресурсов.
@@ -47,7 +51,8 @@ export class AssetLoader {
         // [Anti-Grey] Умное разрешение путей (Smart Resolver)
         const state = useGameStore.getState();
         const isUltra = state.graphicsQuality === 'ULTRA';
-        const isMobile = !isUltra && /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        const isMobile =
+            !isUltra && /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
         // Предзагрузка JSON-атласа предметов (неблокирующая)
         preloadItemsAtlas();
@@ -87,9 +92,13 @@ export class AssetLoader {
             if (!(PIXI.Assets as any)._initialized) {
                 const isIOS =
                     /iPad|iPhone|iPod/.test(navigator.userAgent) ||
-                    (typeof navigator !== 'undefined' && navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+                    (typeof navigator !== 'undefined' &&
+                        navigator.platform === 'MacIntel' &&
+                        navigator.maxTouchPoints > 1);
 
-                console.log(`[AssetLoader] Initializing Pixi Assets. iOS detected: ${isIOS}. Setting preferences accordingly.`);
+                console.log(
+                    `[AssetLoader] Initializing Pixi Assets. iOS detected: ${isIOS}. Setting preferences accordingly.`,
+                );
                 await PIXI.Assets.init({
                     preferences: {
                         preferWorkers: !isIOS,
@@ -105,8 +114,11 @@ export class AssetLoader {
                 try {
                     await PIXI.Assets.load(assetPath);
                 } catch (err) {
-                    console.warn(`[AssetLoader] Failed to load optimized asset: ${assetPath}. Cleaning cache and trying fallback...`, err);
-                    
+                    console.warn(
+                        `[AssetLoader] Failed to load optimized asset: ${assetPath}. Cleaning cache and trying fallback...`,
+                        err,
+                    );
+
                     try {
                         // Clear the corrupted/partial load from Pixi's cache before retrying
                         await PIXI.Assets.unload(assetPath);
@@ -128,7 +140,10 @@ export class AssetLoader {
                             throw new Error('Fallback path is identical to failed path');
                         }
                     } catch (fallbackErr) {
-                        console.error(`[AssetLoader] Critical: Failed to load fallback asset: ${origPath} (PNG fallback: ${pngFallbackPath})`, fallbackErr);
+                        console.error(
+                            `[AssetLoader] Critical: Failed to load fallback asset: ${origPath} (PNG fallback: ${pngFallbackPath})`,
+                            fallbackErr,
+                        );
                         try {
                             // Assign a safe default white texture to prevent crashes on usage
                             PIXI.Assets.cache.set(assetPath, PIXI.Texture.WHITE);
@@ -173,7 +188,8 @@ export class AssetLoader {
         try {
             const state = useGameStore.getState();
             const isUltra = state.graphicsQuality === 'ULTRA';
-            const isMobile = !isUltra && /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            const isMobile =
+                !isUltra && /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
             const preloadList: string[] = [];
 
@@ -218,34 +234,37 @@ export class AssetLoader {
             );
 
             // Оптимизируем пути ассетов так же, как в loadAssets
-            const optimizedList = preloadList.map((path) => {
-                if (!path) return '';
-                const normalized = path.replace(/\\/g, '/').toLowerCase();
-                const isHeroOrSkin = normalized.includes('characters/') && !normalized.includes('characters/ancients/');
-                const isBoss = normalized.includes('ancient_treant') || normalized.includes('ancient_griffin');
-                const shouldKeepPng = isHeroOrSkin || isBoss;
+            const optimizedList = preloadList
+                .map((path) => {
+                    if (!path) return '';
+                    const normalized = path.replace(/\\/g, '/').toLowerCase();
+                    const isHeroOrSkin =
+                        normalized.includes('characters/') && !normalized.includes('characters/ancients/');
+                    const isBoss = normalized.includes('ancient_treant') || normalized.includes('ancient_griffin');
+                    const shouldKeepPng = isHeroOrSkin || isBoss;
 
-                let newPath = path;
-                if (!shouldKeepPng) {
-                    newPath = path.replace(/\.(png|jpg|jpeg)$/i, '.webp');
-                }
+                    let newPath = path;
+                    if (!shouldKeepPng) {
+                        newPath = path.replace(/\.(png|jpg|jpeg)$/i, '.webp');
+                    }
 
-                if (
-                    isMobile &&
-                    (newPath.includes('backgrounds') ||
-                        newPath.includes('Shop.webp') ||
-                        newPath.includes('Shoping.webp') ||
-                        newPath.includes('Shop.png') ||
-                        newPath.includes('Shoping.png') ||
-                        newPath.includes('images/items/') ||
-                        newPath.includes('characters/') ||
-                        newPath.includes('avatars/') ||
-                        newPath.includes('frames/'))
-                ) {
-                    newPath = getOptimizedMobilePath(newPath);
-                }
-                return newPath;
-            }).filter(Boolean);
+                    if (
+                        isMobile &&
+                        (newPath.includes('backgrounds') ||
+                            newPath.includes('Shop.webp') ||
+                            newPath.includes('Shoping.webp') ||
+                            newPath.includes('Shop.png') ||
+                            newPath.includes('Shoping.png') ||
+                            newPath.includes('images/items/') ||
+                            newPath.includes('characters/') ||
+                            newPath.includes('avatars/') ||
+                            newPath.includes('frames/'))
+                    ) {
+                        newPath = getOptimizedMobilePath(newPath);
+                    }
+                    return newPath;
+                })
+                .filter(Boolean);
 
             console.log(`[AssetLoader] Background preloading queue initiated for ${optimizedList.length} assets.`);
             PIXI.Assets.backgroundLoad(optimizedList);
@@ -262,7 +281,8 @@ export class AssetLoader {
         try {
             const state = useGameStore.getState();
             const isUltra = state.graphicsQuality === 'ULTRA';
-            const isMobile = !isUltra && /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            const isMobile =
+                !isUltra && /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
             const preloadList: string[] = [];
 
@@ -284,7 +304,7 @@ export class AssetLoader {
                 resolveAssetPath('/assets/characters/raccoon/raccoon_poses.png.png'),
                 resolveAssetPath('/assets/characters/minotaur/minotaur_poses.png.png'),
                 resolveAssetPath('/assets/characters/tiger_warrior/tiger_warrior_poses.png.png'),
-                resolveAssetPath('/assets/characters/lion_knight/lion_knight_poses.png.png')
+                resolveAssetPath('/assets/characters/lion_knight/lion_knight_poses.png.png'),
             );
 
             // 3. Мобы и боссы
@@ -294,40 +314,45 @@ export class AssetLoader {
                 resolveAssetPath('/assets/characters/ancients/ancient_panther.webp'),
                 resolveAssetPath('/assets/characters/ancients/ancient_treant.png'),
                 resolveAssetPath('/assets/characters/ancients/ancient_spider.webp'),
-                resolveAssetPath('/assets/characters/ancients/ancient_griffin.png')
+                resolveAssetPath('/assets/characters/ancients/ancient_griffin.png'),
             );
 
             // Оптимизируем пути ассетов так же, как в loadAssets
-            const optimizedList = preloadList.map((path) => {
-                if (!path) return '';
-                const normalized = path.replace(/\\/g, '/').toLowerCase();
-                const isHeroOrSkin = normalized.includes('characters/') && !normalized.includes('characters/ancients/');
-                const isBoss = normalized.includes('ancient_treant') || normalized.includes('ancient_griffin');
-                const shouldKeepPng = isHeroOrSkin || isBoss;
+            const optimizedList = preloadList
+                .map((path) => {
+                    if (!path) return '';
+                    const normalized = path.replace(/\\/g, '/').toLowerCase();
+                    const isHeroOrSkin =
+                        normalized.includes('characters/') && !normalized.includes('characters/ancients/');
+                    const isBoss = normalized.includes('ancient_treant') || normalized.includes('ancient_griffin');
+                    const shouldKeepPng = isHeroOrSkin || isBoss;
 
-                let newPath = path;
-                if (!shouldKeepPng) {
-                    newPath = path.replace(/\.(png|jpg|jpeg)$/i, '.webp');
-                }
+                    let newPath = path;
+                    if (!shouldKeepPng) {
+                        newPath = path.replace(/\.(png|jpg|jpeg)$/i, '.webp');
+                    }
 
-                if (
-                    isMobile &&
-                    (newPath.includes('backgrounds') ||
-                        newPath.includes('Shop.webp') ||
-                        newPath.includes('Shoping.webp') ||
-                        newPath.includes('Shop.png') ||
-                        newPath.includes('Shoping.png') ||
-                        newPath.includes('images/items/') ||
-                        newPath.includes('characters/') ||
-                        newPath.includes('avatars/') ||
-                        newPath.includes('frames/'))
-                ) {
-                    newPath = getOptimizedMobilePath(newPath);
-                }
-                return newPath;
-            }).filter(Boolean);
+                    if (
+                        isMobile &&
+                        (newPath.includes('backgrounds') ||
+                            newPath.includes('Shop.webp') ||
+                            newPath.includes('Shoping.webp') ||
+                            newPath.includes('Shop.png') ||
+                            newPath.includes('Shoping.png') ||
+                            newPath.includes('images/items/') ||
+                            newPath.includes('characters/') ||
+                            newPath.includes('avatars/') ||
+                            newPath.includes('frames/'))
+                    ) {
+                        newPath = getOptimizedMobilePath(newPath);
+                    }
+                    return newPath;
+                })
+                .filter(Boolean);
 
-            console.log(`[AssetLoader] Starting native browser preloading for ${optimizedList.length} combat assets...`);
+            console.log(
+                `[AssetLoader] Starting native browser preloading for ${optimizedList.length} combat assets...`,
+            );
             optimizedList.forEach((src) => {
                 const img = new Image();
                 img.src = src;

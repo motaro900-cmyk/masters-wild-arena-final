@@ -696,14 +696,11 @@ export const CityScreen: React.FC = () => {
                                                         'linear-gradient(to right, transparent, #c8a870, transparent)',
                                                 }}
                                             />
-                                            <div
-                                                style={{
-                                                    fontSize: '42px',
-                                                    filter: 'drop-shadow(0 0 10px rgba(255,255,255,0.2))',
-                                                }}
-                                            >
-                                                💎
-                                            </div>
+                                            <img
+                                                src={AssetsMap.UI.ICON_ALMAZ_FULL}
+                                                style={{ width: '42px', height: '42px', objectFit: 'contain', filter: 'drop-shadow(0 0 10px rgba(255,255,255,0.2))' }}
+                                                alt="shard"
+                                            />
                                             <span
                                                 style={{
                                                     color: '#fff',

@@ -33,9 +33,7 @@ export const rawItemsDatabase: Record<string, IEquipmentStats> = {
 export const ITEMS_DATABASE: Record<string, IEquipmentStats> = Object.fromEntries(
     Object.entries(rawItemsDatabase).map(([key, item]) => [
         key,
-        item.mainTab === 'SKINS'
-            ? item
-            : { ...item, image: processItemImage(item.image) },
+        item.mainTab === 'SKINS' ? item : { ...item, image: processItemImage(item.image) },
     ]),
 );
 

@@ -62,7 +62,14 @@ export const SeasonRewardsModal: React.FC<SeasonRewardsModalProps> = ({
                                 marginBottom: '10px',
                             }}
                         >
-                            🏆 НАГРАДЫ СЕЗОНА
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                                <img
+                                    src={AssetsMap.UI.TROPHY_PREMIUM}
+                                    style={{ width: '28px', height: '28px', objectFit: 'contain', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))' }}
+                                    alt="trophy"
+                                />
+                                <span>НАГРАДЫ СЕЗОНА</span>
+                            </div>
                         </h3>
 
                         {/* SEASON TIMER */}
@@ -182,9 +189,7 @@ export const SeasonRewardsModal: React.FC<SeasonRewardsModalProps> = ({
                                                 key={idx}
                                                 style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
                                             >
-                                                <span
-                                                    style={{ fontSize: '15px', fontWeight: 900, color: '#4ade80' }}
-                                                >
+                                                <span style={{ fontSize: '15px', fontWeight: 900, color: '#4ade80' }}>
                                                     {item.amount}
                                                 </span>
                                                 <img

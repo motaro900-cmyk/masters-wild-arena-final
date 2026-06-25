@@ -65,7 +65,7 @@ export const ResourceBar: React.FC<{ onOpenShop?: (tab: string) => void }> = ({ 
                     key={res.key}
                     onMouseEnter={() => setHoveredRes(res.key)}
                     onMouseLeave={() => setHoveredRes(null)}
-                style={{
+                    style={{
                         position: 'relative',
                         width: 145,
                         height: 34,
@@ -247,9 +247,15 @@ export const ResourceBar: React.FC<{ onOpenShop?: (tab: string) => void }> = ({ 
                                 </div>
                                 <div style={{ marginTop: '5px', height: '1px', background: 'rgba(168,85,247,0.2)' }} />
                                 <div className="flex flex-col gap-1 text-[10px]" style={{ color: '#fff' }}>
-                                    <div>💎 Покупка в Банке</div>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                        <img src={AssetsMap.UI.ICON_ALMAZ_FULL} style={{ width: '12px', height: '12px', objectFit: 'contain' }} alt="crystals" />
+                                        <span>Покупка в Банке</span>
+                                    </div>
                                     <div>🎁 Награда за достижения</div>
-                                    <div>⚡ Покупка энергии и редких вещей</div>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                        <img src={AssetsMap.UI.ICON_ENERGY_FULL} style={{ width: '12px', height: '12px', objectFit: 'contain' }} alt="energy" />
+                                        <span>Покупка энергии и редких вещей</span>
+                                    </div>
                                 </div>
                             </div>
                             {/* Треугольничек */}

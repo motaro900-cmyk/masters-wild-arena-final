@@ -5,7 +5,6 @@ import { useShallow } from 'zustand/react/shallow';
 import { AssetsMap } from '../../../../configs/AssetsMap';
 import { LocalStatRow } from './components/LocalStatRow';
 import { CircularGearLayout } from './components/CircularGearLayout';
-import { LaurelLeft, LaurelRight } from './components/MatchmakingDecorations';
 import { MatchmakingNameplates } from './components/MatchmakingNameplate';
 import { calculateTotalPower, calculateWinRewards } from './utils/matchmakingUtils';
 import { getHeroConfig } from '../../../../configs/HeroesConfig';
@@ -40,7 +39,6 @@ interface MatchmakingFoundProps {
     rating: number;
     level: number;
     playerStats: any;
-    forecast: number;
     shouldFlipEnemy: (src: string) => boolean;
     renderStatRow: (label: string, pVal: number, eVal: number, maxVal: number) => React.ReactNode;
     onStartFight: () => void;
@@ -55,23 +53,23 @@ export const MatchmakingFound: React.FC<MatchmakingFoundProps> = ({
     rating,
     level,
     playerStats,
-    forecast,
     shouldFlipEnemy,
     onStartFight,
 }) => {
-    const { accountLevel, heroEquipment, selectedHeroId, title, name, wins, totalBattles, isPremium, winStreak } = useGameStore(
-        useShallow((state) => ({
-            accountLevel: state.level,
-            heroEquipment: state.heroEquipment,
-            selectedHeroId: state.selectedHeroId,
-            title: state.title,
-            name: state.name,
-            wins: state.wins,
-            totalBattles: state.totalBattles,
-            isPremium: state.isPremium,
-            winStreak: state.winStreak,
-        }))
-    );
+    const { accountLevel, heroEquipment, selectedHeroId, title, name, wins, totalBattles, isPremium, winStreak } =
+        useGameStore(
+            useShallow((state) => ({
+                accountLevel: state.level,
+                heroEquipment: state.heroEquipment,
+                selectedHeroId: state.selectedHeroId,
+                title: state.title,
+                name: state.name,
+                wins: state.wins,
+                totalBattles: state.totalBattles,
+                isPremium: state.isPremium,
+                winStreak: state.winStreak,
+            })),
+        );
     const [isStarting, setIsStarting] = React.useState(false);
 
     // --- Мемоизированные вычисления ---
@@ -550,87 +548,54 @@ export const MatchmakingFound: React.FC<MatchmakingFoundProps> = ({
                             label="ЗДОРОВЬЕ"
                             pVal={playerStats.hp}
                             eVal={opponent.stats.hp}
-                            icon={<span style={{ fontSize: '22px', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))' }}>❤️</span>}
+                            icon={
+                                <span style={{ fontSize: '22px', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))' }}>
+                                    ❤️
+                                </span>
+                            }
                         />
                         <LocalStatRow
                             label="АТАКА"
                             pVal={playerStats.attack}
                             eVal={opponent.stats.attack}
-                            icon={<span style={{ fontSize: '22px', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))' }}>⚔️</span>}
+                            icon={
+                                <span style={{ fontSize: '22px', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))' }}>
+                                    ⚔️
+                                </span>
+                            }
                         />
                         <LocalStatRow
                             label="ЗАЩИТА"
                             pVal={playerStats.defense}
                             eVal={opponent.stats.defense}
-                            icon={<span style={{ fontSize: '22px', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))' }}>🛡️</span>}
+                            icon={
+                                <span style={{ fontSize: '22px', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))' }}>
+                                    🛡️
+                                </span>
+                            }
                         />
                         <LocalStatRow
                             label="СКОРОСТЬ"
                             pVal={playerStats.speed ?? 1}
                             eVal={opponent.stats.speed ?? 1}
-                            icon={<span style={{ fontSize: '22px', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))' }}>💨</span>}
+                            icon={
+                                <span style={{ fontSize: '22px', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))' }}>
+                                    💨
+                                </span>
+                            }
                         />
                         <LocalStatRow
                             label="КРИТ. ШАНС"
                             pVal={playerStats.critChance ?? 5}
                             eVal={opponent.stats.critChance ?? 5}
-                            icon={<span style={{ fontSize: '22px', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))' }}>💥</span>}
+                            icon={
+                                <span style={{ fontSize: '22px', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))' }}>
+                                    💥
+                                </span>
+                            }
                         />
                     </div>
 
-                    {/* Win Prediction Box */}
-                    <div
-                        style={{
-                            width: '100%',
-                            background: 'rgba(10, 8, 5, 0.9)',
-                            border: '1px solid rgba(240, 192, 64, 0.25)',
-                            borderRadius: '12px',
-                            padding: '12px 16px',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                            boxSizing: 'border-box',
-                            marginBottom: '16px',
-                        }}
-                    >
-                        <span
-                            style={{
-                                fontSize: '10px',
-                                fontWeight: 900,
-                                color: '#b5a695',
-                                textTransform: 'uppercase',
-                                letterSpacing: '1px',
-                            }}
-                        >
-                            ШАНС ПОБЕДЫ
-                        </span>
-
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '14px', margin: '2px 0' }}>
-                            <LaurelLeft />
-                            <span
-                                style={{
-                                    fontSize: '36px',
-                                    fontWeight: 900,
-                                    color: '#fbbf24',
-                                    fontFamily: "'Russo One', sans-serif",
-                                }}
-                            >
-                                {forecast}%
-                            </span>
-                            <LaurelRight />
-                        </div>
-
-                        <span
-                            style={{
-                                fontSize: '11px',
-                                fontWeight: 900,
-                                color: '#fbbf24',
-                                letterSpacing: '0.5px',
-                            }}
-                        >
-                            {forecast >= 60 ? 'ПОБЕДА ВЕРОЯТНА' : forecast <= 40 ? 'ТЯЖЕЛЫЙ БОЙ' : 'РАВНЫЙ БОЙ'}
-                        </span>
-                    </div>
 
                     {/* Reward Box */}
                     <div
@@ -665,11 +630,24 @@ export const MatchmakingFound: React.FC<MatchmakingFoundProps> = ({
                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                 <img
                                     src={AssetsMap.UI.ICON_GOLD_FULL}
-                                    style={{ width: '28px', height: '28px', objectFit: 'contain', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))' }}
+                                    style={{
+                                        width: '28px',
+                                        height: '28px',
+                                        objectFit: 'contain',
+                                        filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))',
+                                    }}
                                     alt="gold"
                                 />
                                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-                                    <span style={{ fontSize: '17px', fontWeight: 900, color: '#fff', lineHeight: '1.1', fontFamily: "'Outfit', sans-serif" }}>
+                                    <span
+                                        style={{
+                                            fontSize: '17px',
+                                            fontWeight: 900,
+                                            color: '#fff',
+                                            lineHeight: '1.1',
+                                            fontFamily: "'Outfit', sans-serif",
+                                        }}
+                                    >
                                         {winRewards.goldRange}
                                     </span>
                                     <span
@@ -690,11 +668,25 @@ export const MatchmakingFound: React.FC<MatchmakingFoundProps> = ({
                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                 <img
                                     src={AssetsMap.UI.ICON_XP}
-                                    style={{ width: '58px', height: '58px', margin: '0 -15px', objectFit: 'contain', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))' }}
+                                    style={{
+                                        width: '58px',
+                                        height: '58px',
+                                        margin: '0 -15px',
+                                        objectFit: 'contain',
+                                        filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))',
+                                    }}
                                     alt="xp"
                                 />
                                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-                                    <span style={{ fontSize: '17px', fontWeight: 900, color: '#fff', lineHeight: '1.1', fontFamily: "'Outfit', sans-serif" }}>
+                                    <span
+                                        style={{
+                                            fontSize: '17px',
+                                            fontWeight: 900,
+                                            color: '#fff',
+                                            lineHeight: '1.1',
+                                            fontFamily: "'Outfit', sans-serif",
+                                        }}
+                                    >
                                         {winRewards.xp}
                                     </span>
                                     <span
@@ -715,11 +707,24 @@ export const MatchmakingFound: React.FC<MatchmakingFoundProps> = ({
                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                 <img
                                     src={AssetsMap.UI.TROPHY_PREMIUM}
-                                    style={{ width: '28px', height: '28px', objectFit: 'contain', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))' }}
+                                    style={{
+                                        width: '28px',
+                                        height: '28px',
+                                        objectFit: 'contain',
+                                        filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))',
+                                    }}
                                     alt="trophy"
                                 />
                                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-                                    <span style={{ fontSize: '17px', fontWeight: 900, color: '#fff', lineHeight: '1.1', fontFamily: "'Outfit', sans-serif" }}>
+                                    <span
+                                        style={{
+                                            fontSize: '17px',
+                                            fontWeight: 900,
+                                            color: '#fff',
+                                            lineHeight: '1.1',
+                                            fontFamily: "'Outfit', sans-serif",
+                                        }}
+                                    >
                                         {winRewards.trophies}
                                     </span>
                                     <span

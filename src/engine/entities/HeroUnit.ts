@@ -176,6 +176,7 @@ export class HeroUnit extends PIXI.Container implements IEffectTarget, IStatusEf
     private trailInterval: any = null;
     private timers: ReturnType<typeof setTimeout>[] = [];
     public isLunging: boolean = false;
+    public activeTimelines: any[] = [];
 
     public defaultX: number = 0;
     public defaultY: number = 0;
@@ -467,11 +468,21 @@ export class HeroUnit extends PIXI.Container implements IEffectTarget, IStatusEf
     }
 
     // --- Equipment Delegation (dormant — visual overlay system in src/future/HeroEquipmentManager.ts) ---
-    public equipWeapon(_itemId: string | null): Promise<void> { return Promise.resolve(); }
-    public equipHelmet(_itemId: string | null): Promise<void> { return Promise.resolve(); }
-    public equipArmor(_itemId: string | null): Promise<void> { return Promise.resolve(); }
-    public equipShield(_itemId: string | null): Promise<void> { return Promise.resolve(); }
-    public updateEquipment(_equipment: Record<string, string | null>): Promise<void> { return Promise.resolve(); }
+    public equipWeapon(_itemId: string | null): Promise<void> {
+        return Promise.resolve();
+    }
+    public equipHelmet(_itemId: string | null): Promise<void> {
+        return Promise.resolve();
+    }
+    public equipArmor(_itemId: string | null): Promise<void> {
+        return Promise.resolve();
+    }
+    public equipShield(_itemId: string | null): Promise<void> {
+        return Promise.resolve();
+    }
+    public updateEquipment(_equipment: Record<string, string | null>): Promise<void> {
+        return Promise.resolve();
+    }
 
     /**
      * Получить визуальный центр персонажа в глобальных координатах сцены
@@ -550,7 +561,7 @@ export class HeroUnit extends PIXI.Container implements IEffectTarget, IStatusEf
                 this.timers.push(
                     setTimeout(() => {
                         this.setFrame(this.idleFrameIdx); // return to Idle
-                    }, 700 / timeScale)
+                    }, 700 / timeScale),
                 );
             } else if (attackIndex === 1) {
                 gsap.killTweensOf(this.bodyContainer.scale);
@@ -573,7 +584,7 @@ export class HeroUnit extends PIXI.Container implements IEffectTarget, IStatusEf
                 this.timers.push(
                     setTimeout(() => {
                         this.setFrame(this.idleFrameIdx);
-                    }, 600 / timeScale)
+                    }, 600 / timeScale),
                 );
             } else if (attackIndex >= 3) {
                 gsap.killTweensOf(this.bodyContainer);
@@ -593,7 +604,7 @@ export class HeroUnit extends PIXI.Container implements IEffectTarget, IStatusEf
                 this.timers.push(
                     setTimeout(() => {
                         this.setFrame(this.idleFrameIdx);
-                    }, 650 / timeScale)
+                    }, 650 / timeScale),
                 );
             } else {
                 gsap.killTweensOf(this.bodyContainer);
@@ -613,7 +624,7 @@ export class HeroUnit extends PIXI.Container implements IEffectTarget, IStatusEf
                 this.timers.push(
                     setTimeout(() => {
                         this.setFrame(this.idleFrameIdx);
-                    }, 550 / timeScale)
+                    }, 550 / timeScale),
                 );
             }
         }
@@ -843,6 +854,15 @@ export class HeroUnit extends PIXI.Container implements IEffectTarget, IStatusEf
         if (this.trailInterval) {
             clearInterval(this.trailInterval);
             this.trailInterval = null;
+        }
+
+        if (this.activeTimelines) {
+            this.activeTimelines.forEach((tl) => {
+                try {
+                    tl.kill();
+                } catch (e) {}
+            });
+            this.activeTimelines = [];
         }
 
         this.statusEffectController.destroy();

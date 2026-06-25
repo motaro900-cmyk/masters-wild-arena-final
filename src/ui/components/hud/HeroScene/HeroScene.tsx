@@ -349,28 +349,30 @@ export const HeroScene: React.FC = () => {
                                         unequipItem={unequipItem}
                                         addFloatingText={addFloatingText}
                                         heroAction={heroAction}
-                                         setGlobalHoveredItem={(id: string | null, clientX: number, clientY: number) => {
-                                             if (!id) {
-                                                 setGlobalHoveredItem(null);
-                                                 return;
-                                             }
-                                             const info = getScaleAndOffset();
-                                             if (info.isRotated && info.rect) {
-                                                 const nx = info.rect.width > 0 ? (clientX - info.left) / info.rect.width : 0;
-                                                 const ny = info.rect.height > 0 ? (clientY - info.top) / info.rect.height : 0;
-                                                 setGlobalHoveredItem({
-                                                     id,
-                                                     x: ny * 1920,
-                                                     y: (1 - nx) * 1080,
-                                                 });
-                                             } else {
-                                                 setGlobalHoveredItem({
-                                                     id,
-                                                     x: (clientX - info.left) / info.scale,
-                                                     y: (clientY - info.top) / info.scale,
-                                                 });
-                                             }
-                                         }}
+                                        setGlobalHoveredItem={(id: string | null, clientX: number, clientY: number) => {
+                                            if (!id) {
+                                                setGlobalHoveredItem(null);
+                                                return;
+                                            }
+                                            const info = getScaleAndOffset();
+                                            if (info.isRotated && info.rect) {
+                                                const nx =
+                                                    info.rect.width > 0 ? (clientX - info.left) / info.rect.width : 0;
+                                                const ny =
+                                                    info.rect.height > 0 ? (clientY - info.top) / info.rect.height : 0;
+                                                setGlobalHoveredItem({
+                                                    id,
+                                                    x: ny * 1920,
+                                                    y: (1 - nx) * 1080,
+                                                });
+                                            } else {
+                                                setGlobalHoveredItem({
+                                                    id,
+                                                    x: (clientX - info.left) / info.scale,
+                                                    y: (clientY - info.top) / info.scale,
+                                                });
+                                            }
+                                        }}
                                         setDevModal={setDevModal}
                                     />
                                 ) : activeTab === 'TALENTS' ? (

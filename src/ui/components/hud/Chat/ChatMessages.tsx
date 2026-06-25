@@ -9,7 +9,13 @@ interface ChatMessagesProps {
     handleScroll: () => void;
     hasNewMessages: boolean;
     setHasNewMessages: (val: boolean) => void;
-    openContextMenu: (e: React.MouseEvent, author: string, text?: string, timestamp?: number, senderId?: string) => void;
+    openContextMenu: (
+        e: React.MouseEvent,
+        author: string,
+        text?: string,
+        timestamp?: number,
+        senderId?: string,
+    ) => void;
     privateRecipient: string | null;
     setPrivateRecipient: (recipient: string | null) => void;
 }
@@ -441,7 +447,10 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
 
                             <span
                                 className={msg.isTop1 ? 'leader-glow' : ''}
-                                onClick={(e) => msg.type !== 'system' && openContextMenu(e, msg.author, msg.text, msg.timestamp, msg.senderId)}
+                                onClick={(e) =>
+                                    msg.type !== 'system' &&
+                                    openContextMenu(e, msg.author, msg.text, msg.timestamp, msg.senderId)
+                                }
                                 style={{
                                     color: msg.isTop1 ? '#ff3300' : msg.vipLevel > 0 ? '#f0c040' : '#d1d1d1',
                                     fontWeight: 900,

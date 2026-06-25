@@ -47,7 +47,7 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
             setLanguage: state.setLanguage,
             isAdmin: state.isAdmin,
             isMobile: state.isMobile,
-        }))
+        })),
     );
 
     const [confirmWipeChat, setConfirmWipeChat] = React.useState(false);
@@ -84,8 +84,6 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
     React.useEffect(() => {
         setTrackProgress(Math.floor(Math.random() * 30));
     }, [trackName]);
-
-
 
     const colors = {
         text: '#f7ebd3',
@@ -360,14 +358,31 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
                         >
                             <span style={{ fontSize: '28px', pointerEvents: 'none' }}>💿</span>
                             {/* Центр пластинки */}
-                            <div style={{ position: 'absolute', width: '8px', height: '8px', background: '#f0c040', borderRadius: '50%', border: '1.5px solid #000' }} />
+                            <div
+                                style={{
+                                    position: 'absolute',
+                                    width: '8px',
+                                    height: '8px',
+                                    background: '#f0c040',
+                                    borderRadius: '50%',
+                                    border: '1.5px solid #000',
+                                }}
+                            />
                         </div>
 
                         {/* Название трека и прогресс-бар */}
                         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                    <span style={{ fontSize: '9px', opacity: 0.5, fontWeight: 800, letterSpacing: '0.8px', textTransform: 'uppercase' }}>
+                                    <span
+                                        style={{
+                                            fontSize: '9px',
+                                            opacity: 0.5,
+                                            fontWeight: 800,
+                                            letterSpacing: '0.8px',
+                                            textTransform: 'uppercase',
+                                        }}
+                                    >
                                         {t.nowPlaying}
                                     </span>
                                     <span
@@ -387,7 +402,11 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
                                 {/* Кнопки управления - Крупные круглые кнопки для мобильных */}
                                 <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '8px' : '10px' }}>
                                     <motion.button
-                                        whileHover={{ scale: 1.1, backgroundColor: 'rgba(240,192,64,0.15)', borderColor: 'rgba(240,192,64,0.4)' }}
+                                        whileHover={{
+                                            scale: 1.1,
+                                            backgroundColor: 'rgba(240,192,64,0.15)',
+                                            borderColor: 'rgba(240,192,64,0.4)',
+                                        }}
                                         whileTap={{ scale: 0.9 }}
                                         onClick={() => audioService.prevTrack()}
                                         style={{
@@ -408,7 +427,11 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
                                         ⏮
                                     </motion.button>
                                     <motion.button
-                                        whileHover={{ scale: 1.1, backgroundColor: 'rgba(240,192,64,0.15)', borderColor: 'rgba(240,192,64,0.4)' }}
+                                        whileHover={{
+                                            scale: 1.1,
+                                            backgroundColor: 'rgba(240,192,64,0.15)',
+                                            borderColor: 'rgba(240,192,64,0.4)',
+                                        }}
                                         whileTap={{ scale: 0.9 }}
                                         onClick={() => audioService.toggleMusic()}
                                         style={{
@@ -429,7 +452,11 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
                                         {audioService?.isPlaying() ? '⏸' : '▶️'}
                                     </motion.button>
                                     <motion.button
-                                        whileHover={{ scale: 1.1, backgroundColor: 'rgba(240,192,64,0.15)', borderColor: 'rgba(240,192,64,0.4)' }}
+                                        whileHover={{
+                                            scale: 1.1,
+                                            backgroundColor: 'rgba(240,192,64,0.15)',
+                                            borderColor: 'rgba(240,192,64,0.4)',
+                                        }}
                                         whileTap={{ scale: 0.9 }}
                                         onClick={() => audioService.nextTrack()}
                                         style={{
@@ -480,13 +507,17 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
             </div>
 
             {/* БЛОК: ГРАФИКА И ОПТИМИЗАЦИЯ */}
-            <AdvancedSettingsBlock
-                isFullscreen={isFullscreen}
-                handleFullscreenToggle={handleFullscreenToggle}
-            />
+            <AdvancedSettingsBlock isFullscreen={isFullscreen} handleFullscreenToggle={handleFullscreenToggle} />
 
             {/* БЛОК: АККАУНТ И ЯЗЫК */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: isMobile ? '12px' : '20px', alignItems: 'start' }}>
+            <div
+                style={{
+                    display: 'grid',
+                    gridTemplateColumns: '1fr 1fr',
+                    gap: isMobile ? '12px' : '20px',
+                    alignItems: 'start',
+                }}
+            >
                 {/* АККАУНТ */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -519,7 +550,9 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
                         }}
                     >
                         <div>
-                            <div style={{ fontSize: '11.5px', opacity: 0.5, fontWeight: 800, letterSpacing: '0.5px' }}>{t.playerId}</div>
+                            <div style={{ fontSize: '11.5px', opacity: 0.5, fontWeight: 800, letterSpacing: '0.5px' }}>
+                                {t.playerId}
+                            </div>
                             <div
                                 style={{
                                     fontSize: '14px',
@@ -633,13 +666,18 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
                                     claimGroupReward(true);
                                     useGameStore
                                         .getState()
-                                        .showAlert(language === 'EN' ? 'Group join reward: 50 crystals! 💎' : 'Награда за вступление в группу: 50 кристаллов! 💎');
+                                        .showAlert(
+                                            language === 'EN'
+                                                ? 'Group join reward: 50 crystals!'
+                                                : 'Награда за вступление в группу: 50 кристаллов!',
+                                        );
                                 }
                             }}
                             style={{
                                 padding: '14px',
                                 borderRadius: '10px',
-                                background: 'linear-gradient(180deg, rgba(28, 62, 140, 0.4) 0%, rgba(14, 30, 70, 0.8) 100%)',
+                                background:
+                                    'linear-gradient(180deg, rgba(28, 62, 140, 0.4) 0%, rgba(14, 30, 70, 0.8) 100%)',
                                 border: '1.5px solid #0077ff',
                                 color: '#fffdf5',
                                 fontSize: '14px',
@@ -673,7 +711,8 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
                             style={{
                                 padding: '14px',
                                 borderRadius: '10px',
-                                background: 'linear-gradient(180deg, rgba(240, 192, 64, 0.25) 0%, rgba(180, 110, 10, 0.6) 100%)',
+                                background:
+                                    'linear-gradient(180deg, rgba(240, 192, 64, 0.25) 0%, rgba(180, 110, 10, 0.6) 100%)',
                                 border: `1.5px solid ${colors.accent}`,
                                 color: '#fffdf5',
                                 fontSize: '14px',
@@ -702,7 +741,10 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
                             onClose();
                         }}
                         style={{
-                            gridColumn: claimedSocialRewards?.includes('group') && claimedSocialRewards?.includes('favorites') ? 'span 2' : 'auto',
+                            gridColumn:
+                                claimedSocialRewards?.includes('group') && claimedSocialRewards?.includes('favorites')
+                                    ? 'span 2'
+                                    : 'auto',
                             padding: '14px',
                             borderRadius: '10px',
                             background: 'rgba(240,192,64,0.1)',
@@ -735,8 +777,8 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
                                     pointerEvents: 'auto',
                                     transition: 'transform 0.15s ease',
                                 }}
-                                onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.02)'}
-                                onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                                onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.02)')}
+                                onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1)')}
                             >
                                 🔧 ОТКРЫТЬ ПАНЕЛЬ РАЗРАБОТЧИКА
                             </button>
@@ -753,9 +795,7 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
                                     gridColumn: 'span 2',
                                     padding: '14px',
                                     borderRadius: '10px',
-                                    background: confirmWipeProgress
-                                        ? 'rgba(239,68,68,0.2)'
-                                        : 'rgba(255,255,255,0.05)',
+                                    background: confirmWipeProgress ? 'rgba(239,68,68,0.2)' : 'rgba(255,255,255,0.05)',
                                     border: `1px solid ${colors.danger}88`,
                                     color: colors.danger,
                                     fontSize: '14px',
@@ -777,9 +817,14 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
                                     }
                                     const { syncService } = await import('../../../services/SyncService');
                                     await syncService.wipeGlobalChat();
-                                    useGameStore.getState().showAlert(language === 'EN' ? 'Global chat cleared!' : 'Глобальный чат очищен!', () => {
-                                        window.location.reload();
-                                    });
+                                    useGameStore
+                                        .getState()
+                                        .showAlert(
+                                            language === 'EN' ? 'Global chat cleared!' : 'Глобальный чат очищен!',
+                                            () => {
+                                                window.location.reload();
+                                            },
+                                        );
                                 }}
                                 style={{
                                     gridColumn: 'span 2',
@@ -830,7 +875,9 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
                 >
                     {confirmWipeProgress ? '⚠️ ПОДТВЕРДИТЬ УДАЛЕНИЕ АККАУНТА?' : '🗑️ Удалить аккаунт и все данные'}
                 </button>
-                <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.2)', textAlign: 'center', marginTop: '5px' }}>
+                <div
+                    style={{ fontSize: '10px', color: 'rgba(255,255,255,0.2)', textAlign: 'center', marginTop: '5px' }}
+                >
                     Это действие удалит все ваши данные без возможности восстановления
                 </div>
             </div>
@@ -841,8 +888,15 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
                     if (isAdmin) {
                         onOpenAdmin?.();
                     } else {
-                        const currentId = useGameStore.getState().vkUser?.id || useGameStore.getState().vkUser?.uid || 'Не найден (локальный игрок)';
-                        useGameStore.getState().showAlert(`Ваш VK ID: ${currentId}. Скопируйте его и добавьте в Firestore в документ system/admins в массив vkIds.`);
+                        const currentId =
+                            useGameStore.getState().vkUser?.id ||
+                            useGameStore.getState().vkUser?.uid ||
+                            'Не найден (локальный игрок)';
+                        useGameStore
+                            .getState()
+                            .showAlert(
+                                `Ваш VK ID: ${currentId}. Скопируйте его и добавьте в Firestore в документ system/admins в массив vkIds.`,
+                            );
                     }
                 }}
                 style={{

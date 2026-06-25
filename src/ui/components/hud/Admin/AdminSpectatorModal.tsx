@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { db, USERS_COLLECTION } from '../../../../utils/firebase';
 import { BaseWindow } from '../BaseWindow';
+import { AssetsMap } from '../../../../configs/AssetsMap';
 
 interface AdminSpectatorModalProps {
     playerId: string;
@@ -27,7 +28,7 @@ export const AdminSpectatorModal: React.FC<AdminSpectatorModalProps> = ({ player
             },
             (error) => {
                 console.error('[AdminSpectator] onSnapshot error:', error);
-            }
+            },
         );
 
         return () => unsubscribe();
@@ -94,15 +95,37 @@ export const AdminSpectatorModal: React.FC<AdminSpectatorModalProps> = ({ player
                         >
                             <div style={{ color: '#888', fontSize: '10px', marginBottom: '5px' }}>РЕСУРСЫ</div>
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                                <div style={{ color: '#ffd700', fontWeight: 'bold' }}>💰 {playerState.золото || 0}</div>
-                                <div style={{ color: '#00ffff', fontWeight: 'bold' }}>
-                                    💎 {playerState.кристаллы || 0}
+                                <div style={{ color: '#ffd700', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                    <img
+                                        src={AssetsMap.UI.ICON_GOLD_FULL}
+                                        alt="Золото"
+                                        style={{ width: '14px', height: '14px', objectFit: 'contain' }}
+                                    />
+                                    {playerState.золото || 0}
                                 </div>
-                                <div style={{ color: '#0ea5e9', fontWeight: 'bold' }}>
-                                    ⚡ {playerState.энергия || 0}/{playerState.максЭнергия || 50}
+                                <div style={{ color: '#00ffff', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                    <img
+                                        src={AssetsMap.UI.ICON_ALMAZ_FULL}
+                                        alt="Кристаллы"
+                                        style={{ width: '14px', height: '14px', objectFit: 'contain' }}
+                                    />
+                                    {playerState.кристаллы || 0}
                                 </div>
-                                <div style={{ color: '#a78bfa', fontWeight: 'bold' }}>
-                                    🌟 Ур. {playerState.уровень || 1}
+                                <div style={{ color: '#0ea5e9', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                    <img
+                                        src={AssetsMap.UI.ICON_ENERGY_FULL}
+                                        alt="Энергия"
+                                        style={{ width: '14px', height: '14px', objectFit: 'contain' }}
+                                    />
+                                    {playerState.энергия || 0}/{playerState.максЭнергия || 50}
+                                </div>
+                                <div style={{ color: '#a78bfa', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                    <img
+                                        src={AssetsMap.UI.ICON_XP}
+                                        alt="Уровень"
+                                        style={{ width: '14px', height: '14px', objectFit: 'contain' }}
+                                    />
+                                    Ур. {playerState.уровень || 1}
                                 </div>
                             </div>
                         </div>

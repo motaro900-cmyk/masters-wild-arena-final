@@ -47,12 +47,12 @@ export const BankItemShowcase: React.FC<BankItemShowcaseProps> = ({ item, rarity
     const particles = isMobile
         ? []
         : [
-              { left: '15%', bottom: '30%', delay: '0s', duration: '3.2s', anim: 'coin-float-1', symbol: '🪙' },
-              { left: '25%', bottom: '22%', delay: '0.7s', duration: '2.8s', anim: 'coin-float-2', symbol: '💰' },
-              { left: '75%', bottom: '32%', delay: '0.3s', duration: '3.5s', anim: 'coin-float-1', symbol: '✨' },
-              { left: '80%', bottom: '20%', delay: '1.2s', duration: '2.6s', anim: 'coin-float-3', symbol: '🔷' },
-              { left: '48%', bottom: '10%', delay: '0.5s', duration: '3.1s', anim: 'coin-float-2', symbol: '💵' },
-              { left: '60%', bottom: '25%', delay: '1.8s', duration: '2.9s', anim: 'coin-float-3', symbol: '🔸' },
+              { left: '15%', bottom: '30%', delay: '0s', duration: '3.2s', anim: 'coin-float-1', symbol: '✨' },
+              { left: '25%', bottom: '22%', delay: '0.7s', duration: '2.8s', anim: 'coin-float-2', symbol: '✦' },
+              { left: '75%', bottom: '32%', delay: '0.3s', duration: '3.5s', anim: 'coin-float-1', symbol: '★' },
+              { left: '80%', bottom: '20%', delay: '1.2s', duration: '2.6s', anim: 'coin-float-3', symbol: '✧' },
+              { left: '48%', bottom: '10%', delay: '0.5s', duration: '3.1s', anim: 'coin-float-2', symbol: '✦' },
+              { left: '60%', bottom: '25%', delay: '1.8s', duration: '2.9s', anim: 'coin-float-3', symbol: '✨' },
           ];
 
     const outerGlow = 'radial-gradient(circle, ' + rarityColor + '28 0%, ' + rarityColor + '05 50%, transparent 70%)';
@@ -61,7 +61,7 @@ export const BankItemShowcase: React.FC<BankItemShowcaseProps> = ({ item, rarity
     const isGem = item.subTab === 'GEMS';
     const isGold = item.subTab === 'GOLD';
 
-    const currencySymbol = isGem ? '💎' : isGold ? '🪙' : '⚡';
+    const currencySymbol = isGem ? '✧' : isGold ? '✦' : '⚡';
     const currencyName = isGem ? 'АЛМАЗЫ' : isGold ? 'ЗОЛОТО' : 'ЭНЕРГИЯ';
     const currencyColor = isGem ? '#00f0ff' : isGold ? '#ffd700' : '#ffea00';
 
@@ -208,7 +208,9 @@ export const BankItemShowcase: React.FC<BankItemShowcaseProps> = ({ item, rarity
                         onError={(e) => {
                             const currentSrc = e.currentTarget.src;
                             if (currentSrc.endsWith('.webp')) {
-                                e.currentTarget.src = currentSrc.replace(/_mobile\.webp$/i, '.png').replace(/\.webp$/i, '.png');
+                                e.currentTarget.src = currentSrc
+                                    .replace(/_mobile\.webp$/i, '.png')
+                                    .replace(/\.webp$/i, '.png');
                             } else {
                                 e.currentTarget.src = '/assets/images/ui/icons/season_chest.webp';
                             }

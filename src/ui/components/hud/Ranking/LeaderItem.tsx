@@ -74,7 +74,16 @@ export const LeaderItem: React.FC<LeaderItemProps> = ({ player, onClick }) => {
                 }}
             >
                 {isTop3 && (
-                    <div style={{ position: 'absolute', top: -12, left: '50%', transform: 'translateX(-50%)', display: 'flex', justifyContent: 'center' }}>
+                    <div
+                        style={{
+                            position: 'absolute',
+                            top: -12,
+                            left: '50%',
+                            transform: 'translateX(-50%)',
+                            display: 'flex',
+                            justifyContent: 'center',
+                        }}
+                    >
                         {player.rank === 1 ? (
                             <img
                                 src={AssetsMap.UI.ICON_CROWN}
