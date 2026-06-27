@@ -281,24 +281,30 @@ export const initSubscriptions = async (userId: string, prefixedId: string): Pro
                 const updatePayload: any = {};
 
                 const adminChangedFields = dbData.adminChangedFields || [];
-                const mappedAdminFields = adminChangedFields.map((f: string) => {
-                    const map: Record<string, string> = {
-                        золото: 'gold',
-                        gold: 'gold',
-                        кристаллы: 'crystals',
-                        crystals: 'crystals',
-                        уровень: 'level',
-                        level: 'level',
-                        рейтинг: 'rating',
-                        rating: 'rating',
-                        инвентарь: 'inventory',
-                        inventory: 'inventory',
-                        снаряжение: 'heroEquipment',
-                        heroEquipment: 'heroEquipment',
-                        фото: 'avatar',
-                        avatar: 'avatar',
+                const mappedAdminFields: string[] = [];
+                adminChangedFields.forEach((f: string) => {
+                    const map: Record<string, string[]> = {
+                        золото: ['gold'],
+                        gold: ['gold'],
+                        кристаллы: ['crystals'],
+                        crystals: ['crystals'],
+                        уровень: ['level'],
+                        level: ['level'],
+                        рейтинг: ['rating', 'trophies'],
+                        rating: ['rating', 'trophies'],
+                        инвентарь: ['inventory'],
+                        inventory: ['inventory'],
+                        снаряжение: ['heroEquipment'],
+                        heroEquipment: ['heroEquipment'],
+                        фото: ['avatar'],
+                        avatar: ['avatar'],
                     };
-                    return map[f] || f;
+                    const mapped = map[f] || [f];
+                    mapped.forEach((item) => {
+                        if (!mappedAdminFields.includes(item)) {
+                            mappedAdminFields.push(item);
+                        }
+                    });
                 });
 
                 const trackedFields = [

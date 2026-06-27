@@ -859,7 +859,7 @@ export const createPlayerSlice = (set: any, get: any) => {
         setRating: (rating: number) => {
             const newRating = Math.max(0, rating);
             get().checkRankUpRewards(newRating);
-            set({ rating: newRating });
+            set({ rating: newRating, trophies: newRating });
             syncService.debouncedSync();
         },
 
