@@ -651,17 +651,21 @@ export const GameHUD: React.FC = () => {
                 onClose={() => setDevModal({ ...devModal, isOpen: false })}
             />
 
-            <VipDailyRewardModal
-                isOpen={!!vipDailyReward}
-                rewards={vipDailyReward || { gold: 0, crystals: 0, energy: 0 }}
-                daysLeft={vipDailyReward?.daysLeft || 0}
-                onClose={() => setVipDailyReward(null)}
-            />
+            <div style={{ pointerEvents: 'all', position: 'absolute', inset: 0, zIndex: 99999, display: vipDailyReward ? 'block' : 'none' }}>
+                <VipDailyRewardModal
+                    isOpen={!!vipDailyReward}
+                    rewards={vipDailyReward || { gold: 0, crystals: 0, energy: 0 }}
+                    daysLeft={vipDailyReward?.daysLeft || 0}
+                    onClose={() => setVipDailyReward(null)}
+                />
+            </div>
 
-            <LevelUpOverlay />
-            <AlertDialog />
-            <ConfirmDialog />
-            <PlayerInspectModal />
+            <div style={{ pointerEvents: 'all', position: 'absolute', inset: 0, zIndex: 99998 }}>
+                <LevelUpOverlay />
+                <AlertDialog />
+                <ConfirmDialog />
+                <PlayerInspectModal />
+            </div>
         </div>
     );
 };
