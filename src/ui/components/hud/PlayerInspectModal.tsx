@@ -137,27 +137,27 @@ const MiniCard: React.FC<{ emoji: string; label: string; value: React.ReactNode;
             style={{
                 background: 'rgba(255,255,255,0.022)',
                 border: '1px solid rgba(255,255,255,0.07)',
-                borderRadius: '10px',
-                padding: isMobile ? '10px 12px' : '8px 10px',
+                borderRadius: '12px',
+                padding: isMobile ? '12px 14px' : '10px 12px',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '8px',
+                gap: isMobile ? '11px' : '10px',
                 boxSizing: 'border-box',
                 minWidth: 0,
             }}
         >
             <div
                 style={{
-                    width: isMobile ? '38px' : '32px',
-                    height: isMobile ? '38px' : '32px',
-                    borderRadius: '8px',
+                    width: isMobile ? '46px' : '40px',
+                    height: isMobile ? '46px' : '40px',
+                    borderRadius: '10px',
                     flexShrink: 0,
                     background: bg,
                     border: '1px solid rgba(255,255,255,0.06)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    fontSize: isMobile ? '18px' : '16px',
+                    fontSize: isMobile ? '23px' : '20px',
                     lineHeight: 1,
                 }}
             >
@@ -166,19 +166,19 @@ const MiniCard: React.FC<{ emoji: string; label: string; value: React.ReactNode;
             <div style={{ flex: 1, minWidth: 0 }}>
                 <div
                     style={{
-                        fontSize: isMobile ? '12px' : '10px',
+                        fontSize: isMobile ? '12px' : '10.5px',
                         color: 'rgba(255,255,255,0.35)',
                         fontWeight: 700,
                         letterSpacing: '0.5px',
                         textTransform: 'uppercase',
-                        marginBottom: '2px',
+                        marginBottom: '3px',
                     }}
                 >
                     {label}
                 </div>
                 <div
                     style={{
-                        fontSize: isMobile ? '15px' : '13px',
+                        fontSize: isMobile ? '16px' : '14.5px',
                         fontWeight: 800,
                         color: vc,
                         whiteSpace: 'nowrap',
@@ -1682,7 +1682,7 @@ export const PlayerInspectModal: React.FC = () => {
                                                         <MiniCard
                                                             emoji={effectiveVip ? '👑' : '🔒'}
                                                             label="VIP Статус"
-                                                            value={effectiveVip ? `VIP Ур. ${vipLevel}` : 'Нет'}
+                                                            value={effectiveVip ? 'АКТИВЕН' : 'НЕ АКТИВЕН'}
                                                             vc={effectiveVip ? '#fbbf24' : 'rgba(255,255,255,0.28)'}
                                                             bg={
                                                                 effectiveVip

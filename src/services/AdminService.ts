@@ -119,6 +119,7 @@ export async function getGlobalPlayers(limitCount: number = 20): Promise<any[]> 
                 const name = (p.name || p.имя || '').toLowerCase();
                 const isMe = p.id === state.playerId || (p.vkId && String(p.vkId) === String(state.vkUser?.id));
                 if (isMe) return true;
+                if (name === 'мастер') return false; // Hide guest/mock profiles with default name
                 if (['разработчик', 'test'].some((w) => name.includes(w))) return false;
                 if (p.тестовый || p.разработчик) return false;
                 return true;
@@ -150,6 +151,7 @@ export function subscribeToGlobalLeaders(
                             const isMe =
                                 p.id === state.playerId || (p.vkId && String(p.vkId) === String(state.vkUser?.id));
                             if (isMe) return true;
+                            if (name === 'мастер') return false; // Hide guest/mock profiles with default name from leaderboard
                             if (['разработчик', 'test'].some((w) => name.includes(w))) return false;
                             if (p.тестовый || p.разработчик) return false;
                             return true;
