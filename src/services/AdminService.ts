@@ -151,7 +151,9 @@ export function subscribeToGlobalLeaders(
                             const isMe =
                                 p.id === state.playerId || (p.vkId && String(p.vkId) === String(state.vkUser?.id));
                             if (isMe) return true;
-                            if (name === 'мастер') return false; // Hide guest/mock profiles with default name from leaderboard
+                            // Игра в ВК — допускаются только VK аккаунты. Исключаем всех гостей и ботов-заглушек.
+                            if (!p.id.startsWith('VK-')) return false;
+                            if (name.includes('мастер')) return false;
                             if (['разработчик', 'test'].some((w) => name.includes(w))) return false;
                             if (p.тестовый || p.разработчик) return false;
                             return true;

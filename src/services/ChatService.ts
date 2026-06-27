@@ -69,7 +69,14 @@ export async function wipeGlobalChat(): Promise<void> {
 
 export function subscribeToChat(track: TrackFn, callback: (messages: any[]) => void): () => void {
     const chatRef = collection(db, CHAT_COLLECTION);
-    const q = query(chatRef, orderBy('serverTimestamp', 'desc'), limit(50));
+    const connectionTime = new Date();
+    // Фильтруем сообщения по времени подключения (минус 5 секунд для стабильности), чтобы чат при входе был чистым
+    const q = query(
+        chatRef,
+        where('serverTimestamp', '>=', new Date(connectionTime.getTime() - 5000)),
+        orderBy('serverTimestamp', 'desc'),
+        limit(50)
+    );
     return track(
         onSnapshot(
             q,

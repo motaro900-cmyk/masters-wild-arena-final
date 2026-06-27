@@ -4,6 +4,7 @@ import { useGameStore } from '../../../store/useGameStore';
 import { resolveAssetPath } from '../../../utils/assetPath';
 import { getRankInfo } from '../../../configs/RankSystem';
 import { getHeroConfig, HEROES_DB } from '../../../configs/HeroesConfig';
+import { SKINS_DB } from '../../../configs/SkinsConfig';
 import { AvatarFrame } from './SharedUI';
 import { syncService, SyncService } from '../../../services/SyncService';
 import { buildStatsFromEquipment } from '../../../services/MatchmakingService';
@@ -370,6 +371,23 @@ export const PlayerInspectModal: React.FC = () => {
 
     const winRate = totalBattles > 0 ? Math.round((wins / totalBattles) * 100) : 0;
     const heroConfig = getHeroConfig(selectedHeroId);
+
+    let equippedSkinId = 'default';
+    if (isMe) {
+        equippedSkinId = store.equippedSkins?.[selectedHeroId] || 'default';
+    } else if (playerData?.fullStateJSON) {
+        try {
+            const p = JSON.parse(playerData.fullStateJSON);
+            equippedSkinId = p.equippedSkins?.[selectedHeroId] || 'default';
+        } catch {
+            /* ignore */
+        }
+    } else if (playerData?.equippedSkins) {
+        equippedSkinId = playerData.equippedSkins[selectedHeroId] || 'default';
+    }
+    const activeSkin = SKINS_DB.find((s) => s.heroId === selectedHeroId && s.id === equippedSkinId);
+    const heroDisplayImage = activeSkin ? activeSkin.image : heroConfig.image;
+
     const rankInfo = getRankInfo(rating);
     const equipSrc = isMe
         ? store.heroEquipment?.[selectedHeroId] || {}
@@ -476,7 +494,7 @@ export const PlayerInspectModal: React.FC = () => {
                 rating,
                 level: heroLevel,
                 heroId: selectedHeroId,
-                heroImage: heroConfig.image,
+                heroImage: heroDisplayImage,
                 rankIcon: rankInfo.icon,
                 equipment: equipSrc,
                 stats: {
@@ -1237,7 +1255,7 @@ export const PlayerInspectModal: React.FC = () => {
                                                     }}
                                                 />
                                                 <img
-                                                    src={resolveAssetPath(heroConfig.image)}
+                                                    src={resolveAssetPath(heroDisplayImage)}
                                                     style={{
                                                         width: '56px',
                                                         height: '56px',
@@ -1862,7 +1880,7 @@ export const PlayerInspectModal: React.FC = () => {
                                                 />
                                                 {/* HERO */}
                                                 <img
-                                                    src={resolveAssetPath(heroConfig.image)}
+                                                    src={resolveAssetPath(heroDisplayImage)}
                                                     className="h-float"
                                                     style={{
                                                         maxHeight: '88%',
