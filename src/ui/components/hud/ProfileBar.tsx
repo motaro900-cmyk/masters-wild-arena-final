@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { useGameStore } from '../../../store/useGameStore';
 import { AvatarFrame } from './SharedUI';
+import { getRankInfo, RANK_SYSTEM } from '../../../configs/RankSystem';
 
 interface ProfileBarProps {
     onOpenProfile?: () => void;
@@ -21,38 +22,18 @@ export const ProfileBar: React.FC<ProfileBarProps> = ({ onOpenProfile }) => {
     const xpPercent = xpToNextLevel > 0 ? Math.min(100, Math.max(0, (exp / xpToNextLevel) * 100)) : 0;
     const playerName = (name && name !== 'Мастер' ? name : vkUser?.firstName || 'DRAGONSLAYER').toUpperCase();
 
-    const getRankData = (tr: number) => {
-        if (tr >= 5000) return { name: 'ЛЕГЕНДА', color: '#00ffff' };
-        if (tr >= 3000) return { name: 'ВЛАСТЕЛИН', color: '#ff4500' };
-        if (tr >= 2500) return { name: 'ВОЖДЬ', color: '#ffa500' };
-        if (tr >= 2000) return { name: 'ЧЕМПИОН', color: '#ffd700' };
-        if (tr >= 1800) return { name: 'РЫЦАРЬ', color: '#fff' };
-        if (tr >= 1500) return { name: 'СТРАЖ', color: '#0ff' };
-        if (tr >= 1200) return { name: 'ГЛАДИАТОР', color: '#f66' };
-        if (tr >= 1000) return { name: 'ВЕТЕРАН', color: '#ff0' };
-        if (tr >= 800) return { name: 'МАСТЕР', color: '#f4f' };
-        if (tr >= 500) return { name: 'ВОИН', color: '#f84' };
-        if (tr >= 300) return { name: 'СЛЕДОПЫТ', color: '#4f4' };
-        if (tr >= 100) return { name: 'ОХОТНИК', color: '#8df' };
-        return { name: 'НОВИЧОК', color: '#aaa' };
+    const rank = getRankInfo(trophies);
+    const rankIndex = RANK_SYSTEM.findIndex((r) => r.name === rank.name);
+    const nextRank = rankIndex > 0 ? RANK_SYSTEM[rankIndex - 1] : null;
+    const nextRankTrophies = nextRank ? nextRank.minTrophies : rank.minTrophies + 1500;
+    const prevRankTrophies = rank.minTrophies;
+    
+    const tier = {
+        name: rank.name,
+        color: rank.color,
+        icon: trophies >= 10500 ? '👑' : trophies >= 7500 ? '💎' : trophies >= 4500 ? '🥇' : trophies >= 2000 ? '🥈' : '🥉'
     };
 
-    const getTierData = (tr: number) => {
-        if (tr >= 3500) return { name: 'МАСТЕР', color: '#ff00ff', icon: '👑' };
-        if (tr >= 2000) return { name: 'ПЛАТИНА', color: '#e5e4e2', icon: '💎' };
-        if (tr >= 1000) return { name: 'ЗОЛОТО', color: '#ffd700', icon: '🥇' };
-        if (tr >= 500) return { name: 'СЕРЕБРО', color: '#c0c0c0', icon: '🥈' };
-        return { name: 'ДЕРЕВЯННАЯ ЛИГА', color: '#8b4513', icon: '🪵' };
-    };
-
-    const rank = getRankData(trophies);
-    const tier = getTierData(trophies);
-    const nextRankTrophies =
-        [100, 300, 500, 800, 1000, 1200, 1500, 1800, 2000, 2500, 3000, 5000].find((t) => t > trophies) || 5000;
-    const prevRankTrophies =
-        [...[100, 300, 500, 800, 1000, 1200, 1500, 1800, 2000, 2500, 3000, 5000]]
-            .reverse()
-            .find((t) => t <= trophies) || 0;
     const divisor = nextRankTrophies - prevRankTrophies;
     const trophyProgress =
         divisor > 0 ? Math.min(100, Math.max(0, ((trophies - prevRankTrophies) / divisor) * 100)) : 100;
