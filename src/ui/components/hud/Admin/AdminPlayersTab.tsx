@@ -190,7 +190,13 @@ export const AdminPlayersTab: React.FC<AdminPlayersTabProps> = ({
     setMailRecipient,
     setActiveTab,
 }) => {
-    const localPlayerId = useGameStore((s) => s.playerId);
+    const localPlayerId = useGameStore((s) => {
+        if (s.vkUser) return `VK-${s.vkUser.id}`;
+        if (s.playerId === 'DEVELOPER') return 'DEVELOPER';
+        if (s.playerId && s.playerId.startsWith('GUEST-')) return s.playerId;
+        const cleanGuest = s.playerId ? s.playerId.replace(/^MW-/, '') : '';
+        return cleanGuest ? `GUEST-${cleanGuest}` : 'DEVELOPER';
+    });
     const localVkUser = useGameStore((s) => s.vkUser);
     const localPlayerName = useGameStore((s) => s.name);
     const localPlayerAvatar = useGameStore((s) => s.avatar);

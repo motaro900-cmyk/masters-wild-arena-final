@@ -214,7 +214,10 @@ export const RankingWindow: React.FC = () => {
                             trophies: p.рейтинг ?? p.rating ?? 0,
                             avatar: resolveAvatarPath(p.фото ?? p.photo ?? p.avatar),
                             change: 'stable',
-                            isMe: p.id === useGameStore.getState().playerId || String(p.vkId) === String(vkUser?.id),
+                            isMe: (() => {
+                                const myPrefixedId = vkUser ? `VK-${vkUser.id}` : (playerId?.startsWith('GUEST-') ? playerId : `GUEST-${playerId?.replace(/^MW-/, '') || 'DEVELOPER'}`);
+                                return p.id === myPrefixedId || (vkUser?.id && p.vkId && String(p.vkId) === String(vkUser.id));
+                            })(),
                             vipLevel: p.vipLevel || 0,
                             isVipActive: p.isVipActive || false,
                         };
