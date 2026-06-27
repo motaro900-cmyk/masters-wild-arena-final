@@ -17,6 +17,7 @@ class AudioService {
     private musicVolume: number = 0.7;
     private sfxVolume: number = 0.85;
     private loadErrorTimeoutId: any = null;
+    private isAppHidden: boolean = false;
 
     constructor() {
         if (!AudioService.visibilityListenerAdded) {
@@ -43,6 +44,7 @@ class AudioService {
             document.addEventListener('visibilitychange', () => {
                 if (document.hidden) {
                     console.log('🤫 App hidden - Muting audio & stopping ticker');
+                    this.isAppHidden = true;
                     safeMute(true);
                     try {
                         SoundManager.getInstance().suspend();
@@ -54,6 +56,7 @@ class AudioService {
                     }
                 } else {
                     console.log('🔊 App visible - Unmuting audio & starting ticker');
+                    this.isAppHidden = false;
                     try {
                         SoundManager.getInstance().resume();
                     } catch (e) {}
@@ -84,6 +87,7 @@ class AudioService {
 
                     if (type === 'VKWebAppViewHide') {
                         console.log('🤫 VK Bridge: VKWebAppViewHide - Muting audio & stopping ticker');
+                        this.isAppHidden = true;
                         safeMute(true);
                         try {
                             SoundManager.getInstance().suspend();
@@ -95,6 +99,7 @@ class AudioService {
                         }
                     } else if (type === 'VKWebAppViewRestore') {
                         console.log('🔊 VK Bridge: VKWebAppViewRestore - Unmuting audio & starting ticker');
+                        this.isAppHidden = false;
                         try {
                             SoundManager.getInstance().resume();
                         } catch (e) {}
@@ -363,6 +368,7 @@ class AudioService {
      * Воспроизведение звукового эффекта
      */
     public playSFX(url: string) {
+        if (this.isAppHidden) return;
         let sound = this.sfx.get(url);
 
         if (!sound) {
@@ -391,6 +397,7 @@ class AudioService {
      * Запуск цикличного эмбиента (фонового звука окружения)
      */
     public playAmbient(url: string) {
+        if (this.isAppHidden) return;
         try {
             if (this.ambientUrl === url && this.ambient && this.ambient.playing()) {
                 return;
@@ -445,6 +452,7 @@ class AudioService {
      * Воспроизведение звука критического удара (с увеличенным объемом/эффектом)
      */
     public playCritSFX() {
+        if (this.isAppHidden) return;
         const critUrl = '/assets/audio/sfx/impact_crit.mp3';
         const hitFallbackUrl = '/assets/audio/sfx/impact_hit.mp3';
         let sound = this.sfx.get(critUrl);
@@ -475,6 +483,7 @@ class AudioService {
      * Воспроизведение звука атаки в зависимости от типа оружия
      */
     public playStrikeSFX(weaponArchetype: 'SWORD' | 'BOW' | 'STAFF' | 'DAGGER' | 'OTHER') {
+        if (this.isAppHidden) return;
         let url = '/assets/audio/sfx/impact_hit.mp3';
         switch (weaponArchetype) {
             case 'SWORD':
