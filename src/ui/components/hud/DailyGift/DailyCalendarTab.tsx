@@ -487,7 +487,6 @@ export const DailyCalendarTab: React.FC<DailyCalendarTabProps> = ({
                     <div
                         style={{
                             display: 'flex',
-                            gap: isMobile ? '12px' : '24px',
                             justifyContent: 'center',
                             alignItems: 'center',
                             width: '100%',
@@ -495,50 +494,14 @@ export const DailyCalendarTab: React.FC<DailyCalendarTabProps> = ({
                             padding: '0 10px',
                         }}
                     >
-                        {/* Massive Standard Claim Button */}
+                        {/* Single Gold Premium Claim Button */}
                         <motion.button
                             whileHover={{ scale: isClaiming ? 1 : 1.02 }}
                             whileTap={{ scale: isClaiming ? 1 : 0.98 }}
                             onClick={() => handleClaim(false)}
                             disabled={isClaiming}
                             style={{
-                                width: isMobile ? '150px' : '280px',
-                                height: isMobile ? '50px' : '64px',
-                                background: 'linear-gradient(180deg, rgba(83, 69, 58, 0.95) 0%, rgba(41, 30, 23, 0.99) 100%)',
-                                border: '1.8px solid rgba(223, 192, 138, 0.4)',
-                                borderRadius: '14px',
-                                color: '#dfc08a',
-                                fontFamily: "'Cinzel', serif",
-                                fontWeight: 950,
-                                fontSize: isMobile ? '13px' : '18px',
-                                cursor: isClaiming ? 'default' : 'pointer',
-                                boxShadow: '0 6px 20px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.05)',
-                                opacity: isClaiming ? 0.6 : 1,
-                                letterSpacing: '2px',
-                                transition: 'border-color 0.2s, color 0.2s',
-                            }}
-                            onMouseEnter={(e) => {
-                                if (isClaiming) return;
-                                e.currentTarget.style.borderColor = 'rgba(223, 192, 138, 0.95)';
-                                e.currentTarget.style.color = '#ffd700';
-                            }}
-                            onMouseLeave={(e) => {
-                                if (isClaiming) return;
-                                e.currentTarget.style.borderColor = 'rgba(223, 192, 138, 0.4)';
-                                e.currentTarget.style.color = '#dfc08a';
-                            }}
-                        >
-                            ЗАБРАТЬ ОБЫЧНУЮ
-                        </motion.button>
-
-                        {/* Massive Double Reward Video Ad Button */}
-                        <motion.button
-                            whileHover={{ scale: isClaiming ? 1 : 1.02 }}
-                            whileTap={{ scale: isClaiming ? 1 : 0.98 }}
-                            onClick={() => handleClaim(true)}
-                            disabled={isClaiming}
-                            style={{
-                                width: isMobile ? '180px' : '420px',
+                                width: isMobile ? '240px' : '420px',
                                 height: isMobile ? '50px' : '64px',
                                 background: 'linear-gradient(180deg, #ffe082 0%, #d4af37 40%, #8c6300 100%)',
                                 border: '2px solid #fff2a3',
@@ -550,33 +513,14 @@ export const DailyCalendarTab: React.FC<DailyCalendarTabProps> = ({
                                 cursor: isClaiming ? 'default' : 'pointer',
                                 letterSpacing: '2px',
                                 opacity: isClaiming ? 0.6 : 1,
-                                animation: isClaiming ? 'none' : 'doubleBtnGlow 2.5s infinite ease-in-out',
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
                                 gap: '10px',
+                                boxShadow: '0 6px 20px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.05)',
                             }}
                         >
-                            <svg
-                                width={isMobile ? '16' : '22'}
-                                height={isMobile ? '16' : '22'}
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2.5"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                            >
-                                <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18" />
-                                <line x1="7" y1="2" x2="7" y2="22" />
-                                <line x1="17" y1="2" x2="17" y2="22" />
-                                <line x1="2" y1="12" x2="22" y2="12" />
-                                <line x1="2" y1="7" x2="7" y2="7" />
-                                <line x1="2" y1="17" x2="7" y2="17" />
-                                <line x1="17" y1="17" x2="22" y2="17" />
-                                <line x1="17" y1="7" x2="22" y2="7" />
-                            </svg>
-                            <span>УДВОИТЬ НАГРАДУ (X2)</span>
+                            <span>ЗАБРАТЬ НАГРАДУ</span>
                         </motion.button>
                     </div>
                 ) : (
