@@ -110,6 +110,7 @@ export const ShopDetailPanel: React.FC<ShopDetailPanelProps> = ({
         <div
             style={{
                 width: isMobile ? '310px' : '380px',
+                minWidth: isMobile ? '240px' : '300px',
                 background: 'rgba(10,8,8,0.85)',
                 border: `2px solid ${getRarityColor(selectedItem.rarity)}88`,
                 boxShadow: `0 0 30px ${getRarityColor(selectedItem.rarity)}22, inset 0 0 20px rgba(0,0,0,0.8)`,
@@ -118,6 +119,7 @@ export const ShopDetailPanel: React.FC<ShopDetailPanelProps> = ({
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'space-between',
+                overflow: 'hidden',
             }}
         >
             <div
@@ -126,7 +128,7 @@ export const ShopDetailPanel: React.FC<ShopDetailPanelProps> = ({
                     flexDirection: 'column',
                     gap: isMobile ? '12px' : '20px',
                     flex: 1,
-                    height: '100%',
+                    overflowY: 'auto',
                     justifyContent: 'space-between',
                 }}
             >

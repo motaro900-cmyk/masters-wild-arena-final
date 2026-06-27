@@ -343,6 +343,7 @@ export const VIPWindow: React.FC<VIPWindowProps> = () => {
                                     fontSize: '13.5px',
                                     fontWeight: 900,
                                     textShadow: '0 1.5px 3px #000',
+                                    whiteSpace: 'nowrap',
                                 }}
                             >
                                 Осталось:{' '}
