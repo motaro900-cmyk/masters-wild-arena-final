@@ -32,15 +32,7 @@ export const MailWindow: React.FC<MailWindowProps> = () => {
     const [activeTab, setActiveTab] = useState<'INBOX' | 'NEWS' | 'ARCHIVE' | 'SUPPORT' | 'PROMO'>('INBOX');
     const [selectedMail, setSelectedMail] = useState<any>(null);
 
-    const [isMobile, setIsMobile] = useState(false);
-    useEffect(() => {
-        const checkLayout = () => {
-            setIsMobile(typeof window !== 'undefined' && window.innerWidth < 1024);
-        };
-        checkLayout();
-        window.addEventListener('resize', checkLayout);
-        return () => window.removeEventListener('resize', checkLayout);
-    }, []);
+    const isMobile = useGameStore((state: any) => state.isMobile);
 
     const TABS = ['INBOX', 'NEWS', 'ARCHIVE', 'SUPPORT', 'PROMO'] as const;
     const [feedbackCategory, setFeedbackCategory] = useState<'BUG' | 'IDEA' | 'QUESTION'>('BUG');

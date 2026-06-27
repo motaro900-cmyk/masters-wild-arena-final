@@ -42,6 +42,7 @@ export const ShopScene: React.FC = () => {
         successModal,
         setSuccessModal,
         dailyAdWatchesCount,
+        isPurchasing,
     } = useShopScene();
 
     const [isMobile, setIsMobile] = React.useState(isMobileFromStore);
@@ -139,13 +140,13 @@ export const ShopScene: React.FC = () => {
                     position: 'relative',
                     zIndex: 10000,
                     width: '100%',
-                    height: isMobile ? '60px' : '110px',
+                    height: isMobile ? '70px' : '75px',
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center',
-                    padding: isMobile ? '0 20px' : '0 80px',
+                    padding: isMobile ? '0 20px' : '0 40px',
                     pointerEvents: 'none',
-                    borderBottom: '1px solid rgba(240, 192, 64, 0.1)',
+                    borderBottom: 'none',
                     background: 'linear-gradient(180deg, rgba(0,0,0,0.8) 0%, transparent 100%)',
                 }}
             >
@@ -153,49 +154,53 @@ export const ShopScene: React.FC = () => {
                     <button
                         onClick={exitShop}
                         style={{
-                            background: 'rgba(240, 192, 64, 0.1)',
-                            border: '1px solid rgba(240, 192, 64, 0.3)',
-                            borderRadius: '12px',
-                            width: isMobile ? '44px' : '54px',
-                            height: isMobile ? '44px' : '54px',
+                            position: 'absolute',
+                            top: isMobile ? '12px' : '15px',
+                            left: isMobile ? '80px' : '20px',
+                            padding: isMobile ? '10px 20px' : '8px 16px',
+                            background: 'rgba(20, 15, 10, 0.85)',
+                            border: '2px solid #c8a870',
+                            borderRadius: '8px',
                             color: '#f0c040',
-                            fontSize: isMobile ? '16px' : '22px',
+                            fontFamily: "'Cinzel', serif",
+                            fontSize: isMobile ? '16px' : '14px',
+                            fontWeight: 'bold',
                             cursor: 'pointer',
-                            marginRight: isMobile ? '12px' : '20px',
                             display: 'flex',
                             alignItems: 'center',
-                            justifyContent: 'center',
+                            gap: '10px',
+                            boxShadow: '0 5px 25px rgba(0,0,0,0.7)',
                             transition: 'all 0.2s',
-                            boxShadow: '0 0 10px rgba(240,192,64,0.1)',
                         }}
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.background = 'rgba(240, 192, 64, 0.2)';
-                            e.currentTarget.style.borderColor = '#f0c040';
-                            e.currentTarget.style.color = '#fff';
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.background = 'rgba(240, 192, 64, 0.1)';
-                            e.currentTarget.style.borderColor = 'rgba(240, 192, 64, 0.3)';
-                            e.currentTarget.style.color = '#f0c040';
-                        }}
+                        onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.05)')}
+                        onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1)')}
                     >
-                        ◀
+                        <span>←</span> В ЛАГЕРЬ
                     </button>
-                    <h2
-                        style={{
-                            margin: 0,
-                            fontFamily: "'Cinzel', 'Philosopher', serif",
-                            color: '#f0c040',
-                            fontSize: isMobile ? '20px' : '40px',
-                            textShadow: '0 0 20px #000, 0 4px 15px #000',
-                            letterSpacing: '4px',
-                            whiteSpace: 'nowrap',
-                            textTransform: 'uppercase',
-                            lineHeight: '1',
-                        }}
-                    >
-                        {getSectionTitle(activeMainTab)}
-                    </h2>
+                </div>
+
+                <div
+                    style={{
+                        position: 'absolute',
+                        left: '50%',
+                        top: '50%',
+                        transform: 'translate(-50%, -50%)',
+                        margin: 0,
+                        fontFamily: "'Cinzel', 'Philosopher', serif",
+                        background: 'linear-gradient(to bottom, #ffe890 0%, #f0c040 50%, #a27a20 100%)',
+                        WebkitBackgroundClip: 'text',
+                        WebkitTextFillColor: 'transparent',
+                        fontSize: isMobile ? '32px' : '44px',
+                        fontWeight: 900,
+                        letterSpacing: '4px',
+                        whiteSpace: 'nowrap',
+                        textTransform: 'uppercase',
+                        lineHeight: '1',
+                        pointerEvents: 'none',
+                        filter: 'drop-shadow(0 0 10px rgba(240, 192, 64, 0.45)) drop-shadow(0 4px 15px rgba(0,0,0,0.9))',
+                    }}
+                >
+                    МАГАЗИН
                 </div>
 
                 <ResourceBar
@@ -215,7 +220,7 @@ export const ShopScene: React.FC = () => {
                     flex: 1,
                     padding: isMobile ? '10px 15px 5px 15px' : '20px 80px 10px 80px',
                     gap: isMobile ? '15px' : '40px',
-                    maxHeight: isMobile ? 'calc(100% - 120px)' : 'calc(100% - 230px)',
+                    maxHeight: isMobile ? 'calc(100% - 80px)' : 'calc(100% - 160px)',
                     minWidth: 0,
                     overflow: 'hidden',
                 }}
@@ -234,7 +239,7 @@ export const ShopScene: React.FC = () => {
                         boxShadow: '0 10px 30px rgba(0,0,0,0.8)',
                     }}
                 >
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? '12px' : '16px' }}>
                         <SidebarBtn
                             active={activeMainTab === 'ARSENAL'}
                             onClick={() => setActiveMainTab('ARSENAL')}
@@ -278,7 +283,7 @@ export const ShopScene: React.FC = () => {
                             className="no-scrollbar"
                             style={{
                                 display: 'flex',
-                                gap: isMobile ? '8px' : '15px',
+                                gap: isMobile ? '20px' : '24px',
                                 borderBottom: 'none',
                                 paddingBottom: isMobile ? '6px' : '10px',
                                 alignItems: 'center',
@@ -354,6 +359,7 @@ export const ShopScene: React.FC = () => {
                                 powerDiff={powerDiff}
                                 handleBuyTrigger={handleBuyTrigger}
                                 isMobile={isMobile}
+                                isPurchasing={isPurchasing}
                             />
                         </div>
                     ) : (

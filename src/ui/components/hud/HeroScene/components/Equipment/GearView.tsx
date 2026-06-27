@@ -9,6 +9,7 @@ import { EquippedHeroView } from '../../../../EquippedHeroView';
 import { InventoryPanel } from '../../../InventoryPanel';
 import { rarityColors } from '../../constants/roleIcons';
 import { SKINS_DB } from '../../../../../../configs/SkinsConfig';
+import { HEROES_DB } from '../../../../../../configs/HeroesConfig';
 
 import { CornerDecoration, stoneBrickPattern } from './decorations';
 import { EquipmentSlot } from './EquipmentSlot';
@@ -33,6 +34,56 @@ export const GearView = ({
     const equippedSkinId = equippedSkins[hero.id] || 'default';
     const activeSkin = SKINS_DB.find((s) => s.id === equippedSkinId && s.heroId === hero.id);
     const isDefaultSkin = !activeSkin || activeSkin.id === 'default' || activeSkin.id.endsWith('_default');
+
+    const setSelectedHeroId = useGameStore((s: any) => s.setSelectedHeroId);
+    const ownedHeroes = useGameStore((s: any) => s.ownedHeroes) || ['panda'];
+    const isMobile = useGameStore((s: any) => s.isMobile) || false;
+
+    const ownedHeroesList = useMemo(() => {
+        return HEROES_DB.filter((h) => ownedHeroes.includes(h.id));
+    }, [ownedHeroes]);
+
+    const currentHeroIndex = ownedHeroesList.findIndex((h) => h.id === hero.id);
+
+    const handlePrevHero = () => {
+        if (ownedHeroesList.length <= 1) return;
+        audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
+        const prevIndex = (currentHeroIndex - 1 + ownedHeroesList.length) % ownedHeroesList.length;
+        setSelectedHeroId(ownedHeroesList[prevIndex].id);
+    };
+
+    const handleNextHero = () => {
+        if (ownedHeroesList.length <= 1) return;
+        audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
+        const nextIndex = (currentHeroIndex + 1) % ownedHeroesList.length;
+        setSelectedHeroId(ownedHeroesList[nextIndex].id);
+    };
+
+    const [touchStartX, setTouchStartX] = useState<number | null>(null);
+    const [touchStartY, setTouchStartY] = useState<number | null>(null);
+
+    const handleTouchStart = (e: React.TouchEvent) => {
+        if (ownedHeroesList.length <= 1) return;
+        setTouchStartX(e.touches[0].clientX);
+        setTouchStartY(e.touches[0].clientY);
+    };
+
+    const handleTouchEnd = (e: React.TouchEvent) => {
+        if (ownedHeroesList.length <= 1 || touchStartX === null || touchStartY === null) return;
+        const diffX = e.changedTouches[0].clientX - touchStartX;
+        const diffY = e.changedTouches[0].clientY - touchStartY;
+
+        if (Math.abs(diffX) > 60 && Math.abs(diffY) < 50) {
+            if (diffX > 0) {
+                handlePrevHero();
+            } else {
+                handleNextHero();
+            }
+        }
+        setTouchStartX(null);
+        setTouchStartY(null);
+    };
+
 
     const heroesState = useGameStore((s: any) => s.heroes) || {};
     const heroState = heroesState[hero.id] || { level: 1, exp: 0 };
@@ -162,16 +213,19 @@ export const GearView = ({
             exit={{ opacity: 0, scale: 1.05 }}
             style={{
                 position: 'absolute',
-                inset: '20px 20px 20px 40px',
+                inset: isMobile ? '8px 8px 8px 8px' : '20px 20px 20px 20px',
                 display: 'flex',
-                gap: '24px',
+                gap: isMobile ? '12px' : '30px',
                 alignItems: 'stretch',
+                justifyContent: isMobile ? 'flex-start' : 'center',
             }}
         >
             {/* Symmetrical Hero Card (combines old left & center panels) */}
             <div
                 style={{
-                    flex: 1,
+                    width: isMobile ? undefined : '940px',
+                    flex: isMobile ? 1 : undefined,
+                    flexShrink: isMobile ? 1 : 0,
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
@@ -181,6 +235,8 @@ export const GearView = ({
             >
                 <div
                     className="symmetrical-hero-card"
+                    onTouchStart={handleTouchStart}
+                    onTouchEnd={handleTouchEnd}
                     style={{
                         background: `${stoneBrickPattern}, linear-gradient(180deg, rgba(24, 18, 15, 0.98) 0%, rgba(12, 9, 8, 1.0) 100%)`,
                     }}
@@ -790,6 +846,80 @@ export const GearView = ({
                             </div>
                         </div>
                     </div>
+
+                    {/* Navigation Arrows */}
+                    {ownedHeroesList.length > 1 && (
+                        <>
+                            <button
+                                onClick={handlePrevHero}
+                                style={{
+                                    position: 'absolute',
+                                    left: '195px',
+                                    top: '300px',
+                                    width: '44px',
+                                    height: '44px',
+                                    borderRadius: '50%',
+                                    background: 'radial-gradient(circle, rgba(30, 24, 20, 0.95) 0%, rgba(15, 12, 10, 1) 100%)',
+                                    border: '1.5px solid rgba(240, 192, 64, 0.6)',
+                                    color: '#f0c040',
+                                    fontSize: '18px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    cursor: 'pointer',
+                                    zIndex: 20,
+                                    boxShadow: '0 4px 10px rgba(0, 0, 0, 0.6)',
+                                    transition: 'all 0.2s ease',
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.transform = 'scale(1.1)';
+                                    e.currentTarget.style.borderColor = 'rgba(240, 192, 64, 1)';
+                                    e.currentTarget.style.boxShadow = '0 0 12px rgba(240, 192, 64, 0.4)';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.transform = 'scale(1)';
+                                    e.currentTarget.style.borderColor = 'rgba(240, 192, 64, 0.6)';
+                                    e.currentTarget.style.boxShadow = '0 4px 10px rgba(0, 0, 0, 0.6)';
+                                }}
+                            >
+                                ◀
+                            </button>
+                            <button
+                                onClick={handleNextHero}
+                                style={{
+                                    position: 'absolute',
+                                    right: '195px',
+                                    top: '300px',
+                                    width: '44px',
+                                    height: '44px',
+                                    borderRadius: '50%',
+                                    background: 'radial-gradient(circle, rgba(30, 24, 20, 0.95) 0%, rgba(15, 12, 10, 1) 100%)',
+                                    border: '1.5px solid rgba(240, 192, 64, 0.6)',
+                                    color: '#f0c040',
+                                    fontSize: '18px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    cursor: 'pointer',
+                                    zIndex: 20,
+                                    boxShadow: '0 4px 10px rgba(0, 0, 0, 0.6)',
+                                    transition: 'all 0.2s ease',
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.transform = 'scale(1.1)';
+                                    e.currentTarget.style.borderColor = 'rgba(240, 192, 64, 1)';
+                                    e.currentTarget.style.boxShadow = '0 0 12px rgba(240, 192, 64, 0.4)';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.transform = 'scale(1)';
+                                    e.currentTarget.style.borderColor = 'rgba(240, 192, 64, 0.6)';
+                                    e.currentTarget.style.boxShadow = '0 4px 10px rgba(0, 0, 0, 0.6)';
+                                }}
+                            >
+                                ▶
+                            </button>
+                        </>
+                    )}
                 </div>
             </div>
 
@@ -880,15 +1010,17 @@ export const GearView = ({
                         <div
                             style={{
                                 flex: 1,
+                                width: '100%',
                                 display: 'flex',
                                 flexDirection: 'column',
                                 overflowY: 'auto',
                                 paddingRight: '5px',
                                 paddingTop: '5px',
+                                boxSizing: 'border-box',
                             }}
                             className="custom-scrollbar"
                         >
-                            <div style={{ textAlign: 'center', marginBottom: '15px' }}>
+                            <div style={{ textAlign: 'center', marginBottom: '15px', width: '100%', boxSizing: 'border-box' }}>
                                 <h4
                                     style={{
                                         margin: 0,
@@ -907,6 +1039,7 @@ export const GearView = ({
                                         background:
                                             'linear-gradient(90deg, transparent, rgba(240, 192, 64, 0.4), transparent)',
                                         marginTop: '8px',
+                                        width: '100%',
                                     }}
                                 />
                             </div>
@@ -919,6 +1052,8 @@ export const GearView = ({
                                     textAlign: 'justify',
                                     whiteSpace: 'pre-wrap',
                                     padding: '0 5px 15px 5px',
+                                    width: '100%',
+                                    boxSizing: 'border-box',
                                 }}
                             >
                                 {hero.lore || 'История этого героя пока покрыта тайной...'}

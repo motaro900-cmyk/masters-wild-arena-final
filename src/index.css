@@ -35,7 +35,10 @@ html,
     -moz-osx-font-smoothing: auto;
     text-rendering: auto;
     overscroll-behavior: none;
-    touch-action: pan-y;
+    /* [iOS Fix]: touch-action: none обязателен для корректной работы
+       touch-событий в PixiJS canvas на iOS Safari.
+       pan-y перехватывал тапы и делал canvas неинтерактивным. */
+    touch-action: none;
 }
 
 /* ─── MOBILE ADAPTATION ─────────────────────────────────────────────────── */
@@ -90,8 +93,13 @@ canvas {
     height: 100% !important;
     object-fit: contain;
     display: block;
-    image-rendering: pixelated;
+    /* [iOS Fix]: image-rendering: pixelated ломает антиалиасинг WebGL на iOS Safari.
+       auto даёт правильный рендер на всех платформах. */
+    image-rendering: auto;
     will-change: transform;
+    /* [iOS Fix]: touch-action: none обязателен чтобы PixiJS получал
+       нативные touch-события на iOS, не перехваченные браузером. */
+    touch-action: none;
     /* Без фильтров — чистый рендер */
 }
 
@@ -737,7 +745,7 @@ canvas {
 }
 
 /* Mobile touch targets — только для телефонов */
-@media (max-width: 768px) {
+@media (max-width: 768px), (pointer: coarse) {
     /* Увеличенное расширение для мобильных touch-таргетов */
     .mobile-hit-area {
         inset: -20px;
@@ -752,6 +760,16 @@ canvas {
     .action-btn-mobile {
         min-height: 120px !important;
     }
+}
+
+.is-mobile .mobile-hit-area {
+    inset: -20px;
+}
+.is-mobile .nav-tab-mobile {
+    min-height: 80px !important;
+}
+.is-mobile .action-btn-mobile {
+    min-height: 120px !important;
 }
 
 /* Pixel-perfect rendering for all UI sprites and panels */

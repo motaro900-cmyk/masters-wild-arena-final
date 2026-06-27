@@ -51,7 +51,7 @@ export const PurchaseConfirmOverlay: React.FC<PurchaseConfirmOverlayProps> = ({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             style={{
-                position: 'fixed',
+                position: 'absolute',
                 inset: 0,
                 zIndex: 3000,
                 display: 'flex',

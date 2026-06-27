@@ -51,14 +51,14 @@ export const DailyGiftBanner: React.FC<{ onClick: () => void }> = ({ onClick }) 
                 backgroundImage: `url(${AssetsMap.UI.ICON_GIFT})`,
                 backgroundSize: '100% 100%',
                 backgroundRepeat: 'no-repeat',
-                width: 360,
-                height: 90,
+                width: 420,
+                height: 105,
                 cursor: 'pointer',
                 position: 'relative',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'flex-end',
-                paddingRight: 100,
+                paddingRight: 115,
                 pointerEvents: 'auto',
                 transition: 'transform 0.2s',
             }}
@@ -69,7 +69,7 @@ export const DailyGiftBanner: React.FC<{ onClick: () => void }> = ({ onClick }) 
                 <span
                     style={{
                         fontFamily: "'Cinzel', serif",
-                        fontSize: 18,
+                        fontSize: 21,
                         fontWeight: 900,
                         color: '#f0c040',
                         textShadow: '0 2px 4px rgba(0,0,0,0.9)',

@@ -33,7 +33,7 @@ export const ShopBottomShelf: React.FC<ShopBottomShelfProps> = ({
     setDirection,
     ITEMS_PER_PAGE,
 }) => {
-    const itemsPerPage = isMobile ? 2 : ITEMS_PER_PAGE;
+    const itemsPerPage = ITEMS_PER_PAGE;
     const totalPages = Math.ceil(filteredItems.length / itemsPerPage);
     const startIndex = currentPage * itemsPerPage;
     const paginatedItems = filteredItems.slice(startIndex, startIndex + itemsPerPage);
@@ -151,7 +151,7 @@ export const ShopBottomShelf: React.FC<ShopBottomShelfProps> = ({
                 <div
                     style={{
                         flex: 1,
-                        height: isMobile ? '165px' : '210px',
+                        height: isMobile ? '178px' : '210px',
                         background: 'rgba(10,8,8,0.7)',
                         border: '1px solid rgba(240,192,64,0.1)',
                         borderRadius: '12px',

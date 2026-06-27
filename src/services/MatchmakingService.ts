@@ -681,16 +681,23 @@ class MatchmakingServiceClass {
         // Рассчитываем характеристики бота на основе сгенерированного снаряжения и уровня (честно, без искусственных множителей)
         const finalStats = buildStatsFromEquipment(randomHero.id, botLevel, equipment, avgItemLevel);
 
-        // Случайный аватар из доступных в игре
-        const randomAvatarObj = AVATARS[Math.floor(Math.random() * AVATARS.length)];
+        // Получаем аватары, доступные на данном уровне бота (без VIP-ограничений)
+        const allowedAvatars = AVATARS.filter((a) => {
+            const reqLevel = a.requiredLevel || 0;
+            const reqVip = a.requiredVip || 0;
+            return botLevel >= reqLevel && reqVip === 0;
+        });
+        const randomAvatarObj = allowedAvatars[Math.floor(Math.random() * allowedAvatars.length)] || AVATARS[0];
         const avatar = randomAvatarObj.path;
 
-        // Случайная рамка (исключая разработчика, с 30% шансом на отсутствие рамки)
-        const allowedFrames = AVATAR_FRAMES.filter((f) => f.id !== 'storm_lightning_frame.webp');
-        const randomFrameObj =
-            Math.random() < 0.3
-                ? AVATAR_FRAMES.find((f) => f.id === 'none') || AVATAR_FRAMES[0]
-                : allowedFrames[Math.floor(Math.random() * allowedFrames.length)];
+        // Получаем рамки, доступные на данном уровне бота (исключая рамку разработчика и VIP-рамки)
+        const allowedFrames = AVATAR_FRAMES.filter((f) => {
+            if (f.id === 'storm_lightning_frame.webp') return false;
+            const reqLevel = f.requiredLevel || 0;
+            const reqVip = f.requiredVip || 0;
+            return botLevel >= reqLevel && reqVip === 0;
+        });
+        const randomFrameObj = allowedFrames[Math.floor(Math.random() * allowedFrames.length)] || AVATAR_FRAMES[0];
         const avatarFrame = randomFrameObj.id;
 
         // Случайный титул (исключая разработчика)

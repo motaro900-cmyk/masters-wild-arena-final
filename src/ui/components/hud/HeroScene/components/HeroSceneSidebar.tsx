@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { SceneTab } from '../types';
+import { useGameStore } from '../../../../../store/useGameStore';
 
 interface HeroSceneSidebarProps {
     activeTab: SceneTab;
@@ -10,10 +11,10 @@ interface HeroSceneSidebarProps {
 
 const stoneBrickPattern =
     "url(\"data:image/svg+xml;utf8,<svg width='60' height='40' viewBox='0 0 60 40' xmlns='http://www.w3.org/2000/svg'><rect width='60' height='40' fill='none'/><line x1='0' y1='20' x2='60' y2='20' stroke='rgba(0,0,0,0.52)' stroke-width='1.5'/><line x1='0' y1='40' x2='60' y2='40' stroke='rgba(0,0,0,0.52)' stroke-width='1.5'/><line x1='30' y1='0' x2='30' y2='20' stroke='rgba(0,0,0,0.52)' stroke-width='1.5'/><line x1='0' y1='20' x2='0' y2='40' stroke='rgba(0,0,0,0.52)' stroke-width='1.5'/><line x1='60' y1='20' x2='60' y2='40' stroke='rgba(0,0,0,0.52)' stroke-width='1.5'/><line x1='0' y1='1.5' x2='60' y2='1.5' stroke='rgba(255,255,255,0.15)' stroke-width='1'/><line x1='0' y1='21.5' x2='60' y2='21.5' stroke='rgba(255,255,255,0.15)' stroke-width='1'/><line x1='31.5' y1='0.8' x2='31.5' y2='19.5' stroke='rgba(255,255,255,0.15)' stroke-width='1'/><line x1='1.5' y1='20.8' x2='1.5' y2='39.5' stroke='rgba(255,255,255,0.15)' stroke-width='1'/><path d='M44,3 L40,7 L42,12 L38,15' stroke='rgba(0,0,0,0.45)' stroke-width='0.8' fill='none'/><path d='M45,3.5 L41,7.5 L43,12.5 L39,15.5' stroke='rgba(255,255,255,0.08)' stroke-width='0.8' fill='none'/><line x1='6' y1='8' x2='20' y2='8' stroke='rgba(0,0,0,0.42)' stroke-width='0.8'/><line x1='6' y1='9' x2='20' y2='9' stroke='rgba(255,255,255,0.08)' stroke-width='0.8'/><path d='M10,23 L13,28 L11,34' stroke='rgba(0,0,0,0.48)' stroke-width='0.9' fill='none'/><path d='M11,23.5 L14,28.5 L12,34.5' stroke='rgba(255,255,255,0.09)' stroke-width='0.9' fill='none'/><path d='M35,33 L48,30 L54,32' stroke='rgba(0,0,0,0.42)' stroke-width='0.8' fill='none'/><path d='M35,34 L48,31 L54,33' stroke='rgba(255,255,255,0.07)' stroke-width='0.8' fill='none'/><circle cx='12' cy='14' r='0.8' fill='rgba(0,0,0,0.45)'/><circle cx='12.5' cy='14.5' r='0.4' fill='rgba(255,255,255,0.08)'/><circle cx='48' cy='26' r='1.2' fill='rgba(0,0,0,0.5)'/><circle cx='48.5' cy='26.5' r='0.6' fill='rgba(255,255,255,0.1)'/></svg>\")";
-
+ 
 // SVG Icons for each tab
-const IconHeroes = ({ active }: { active: boolean }) => (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+const IconHeroes = ({ active, isMobile }: { active: boolean; isMobile: boolean }) => (
+    <svg width={isMobile ? '32' : '22'} height={isMobile ? '32' : '22'} viewBox="0 0 24 24" fill="none">
         {/* Helmet dome */}
         <path
             d="M12 2C8 2 6 5 6 10v3c0 2 1 4 3 5l3 2 3-2c2-1 3-3 3-5v-3c0-5-2-8-6-8Z"
@@ -46,8 +47,8 @@ const IconHeroes = ({ active }: { active: boolean }) => (
     </svg>
 );
 
-const IconEquipment = ({ active }: { active: boolean }) => (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+const IconEquipment = ({ active, isMobile }: { active: boolean; isMobile: boolean }) => (
+    <svg width={isMobile ? '32' : '22'} height={isMobile ? '32' : '22'} viewBox="0 0 24 24" fill="none">
         {/* Shield outline */}
         <path
             d="M12 22s8-4.5 8-11.5V5l-8-3-8 3v5.5c0 7 8 11.5 8 11.5Z"
@@ -81,24 +82,25 @@ const IconEquipment = ({ active }: { active: boolean }) => (
     </svg>
 );
 
-const TAB_CONFIG: { id: SceneTab; label: string; Icon: React.FC<{ active: boolean }> }[] = [
+const TAB_CONFIG: { id: SceneTab; label: string; Icon: React.FC<{ active: boolean; isMobile: boolean }> }[] = [
     { id: 'LIST', label: 'ГЕРОИ', Icon: IconHeroes },
     { id: 'HERO', label: 'СНАРЯЖЕНИЕ', Icon: IconEquipment },
 ];
 
 export const HeroSceneSidebar: React.FC<HeroSceneSidebarProps> = ({ activeTab, setActiveTab }) => {
     const [hoveredId, setHoveredId] = React.useState<SceneTab | null>(null);
+    const isMobile = useGameStore((state) => state.isMobile);
 
     return (
         <div
             style={{
-                width: '260px',
+                width: isMobile ? '210px' : '260px',
                 height: '100%',
                 background: `${stoneBrickPattern}, linear-gradient(180deg, #1c1612 0%, #120e0b 100%)`,
                 borderRight: '1px solid rgba(240, 192, 64, 0.25)',
                 display: 'flex',
                 flexDirection: 'column',
-                padding: '24px 18px 20px 18px',
+                padding: isMobile ? '24px 8px 20px 8px' : '24px 18px 20px 18px',
                 gap: '0px',
                 zIndex: 100,
                 boxShadow: '5px 0 25px rgba(0, 0, 0, 0.5)',
@@ -112,27 +114,28 @@ export const HeroSceneSidebar: React.FC<HeroSceneSidebarProps> = ({ activeTab, s
                     height: '1px',
                     background: 'linear-gradient(90deg, transparent, rgba(240,192,64,0.25), transparent)',
                     marginBottom: '20px',
-                    marginLeft: '-18px',
-                    marginRight: '-18px',
+                    marginLeft: isMobile ? '-8px' : '-18px',
+                    marginRight: isMobile ? '-8px' : '-18px',
                 }}
             />
 
             {/* ── NAV TABS ── */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', flex: 1 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? '16px' : '12px', flex: 1 }}>
                 {TAB_CONFIG.map(({ id, label, Icon }) => {
                     const isActive = activeTab === id;
                     const isHovered = hoveredId === id;
                     return (
                         <motion.button
                             key={id}
-                            whileHover={!isActive ? { x: 4 } : {}}
+                            whileHover={isMobile ? { scale: 1.02 } : (!isActive ? { x: 4 } : {})}
                             whileTap={{ scale: 0.98 }}
                             onClick={() => setActiveTab(id)}
                             onMouseEnter={() => setHoveredId(id)}
                             onMouseLeave={() => setHoveredId(null)}
                             style={{
                                 width: '100%',
-                                padding: '18px 20px',
+                                height: isMobile ? '160px' : 'auto',
+                                padding: isMobile ? '16px 8px' : '18px 20px',
                                 background: isActive
                                     ? 'linear-gradient(135deg, #2c211a 0%, #17120e 100%)'
                                     : isHovered
@@ -145,8 +148,10 @@ export const HeroSceneSidebar: React.FC<HeroSceneSidebarProps> = ({ activeTab, s
                                       : '1px solid rgba(212, 175, 55, 0.2)',
                                 borderRadius: '12px',
                                 display: 'flex',
+                                flexDirection: isMobile ? 'column' : 'row',
                                 alignItems: 'center',
-                                gap: '16px',
+                                justifyContent: isMobile ? 'center' : 'flex-start',
+                                gap: isMobile ? '10px' : '16px',
                                 cursor: 'pointer',
                                 position: 'relative',
                                 overflow: 'hidden',
@@ -166,8 +171,8 @@ export const HeroSceneSidebar: React.FC<HeroSceneSidebarProps> = ({ activeTab, s
                                     style={{
                                         position: 'absolute',
                                         left: 0,
-                                        top: '20%',
-                                        height: '60%',
+                                        top: isMobile ? '10%' : '20%',
+                                        height: isMobile ? '80%' : '60%',
                                         width: '3px',
                                         background: '#f0c040',
                                         borderRadius: '0 2px 2px 0',
@@ -179,8 +184,8 @@ export const HeroSceneSidebar: React.FC<HeroSceneSidebarProps> = ({ activeTab, s
                             {/* Icon */}
                             <div
                                 style={{
-                                    width: '24px',
-                                    height: '24px',
+                                    width: isMobile ? '36px' : '24px',
+                                    height: isMobile ? '36px' : '24px',
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
@@ -189,7 +194,7 @@ export const HeroSceneSidebar: React.FC<HeroSceneSidebarProps> = ({ activeTab, s
                                     transition: 'filter 0.2s ease',
                                 }}
                             >
-                                <Icon active={isActive} />
+                                <Icon active={isActive} isMobile={isMobile} />
                             </div>
 
                             {/* Label */}
@@ -200,12 +205,13 @@ export const HeroSceneSidebar: React.FC<HeroSceneSidebarProps> = ({ activeTab, s
                                         : isHovered
                                           ? 'rgba(255, 254, 250, 0.85)'
                                           : 'rgba(255, 254, 250, 0.6)',
-                                    fontSize: '15px',
+                                    fontSize: isMobile ? '13px' : '15px',
                                     fontWeight: 900,
                                     fontFamily: "'Cinzel', serif",
-                                    letterSpacing: '2px',
+                                    letterSpacing: isMobile ? '1px' : '2px',
                                     textShadow: isActive ? '0 0 8px rgba(240, 192, 64, 0.35)' : 'none',
                                     transition: 'color 0.2s ease',
+                                    textAlign: isMobile ? 'center' : 'left',
                                 }}
                             >
                                 {label}
@@ -217,6 +223,7 @@ export const HeroSceneSidebar: React.FC<HeroSceneSidebarProps> = ({ activeTab, s
                                     style={{
                                         position: 'absolute',
                                         right: '12px',
+                                        top: isMobile ? '12px' : 'auto',
                                         width: '6px',
                                         height: '6px',
                                         borderRadius: '50%',
@@ -235,8 +242,8 @@ export const HeroSceneSidebar: React.FC<HeroSceneSidebarProps> = ({ activeTab, s
                 style={{
                     height: '1px',
                     background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent)',
-                    marginLeft: '-18px',
-                    marginRight: '-18px',
+                    marginLeft: isMobile ? '-8px' : '-18px',
+                    marginRight: isMobile ? '-8px' : '-18px',
                     marginBottom: '14px',
                 }}
             />

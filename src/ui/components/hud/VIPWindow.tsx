@@ -172,10 +172,10 @@ export const VIPWindow: React.FC<VIPWindowProps> = () => {
     ];
 
     const vipPackages = [
-        { days: 1, price: 50, label: '1 ДЕНЬ', discount: null },
-        { days: 3, price: 130, label: '3 ДНЯ', discount: null },
-        { days: 7, price: 250, label: '7 ДНЕЙ', discount: '-11%' },
-        { days: 30, price: 900, label: '30 ДНЕЙ', discount: '-40%' },
+        { days: 1, price: 100, label: '1 ДЕНЬ', discount: null },
+        { days: 3, price: 270, label: '3 ДНЯ', discount: 'ВЫГОДА 10%' },
+        { days: 7, price: 550, label: '7 ДНЕЙ', discount: 'ВЫГОДА 21%' },
+        { days: 30, price: 1800, label: '30 ДНЕЙ', discount: 'ВЫГОДА 40%' },
     ];
 
     const buyVip = React.useCallback((days: number, price: number) => {
@@ -231,13 +231,13 @@ export const VIPWindow: React.FC<VIPWindowProps> = () => {
                 style={{
                     background: isActive
                         ? 'linear-gradient(135deg, rgba(88, 28, 135, 0.4) 0%, rgba(26, 12, 45, 0.98) 60%, rgba(12, 5, 20, 1) 100%)'
-                        : 'linear-gradient(135deg, rgba(30, 30, 30, 0.95) 0%, rgba(12, 12, 12, 0.99) 100%)',
+                        : 'linear-gradient(135deg, rgba(60, 35, 5, 0.98) 0%, rgba(40, 22, 3, 0.99) 50%, rgba(20, 10, 0, 1) 100%)',
                     padding: isMobile ? '14px 18px 12px' : '24px 28px 20px',
                     borderRadius: '16px',
-                    border: isActive ? '2px solid #ffd700' : '1.5px solid rgba(255,255,255,0.08)',
+                    border: isActive ? '2px solid #ffd700' : '1.5px solid rgba(240,192,64,0.35)',
                     boxShadow: isActive
                         ? '0 0 35px rgba(240, 192, 64, 0.3), inset 0 0 20px rgba(240, 192, 64, 0.15)'
-                        : '0 8px 25px rgba(0,0,0,0.85)',
+                        : '0 0 28px rgba(180, 120, 20, 0.25), inset 0 0 30px rgba(200, 140, 30, 0.08)',
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
@@ -246,41 +246,40 @@ export const VIPWindow: React.FC<VIPWindowProps> = () => {
                     overflow: 'hidden',
                 }}
             >
-                {/* Radial light shimmer for active status */}
-                {isActive && (
-                    <div
-                        style={{
-                            position: 'absolute',
-                            top: 0,
-                            left: 0,
-                            right: 0,
-                            height: '100%',
-                            background:
-                                'radial-gradient(circle at 50% 0%, rgba(240, 192, 64, 0.35) 0%, transparent 75%)',
-                            pointerEvents: 'none',
-                        }}
-                    />
-                )}
+                {/* Radial shimmer — both active and inactive get a top-center glow */}
+                <div
+                    style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        height: '100%',
+                        background: isActive
+                            ? 'radial-gradient(circle at 50% 0%, rgba(240, 192, 64, 0.35) 0%, transparent 75%)'
+                            : 'radial-gradient(circle at 50% 0%, rgba(200, 130, 20, 0.22) 0%, transparent 70%)',
+                        pointerEvents: 'none',
+                    }}
+                />
 
-                {/* Floating crown */}
+                {/* Floating crown — golden on both states */}
                 <motion.img
                     src={AssetsMap.UI.ICON_CROWN}
                     alt="crown"
                     style={{
-                        width: isMobile ? '36px' : '48px',
-                        height: isMobile ? '36px' : '48px',
+                        width: isMobile ? '36px' : '52px',
+                        height: isMobile ? '36px' : '52px',
                         objectFit: 'contain',
                         filter: isActive
                             ? 'drop-shadow(0 0 14px rgba(240,192,64,0.75)) drop-shadow(0 2px 4px rgba(0,0,0,0.9))'
-                            : 'grayscale(1) brightness(0.35) drop-shadow(0 2px 4px rgba(0,0,0,0.95))',
+                            : 'drop-shadow(0 0 10px rgba(200,140,30,0.55)) brightness(0.75) sepia(0.4) drop-shadow(0 2px 4px rgba(0,0,0,0.9))',
                         zIndex: 1,
-                        animation: isActive ? 'floatCrown 3s ease-in-out infinite' : 'none',
+                        animation: isActive ? 'floatCrown 3s ease-in-out infinite' : 'floatCrown 5s ease-in-out infinite',
                     }}
                 />
 
                 <span
                     style={{
-                        color: isActive ? '#ffd700' : 'rgba(255, 255, 255, 0.35)',
+                        color: isActive ? '#ffd700' : 'rgba(200, 150, 60, 0.75)',
                         fontSize: '10.5px',
                         fontWeight: 950,
                         textTransform: 'uppercase',
@@ -289,7 +288,7 @@ export const VIPWindow: React.FC<VIPWindowProps> = () => {
                         textShadow: '0 1.5px 3px rgba(0,0,0,0.95)',
                     }}
                 >
-                    Текущий статус
+                    {isActive ? 'Текущий статус' : 'Эксклюзивный статус'}
                 </span>
 
                 {isActive ? (
@@ -304,15 +303,13 @@ export const VIPWindow: React.FC<VIPWindowProps> = () => {
                     >
                         <span
                             style={{
-                                background: 'linear-gradient(to bottom, #fffdf0 0%, #ffd700 45%, #b87800 100%)',
-                                WebkitBackgroundClip: 'text',
-                                WebkitTextFillColor: 'transparent',
+                                color: '#ffd700',
                                 fontSize: isMobile ? '24px' : '32px',
                                 fontWeight: 950,
                                 fontFamily: "'Cinzel', serif",
-                                filter: 'drop-shadow(0 2px 10px rgba(0,0,0,0.95))',
                                 letterSpacing: '2.5px',
                                 lineHeight: 1.1,
+                                textShadow: '0 0 18px rgba(240,192,64,0.75), 0 0 6px rgba(240,192,64,0.5), 0 2px 6px rgba(0,0,0,0.95)',
                             }}
                         >
                             VIP АКТИВЕН
@@ -362,42 +359,20 @@ export const VIPWindow: React.FC<VIPWindowProps> = () => {
                         </div>
                     </div>
                 ) : (
-                    <div
+                    <span
                         style={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                            gap: '6px',
+                            color: 'rgba(200, 160, 60, 0.8)',
+                            fontSize: isMobile ? '18px' : '22px',
+                            fontWeight: 900,
+                            fontFamily: "'Cinzel', serif",
+                            letterSpacing: '2px',
+                            lineHeight: 1.2,
+                            textShadow: '0 2px 8px rgba(0,0,0,0.98)',
                             zIndex: 1,
                         }}
                     >
-                        <span
-                            style={{
-                                color: '#dfc08a',
-                                fontSize: isMobile ? '22px' : '30px',
-                                fontWeight: 955,
-                                fontFamily: "'Cinzel', serif",
-                                letterSpacing: '2px',
-                                lineHeight: 1.1,
-                                textShadow: '0 2px 10px rgba(0,0,0,0.98)',
-                            }}
-                        >
-                            VIP НЕ АКТИВЕН
-                        </span>
-                        <span
-                            style={{
-                                color: '#bca895',
-                                fontSize: '13px',
-                                textAlign: 'center',
-                                lineHeight: 1.5,
-                                maxWidth: '420px',
-                                fontWeight: 800,
-                                textShadow: '0 1.5px 3px rgba(0,0,0,0.95)',
-                            }}
-                        >
-                            Приобретите VIP, чтобы мгновенно активировать все бонусы!
-                        </span>
-                    </div>
+                        VIP НЕ АКТИВЕН
+                    </span>
                 )}
             </motion.div>
 
@@ -424,7 +399,9 @@ export const VIPWindow: React.FC<VIPWindowProps> = () => {
                 <div
                     style={{
                         display: 'grid',
-                        gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr',
+                        // Always 2 columns: VIP window is 980-1100px wide on all platforms,
+                        // so there is always room for two columns regardless of isMobile flag.
+                        gridTemplateColumns: '1fr 1fr',
                         gap: '10px',
                     }}
                 >
@@ -621,23 +598,23 @@ export const VIPWindow: React.FC<VIPWindowProps> = () => {
                                         style={{
                                             position: 'absolute',
                                             top: '-1px',
-                                            right: '14px',
+                                            right: isBest ? '155px' : '135px',
                                             background: isBest
                                                 ? 'linear-gradient(135deg, #a855f7 0%, #6b21a8 100%)'
                                                 : 'linear-gradient(135deg, #ffd700 0%, #b87800 100%)',
                                             color: isBest ? '#ffffff' : '#1c1002',
-                                            fontSize: '8.5px',
+                                            fontSize: '10px',
                                             fontWeight: 955,
-                                            padding: '2px 10px',
+                                            padding: '3px 12px',
                                             borderRadius: '0 0 8px 8px',
-                                            letterSpacing: '0.6px',
+                                            letterSpacing: '0.8px',
                                             boxShadow: '0 2px 8px rgba(0,0,0,0.5)',
                                             border: isBest ? '1px solid rgba(168,85,247,0.5)' : '1px solid #ffd700',
                                             borderTop: 'none',
                                             fontFamily: "'Cinzel', serif",
                                         }}
                                     >
-                                        {isBest ? `${pkg.discount} ВЫБОР` : pkg.discount}
+                                        {isBest ? `${pkg.discount} • ВЫБОР` : pkg.discount}
                                     </div>
                                 )}
 
@@ -645,9 +622,9 @@ export const VIPWindow: React.FC<VIPWindowProps> = () => {
                                 <span
                                     style={{
                                         fontFamily: "'Cinzel', serif",
-                                        fontSize: isMobile ? '13px' : '15px',
+                                        fontSize: isMobile ? '14px' : '17px',
                                         fontWeight: 955,
-                                        letterSpacing: '1px',
+                                        letterSpacing: '1.2px',
                                         background: isBest
                                             ? 'linear-gradient(to bottom, #ffffff 0%, #d8b4fe 50%, #8b5cf6 100%)'
                                             : pkg.days === 7
@@ -667,9 +644,9 @@ export const VIPWindow: React.FC<VIPWindowProps> = () => {
                                     style={{
                                         display: 'flex',
                                         alignItems: 'center',
-                                        gap: '6px',
+                                        gap: '7px',
                                         background: 'rgba(0,0,0,0.68)',
-                                        padding: '5px 12px',
+                                        padding: '6px 14px',
                                         borderRadius: '20px',
                                         border: isBest
                                             ? '1.5px solid rgba(168,85,247,0.45)'
@@ -682,8 +659,8 @@ export const VIPWindow: React.FC<VIPWindowProps> = () => {
                                         src={AssetsMap.UI.ICON_ALMAZ_FULL}
                                         alt="gems"
                                         style={{
-                                            width: '14px',
-                                            height: '14px',
+                                            width: '17px',
+                                            height: '17px',
                                             filter: 'drop-shadow(0 0 4px rgba(192,132,252,0.65))',
                                         }}
                                     />
@@ -691,7 +668,7 @@ export const VIPWindow: React.FC<VIPWindowProps> = () => {
                                         style={{
                                             color: '#c084fc',
                                             fontWeight: 955,
-                                            fontSize: '13.5px',
+                                            fontSize: '16.5px',
                                             textShadow: '0 0 8px rgba(192,132,252,0.38)',
                                             fontFamily: "'Cinzel', serif",
                                         }}
@@ -703,6 +680,37 @@ export const VIPWindow: React.FC<VIPWindowProps> = () => {
                         );
                     })}
                 </div>
+            </div>
+
+            {/* ────────── 4. VIP FOOTER FEATURE STRIP ────────── */}
+            {/* ────────── 4. ATMOSPHERIC FOOTER QUOTE ────────── */}
+            <div
+                style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: '4px',
+                    padding: '10px 20px',
+                    borderTop: '1px solid rgba(240,192,64,0.1)',
+                }}
+            >
+                <span
+                    style={{
+                        color: 'rgba(240, 200, 80, 0.55)',
+                        fontSize: '11px',
+                        fontStyle: 'italic',
+                        fontFamily: "'Cinzel', serif",
+                        textAlign: 'center',
+                        letterSpacing: '0.5px',
+                        lineHeight: 1.6,
+                        textShadow: '0 1px 4px rgba(0,0,0,0.9)',
+                    }}
+                >
+                    {isActive
+                        ? '✦ Дикая природа встречает своих лучших охотников с почестями ✦'
+                        : '✦ Величайшие охотники начинали с одного шага вперёд ✦'
+                    }
+                </span>
             </div>
         </div>
     );

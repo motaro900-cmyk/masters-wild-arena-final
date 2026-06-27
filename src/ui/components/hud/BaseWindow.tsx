@@ -77,6 +77,7 @@ export const BaseWindow: React.FC<BaseWindowProps> = ({
             'VIP СТАТУС': 'VIP СТАТУС',
             'НАСТРОЙКА ПРОФИЛЯ': 'НАСТРОЙКА ПРОФИЛЯ',
             'КАЛЕНДАРЬ НАГРАД': 'КАЛЕНДАРЬ НАГРАД',
+            'ЕЖЕДНЕВНЫЕ НАГРАДЫ': 'ЕЖЕДНЕВНЫЕ НАГРАДЫ',
             РЕЙТИНГ: 'РЕЙТИНГ',
             'ИНФОРМАЦИЯ О КЛАНЕ': 'ИНФОРМАЦИЯ О КЛАНЕ',
             'ПУТЬ МАСТЕРА': 'ПУТЬ МАСТЕРА',
@@ -90,6 +91,7 @@ export const BaseWindow: React.FC<BaseWindowProps> = ({
             'VIP СТАТУС': 'VIP STATUS',
             'НАСТРОЙКА ПРОФИЛЯ': 'PROFILE CUSTOMIZE',
             'КАЛЕНДАРЬ НАГРАД': 'DAILY REWARDS',
+            'ЕЖЕДНЕВНЫЕ НАГРАДЫ': 'DAILY REWARDS',
             РЕЙТИНГ: 'RANKING',
             'ИНФОРМАЦИЯ О КЛАНЕ': 'CLAN INFO',
             'ПУТЬ МАСТЕРА': 'PATH OF THE MASTER',
@@ -212,15 +214,20 @@ export const BaseWindow: React.FC<BaseWindowProps> = ({
                             )}
                             <div style={{ position: 'relative', display: 'inline-flex' }}>
                                 <div
-                                    className="mobile-hit-area"
+                                    style={{
+                                        position: 'absolute',
+                                        inset: isMobile ? '-10px' : '-5px',
+                                        cursor: 'pointer',
+                                        zIndex: 1,
+                                    }}
                                     onClick={() => {
                                         audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
                                         onClose();
                                     }}
                                 />
                                 <motion.button
-                                    whileHover={{ scale: 1.1 }}
-                                    whileTap={{ scale: 0.9 }}
+                                    whileHover={{ scale: 1.15 }}
+                                    whileTap={{ scale: 0.85 }}
                                     onClick={() => {
                                         audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
                                         onClose();
@@ -235,16 +242,17 @@ export const BaseWindow: React.FC<BaseWindowProps> = ({
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'center',
-                                        width: isMobile ? '44px' : '30px',
-                                        height: isMobile ? '44px' : '30px',
+                                        width: isMobile ? '44px' : '32px',
+                                        height: isMobile ? '44px' : '32px',
+                                        marginRight: isMobile ? '10px' : '5px',
                                     }}
                                     onMouseEnter={(e) => (e.currentTarget.style.opacity = '1')}
                                     onMouseLeave={(e) => (e.currentTarget.style.opacity = '0.8')}
                                 >
                                     <X
-                                        size={30}
+                                        size={isMobile ? 32 : 24}
                                         style={{
-                                            filter: isLight ? 'none' : 'drop-shadow(0 0 4px rgba(251,191,36,0.3))',
+                                            filter: isLight ? 'none' : 'drop-shadow(0 0 5px rgba(251,191,36,0.35))',
                                         }}
                                     />
                                 </motion.button>

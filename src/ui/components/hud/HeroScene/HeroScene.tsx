@@ -218,67 +218,73 @@ export const HeroScene: React.FC = () => {
                             position: 'relative',
                             zIndex: 10000,
                             flexShrink: 0,
-                            height: '66px',
+                            height: isMobile ? '70px' : '75px',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'space-between',
-                            padding: '0 28px 0 16px',
+                            padding: isMobile ? '0 20px' : '0 40px',
                             background: 'linear-gradient(180deg, #1c1612 0%, #120e0b 100%)',
-                            borderBottom: '1px solid rgba(240, 192, 64, 0.25)',
+                            borderBottom: 'none',
                             boxShadow: '0 4px 24px rgba(0, 0, 0, 0.5)',
                         }}
                     >
-                        {/* Left: back arrow + ГЕРОИ */}
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                            <motion.button
-                                whileHover={{ x: -3, scale: 1.1 }}
-                                whileTap={{ scale: 0.9 }}
-                                onTap={() => {
-                                    audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
-                                    goToMainMenu();
-                                }}
+                        {/* Left: back arrow */}
+                        <div style={{ display: 'flex', alignItems: 'center', pointerEvents: 'auto' }}>
+                            <button
                                 onClick={() => {
                                     audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
                                     goToMainMenu();
                                 }}
                                 style={{
-                                    background: 'rgba(240,192,64,0.1)',
-                                    border: '1px solid rgba(240,192,64,0.3)',
-                                    borderRadius: '12px',
-                                    width: isMobile ? '44px' : '54px',
-                                    height: isMobile ? '44px' : '54px',
+                                    position: 'absolute',
+                                    top: isMobile ? '12px' : '15px',
+                                    left: isMobile ? '80px' : '20px',
+                                    padding: isMobile ? '10px 20px' : '8px 16px',
+                                    background: 'rgba(20, 15, 10, 0.85)',
+                                    border: '2px solid #c8a870',
+                                    borderRadius: '8px',
+                                    color: '#f0c040',
+                                    fontFamily: "'Cinzel', serif",
+                                    fontSize: isMobile ? '16px' : '14px',
+                                    fontWeight: 'bold',
+                                    cursor: 'pointer',
                                     display: 'flex',
                                     alignItems: 'center',
-                                    justifyContent: 'center',
-                                    cursor: 'pointer',
-                                    flexShrink: 0,
-                                    touchAction: 'manipulation',
+                                    gap: '10px',
+                                    boxShadow: '0 5px 25px rgba(0,0,0,0.7)',
+                                    transition: 'all 0.2s',
+                                    zIndex: 10,
                                 }}
+                                onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.05)')}
+                                onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1)')}
                             >
-                                <svg width="18" height="18" viewBox="0 0 16 16" fill="none">
-                                    <path
-                                        d="M10 3L5 8l5 5"
-                                        stroke="#f0c040"
-                                        strokeWidth="2.5"
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        style={{ filter: 'drop-shadow(0 0 4px rgba(240, 192, 64, 0.5))' }}
-                                    />
-                                </svg>
-                            </motion.button>
-                            <span
-                                style={{
-                                    color: '#fdfbf7',
-                                    fontSize: '22px',
-                                    fontWeight: 900,
-                                    fontFamily: "'Cinzel', 'Philosopher', serif",
-                                    letterSpacing: '3px',
-                                    textTransform: 'uppercase',
-                                    textShadow: '0 0 10px rgba(240, 192, 64, 0.2)',
-                                }}
-                            >
-                                ГЕРОИ
-                            </span>
+                                <span>←</span> В ЛАГЕРЬ
+                            </button>
+                        </div>
+
+                        {/* Centered large title */}
+                        <div
+                            style={{
+                                position: 'absolute',
+                                left: '50%',
+                                top: '50%',
+                                transform: 'translate(-50%, -50%)',
+                                margin: 0,
+                                fontFamily: "'Cinzel', 'Philosopher', serif",
+                                background: 'linear-gradient(to bottom, #ffe890 0%, #f0c040 50%, #a27a20 100%)',
+                                WebkitBackgroundClip: 'text',
+                                WebkitTextFillColor: 'transparent',
+                                fontSize: isMobile ? '32px' : '44px',
+                                fontWeight: 900,
+                                letterSpacing: '4px',
+                                whiteSpace: 'nowrap',
+                                textTransform: 'uppercase',
+                                lineHeight: '1',
+                                pointerEvents: 'none',
+                                filter: 'drop-shadow(0 0 10px rgba(240, 192, 64, 0.45)) drop-shadow(0 4px 15px rgba(0,0,0,0.9))',
+                            }}
+                        >
+                            ГЕРОИ
                         </div>
 
                         {/* Right: Resource bars */}

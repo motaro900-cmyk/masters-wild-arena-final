@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useGameStore } from '../../store/useGameStore';
 import { AssetsMap } from '../../configs/AssetsMap';
 import { lazyWithRetry } from '../../utils/LazyWithRetry';
+import { VipDailyRewardModal } from './hud/VipDailyRewardModal';
 
 // HUD Components
 import { BattlePassBar } from './hud/BattlePassBar';
@@ -24,6 +25,7 @@ import { PlayerInspectModal } from './hud/PlayerInspectModal';
 import bridge from '@vkontakte/vk-bridge';
 import { safeGetItem, safeSetItem } from '../../utils/SafeStorage';
 import { useGraphicsConfig } from '../hooks/useGraphicsConfig';
+import { TimeService } from '../../utils/TimeService';
 
 const AdminPanel = lazyWithRetry(() => import('./hud/AdminPanel').then((m) => ({ default: m.AdminPanel })));
 
@@ -38,6 +40,7 @@ export const GameHUD: React.FC = () => {
     const [activeWindow, setRawActiveWindow] = useState<string | null>(null);
     const [showAdmin, setShowAdmin] = useState(false);
     const [devModal, setDevModal] = useState({ isOpen: false, title: '' });
+    const [vipDailyReward, setVipDailyReward] = useState<{ gold: number; crystals: number; energy: number; daysLeft: number } | null>(null);
     const goToShop = useGameStore((state) => state.goToShop);
     const [prevScreen, setPrevScreen] = useState(activeScreen);
     const gfx = useGraphicsConfig();
@@ -165,7 +168,7 @@ export const GameHUD: React.FC = () => {
 
     // Ежедневный VIP-подарок на почту и синхронизация VIP-статуса
     useEffect(() => {
-        const now = Date.now();
+        const now = TimeService.now();
         const isActive = vipEndTime ? vipEndTime > now : false;
 
         // Синхронизируем vipLevel в сторе
@@ -185,54 +188,50 @@ export const GameHUD: React.FC = () => {
         const msk = new Date(now + (new Date().getTimezoneOffset() + 180) * 60000);
         const mskDateStr = `${msk.getFullYear()}-${(msk.getMonth() + 1).toString().padStart(2, '0')}-${msk.getDate().toString().padStart(2, '0')}`;
 
-        const lastClaim = safeGetItem('lastVipMailClaimDate');
+        const store = useGameStore.getState();
+        const lastClaim = store.lastVipMailClaimDate || safeGetItem('lastVipMailClaimDate');
+        
         if (lastClaim !== mskDateStr) {
             // Генерируем случайные дары
             const rand = Math.random();
-            let rewards = [];
+            let gold = 500;
+            let crystals = 10;
+            let energy = 5;
+
             if (rand < 0.33) {
-                rewards = [
-                    { type: 'GOLD', amount: 500 },
-                    { type: 'CRYSTALS', amount: 10 },
-                    { type: 'ENERGY', amount: 5 },
-                ];
+                gold = 500;
+                crystals = 10;
+                energy = 5;
             } else if (rand < 0.66) {
-                rewards = [
-                    { type: 'GOLD', amount: 800 },
-                    { type: 'CRYSTALS', amount: 5 },
-                    { type: 'ENERGY', amount: 10 },
-                ];
+                gold = 800;
+                crystals = 5;
+                energy = 10;
             } else {
-                rewards = [
-                    { type: 'GOLD', amount: 300 },
-                    { type: 'CRYSTALS', amount: 15 },
-                    { type: 'ENERGY', amount: 8 },
-                ];
+                gold = 300;
+                crystals = 15;
+                energy = 8;
             }
 
-            const newMail = {
-                id: `vip_daily_${mskDateStr}_${Date.now()}`,
-                from: 'КОРОЛЕВСКАЯ СЛУЖБА',
-                subject: 'ЕЖЕДНЕВНЫЙ VIP ПОДАРОК!',
-                body: 'Славься, наш благородный покровитель! \n\nКаждый день твоего VIP-статуса Королевская Служба доставляет тебе лучшие дары из сокровищницы. \n\nСпасибо за твою поддержку! Желаем легких побед и славных свершений на просторах Masters of the Wild!',
-                date: 'СЕГОДНЯ',
-                isRead: false,
-                isStarred: false,
-                tab: 'INBOX',
-                rewards: rewards,
-            };
+            const daysLeft = Math.ceil((vipEndTime - now) / (24 * 3600 * 1000));
 
-            // Добавляем во входящие
             setTimeout(() => {
-                const store = useGameStore.getState();
-                if (store.addMail) {
-                    store.addMail(newMail);
-                } else {
-                    useGameStore.setState({
-                        mail: [newMail, ...(store.mail || [])],
-                    });
-                }
+                const currentStore = useGameStore.getState();
+                
+                // Credit rewards instantly
+                currentStore.addGold(gold);
+                currentStore.addCrystals(crystals);
+                currentStore.addEnergy(energy);
+
+                // Open popup modal showing claim info
+                setVipDailyReward({ gold, crystals, energy, daysLeft });
+
+                useGameStore.setState({ lastVipMailClaimDate: mskDateStr });
                 safeSetItem('lastVipMailClaimDate', mskDateStr);
+                
+                // Триггерим фоновую синхронизацию
+                import('../../services/SyncService').then(({ syncService }) => {
+                    syncService.debouncedSync();
+                });
             }, 100);
         }
     }, [vipLevel, vipEndTime]);
@@ -385,8 +384,8 @@ export const GameHUD: React.FC = () => {
                     </div>
 
                     <div
-                        className="absolute top-[160px] right-[25px] flex flex-col gap-3 items-end hud-interactive w-[400px]"
-                        style={{ zIndex: 100, transform: `scale(${hudScale})`, transformOrigin: 'top right' }}
+                        className="absolute top-[160px] right-[25px] flex flex-col gap-3 items-end hud-interactive w-[420px]"
+                        style={{ zIndex: 100, transform: `scale(${hudScale * 0.88})`, transformOrigin: 'top right' }}
                     >
                         <DailyGiftBanner onClick={() => setActiveWindow('GIFT')} />
                         <DailyTaskPanel />
@@ -480,14 +479,14 @@ export const GameHUD: React.FC = () => {
 
                     {/* STANDALONE CITY BUTTON */}
                     <div
-                        className="absolute bottom-[10px] left-[calc(50%+400px)] hud-interactive"
+                        className="absolute bottom-[10px] left-[calc(50%+390px)] hud-interactive"
                         style={{ transform: `scale(${hudScale})`, transformOrigin: 'bottom center' }}
                     >
                         <button
                             onClick={() => useGameStore.getState().goToCity()}
                             style={{
-                                width: '200px',
-                                height: '240px',
+                                width: '220px',
+                                height: '260px',
                                 background: 'none',
                                 border: 'none',
                                 cursor: 'pointer',
@@ -495,12 +494,12 @@ export const GameHUD: React.FC = () => {
                                 flexDirection: 'column',
                                 alignItems: 'center',
                                 justifyContent: 'center',
-                                gap: '15px',
+                                gap: '10px',
                                 transition: 'all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
                                 pointerEvents: 'auto',
                             }}
                             onMouseEnter={(e) => {
-                                e.currentTarget.style.transform = 'scale(1.08) translateY(-10px)';
+                                e.currentTarget.style.transform = 'scale(1.08) translateY(-8px)';
                                 const img = e.currentTarget.querySelector('img');
                                 if (img) img.style.filter = 'drop-shadow(0 0 35px rgba(240,192,64,0.7))';
                             }}
@@ -513,8 +512,8 @@ export const GameHUD: React.FC = () => {
                             <img
                                 src="/assets/images/ui/icon_city.png"
                                 style={{
-                                    width: '180px',
-                                    height: '180px',
+                                    width: '200px',
+                                    height: '200px',
                                     objectFit: 'contain',
                                     filter: 'drop-shadow(0 0 15px rgba(240,192,64,0.4))',
                                     transition: 'all 0.3s ease',
@@ -524,7 +523,7 @@ export const GameHUD: React.FC = () => {
                             <div
                                 style={{
                                     fontFamily: "'Cinzel', serif",
-                                    fontSize: '18px',
+                                    fontSize: '20px',
                                     fontWeight: 900,
                                     color: '#f0c040',
                                     letterSpacing: '4px',
@@ -564,8 +563,8 @@ export const GameHUD: React.FC = () => {
                                 key={win.id}
                                 onClick={() => setActiveWindow(win.id)}
                                 style={{
-                                    width: 70,
-                                    height: 70,
+                                    width: 72,
+                                    height: 72,
                                     backgroundImage: `url(${win.sprite})`,
                                     backgroundSize: '100% 100%',
                                     backgroundColor: 'transparent',
@@ -581,8 +580,8 @@ export const GameHUD: React.FC = () => {
                                     <div
                                         style={{
                                             position: 'absolute',
-                                            top: -2,
-                                            right: -2,
+                                            top: -3,
+                                            right: -3,
                                             minWidth: '20px',
                                             height: '20px',
                                             background: '#ef4444',
@@ -593,7 +592,7 @@ export const GameHUD: React.FC = () => {
                                             alignItems: 'center',
                                             justifyContent: 'center',
                                             fontWeight: 900,
-                                            border: '2.5px solid #0f0a05',
+                                            border: '2px solid #0f0a05',
                                             padding: '0 4px',
                                             boxShadow: '0 0 10px rgba(239, 68, 68, 0.5)',
                                         }}
@@ -650,6 +649,13 @@ export const GameHUD: React.FC = () => {
                 isOpen={devModal.isOpen}
                 title={devModal.title}
                 onClose={() => setDevModal({ ...devModal, isOpen: false })}
+            />
+
+            <VipDailyRewardModal
+                isOpen={!!vipDailyReward}
+                rewards={vipDailyReward || { gold: 0, crystals: 0, energy: 0 }}
+                daysLeft={vipDailyReward?.daysLeft || 0}
+                onClose={() => setVipDailyReward(null)}
             />
 
             <LevelUpOverlay />

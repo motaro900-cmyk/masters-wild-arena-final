@@ -219,7 +219,7 @@ export const boots: Record<string, IEquipmentStats> = {
         defenseBonus: 140,
         hpBonus: 1540,
         speedBonus: 0.2,
-        priceGold: 115000,
+        priceGold: 130000,
         image: '/assets/images/items/boots/boots_4.webp',
         mainTab: 'ARSENAL',
         subTab: 'BOOTS',

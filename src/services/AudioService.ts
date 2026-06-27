@@ -2,6 +2,7 @@ import { Howl, Howler } from 'howler';
 import bridge from '@vkontakte/vk-bridge';
 import { AssetsMap } from '../configs/AssetsMap';
 import { PixiApp } from '../engine/core/PixiApp';
+import { SoundManager } from '../engine/systems/SoundManager';
 
 /**
  * AudioService - Централизованное управление музыкой и звуками.
@@ -44,12 +45,18 @@ class AudioService {
                     console.log('🤫 App hidden - Muting audio & stopping ticker');
                     safeMute(true);
                     try {
+                        SoundManager.getInstance().suspend();
+                    } catch (e) {}
+                    try {
                         PixiApp.getInstance().getApp()?.ticker.stop();
                     } catch (err) {
                         console.warn('Could not stop PIXI ticker on visibilitychange:', err);
                     }
                 } else {
                     console.log('🔊 App visible - Unmuting audio & starting ticker');
+                    try {
+                        SoundManager.getInstance().resume();
+                    } catch (e) {}
                     try {
                         PixiApp.getInstance().getApp()?.ticker.start();
                     } catch (err) {
@@ -79,12 +86,18 @@ class AudioService {
                         console.log('🤫 VK Bridge: VKWebAppViewHide - Muting audio & stopping ticker');
                         safeMute(true);
                         try {
+                            SoundManager.getInstance().suspend();
+                        } catch (e) {}
+                        try {
                             PixiApp.getInstance().getApp()?.ticker.stop();
                         } catch (err) {
                             console.warn('Could not stop PIXI ticker on VKWebAppViewHide:', err);
                         }
                     } else if (type === 'VKWebAppViewRestore') {
                         console.log('🔊 VK Bridge: VKWebAppViewRestore - Unmuting audio & starting ticker');
+                        try {
+                            SoundManager.getInstance().resume();
+                        } catch (e) {}
                         try {
                             PixiApp.getInstance().getApp()?.ticker.start();
                         } catch (err) {
@@ -107,34 +120,14 @@ class AudioService {
                 console.warn('Failed to subscribe to VK Bridge lifecycle events:', err);
             }
         } // end if (!AudioService.visibilityListenerAdded)
-        // Run background assets verification check
-        this.verifyIntegrity();
+        // Background assets verification check bypassed in production
     }
 
     /**
      * Проверка существования медиа-файлов
      */
     public async verifyIntegrity() {
-        const criticalUrls = [
-            '/assets/audio/sfx/click.mp3',
-            '/assets/audio/sfx/buy_success.mp3',
-            '/assets/audio/sfx/impact_hit.mp3',
-            '/assets/audio/sfx/block.mp3',
-            '/assets/audio/sfx/miss.mp3',
-            '/assets/audio/sfx/strike_staff.mp3',
-        ];
-
-        console.log('🔍 AudioService: Checking audio assets integrity...');
-        for (const url of criticalUrls) {
-            try {
-                const res = await fetch(url, { method: 'HEAD' });
-                if (!res.ok) {
-                    console.error(`⚠️ AudioService Asset Missing (Status ${res.status}): ${url}`);
-                }
-            } catch (err) {
-                console.warn(`⚠️ AudioService Asset Verification Failed for ${url}:`, err);
-            }
-        }
+        // Заглушка в продакшене для исключения блокирующих сетевых запросов при старте
     }
 
     public resumeContext() {

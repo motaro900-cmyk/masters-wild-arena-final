@@ -272,8 +272,8 @@ export const CityScreen: React.FC = () => {
             <div
                 style={{
                     position: 'absolute',
-                    top: '40px',
-                    left: '40px',
+                    top: isMobile ? '12px' : '15px',
+                    left: isMobile ? '80px' : '20px',
                     zIndex: 10,
                 }}
             >
@@ -283,13 +283,13 @@ export const CityScreen: React.FC = () => {
                         goToMainMenu();
                     }}
                     style={{
-                        padding: '12px 24px',
+                        padding: isMobile ? '10px 20px' : '8px 16px',
                         background: 'rgba(20, 15, 10, 0.85)',
                         border: '2px solid #c8a870',
-                        borderRadius: '12px',
+                        borderRadius: '8px',
                         color: '#f0c040',
                         fontFamily: "'Cinzel', serif",
-                        fontSize: '18px',
+                        fontSize: isMobile ? '16px' : '14px',
                         fontWeight: 'bold',
                         cursor: 'pointer',
                         display: 'flex',

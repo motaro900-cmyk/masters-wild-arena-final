@@ -95,11 +95,11 @@ export const MatchmakingOverlay: React.FC<MatchmakingOverlayProps> = ({ onFound,
 
         let isCancelled = false;
 
-        // Trigger background pre-caching of battle assets
+        // Trigger background pre-caching of battle assets (only player's hero first)
         import('../../../engine/systems/AssetLoader')
             .then(({ AssetLoader }) => {
                 if (isCancelled) return;
-                AssetLoader.getInstance().preloadBattleAssets();
+                AssetLoader.getInstance().preloadBattleAssets(selectedHeroId);
             })
             .catch((err) => {
                 console.error('❌ Failed to trigger battle asset preloading:', err);
@@ -136,6 +136,14 @@ export const MatchmakingOverlay: React.FC<MatchmakingOverlayProps> = ({ onFound,
 
         Promise.all([searchPromise, minDelayPromise]).then(([found]) => {
             if (isCancelled) return;
+            
+            // Preload opponent's hero asset as soon as found
+            import('../../../engine/systems/AssetLoader')
+                .then(({ AssetLoader }) => {
+                    AssetLoader.getInstance().preloadBattleAssets(selectedHeroId, found.heroId);
+                })
+                .catch(() => {});
+
             setOpponent({
                 id: found.id,
                 name: found.name,

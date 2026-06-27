@@ -33,6 +33,7 @@ export const useShopScene = () => {
     const [toastMessage, setToastMessage] = useState<string | null>(null);
     const [timeStr, setTimeStr] = useState('00:00:00');
     const [successModal, setSuccessModal] = useState<{ itemName: string; crystalsAmount: number } | null>(null);
+    const [isPurchasing, setIsPurchasing] = useState(false);
 
     // Initialize shop rotation on load
     useEffect(() => {
@@ -164,9 +165,10 @@ export const useShopScene = () => {
     };
 
     const confirmPurchase = async (currency: 'gold' | 'gem' | 'votes' | 'ad') => {
-        if (!selectedItem) return;
+        if (!selectedItem || isPurchasing) return;
         const item = selectedItem;
 
+        setIsPurchasing(true);
         setShowConfirm(false);
 
         try {
@@ -205,10 +207,13 @@ export const useShopScene = () => {
             console.error('Purchase error:', error);
             audioService.playSFX(AssetsMap.AUDIO.SFX_ERROR);
             setToastMessage('❌ Произошла ошибка при обработке платежа.');
+        } finally {
+            setIsPurchasing(false);
         }
     };
 
     const triggerManualRefresh = async (currency: 'gold' | 'gem' | 'ad') => {
+        if (isPurchasing) return;
         setShowRefreshConfirm(false);
         try {
             const success = await refreshShop(currency);
@@ -253,5 +258,6 @@ export const useShopScene = () => {
         handleBuyTrigger,
         confirmPurchase,
         triggerManualRefresh,
+        isPurchasing,
     };
 };

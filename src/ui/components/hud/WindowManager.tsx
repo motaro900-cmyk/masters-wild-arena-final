@@ -26,7 +26,14 @@ interface WindowManagerProps {
 }
 
 export const WindowManager: React.FC<WindowManagerProps> = ({ activeWindow, setActiveWindow, setShowAdmin }) => {
+    const isMobile = useGameStore((state: any) => state.isMobile);
+
     if (!activeWindow) return null;
+
+    // PC: 1280x850px (fits 1920x1080 perfectly)
+    // Mobile: 980x700px (more compact, leaves margins on smaller phone displays)
+    const windowWidth = isMobile ? '980px' : '1280px';
+    const windowHeight = isMobile ? '700px' : '850px';
 
     return (
         <div
@@ -54,8 +61,8 @@ export const WindowManager: React.FC<WindowManagerProps> = ({ activeWindow, setA
                             title="ДРУЗЬЯ"
                             isOpen={true}
                             onClose={() => setActiveWindow(null)}
-                            width="1200px"
-                            height="900px"
+                            width={windowWidth}
+                            height={windowHeight}
                         >
                             <FriendsWindow onClose={() => setActiveWindow(null)} />
                         </BaseWindow>
@@ -65,8 +72,8 @@ export const WindowManager: React.FC<WindowManagerProps> = ({ activeWindow, setA
                             title="ПОЧТА"
                             isOpen={true}
                             onClose={() => setActiveWindow(null)}
-                            width="1380px"
-                            height="900px"
+                            width={windowWidth}
+                            height={windowHeight}
                         >
                             <MailWindow onClose={() => setActiveWindow(null)} />
                         </BaseWindow>
@@ -76,8 +83,8 @@ export const WindowManager: React.FC<WindowManagerProps> = ({ activeWindow, setA
                             title="VIP СТАТУС"
                             isOpen={true}
                             onClose={() => setActiveWindow(null)}
-                            width="1100px"
-                            height="800px"
+                            width={windowWidth}
+                            height={windowHeight}
                         >
                             <VIPWindow onClose={() => setActiveWindow(null)} />
                         </BaseWindow>
@@ -87,8 +94,8 @@ export const WindowManager: React.FC<WindowManagerProps> = ({ activeWindow, setA
                             title="НАСТРОЙКИ"
                             isOpen={true}
                             onClose={() => setActiveWindow(null)}
-                            width="1080px"
-                            height="880px"
+                            width={windowWidth}
+                            height={windowHeight}
                             headerExtra={
                                 <div style={{ marginLeft: '30px' }}>
                                     <ServerTime />
@@ -109,19 +116,19 @@ export const WindowManager: React.FC<WindowManagerProps> = ({ activeWindow, setA
                             title="НАСТРОЙКА ПРОФИЛЯ"
                             isOpen={true}
                             onClose={() => setActiveWindow(null)}
-                            width="1320px"
-                            height="860px"
+                            width={windowWidth}
+                            height={windowHeight}
                         >
                             <ProfileCustomizeWindow onClose={() => setActiveWindow(null)} />
                         </BaseWindow>
                     )}
                     {activeWindow === 'GIFT' && (
                         <BaseWindow
-                            title="КАЛЕНДАРЬ НАГРАД"
+                            title="ЕЖЕДНЕВНЫЕ НАГРАДЫ"
                             isOpen={true}
                             onClose={() => setActiveWindow(null)}
-                            width="1100px"
-                            height="720px"
+                            width={windowWidth}
+                            height={windowHeight}
                         >
                             <DailyGiftWindow onClose={() => setActiveWindow(null)} />
                         </BaseWindow>
@@ -131,8 +138,8 @@ export const WindowManager: React.FC<WindowManagerProps> = ({ activeWindow, setA
                             title="РЕЙТИНГ"
                             isOpen={true}
                             onClose={() => setActiveWindow(null)}
-                            width="1100px"
-                            height="900px"
+                            width={windowWidth}
+                            height={windowHeight}
                         >
                             <RankingWindow />
                         </BaseWindow>
@@ -142,8 +149,8 @@ export const WindowManager: React.FC<WindowManagerProps> = ({ activeWindow, setA
                             title="ИНФОРМАЦИЯ О КЛАНЕ"
                             isOpen={true}
                             onClose={() => setActiveWindow(null)}
-                            width="1200px"
-                            height="900px"
+                            width={windowWidth}
+                            height={windowHeight}
                         >
                             <ClanWindow />
                         </BaseWindow>
@@ -153,8 +160,8 @@ export const WindowManager: React.FC<WindowManagerProps> = ({ activeWindow, setA
                             title="ПУТЬ МАСТЕРА"
                             isOpen={true}
                             onClose={() => setActiveWindow(null)}
-                            width="1050px"
-                            height="880px"
+                            width={windowWidth}
+                            height={windowHeight}
                         >
                             <RanksListWindow />
                         </BaseWindow>
@@ -164,8 +171,8 @@ export const WindowManager: React.FC<WindowManagerProps> = ({ activeWindow, setA
                             title="ИНВЕНТАРЬ"
                             isOpen={true}
                             onClose={() => setActiveWindow(null)}
-                            width="1450px"
-                            height="900px"
+                            width={windowWidth}
+                            height={windowHeight}
                         >
                             <div
                                 style={{
@@ -222,8 +229,8 @@ export const WindowManager: React.FC<WindowManagerProps> = ({ activeWindow, setA
                             title="ЗВЕРИНЕЦ"
                             isOpen={true}
                             onClose={() => setActiveWindow(null)}
-                            width="1150px"
-                            height="900px"
+                            width={windowWidth}
+                            height={windowHeight}
                         >
                             <BestiaryWindow />
                         </BaseWindow>

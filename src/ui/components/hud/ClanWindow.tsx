@@ -70,15 +70,7 @@ export const ClanWindow: React.FC = () => {
     const [view, setView] = useState<'BROWSE' | 'CREATE' | 'DASHBOARD'>(clanId ? 'DASHBOARD' : 'BROWSE');
     const [dashboardTab, setDashboardTab] = useState<'LOBBY' | 'MEMBERS' | 'STORE' | 'BANK'>('LOBBY');
 
-    const [isMobile, setIsMobile] = useState(false);
-    useEffect(() => {
-        const checkLayout = () => {
-            setIsMobile(typeof window !== 'undefined' && window.innerWidth < 1024);
-        };
-        checkLayout();
-        window.addEventListener('resize', checkLayout);
-        return () => window.removeEventListener('resize', checkLayout);
-    }, []);
+    const isMobile = useGameStore((state: any) => state.isMobile);
 
     const [members, setMembers] = useState<ClanMember[]>([]);
     const [playerContribution, setPlayerContribution] = useState(0);
@@ -206,7 +198,7 @@ export const ClanWindow: React.FC = () => {
                             trophies: clan ? Math.floor(clan.totalTrophies / 10) : 3000,
                             lastSeen: 'В сети',
                             isOnline: true,
-                            avatar: 'sprite:sprite-avatar avatar-pos-1',
+                            avatar: 'panda',
                             contribution: 500,
                             level: clan ? clan.level * 2 + 5 : 20,
                         },

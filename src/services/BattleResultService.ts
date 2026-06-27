@@ -115,9 +115,13 @@ class BattleResultServiceClass {
         // TODO: Cloud Function resolveBattle — uncomment when Cloud Functions are deployed.
 
         // Fallback to client calculation to ensure game stays playable
-        myGoldChange = getGoldReward(params.myLevel, attackerWon);
+        const baseGold = getGoldReward(params.myLevel, attackerWon);
+        const storeState = useGameStore.getState();
+        const isVip = storeState.vipLevel > 0 && (storeState.vipEndTime || 0) > Date.now();
+        myGoldChange = Math.floor(baseGold * (isVip ? 1.15 : 1.0));
+
         myExpChange = Math.round(
-            getXPReward(attackerWon, params.myLevel) * (useGameStore.getState().isPremium ? 1.25 : 1.0),
+            getXPReward(attackerWon, params.myLevel) * (storeState.isPremium ? 1.25 : 1.0),
         );
 
         const serverAttackerWon = serverResult === 'win';

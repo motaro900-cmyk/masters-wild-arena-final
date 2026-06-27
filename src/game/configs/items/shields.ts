@@ -176,7 +176,7 @@ export const shields: Record<string, IEquipmentStats> = {
         rarity: 'LEGENDARY',
         defenseBonus: 133,
         hpBonus: 1330,
-        priceGold: 95000,
+        priceGold: 108000,
         image: '/assets/images/items/shields/bone_shield.webp',
         mainTab: 'ARSENAL',
         subTab: 'SHIELDS',

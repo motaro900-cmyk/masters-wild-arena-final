@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useGameStore } from '../../../store/useGameStore';
 import { AssetsMap } from '../../../configs/AssetsMap';
+import { TimeService } from '../../../utils/TimeService';
 import { useGraphicsConfig } from '../../hooks/useGraphicsConfig';
 
 const RESOURCES = [
@@ -17,8 +18,17 @@ export const ResourceBar: React.FC<{ onOpenShop?: (tab: string) => void }> = ({ 
     const maxEnergy = useGameStore((s) => s.maxEnergy);
     const lastEnergyUpdate = useGameStore((s) => s.lastEnergyUpdate);
     const regenerateEnergy = useGameStore((s) => s.regenerateEnergy);
+    const isMobile = useGameStore((s) => s.isMobile);
     const [hoveredRes, setHoveredRes] = useState<string | null>(null);
     const [timeLeft, setTimeLeft] = useState<{ next: string; full: string } | null>(null);
+
+    const barWidth = isMobile ? 125 : 150;
+    const barHeight = isMobile ? 30 : 36;
+    const fontSize = isMobile ? 13 : 16;
+    const padLeft = isMobile ? 26 : 32;
+    const padRight = isMobile ? 20 : 26;
+    const plusSize = isMobile ? 22 : 26;
+    const plusRight = isMobile ? 3 : 4;
 
     // Обновляем таймер каждую секунду
     useEffect(() => {
@@ -28,7 +38,7 @@ export const ResourceBar: React.FC<{ onOpenShop?: (tab: string) => void }> = ({ 
             }
 
             if (energy < maxEnergy) {
-                const now = Date.now();
+                const now = TimeService.now();
                 const FIVE_MIN = 5 * 60 * 1000;
                 const diff = now - lastEnergyUpdate;
                 const nextMs = FIVE_MIN - diff;
@@ -59,7 +69,7 @@ export const ResourceBar: React.FC<{ onOpenShop?: (tab: string) => void }> = ({ 
     const values = { energy: `${energy}/${maxEnergy}`, gold, gems: crystals };
 
     return (
-        <div className="flex items-center gap-3 pointer-events-auto">
+        <div className="flex items-center pointer-events-auto" style={{ gap: '0px' }}>
             {RESOURCES.map((res) => (
                 <div
                     key={res.key}
@@ -67,8 +77,8 @@ export const ResourceBar: React.FC<{ onOpenShop?: (tab: string) => void }> = ({ 
                     onMouseLeave={() => setHoveredRes(null)}
                     style={{
                         position: 'relative',
-                        width: 145,
-                        height: 34,
+                        width: barWidth,
+                        height: barHeight,
                         backgroundImage: `url(${res.sprite})`,
                         backgroundSize: '100% 100%',
                         backgroundRepeat: 'no-repeat',
@@ -279,14 +289,14 @@ export const ResourceBar: React.FC<{ onOpenShop?: (tab: string) => void }> = ({ 
                         style={{
                             flex: 1,
                             textAlign: 'center',
-                            paddingRight: 28,
-                            paddingLeft: 34,
+                            paddingRight: padRight,
+                            paddingLeft: padLeft,
                         }}
                     >
                         <span
                             style={{
                                 fontFamily: "'Nunito', sans-serif",
-                                fontSize: 16,
+                                fontSize: fontSize,
                                 fontWeight: 900,
                                 color: res.color,
                                 textShadow: '1px 1.5px 0px #000, -1px -1px 0px #000, 0 2px 6px rgba(0,0,0,0.85)',
@@ -298,7 +308,7 @@ export const ResourceBar: React.FC<{ onOpenShop?: (tab: string) => void }> = ({ 
                         </span>
                     </div>
 
-                    <div style={{ position: 'absolute', right: 4, width: 24, height: 24, zIndex: 5 }}>
+                    <div style={{ position: 'absolute', right: plusRight, width: plusSize, height: plusSize, zIndex: 5 }}>
                         <div
                             className="mobile-hit-area"
                             onClick={() => onOpenShop?.(res.key === 'gems' ? 'GEMS' : res.key.toUpperCase())}

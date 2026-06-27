@@ -48,16 +48,8 @@ export const FriendsWindow: React.FC<FriendsWindowProps> = () => {
         handleSendFriendRequest,
     } = useFriendsWindow();
 
-    const [isMobile, setIsMobile] = useState(false);
+    const isMobile = useGameStore((state: any) => state.isMobile);
     const [isInviting, setIsInviting] = useState(false);
-    useEffect(() => {
-        const checkLayout = () => {
-            setIsMobile(typeof window !== 'undefined' && window.innerWidth < 1024);
-        };
-        checkLayout();
-        window.addEventListener('resize', checkLayout);
-        return () => window.removeEventListener('resize', checkLayout);
-    }, []);
 
     const TABS = ['ALL', 'ONLINE', 'WORLD', 'REQUESTS', 'REWARDS'] as const;
 

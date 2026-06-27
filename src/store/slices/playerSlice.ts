@@ -94,6 +94,8 @@ export const createPlayerSlice = (set: any, get: any) => {
         maxEnergy: ENERGY_CONFIG.MAX_ENERGY,
         lastEnergyUpdate: Date.now(),
         vipEndTime: 0,
+        lastVipMailClaimDate: '',
+        lastVipQuestPassDate: '',
         hasBoughtStarterPack: false,
         dailyAdWatchesCount: 0,
         dailyEnergyPurchasesCount: 0,
@@ -105,7 +107,7 @@ export const createPlayerSlice = (set: any, get: any) => {
         lastBattleReset: Date.now(),
         name: 'Мастер',
         lastNameChange: 0,
-        avatar: 'sprite:sprite-avatar avatar-pos-1',
+        avatar: '/assets/images/avatars/panda.webp',
         frame: 'none',
         title: 'Странник',
         trophies: 0,
@@ -229,7 +231,9 @@ export const createPlayerSlice = (set: any, get: any) => {
         addCrystals: (amount: number) => set((state: any) => ({ crystals: state.crystals + amount })),
         spendDiamonds: (amount: number) => set((state: any) => ({ crystals: Math.max(0, state.crystals - amount) })),
         addEnergy: (amount: number) =>
-            set((state: any) => ({ energy: Math.min(state.energy + amount, state.maxEnergy || 50) })),
+            // Allow energy to exceed maxEnergy (overflow from rewards/purchases).
+            // Regen is paused while energy >= maxEnergy, so overflow drains via combat only.
+            set((state: any) => ({ energy: state.energy + amount })),
         consumeEnergy: (amount: number) => {
             const s = get();
             if (s.hasInfiniteEnergy) return true;
@@ -552,7 +556,12 @@ export const createPlayerSlice = (set: any, get: any) => {
                 set({ maxEnergy });
             }
 
+            // Pause regen while at or above cap (handles overflow > maxEnergy too)
             if (s.energy >= maxEnergy) {
+                // If overflow, still sync maxEnergy timestamp so regen starts correctly after draining
+                if (s.energy > maxEnergy) {
+                    set({ lastEnergyUpdate: now });
+                }
                 return;
             }
             const elapsed = now - s.lastEnergyUpdate;

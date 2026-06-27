@@ -95,17 +95,7 @@ export const DailyGiftWindow: React.FC<DailyGiftWindowProps> = ({ onClose }) => 
     // Tab control
     const [activeTab, setActiveTab] = useState<'CALENDAR' | 'WHEEL'>('CALENDAR');
 
-    const storeIsMobile = useGameStore((state) => state.isMobile);
-    const [isMobile, setIsMobile] = useState(storeIsMobile);
-
-    useEffect(() => {
-        const checkLayout = () => {
-            setIsMobile(storeIsMobile || (typeof window !== 'undefined' && window.innerWidth < 1024));
-        };
-        checkLayout();
-        window.addEventListener('resize', checkLayout);
-        return () => window.removeEventListener('resize', checkLayout);
-    }, [storeIsMobile]);
+    const isMobile = useGameStore((state) => state.isMobile);
 
     // Calendar states
     const initialGiftTime = useGameStore.getState().lastDailyGiftClaimedTime || 0;
@@ -153,6 +143,7 @@ export const DailyGiftWindow: React.FC<DailyGiftWindowProps> = ({ onClose }) => 
 
     const [isSpinning, setIsSpinning] = useState<boolean>(false);
     const [wheelRotation, setWheelRotation] = useState<number>(0);
+    const [targetSectorIndex, setTargetSectorIndex] = useState<number>(0);
 
     const computeInitialWheelState = () => {
         const wheelTime = initialWheelTime;
@@ -369,6 +360,7 @@ export const DailyGiftWindow: React.FC<DailyGiftWindowProps> = ({ onClose }) => 
 
         // Generate target sector index
         const sectorIndex = getRandomSectorIndex();
+        setTargetSectorIndex(sectorIndex);
         const sectorDegrees = 45;
         const targetAngle = 360 - sectorIndex * sectorDegrees - 22.5;
 
@@ -445,7 +437,7 @@ export const DailyGiftWindow: React.FC<DailyGiftWindowProps> = ({ onClose }) => 
                 flexDirection: 'column',
                 alignItems: 'center',
                 justifyContent: 'flex-start',
-                padding: '16px 32px',
+                padding: isMobile ? '8px 16px' : '16px 32px',
                 fontFamily: "'Outfit', 'Nunito', sans-serif",
                 color: '#fff',
                 position: 'relative',
@@ -464,7 +456,7 @@ export const DailyGiftWindow: React.FC<DailyGiftWindowProps> = ({ onClose }) => 
             `}</style>
 
             {/* Tabs Header */}
-            <div style={{ display: 'flex', gap: '18px', marginBottom: '16px', zIndex: 5 }}>
+            <div style={{ display: 'flex', gap: isMobile ? '12px' : '18px', marginBottom: isMobile ? '10px' : '16px', zIndex: 5 }}>
                 <button
                     onClick={() => {
                         if (isSpinning) return;
@@ -488,7 +480,7 @@ export const DailyGiftWindow: React.FC<DailyGiftWindowProps> = ({ onClose }) => 
                         }
                     }}
                     style={{
-                        padding: '11px 28px',
+                        padding: isMobile ? '8px 16px' : '11px 28px',
                         background:
                             activeTab === 'CALENDAR'
                                 ? 'linear-gradient(180deg, #ffe57f 0%, #e5a910 40%, #8c6300 100%)'
@@ -498,7 +490,7 @@ export const DailyGiftWindow: React.FC<DailyGiftWindowProps> = ({ onClose }) => 
                         color: activeTab === 'CALENDAR' ? '#1c1002' : '#c8a870',
                         fontFamily: "'Cinzel', serif",
                         fontWeight: 900,
-                        fontSize: '13px',
+                        fontSize: isMobile ? '12px' : '13px',
                         cursor: 'pointer',
                         transition: 'all 0.25s ease',
                         letterSpacing: '1.5px',
@@ -534,7 +526,7 @@ export const DailyGiftWindow: React.FC<DailyGiftWindowProps> = ({ onClose }) => 
                         }
                     }}
                     style={{
-                        padding: '11px 28px',
+                        padding: isMobile ? '8px 16px' : '11px 28px',
                         background:
                             activeTab === 'WHEEL'
                                 ? 'linear-gradient(180deg, #ffe57f 0%, #e5a910 40%, #8c6300 100%)'
@@ -544,7 +536,7 @@ export const DailyGiftWindow: React.FC<DailyGiftWindowProps> = ({ onClose }) => 
                         color: activeTab === 'WHEEL' ? '#1c1002' : '#c8a870',
                         fontFamily: "'Cinzel', serif",
                         fontWeight: 900,
-                        fontSize: '13px',
+                        fontSize: isMobile ? '12px' : '13px',
                         cursor: 'pointer',
                         transition: 'all 0.25s ease',
                         letterSpacing: '1.5px',
@@ -556,7 +548,7 @@ export const DailyGiftWindow: React.FC<DailyGiftWindowProps> = ({ onClose }) => 
                                 : 'none',
                     }}
                 >
-                    КОЛЕСО ФОРТУНЫ
+                    РУЛЕТКА УДАЧИ
                 </button>
             </div>
 
@@ -576,9 +568,11 @@ export const DailyGiftWindow: React.FC<DailyGiftWindowProps> = ({ onClose }) => 
                 }}
                 style={{
                     width: '100%',
+                    flex: 1,
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
+                    justifyContent: 'space-between',
                     touchAction: isMobile ? 'pan-y' : 'auto',
                 }}
             >
@@ -596,7 +590,7 @@ export const DailyGiftWindow: React.FC<DailyGiftWindowProps> = ({ onClose }) => 
                         isMobile={isMobile}
                         isSpinning={isSpinning}
                         isFreeSpinAvailable={isFreeSpinAvailable}
-                        wheelRotation={wheelRotation}
+                        targetSectorIndex={targetSectorIndex}
                         handleSpinWheel={handleSpinWheel}
                         wheelTimeLeft={wheelTimeLeft}
                     />

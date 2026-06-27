@@ -1130,9 +1130,9 @@ class BootController {
         }
 
         const enemyRank = getRankInfo(enemyRating);
-        let enemyAvatar = '/assets/images/avatars/wolf.webp';
+        let enemyAvatar = '/assets/images/avatars/panda.webp';
         if (state.battleMode === 'PVE' && state.activePveEnemy) {
-            enemyAvatar = state.activePveEnemy.image || '/assets/images/avatars/wolf.webp';
+            enemyAvatar = state.activePveEnemy.image || '/assets/images/avatars/panda.webp';
         } else if (activeRankedOpponent?.avatar) {
             enemyAvatar = activeRankedOpponent.avatar;
         }
@@ -1147,7 +1147,31 @@ class BootController {
             hudPrecomputed: true,
             isSystemUpdate: true,
         });
-        console.log('[BootController] HUD derived values precomputed successfully.');
+    }
+
+    public async calibrateTime(): Promise<void> {
+        try {
+            const start = Date.now();
+            const response = await fetchWithRetry(
+                '/api/time',
+                {
+                    method: 'GET',
+                    cache: 'no-cache',
+                    signal: AbortSignal.timeout(5000),
+                },
+                2,
+                1000,
+            );
+            const data = await response.json();
+            if (data.serverTime) {
+                const latency = (Date.now() - start) / 2;
+                this.timeOffset = data.serverTime + latency - Date.now();
+                console.log('[BootController] Re-calibrated server time offset:', this.timeOffset);
+                TimeService.setOffset(this.timeOffset);
+            }
+        } catch (e) {
+            console.warn('[BootController] Re-calibrate time failed:', e);
+        }
     }
 
     public async ready(container: HTMLElement): Promise<void> {
@@ -1196,6 +1220,22 @@ class BootController {
 
         const duration = Date.now() - this.bootStartTime;
         console.log(`[Performance] 🚀 Game successfully booted. Total loading time: ${duration}ms`);
+
+        // Рекалибровка времени при возвращении во вкладку (защита от накрутки временем в фоне)
+        if (typeof document !== 'undefined') {
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'visible') {
+                    console.log('[BootController] Tab active, re-calibrating offset...');
+                    this.calibrateTime().then(() => {
+                        try {
+                            useGameStore.getState().regenerateEnergy?.();
+                        } catch (err) {
+                            console.warn('[BootController] Auto-regen failed:', err);
+                        }
+                    });
+                }
+            });
+        }
     }
 }
 

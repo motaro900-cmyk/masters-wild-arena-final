@@ -148,7 +148,7 @@ export const RankingWindow: React.FC = () => {
                 name: clanLeaderName,
                 level: clan ? clan.level * 2 + 5 : 20,
                 trophies: clan ? Math.floor(clan.totalTrophies / 10) : 3000,
-                avatar: 'sprite:sprite-avatar avatar-pos-1',
+                avatar: 'panda',
                 contribution: 500,
             };
             membersList = [clanLeaderEntry, ...DEFAULT_MOCK_MEMBERS, playerMember];
@@ -184,15 +184,7 @@ export const RankingWindow: React.FC = () => {
 
     const scrollRef = React.useRef<HTMLDivElement>(null);
 
-    const [isMobile, setIsMobile] = React.useState(false);
-    React.useEffect(() => {
-        const checkLayout = () => {
-            setIsMobile(typeof window !== 'undefined' && window.innerWidth < 1024);
-        };
-        checkLayout();
-        window.addEventListener('resize', checkLayout);
-        return () => window.removeEventListener('resize', checkLayout);
-    }, []);
+    const isMobile = useGameStore((state: any) => state.isMobile);
 
     const TABS = ['GLOBAL', 'CLAN', 'FRIENDS'] as const;
 

@@ -3,7 +3,7 @@ import { join } from 'path';
 import { mkdirSync } from 'fs';
 
 const CHROME_PATH = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
-const GAME_URL = 'http://localhost:4173';
+const GAME_URL = 'http://localhost:5173';
 const SCREENSHOT_DIR = 'C:\\Users\\Motar\\.gemini\\antigravity\\brain\\4f469d25-f6bf-406c-978b-b93308fea26b\\';
 
 async function delay(ms) {
@@ -147,6 +147,21 @@ async function run() {
         await delay(2000);
         await page.screenshot({ path: join(SCREENSHOT_DIR, 'mobile_shop.png') });
         console.log('📸 Captured: mobile_shop.png');
+
+        // Return to main menu
+        await page.evaluate(() => {
+            window.useGameStore.getState().setActiveScreen('MAIN_MENU');
+        });
+        await delay(1000);
+
+        // 6. SCREENSHOT: City Screen
+        console.log('🤖 Opening City Screen...');
+        await page.evaluate(() => {
+            window.useGameStore.getState().setActiveScreen('CITY');
+        });
+        await delay(2000);
+        await page.screenshot({ path: join(SCREENSHOT_DIR, 'mobile_city.png') });
+        console.log('📸 Captured: mobile_city.png');
 
         // Return to main menu
         await page.evaluate(() => {

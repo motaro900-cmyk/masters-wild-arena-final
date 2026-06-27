@@ -266,14 +266,7 @@ export const AvatarFrame: React.FC<{
                     justifyContent: 'center',
                 }}
             >
-                {avatarFilename.startsWith('sprite:') ? (
-                    <div
-                        className={avatarFilename.replace('sprite:', '')}
-                        style={{ width: '100%', height: '100%', backgroundSize: '300% 300%' }}
-                    />
-                ) : (
-                    <img src={avatarSrc} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" />
-                )}
+                <img src={avatarSrc} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" />
             </div>
 
             {/* Сама рамка */}

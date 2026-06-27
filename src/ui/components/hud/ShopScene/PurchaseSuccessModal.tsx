@@ -30,17 +30,19 @@ export const PurchaseSuccessModal: React.FC<PurchaseSuccessModalProps> = ({
     crystalsAmount,
     onClose,
 }) => {
-    const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const onCloseRef = useRef(onClose);
+    useEffect(() => {
+        onCloseRef.current = onClose;
+    }, [onClose]);
 
     useEffect(() => {
         if (isOpen) {
-            if (timerRef.current) clearTimeout(timerRef.current);
-            timerRef.current = setTimeout(onClose, 5500);
+            const timer = setTimeout(() => {
+                onCloseRef.current();
+            }, 5500);
+            return () => clearTimeout(timer);
         }
-        return () => {
-            if (timerRef.current) clearTimeout(timerRef.current);
-        };
-    }, [isOpen, onClose]);
+    }, [isOpen]);
 
     return (
         <AnimatePresence>
@@ -53,7 +55,7 @@ export const PurchaseSuccessModal: React.FC<PurchaseSuccessModalProps> = ({
                     transition={{ duration: 0.25 }}
                     onClick={onClose}
                     style={{
-                        position: 'fixed',
+                        position: 'absolute',
                         inset: 0,
                         zIndex: 9999,
                         display: 'flex',

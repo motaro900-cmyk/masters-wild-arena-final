@@ -314,7 +314,10 @@ export const PlayerInspectModal: React.FC = () => {
 
     if (isMe) {
         name = store.name || 'Мастер';
-        avatar = myVkUser?.photo_200 || myVkUser?.photo || store.avatar || 'panda';
+        avatar =
+            store.avatar && !store.avatar.startsWith('sprite:')
+                ? store.avatar
+                : myVkUser?.photo_200 || myVkUser?.photo || '/assets/images/avatars/panda.webp';
         level = store.level || 1;
         rating = store.rating || 0;
         vipLevel = store.vipLevel || 0;
@@ -694,7 +697,7 @@ export const PlayerInspectModal: React.FC = () => {
     return (
         <div
             style={{
-                position: 'fixed',
+                position: 'absolute',
                 inset: 0,
                 background: 'rgba(0,0,0,0.72)',
                 backdropFilter: 'blur(12px)',
@@ -716,10 +719,10 @@ export const PlayerInspectModal: React.FC = () => {
                 transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
                 onClick={(e) => e.stopPropagation()}
                 style={{
-                    width: isMobile ? '96%' : '100%',
-                    maxWidth: isMobile ? '100%' : '1020px',
+                    width: '1100px',
+                    maxWidth: '100%',
                     /* ★ ФИКСИРОВАННАЯ ВЫСОТА — окно не прыгает при смене вкладок */
-                    height: isMobile ? '95vh' : 'min(88vh, 700px)',
+                    height: '800px',
                     background: 'linear-gradient(158deg, #231b0e 0%, #160f09 48%, #0e0804 100%)',
                     border: '2px solid rgba(240,192,64,0.42)',
                     borderRadius: '22px',
@@ -1332,20 +1335,19 @@ export const PlayerInspectModal: React.FC = () => {
                                             </div>
                                         </div>
 
-                                        {/* Двухколоночный блок — flex: 1 */}
                                         <div
                                             style={{
                                                 display: 'flex',
-                                                flexDirection: isMobile ? 'column' : 'row',
+                                                flexDirection: 'row',
                                                 gap: '12px',
-                                                flex: isMobile ? 'none' : 1,
+                                                flex: 1,
                                                 minHeight: 0,
                                             }}
                                         >
                                             {/* LEFT: Характеристики */}
                                             <div
                                                 style={{
-                                                    flex: isMobile ? 'none' : 1,
+                                                    flex: 1,
                                                     background: 'rgba(0,0,0,0.22)',
                                                     border: '1px solid rgba(240,192,64,0.09)',
                                                     borderRadius: '14px',
@@ -1444,7 +1446,7 @@ export const PlayerInspectModal: React.FC = () => {
                                             {/* RIGHT: Профиль */}
                                             <div
                                                 style={{
-                                                    flex: isMobile ? 'none' : 1.12,
+                                                    flex: 1.12,
                                                     display: 'flex',
                                                     flexDirection: 'column',
                                                     gap: '10px',
@@ -2108,7 +2110,7 @@ export const PlayerInspectModal: React.FC = () => {
                                 <div
                                     style={{
                                         display: 'flex',
-                                        flexDirection: isMobile ? 'column' : 'row',
+                                        flexDirection: 'row',
                                         gap: '10px',
                                         flexShrink: 0,
                                         width: '100%',
@@ -2119,8 +2121,8 @@ export const PlayerInspectModal: React.FC = () => {
                                         disabled={isAlreadyFriend}
                                         className="act-btn"
                                         style={{
-                                            flex: isMobile ? 'none' : 1,
-                                            width: isMobile ? '100%' : 'auto',
+                                            flex: 1,
+                                            width: 'auto',
                                             height: '42px',
                                             background: isAlreadyFriend
                                                 ? 'rgba(255,255,255,0.02)'
@@ -2156,8 +2158,8 @@ export const PlayerInspectModal: React.FC = () => {
                                         onClick={handleWriteMsg}
                                         className="act-btn"
                                         style={{
-                                            flex: isMobile ? 'none' : 1,
-                                            width: isMobile ? '100%' : 'auto',
+                                            flex: 1,
+                                            width: 'auto',
                                             height: '42px',
                                             background: 'rgba(255,255,255,0.04)',
                                             border: '1px solid rgba(255,255,255,0.15)',
@@ -2186,8 +2188,8 @@ export const PlayerInspectModal: React.FC = () => {
                                         onClick={handleChallenge}
                                         className="act-btn"
                                         style={{
-                                            flex: isMobile ? 'none' : 1.7,
-                                            width: isMobile ? '100%' : 'auto',
+                                            flex: 1.7,
+                                            width: 'auto',
                                             height: '42px',
                                             background:
                                                 'linear-gradient(180deg, #ffe880 0%, #f0c040 50%, #9a6e10 100%)',

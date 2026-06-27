@@ -56,15 +56,7 @@ export const ProfileCustomizeWindow: React.FC<ProfileCustomizeWindowProps> = () 
     // Tab state: 'AVATARS' | 'FRAMES' | 'TITLES'
     const [activeTab, setActiveTab] = useState<'AVATARS' | 'FRAMES' | 'TITLES'>('AVATARS');
 
-    const [isMobile, setIsMobile] = useState(false);
-    useEffect(() => {
-        const checkLayout = () => {
-            setIsMobile(typeof window !== 'undefined' && window.innerWidth < 1024);
-        };
-        checkLayout();
-        window.addEventListener('resize', checkLayout);
-        return () => window.removeEventListener('resize', checkLayout);
-    }, []);
+    const isMobile = useGameStore((state: any) => state.isMobile);
 
     const TABS = ['AVATARS', 'FRAMES', 'TITLES'] as const;
 

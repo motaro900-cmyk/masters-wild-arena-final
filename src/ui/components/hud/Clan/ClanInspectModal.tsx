@@ -113,6 +113,8 @@ export const ClanInspectModal: React.FC<ClanInspectModalProps> = ({
         const count = clan.membersCount;
         const members: InspectMember[] = [];
 
+        const MOCK_AVATARS = ['panda', 'lion', 'tiger', 'panther', 'bear', 'cat', 'monkey', 'moose', 'boar', 'rhino', 'ram', 'crocodile'];
+
         // Лидер клана
         const leaderTrophies = Math.max(clan.minTrophies + 500, Math.floor(clan.totalTrophies * 0.12));
         members.push({
@@ -121,7 +123,7 @@ export const ClanInspectModal: React.FC<ClanInspectModalProps> = ({
             trophies: leaderTrophies,
             lastSeen: 'В сети',
             isOnline: true,
-            avatar: 'sprite:sprite-avatar avatar-pos-1',
+            avatar: 'panda',
             contribution: Math.floor(Math.random() * 300) + 300,
             level: Math.max(15, Math.floor(clan.level * 2.2) + Math.floor(Math.random() * 8)),
         });
@@ -142,7 +144,7 @@ export const ClanInspectModal: React.FC<ClanInspectModalProps> = ({
                 ),
                 lastSeen: isOnline ? 'В сети' : `${Math.floor(Math.random() * 23) + 1}ч назад`,
                 isOnline,
-                avatar: `sprite:sprite-avatar avatar-pos-${(i + 2) % 9}`,
+                avatar: MOCK_AVATARS[(i + 1) % MOCK_AVATARS.length],
                 contribution: Math.floor(Math.random() * 250) + 150,
                 level: Math.max(10, Math.floor(clan.level * 1.8) + Math.floor(Math.random() * 6)),
             });
@@ -165,7 +167,7 @@ export const ClanInspectModal: React.FC<ClanInspectModalProps> = ({
                 trophies,
                 lastSeen: isOnline ? 'В сети' : `${Math.floor(Math.random() * 6) + 1}д назад`,
                 isOnline,
-                avatar: `sprite:sprite-avatar avatar-pos-${(i + 5) % 9}`,
+                avatar: MOCK_AVATARS[(i + 4) % MOCK_AVATARS.length],
                 contribution: Math.floor(Math.random() * 150),
                 level: Math.max(1, Math.floor(clan.level * 1.3) + Math.floor((Math.random() - 0.5) * 4)),
             });

@@ -160,12 +160,12 @@ export const ShopItemCard: React.FC<ShopItemCardProps> = React.memo(
                 onClick={onClick}
                 whileHover={{ y: -6, scale: 1.03 }}
                 style={{
-                    width: isMobile ? '130px' : '155px',
-                    maxWidth: isMobile ? '130px' : '155px',
-                    minWidth: isMobile ? '130px' : '155px',
+                    width: isMobile ? '142px' : '155px',
+                    maxWidth: isMobile ? '142px' : '155px',
+                    minWidth: isMobile ? '142px' : '155px',
                     boxSizing: 'border-box',
                     flexShrink: 0,
-                    height: isMobile ? '154px' : '180px',
+                    height: isMobile ? '168px' : '180px',
                     background: isSelected
                         ? isMobile
                             ? `radial-gradient(circle, rgba(240,192,64,0.25) 0%, rgba(20,15,15,0.98) 100%)`
@@ -300,7 +300,7 @@ export const ShopItemCard: React.FC<ShopItemCardProps> = React.memo(
                         alignSelf: 'flex-start',
                         letterSpacing: '1px',
                         textTransform: 'uppercase',
-                        marginTop: item.badge && !isLocked ? (isMobile ? '12px' : '16px') : '0px',
+                        marginTop: item.badge && !isLocked ? (isMobile ? '20px' : '24px') : '0px',
                         zIndex: 2,
                     }}
                 >

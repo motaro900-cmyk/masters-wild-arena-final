@@ -147,7 +147,7 @@ export const ShopShowcasePanel: React.FC<ShopShowcasePanelProps> = ({
                 }
             }}
             style={{
-                flex: 1.4,
+                flex: isMobile ? 1.0 : 1.4,
                 background: 'rgba(15,12,12,0.6)',
                 border: '1px solid rgba(240,192,64,0.1)',
                 borderRadius: '16px',
@@ -161,6 +161,18 @@ export const ShopShowcasePanel: React.FC<ShopShowcasePanelProps> = ({
                 touchAction: isMobile ? 'pan-y' : 'auto',
             }}
         >
+            {/* Inline CSS Animations to optimize and ensure presence */}
+            <style dangerouslySetInnerHTML={{ __html: `
+                @keyframes float-item {
+                    0%, 100% { transform: translateY(0px); }
+                    50% { transform: translateY(-12px); }
+                }
+                @keyframes pulse-glow-showcase {
+                    0%, 100% { opacity: 0.3; transform: scale(0.95); }
+                    50% { opacity: 0.65; transform: scale(1.05); }
+                }
+            ` }} />
+
             {/* Decorative Vignette */}
             <div
                 style={{
@@ -193,8 +205,9 @@ export const ShopShowcasePanel: React.FC<ShopShowcasePanelProps> = ({
                     <div
                         style={{
                             position: 'relative',
-                            width: isMobile ? '360px' : '380px',
-                            height: isMobile ? '320px' : '340px',
+                            width: '100%',
+                            maxWidth: isMobile ? '340px' : '440px',
+                            height: isMobile ? '240px' : '380px',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
@@ -204,81 +217,36 @@ export const ShopShowcasePanel: React.FC<ShopShowcasePanelProps> = ({
                         <div
                             style={{
                                 position: 'absolute',
-                                width: isMobile ? '320px' : '320px',
-                                height: isMobile ? '320px' : '320px',
+                                width: isMobile ? '280px' : '360px',
+                                height: isMobile ? '280px' : '360px',
                                 borderRadius: '50%',
                                 background:
                                     'radial-gradient(circle, ' +
                                     getRarityColor(selectedItem.rarity) +
-                                    '22 0%, transparent 70%)',
-                                animation: 'pulse-glow 4s infinite ease-in-out',
+                                    '1a 0%, transparent 70%)',
+                                animation: 'pulse-glow-showcase 4s infinite ease-in-out',
+                                pointerEvents: 'none',
                             }}
                         />
-
-                        {/* Pedestal Platform Slab */}
-                        <div
-                            style={{
-                                position: 'absolute',
-                                bottom: isMobile ? '-12px' : '-15px',
-                                width: isMobile ? '340px' : '340px',
-                                height: isMobile ? '70px' : '76px',
-                                borderRadius: '50%',
-                                background: 'linear-gradient(180deg, rgba(35,30,30,0.96) 0%, rgba(10,5,5,0.98) 100%)',
-                                border:
-                                    (isMobile ? '1px solid ' : '2px solid ') +
-                                    getRarityColor(selectedItem.rarity) +
-                                    '88',
-                                boxShadow: isMobile
-                                    ? '0 4px 10px rgba(0,0,0,0.8), 0 0 10px ' +
-                                      getRarityColor(selectedItem.rarity) +
-                                      '33'
-                                    : '0 8px 25px rgba(0,0,0,0.8), 0 0 15px ' +
-                                      getRarityColor(selectedItem.rarity) +
-                                      '33, inset 0 2px 4px rgba(255,255,255,0.15)',
-                                transform: 'rotateX(65deg)',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                            }}
-                        >
-                            {/* Inner spinning element */}
-                            <div
-                                style={{
-                                    width: isMobile ? '280px' : '280px',
-                                    height: isMobile ? '280px' : '280px',
-                                    borderRadius: '50%',
-                                    border: `1.5px dashed ${getRarityColor(selectedItem.rarity)}77`,
-                                    boxShadow: `inset 0 0 15px ${getRarityColor(selectedItem.rarity)}22`,
-                                    animation: 'spin-slow-reverse 12s infinite linear',
-                                }}
-                            />
-                        </div>
 
                         {/* Floating Item Avatar (Large) */}
                         <div
                             style={{
                                 zIndex: 5,
                                 animation:
-                                    selectedItem.mainTab === 'SKINS' ? undefined : 'float-item 4s infinite ease-in-out',
+                                    isMobile ? undefined : (selectedItem.mainTab === 'SKINS' ? undefined : 'float-item 4s infinite ease-in-out'),
                                 display: 'flex',
-                                alignItems: 'flex-end',
+                                alignItems: 'center',
                                 justifyContent: 'center',
-                                marginBottom:
-                                    selectedItem.mainTab === 'SKINS'
-                                        ? isMobile
-                                            ? '10px'
-                                            : '14px'
-                                        : isMobile
-                                          ? '35px'
-                                          : '45px',
+                                marginBottom: '0px',
                             }}
                         >
                             {selectedItem.spriteClass ? (
                                 <div
                                     className={selectedItem.spriteClass}
                                     style={{
-                                        width: isMobile ? '300px' : '260px',
-                                        height: isMobile ? '300px' : '260px',
+                                        width: isMobile ? '300px' : '340px',
+                                        height: isMobile ? '300px' : '340px',
                                         filter: `contrast(1.2) brightness(1.2) drop-shadow(0 0 20px ${getRarityColor(selectedItem.rarity)}cc)`,
                                     }}
                                 />
@@ -290,20 +258,20 @@ export const ShopShowcasePanel: React.FC<ShopShowcasePanelProps> = ({
                                             width={
                                                 selectedItem.mainTab === 'SKINS'
                                                     ? isMobile
-                                                        ? '340px'
-                                                        : '320px'
+                                                        ? '320px'
+                                                        : '380px'
                                                     : isMobile
                                                       ? '300px'
-                                                      : '260px'
+                                                      : '340px'
                                             }
                                             height={
                                                 selectedItem.mainTab === 'SKINS'
                                                     ? isMobile
-                                                        ? '340px'
-                                                        : '320px'
+                                                        ? '320px'
+                                                        : '380px'
                                                     : isMobile
                                                       ? '300px'
-                                                      : '260px'
+                                                      : '340px'
                                             }
                                         />
                                     )}
@@ -317,22 +285,21 @@ export const ShopShowcasePanel: React.FC<ShopShowcasePanelProps> = ({
                                                 width:
                                                     selectedItem.mainTab === 'SKINS'
                                                         ? isMobile
-                                                            ? '340px'
-                                                            : '320px'
+                                                            ? '320px'
+                                                            : '380px'
                                                         : isMobile
                                                           ? '300px'
-                                                          : '260px',
+                                                          : '340px',
                                                 height:
                                                     selectedItem.mainTab === 'SKINS'
                                                         ? isMobile
-                                                            ? '340px'
-                                                            : '320px'
+                                                            ? '320px'
+                                                            : '380px'
                                                         : isMobile
                                                           ? '300px'
-                                                          : '260px',
+                                                          : '340px',
                                                 objectFit: 'contain',
-                                                objectPosition:
-                                                    selectedItem.mainTab === 'SKINS' ? 'bottom center' : 'center',
+                                                objectPosition: 'center',
                                                 filter: `contrast(1.1) brightness(1.15) drop-shadow(0 0 25px ${getRarityColor(selectedItem.rarity)}cc)`,
                                                 display: selectedImageLoaded ? 'block' : 'none',
                                             }}

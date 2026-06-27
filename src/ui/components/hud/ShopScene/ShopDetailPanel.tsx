@@ -14,6 +14,7 @@ interface ShopDetailPanelProps {
     powerDiff: number;
     handleBuyTrigger: (item: ShopItem) => void;
     isMobile?: boolean;
+    isPurchasing?: boolean;
 }
 
 export const ShopDetailPanel: React.FC<ShopDetailPanelProps> = ({
@@ -25,6 +26,7 @@ export const ShopDetailPanel: React.FC<ShopDetailPanelProps> = ({
     powerDiff,
     handleBuyTrigger,
     isMobile = false,
+    isPurchasing = false,
 }) => {
     const stats = getItemStats(selectedItem);
 
@@ -107,12 +109,12 @@ export const ShopDetailPanel: React.FC<ShopDetailPanelProps> = ({
     return (
         <div
             style={{
-                width: isMobile ? '260px' : '380px',
+                width: isMobile ? '310px' : '380px',
                 background: 'rgba(10,8,8,0.85)',
                 border: `2px solid ${getRarityColor(selectedItem.rarity)}88`,
                 boxShadow: `0 0 30px ${getRarityColor(selectedItem.rarity)}22, inset 0 0 20px rgba(0,0,0,0.8)`,
                 borderRadius: '16px',
-                padding: isMobile ? '12px' : '25px',
+                padding: isMobile ? '16px' : '25px',
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'space-between',
@@ -122,13 +124,13 @@ export const ShopDetailPanel: React.FC<ShopDetailPanelProps> = ({
                 style={{
                     display: 'flex',
                     flexDirection: 'column',
-                    gap: isMobile ? '8px' : '20px',
+                    gap: isMobile ? '12px' : '20px',
                     flex: 1,
                     height: '100%',
                     justifyContent: 'space-between',
                 }}
             >
-                <div style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? '8px' : '20px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? '12px' : '20px' }}>
                     {/* Header: Quality/Rarity and Name */}
                     <div
                         style={{
@@ -138,7 +140,7 @@ export const ShopDetailPanel: React.FC<ShopDetailPanelProps> = ({
                     >
                         <span
                             style={{
-                                fontSize: isMobile ? '9px' : '11px',
+                                fontSize: isMobile ? '10px' : '11px',
                                 color: getRarityColor(selectedItem.rarity),
                                 fontWeight: 900,
                                 letterSpacing: '1.5px',
@@ -160,7 +162,7 @@ export const ShopDetailPanel: React.FC<ShopDetailPanelProps> = ({
                             <h4
                                 style={{
                                     margin: 0,
-                                    fontSize: isMobile ? '16px' : '22px',
+                                    fontSize: isMobile ? '19px' : '22px',
                                     color: '#fff',
                                     textTransform: 'uppercase',
                                     fontFamily: "'Cinzel', 'Philosopher', serif",
@@ -249,7 +251,7 @@ export const ShopDetailPanel: React.FC<ShopDetailPanelProps> = ({
 
                     {/* Stats of the selected item */}
                     {stats && (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? '10px' : '8px' }}>
                             {renderStatWithCompare('⚔️', 'АТАКА', 'attackBonus')}
                             {renderStatWithCompare('🛡️', 'ЗАЩИТА', 'defenseBonus')}
                             {renderStatWithCompare('❤️', 'ЗДОРОВЬЕ', 'hpBonus')}
@@ -262,7 +264,7 @@ export const ShopDetailPanel: React.FC<ShopDetailPanelProps> = ({
                     {(selectedItem.flavor || selectedItem.desc) && (
                         <div
                             style={{
-                                fontSize: isMobile ? '11px' : '13px',
+                                fontSize: isMobile ? '12px' : '13px',
                                 color: 'rgba(255,255,255,0.7)',
                                 lineHeight: '1.4',
                                 fontStyle: 'italic',
@@ -328,6 +330,7 @@ export const ShopDetailPanel: React.FC<ShopDetailPanelProps> = ({
                         item={selectedItem}
                         onTrigger={() => handleBuyTrigger(selectedItem)}
                         discount={shopDiscounts?.[selectedItem.id]}
+                        isPurchasing={isPurchasing}
                     />
                 </div>
             </div>

@@ -24,9 +24,10 @@ interface BuyBtnProps {
     item: ShopItem;
     onTrigger: () => void;
     discount?: number;
+    isPurchasing?: boolean;
 }
 
-export const BuyBtn: React.FC<BuyBtnProps> = ({ item, onTrigger, discount = 0 }) => {
+export const BuyBtn: React.FC<BuyBtnProps> = ({ item, onTrigger, discount = 0, isPurchasing = false }) => {
     const { ownedSkins, equippedSkins, equipSkin, unequipSkin, inventory, heroEquipment, level } = useGameStore(
         useShallow((state) => ({
             ownedSkins: state.ownedSkins,
@@ -70,7 +71,8 @@ export const BuyBtn: React.FC<BuyBtnProps> = ({ item, onTrigger, discount = 0 })
     if (item.mainTab === 'SKINS' && isSkinOwned) {
         return (
             <button
-                onClick={handleSkinEquip}
+                disabled={isPurchasing}
+                onClick={isPurchasing ? undefined : handleSkinEquip}
                 style={{
                     width: '100%',
                     height: '50px',
@@ -83,10 +85,11 @@ export const BuyBtn: React.FC<BuyBtnProps> = ({ item, onTrigger, discount = 0 })
                     fontWeight: 900,
                     fontFamily: "'Cinzel', 'Philosopher', serif",
                     fontSize: '15px',
-                    cursor: 'pointer',
+                    cursor: isPurchasing ? 'not-allowed' : 'pointer',
+                    opacity: isPurchasing ? 0.7 : 1,
                 }}
             >
-                {isSkinEquipped ? 'СНЯТЬ ОБЛИК' : 'НАДЕТЬ ОБЛИК'}
+                {isPurchasing ? 'ОБРАБОТКА... ⏳' : isSkinEquipped ? 'СНЯТЬ ОБЛИК' : 'НАДЕТЬ ОБЛИК'}
             </button>
         );
     }
@@ -99,13 +102,13 @@ export const BuyBtn: React.FC<BuyBtnProps> = ({ item, onTrigger, discount = 0 })
 
     return (
         <button
-            disabled={isLevelLocked || isOwned}
-            onClick={isLevelLocked || isOwned ? undefined : onTrigger}
+            disabled={isLevelLocked || isOwned || isPurchasing}
+            onClick={isLevelLocked || isOwned || isPurchasing ? undefined : onTrigger}
             style={{
                 width: '100%',
                 height: '50px',
                 background:
-                    isLevelLocked || isOwned
+                    isLevelLocked || isOwned || isPurchasing
                         ? 'linear-gradient(180deg, #4b5563 0%, #1f2937 100%)'
                         : item.isAd
                           ? 'linear-gradient(180deg, #10b981 0%, #047857 100%)'
@@ -115,7 +118,7 @@ export const BuyBtn: React.FC<BuyBtnProps> = ({ item, onTrigger, discount = 0 })
                               ? 'linear-gradient(180deg, #a855f7 0%, #6b21a8 100%)'
                               : 'linear-gradient(180deg, #f0c040 0%, #a67c00 100%)',
                 border:
-                    isLevelLocked || isOwned
+                    isLevelLocked || isOwned || isPurchasing
                         ? '1px solid #4b5563'
                         : item.isAd
                           ? '1px solid #059669'
@@ -126,7 +129,7 @@ export const BuyBtn: React.FC<BuyBtnProps> = ({ item, onTrigger, discount = 0 })
                               : '1px solid #ffdf00',
                 borderRadius: '8px',
                 color:
-                    isLevelLocked || isOwned
+                    isLevelLocked || isOwned || isPurchasing
                         ? '#9ca3af'
                         : item.priceVotes !== undefined || item.isAd || isGem
                           ? '#fff'
@@ -134,15 +137,18 @@ export const BuyBtn: React.FC<BuyBtnProps> = ({ item, onTrigger, discount = 0 })
                 fontWeight: 900,
                 fontFamily: "'Cinzel', 'Philosopher', serif",
                 fontSize: '16px',
-                cursor: isLevelLocked || isOwned ? 'not-allowed' : 'pointer',
+                cursor: isLevelLocked || isOwned || isPurchasing ? 'not-allowed' : 'pointer',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: '8px',
+                opacity: isPurchasing ? 0.7 : 1,
             }}
             title={isLevelLocked ? `Требуется уровень ${item.requiredLevel}` : undefined}
         >
-            {isLevelLocked ? (
+            {isPurchasing ? (
+                <>ОБРАБОТКА... ⏳</>
+            ) : isLevelLocked ? (
                 <>ТРЕБУЕТСЯ УР. {item.requiredLevel} 🔒</>
             ) : isOwned ? (
                 <>КУПЛЕНО</>

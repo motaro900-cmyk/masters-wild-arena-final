@@ -5,6 +5,7 @@ import { QUESTS_POOL } from '../../../configs/QuestsConfig';
 import { safeGetItem, safeSetItem } from '../../../utils/SafeStorage';
 import { audioService } from '../../../services/AudioService';
 import { AssetsMap } from '../../../configs/AssetsMap';
+import { TimeService } from '../../../utils/TimeService';
 
 interface IDailyQuest {
     questId: string;
@@ -19,6 +20,7 @@ export const DailyTaskPanel = React.memo(() => {
     const refreshDailyQuests = useGameStore((state) => state.refreshDailyQuests);
     const vipLevel = useGameStore((state) => state.vipLevel);
     const vipEndTime = useGameStore((state) => state.vipEndTime);
+    const storeLastVipQuestPassDate = useGameStore((state) => (state as any).lastVipQuestPassDate);
     const isMobileFromStore = useGameStore((state) => state.isMobile);
     const graphicsQuality = useGameStore((state) => state.graphicsQuality);
     const [isMobileLayout, setIsMobileLayout] = useState(isMobileFromStore);
@@ -64,15 +66,22 @@ export const DailyTaskPanel = React.memo(() => {
     };
 
     const getMoscowDateString = () => {
-        const now = new Date();
-        const msk = new Date(now.getTime() + (now.getTimezoneOffset() + 180) * 60000);
+        const now = TimeService.now();
+        const msk = new Date(now + (new Date().getTimezoneOffset() + 180) * 60000);
         return `${msk.getFullYear()}-${(msk.getMonth() + 1).toString().padStart(2, '0')}-${msk.getDate().toString().padStart(2, '0')}`;
     };
 
     const todayStr = getMoscowDateString();
-    const [lastPassDate, setLastPassDate] = useState(() => safeGetItem('lastVipQuestPassDate') || '');
+    const [lastPassDate, setLastPassDate] = useState(() => storeLastVipQuestPassDate || safeGetItem('lastVipQuestPassDate') || '');
 
-    const hasVip = vipLevel > 0 || (vipEndTime ? vipEndTime > Date.now() : false);
+    // Sync local state if store value updates
+    useEffect(() => {
+        if (storeLastVipQuestPassDate) {
+            setLastPassDate(storeLastVipQuestPassDate);
+        }
+    }, [storeLastVipQuestPassDate]);
+
+    const hasVip = vipLevel > 0 || (vipEndTime ? vipEndTime > TimeService.now() : false);
     const canInstantPass = hasVip && lastPassDate !== todayStr;
 
     const handleInstantPassQuest = (questId: string) => {
@@ -93,13 +102,21 @@ export const DailyTaskPanel = React.memo(() => {
         });
 
         // Записываем в Zustand
-        useGameStore.setState({ dailyQuests: updatedQuests });
+        useGameStore.setState({ 
+            dailyQuests: updatedQuests,
+            lastVipQuestPassDate: todayStr 
+        });
 
         // Сохраняем дату авто-прохождения
         safeSetItem('lastVipQuestPassDate', todayStr);
         setLastPassDate(todayStr);
 
         audioService.playSFX(AssetsMap.AUDIO.SFX_LEVEL_UP);
+
+        // Триггерим фоновую синхронизацию
+        import('../../../services/SyncService').then(({ syncService }) => {
+            syncService.debouncedSync();
+        });
     };
 
     React.useEffect(() => {
@@ -130,8 +147,8 @@ export const DailyTaskPanel = React.memo(() => {
         <div
             id="daily-task-panel-root"
             style={{
-                width: 400,
-                height: isCollapsed ? 65 : 480,
+                width: 420,
+                height: isCollapsed ? 70 : 540,
                 padding: '28px 28px 22px 28px',
                 display: 'flex',
                 flexDirection: 'column',
@@ -204,11 +221,11 @@ export const DailyTaskPanel = React.memo(() => {
                         style={{
                             display: 'flex',
                             flexDirection: 'column',
-                            gap: isMobileLayout ? '8px' : '10px',
+                            gap: '10px',
                             flex: 1,
                             overflow: 'hidden',
                             marginTop: '0px',
-                            paddingTop: isMobileLayout ? '7px' : '0px',
+                            paddingTop: '0px',
                             position: 'relative',
                             zIndex: 1,
                         }}
@@ -222,13 +239,21 @@ export const DailyTaskPanel = React.memo(() => {
 
                                 const isComplete = dq.progress >= qData.target;
 
+                                // Сетка на фоновой картинке фиксированная, поэтому позиционирование квестов
+                                // должно быть одинаковым для ПК и мобильных, так как размер панели неизменен (420x540).
+                                const currentStyle = [
+                                    { padding: '18px 0 0 0', height: '88px' },
+                                    { padding: '12px 0 0 0', height: '94px' },
+                                    { padding: '4px 0 0 0', height: '94px' },
+                                    { padding: '2px 0 0 0', height: '94px' }
+                                ][index] || { padding: '12px 0 0 0', height: '94px' };
+
                                 return (
                                     <div
                                         key={`quest-item-${dq.questId}-${index}`}
                                         style={{
-                                            padding: '6px 0 0 0',
+                                            ...currentStyle,
                                             position: 'relative',
-                                            height: '78px',
                                             display: 'flex',
                                             flexDirection: 'column',
                                             justifyContent: 'flex-start',
@@ -272,7 +297,7 @@ export const DailyTaskPanel = React.memo(() => {
                                             <div
                                                 style={{
                                                     color: '#4e381f',
-                                                    fontSize: '11.5px',
+                                                    fontSize: '12px',
                                                     fontWeight: 800,
                                                     marginTop: '2px',
                                                     fontFamily: "'Montserrat', sans-serif",
@@ -295,20 +320,20 @@ export const DailyTaskPanel = React.memo(() => {
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                                                 <img
                                                     src={AssetsMap.UI.ICON_GOLD_FULL}
-                                                    style={{ width: 30, height: 30, objectFit: 'contain' }}
+                                                    style={{ width: 28, height: 28, objectFit: 'contain' }}
                                                     alt=""
                                                 />
-                                                <span style={{ fontSize: '14px', fontWeight: 900, color: '#3d260f' }}>
+                                                <span style={{ fontSize: '15px', fontWeight: 900, color: '#3d260f' }}>
                                                     {qData.rewardGold}
                                                 </span>
                                             </div>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                                                 <img
                                                     src={AssetsMap.UI.ICON_ALMAZ_FULL}
-                                                    style={{ width: 28, height: 28, objectFit: 'contain' }}
+                                                    style={{ width: 26, height: 26, objectFit: 'contain' }}
                                                     alt=""
                                                 />
-                                                <span style={{ fontSize: '14px', fontWeight: 900, color: '#3d260f' }}>
+                                                <span style={{ fontSize: '15px', fontWeight: 900, color: '#3d260f' }}>
                                                     {qData.rewardGems}
                                                 </span>
                                             </div>
@@ -316,16 +341,16 @@ export const DailyTaskPanel = React.memo(() => {
                                                 <img
                                                     src={AssetsMap.UI.ICON_XP}
                                                     style={{
-                                                        width: 26,
-                                                        height: 26,
+                                                        width: 24,
+                                                        height: 24,
                                                         objectFit: 'contain',
                                                         filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.4))',
-                                                        transform: 'scale(1.9)',
+                                                        transform: 'scale(1.3)',
                                                         transformOrigin: 'center',
                                                     }}
                                                     alt=""
                                                 />
-                                                <span style={{ fontSize: '14px', fontWeight: 900, color: '#3d260f' }}>
+                                                <span style={{ fontSize: '15px', fontWeight: 900, color: '#3d260f' }}>
                                                     {qData.rewardExp}
                                                 </span>
                                             </div>

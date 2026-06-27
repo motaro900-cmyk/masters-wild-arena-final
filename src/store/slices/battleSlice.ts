@@ -79,7 +79,7 @@ export const createBattleSlice = (set: any, get: any) => ({
             lastBattleReset: Date.now(),
             name: 'Мастер',
             lastNameChange: 0,
-            avatar: 'sprite:sprite-avatar avatar-pos-1',
+            avatar: '/assets/images/avatars/panda.webp',
             frame: 'harvest_wheat_frame.webp',
             title: 'Странник',
             trophies: 0,
@@ -222,10 +222,12 @@ export const createBattleSlice = (set: any, get: any) => ({
                 else heartGained = 1;
             }
 
-            const goldGained = Math.min(
+            const baseGold = Math.min(
                 100 + pveStage * 30,
                 5000, // максимум 5к золота за 1 PvE бой
             );
+            const isVip = get().vipLevel > 0 && (get().vipEndTime || 0) > Date.now();
+            const goldGained = Math.floor(baseGold * (isVip ? 1.15 : 1.0));
             const crystalsGained = isBoss ? 20 : 0;
 
             let logMsg = `Победа! Получено: 🪙 ${goldGained} золота, 🔷 ${xpReward} опыта`;

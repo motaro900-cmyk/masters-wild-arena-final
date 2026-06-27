@@ -316,7 +316,7 @@ const store = create<GameStoreState>()(
                     console.log('🔄 Migrating store to v23: Forcing Intro...');
                     persistedState.activeScreen = 'INTRO';
                     persistedState.name = 'Мастер';
-                    persistedState.avatar = 'sprite:sprite-avatar avatar-pos-1';
+                    persistedState.avatar = '/assets/images/avatars/panda.webp';
                 }
 
                 if (version < 24) {

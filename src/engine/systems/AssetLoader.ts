@@ -32,6 +32,7 @@ function getOptimizedMobilePath(path: string): string {
  */
 export class AssetLoader {
     private static instance: AssetLoader;
+    private loadedPaths: Set<string> = new Set();
 
     private constructor() {}
 
@@ -87,7 +88,13 @@ export class AssetLoader {
             return newPath;
         });
 
-        console.log(`[AssetLoader] Loading ${optimizedManifest.length} optimized assets...`);
+        const assetsToLoad = optimizedManifest.filter((path) => !this.loadedPaths.has(path));
+        if (assetsToLoad.length === 0) {
+            console.log('[AssetLoader] All requested assets are already loaded. Skipping.');
+            return;
+        }
+
+        console.log(`[AssetLoader] Loading ${assetsToLoad.length} optimized assets...`);
         try {
             if (!(PIXI.Assets as any)._initialized) {
                 const isIOS =
@@ -110,9 +117,10 @@ export class AssetLoader {
             }
 
             // Load assets individually to prevent one failure from crashing the entire app
-            const loadPromises = optimizedManifest.map(async (assetPath, index) => {
+            const loadPromises = assetsToLoad.map(async (assetPath) => {
                 try {
                     await PIXI.Assets.load(assetPath);
+                    this.loadedPaths.add(assetPath);
                 } catch (err) {
                     console.warn(
                         `[AssetLoader] Failed to load optimized asset: ${assetPath}. Cleaning cache and trying fallback...`,
@@ -126,7 +134,10 @@ export class AssetLoader {
                         // Silent fail for unload, proceed to fallback
                     }
 
-                    const origPath = manifest[index];
+                    // Find corresponding original path in manifest
+                    const idx = optimizedManifest.indexOf(assetPath);
+                    const origPath = idx !== -1 ? manifest[idx] : assetPath;
+                    
                     // If the optimized path (usually WebP) failed, try to fallback to the PNG version
                     let pngFallbackPath = origPath;
                     if (origPath.endsWith('.webp')) {
@@ -136,6 +147,8 @@ export class AssetLoader {
                     try {
                         if (pngFallbackPath !== assetPath) {
                             await PIXI.Assets.load(pngFallbackPath);
+                            this.loadedPaths.add(pngFallbackPath);
+                            this.loadedPaths.add(assetPath); // Mark original as resolved to prevent duplicate fallbacks
                         } else {
                             throw new Error('Fallback path is identical to failed path');
                         }
@@ -151,6 +164,7 @@ export class AssetLoader {
                             if (pngFallbackPath !== origPath) {
                                 PIXI.Assets.cache.set(pngFallbackPath, PIXI.Texture.WHITE);
                             }
+                            this.loadedPaths.add(assetPath);
                         } catch (cacheErr) {
                             // ignore cache errors
                         }
@@ -277,7 +291,7 @@ export class AssetLoader {
      * Предзагрузка боевых ассетов (изображения арен, героев и монстров) через кэш браузера.
      * Это предотвращает зависания WebGL/PixiJS и гарантирует мгновенную загрузку из кэша при старте боя.
      */
-    public preloadBattleAssets(): void {
+    public preloadBattleAssets(playerHeroId?: string, opponentHeroId?: string, isPve: boolean = false): void {
         try {
             const state = useGameStore.getState();
             const isUltra = state.graphicsQuality === 'ULTRA';
@@ -297,25 +311,53 @@ export class AssetLoader {
                 }
             }
 
-            // 2. Изображения спрайтшитов героев и обликов
-            preloadList.push(
-                resolveAssetPath('/assets/characters/panda/panda_poses.png.png'),
-                resolveAssetPath('/assets/characters/panda/panda_frost_poses.png'),
-                resolveAssetPath('/assets/characters/raccoon/raccoon_poses.png.png'),
-                resolveAssetPath('/assets/characters/minotaur/minotaur_poses.png.png'),
-                resolveAssetPath('/assets/characters/tiger_warrior/tiger_warrior_poses.png.png'),
-                resolveAssetPath('/assets/characters/lion_knight/lion_knight_poses.png.png'),
-            );
+            // 2. Изображения спрайтшитов только необходимых героев (оптимизация VRAM OOM)
+            const heroPaths: Record<string, string[]> = {
+                panda: [
+                    '/assets/characters/panda/panda_poses.png.png',
+                    '/assets/characters/panda/panda_frost_poses.png'
+                ],
+                raccoon: ['/assets/characters/raccoon/raccoon_poses.png.png'],
+                minotaur: ['/assets/characters/minotaur/minotaur_poses.png.png'],
+                tiger_warrior: ['/assets/characters/tiger_warrior/tiger_warrior_poses.png.png'],
+                lion_knight: ['/assets/characters/lion_knight/lion_knight_poses.png.png'],
+                wolf_knight: ['/assets/characters/raccoon/raccoon_poses.png.png'], // Фоллбек
+                shadow_dancer: ['/assets/characters/panda/panda_poses.png.png'],
+                crystal_guardian: ['/assets/characters/minotaur/minotaur_poses.png.png'],
+                storm_caller: ['/assets/characters/raccoon/raccoon_poses.png.png'],
+                nature_warden: ['/assets/characters/panda/panda_poses.png.png'],
+                void_walker: ['/assets/characters/tiger_warrior/tiger_warrior_poses.png.png']
+            };
 
-            // 3. Мобы и боссы
-            preloadList.push(
-                resolveAssetPath('/assets/characters/ancients/ancient_wolf.webp'),
-                resolveAssetPath('/assets/characters/ancients/ancient_golem.webp'),
-                resolveAssetPath('/assets/characters/ancients/ancient_panther.webp'),
-                resolveAssetPath('/assets/characters/ancients/ancient_treant.png'),
-                resolveAssetPath('/assets/characters/ancients/ancient_spider.webp'),
-                resolveAssetPath('/assets/characters/ancients/ancient_griffin.png'),
-            );
+            const heroesToPreload = new Set<string>();
+            heroesToPreload.add(playerHeroId || state.selectedHeroId || 'panda');
+            
+            if (opponentHeroId) {
+                heroesToPreload.add(opponentHeroId);
+            } else if (state.activeRankedOpponent?.selectedHeroId) {
+                heroesToPreload.add(state.activeRankedOpponent.selectedHeroId);
+            }
+
+            heroesToPreload.forEach((heroId) => {
+                const paths = heroPaths[heroId];
+                if (paths) {
+                    paths.forEach((p) => preloadList.push(resolveAssetPath(p)));
+                } else {
+                    preloadList.push(resolveAssetPath('/assets/characters/panda/panda_poses.png.png'));
+                }
+            });
+
+            // 3. Мобы и боссы (только для PVE режима)
+            if (isPve) {
+                preloadList.push(
+                    resolveAssetPath('/assets/characters/ancients/ancient_wolf.webp'),
+                    resolveAssetPath('/assets/characters/ancients/ancient_golem.webp'),
+                    resolveAssetPath('/assets/characters/ancients/ancient_panther.webp'),
+                    resolveAssetPath('/assets/characters/ancients/ancient_treant.png'),
+                    resolveAssetPath('/assets/characters/ancients/ancient_spider.webp'),
+                    resolveAssetPath('/assets/characters/ancients/ancient_griffin.png'),
+                );
+            }
 
             // Оптимизируем пути ассетов так же, как в loadAssets
             const optimizedList = preloadList

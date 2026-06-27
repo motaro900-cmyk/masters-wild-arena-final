@@ -115,8 +115,8 @@ export const BattleHUD = React.memo<BattleHUDProps>(
         const enemyAvatar =
             precomputedEnemyAvatar ||
             (battleMode === 'PVE'
-                ? enemyData.image || '/assets/images/avatars/wolf.webp'
-                : activeRankedOpponent?.avatar || enemyData.image || '/assets/images/avatars/wolf.webp');
+                ? enemyData.image || '/assets/images/avatars/panda.webp'
+                : activeRankedOpponent?.avatar || enemyData.image || '/assets/images/avatars/panda.webp');
 
         return (
             <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 100 }}>
