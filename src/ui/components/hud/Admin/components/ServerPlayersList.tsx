@@ -185,7 +185,7 @@ export const ServerPlayersList: React.FC<ServerPlayersListProps> = ({
                             border: `1.5px solid ${searchQuery ? 'rgba(255,77,77,0.45)' : '#252525'}`,
                             borderRadius: '10px',
                             color: '#fff',
-                            fontSize: '13px',
+                            fontSize: '15px',
                             outline: 'none',
                             boxSizing: 'border-box',
                             transition: 'border-color 0.2s',
@@ -254,7 +254,7 @@ export const ServerPlayersList: React.FC<ServerPlayersListProps> = ({
                                     border: `1px solid ${active ? activeBorder : '#1e1e1e'}`,
                                     background: active ? activeBg : '#111',
                                     color: active ? activeColor : '#444',
-                                    fontSize: '11px',
+                                    fontSize: '13px',
                                     fontWeight: active ? 700 : 400,
                                     cursor: 'pointer',
                                     transition: 'all 0.15s',
@@ -269,7 +269,7 @@ export const ServerPlayersList: React.FC<ServerPlayersListProps> = ({
                 {/* Account type label */}
                 <div
                     style={{
-                        fontSize: '9px',
+                        fontSize: '11px',
                         color: '#383838',
                         letterSpacing: '1px',
                         fontWeight: 700,
@@ -312,7 +312,7 @@ export const ServerPlayersList: React.FC<ServerPlayersListProps> = ({
                                     border: `1px solid ${active ? aBorder : '#1c1c1c'}`,
                                     background: active ? aBg : '#0d0d0d',
                                     color: active ? aColor : '#3a3a3a',
-                                    fontSize: '10px',
+                                    fontSize: '12px',
                                     fontWeight: active ? 700 : 400,
                                     cursor: 'pointer',
                                     transition: 'all 0.15s',
@@ -409,7 +409,7 @@ export const ServerPlayersList: React.FC<ServerPlayersListProps> = ({
                                 >
                                     <div
                                         style={{
-                                            fontSize: '13px',
+                                            fontSize: '15px',
                                             fontWeight: 700,
                                             color: isSelf ? '#f0c040' : '#e8e8e8',
                                             whiteSpace: 'nowrap',
@@ -421,7 +421,7 @@ export const ServerPlayersList: React.FC<ServerPlayersListProps> = ({
                                         {isSelf && (
                                             <span
                                                 style={{
-                                                    fontSize: '9px',
+                                                    fontSize: '11px',
                                                     fontWeight: 400,
                                                     opacity: 0.5,
                                                     marginLeft: '6px',
@@ -433,7 +433,7 @@ export const ServerPlayersList: React.FC<ServerPlayersListProps> = ({
                                     </div>
                                     <div
                                         style={{
-                                            fontSize: '9px',
+                                            fontSize: '11px',
                                             color: '#3a3a3a',
                                             fontFamily: 'monospace',
                                             letterSpacing: '0.3px',
@@ -443,7 +443,7 @@ export const ServerPlayersList: React.FC<ServerPlayersListProps> = ({
                                     </div>
                                     <div
                                         style={{
-                                            fontSize: '10px',
+                                            fontSize: '12px',
                                             color:
                                                 p.status === 'ONLINE'
                                                     ? '#4dff4d'

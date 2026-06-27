@@ -868,7 +868,7 @@ const tabButtonStyle: React.CSSProperties = {
     background: 'none',
     border: 'none',
     cursor: 'pointer',
-    fontSize: '14px',
+    fontSize: '16px',
     fontWeight: 'bold',
     padding: '10px 0',
     transition: 'color 0.2s',
@@ -881,7 +881,7 @@ const closeButtonStyle: React.CSSProperties = {
     cursor: 'pointer',
     borderRadius: '8px',
     fontWeight: 'bold',
-    fontSize: '14px',
+    fontSize: '16px',
     boxShadow: '0 4px 15px rgba(255, 77, 77, 0.3)',
 };
 const scrollAreaStyle: React.CSSProperties = { flex: 1, overflowY: 'auto', paddingRight: '10px' };
