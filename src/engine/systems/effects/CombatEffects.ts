@@ -107,6 +107,11 @@ export function applyHitResolution(
 
         if (hitType === 'HIT' || hitType === 'CRIT') {
             spawnImpactParticles(damage || 0, px, py, pColor);
+            if (hitType === 'CRIT') {
+                spawnSmokePuff(targetUnit.x, targetUnit.y);
+            } else {
+                spawnDustPuff(targetUnit.x, targetUnit.y, 0.7);
+            }
         } else {
             fx.particleBurst(px, py, 6, pColor, 130);
         }
@@ -237,7 +242,7 @@ export function blockEffect(target: IEffectTarget, attacker?: IEffectTarget | nu
 export function deathEffect(target: IEffectTarget): void {
     try {
         const fx = EffectsManager.getInstance();
-        fx.screenShake(8, 0.9, 300);
+        fx.screenShake(12, 0.9, 450);
 
         // Нахождение центра мишени
         let px = target.x;
@@ -254,8 +259,24 @@ export function deathEffect(target: IEffectTarget): void {
             py = globalPos.y;
         }
 
-        fx.particleBurst(px, py, 30, 0xff0000, 300);
-        fx.fadeOut(target, 0.8);
+        const charColor = (target as any).config?.color ?? 0xff0000;
+
+        // Взрыв частиц цвета героя
+        fx.particleBurst(px, py, 25, charColor, 250);
+        // Дополнительный кольцевой взрыв светящихся искр
+        fx.particleBurst(px, py, 15, 0xffffff, 350);
+
+        // Спавним густой дым рассеивания
+        spawnSmokePuff(target.x, target.y);
+
+        // Белая вспышка на спрайте (как при перерождении)
+        const flashSprite = target.bodySprite || target;
+        if (flashSprite) {
+            fx.colorFlash(flashSprite, 0xffffff, 0.4);
+        }
+
+        // Растворение персонажа
+        fx.fadeOut(target, 1.2);
     } catch (error) {
         console.error('❌ Death effect error:', error);
     }
