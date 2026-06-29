@@ -242,7 +242,7 @@ export class SyncService {
         try {
             const playerRef = doc(db, USERS_COLLECTION, userId);
             const selectedHeroId = state.selectedHeroId || 'panda';
-            const activeHeroLevel = state.heroes?.[selectedHeroId]?.level || 1;
+            const activeAccountLevel = state.level || 1;
 
             const syncTimestamp = TimeService.now();
             // Also update the store's lastSavedTimestamp so local cache matches
@@ -278,7 +278,7 @@ export class SyncService {
                 vkFirstName: vkUser ? vkUser.first_name || vkUser.firstName || '' : '',
                 vkLastName: vkUser ? vkUser.last_name || vkUser.lastName || '' : '',
                 vkLink: vkUser ? `https://vk.com/id${vkUser.id}` : '',
-                level: activeHeroLevel,
+                level: activeAccountLevel,
                 gold: state.gold || 0,
                 crystals: state.crystals || 0,
                 rating: state.rating || 0,
@@ -286,6 +286,7 @@ export class SyncService {
                 activeScreen: state.activeScreen || 'MAIN_MENU',
                 hero: selectedHeroId,
                 avatar: state.avatar || (vkUser ? vkUser.photo200 || vkUser.photo || '' : ''),
+                frame: state.frame || 'none',
                 equipment: equipmentSlice,
                 inventory: state.inventory || [],
                 friends: (state.friends || []).map((f: any) => (typeof f === 'object' ? f.id : f)).filter(Boolean),
@@ -302,7 +303,7 @@ export class SyncService {
                 // Russian legacy keys
                 золото: state.gold || 0,
                 кристаллы: state.crystals || 0,
-                уровень: activeHeroLevel,
+                уровень: activeAccountLevel,
                 рейтинг: state.rating || 0,
                 былВСети: serverTimestamp(),
                 имя: state.name || 'Мастер',

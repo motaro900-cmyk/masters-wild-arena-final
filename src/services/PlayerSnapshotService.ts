@@ -76,6 +76,7 @@ class PlayerSnapshotServiceClass {
                 activeScreen: state.activeScreen || 'MAIN_MENU',
                 hero: selectedHeroId,
                 avatar: state.avatar || (vkUser ? vkUser.photo200 || vkUser.photo || '' : ''),
+                frame: state.frame || 'none',
                 equipment: {
                     WEAPONS: equipment.WEAPONS || null,
                     HELMETS: equipment.HELMETS || null,
