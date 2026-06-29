@@ -464,6 +464,14 @@ export class EffectsManager {
         CombatEffects.spawnImpactParticles(damage, x, y, color);
     }
 
+    public spawnEarthquakeFissures(x: number, y: number, color: number = 0xd4a373): void {
+        CombatEffects.spawnEarthquakeFissures(x, y, color);
+    }
+
+    public spawnBastionShield(x: number, y: number, color: number = 0x00d4ff, isPlayer: boolean = true): void {
+        CombatEffects.spawnBastionShield(x, y, color, isPlayer);
+    }
+
     // --- Spell Effects Delegation ---
     public spawnLightningStrike(targetX: number, targetY: number): void {
         SpellEffects.spawnLightningStrike(targetX, targetY);

@@ -99,8 +99,9 @@ export async function executeAttack(engine: BattleEngine, attacker: HeroUnit, vi
         await attacker.animateTeleportOut();
         if (!anyEngine.isCombatRunning) return;
 
-        const targetX = isPlayer ? victim.x + 85 : victim.x - 85;
-        const faceScaleX = -attacker.parentDefaultScaleX;
+        const targetX = isPlayer ? victim.x + 130 : victim.x - 130;
+        const faceScaleX = isPlayer ? -attacker.parentDefaultScaleX : attacker.parentDefaultScaleX;
+        attacker.nextAttackPose = 4; // Задаем позу Thrust (выпад)
 
         await attacker.animateTeleportIn(targetX, faceScaleX);
     } else if (isSpecialStrike) {
@@ -245,7 +246,7 @@ export async function executeAttack(engine: BattleEngine, attacker: HeroUnit, vi
 
     attacker.playAttackAnimation();
 
-    const hitX = isPlayer ? attacker.x + 85 : attacker.x - 85;
+    const hitX = attacker.scale.x > 0 ? attacker.x + 85 : attacker.x - 85;
     const hitY = attacker.y - 120;
 
     if (attackerWeaponArchetype === 'STAFF') {

@@ -48,6 +48,8 @@ export function applyHitResolution(
         // 2. Обработка блокирования (BLOCK)
         if (hitType === 'BLOCK') {
             blockEffect(targetUnit, attackerUnit);
+            const shieldColor = (targetUnit as any).config?.color ?? 0x00d4ff;
+            spawnBastionShield(targetUnit.x, targetUnit.y, shieldColor, !isPlayerTarget);
             fx.knockback(targetUnit, isPlayerTarget, 'HIT'); // Легкий отскок
             return;
         }
@@ -70,10 +72,15 @@ export function applyHitResolution(
         const knockbackType = hitType === 'CRIT' ? 'CRIT' : 'HIT';
         fx.knockback(targetUnit, isPlayerTarget, knockbackType);
 
-        // 5. Тряска экрана (Camera Shake)
+        // 5. Тряска экрана (Camera Shake) & Earthquake Slam для Бойцов
         if (hitType === 'CRIT') {
             const shakeIntensity = attackerRole === 'TANK' ? 14 : attackerRole === 'ASSASSIN' ? 8 : 10;
             fx.screenShake(shakeIntensity, 0.93, 300);
+
+            if (attackerRole === 'WARRIOR') {
+                const crackColor = attackerUnit && (attackerUnit as any).config?.color ? (attackerUnit as any).config.color : 0xd4a373;
+                spawnEarthquakeFissures(targetUnit.x, targetUnit.y, crackColor);
+            }
         } else {
             const shakeIntensity = attackerRole === 'TANK' ? 6 : 3;
             fx.screenShake(shakeIntensity, 0.95, 150);
@@ -692,5 +699,89 @@ export function spawnImpactParticles(damage: number, x: number, y: number, color
         }
     } catch (error) {
         console.error('❌ spawnImpactParticles error:', error);
+    }
+}
+
+export function spawnEarthquakeFissures(x: number, y: number, color: number = 0xd4a373): void {
+    try {
+        const pixiApp = PixiApp.getInstance();
+        const container = new PIXI.Container();
+        container.position.set(x, y);
+        pixiApp.effectsLayer.addChild(container);
+
+        const fissure = new PIXI.Graphics();
+        fissure.beginPath();
+        fissure.stroke({ color: color, width: 4 });
+
+        const paths = [
+            [{ x: 0, y: 0 }, { x: -30, y: 15 }, { x: -70, y: 10 }, { x: -110, y: 25 }],
+            [{ x: 0, y: 0 }, { x: 40, y: -10 }, { x: 80, y: -5 }, { x: 120, y: -20 }],
+            [{ x: 0, y: 0 }, { x: -10, y: 35 }, { x: 15, y: 70 }, { x: 5, y: 100 }]
+        ];
+
+        paths.forEach(path => {
+            fissure.moveTo(path[0].x, path[0].y);
+            for (let i = 1; i < path.length; i++) {
+                fissure.lineTo(path[i].x, path[i].y);
+            }
+        });
+        container.addChild(fissure);
+
+        gsap.to(container, {
+            alpha: 0,
+            duration: 0.6,
+            ease: 'power1.in',
+            onComplete: () => {
+                if (container && !container.destroyed) {
+                    gsap.killTweensOf(container);
+                    container.destroy({ children: true });
+                }
+            }
+        });
+    } catch (e) {
+        console.error('❌ spawnEarthquakeFissures error:', e);
+    }
+}
+
+export function spawnBastionShield(x: number, y: number, color: number = 0x00d4ff, isPlayer: boolean = true): void {
+    try {
+        const pixiApp = PixiApp.getInstance();
+        const container = new PIXI.Container();
+        container.position.set(x, y - 80);
+        pixiApp.effectsLayer.addChild(container);
+
+        const shield = new PIXI.Graphics();
+        shield.beginPath();
+        const startAngle = isPlayer ? Math.PI * 0.6 : -Math.PI * 0.4;
+        const endAngle = isPlayer ? Math.PI * 1.4 : Math.PI * 0.4;
+
+        shield.arc(0, 0, 75, startAngle, endAngle);
+        shield.stroke({ color: color, width: 8, alpha: 0.8 });
+        shield.fill({ color: color, alpha: 0.15 });
+        container.addChild(shield);
+
+        const dir = isPlayer ? -1 : 1;
+        container.x += 15 * dir;
+
+        gsap.to(container, {
+            x: x,
+            duration: 0.1,
+            ease: 'bounce.out'
+        });
+
+        gsap.to(container, {
+            alpha: 0,
+            duration: 0.4,
+            delay: 0.15,
+            ease: 'power2.in',
+            onComplete: () => {
+                if (container && !container.destroyed) {
+                    gsap.killTweensOf(container);
+                    container.destroy({ children: true });
+                }
+            }
+        });
+    } catch (e) {
+        console.error('❌ spawnBastionShield error:', e);
     }
 }
