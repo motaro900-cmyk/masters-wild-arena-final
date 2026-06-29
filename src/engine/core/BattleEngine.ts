@@ -303,7 +303,7 @@ export class BattleEngine {
 
                 // Update background particles (only if maxParticles > 0)
                 if (maxParticles > 0) {
-                    BattleParticleSystem.updateParticles(arenaParticles, delta, W, H);
+                    BattleParticleSystem.updateParticles(arenaParticles, dt, W, H);
                 }
             };
             pixiApp.addUpdateLoop(this.updateCallback);

@@ -407,7 +407,7 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
                 <div
                     ref={panelRef}
                     style={{
-                        width: '740px',
+                        width: '880px',
                         background: 'linear-gradient(135deg, rgba(24, 16, 8, 0.95) 0%, rgba(12, 7, 3, 0.98) 100%)',
                         border: '2.5px solid rgba(196, 139, 59, 0.55)',
                         borderRadius: '24px',
@@ -424,7 +424,7 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
                         }}
                     />
 
-                    <div ref={statsRef} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+                    <div ref={statsRef} style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '14px' }}>
                         {stats.map((stat, i) => (
                             <div
                                 key={i}
@@ -477,9 +477,9 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
                             borderRadius: '16px',
                             padding: '16px 20px',
                             border: '1px solid rgba(255, 255, 255, 0.05)',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: '16px',
+                            display: 'grid',
+                            gridTemplateColumns: '1fr 1fr',
+                            gap: '24px',
                         }}
                     >
                         {/* 1. УРОВЕНЬ АККАУНТА */}
@@ -646,7 +646,7 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
             {!isVictory && recommendation && (
                 <div
                     style={{
-                        width: '700px',
+                        width: '880px',
                         background: 'rgba(139, 28, 28, 0.1)',
                         border: '2px solid rgba(139, 28, 28, 0.4)',
                         borderRadius: '16px',

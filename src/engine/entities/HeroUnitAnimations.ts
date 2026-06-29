@@ -242,12 +242,12 @@ export function animateLungeForward(
             unit.setFrame(2);
         } else if (hasPoses && unit.attackFrameIdxs && unit.attackFrameIdxs.length > 0) {
             const attackPoseCount = unit.attackFrameIdxs.length;
-            // Выбираем случайную атаку: Swing (0), Thrust (1), Jump (2)
-            const randIndex = Math.floor(Math.random() * Math.min(3, attackPoseCount));
+            // Для обычных атак выбираем только Swing (0) или Thrust (1)
+            const randIndex = Math.floor(Math.random() * Math.min(2, attackPoseCount));
             unit.nextAttackPose = unit.attackFrameIdxs[randIndex];
-            if (randIndex === 2) attackType = 'jump';
-            else if (randIndex === 1) attackType = 'thrust';
-            unit.setFrame(2); // Set run/lunge pose frame initially
+            if (randIndex === 1) attackType = 'thrust';
+            else attackType = 'swing';
+            unit.setFrame(2);
         }
         anyUnit.nextAttackType = attackType;
 
@@ -313,10 +313,10 @@ export function animateLungeForward(
                 ease: 'sine.inOut',
             });
         } else {
-            // 3. Swing (normal lunge): small hop curve
+            // 3. Swing (normal lunge): flat horizontal slide
             tl.to(unit, {
                 x: targetX,
-                y: startY - 40,
+                y: startY - 10,
                 duration: 0.25 * animSpeed,
                 ease: 'sine.out',
             });
