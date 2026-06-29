@@ -146,24 +146,34 @@ export const ItemTooltipPortal: React.FC<ItemTooltipPortalProps> = ({ hoveredIte
                                 border: '1px solid rgba(255,255,255,0.03)',
                             }}
                         >
-                            {['attackBonus', 'defenseBonus', 'hpBonus'].map((statKey) => {
+                            {['attackBonus', 'defenseBonus', 'hpBonus', 'critBonus', 'speedBonus'].map((statKey) => {
                                 const val = itemData[statKey];
-                                if (val === undefined) return null;
+                                if (val === undefined || val === null || val === 0) return null;
                                 const labels: any = {
                                     attackBonus: 'АТАКА',
                                     defenseBonus: 'ЗАЩИТА',
                                     hpBonus: 'ЗДОРОВЬЕ',
+                                    critBonus: 'КРИТ. ШАНС',
+                                    speedBonus: 'СКОРОСТЬ',
                                 };
                                 const colors: any = {
                                     attackBonus: '#f97316',
                                     defenseBonus: '#3b82f6',
                                     hpBonus: '#ef4444',
+                                    critBonus: '#a855f7',
+                                    speedBonus: '#fcd34d',
                                 };
                                 const icons: any = {
                                     attackBonus: 'sprite-stat stat-attack',
                                     defenseBonus: 'sprite-stat stat-defense',
                                     hpBonus: 'sprite-stat stat-hp',
+                                    critBonus: 'sprite-stat stat-crit',
+                                    speedBonus: 'sprite-stat stat-speed',
                                 };
+                                const displayValue = statKey === 'critBonus'
+                                    ? `+${Math.round(val * 100)}%`
+                                    : `+${val}`;
+
                                 return (
                                     <div
                                         key={statKey}
@@ -190,7 +200,7 @@ export const ItemTooltipPortal: React.FC<ItemTooltipPortalProps> = ({ hoveredIte
                                                 {labels[statKey]}
                                             </span>
                                         </div>
-                                        <span style={{ color: colors[statKey] }}>+{val}</span>
+                                        <span style={{ color: colors[statKey] }}>{displayValue}</span>
                                     </div>
                                 );
                             })}
