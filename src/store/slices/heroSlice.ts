@@ -14,13 +14,13 @@ export const createHeroSlice = (set: any, get: any) => {
         heroGalleryId: 'panda',
         ownedHeroes: ['panda'],
         heroes: {
-            panda: { level: 1, exp: 0, strength: 16, agility: 19, stamina: 21 },
-            wolf_knight: { level: 1, exp: 0, strength: 65, agility: 25, stamina: 45 },
-            shadow_dancer: { level: 1, exp: 0, strength: 16, agility: 28, stamina: 14 },
-            crystal_guardian: { level: 1, exp: 0, strength: 14, agility: 10, stamina: 30 },
-            storm_caller: { level: 1, exp: 0, strength: 12, agility: 18, stamina: 16 },
-            nature_warden: { level: 1, exp: 0, strength: 10, agility: 16, stamina: 22 },
-            void_walker: { level: 1, exp: 0, strength: 20, agility: 26, stamina: 18 },
+            panda: { level: 1, exp: 0 },
+            wolf_knight: { level: 1, exp: 0 },
+            shadow_dancer: { level: 1, exp: 0 },
+            crystal_guardian: { level: 1, exp: 0 },
+            storm_caller: { level: 1, exp: 0 },
+            nature_warden: { level: 1, exp: 0 },
+            void_walker: { level: 1, exp: 0 },
         } as Record<string, any>,
         heroTalents: {
             panda: {},
@@ -45,22 +45,11 @@ export const createHeroSlice = (set: any, get: any) => {
         unlockHero: (heroId: string) => {
             set((state: any) => {
                 if (state.ownedHeroes.includes(heroId)) return state;
-                // Initialize default stats, level 1, exp 0 when unlocking a hero
-                const heroData = HEROES_DB.find((h) => h.id === heroId);
-                const initialHeroStats = heroData
-                    ? {
-                          level: 1,
-                          exp: 0,
-                          strength: heroData.stats.strength,
-                          agility: heroData.stats.agility,
-                          stamina: heroData.stats.stamina,
-                      }
-                    : { level: 1, exp: 0, strength: 50, agility: 20, stamina: 30 };
                 return {
                     ownedHeroes: [...state.ownedHeroes, heroId],
                     heroes: {
                         ...state.heroes,
-                        [heroId]: initialHeroStats,
+                        [heroId]: { level: 1, exp: 0 },
                     },
                 };
             });
@@ -68,11 +57,11 @@ export const createHeroSlice = (set: any, get: any) => {
         },
         addHeroExp: (heroId: string, amount: number) => {
             set((state: any) => {
-                const hero = state.heroes[heroId] || { level: 1, exp: 0, strength: 50, agility: 20, stamina: 30 };
+                const hero = state.heroes[heroId] || { level: 1, exp: 0 };
                 const heroData = HEROES_DB.find((h) => h.id === heroId);
                 const baseStats = heroData
-                    ? { strength: heroData.stats.strength, stamina: heroData.stats.stamina }
-                    : { strength: 50, stamina: 30 };
+                    ? { hp: heroData.stats.hp, attack: heroData.stats.attack }
+                    : { hp: 100, attack: 10 };
 
                 const { updatedProgress, delta } = HeroLevelService.addExp(heroId, hero, amount, baseStats);
 
@@ -177,7 +166,6 @@ export const createHeroSlice = (set: any, get: any) => {
             const heroLevel = heroState.level || 1;
 
             const equipment = state.heroEquipment[heroId] || {};
-
             const eqLevels = Object.entries(equipment)
                 .map(([slot, eqId]) => {
                     if (!eqId) return `${slot}:none`;
@@ -223,16 +211,13 @@ export const createHeroSlice = (set: any, get: any) => {
                 pantsInfo,
             ].filter(Boolean) as { template: IEquipmentStats; level: number }[];
 
+            // 5 чистых статов напрямую из HeroesConfig
             const base = {
-                hp: Math.round(heroData.stats.stamina * 10 * levelMultiplier),
-                attack: Math.round(heroData.stats.strength * 2 * levelMultiplier),
-                defense: Math.round(heroData.stats.stamina * 0.5 * levelMultiplier),
-                speed: 1 + heroData.stats.agility * 0.05, // internal ATB speed multiplier
-                critChance: heroData.stats.agility * 0.5, // stored as % (e.g. 6%)
-                evasion: 0,
-                lifesteal: 0,
-                penetration: 0,
-                accuracy: 100,
+                hp: Math.round(heroData.stats.hp * levelMultiplier),
+                attack: Math.round(heroData.stats.attack * levelMultiplier),
+                defense: Math.round(heroData.stats.defense * levelMultiplier),
+                speed: heroData.stats.speed,
+                critChance: heroData.stats.critChance,
                 critDamage: 1.5,
             };
 
@@ -249,27 +234,26 @@ export const createHeroSlice = (set: any, get: any) => {
                 const level = lvl as number;
                 if (level <= 0) return;
 
-                // Attack talents
+                // Таланты атаки
                 if (tId === 'atk_base') total.attack = Math.round(total.attack * (1 + level * 0.05));
                 if (tId === 'atk_crit') total.critChance += level * 2;
-                if (tId === 'atk_pen') total.critDamage += level * 0.10; // Ярость Тигра: Критический урон +10% за уровень
+                if (tId === 'atk_pen') total.critDamage += level * 0.10;
 
-                // Defense talents
+                // Таланты защиты
                 if (tId === 'def_base') total.hp = Math.round(total.hp * (1 + level * 0.05));
-                if (tId === 'def_eva') total.defense = Math.round(total.defense * (1 + level * 0.04)); // Мистический Барьер: Защита +4% за уровень
-                if (tId === 'def_ult') total.defense = Math.round(total.defense * (1 + level * 0.2)); // «Весь урон снижен на 20%» — работает через defense
+                if (tId === 'def_eva') total.defense = Math.round(total.defense * (1 + level * 0.04));
+                if (tId === 'def_ult') total.defense = Math.round(total.defense * (1 + level * 0.2));
 
-                // Mastery talents
+                // Мастерство
                 if (tId === 'mas_base') total.speed += level * 0.1;
                 if (tId === 'mas_spd') total.speed = +(total.speed * (1 + level * 0.03)).toFixed(2);
                 if (tId === 'mas_ult') total.critDamage += level * 0.1;
-                if (tId === 'mas_focus') total.critChance += level * 3; // Лотос Познания: Крит. Шанс +3% за уровень
+                if (tId === 'mas_focus') total.critChance += level * 3;
             });
 
             allItemsInfo.forEach((itemInfo) => {
                 const item = itemInfo.template;
                 const lvl = itemInfo.level;
-                // Multipliers table for item levels 1 to 10 as per game design balance
                 const multTable: Record<number, number> = {
                     1: 1.0,
                     2: 1.15,
@@ -288,7 +272,6 @@ export const createHeroSlice = (set: any, get: any) => {
                 if (item.attackBonus) total.attack = Math.round(total.attack + item.attackBonus * mult);
                 if (item.defenseBonus) total.defense = Math.round(total.defense + item.defenseBonus * mult);
 
-                // critBonus stored as 0-100 scale; items may store as 0-1 or 0-100 — normalize
                 const rawCrit = item.critBonus || 0;
                 if (rawCrit) {
                     const critPct = rawCrit <= 1 ? rawCrit * 100 : rawCrit;
@@ -299,25 +282,24 @@ export const createHeroSlice = (set: any, get: any) => {
                 if (rawSpeed) total.speed += rawSpeed * mult;
             });
 
-            // Apply active potion buffs
+            // Применяем активные баффы зелий
             const buffs = state.activeBuffs || {};
             const now = Date.now();
             if (buffs.hp_potion_1 && buffs.hp_potion_1 > now) {
-                total.hp = Math.round(total.hp * 1.1); // +10% HP
+                total.hp = Math.round(total.hp * 1.1);
             }
             if (buffs.hp_potion_2 && buffs.hp_potion_2 > now) {
-                total.hp = Math.round(total.hp * 1.2); // +20% HP
+                total.hp = Math.round(total.hp * 1.2);
             }
             if (buffs.hp_potion_3 && buffs.hp_potion_3 > now) {
-                total.hp = Math.round(total.hp * 1.35); // +35% HP
+                total.hp = Math.round(total.hp * 1.35);
             }
             if (buffs.mana_potion_1 && buffs.mana_potion_1 > now) {
-                total.speed = +(total.speed * 1.15).toFixed(2); // +15% Speed
+                total.speed = +(total.speed * 1.15).toFixed(2);
             }
 
-            // Cap crit/evasion/critDamage at sensible max
+            // Ограничения для баланса
             total.critChance = Math.min(75, total.critChance);
-            total.evasion = 0;
             if (total.critDamage) {
                 total.critDamage = Math.min(3.0, total.critDamage);
             }

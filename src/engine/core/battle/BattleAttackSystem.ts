@@ -37,6 +37,10 @@ export async function executeAttack(engine: BattleEngine, attacker: HeroUnit, vi
         const currentMana = anyEngine.state.playerMana;
         const newMana = Math.min(100, currentMana + 25);
         anyEngine.updateState({ playerMana: newMana });
+    } else {
+        const currentMana = anyEngine.state.enemyMana || 0;
+        const newMana = Math.min(100, currentMana + 25);
+        anyEngine.updateState({ enemyMana: newMana } as any);
     }
 
     await new Promise((r) => setTimeout(r, 100 / timeScale));
@@ -62,13 +66,29 @@ export async function executeAttack(engine: BattleEngine, attacker: HeroUnit, vi
     }
 
     const stats = isPlayer ? anyEngine.playerStats! : anyEngine.enemyStats!;
-    const isCrit = Math.random() < stats.critChance;
+
+    // === Execute Window для Убийц ===
+    let finalAttack = stats.attack;
+    let finalCritChance = stats.critChance;
+    const isAssassin = attacker.config?.role === 'ASSASSIN';
+
+    const victimHP = isPlayer ? engine.state.enemyHP : engine.state.playerHP;
+    const victimMaxHP = isPlayer ? anyEngine.enemyStats!.hp : anyEngine.playerStats!.hp;
+    const isExecuteRange = victimHP / victimMaxHP < 0.35;
+
+    if (isAssassin && isExecuteRange) {
+        finalAttack = Math.round(finalAttack * 1.30);
+        finalCritChance = Math.min(1.0, finalCritChance + 0.15);
+        anyEngine.updateState({ log: `🗡️ [ФАЗА КАЗНИ] ${attacker.config.name} чувствует кровь! Атака +30%, крит +15%!` });
+        anyEngine.addCombatLog(`🗡️ [ФАЗА КАЗНИ] Атака ${attacker.config.name} усилена против раненого врага!`);
+    }
+
+    const isCrit = Math.random() < finalCritChance;
     if (isCrit) specialChance += 0.12;
     specialChance = Math.min(0.8, specialChance);
 
     const isSpecialStrike = Math.random() < specialChance;
     attacker.attackCounter = (attacker.attackCounter || 0) + 1;
-    const isAssassin = attacker.config?.role === 'ASSASSIN';
     const isShadowStep = isAssassin && attacker.attackCounter % 3 === 0;
 
     if (isShadowStep) {
@@ -311,7 +331,7 @@ export async function executeAttack(engine: BattleEngine, attacker: HeroUnit, vi
         return;
     }
 
-    let damage = stats.attack * (0.9 + Math.random() * 0.2);
+    let damage = finalAttack * (0.9 + Math.random() * 0.2);
     const cappedCritDamage = Math.min(stats.critDamage || 1.5, 3.0);
     if (isCrit) damage *= cappedCritDamage;
     if (instinctEvent?.type === 'RAGE') damage *= 1.5;
@@ -446,6 +466,17 @@ export async function executeAttack(engine: BattleEngine, attacker: HeroUnit, vi
 
     const attackerId = attacker.config?.id;
     const attackerRole = attacker.config?.role;
+
+    // === Stagger Breakpoint для Бойцов ===
+    if (attackerRole === 'WARRIOR') {
+        attacker.staggerCount = (attacker.staggerCount || 0) + 1;
+        if (attacker.staggerCount >= 3) {
+            attacker.staggerCount = 0;
+            anyEngine.applyStatus(victim, 'FREEZE', 1, 0, !isPlayer);
+            anyEngine.updateState({ log: `⚔️ [ОШЕЛОМЛЕНИЕ] ${attacker.config.name} замедляет цель мощной комбой!` });
+            anyEngine.addCombatLog(`⚔️ [ОШЕЛОМЛЕНИЕ] Третий удар бойца наложил Заморозку на врага!`);
+        }
+    }
 
     const abilityCfg = getAbilityConfig(attackerId) ?? getAbilityConfigByRole(attackerRole);
     if (abilityCfg?.attackPassive) {

@@ -29,6 +29,8 @@ export interface BattleState {
     log: string;
     playerMana: number;
     playerMaxMana: number;
+    enemyMana: number;
+    enemyMaxMana: number;
     playerStatuses: Array<{ type: string; stacks: number; duration: number }>;
     enemyStatuses: Array<{ type: string; stacks: number; duration: number }>;
     playerShield: number;
@@ -116,6 +118,8 @@ export class BattleEngine {
         log: 'ПОДГОТОВКА...',
         playerMana: 0,
         playerMaxMana: 100,
+        enemyMana: 0,
+        enemyMaxMana: 100,
         playerStatuses: [],
         enemyStatuses: [],
         playerShield: 0,
@@ -392,7 +396,7 @@ export class BattleEngine {
                     this.addCombatLog(`💫 ${skipMsg}`);
                     await new Promise((r) => setTimeout(r, 1500 / timeScale));
                 } else if (this.state.playerMana >= 100) {
-                    await this.castActiveAbility();
+                    await this.castActiveAbility(true);
                 } else {
                     await this.executeAttack(this.player!, this.enemy!, true);
                 }
@@ -407,10 +411,12 @@ export class BattleEngine {
                     if (!this.isCombatRunning || this.state.playerHP <= 0 || this.state.enemyHP <= 0) break;
 
                     if (this.enemy!.isStunnedStatus) {
-                        const skipMsg = 'Враг оглушен и пропускаете ход!';
+                        const skipMsg = 'Враг оглушен и пропускает ход!';
                         this.updateState({ log: skipMsg });
                         this.addCombatLog(`💫 ${skipMsg}`);
                         await new Promise((r) => setTimeout(r, 1500 / timeScale));
+                    } else if ((this.state as any).enemyMana >= 100) {
+                        await this.castActiveAbility(false);
                     } else {
                         await this.executeAttack(this.enemy!, this.player!, false);
                     }
@@ -526,6 +532,7 @@ export class BattleEngine {
             }
         }
 
+        let nextHP = 0;
         if (target === 'player') {
             let remainingDamage = modifiedDamage;
             let shield = this.state.playerShield || 0;
@@ -539,14 +546,45 @@ export class BattleEngine {
                 }
                 this.updateState({ playerShield: shield });
             }
-            const nextHP = Math.max(0, this.state.playerHP - remainingDamage);
+            nextHP = Math.max(0, this.state.playerHP - remainingDamage);
             this.updateState({ playerHP: nextHP });
-            return nextHP;
         } else {
-            const nextHP = Math.max(0, this.state.enemyHP - modifiedDamage);
+            nextHP = Math.max(0, this.state.enemyHP - modifiedDamage);
             this.updateState({ enemyHP: nextHP });
-            return nextHP;
         }
+
+        // === Resolve Barrier для Танков ===
+        const unit = target === 'player' ? this.player : this.enemy;
+        const stats = target === 'player' ? this.playerStats : this.enemyStats;
+        const maxHP = stats ? stats.hp : 100;
+        const isTank = unit?.config?.role === 'TANK';
+
+        if (isTank && nextHP > 0 && nextHP / maxHP < 0.50 && !(unit as any).resolveBarrierTriggered) {
+            (unit as any).resolveBarrierTriggered = true;
+
+            const shieldVal = Math.ceil(maxHP * 0.25);
+            if (target === 'player') {
+                const currentShield = this.state.playerShield || 0;
+                this.updateState({ playerShield: currentShield + shieldVal });
+            } else {
+                (this.state as any).enemyShield = ((this.state as any).enemyShield || 0) + shieldVal;
+            }
+
+            stats.defense = Math.round(stats.defense * 1.30);
+            this.applyStatus(unit, 'STUN_IMMUNITY' as any, 2, 0, target === 'player');
+
+            const barrierMsg = `🛡️ [РУБЕЖ СТОЙКОСТИ] ${unit.config.name} активирует барьер! Получен Щит +${shieldVal} и Защита +30%!`;
+            this.updateState({ log: barrierMsg });
+            this.addCombatLog(barrierMsg);
+            this.onCombatEvent({
+                type: 'BLOCK',
+                damage: shieldVal,
+                target: target,
+                label: `🛡️ СТОЙКОСТЬ +${shieldVal}`,
+            });
+        }
+
+        return nextHP;
     }
 
     public instantWin() {
@@ -565,8 +603,8 @@ export class BattleEngine {
         this.checkCombatEnd();
     }
 
-    public async castActiveAbility() {
-        await BattleAbilitySystem.castActiveAbility(this);
+    public async castActiveAbility(isPlayerCast: boolean = true) {
+        await BattleAbilitySystem.castActiveAbility(this, isPlayerCast);
     }
 
     public applyStatus(unit: HeroUnit, type: StatusType, duration: number, damagePerTurn: number, isPlayer: boolean) {
