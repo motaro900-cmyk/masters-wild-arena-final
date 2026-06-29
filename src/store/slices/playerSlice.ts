@@ -399,7 +399,7 @@ export const createPlayerSlice = (set: any, get: any) => {
                     'system',
                 );
             }
-            if (type === 'LEVEL_UP' && payload.level >= 80) {
+            if (type === 'LEVEL_UP' && payload.level === 80) {
                 addMessage(
                     `⚔️ ЛЕГЕНДАРНЫЙ РУБЕЖ: Герой «${payload.playerName}» достиг великого 80 уровня! Легенды слагают песни о его силе! 🛡️🌿`,
                     'ГЕРОЛЬД',
