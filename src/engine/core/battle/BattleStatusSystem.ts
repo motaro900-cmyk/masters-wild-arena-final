@@ -153,9 +153,17 @@ export async function resolvePeriodicDamage(engine: BattleEngine, unit: HeroUnit
         if (status.type === 'BURN' || status.type === 'POISON') {
             const { timeScale } = useGameStore.getState();
 
-            const tickDamage = status.type === 'BURN' ? status.damagePerTurn : status.damagePerTurn * status.stacks;
-
             const targetStats = isPlayer ? engine.playerStats : engine.enemyStats;
+            const targetMaxHP = targetStats ? targetStats.hp : 100;
+
+            // Процентный урон от максимального здоровья цели
+            let tickDamage = 0;
+            if (status.type === 'POISON') {
+                tickDamage = Math.ceil(targetMaxHP * 0.018 * status.stacks);
+            } else {
+                tickDamage = Math.ceil(targetMaxHP * 0.035);
+            }
+
             const targetDefense = targetStats ? targetStats.defense : 0;
             const defMultiplier = status.type === 'POISON' ? 0.5 : 0.25;
             const effectiveDef = targetDefense * defMultiplier;

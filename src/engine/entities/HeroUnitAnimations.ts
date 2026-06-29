@@ -24,7 +24,31 @@ function createTimeline(unit: HeroUnit, vars?: gsap.TimelineVars): gsap.core.Tim
  * Телепортация персонажа с эффектом тумана
  */
 export function teleportTo(unit: HeroUnit, newX: number, newY: number): Promise<void> {
+    const anyUnit = unit as any;
+    anyUnit.clearCurrentResolve();
     return new Promise((resolve) => {
+        const safetyTimer = setTimeout(() => {
+            if (!unit.destroyed) {
+                unit.x = newX;
+                unit.y = newY;
+                unit.alpha = 1;
+                if (anyUnit.currentResolve === wrappedResolve) {
+                    anyUnit.currentResolve = null;
+                }
+                resolve();
+            }
+        }, 1500);
+
+        const wrappedResolve = () => {
+            clearTimeout(safetyTimer);
+            if (anyUnit.currentResolve === wrappedResolve) {
+                anyUnit.currentResolve = null;
+            }
+            resolve();
+        };
+
+        anyUnit.currentResolve = wrappedResolve;
+
         EffectsManager.getInstance().spawnSmokePuff(unit.x, unit.y);
 
         gsap.to(unit, {
@@ -39,7 +63,7 @@ export function teleportTo(unit: HeroUnit, newX: number, newY: number): Promise<
                     alpha: 1,
                     duration: 0.2,
                     onComplete: () => {
-                        resolve();
+                        wrappedResolve();
                     },
                 });
             },
@@ -51,8 +75,31 @@ export function teleportTo(unit: HeroUnit, newX: number, newY: number): Promise<
  * Прыжок + приземление с ударом (Landing Slam)
  */
 export function jumpSlam(unit: HeroUnit, targetX: number): Promise<void> {
+    const anyUnit = unit as any;
+    anyUnit.clearCurrentResolve();
     return new Promise((resolve) => {
         const originalY = unit.y;
+
+        const safetyTimer = setTimeout(() => {
+            if (!unit.destroyed) {
+                unit.y = originalY;
+                unit.x = targetX;
+                if (anyUnit.currentResolve === wrappedResolve) {
+                    anyUnit.currentResolve = null;
+                }
+                resolve();
+            }
+        }, 2000);
+
+        const wrappedResolve = () => {
+            clearTimeout(safetyTimer);
+            if (anyUnit.currentResolve === wrappedResolve) {
+                anyUnit.currentResolve = null;
+            }
+            resolve();
+        };
+
+        anyUnit.currentResolve = wrappedResolve;
 
         // 1. Прыжок вверх
         gsap.to(unit, {
@@ -68,7 +115,7 @@ export function jumpSlam(unit: HeroUnit, targetX: number): Promise<void> {
                     ease: 'power2.in',
                     onComplete: () => {
                         (unit as any).spawnLandingEffect();
-                        resolve();
+                        wrappedResolve();
                     },
                 });
             },
@@ -164,6 +211,9 @@ export function animateLungeForward(
         const safetyTimer = setTimeout(() => {
             if (!unit.destroyed && unit.isLunging) {
                 unit.isLunging = false;
+                if (anyUnit.currentResolve === wrappedResolve) {
+                    anyUnit.currentResolve = null;
+                }
                 resolve();
             }
         }, 2000);
@@ -184,14 +234,22 @@ export function animateLungeForward(
 
         const hasPoses = unit.posesTextures && unit.posesTextures.length > 0;
 
+        let attackType: 'swing' | 'thrust' | 'jump' = 'swing';
         if (poseOverride !== undefined) {
             unit.nextAttackPose = poseOverride;
+            if (unit.attackFrameIdxs && unit.attackFrameIdxs.indexOf(poseOverride) === 2) attackType = 'jump';
+            else if (unit.attackFrameIdxs && unit.attackFrameIdxs.indexOf(poseOverride) === 1) attackType = 'thrust';
             unit.setFrame(2);
-        } else if (hasPoses) {
-            // Randomly select next attack pose index: Swing (3), Thrust (4), Sweep (5), Jump Strike (6)
-            unit.nextAttackPose = [3, 4, 5, 6][Math.floor(Math.random() * 4)];
+        } else if (hasPoses && unit.attackFrameIdxs && unit.attackFrameIdxs.length > 0) {
+            const attackPoseCount = unit.attackFrameIdxs.length;
+            // Выбираем случайную атаку: Swing (0), Thrust (1), Jump (2)
+            const randIndex = Math.floor(Math.random() * Math.min(3, attackPoseCount));
+            unit.nextAttackPose = unit.attackFrameIdxs[randIndex];
+            if (randIndex === 2) attackType = 'jump';
+            else if (randIndex === 1) attackType = 'thrust';
             unit.setFrame(2); // Set run/lunge pose frame initially
         }
+        anyUnit.nextAttackType = attackType;
 
         // Start spawning ghost trails (for ASSASSIN and WARRIOR roles)
         const isAssassin = unit.config?.role === 'ASSASSIN';
@@ -228,7 +286,7 @@ export function animateLungeForward(
         });
         tl.timeScale(timeScale);
 
-        if (unit.nextAttackPose === 6) {
+        if (anyUnit.nextAttackType === 'jump') {
             // 1. Jump strike lunge: high arc (Y: -360px) to targets
             tl.to(unit, {
                 x: targetX,
@@ -242,7 +300,7 @@ export function animateLungeForward(
                 duration: 0.2 * animSpeed,
                 ease: 'power2.in',
             });
-        } else if (unit.nextAttackPose === 4) {
+        } else if (anyUnit.nextAttackType === 'thrust') {
             // 2. Thrust: ultra fast straight line dash
             tl.to(unit, {
                 x: targetX,
@@ -285,6 +343,9 @@ export function animateLungeReturn(unit: HeroUnit, startX: number, startY: numbe
                 unit.x = startX;
                 unit.y = startY;
                 unit.setFrame(0);
+                if (anyUnit.currentResolve === wrappedResolve) {
+                    anyUnit.currentResolve = null;
+                }
                 resolve();
             }
         }, 2000);
@@ -353,6 +414,13 @@ export function animateTeleportOut(unit: HeroUnit): Promise<void> {
         anyUnit.currentResolve = resolve;
         const timeScale = useGameStore.getState().timeScale || 1;
 
+        const safetyTimer = setTimeout(() => {
+            if (!unit.destroyed && anyUnit.currentResolve === resolve) {
+                anyUnit.currentResolve = null;
+                resolve();
+            }
+        }, 1500);
+
         gsap.killTweensOf(unit);
         if (unit.bodyContainer && !unit.bodyContainer.destroyed && unit.bodyContainer.scale) {
             gsap.killTweensOf(unit.bodyContainer.scale);
@@ -367,6 +435,7 @@ export function animateTeleportOut(unit: HeroUnit): Promise<void> {
 
         const tl = createTimeline(unit, {
             onComplete: () => {
+                clearTimeout(safetyTimer);
                 unit.alpha = 0;
                 if (anyUnit.currentResolve === resolve) {
                     anyUnit.currentResolve = null;
@@ -409,6 +478,13 @@ export function animateTeleportIn(unit: HeroUnit, targetX: number, faceScaleX: n
         anyUnit.currentResolve = resolve;
         const timeScale = useGameStore.getState().timeScale || 1;
 
+        const safetyTimer = setTimeout(() => {
+            if (!unit.destroyed && anyUnit.currentResolve === resolve) {
+                anyUnit.currentResolve = null;
+                resolve();
+            }
+        }, 1500);
+
         unit.x = targetX;
         unit.scale.x = faceScaleX;
         unit.alpha = 0;
@@ -422,6 +498,7 @@ export function animateTeleportIn(unit: HeroUnit, targetX: number, faceScaleX: n
 
         const tl = createTimeline(unit, {
             onComplete: () => {
+                clearTimeout(safetyTimer);
                 unit.alpha = 1;
                 if (unit.bodyContainer && !unit.bodyContainer.destroyed && unit.bodyContainer.scale) {
                     unit.bodyContainer.scale.set(unit.defaultScaleX, unit.defaultScaleY);

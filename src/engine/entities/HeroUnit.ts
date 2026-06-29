@@ -193,6 +193,20 @@ export class HeroUnit extends PIXI.Container implements IEffectTarget, IStatusEf
 
     public resetToIdle() {
         if (this.destroyed || !this.scale) return;
+        
+        // Резолвим активный промис перед сбросом, чтобы не вешать BattleEngine
+        if (this.currentResolve) {
+            const res = this.currentResolve;
+            this.currentResolve = null;
+            res();
+        }
+
+        // Очищаем фоновые таймеры сброса кадров
+        if (this.timers && this.timers.length > 0) {
+            this.timers.forEach((t) => clearTimeout(t));
+            this.timers = [];
+        }
+
         gsap.killTweensOf(this);
         gsap.killTweensOf(this.scale);
         if (this.trailInterval) {
@@ -221,7 +235,11 @@ export class HeroUnit extends PIXI.Container implements IEffectTarget, IStatusEf
             const res = this.currentResolve;
             this.currentResolve = null;
             res();
-            this.resetToIdle();
+        }
+        // Очищаем фоновые таймеры сброса кадров
+        if (this.timers && this.timers.length > 0) {
+            this.timers.forEach((t) => clearTimeout(t));
+            this.timers = [];
         }
     }
 
@@ -535,7 +553,8 @@ export class HeroUnit extends PIXI.Container implements IEffectTarget, IStatusEf
         if (hasPoses) {
             const attackList =
                 this.attackFrameIdxs && this.attackFrameIdxs.length > 0 ? this.attackFrameIdxs : [3, 4, 6];
-            const chosenPose = attackList[Math.floor(Math.random() * attackList.length)];
+            const chosenPose = this.nextAttackPose !== undefined ? this.nextAttackPose : attackList[Math.floor(Math.random() * attackList.length)];
+            this.nextAttackPose = undefined;
             this.setFrame(chosenPose);
 
             const attackIndex = attackList.indexOf(chosenPose);

@@ -55,7 +55,7 @@ export const HEROES_DB: IHeroConfig[] = [
         role: 'WARRIOR',
         unlockType: 'free',
         unlockCost: 0,
-        stats: { hp: 220, attack: 32, defense: 12, speed: 1.95, critChance: 9.5 },
+        stats: { hp: 770, attack: 32, defense: 12, speed: 1.95, critChance: 9.5 },
         baseScale: 0.8,
         anchors: {
             feet: { x: 0.5, y: 0.95 },
@@ -78,7 +78,7 @@ export const HEROES_DB: IHeroConfig[] = [
         unlockCost: 800,
         unlockGoldCost: 20000,
         requiredTrophies: 400,
-        stats: { hp: 160, attack: 42, defense: 6, speed: 2.10, critChance: 11.5 },
+        stats: { hp: 560, attack: 42, defense: 6, speed: 2.10, critChance: 11.5 },
         baseScale: 0.75,
         anchors: {
             feet: { x: 0.5, y: 0.95 },
@@ -101,7 +101,7 @@ export const HEROES_DB: IHeroConfig[] = [
         unlockCost: 1500,
         unlockGoldCost: 40000,
         requiredTrophies: 1000,
-        stats: { hp: 320, attack: 28, defense: 18, speed: 1.45, critChance: 4.0 },
+        stats: { hp: 1120, attack: 28, defense: 18, speed: 1.45, critChance: 4.0 },
         baseScale: 0.87,
         anchors: {
             feet: { x: 0.5, y: 0.95 },
@@ -124,7 +124,7 @@ export const HEROES_DB: IHeroConfig[] = [
         unlockCost: 2000,
         unlockGoldCost: 60000,
         requiredTrophies: 2000,
-        stats: { hp: 150, attack: 40, defense: 6, speed: 2.20, critChance: 12.5 },
+        stats: { hp: 525, attack: 40, defense: 6, speed: 2.20, critChance: 12.5 },
         baseScale: 0.82,
         anchors: {
             feet: { x: 0.5, y: 0.95 },
@@ -147,7 +147,7 @@ export const HEROES_DB: IHeroConfig[] = [
         unlockCost: 3500,
         unlockGoldCost: 100000,
         requiredTrophies: 3000,
-        stats: { hp: 230, attack: 34, defense: 11, speed: 1.80, critChance: 8.0 },
+        stats: { hp: 805, attack: 34, defense: 11, speed: 1.80, critChance: 8.0 },
         baseScale: 0.75,
         anchors: {
             feet: { x: 0.5, y: 0.95 },
@@ -171,7 +171,7 @@ export const HEROES_DB: IHeroConfig[] = [
         role: 'ASSASSIN',
         unlockType: 'diamonds',
         unlockCost: 50,
-        stats: { hp: 170, attack: 38, defense: 7, speed: 2.15, critChance: 14.0 },
+        stats: { hp: 595, attack: 38, defense: 7, speed: 2.15, critChance: 14.0 },
         baseScale: 0.85,
         anchors: {
             feet: { x: 0.5, y: 0.95 },
@@ -192,7 +192,7 @@ export const HEROES_DB: IHeroConfig[] = [
         role: 'TANK',
         unlockType: 'gold',
         unlockCost: 350,
-        stats: { hp: 300, attack: 26, defense: 20, speed: 1.35, critChance: 5.0 },
+        stats: { hp: 1050, attack: 26, defense: 20, speed: 1.35, critChance: 5.0 },
         baseScale: 1.0,
         anchors: {
             feet: { x: 0.5, y: 0.95 },
@@ -213,7 +213,7 @@ export const HEROES_DB: IHeroConfig[] = [
         role: 'MAGE',
         unlockType: 'diamonds',
         unlockCost: 150,
-        stats: { hp: 180, attack: 35, defense: 8, speed: 1.70, critChance: 10.0 },
+        stats: { hp: 630, attack: 35, defense: 8, speed: 1.70, critChance: 10.0 },
         baseScale: 0.9,
         anchors: {
             feet: { x: 0.5, y: 0.95 },
@@ -234,7 +234,7 @@ export const HEROES_DB: IHeroConfig[] = [
         role: 'SUPPORT',
         unlockType: 'level',
         unlockCost: 15,
-        stats: { hp: 200, attack: 24, defense: 10, speed: 1.85, critChance: 7.0 },
+        stats: { hp: 700, attack: 24, defense: 10, speed: 1.85, critChance: 7.0 },
         baseScale: 0.85,
         anchors: {
             feet: { x: 0.5, y: 0.95 },
@@ -256,7 +256,7 @@ export const HEROES_DB: IHeroConfig[] = [
         unlockType: 'achievement',
         unlockCost: 0,
         unlockAchievement: 'win_100_battles',
-        stats: { hp: 190, attack: 36, defense: 9, speed: 1.95, critChance: 11.0 },
+        stats: { hp: 665, attack: 36, defense: 9, speed: 1.95, critChance: 11.0 },
         baseScale: 0.88,
         anchors: {
             feet: { x: 0.5, y: 0.95 },

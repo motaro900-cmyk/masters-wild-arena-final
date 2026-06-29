@@ -562,7 +562,7 @@ export class BattleEngine {
         if (isTank && nextHP > 0 && nextHP / maxHP < 0.50 && !(unit as any).resolveBarrierTriggered) {
             (unit as any).resolveBarrierTriggered = true;
 
-            const shieldVal = Math.ceil(maxHP * 0.25);
+            const shieldVal = Math.ceil(maxHP * 0.15);
             if (target === 'player') {
                 const currentShield = this.state.playerShield || 0;
                 this.updateState({ playerShield: currentShield + shieldVal });
