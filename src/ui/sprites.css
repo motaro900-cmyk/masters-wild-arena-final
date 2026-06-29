@@ -9,39 +9,7 @@
     filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.8));
 }
 
-/* Stats Sheet (8 icons: Attack, Defense, Speed, HP, Accuracy, Armor Pen, Lifesteal, Crit) */
-/* Grid 4x2 assumed */
-.sprite-stat {
-    width: 32px;
-    height: 32px;
-    background-image: url('/assets/images/sheets/stats_sheet.webp');
-    background-size: 400% 200%; /* 4 columns, 2 rows */
-}
 
-.stat-attack {
-    background-position: 0% 0%;
-}
-.stat-defense {
-    background-position: 33.33% 0%;
-}
-.stat-speed {
-    background-position: 66.66% 0%;
-}
-.stat-hp {
-    background-position: 100% 0%;
-}
-.stat-accuracy {
-    background-position: 0% 100%;
-}
-.stat-penetration {
-    background-position: 33.33% 100%;
-}
-.stat-lifesteal {
-    background-position: 66.66% 100%;
-}
-.stat-crit {
-    background-position: 100% 100%;
-}
 
 /* Talents Sheet (12 icons, grid 4x4 in 1024x1024 sheet) */
 .sprite-talent {

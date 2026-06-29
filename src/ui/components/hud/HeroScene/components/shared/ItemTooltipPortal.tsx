@@ -163,12 +163,12 @@ export const ItemTooltipPortal: React.FC<ItemTooltipPortalProps> = ({ hoveredIte
                                     critBonus: '#a855f7',
                                     speedBonus: '#fcd34d',
                                 };
-                                const icons: any = {
-                                    attackBonus: 'sprite-stat stat-attack',
-                                    defenseBonus: 'sprite-stat stat-defense',
-                                    hpBonus: 'sprite-stat stat-hp',
-                                    critBonus: 'sprite-stat stat-crit',
-                                    speedBonus: 'sprite-stat stat-speed',
+                                const emojis: any = {
+                                    attackBonus: '⚔️',
+                                    defenseBonus: '🛡️',
+                                    hpBonus: '❤️',
+                                    critBonus: '💥',
+                                    speedBonus: '💨',
                                 };
                                 const displayValue = statKey === 'critBonus'
                                     ? `+${Math.round(val * 100)}%`
@@ -186,16 +186,9 @@ export const ItemTooltipPortal: React.FC<ItemTooltipPortalProps> = ({ hoveredIte
                                         }}
                                     >
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                            <div
-                                                className={icons[statKey]}
-                                                style={{
-                                                    width: '24px',
-                                                    height: '24px',
-                                                    backgroundSize: '400% 200%',
-                                                    filter: `contrast(1.2) brightness(1.1) drop-shadow(0 0 5px ${colors[statKey]}aa)`,
-                                                    imageRendering: '-webkit-optimize-contrast',
-                                                }}
-                                            />
+                                            <span style={{ fontSize: '18px', filter: `drop-shadow(0 0 5px ${colors[statKey]}aa)` }}>
+                                                {emojis[statKey]}
+                                            </span>
                                             <span style={{ color: 'rgba(255,255,255,0.3)', letterSpacing: '1px' }}>
                                                 {labels[statKey]}
                                             </span>
