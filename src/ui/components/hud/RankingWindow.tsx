@@ -5,7 +5,7 @@ import { resolveAssetPath } from '../../../utils/assetPath';
 import { getRankInfo } from '../../../configs/RankSystem';
 import { audioService } from '../../../services/AudioService';
 import { AssetsMap } from '../../../configs/AssetsMap';
-import { resolveAvatarPath } from '../../../configs/ProfileCustomization';
+import { resolveAvatarPath, getAvatarFramePath } from '../../../configs/ProfileCustomization';
 import { MOCK_CLANS, DEFAULT_MOCK_MEMBERS } from './Clan/ClanMockData';
 
 // Import subcomponents
@@ -19,9 +19,8 @@ export const RankingWindow: React.FC = () => {
     const playerName = useGameStore((state) => state.name);
     const playerId = useGameStore((state) => state.playerId);
     const friends = useGameStore((state) => state.friends) || [];
-    const heroes = useGameStore((state) => state.heroes) || {};
-    const selectedHeroId = useGameStore((state) => state.selectedHeroId) || 'panda';
-    const playerLevel = heroes[selectedHeroId]?.level || 1;
+    const playerLevel = useGameStore((state) => state.level) || 1;
+    const playerFrame = useGameStore((state) => state.frame) || 'none';
     const playerVipLevel = useGameStore((state) => state.vipLevel) || 0;
     const clanId = useGameStore((state) => state.clanId);
 
@@ -46,6 +45,7 @@ export const RankingWindow: React.FC = () => {
                 level: playerLevel,
                 trophies: rating,
                 avatar: resolveAvatarPath(vkUser?.photo_200 || vkUser?.photo || playerAvatar),
+                frame: playerFrame,
                 change: 'stable',
                 isMe: true,
                 vipLevel: playerVipLevel,
@@ -61,6 +61,7 @@ export const RankingWindow: React.FC = () => {
                     level: f.level || 1,
                     trophies: f.rating ?? f.trophies ?? 0,
                     avatar: resolveAvatarPath(f.avatar),
+                    frame: f.frame || f.avatarFrame || 'none',
                     change: 'stable',
                     isMe: false,
                     vipLevel: f.vipLevel || 0,
@@ -134,6 +135,7 @@ export const RankingWindow: React.FC = () => {
             level: playerLevel,
             trophies: rating,
             avatar: resolveAvatarPath(vkUser?.photo_200 || vkUser?.photo || playerAvatar),
+            frame: playerFrame,
             change: 'stable',
             isMe: true,
             vipLevel: playerVipLevel,
@@ -149,6 +151,7 @@ export const RankingWindow: React.FC = () => {
                 level: clan ? clan.level * 2 + 5 : 20,
                 trophies: clan ? Math.floor(clan.totalTrophies / 10) : 3000,
                 avatar: 'panda',
+                frame: 'none',
                 contribution: 500,
             };
             membersList = [clanLeaderEntry, ...DEFAULT_MOCK_MEMBERS, playerMember];
@@ -165,6 +168,7 @@ export const RankingWindow: React.FC = () => {
                 level: m.level || 1,
                 trophies: m.trophies || 0,
                 avatar: resolveAvatarPath(m.avatar),
+                frame: isMe ? playerFrame : m.frame || 'none',
                 change: 'stable' as const,
                 isMe,
                 vipLevel: isMe ? playerVipLevel : 0,
@@ -205,6 +209,10 @@ export const RankingWindow: React.FC = () => {
                     const mappedLeaders: LeaderboardEntry[] = players.map((p, index) => {
                         const nameVal = p.name || p.имя || 'Мастер';
                         const firstName = nameVal.split(' ')[0];
+                        const isMe = (() => {
+                            const myPrefixedId = vkUser ? `VK-${vkUser.id}` : (playerId?.startsWith('GUEST-') ? playerId : `GUEST-${playerId?.replace(/^MW-/, '') || 'DEVELOPER'}`);
+                            return p.id === myPrefixedId || (vkUser?.id && p.vkId && String(p.vkId) === String(vkUser.id));
+                        })();
 
                         return {
                             id: p.id,
@@ -213,11 +221,9 @@ export const RankingWindow: React.FC = () => {
                             level: p.уровень ?? p.level ?? p.лев ?? 1,
                             trophies: p.рейтинг ?? p.rating ?? 0,
                             avatar: resolveAvatarPath(p.фото ?? p.photo ?? p.avatar),
+                            frame: isMe ? playerFrame : p.frame || p.avatarFrame || 'none',
                             change: 'stable',
-                            isMe: (() => {
-                                const myPrefixedId = vkUser ? `VK-${vkUser.id}` : (playerId?.startsWith('GUEST-') ? playerId : `GUEST-${playerId?.replace(/^MW-/, '') || 'DEVELOPER'}`);
-                                return p.id === myPrefixedId || (vkUser?.id && p.vkId && String(p.vkId) === String(vkUser.id));
-                            })(),
+                            isMe,
                             vipLevel: p.vipLevel || 0,
                             isVipActive: p.isVipActive || false,
                         };
@@ -563,24 +569,76 @@ export const RankingWindow: React.FC = () => {
                             />
                         )}
                     </div>
-                    <div
-                        style={{
-                            width: '45px',
-                            height: '45px',
-                            background: '#333',
-                            borderRadius: '12px',
-                            border: '2px solid #f0c040',
-                            overflow: 'hidden',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                        }}
-                    >
-                        <img
-                            src={resolveAvatarPath(vkUser?.photo_200 || vkUser?.photo || playerAvatar)}
-                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                            alt="avatar"
-                        />
+                    {/* АВАТАР + РАМКА + УРОВЕНЬ */}
+                    <div style={{ position: 'relative', width: '58px', height: '58px', flexShrink: 0 }}>
+                        <div
+                            style={{
+                                width: '38px',
+                                height: '38px',
+                                borderRadius: '50%',
+                                background: '#111',
+                                overflow: 'hidden',
+                                position: 'absolute',
+                                top: '50%',
+                                left: '50%',
+                                transform: 'translate(-50%, -50%)',
+                                zIndex: 10,
+                            }}
+                        >
+                            <img
+                                src={resolveAvatarPath(vkUser?.photo_200 || vkUser?.photo || playerAvatar)}
+                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                alt="avatar"
+                            />
+                        </div>
+                        {playerFrame && playerFrame !== 'none' ? (
+                            <img
+                                src={getAvatarFramePath(playerFrame)}
+                                style={{
+                                    position: 'absolute',
+                                    inset: 0,
+                                    width: '100%',
+                                    height: '100%',
+                                    objectFit: 'contain',
+                                    pointerEvents: 'none',
+                                    zIndex: 20,
+                                }}
+                                alt="frame"
+                            />
+                        ) : (
+                            <div
+                                style={{
+                                    position: 'absolute',
+                                    inset: '8px',
+                                    borderRadius: '50%',
+                                    border: '2px solid #f0c040',
+                                    zIndex: 15,
+                                }}
+                            />
+                        )}
+                        {/* Уровень аккаунта */}
+                        <div
+                            style={{
+                                position: 'absolute',
+                                bottom: '-4px',
+                                right: '-4px',
+                                width: '20px',
+                                height: '20px',
+                                background: 'linear-gradient(180deg, #f0c040 0%, #a06010 100%)',
+                                borderRadius: '50%',
+                                border: '1.5px solid #3a1a00',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                fontSize: '9px',
+                                fontWeight: 900,
+                                color: '#000',
+                                zIndex: 25,
+                                boxShadow: '0 2px 6px rgba(0,0,0,0.7)',
+                            }}
+                        >
+                            {playerLevel}
+                        </div>
                     </div>
                     <div>
                         <div style={{ color: '#fff', fontSize: '16px', fontWeight: 800 }}>

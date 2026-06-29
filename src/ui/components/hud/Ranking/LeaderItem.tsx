@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { AssetsMap } from '../../../../configs/AssetsMap';
 import { getRankInfo } from '../../../../configs/RankSystem';
 import { resolveAssetPath } from '../../../../utils/assetPath';
-import { resolveAvatarPath } from '../../../../configs/ProfileCustomization';
+import { resolveAvatarPath, getAvatarFramePath } from '../../../../configs/ProfileCustomization';
 
 export interface LeaderboardEntry {
     id: string;
@@ -12,6 +12,7 @@ export interface LeaderboardEntry {
     level: number;
     trophies: number;
     avatar: string;
+    frame?: string;
     change: 'up' | 'down' | 'stable';
     isMe?: boolean;
     vipLevel?: number;
@@ -123,28 +124,65 @@ export const LeaderItem: React.FC<LeaderItemProps> = ({ player, onClick }) => {
                 )}
             </div>
 
-            {/* АВАТАР */}
+            {/* АВАТАР И РАМКА */}
             <div
                 style={{
-                    width: '50px',
-                    height: '50px',
-                    borderRadius: '50%',
-                    background: 'rgba(0,0,0,0.5)',
-                    border: `2px solid ${player.isMe ? '#f0c040' : '#444'}`,
-                    marginRight: '15px',
+                    width: '58px',
+                    height: '58px',
+                    position: 'relative',
+                    marginRight: '12px',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    fontSize: '24px',
-                    boxShadow: isTop3 ? `0 0 15px ${rankColor}33` : 'none',
-                    overflow: 'hidden',
+                    flexShrink: 0,
                 }}
             >
-                <img
-                    src={resolveAvatarPath(player.avatar)}
-                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                    alt="avatar"
-                />
+                <div
+                    style={{
+                        width: '38px',
+                        height: '38px',
+                        borderRadius: '50%',
+                        overflow: 'hidden',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        background: '#111',
+                        zIndex: 10,
+                        boxShadow: isTop3 ? `0 0 10px ${rankColor}33` : 'none',
+                    }}
+                >
+                    <img
+                        src={resolveAvatarPath(player.avatar)}
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        alt="avatar"
+                    />
+                </div>
+                {player.frame && player.frame !== 'none' ? (
+                    <img
+                        src={getAvatarFramePath(player.frame)}
+                        style={{
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'contain',
+                            pointerEvents: 'none',
+                            zIndex: 20,
+                        }}
+                        alt="frame"
+                    />
+                ) : (
+                    <div
+                        style={{
+                            position: 'absolute',
+                            inset: '8px',
+                            borderRadius: '50%',
+                            border: `2px solid ${player.isMe ? '#f0c040' : 'rgba(255,255,255,0.2)'}`,
+                            zIndex: 15,
+                        }}
+                    />
+                )}
             </div>
 
             {/* ИМЯ И УРОВЕНЬ */}
@@ -184,7 +222,25 @@ export const LeaderItem: React.FC<LeaderItemProps> = ({ player, onClick }) => {
                     )}
                     {player.isMe && <span style={{ fontSize: '12px', opacity: 0.7 }}>(ВЫ)</span>}
                 </div>
-                <div style={{ color: '#dfc08a', fontSize: '12px', fontWeight: 600 }}>Уровень {player.level}</div>
+                {/* Уровень аккаунта — красивая пилюля */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginTop: '2px' }}>
+                    <div
+                        style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            padding: '1px 8px',
+                            background: 'linear-gradient(90deg, rgba(240,192,64,0.15) 0%, rgba(240,192,64,0.05) 100%)',
+                            borderRadius: '20px',
+                            border: '1px solid rgba(240,192,64,0.35)',
+                        }}
+                    >
+                        <span style={{ color: '#f0c040', fontSize: '10px', fontWeight: 900 }}>⚡</span>
+                        <span style={{ color: '#dfc08a', fontSize: '11px', fontWeight: 800 }}>
+                            Ур. {player.level}
+                        </span>
+                    </div>
+                </div>
             </div>
 
             {/* ЛИГА */}
