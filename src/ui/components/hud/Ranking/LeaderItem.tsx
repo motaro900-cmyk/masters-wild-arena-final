@@ -127,10 +127,10 @@ export const LeaderItem: React.FC<LeaderItemProps> = ({ player, onClick }) => {
             {/* АВАТАР И РАМКА */}
             <div
                 style={{
-                    width: '58px',
-                    height: '58px',
+                    width: '74px',
+                    height: '74px',
                     position: 'relative',
-                    marginRight: '12px',
+                    marginRight: '14px',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -139,8 +139,8 @@ export const LeaderItem: React.FC<LeaderItemProps> = ({ player, onClick }) => {
             >
                 <div
                     style={{
-                        width: '38px',
-                        height: '38px',
+                        width: '50px',
+                        height: '50px',
                         borderRadius: '50%',
                         overflow: 'hidden',
                         display: 'flex',
@@ -148,7 +148,7 @@ export const LeaderItem: React.FC<LeaderItemProps> = ({ player, onClick }) => {
                         justifyContent: 'center',
                         background: '#111',
                         zIndex: 10,
-                        boxShadow: isTop3 ? `0 0 10px ${rankColor}33` : 'none',
+                        boxShadow: isTop3 ? `0 0 14px ${rankColor}44` : 'none',
                     }}
                 >
                     <img
@@ -191,7 +191,7 @@ export const LeaderItem: React.FC<LeaderItemProps> = ({ player, onClick }) => {
                     style={{
                         color: player.isMe ? '#f0c040' : '#fff',
                         fontWeight: 700,
-                        fontSize: '18px',
+                        fontSize: '20px',
                         display: 'flex',
                         alignItems: 'center',
                         gap: '8px',
@@ -204,12 +204,12 @@ export const LeaderItem: React.FC<LeaderItemProps> = ({ player, onClick }) => {
                                 backgroundImage: `url(${resolveAssetPath(AssetsMap.UI.VIP_PLAQUE)})`,
                                 backgroundSize: '100% 100%',
                                 backgroundPosition: 'center',
-                                width: '45px',
-                                height: '18px',
+                                width: '55px',
+                                height: '22px',
                                 color: '#fff',
                                 fontWeight: 900,
                                 fontFamily: "'Cinzel', 'Philosopher', serif",
-                                fontSize: '9px',
+                                fontSize: '11px',
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
@@ -220,22 +220,22 @@ export const LeaderItem: React.FC<LeaderItemProps> = ({ player, onClick }) => {
                             VIP
                         </div>
                     )}
-                    {player.isMe && <span style={{ fontSize: '12px', opacity: 0.7 }}>(ВЫ)</span>}
+                    {player.isMe && <span style={{ fontSize: '13px', opacity: 0.7 }}>(ВЫ)</span>}
                 </div>
                 {/* Уровень аккаунта — красивая пилюля */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginTop: '2px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginTop: '3px' }}>
                     <div
                         style={{
                             display: 'inline-flex',
                             alignItems: 'center',
                             gap: '4px',
-                            padding: '1px 8px',
+                            padding: '2px 10px',
                             background: 'linear-gradient(90deg, rgba(240,192,64,0.15) 0%, rgba(240,192,64,0.05) 100%)',
                             borderRadius: '20px',
                             border: '1px solid rgba(240,192,64,0.35)',
                         }}
                     >
-                        <span style={{ color: '#dfc08a', fontSize: '11px', fontWeight: 800 }}>
+                        <span style={{ color: '#dfc08a', fontSize: '13px', fontWeight: 800 }}>
                             Ур. {player.level}
                         </span>
                     </div>
