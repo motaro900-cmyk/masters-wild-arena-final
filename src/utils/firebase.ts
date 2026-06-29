@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { initializeFirestore } from 'firebase/firestore';
+import { initializeFirestore, enableIndexedDbPersistence } from 'firebase/firestore';
 
 // Ваш конфиг из консоли Firebase
 const firebaseConfig = {
@@ -14,6 +14,18 @@ const firebaseConfig = {
 // Инициализация
 const app = initializeApp(firebaseConfig);
 export const db = initializeFirestore(app, {});
+
+if (typeof window !== 'undefined') {
+    enableIndexedDbPersistence(db).catch((err) => {
+        if (err.code === 'failed-precondition') {
+            console.warn('[Firebase] Persistence failed-precondition: multiple tabs open.');
+        } else if (err.code === 'unimplemented') {
+            console.warn('[Firebase] Persistence unimplemented by browser.');
+        } else {
+            console.warn('[Firebase] Failed to enable persistence:', err);
+        }
+    });
+}
 
 const isLocalhost =
     typeof window !== 'undefined' &&

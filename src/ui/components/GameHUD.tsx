@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useGameStore } from '../../store/useGameStore';
 import { AssetsMap } from '../../configs/AssetsMap';
 import { lazyWithRetry } from '../../utils/LazyWithRetry';
-import { VipDailyRewardModal } from './hud/VipDailyRewardModal';
 
 // HUD Components
 import { BattlePassBar } from './hud/BattlePassBar';
@@ -19,15 +18,16 @@ const WindowManager = lazyWithRetry(() => import('./hud/WindowManager'));
 import { WindowLoadingSpinner } from './hud/WindowLoadingSpinner';
 import { AlertDialog, ConfirmDialog } from './hud/GlobalDialogs';
 import { UnderDevelopmentModal } from './hud/SharedUI';
-import { MatchmakingOverlay } from './hud/MatchmakingOverlay';
-import { LevelUpOverlay } from './hud/LevelUpOverlay';
-import { PlayerInspectModal } from './hud/PlayerInspectModal';
 import bridge from '@vkontakte/vk-bridge';
 import { safeGetItem, safeSetItem } from '../../utils/SafeStorage';
 import { useGraphicsConfig } from '../hooks/useGraphicsConfig';
 import { TimeService } from '../../utils/TimeService';
 
 const AdminPanel = lazyWithRetry(() => import('./hud/AdminPanel').then((m) => ({ default: m.AdminPanel })));
+const VipDailyRewardModal = lazyWithRetry(() => import('./hud/VipDailyRewardModal').then((m) => ({ default: m.VipDailyRewardModal })));
+const MatchmakingOverlay = lazyWithRetry(() => import('./hud/MatchmakingOverlay').then((m) => ({ default: m.MatchmakingOverlay })));
+const LevelUpOverlay = lazyWithRetry(() => import('./hud/LevelUpOverlay').then((m) => ({ default: m.LevelUpOverlay })));
+const PlayerInspectModal = lazyWithRetry(() => import('./hud/PlayerInspectModal').then((m) => ({ default: m.PlayerInspectModal })));
 
 export const GameHUD: React.FC = () => {
     const activeScreen = useGameStore((state) => state.activeScreen);
@@ -623,49 +623,57 @@ export const GameHUD: React.FC = () => {
             )}
 
             {activeWindow === 'RANKED_LOBBY' && (
-                <MatchmakingOverlay
-                    onCancel={() => setActiveWindow(null)}
-                    onFound={(opp) => {
-                        // Используем setRawActiveWindow напрямую, чтобы не вызывать
-                        // window.history.back() и избежать двойного срабатывания
-                        setRawActiveWindow(null);
-
-                        useGameStore.setState({
-                            selectedEnemyId: opp.id,
-                            battleMode: 'RANKED',
-                            activeRankedOpponent: opp,
-                        });
-
-                        import('../../services/SyncService').then(({ syncService }) => {
-                            syncService.logPlayerAction(`Начал рейтинговый бой против: ${opp.name}`);
-                        });
-
-                        useGameStore.getState().setScreen('BATTLE');
-                    }}
-                />
+                <React.Suspense fallback={<WindowLoadingSpinner />}>
+                    <MatchmakingOverlay
+                        onCancel={() => setActiveWindow(null)}
+                        onFound={(opp) => {
+                            // Используем setRawActiveWindow напрямую, чтобы не вызывать
+                            // window.history.back() и избежать двойного срабатывания
+                            setRawActiveWindow(null);
+ 
+                            useGameStore.setState({
+                                selectedEnemyId: opp.id,
+                                battleMode: 'RANKED',
+                                activeRankedOpponent: opp,
+                            });
+ 
+                            import('../../services/SyncService').then(({ syncService }) => {
+                                syncService.logPlayerAction(`Начал рейтинговый бой против: ${opp.name}`);
+                            });
+ 
+                            useGameStore.getState().setScreen('BATTLE');
+                        }}
+                    />
+                </React.Suspense>
             )}
-
+ 
             <UnderDevelopmentModal
                 isOpen={devModal.isOpen}
                 title={devModal.title}
                 onClose={() => setDevModal({ ...devModal, isOpen: false })}
             />
-
+ 
             {vipDailyReward && (
                 <div style={{ pointerEvents: 'all', position: 'absolute', inset: 0, zIndex: 99999 }}>
-                    <VipDailyRewardModal
-                        isOpen={true}
-                        rewards={vipDailyReward}
-                        daysLeft={vipDailyReward.daysLeft || 0}
-                        onClose={() => setVipDailyReward(null)}
-                    />
+                    <React.Suspense fallback={<WindowLoadingSpinner />}>
+                        <VipDailyRewardModal
+                            isOpen={true}
+                            rewards={vipDailyReward}
+                            daysLeft={vipDailyReward.daysLeft || 0}
+                            onClose={() => setVipDailyReward(null)}
+                        />
+                    </React.Suspense>
                 </div>
             )}
-
-            <LevelUpOverlay />
+ 
+            <React.Suspense fallback={null}>
+                <LevelUpOverlay />
+            </React.Suspense>
             <AlertDialog />
             <ConfirmDialog />
-            <PlayerInspectModal />
+            <React.Suspense fallback={null}>
+                <PlayerInspectModal />
+            </React.Suspense>
         </div>
     );
 };

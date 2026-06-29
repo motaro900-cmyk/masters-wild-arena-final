@@ -724,8 +724,33 @@ class BootController {
             ),
         );
 
-        // Await all parallel promises
-        await Promise.all([timePromise, verifyPromise, Promise.race([vkPromise, timeoutPromise])]);
+        // Await all parallel promises with fallback recovery
+        try {
+            await Promise.all([timePromise, verifyPromise, Promise.race([vkPromise, timeoutPromise])]);
+        } catch (err: any) {
+            console.warn('[BootController] resolveVK encountered an error/timeout, attempting URL fallback:', err);
+            const searchParams = new URLSearchParams(window.location.search);
+            const urlVkUserId = searchParams.get('vk_user_id');
+            if (urlVkUserId) {
+                console.log('[BootController] Recovering session using URL parameter vk_user_id:', urlVkUserId);
+                this.vkUser = {
+                    id: urlVkUserId,
+                    firstName: 'Игрок',
+                    lastName: '',
+                    photo: '/assets/images/avatars/panda.webp',
+                    photo200: '/assets/images/avatars/panda.webp',
+                };
+                const { useGameStore } = await import('../store/useGameStore');
+                useGameStore.setState({ vkUser: this.vkUser, isSystemUpdate: true });
+                if (this.vkUser.photo200 || this.vkUser.photo) {
+                    useGameStore.setState({ avatar: this.vkUser.photo200 || this.vkUser.photo, isSystemUpdate: true });
+                }
+                // Ensure other critical tasks (like verifyPromise) are resolved
+                await Promise.all([timePromise, verifyPromise]);
+            } else {
+                throw err;
+            }
+        }
 
         // Set explicit authState for debug/telemetry/security observability
         const { useGameStore } = await import('../store/useGameStore');
