@@ -134,8 +134,8 @@ export const QUESTS_POOL: Quest[] = [
     {
         id: 'q12',
         title: 'КОЛЛЕКЦИОНЕР',
-        description: 'Открой 3 любых подарка или сундука',
-        target: 3,
+        description: 'Открой 2 любых подарка или сундука',
+        target: 2,
         rewardGold: 750,
         rewardGems: 8,
         rewardExp: 500,
