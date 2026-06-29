@@ -147,20 +147,7 @@ export const DailyCalendarTab: React.FC<DailyCalendarTabProps> = ({
                     margin: isMobile ? '8px 0' : '10px 0',
                 }}
             >
-                {/* Horizontal progress connecting line */}
-                <div
-                    style={{
-                        position: 'absolute',
-                        left: '40px',
-                        right: '40px',
-                        top: isMobile ? '120px' : '140px',
-                        height: '3px',
-                        background: 'linear-gradient(90deg, rgba(229,169,16,0.02) 0%, rgba(229,169,16,0.3) 50%, rgba(229,169,16,0.02) 100%)',
-                        boxShadow: '0 0 8px rgba(229, 169, 16, 0.15)',
-                        zIndex: 1,
-                        pointerEvents: 'none',
-                    }}
-                />
+
 
                 {STREAK_REWARDS.map((rewardItem) => {
                     const isCurrent = rewardItem.day === streak && !claimedToday;
@@ -339,8 +326,8 @@ export const DailyCalendarTab: React.FC<DailyCalendarTabProps> = ({
                                                 left: '50%',
                                                 top: '50%',
                                                 transform: 'translate(-50%, -50%)',
-                                                width: isDay7 ? '170px' : '110px',
-                                                height: isDay7 ? '170px' : '110px',
+                                                width: isDay7 ? '130px' : '85px',
+                                                height: isDay7 ? '130px' : '85px',
                                                 background: getRewardAura(rewardItem.type),
                                                 borderRadius: '50%',
                                                 pointerEvents: 'none',
@@ -361,11 +348,11 @@ export const DailyCalendarTab: React.FC<DailyCalendarTabProps> = ({
                                         }}
                                         style={{
                                             width: isDay7
-                                                ? isMobile ? '76px' : '145px'
-                                                : isMobile ? '52px' : '96px',
+                                                ? isMobile ? '60px' : '110px'
+                                                : isMobile ? '42px' : '72px',
                                             height: isDay7
-                                                ? isMobile ? '76px' : '145px'
-                                                : isMobile ? '52px' : '96px',
+                                                ? isMobile ? '60px' : '110px'
+                                                : isMobile ? '42px' : '72px',
                                             objectFit: 'contain',
                                             filter: isLocked
                                                 ? 'brightness(0.45) saturate(0.45)'

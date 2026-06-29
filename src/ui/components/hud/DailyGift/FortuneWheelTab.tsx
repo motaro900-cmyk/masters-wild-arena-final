@@ -328,8 +328,8 @@ export const FortuneWheelTab: React.FC<FortuneWheelTabProps> = ({
                                             left: '50%',
                                             top: '50%',
                                             transform: 'translate(-50%, -50%)',
-                                            width: isMobile ? '90px' : '130px',
-                                            height: isMobile ? '90px' : '130px',
+                                            width: isMobile ? '65px' : '85px',
+                                            height: isMobile ? '65px' : '85px',
                                             background: getRewardAura(reward.type),
                                             borderRadius: '50%',
                                             pointerEvents: 'none',
@@ -369,8 +369,8 @@ export const FortuneWheelTab: React.FC<FortuneWheelTabProps> = ({
                                     src={reward.icon}
                                     alt={reward.type}
                                     style={{
-                                        width: isMobile ? '52px' : '92px',
-                                        height: isMobile ? '52px' : '92px',
+                                        width: isMobile ? '42px' : '72px',
+                                        height: isMobile ? '42px' : '72px',
                                         objectFit: 'contain',
                                         filter: isCenterItem
                                             ? 'drop-shadow(0 0 12px rgba(255, 215, 0, 0.45)) drop-shadow(0 4px 8px rgba(0,0,0,0.85))'
