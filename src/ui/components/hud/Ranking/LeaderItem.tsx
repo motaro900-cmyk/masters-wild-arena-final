@@ -140,15 +140,11 @@ export const LeaderItem: React.FC<LeaderItemProps> = ({ player, onClick }) => {
                     overflow: 'hidden',
                 }}
             >
-                {player.avatar.includes('sprite') ? (
-                    <div className={player.avatar.replace('sprite:', '')} style={{ transform: 'scale(0.8)' }} />
-                ) : (
-                    <img
-                        src={player.avatar}
-                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                        alt="avatar"
-                    />
-                )}
+                <img
+                    src={resolveAvatarPath(player.avatar)}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    alt="avatar"
+                />
             </div>
 
             {/* ИМЯ И УРОВЕНЬ */}
