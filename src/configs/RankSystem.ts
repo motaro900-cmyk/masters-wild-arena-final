@@ -9,7 +9,7 @@ export interface RankTier {
 
 export const RANK_SYSTEM: RankTier[] = [
     {
-        name: 'ЛЕГЕНДА',
+        name: 'МИФИЧЕСКИЙ',
         minTrophies: 10500,
         maxTrophies: 999999,
         color: '#ef4444',
@@ -17,7 +17,7 @@ export const RANK_SYSTEM: RankTier[] = [
         icon: '/assets/images/ui/rank_11.webp',
     },
     {
-        name: 'ВЛАСТЕЛИН',
+        name: 'ЛЕГЕНДА',
         minTrophies: 9000,
         maxTrophies: 10500,
         color: '#f59e0b',
@@ -25,7 +25,7 @@ export const RANK_SYSTEM: RankTier[] = [
         icon: '/assets/images/ui/rank_10.webp',
     },
     {
-        name: 'МАГИСТР',
+        name: 'ВЛАСТЕЛИН',
         minTrophies: 7500,
         maxTrophies: 9000,
         color: '#a855f7',
@@ -37,7 +37,7 @@ export const RANK_SYSTEM: RankTier[] = [
         minTrophies: 6000,
         maxTrophies: 7500,
         color: '#3b82f6',
-        glow: 'rgba(59, 130, 246, 0.5)',
+        glow: 'rgba(59, 130, 246, 0.4)',
         icon: '/assets/images/ui/rank_07.webp',
     },
     {
@@ -45,7 +45,7 @@ export const RANK_SYSTEM: RankTier[] = [
         minTrophies: 4500,
         maxTrophies: 6000,
         color: '#10b981',
-        glow: 'rgba(16, 185, 129, 0.4)',
+        glow: 'rgba(16, 185, 129, 0.3)',
         icon: '/assets/images/ui/rank_06.webp',
     },
     {
@@ -53,7 +53,7 @@ export const RANK_SYSTEM: RankTier[] = [
         minTrophies: 3000,
         maxTrophies: 4500,
         color: '#00f2ff',
-        glow: 'rgba(0, 242, 255, 0.4)',
+        glow: 'rgba(0, 242, 255, 0.3)',
         icon: '/assets/images/ui/rank_05.webp',
     },
     {
