@@ -229,7 +229,7 @@ export const createHeroSlice = (set: any, get: any) => {
                 defense: Math.round(heroData.stats.stamina * 0.5 * levelMultiplier),
                 speed: 1 + heroData.stats.agility * 0.05, // internal ATB speed multiplier
                 critChance: heroData.stats.agility * 0.5, // stored as % (e.g. 6%)
-                evasion: heroData.stats.agility * 0.2, // stored as % (e.g. 2.4%)
+                evasion: 0,
                 lifesteal: 0,
                 penetration: 0,
                 accuracy: 100,
@@ -252,17 +252,18 @@ export const createHeroSlice = (set: any, get: any) => {
                 // Attack talents
                 if (tId === 'atk_base') total.attack = Math.round(total.attack * (1 + level * 0.05));
                 if (tId === 'atk_crit') total.critChance += level * 2;
+                if (tId === 'atk_pen') total.critDamage += level * 0.10; // Ярость Тигра: Критический урон +10% за уровень
 
                 // Defense talents
                 if (tId === 'def_base') total.hp = Math.round(total.hp * (1 + level * 0.05));
-                if (tId === 'def_eva') total.evasion += level * 2;
+                if (tId === 'def_eva') total.defense = Math.round(total.defense * (1 + level * 0.04)); // Мистический Барьер: Защита +4% за уровень
                 if (tId === 'def_ult') total.defense = Math.round(total.defense * (1 + level * 0.2)); // «Весь урон снижен на 20%» — работает через defense
 
                 // Mastery talents
                 if (tId === 'mas_base') total.speed += level * 0.1;
                 if (tId === 'mas_spd') total.speed = +(total.speed * (1 + level * 0.03)).toFixed(2);
                 if (tId === 'mas_ult') total.critDamage += level * 0.1;
-                if (tId === 'atk_pen') total.penetration += level * 10;
+                if (tId === 'mas_focus') total.critChance += level * 3; // Лотос Познания: Крит. Шанс +3% за уровень
             });
 
             allItemsInfo.forEach((itemInfo) => {
@@ -316,7 +317,7 @@ export const createHeroSlice = (set: any, get: any) => {
 
             // Cap crit/evasion/critDamage at sensible max
             total.critChance = Math.min(75, total.critChance);
-            total.evasion = Math.min(60, total.evasion);
+            total.evasion = 0;
             if (total.critDamage) {
                 total.critDamage = Math.min(3.0, total.critDamage);
             }

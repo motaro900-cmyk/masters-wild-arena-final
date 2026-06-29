@@ -166,11 +166,11 @@ export class BattleEngine {
                 defense: Number(playerStats?.defense) || 5,
                 speed: Number(playerStats?.speed) || 1.5,
                 critChance: Math.max(0.25, pCrit > 1 ? pCrit / 100 : pCrit),
-                dodge: Math.max(0.05, pDodge > 1 ? pDodge / 100 : pDodge),
+                dodge: 0,
                 critDamage: Number(playerStats?.critDamage) || 1.5,
-                lifesteal: Number(playerStats?.lifesteal) || 0,
-                penetration: Number(playerStats?.penetration) || 0,
-                accuracy: Number(playerStats?.accuracy) || 100,
+                lifesteal: 0,
+                penetration: 0,
+                accuracy: 100,
                 avgItemLevel: Number(playerStats?.avgItemLevel) || 1,
             };
             this.enemyStats = {
@@ -179,11 +179,11 @@ export class BattleEngine {
                 defense: Number(enemyStats?.defense) || 3,
                 speed: Number(enemyStats?.speed) || 1.2,
                 critChance: Math.max(0.22, eCrit > 1 ? eCrit / 100 : eCrit),
-                dodge: Math.max(0.05, eDodge > 1 ? eDodge / 100 : eDodge),
+                dodge: 0,
                 critDamage: Number(enemyStats?.critDamage) || 1.5,
-                lifesteal: Number(enemyStats?.lifesteal) || 0,
-                penetration: Number(enemyStats?.penetration) || 0,
-                accuracy: Number(enemyStats?.accuracy) || 100,
+                lifesteal: 0,
+                penetration: 0,
+                accuracy: 100,
                 avgItemLevel: Number(enemyStats?.avgItemLevel) || 1,
             };
 

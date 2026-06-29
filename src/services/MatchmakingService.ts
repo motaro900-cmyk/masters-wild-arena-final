@@ -136,7 +136,8 @@ export const buildStatsFromEquipment = (
         defense: Math.round(heroData.stats.stamina * 0.5 * levelMult),
         speed: 1 + heroData.stats.agility * 0.05,
         critChance: heroData.stats.agility * 0.5,
-        evasion: heroData.stats.agility * 0.2,
+        evasion: 0,
+        critDamage: 1.5,
         avgItemLevel,
     };
 
@@ -146,11 +147,13 @@ export const buildStatsFromEquipment = (
         if (tLevel <= 0) return;
         if (tId === 'atk_base') total.attack = Math.round(total.attack * (1 + tLevel * 0.05));
         if (tId === 'atk_crit') total.critChance += tLevel * 2;
+        if (tId === 'atk_pen') total.critDamage = (total.critDamage || 1.5) + tLevel * 0.10; // Ярость Тигра: Критический урон +10% за уровень
         if (tId === 'def_base') total.hp = Math.round(total.hp * (1 + tLevel * 0.05));
-        if (tId === 'def_eva') total.evasion += tLevel * 2;
+        if (tId === 'def_eva') total.defense = Math.round(total.defense * (1 + tLevel * 0.04)); // Мистический Барьер: Защита +4% за уровень
         if (tId === 'def_ult') total.defense = Math.round(total.defense * (1 + tLevel * 0.2));
         if (tId === 'mas_base') total.speed += tLevel * 0.1;
         if (tId === 'mas_spd') total.speed = +(total.speed * (1 + tLevel * 0.03)).toFixed(2);
+        if (tId === 'mas_focus') total.critChance += tLevel * 3; // Лотос Познания: Крит. Шанс +3% за уровень
     });
 
     const getEquippedItemInfo = (equippedId: string | null) => {

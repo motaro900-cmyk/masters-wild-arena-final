@@ -282,12 +282,7 @@ export async function executeAttack(engine: BattleEngine, attacker: HeroUnit, vi
         extraDodge = 0.15;
     }
 
-    const effectiveAccuracy = stats.accuracy || 100;
-    const effectiveDodge = Math.max(0, (targetStats.dodge || 0.05) - Math.max(0, effectiveAccuracy - 100) * 0.005);
-    const totalDodgeChance = Math.min(0.6, effectiveDodge + extraDodge);
-    let hasDodged = Math.random() < totalDodgeChance;
-    if (instinctEvent?.type === 'FOCUS') hasDodged = false;
-    if (victim.isStunnedStatus) hasDodged = false;
+    let hasDodged = false;
 
     if (hasDodged && !(isPlayer && isOneShot)) {
         attacker.playAttackAnimation();
@@ -321,8 +316,7 @@ export async function executeAttack(engine: BattleEngine, attacker: HeroUnit, vi
     if (instinctEvent?.type === 'RAGE') damage *= 1.5;
     if (isPlayer && isOneShot) damage = 999999;
 
-    const effectiveDef = Math.max(0, targetStats.defense - (stats.penetration || 0));
-    let targetDefense = effectiveDef;
+    let targetDefense = targetStats.defense;
     if (attackerWeaponArchetype === 'STAFF') {
         targetDefense *= 0.5;
         anyEngine.addCombatLog(`✨ [Магия] Атака посохом игнорирует 50% защиты цели!`);
