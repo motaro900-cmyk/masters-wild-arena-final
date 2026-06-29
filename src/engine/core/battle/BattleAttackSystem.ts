@@ -277,12 +277,13 @@ export async function executeAttack(engine: BattleEngine, attacker: HeroUnit, vi
     const victimWeaponId = victimEquipment.WEAPONS || null;
     const victimWeaponArchetype = getWeaponArchetype(victimWeaponId);
 
-    let extraDodge = 0;
-    if (victimWeaponArchetype === 'BOW') {
-        extraDodge = 0.15;
-    }
+    // Фиксированный шанс уклонения: 5% базовый, 15% для кинжалов/луков
+    const baseDodgeChance = 0.05;
+    const weaponDodgeBonus = (victimWeaponArchetype === 'BOW' || victimWeaponArchetype === 'DAGGER') ? 0.10 : 0.0;
+    const totalDodgeChance = baseDodgeChance + weaponDodgeBonus;
 
-    let hasDodged = false;
+    let hasDodged = Math.random() < totalDodgeChance;
+    if (victim.isStunnedStatus) hasDodged = false; // Оглушенный не уклоняется
 
     if (hasDodged && !(isPlayer && isOneShot)) {
         attacker.playAttackAnimation();
@@ -350,7 +351,8 @@ export async function executeAttack(engine: BattleEngine, attacker: HeroUnit, vi
         }
     }
 
-    let hasBlocked = Math.random() < (targetStats.defense > 0 ? 0.15 : 0.05);
+    const hasShield = !!victimEquipment.SHIELDS;
+    let hasBlocked = hasShield && Math.random() < 0.15;
     if (instinctEvent?.type === 'FOCUS') hasBlocked = false;
     if (victim.isStunnedStatus) hasBlocked = false;
 
@@ -363,25 +365,65 @@ export async function executeAttack(engine: BattleEngine, attacker: HeroUnit, vi
                 anyEngine.maxSingleHitDamage = blockedDamage;
             }
         }
-        const logMsg = `[Раунд] ${isPlayer ? 'Враг' : 'Вы'} блокирует удар! Урон снижен до ${blockedDamage}.`;
-        anyEngine.updateState({ log: logMsg });
-        anyEngine.addCombatLog(logMsg);
         anyEngine.onCombatEvent({ type: 'BLOCK', damage: blockedDamage, target: isPlayer ? 'enemy' : 'player' });
 
         victim.animateDefend();
         EffectsManager.getInstance().blockEffect(victim);
         victim.playHitEffect();
 
+        let isVictimAlive = true;
         if (isPlayer) {
             const nextHP = anyEngine.applyDamage('enemy', blockedDamage);
-            if (nextHP <= 0) victim.animateDeath(false);
+            if (nextHP <= 0) {
+                victim.animateDeath(false);
+                isVictimAlive = false;
+            }
         } else {
             const nextHP = anyEngine.applyDamage('player', blockedDamage);
             anyEngine.totalDamageTaken += blockedDamage;
-            if (nextHP <= 0) victim.animateDeath(true);
+            if (nextHP <= 0) {
+                victim.animateDeath(true);
+                isVictimAlive = false;
+            }
         }
 
-        await new Promise((r) => setTimeout(r, 600 / timeScale));
+        if (isVictimAlive) {
+            const counterDamage = Math.max(1, Math.ceil(targetStats.attack * 0.4));
+            const logMsg = `🛡️ [КОНТРАТАКА] ${victim.config.name} блокирует удар щитом и наносит ответный выпад на ${counterDamage} урона!`;
+            anyEngine.updateState({ log: logMsg });
+            anyEngine.addCombatLog(logMsg);
+
+            const victimStartX = victim.x;
+            const victimStartY = victim.y;
+
+            await victim.animateLungeForward(!isPlayer, 3, attacker.x);
+
+            audioService.playStrikeSFX(victimWeaponArchetype);
+
+            if (isPlayer) {
+                const nextAttackerHP = anyEngine.applyDamage('player', counterDamage);
+                anyEngine.totalDamageTaken += counterDamage;
+                anyEngine.onCombatEvent({ type: 'HIT', damage: counterDamage, target: 'player', label: `🛡️ -${counterDamage}` });
+                attacker.animateHitReaction(false);
+                EffectsManager.getInstance().normalHit(attacker);
+                if (nextAttackerHP <= 0) attacker.animateDeath(true);
+            } else {
+                const nextAttackerHP = anyEngine.applyDamage('enemy', counterDamage);
+                anyEngine.totalDamageDealt += counterDamage;
+                anyEngine.onCombatEvent({ type: 'HIT', damage: counterDamage, target: 'enemy', label: `🛡️ -${counterDamage}` });
+                attacker.animateHitReaction(false);
+                EffectsManager.getInstance().normalHit(attacker);
+                if (nextAttackerHP <= 0) attacker.animateDeath(false);
+            }
+
+            await victim.animateLungeReturn(victimStartX, victimStartY);
+        } else {
+            const logMsg = `[Раунд] ${isPlayer ? 'Враг' : 'Вы'} блокирует удар перед смертью!`;
+            anyEngine.updateState({ log: logMsg });
+            anyEngine.addCombatLog(logMsg);
+        }
+
+        await new Promise((r) => setTimeout(r, 400 / timeScale));
         await attacker.animateLungeReturn(startX, startY);
         return;
     }
