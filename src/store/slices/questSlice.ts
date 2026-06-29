@@ -298,6 +298,10 @@ export const createQuestSlice = (set: any, get: any) => ({
 
     addBpExp: (amount: number) => {
         const state = get() as any;
+        if (state.bpLevel >= 15) {
+            set({ bpExp: 1000 });
+            return;
+        }
         const actualAmount = state.isPremium ? Math.round(amount * 1.5) : amount;
         let newExp = state.bpExp + actualAmount;
         let newLevel = state.bpLevel;
@@ -312,6 +316,10 @@ export const createQuestSlice = (set: any, get: any) => ({
             newExp -= maxExp;
             newLevel += 1;
             leveledUp = true;
+        }
+
+        if (newLevel >= 15) {
+            newExp = maxExp;
         }
 
         set({
@@ -331,9 +339,11 @@ export const createQuestSlice = (set: any, get: any) => ({
             return false;
         }
         if (state.crystals >= cost) {
+            const nextLevel = state.bpLevel + 1;
             set({
                 crystals: state.crystals - cost,
-                bpLevel: state.bpLevel + 1,
+                bpLevel: nextLevel,
+                bpExp: nextLevel >= 15 ? 1000 : state.bpExp,
             });
             syncService.debouncedSync();
             audioService.playSFX(AssetsMap.AUDIO.SFX_BUY);
@@ -356,6 +366,7 @@ export const createQuestSlice = (set: any, get: any) => ({
             set({
                 crystals: state.crystals - cost,
                 bpLevel: 15,
+                bpExp: 1000,
             });
             syncService.debouncedSync();
             audioService.playSFX(AssetsMap.AUDIO.SFX_BUY);

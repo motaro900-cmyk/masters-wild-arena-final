@@ -37,7 +37,7 @@ export const BattlePassHeader: React.FC<BattlePassHeaderProps> = ({
     onClose,
 }) => {
     const isMobile = useGameStore((state) => state.isMobile);
-    const progress = (bpExp / maxExp) * 100;
+    const progress = bpLevel >= 15 ? 100 : (bpExp / maxExp) * 100;
 
     return (
         <div
@@ -137,7 +137,7 @@ export const BattlePassHeader: React.FC<BattlePassHeaderProps> = ({
                             textShadow: '1px 1px 2px rgba(0,0,0,1), 0 0 4px rgba(0,0,0,0.8)',
                         }}
                     >
-                        {bpExp} / {maxExp} XP
+                        {bpLevel >= 15 ? 'МАКС. УРОВЕНЬ' : `${bpExp} / ${maxExp} XP`}
                     </div>
                 </div>
 

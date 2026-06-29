@@ -11,7 +11,7 @@ export const BattlePassBar: React.FC = () => {
     const setScreen = useGameStore((state) => state.setScreen);
     const graphicsQuality = useGameStore((state) => state.graphicsQuality);
     const maxExp = 1000;
-    const progress = Math.min(100, Math.max(0, (bpExp / maxExp) * 100));
+    const progress = bpLevel >= 15 ? 100 : Math.min(100, Math.max(0, (bpExp / maxExp) * 100));
 
     const isLow = graphicsQuality === 'LOW';
 
@@ -149,7 +149,7 @@ export const BattlePassBar: React.FC = () => {
                             pointerEvents: 'none',
                         }}
                     >
-                        {bpExp} / {maxExp} XP
+                        {bpLevel >= 15 ? 'МАКС. УРОВЕНЬ' : `${bpExp} / ${maxExp} XP`}
                     </div>
                 </div>
 
