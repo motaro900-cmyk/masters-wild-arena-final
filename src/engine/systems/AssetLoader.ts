@@ -212,7 +212,6 @@ export class AssetLoader {
                 preloadList.push(
                     AssetsMap.BACKGROUNDS.CITY_HUB_MOBILE,
                     AssetsMap.BACKGROUNDS.FORGE_MOBILE,
-                    AssetsMap.BACKGROUNDS.HEROES_HALL_MOBILE,
                     AssetsMap.BACKGROUNDS.RANKED_LOBBY_MOBILE,
                     AssetsMap.BACKGROUNDS.BATTLE_PASS_MOBILE,
                     AssetsMap.BACKGROUNDS.SANCTUARY_MOBILE,
@@ -225,7 +224,6 @@ export class AssetLoader {
                 preloadList.push(
                     AssetsMap.BACKGROUNDS.CITY_HUB,
                     AssetsMap.BACKGROUNDS.FORGE,
-                    AssetsMap.BACKGROUNDS.HEROES_HALL,
                     AssetsMap.BACKGROUNDS.RANKED_LOBBY,
                     AssetsMap.BACKGROUNDS.BATTLE_PASS,
                     AssetsMap.BACKGROUNDS.SANCTUARY,

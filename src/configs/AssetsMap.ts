@@ -119,8 +119,6 @@ const rawAssetsMap = {
             '/assets/images/backgrounds/battle/bg_6_mobile.webp',
         ],
         SHOP: '/assets/images/ui/Shop.webp',
-        HEROES_HALL: '/assets/images/backgrounds/bg_heroes_hall.webp', // was кириллица
-        HEROES_HALL_MOBILE: '/assets/images/backgrounds/bg_heroes_hall_mobile.webp', // was кириллица
         SHOP_NAV_BG: '/assets/images/ui/Shoping.webp',
         SHOP_GRID_FRAME: '/assets/images/ui/btn_panel_mis12c.webp', // was ChatGPT-мусор
         SHOP_ITEM_FRAME: '/assets/images/ui/Shop phone.webp',
