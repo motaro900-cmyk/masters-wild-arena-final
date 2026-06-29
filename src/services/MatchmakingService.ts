@@ -131,11 +131,11 @@ export const buildStatsFromEquipment = (
     const heroData = HEROES_DB.find((h) => h.id === heroId) || HEROES_DB[0];
     const levelMult = getLevelMultiplier(level);
     const total = {
-        hp: Math.round(heroData.stats.stamina * 10 * levelMult),
-        attack: Math.round(heroData.stats.strength * 2 * levelMult),
-        defense: Math.round(heroData.stats.stamina * 0.5 * levelMult),
-        speed: 1 + heroData.stats.agility * 0.05,
-        critChance: heroData.stats.agility * 0.5,
+        hp: Math.round(heroData.stats.hp * levelMult),
+        attack: Math.round(heroData.stats.attack * levelMult),
+        defense: Math.round(heroData.stats.defense * levelMult),
+        speed: heroData.stats.speed,
+        critChance: heroData.stats.critChance,
         evasion: 0,
         critDamage: 1.5,
         avgItemLevel,

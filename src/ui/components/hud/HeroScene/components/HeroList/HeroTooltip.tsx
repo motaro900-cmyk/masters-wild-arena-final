@@ -89,9 +89,9 @@ export const HeroTooltip = ({ hero, mousePos, rarityColors }: any) => {
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                <TooltipStat icon="❤️" label="Здоровье" value={hero.stats.stamina * 10} color="#ef4444" />
-                <TooltipStat icon="⚔️" label="Атака" value={hero.stats.strength * 2} color="#f97316" />
-                <TooltipStat icon="🛡️" label="Защита" value={hero.stats.stamina * 0.5} color="#3b82f6" />
+                <TooltipStat icon="❤️" label="Здоровье" value={hero.stats.hp} color="#ef4444" />
+                <TooltipStat icon="⚔️" label="Атака" value={hero.stats.attack} color="#f97316" />
+                <TooltipStat icon="🛡️" label="Защита" value={hero.stats.defense} color="#3b82f6" />
             </div>
 
             {!isOwned && (

@@ -27,18 +27,15 @@ export const SOURCE_ICONS: Record<string, string> = {
     event: '🌟',
 };
 
-/**
- * Вычисляет производные боевые характеристики из базовых статов героя.
- */
 export function deriveStats(
-    stats: { strength: number; agility: number; stamina: number; intelligence: number },
+    stats: { hp: number; attack: number; defense: number; speed: number; critChance: number },
     _heroId?: string,
 ) {
     return {
-        hp: stats.stamina * 10,
-        attack: stats.strength * 2,
-        defense: Math.round(stats.stamina * 0.5),
-        speed: Math.round((1 + stats.agility * 0.05) * 100) / 100,
-        crit: Math.round(stats.agility * 0.5),
+        hp: stats.hp,
+        attack: stats.attack,
+        defense: stats.defense,
+        speed: stats.speed,
+        crit: stats.critChance,
     };
 }

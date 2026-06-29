@@ -118,11 +118,11 @@ export const BattleScene: React.FC = () => {
         }
 
         const calculated = getCalculatedStats(rawEnemy.id)?.total || {
-            hp: rawEnemy.stats.stamina * 20,
-            attack: rawEnemy.stats.strength * 2,
-            defense: rawEnemy.stats.agility * 1,
-            speed: 1.0,
-            crit: 0.05,
+            hp: rawEnemy.stats.hp,
+            attack: rawEnemy.stats.attack,
+            defense: rawEnemy.stats.defense,
+            speed: rawEnemy.stats.speed,
+            crit: rawEnemy.stats.critChance,
             avgItemLevel: 1,
         };
         return {
