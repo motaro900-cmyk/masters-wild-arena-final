@@ -306,6 +306,9 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
         });
     }
 
+    const rewardsList = stats.filter((s) => ['Золото получено', 'Опыт получен', 'Кубки', 'Кристаллы'].includes(s.label));
+    const combatStatsList = stats.filter((s) => ['Нанесено урона', 'Лучший удар', 'Получено урона', 'Ходов сыграно'].includes(s.label));
+
     return (
         <div
             ref={containerRef}
@@ -424,106 +427,230 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
                         }}
                     />
 
-                    <div ref={statsRef} style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '14px' }}>
-                        {stats.map((stat, i) => (
-                            <div
-                                key={i}
-                                className="result-stat-item result-stat-item-animated"
-                                style={{
-                                    display: 'flex',
-                                    justifyContent: 'space-between',
-                                    alignItems: 'center',
-                                    padding: '8px 16px',
-                                    background: 'rgba(0,0,0,0.3)',
-                                    borderRadius: '12px',
-                                    border: '1px solid rgba(255,255,255,0.05)',
-                                    animationDelay: `${i * 150}ms`,
-                                }}
-                            >
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                    <span style={{ fontSize: '24px' }}>{stat.icon}</span>
-                                    <span
-                                        style={{
-                                            color: '#ffffff',
-                                            fontSize: '18px',
-                                            letterSpacing: '0.05em',
-                                            fontWeight: 700,
-                                            fontFamily: "'Cinzel', serif",
-                                        }}
-                                    >
-                                        {stat.label}
-                                    </span>
-                                </div>
-                                <span
+                    <div ref={statsRef}>
+                        {/* РАЗДЕЛ "НАГРАДЫ" */}
+                        {rewardsList.length > 0 && (
+                            <div style={{ marginBottom: '25px' }}>
+                                <div
                                     style={{
-                                        color:
-                                            stat.label === 'Кубки' && data.trophiesChange < 0 ? '#f43f5e' : '#ffffff',
-                                        fontWeight: 900,
-                                        fontSize: '22px',
+                                        fontSize: '13px',
+                                        fontWeight: 800,
+                                        color: '#fbbf24',
+                                        letterSpacing: '2px',
                                         fontFamily: "'Cinzel', serif",
+                                        textAlign: 'center',
+                                        textTransform: 'uppercase',
+                                        marginBottom: '14px',
+                                        opacity: 0.9,
                                     }}
                                 >
-                                    {stat.value}
-                                </span>
+                                    Награды за бой
+                                </div>
+                                <div
+                                    style={{
+                                        display: 'grid',
+                                        gridTemplateColumns: `repeat(${rewardsList.length}, 1fr)`,
+                                        gap: '16px',
+                                    }}
+                                >
+                                    {rewardsList.map((stat, i) => (
+                                        <div
+                                            key={i}
+                                            className="result-stat-item result-stat-item-animated"
+                                            style={{
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                padding: '16px 12px',
+                                                background: 'linear-gradient(180deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%)',
+                                                borderRadius: '16px',
+                                                border: '1.5px solid rgba(196, 139, 59, 0.35)',
+                                                boxShadow: '0 8px 20px rgba(0,0,0,0.4)',
+                                                animationDelay: `${i * 100}ms`,
+                                            }}
+                                        >
+                                            <div style={{ fontSize: '30px', marginBottom: '6px', lineHeight: 1 }}>{stat.icon}</div>
+                                            <div
+                                                style={{
+                                                    color: 'rgba(255,255,255,0.5)',
+                                                    fontSize: '11px',
+                                                    fontWeight: 700,
+                                                    fontFamily: "'Cinzel', serif",
+                                                    textTransform: 'uppercase',
+                                                    marginBottom: '4px',
+                                                    letterSpacing: '0.05em',
+                                                }}
+                                            >
+                                                {stat.label}
+                                            </div>
+                                            <div
+                                                style={{
+                                                    color: '#ffffff',
+                                                    fontWeight: 900,
+                                                    fontSize: '18px',
+                                                    fontFamily: "'Cinzel', serif",
+                                                    whiteSpace: 'nowrap',
+                                                }}
+                                            >
+                                                {stat.value}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
-                        ))}
+                        )}
+
+                        {/* РАЗДЕЛИТЕЛЬ СЕКЦИЙ */}
+                        <div
+                            style={{
+                                height: '1px',
+                                background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent)',
+                                marginBottom: '20px',
+                            }}
+                        />
+
+                        {/* РАЗДЕЛ "СТАТИСТИКА" */}
+                        <div style={{ marginBottom: '25px' }}>
+                            <div
+                                style={{
+                                    fontSize: '13px',
+                                    fontWeight: 800,
+                                    color: 'rgba(255,255,255,0.5)',
+                                    letterSpacing: '2px',
+                                    fontFamily: "'Cinzel', serif",
+                                    textAlign: 'center',
+                                    textTransform: 'uppercase',
+                                    marginBottom: '14px',
+                                }}
+                            >
+                                Статистика сражения
+                            </div>
+                            <div
+                                style={{
+                                    display: 'grid',
+                                    gridTemplateColumns: '1fr 1fr',
+                                    gap: '12px',
+                                }}
+                            >
+                                {combatStatsList.map((stat, i) => (
+                                    <div
+                                        key={i}
+                                        className="result-stat-item result-stat-item-animated"
+                                        style={{
+                                            display: 'flex',
+                                            justifyContent: 'space-between',
+                                            alignItems: 'center',
+                                            padding: '10px 20px',
+                                            background: 'rgba(0,0,0,0.25)',
+                                            borderRadius: '12px',
+                                            border: '1px solid rgba(255,255,255,0.05)',
+                                            animationDelay: `${(i + rewardsList.length) * 100}ms`,
+                                        }}
+                                    >
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                            <span style={{ fontSize: '20px', lineHeight: 1 }}>{stat.icon}</span>
+                                            <span
+                                                style={{
+                                                    color: 'rgba(255,255,255,0.7)',
+                                                    fontSize: '14px',
+                                                    fontWeight: 700,
+                                                    fontFamily: "'Cinzel', serif",
+                                                }}
+                                            >
+                                                {stat.label}
+                                            </span>
+                                        </div>
+                                        <span
+                                            style={{
+                                                color: '#ffffff',
+                                                fontWeight: 900,
+                                                fontSize: '17px',
+                                                fontFamily: "'Cinzel', serif",
+                                            }}
+                                        >
+                                            {stat.value}
+                                        </span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
                     </div>
 
-                    {/* ПРОГРЕСС ОПЫТА */}
+                    {/* РАЗДЕЛ "РАЗВИТИЕ" */}
                     <div
                         style={{
-                            marginTop: '20px',
+                            marginTop: '25px',
                             background: 'rgba(0, 0, 0, 0.25)',
-                            borderRadius: '16px',
-                            padding: '16px 20px',
-                            border: '1px solid rgba(255, 255, 255, 0.05)',
-                            display: 'grid',
-                            gridTemplateColumns: '1fr 1fr',
-                            gap: '24px',
+                            borderRadius: '18px',
+                            padding: '20px 24px',
+                            border: '1.5px solid rgba(196, 139, 59, 0.18)',
                         }}
                     >
-                        {/* 1. УРОВЕНЬ АККАУНТА */}
-                        <AnimatingXPBar
-                            label="УРОВЕНЬ АККАУНТА"
-                            startLevel={startAccount.level}
-                            endLevel={accountLevel}
-                            startExp={startAccount.exp}
-                            endExp={accountExp}
-                            xpEarned={data.xpEarned}
-                            getExpNeededFunc={getExpNeeded}
-                            icon={<span style={{ fontSize: '16px' }}>👑</span>}
-                            barColor="linear-gradient(90deg, #d97706, #fbbf24)"
-                            glowColor="rgba(251, 191, 36, 0.5)"
-                            textColor="#fbbf24"
-                        />
+                        <div
+                            style={{
+                                fontSize: '12px',
+                                fontWeight: 800,
+                                color: 'rgba(255,255,255,0.4)',
+                                letterSpacing: '2px',
+                                fontFamily: "'Cinzel', serif",
+                                textAlign: 'center',
+                                textTransform: 'uppercase',
+                                marginBottom: '16px',
+                            }}
+                        >
+                            Прогресс и опыт
+                        </div>
+                        <div
+                            style={{
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: '20px',
+                            }}
+                        >
+                            {/* 1. УРОВЕНЬ АККАУНТА */}
+                            <AnimatingXPBar
+                                label="УРОВЕНЬ АККАУНТА"
+                                startLevel={startAccount.level}
+                                endLevel={accountLevel}
+                                startExp={startAccount.exp}
+                                endExp={accountExp}
+                                xpEarned={data.xpEarned}
+                                getExpNeededFunc={getExpNeeded}
+                                icon={<span style={{ fontSize: '16px' }}>👑</span>}
+                                barColor="linear-gradient(90deg, #d97706, #fbbf24)"
+                                glowColor="rgba(251, 191, 36, 0.5)"
+                                textColor="#fbbf24"
+                            />
 
-                        {/* 2. УРОВЕНЬ ГЕРОЯ */}
-                        <AnimatingXPBar
-                            label={`ГЕРОЙ ${heroConfig.name.toUpperCase()}`}
-                            startLevel={startHero.level}
-                            endLevel={level}
-                            startExp={startHero.exp}
-                            endExp={exp}
-                            xpEarned={data.xpEarned}
-                            getExpNeededFunc={getHeroExpNeeded}
-                            icon={
-                                <img
-                                    src={heroConfig.image}
-                                    style={{
-                                        width: '24px',
-                                        height: '24px',
-                                        borderRadius: '50%',
-                                        border: '1.5px solid #38bdf8',
-                                        objectFit: 'cover',
-                                        backgroundColor: '#1c1917',
-                                    }}
-                                    alt={heroConfig.name}
-                                />
-                            }
-                            barColor="linear-gradient(90deg, #0284c7, #38bdf8)"
-                            glowColor="rgba(56, 189, 248, 0.5)"
-                            textColor="#38bdf8"
-                        />
+                            {/* 2. УРОВЕНЬ ГЕРОЯ */}
+                            <AnimatingXPBar
+                                label={`ГЕРОЙ ${heroConfig.name.toUpperCase()}`}
+                                startLevel={startHero.level}
+                                endLevel={level}
+                                startExp={startHero.exp}
+                                endExp={exp}
+                                xpEarned={data.xpEarned}
+                                getExpNeededFunc={getHeroExpNeeded}
+                                icon={
+                                    <img
+                                        src={heroConfig.image}
+                                        style={{
+                                            width: '24px',
+                                            height: '24px',
+                                            borderRadius: '50%',
+                                            border: '1.5px solid #38bdf8',
+                                            objectFit: 'cover',
+                                            backgroundColor: '#1c1917',
+                                        }}
+                                        alt={heroConfig.name}
+                                    />
+                                }
+                                barColor="linear-gradient(90deg, #0284c7, #38bdf8)"
+                                glowColor="rgba(56, 189, 248, 0.5)"
+                                textColor="#38bdf8"
+                            />
+                        </div>
                     </div>
 
                     {/* НАГРАДЫ ОБИТЕЛИ (ТОЛЬКО PVE ПОБЕДА) */}
