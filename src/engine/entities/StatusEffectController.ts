@@ -347,50 +347,16 @@ export class StatusEffectController {
         this.freezeEffectContainer = new PIXI.Container();
         this.freezeEffectContainer.zIndex = 35;
         this.unit.addChild(this.freezeEffectContainer);
+        
+        // Переводим персонажа в позу Idle при заморозке
+        if (typeof (this.unit as any).setFrame === 'function') {
+            const idleIdx = (this.unit as any).idleFrameIdx !== undefined ? (this.unit as any).idleFrameIdx : 0;
+            (this.unit as any).setFrame(idleIdx);
+        }
+        
         this.updateTints();
 
-        const iceBlock = new PIXI.Graphics();
-        const points = [
-            { x: -125, y: 5 },
-            { x: 125, y: 5 },
-            { x: 145, y: -150 },
-            { x: 90, y: -340 },
-            { x: -90, y: -340 },
-            { x: -145, y: -150 },
-        ];
-
-        iceBlock.beginPath();
-        iceBlock.moveTo(points[0].x, points[0].y);
-        for (let i = 1; i < points.length; i++) {
-            iceBlock.lineTo(points[i].x, points[i].y);
-        }
-        iceBlock.closePath();
-        iceBlock.fill({ color: 0x80deea, alpha: 0.55 });
-        iceBlock.stroke({ color: 0xe0f7fa, width: 3.5, alpha: 0.85 });
-
-        const facets = new PIXI.Graphics();
-        facets.beginPath();
-        facets.moveTo(-50, -170);
-        facets.lineTo(50, -170);
-        facets.lineTo(90, -340);
-        facets.moveTo(-50, -170);
-        facets.lineTo(-90, -340);
-        facets.moveTo(-50, -170);
-        facets.lineTo(-145, -150);
-        facets.moveTo(50, -170);
-        facets.lineTo(145, -150);
-        facets.moveTo(-50, -170);
-        facets.lineTo(-125, 5);
-        facets.moveTo(50, -170);
-        facets.lineTo(125, 5);
-        facets.closePath();
-        facets.stroke({ color: 0xffffff, width: 2.0, alpha: 0.65 });
-        facets.blendMode = 'add';
-
-        this.freezeEffectContainer.addChild(iceBlock);
-        this.freezeEffectContainer.addChild(facets);
-
-        const crystalCount = 5 + Math.floor(Math.random() * 3);
+        const crystalCount = 6 + Math.floor(Math.random() * 4);
         for (let i = 0; i < crystalCount; i++) {
             const crystal = new PIXI.Graphics();
             const size = 8 + Math.random() * 8;
@@ -401,19 +367,19 @@ export class StatusEffectController {
             crystal.lineTo(0, size);
             crystal.lineTo(-size * 0.6, 0);
             crystal.closePath();
-            crystal.fill({ color: 0xaaddff });
+            crystal.fill({ color: 0x88ccff });
             crystal.stroke({ color: 0xffffff, width: 1.5 });
 
             const angle = Math.random() * Math.PI * 2;
-            const distance = 40 + Math.random() * 20;
+            const distance = 60 + Math.random() * 50;
             crystal.x = Math.cos(angle) * distance;
-            crystal.y = Math.sin(angle) * distance * 0.4 - 20;
+            crystal.y = Math.sin(angle) * distance * 0.6 - 120;
 
             crystal.scale.set(0);
             gsap.to(crystal.scale, {
                 x: 1,
                 y: 1,
-                duration: 0.2,
+                duration: 0.3,
                 ease: 'back.out(1.5)',
             });
 
@@ -423,8 +389,8 @@ export class StatusEffectController {
         gsap.killTweensOf(this.freezeEffectContainer.scale);
         this.freezeEffectContainer.scale.set(1.0);
         gsap.to(this.freezeEffectContainer.scale, {
-            x: 1.02,
-            y: 1.02,
+            x: 1.05,
+            y: 1.05,
             duration: 2.0,
             repeat: -1,
             yoyo: true,

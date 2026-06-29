@@ -365,8 +365,8 @@ export class BattleEngine {
                     });
                 }
 
-                if (totalBattleTicks >= 10000) {
-                    const limitMsg = '⏱️ [ЛИМИТ ВРЕМЕНИ] Превышен лимит в 10000 тиков!';
+                if (totalBattleTicks >= 150000) {
+                    const limitMsg = '⏱️ [ЛИМИТ ВРЕМЕНИ] Превышен лимит в 150000 тиков!';
                     this.updateState({ log: limitMsg });
                     this.addCombatLog(limitMsg);
 
