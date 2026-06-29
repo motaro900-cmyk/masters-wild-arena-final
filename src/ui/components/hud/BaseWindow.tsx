@@ -121,9 +121,7 @@ export const BaseWindow: React.FC<BaseWindowProps> = ({
     };
 
     return (
-        <AnimatePresence>
-            {isOpen && (
-                <motion.div
+        <motion.div
                     initial={{ scale: 0.88, opacity: 0, y: 15 }}
                     animate={{ scale: 1, opacity: 1, y: 0 }}
                     exit={{ scale: 0.88, opacity: 0, y: 15 }}
@@ -278,8 +276,6 @@ export const BaseWindow: React.FC<BaseWindowProps> = ({
 
                     {/* Контент окна */}
                     <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>{children}</div>
-                </motion.div>
-            )}
-        </AnimatePresence>
+        </motion.div>
     );
 };

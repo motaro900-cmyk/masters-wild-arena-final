@@ -208,13 +208,6 @@ export class PixiApp {
                     useGameStore.getState().isMobile ||
                     isIOS ||
                     (typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent));
-                const resolution = isMobile
-                    ? 1
-                    : this.config.resolution === ResolutionType.HIGH
-                      ? Math.min(window.devicePixelRatio || 1, 3)
-                      : this.config.resolution === ResolutionType.MEDIUM
-                        ? Math.min(window.devicePixelRatio || 1, 2)
-                        : 1;
 
                 // Load compatibility rules dynamically
                 await fetchCompatibilityRules();
@@ -245,6 +238,31 @@ export class PixiApp {
                         `[PixiApp] WebGPU disabled for blacklisted GPU: ${profile.gpuRenderer}. Reason: ${compatCheck.reason}`,
                     );
                 }
+
+                // Detect weak or integrated GPUs to cap max device resolution (prevents lag on weak laptops/PCs)
+                let isWeakGPU = false;
+                const gpuLower = (profile.gpuRenderer || '').toLowerCase();
+                if (
+                    gpuLower.includes('intel') ||
+                    gpuLower.includes('uhd') ||
+                    gpuLower.includes('hd graphics') ||
+                    gpuLower.includes('amd radeon(tm) r') ||
+                    gpuLower.includes('llvmpipe') ||
+                    gpuLower.includes('swiftshader')
+                ) {
+                    isWeakGPU = true;
+                    console.log(`[PixiApp] Weak/Integrated GPU detected (${profile.gpuRenderer}). Capping resolution backing store.`);
+                }
+
+                const resolution = isMobile
+                    ? 1
+                    : isWeakGPU
+                      ? Math.min(window.devicePixelRatio || 1, 1.25)
+                      : this.config.resolution === ResolutionType.HIGH
+                        ? Math.min(window.devicePixelRatio || 1, 3)
+                        : this.config.resolution === ResolutionType.MEDIUM
+                          ? Math.min(window.devicePixelRatio || 1, 2)
+                          : 1;
 
                 let preference: 'webgl' | 'webgpu' = 'webgl';
                 if (rendererPref === 'webgpu') {
