@@ -221,6 +221,7 @@ export const BaseWindow: React.FC<BaseWindowProps> = ({
                                         zIndex: 1,
                                     }}
                                     onClick={() => {
+                                        audioService.stopAllSFX();
                                         audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
                                         onClose();
                                     }}
@@ -229,6 +230,7 @@ export const BaseWindow: React.FC<BaseWindowProps> = ({
                                     whileHover={{ scale: 1.15 }}
                                     whileTap={{ scale: 0.85 }}
                                     onClick={() => {
+                                        audioService.stopAllSFX();
                                         audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
                                         onClose();
                                     }}

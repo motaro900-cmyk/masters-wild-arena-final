@@ -387,6 +387,9 @@ class AudioService {
 
         try {
             sound?.volume(this.sfxVolume);
+            // Вносим случайное изменение питча (скорости воспроизведения) для разнообразия звуков
+            const randomRate = 0.92 + Math.random() * 0.16; // 0.92 - 1.08
+            sound?.rate(randomRate);
             sound?.play();
         } catch (err) {
             console.warn(`❌ Failed to play SFX for ${url}:`, err);

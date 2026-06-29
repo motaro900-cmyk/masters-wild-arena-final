@@ -190,6 +190,7 @@ export const BattleScene: React.FC = () => {
         return () => {
             // Revert to city theme when leaving battle
             audioService.playMusic(AssetsMap.AUDIO.MUSIC_MAIN);
+            audioService.stopAllSFX();
         };
     }, []);
 
