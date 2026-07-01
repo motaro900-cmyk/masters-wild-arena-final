@@ -360,33 +360,41 @@ export class GameApp {
         const newRanges = rangesToLoad.filter((r) => !this.loadedLevelRanges.has(r));
         if (newRanges.length === 0) return;
 
-        // Fetch all item configurations
-        const { ITEMS_DATABASE } = await import('./game/configs/items/index');
-        const itemsToLoad: string[] = [];
+        // Eagerly reserve the ranges to prevent duplicate concurrent downloads
+        newRanges.forEach((r) => this.loadedLevelRanges.add(r));
 
-        Object.values(ITEMS_DATABASE).forEach((item: any) => {
-            if (!item.image) return;
-            if (item.requiredLevel === undefined) return; // Skip items without a level (like skins/consumables) from preloading queue
-            const lvl = item.requiredLevel;
+        try {
+            // Fetch all item configurations
+            const { ITEMS_DATABASE } = await import('./game/configs/items/index');
+            const itemsToLoad: string[] = [];
 
-            // Check if level matches the newly unlocked ranges
-            const isMatch = newRanges.some((range) => {
-                if (range === '1-20' && lvl <= 20) return true;
-                if (range === '21-40' && lvl >= 21 && lvl <= 40) return true;
-                if (range === '41-60' && lvl >= 41 && lvl <= 60) return true;
-                if (range === '61-80' && lvl >= 61 && lvl <= 80) return true;
-                return false;
+            Object.values(ITEMS_DATABASE).forEach((item: any) => {
+                if (!item.image) return;
+                if (item.requiredLevel === undefined) return; // Skip items without a level (like skins/consumables) from preloading queue
+                const lvl = item.requiredLevel;
+
+                // Check if level matches the newly unlocked ranges
+                const isMatch = newRanges.some((range) => {
+                    if (range === '1-20' && lvl <= 20) return true;
+                    if (range === '21-40' && lvl >= 21 && lvl <= 40) return true;
+                    if (range === '41-60' && lvl >= 41 && lvl <= 60) return true;
+                    if (range === '61-80' && lvl >= 61 && lvl <= 80) return true;
+                    return false;
+                });
+
+                if (isMatch) {
+                    itemsToLoad.push(item.image);
+                }
             });
 
-            if (isMatch) {
-                itemsToLoad.push(item.image);
+            if (itemsToLoad.length > 0) {
+                console.log(`[GameApp] Preloading ${itemsToLoad.length} item sprites for ranges:`, newRanges);
+                await this.assetLoader.loadAssets(itemsToLoad);
             }
-        });
-
-        if (itemsToLoad.length > 0) {
-            console.log(`[GameApp] Preloading ${itemsToLoad.length} item sprites for ranges:`, newRanges);
-            await this.assetLoader.loadAssets(itemsToLoad);
-            newRanges.forEach((r) => this.loadedLevelRanges.add(r));
+        } catch (error) {
+            // Rollback reservations on failure so they can be retried later
+            newRanges.forEach((r) => this.loadedLevelRanges.delete(r));
+            throw error;
         }
     }
 
@@ -396,6 +404,15 @@ export class GameApp {
 
         // Lazy load item sprites based on current player level (utilizes idle callback to avoid network bottleneck on startup)
         const triggerPreload = () => {
+            // Network-aware check: skip background preloading on very slow connections or Save Data mode
+            if (typeof navigator !== 'undefined' && (navigator as any).connection) {
+                const conn = (navigator as any).connection;
+                if (conn.saveData || /2g|slow-2g/.test(conn.effectiveType || '')) {
+                    console.log('[GameApp] Skipping background item sprites preloading due to slow connection or save-data mode.');
+                    return;
+                }
+            }
+
             const currentLevel = useGameStore.getState().level || 1;
             this.loadItemSpritesForLevel(currentLevel).catch((err) => {
                 console.error('❌ Background item sprite preloading failed:', err);
@@ -411,6 +428,14 @@ export class GameApp {
         // Background preload next-scene textures and arena assets (delayed to prevent network bottleneck at startup)
         setTimeout(() => {
             try {
+                // Network-aware check: skip background preloading on very slow connections or Save Data mode
+                if (typeof navigator !== 'undefined' && (navigator as any).connection) {
+                    const conn = (navigator as any).connection;
+                    if (conn.saveData || /2g|slow-2g/.test(conn.effectiveType || '')) {
+                        console.log('[GameApp] Skipping general background preloading due to slow connection or save-data mode.');
+                        return;
+                    }
+                }
                 this.assetLoader.startBackgroundPreload();
             } catch (err) {
                 console.error('❌ Background general asset preloading failed:', err);
