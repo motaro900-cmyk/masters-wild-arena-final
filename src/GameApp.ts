@@ -394,11 +394,13 @@ export class GameApp {
         const manifest = AssetLoader.createGameManifest();
         await this.assetLoader.loadAssets(manifest);
 
-        // Lazy load item sprites based on current player level (non-blocking)
-        const currentLevel = useGameStore.getState().level || 1;
-        this.loadItemSpritesForLevel(currentLevel).catch((err) => {
-            console.error('❌ Background item sprite preloading failed:', err);
-        });
+        // Lazy load item sprites based on current player level (delayed by 3s to prevent network bottleneck at startup)
+        setTimeout(() => {
+            const currentLevel = useGameStore.getState().level || 1;
+            this.loadItemSpritesForLevel(currentLevel).catch((err) => {
+                console.error('❌ Background item sprite preloading failed:', err);
+            });
+        }, 3000);
 
         // Background preload next-scene textures and arena assets (delayed to prevent network bottleneck at startup)
         setTimeout(() => {
