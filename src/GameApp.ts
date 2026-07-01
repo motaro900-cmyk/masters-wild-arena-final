@@ -394,13 +394,19 @@ export class GameApp {
         const manifest = AssetLoader.createGameManifest();
         await this.assetLoader.loadAssets(manifest);
 
-        // Lazy load item sprites based on current player level (delayed by 3s to prevent network bottleneck at startup)
-        setTimeout(() => {
+        // Lazy load item sprites based on current player level (utilizes idle callback to avoid network bottleneck on startup)
+        const triggerPreload = () => {
             const currentLevel = useGameStore.getState().level || 1;
             this.loadItemSpritesForLevel(currentLevel).catch((err) => {
                 console.error('❌ Background item sprite preloading failed:', err);
             });
-        }, 3000);
+        };
+
+        if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+            window.requestIdleCallback(() => triggerPreload(), { timeout: 3000 });
+        } else {
+            setTimeout(triggerPreload, 3000);
+        }
 
         // Background preload next-scene textures and arena assets (delayed to prevent network bottleneck at startup)
         setTimeout(() => {
