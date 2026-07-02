@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../../../store/useGameStore';
 import { MOBS_DB } from '../../../configs/MobsConfig';
 import { syncService } from '../../../services/SyncService';
@@ -71,239 +72,478 @@ const FeedbackTab: React.FC<FeedbackTabProps> = ({
     onRefresh,
     onDelete,
     onGoToPlayer,
-}) => (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', height: 'auto' }}>
-        {/* Header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div style={{ fontSize: '13px', fontWeight: 800, letterSpacing: '1px', color: '#aaa' }}>
-                ОТЗЫВЫ ИГРОКОВ
-                <span style={{ marginLeft: '10px', fontSize: '11px', color: '#555', fontWeight: 400 }}>
-                    (всего: {feedbackList.length})
-                </span>
-            </div>
-            <button
-                onClick={onRefresh}
-                disabled={isLoadingFeedback}
-                style={{
-                    ...applyBtn,
-                    padding: '5px 16px',
-                    background: isLoadingFeedback ? '#1a1a1a' : undefined,
-                    cursor: isLoadingFeedback ? 'not-allowed' : 'pointer',
-                }}
-            >
-                {isLoadingFeedback ? 'ЗАГРУЗКА...' : 'ОБНОВИТЬ 🔄'}
-            </button>
-        </div>
+}) => {
+    const [replyingItem, setReplyingItem] = useState<any | null>(null);
+    const [replyText, setReplyText] = useState('');
+    const [isSendingReply, setIsSendingReply] = useState(false);
 
-        {/* 3-column grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '14px', alignItems: 'start' }}>
-            {FEEDBACK_COLUMNS.map((col) => {
-                const items = feedbackList.filter((f: any) => f.category === col.key);
-                return (
-                    <div
-                        key={col.key}
-                        style={{
-                            background: col.dimColor,
-                            border: `1px solid ${col.border}`,
-                            borderRadius: '12px',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: '0',
-                            maxHeight: '640px',
-                            overflow: 'hidden',
-                        }}
-                    >
-                        {/* Column header */}
+    const handleSendReply = async () => {
+        if (!replyingItem || !replyText.trim()) return;
+        setIsSendingReply(true);
+        try {
+            const mailData = {
+                from: 'Поддержка',
+                subject: 'Ответ на обращение',
+                body: replyText,
+                date: new Date().toLocaleDateString('ru-RU'),
+                tab: 'INBOX',
+                rewards: [],
+            };
+            await syncService.sendMail(replyingItem.userId, mailData);
+            await syncService.deleteFeedback(replyingItem.id);
+            useGameStore.getState().showAlert('Ответ отправлен, отзыв закрыт! ✉️✅');
+            setReplyingItem(null);
+            setReplyText('');
+            onRefresh();
+        } catch (e) {
+            console.error('Failed to send reply:', e);
+            useGameStore.getState().showAlert('Ошибка при отправке ответа ❌');
+        } finally {
+            setIsSendingReply(false);
+        }
+    };
+
+    return (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', height: 'auto', position: 'relative' }}>
+            {/* Header */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ fontSize: '13px', fontWeight: 800, letterSpacing: '1px', color: '#aaa' }}>
+                    ОТЗЫВЫ ИГРОКОВ
+                    <span style={{ marginLeft: '10px', fontSize: '11px', color: '#555', fontWeight: 400 }}>
+                        (всего: {feedbackList.length})
+                    </span>
+                </div>
+                <button
+                    onClick={onRefresh}
+                    disabled={isLoadingFeedback}
+                    style={{
+                        ...applyBtn,
+                        padding: '5px 16px',
+                        background: isLoadingFeedback ? '#1a1a1a' : undefined,
+                        cursor: isLoadingFeedback ? 'not-allowed' : 'pointer',
+                    }}
+                >
+                    {isLoadingFeedback ? 'ЗАГРУЗКА...' : 'ОБНОВИТЬ 🔄'}
+                </button>
+            </div>
+
+            {/* 3-column grid */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '14px', alignItems: 'start' }}>
+                {FEEDBACK_COLUMNS.map((col) => {
+                    const items = feedbackList.filter((f: any) => f.category === col.key);
+                    return (
                         <div
+                            key={col.key}
                             style={{
-                                padding: '12px 14px',
-                                borderBottom: `1px solid ${col.border}`,
+                                background: col.dimColor,
+                                border: `1px solid ${col.border}`,
+                                borderRadius: '12px',
                                 display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'space-between',
+                                flexDirection: 'column',
+                                gap: '0',
+                                maxHeight: '640px',
+                                overflow: 'hidden',
                             }}
                         >
-                            <span
-                                style={{ fontSize: '12px', fontWeight: 900, color: col.color, letterSpacing: '0.5px' }}
-                            >
-                                {col.label}
-                            </span>
-                            <span
+                            {/* Column header */}
+                            <div
                                 style={{
-                                    background: col.color,
-                                    color: '#000',
-                                    fontWeight: 900,
-                                    fontSize: '10px',
-                                    borderRadius: '20px',
-                                    padding: '1px 8px',
-                                    minWidth: '22px',
-                                    textAlign: 'center',
+                                    padding: '12px 14px',
+                                    borderBottom: `1px solid ${col.border}`,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'space-between',
                                 }}
                             >
-                                {items.length}
-                            </span>
-                        </div>
-
-                        {/* Cards list */}
-                        <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '0' }}>
-                            {items.length === 0 ? (
-                                <div
+                                <span
+                                    style={{ fontSize: '12px', fontWeight: 900, color: col.color, letterSpacing: '0.5px' }}
+                                >
+                                    {col.label}
+                                </span>
+                                <span
                                     style={{
-                                        padding: '30px 14px',
+                                        background: col.color,
+                                        color: '#000',
+                                        fontWeight: 900,
+                                        fontSize: '10px',
+                                        borderRadius: '20px',
+                                        padding: '1px 8px',
+                                        minWidth: '22px',
                                         textAlign: 'center',
-                                        color: '#444',
-                                        fontSize: '12px',
                                     }}
                                 >
-                                    Отзывов нет
-                                </div>
-                            ) : (
-                                items.map((f: any) => (
+                                    {items.length}
+                                </span>
+                            </div>
+
+                            {/* Cards list */}
+                            <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '0' }}>
+                                {items.length === 0 ? (
                                     <div
-                                        key={f.id}
                                         style={{
-                                            padding: '12px 14px',
-                                            borderBottom: '1px solid rgba(255,255,255,0.04)',
-                                            display: 'flex',
-                                            flexDirection: 'column',
-                                            gap: '6px',
+                                            padding: '30px 14px',
+                                            textAlign: 'center',
+                                            color: '#444',
+                                            fontSize: '12px',
                                         }}
                                     >
-                                        {/* Sender row */}
+                                        Отзывов нет
+                                    </div>
+                                ) : (
+                                    items.map((f: any) => (
                                         <div
+                                            key={f.id}
                                             style={{
+                                                padding: '12px 14px',
+                                                borderBottom: '1px solid rgba(255,255,255,0.04)',
                                                 display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'space-between',
+                                                flexDirection: 'column',
                                                 gap: '6px',
                                             }}
                                         >
+                                            {/* Sender row */}
                                             <div
                                                 style={{
                                                     display: 'flex',
                                                     alignItems: 'center',
+                                                    justifyContent: 'space-between',
                                                     gap: '6px',
-                                                    flex: 1,
-                                                    minWidth: 0,
                                                 }}
                                             >
-                                                <span
+                                                <div
                                                     style={{
-                                                        fontSize: '11px',
-                                                        fontWeight: 700,
-                                                        color: '#e2e2e2',
-                                                        overflow: 'hidden',
-                                                        textOverflow: 'ellipsis',
-                                                        whiteSpace: 'nowrap',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        gap: '8px',
+                                                        flex: 1,
+                                                        minWidth: 0,
                                                     }}
                                                 >
-                                                    {f.userName || 'Игрок'}
+                                                    <img
+                                                        src={f.vkAvatar || f.avatar || '/assets/images/avatars/panda.webp'}
+                                                        style={{
+                                                            width: '20px',
+                                                            height: '20px',
+                                                            borderRadius: '50%',
+                                                            objectFit: 'cover',
+                                                            border: '1px solid rgba(255,255,255,0.1)',
+                                                        }}
+                                                        alt=""
+                                                    />
+                                                    <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+                                                        <span
+                                                            style={{
+                                                                fontSize: '11px',
+                                                                fontWeight: 700,
+                                                                color: '#e2e2e2',
+                                                                overflow: 'hidden',
+                                                                textOverflow: 'ellipsis',
+                                                                whiteSpace: 'nowrap',
+                                                            }}
+                                                        >
+                                                            {f.userName || 'Игрок'}
+                                                        </span>
+                                                        {f.realName && (
+                                                            <span
+                                                                style={{
+                                                                    fontSize: '9px',
+                                                                    color: '#888',
+                                                                    overflow: 'hidden',
+                                                                    textOverflow: 'ellipsis',
+                                                                    whiteSpace: 'nowrap',
+                                                                }}
+                                                            >
+                                                                {f.realName}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    {f.level > 0 && (
+                                                        <span style={{ fontSize: '9px', color: '#888', flexShrink: 0 }}>
+                                                            Ур.{f.level}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <span style={{ fontSize: '9px', color: '#555', flexShrink: 0 }}>
+                                                    {formatFeedbackTime(f.timestamp)}
                                                 </span>
-                                                {f.level > 0 && (
-                                                    <span style={{ fontSize: '9px', color: '#888', flexShrink: 0 }}>
-                                                        Ур.{f.level}
+                                            </div>
+
+                                            {/* Platform / version / vkId */}
+                                            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center' }}>
+                                                {f.platform && (
+                                                    <span
+                                                        style={{
+                                                            fontSize: '9px',
+                                                            color: '#666',
+                                                            background: 'rgba(255,255,255,0.04)',
+                                                            padding: '1px 6px',
+                                                            borderRadius: '4px',
+                                                        }}
+                                                    >
+                                                        {f.platform}
                                                     </span>
                                                 )}
+                                                {f.version && (
+                                                    <span
+                                                        style={{
+                                                            fontSize: '9px',
+                                                            color: '#666',
+                                                            background: 'rgba(255,255,255,0.04)',
+                                                            padding: '1px 6px',
+                                                            borderRadius: '4px',
+                                                        }}
+                                                    >
+                                                        {f.version}
+                                                    </span>
+                                                )}
+                                                {f.vkId && (
+                                                    <a
+                                                        href={`https://vk.com/away.php?to=https://vk.com/id${f.vkId}`}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        style={{
+                                                            fontSize: '9px',
+                                                            color: '#60a5fa',
+                                                            background: 'rgba(96,165,250,0.1)',
+                                                            border: '1px solid rgba(96,165,250,0.2)',
+                                                            padding: '1px 6px',
+                                                            borderRadius: '4px',
+                                                            textDecoration: 'none',
+                                                            fontWeight: 800,
+                                                        }}
+                                                    >
+                                                        🔗 VK ID: {f.vkId}
+                                                    </a>
+                                                )}
                                             </div>
-                                            <span style={{ fontSize: '9px', color: '#555', flexShrink: 0 }}>
-                                                {formatFeedbackTime(f.timestamp)}
-                                            </span>
-                                        </div>
 
-                                        {/* Platform / version */}
-                                        <div style={{ display: 'flex', gap: '6px' }}>
-                                            {f.platform && (
-                                                <span
-                                                    style={{
-                                                        fontSize: '9px',
-                                                        color: '#666',
-                                                        background: 'rgba(255,255,255,0.04)',
-                                                        padding: '1px 6px',
-                                                        borderRadius: '4px',
-                                                    }}
-                                                >
-                                                    {f.platform}
-                                                </span>
-                                            )}
-                                            {f.version && (
-                                                <span
-                                                    style={{
-                                                        fontSize: '9px',
-                                                        color: '#666',
-                                                        background: 'rgba(255,255,255,0.04)',
-                                                        padding: '1px 6px',
-                                                        borderRadius: '4px',
-                                                    }}
-                                                >
-                                                    {f.version}
-                                                </span>
-                                            )}
-                                        </div>
-
-                                        {/* Feedback text */}
-                                        <div
-                                            style={{
-                                                fontSize: '12px',
-                                                color: '#ccc',
-                                                lineHeight: '1.5',
-                                                background: 'rgba(0,0,0,0.25)',
-                                                padding: '8px 10px',
-                                                borderRadius: '7px',
-                                                wordBreak: 'break-word',
-                                            }}
-                                        >
-                                            {f.text}
-                                        </div>
-
-                                        {/* Action buttons */}
-                                        <div style={{ display: 'flex', gap: '6px', marginTop: '2px' }}>
-                                            <button
-                                                onClick={() => onDelete(f.id)}
+                                            {/* Feedback text */}
+                                            <div
                                                 style={{
-                                                    flex: 1,
-                                                    padding: '5px 0',
-                                                    borderRadius: '6px',
-                                                    border: '1px solid rgba(74,222,128,0.3)',
-                                                    background: 'rgba(74,222,128,0.07)',
-                                                    color: '#4ade80',
-                                                    fontSize: '9px',
-                                                    fontWeight: 800,
-                                                    cursor: 'pointer',
-                                                    letterSpacing: '0.5px',
+                                                    fontSize: '12px',
+                                                    color: '#ccc',
+                                                    lineHeight: '1.5',
+                                                    background: 'rgba(0,0,0,0.25)',
+                                                    padding: '8px 10px',
+                                                    borderRadius: '7px',
+                                                    wordBreak: 'break-word',
                                                 }}
                                             >
-                                                ✅ РЕШЕНО
-                                            </button>
-                                            {f.userId && (
+                                                {f.text}
+                                            </div>
+
+                                            {f.debugDump && (
+                                                <details style={{ marginTop: '2px' }}>
+                                                    <summary style={{ fontSize: '9px', color: '#f59e0b', cursor: 'pointer', outline: 'none', userSelect: 'none', fontWeight: 700 }}>
+                                                        📄 ДИАГНОСТИКА
+                                                    </summary>
+                                                    <pre style={{
+                                                        fontSize: '9px',
+                                                        fontFamily: 'monospace',
+                                                        color: '#aaa',
+                                                        background: '#050505',
+                                                        padding: '6px',
+                                                        borderRadius: '4px',
+                                                        marginTop: '4px',
+                                                        maxHeight: '100px',
+                                                        overflowY: 'auto',
+                                                        whiteSpace: 'pre-wrap',
+                                                        wordBreak: 'break-all',
+                                                        border: '1px solid #222'
+                                                    }}>
+                                                        {JSON.stringify(f.debugDump, null, 2)}
+                                                    </pre>
+                                                </details>
+                                            )}
+
+                                            {/* Action buttons */}
+                                            <div style={{ display: 'flex', gap: '6px', marginTop: '2px' }}>
                                                 <button
-                                                    onClick={() => onGoToPlayer(f.userId)}
+                                                    onClick={() => onDelete(f.id)}
                                                     style={{
                                                         flex: 1,
                                                         padding: '5px 0',
                                                         borderRadius: '6px',
-                                                        border: '1px solid rgba(96,165,250,0.3)',
-                                                        background: 'rgba(96,165,250,0.07)',
-                                                        color: '#60a5fa',
+                                                        border: '1px solid rgba(74,222,128,0.3)',
+                                                        background: 'rgba(74,222,128,0.07)',
+                                                        color: '#4ade80',
                                                         fontSize: '9px',
                                                         fontWeight: 800,
                                                         cursor: 'pointer',
                                                         letterSpacing: '0.5px',
                                                     }}
                                                 >
-                                                    👤 ИГРОК
+                                                    ✅ РЕШЕНО
                                                 </button>
-                                            )}
+                                                {f.userId && (
+                                                    <button
+                                                        onClick={() => setReplyingItem(f)}
+                                                        style={{
+                                                            flex: 1,
+                                                            padding: '5px 0',
+                                                            borderRadius: '6px',
+                                                            border: '1px solid rgba(245,158,11,0.3)',
+                                                            background: 'rgba(245,158,11,0.07)',
+                                                            color: '#f59e0b',
+                                                            fontSize: '9px',
+                                                            fontWeight: 800,
+                                                            cursor: 'pointer',
+                                                            letterSpacing: '0.5px',
+                                                        }}
+                                                    >
+                                                        ✉️ ОТВЕТИТЬ
+                                                    </button>
+                                                )}
+                                                {f.userId && (
+                                                    <button
+                                                        onClick={() => onGoToPlayer(f.userId)}
+                                                        style={{
+                                                            flex: 1,
+                                                            padding: '5px 0',
+                                                            borderRadius: '6px',
+                                                            border: '1px solid rgba(96,165,250,0.3)',
+                                                            background: 'rgba(96,165,250,0.07)',
+                                                            color: '#60a5fa',
+                                                            fontSize: '9px',
+                                                            fontWeight: 800,
+                                                            cursor: 'pointer',
+                                                            letterSpacing: '0.5px',
+                                                        }}
+                                                    >
+                                                        👤 ИГРОК
+                                                    </button>
+                                                )}
+                                            </div>
                                         </div>
-                                    </div>
-                                ))
-                            )}
+                                    ))
+                                )}
+                            </div>
                         </div>
-                    </div>
-                );
-            })}
+                    );
+                })}
+            </div>
+
+            {/* Reply Modal */}
+            <AnimatePresence>
+                {replyingItem && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        style={{
+                            position: 'fixed',
+                            inset: 0,
+                            zIndex: 100000,
+                            backgroundColor: 'rgba(0,0,0,0.75)',
+                            backdropFilter: 'blur(5px)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                        }}
+                    >
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.9, opacity: 0 }}
+                            style={{
+                                background: '#0e0e10',
+                                border: '1px solid #c8952a',
+                                borderRadius: '12px',
+                                width: '480px',
+                                padding: '24px',
+                                boxShadow: '0 0 25px rgba(200, 149, 42, 0.2)',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: '16px',
+                            }}
+                        >
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <span style={{ fontSize: '13px', fontWeight: 900, color: '#f59e0b', letterSpacing: '0.5px' }}>
+                                    ОТВЕТИТЬ ИГРОКУ: {replyingItem.userName}
+                                </span>
+                                <button
+                                    onClick={() => setReplyingItem(null)}
+                                    style={{
+                                        background: 'none',
+                                        border: 'none',
+                                        color: '#666',
+                                        cursor: 'pointer',
+                                        fontSize: '18px',
+                                        padding: '4px',
+                                    }}
+                                >
+                                    ✕
+                                </button>
+                            </div>
+
+                            <div style={{ background: 'rgba(255,255,255,0.03)', padding: '12px', borderRadius: '8px', border: '1px solid #222' }}>
+                                <div style={{ fontSize: '10px', color: '#666', marginBottom: '4px' }}>ОТЗЫВ ИГРОКА:</div>
+                                <div style={{ fontSize: '12px', color: '#ccc', fontStyle: 'italic' }}>
+                                    "{replyingItem.text}"
+                                </div>
+                            </div>
+
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                <label style={{ fontSize: '11px', color: '#aaa', fontWeight: 700 }}>ТЕКСТ ОТВЕТА (ПИСЬМО В ИГРЕ):</label>
+                                <textarea
+                                    value={replyText}
+                                    onChange={(e) => setReplyText(e.target.value)}
+                                    rows={4}
+                                    placeholder="Привет! Спасибо за отзыв. Мы проверили ваше обращение..."
+                                    style={{
+                                        background: '#050505',
+                                        border: '1px solid #333',
+                                        borderRadius: '6px',
+                                        color: '#fff',
+                                        padding: '10px',
+                                        fontSize: '12px',
+                                        outline: 'none',
+                                        resize: 'vertical',
+                                    }}
+                                />
+                            </div>
+
+                            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', marginTop: '4px' }}>
+                                <button
+                                    onClick={() => setReplyingItem(null)}
+                                    style={{
+                                        background: 'none',
+                                        border: '1px solid #333',
+                                        borderRadius: '6px',
+                                        color: '#aaa',
+                                        padding: '8px 16px',
+                                        fontSize: '11px',
+                                        fontWeight: 800,
+                                        cursor: 'pointer',
+                                    }}
+                                >
+                                    ОТМЕНА
+                                </button>
+                                <button
+                                    onClick={handleSendReply}
+                                    disabled={isSendingReply || !replyText.trim()}
+                                    style={{
+                                        background: '#f59e0b',
+                                        border: 'none',
+                                        borderRadius: '6px',
+                                        color: '#000',
+                                        padding: '8px 20px',
+                                        fontSize: '11px',
+                                        fontWeight: 900,
+                                        cursor: isSendingReply || !replyText.trim() ? 'not-allowed' : 'pointer',
+                                        opacity: isSendingReply || !replyText.trim() ? 0.5 : 1,
+                                    }}
+                                >
+                                    {isSendingReply ? 'ОТПРАВКА...' : 'ОТПРАВИТЬ ОТВЕТ ✉️'}
+                                </button>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
-    </div>
-);
+    );
+};
 
 const AdminPanelContent: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     const messages = useGameStore((state) => state.messages);

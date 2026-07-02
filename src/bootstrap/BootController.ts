@@ -1,6 +1,7 @@
 import { initVK, getVkUserInfo } from '../utils/VKBridge';
 import { initTelemetry } from '../services/TelemetryService';
 import { TimeService } from '../utils/TimeService';
+import { safeGetItem } from '../utils/SafeStorage';
 
 export type BootState = 'INIT' | 'LOAD' | 'READY' | 'FAILED';
 export type BootMode = 'STRICT' | 'LENIENT';
@@ -27,6 +28,30 @@ export type BootAction =
     | { type: 'SYNC_DATA' }
     | { type: 'BEACON_SYNC' }
     | { type: 'FLUSH_LOGS'; payload: { text: string } };
+
+// Helper for fetching with retries (used by resolveVK and calibrateTime)
+const fetchWithRetry = async (
+    url: string,
+    options: RequestInit = {},
+    retries: number = 3,
+    delay: number = 1500,
+): Promise<Response> => {
+    let lastErr: any = null;
+    for (let i = 0; i < retries; i++) {
+        try {
+            const response = await fetch(url, options);
+            if (response.ok) return response;
+            throw new Error(`Server returned status ${response.status}`);
+        } catch (err) {
+            lastErr = err;
+            console.warn(`[BootController] Fetch attempt ${i + 1}/${retries} failed for ${url}:`, err);
+            if (i < retries - 1) {
+                await new Promise((resolve) => setTimeout(resolve, delay));
+            }
+        }
+    }
+    throw lastErr || new Error(`Failed to fetch ${url} after ${retries} attempts`);
+};
 
 class BootController {
     private static instance: BootController;
@@ -519,29 +544,7 @@ class BootController {
     }
 
     public async resolveVK(setNotInVk: (val: boolean) => void, _setInitError: (err: string) => void): Promise<void> {
-        // Helper for fetching with retries
-        const fetchWithRetry = async (
-            url: string,
-            options: RequestInit = {},
-            retries: number = 3,
-            delay: number = 1500,
-        ): Promise<Response> => {
-            let lastErr: any = null;
-            for (let i = 0; i < retries; i++) {
-                try {
-                    const response = await fetch(url, options);
-                    if (response.ok) return response;
-                    throw new Error(`Server returned status ${response.status}`);
-                } catch (err) {
-                    lastErr = err;
-                    console.warn(`[BootController] Fetch attempt ${i + 1}/${retries} failed for ${url}:`, err);
-                    if (i < retries - 1) {
-                        await new Promise((resolve) => setTimeout(resolve, delay));
-                    }
-                }
-            }
-            throw lastErr || new Error(`Failed to fetch ${url} after ${retries} attempts`);
-        };
+        // fetchWithRetry is now defined globally in this file
 
         // Helper for getting VK user info with retries
         const getVkUserInfoWithRetry = async (retries: number = 5, delay: number = 2000): Promise<any> => {
@@ -777,9 +780,7 @@ class BootController {
 
         this.userId = SyncService.getPrefixedUserId(this.vkUser, playerId);
 
-        const cacheRaw = typeof window !== 'undefined' ? localStorage.getItem('game-storage') : null;
-        const hasLocalCache = !!cacheRaw;
-        const maxAttempts = hasLocalCache ? 1 : 3;
+        const maxAttempts = 2; // Always attempt twice to prevent transient glitches from dropping into offline mode
 
         let remoteResult = null;
         let loadError = null;
@@ -802,7 +803,7 @@ class BootController {
             }
 
             // Read raw local storage cache
-            const cacheRaw = localStorage.getItem('game-storage');
+            const cacheRaw = safeGetItem('game-storage');
             let cacheState: any = null;
             if (cacheRaw) {
                 try {
@@ -835,6 +836,7 @@ class BootController {
                 stateToRestore.vkUser = this.vkUser;
                 stateToRestore.activeScreen = fbProfile.isNewPlayer === true ? 'INTRO' : 'MAIN_MENU';
                 stateToRestore.onboardingCompleted = fbProfile.isNewPlayer !== true;
+                stateToRestore.isOfflineSession = false;
 
                 // Reset and apply remote profile
                 useGameStore.getState().resetStore();
@@ -844,6 +846,7 @@ class BootController {
                 console.log('[BootController] No Firebase snapshot found, falling back to local cache.');
                 useGameStore.getState().resetStore();
                 cacheState.vkUser = this.vkUser;
+                cacheState.isOfflineSession = true;
                 cacheState.isSystemUpdate = true;
                 useGameStore.setState(cacheState);
             } else {
@@ -857,12 +860,13 @@ class BootController {
                     tutorialStep: 0,
                     activeScreen: 'INTRO',
                     vkUser: this.vkUser,
+                    isOfflineSession: false,
                     isSystemUpdate: true,
                 });
             }
         } catch (error) {
             console.error('[BootController] Firebase snapshot load failed. Resolving to cache fallback.', error);
-            const cacheRaw = localStorage.getItem('game-storage');
+            const cacheRaw = safeGetItem('game-storage');
             let cacheState: any = null;
             if (cacheRaw) {
                 try {
@@ -874,6 +878,7 @@ class BootController {
             if (cacheState && cacheState.lastSavedTimestamp) {
                 useGameStore.getState().resetStore();
                 cacheState.vkUser = this.vkUser;
+                cacheState.isOfflineSession = true;
                 cacheState.isSystemUpdate = true;
                 useGameStore.setState(cacheState);
             } else {
@@ -1241,7 +1246,7 @@ class BootController {
         });
         this.needPostBootSync = false;
 
-        syncService.startAutoSync(60000);
+        // syncService.startAutoSync(60000); // Disabled periodic auto-sync in favor of event-based sync and beaconFlush
 
         const duration = Date.now() - this.bootStartTime;
         console.log(`[Performance] 🚀 Game successfully booted. Total loading time: ${duration}ms`);

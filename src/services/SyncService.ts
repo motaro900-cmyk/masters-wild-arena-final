@@ -98,6 +98,9 @@ export class SyncService {
             window.addEventListener('pagehide', () => {
                 bootController.execute({ type: 'BEACON_SYNC' }).catch(() => {});
             });
+            window.addEventListener('beforeunload', () => {
+                bootController.execute({ type: 'BEACON_SYNC' }).catch(() => {});
+            });
             window.addEventListener('visibilitychange', () => {
                 if (document.visibilityState === 'hidden') {
                     bootController.execute({ type: 'BEACON_SYNC' }).catch(() => {});
@@ -117,6 +120,10 @@ export class SyncService {
         }
         try {
             const state = useGameStore.getState();
+            if (state.isOfflineSession) {
+                console.warn('[SyncService] Blocked beacon sync: offline session active.');
+                return;
+            }
             const isReady = bootController.isReady();
             if (!isReady) {
                 console.warn('[SyncService] Blocked beacon sync: Profile is not ready.');
@@ -124,6 +131,12 @@ export class SyncService {
             }
             const userId = this.getCurrentUserId();
             if (!userId.startsWith('VK-')) return;
+
+            const isLocalhost =
+                typeof window !== 'undefined' &&
+                (window.location.hostname === 'localhost' ||
+                    window.location.hostname === '127.0.0.1' ||
+                    window.location.protocol === 'file:');
 
             const criticalPayload = {
                 userId,
@@ -136,6 +149,7 @@ export class SyncService {
                 trophies: state.trophies,
                 fullStateJSON: this.buildFullStateJSON(state, TimeService.now()),
                 wasOnline: new Date().toISOString(),
+                isDev: isLocalhost,
             };
 
             const blob = new Blob([JSON.stringify(criticalPayload)], { type: 'application/json' });
@@ -178,6 +192,11 @@ export class SyncService {
     // ─── Core sync ─────────────────────────────────────────────────────────────
 
     public async syncPlayerData(): Promise<void> {
+        const state = useGameStore.getState();
+        if (state.isOfflineSession) {
+            console.warn('[SyncService] syncPlayerData: Blocked write since this is an offline session fallback.');
+            return Promise.resolve();
+        }
         const userId = this.getCurrentUserId();
         if (!userId.startsWith('VK-')) {
             if (!this.warnedNonVK) {
@@ -625,6 +644,7 @@ export class SyncService {
             const actionsToFlush = [...this.pendingActions];
             this.pendingActions = [];
             const state = useGameStore.getState();
+            if (state.isOfflineSession) return;
             const userId = SyncService.getPrefixedUserId(state.vkUser, state.playerId);
             if (!userId) return;
             this.writeChain = this.writeChain

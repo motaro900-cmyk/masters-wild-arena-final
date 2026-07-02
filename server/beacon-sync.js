@@ -4,7 +4,6 @@
  */
 
 const FIREBASE_PROJECT_ID = 'masters-of-the-wilde';
-const USERS_COLLECTION = 'пользователи';
 const FIREBASE_WEB_API_KEY = 'AIzaSyCkdcAHtqY-K_HRfb0FpkVR8lU5tbJfmYE';
 
 export default async function handler(req, res) {
@@ -50,6 +49,8 @@ export default async function handler(req, res) {
         if (!userId || !userId.startsWith('VK-')) {
             return res.status(400).json({ error: 'Invalid or missing userId' });
         }
+
+        const USERS_COLLECTION = body.isDev === true ? 'пользователи_dev' : 'пользователи';
 
         // Parse the embedded fullStateJSON if present
         let fullStateParsed = null;

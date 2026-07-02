@@ -257,10 +257,6 @@ export const createShopSlice = (set: any, get: any) => ({
                     hasBoughtStarterPack: true,
                 });
 
-                if (typeof window !== 'undefined') {
-                    localStorage.setItem('vipEndTime', newEndTime.toString());
-                }
-
                 syncService.logPlayerAction(`Купил Стартовый Пакет: +200 💎, +3 дня VIP 👑`);
                 await syncService.syncPlayerData();
                 if (typeof window !== 'undefined') {

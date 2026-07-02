@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { getStorage } from '../utils/SafeStorage';
+import { getSecureStorage } from '../utils/SafeStorage';
 import { ENERGY_CONFIG } from '../game/configs/constants';
 import { TimeService } from '../utils/TimeService';
 
@@ -42,6 +42,7 @@ type GameStoreState = {
     setInspectPlayerName?: (name: string | null) => void;
     pvpCooldowns?: Record<string, number>;
     recordAttack?: (targetId: string) => void;
+    copyDebugDump: () => void;
 
     // Precomputed HUD values
     hudPlayerRank?: any;
@@ -157,6 +158,29 @@ const store = create<GameStoreState>()(
                 }, 0);
                 return Math.max(0, totalEarned - totalSpent);
             },
+            copyDebugDump: () => {
+                const state = get() as any;
+                const dump = {
+                    playerId: state.playerId,
+                    vkUser: state.vkUser,
+                    level: state.level,
+                    gold: state.gold,
+                    crystals: state.crystals,
+                    rating: state.rating,
+                    activeHeroId: state.activeHeroId,
+                    inventorySize: state.inventory?.length || 0,
+                    lastSavedTimestamp: state.lastSavedTimestamp,
+                    isOfflineSession: state.isOfflineSession,
+                };
+                if (typeof navigator !== 'undefined' && navigator.clipboard) {
+                    navigator.clipboard
+                        .writeText(JSON.stringify(dump, null, 2))
+                        .then(() => state.showAlert('DEBUG DUMP скопирован в буфер обмена! 📄'))
+                        .catch(() => state.showAlert('Не удалось скопировать. Попробуйте вручную.'));
+                } else {
+                    state.showAlert('Clipboard API не поддерживается на этом устройстве.');
+                }
+            },
             resetStore: () => {
                 set({
                     ...createPlayerSlice(set, get),
@@ -177,53 +201,20 @@ const store = create<GameStoreState>()(
                     hudEnemyRank: null,
                     hudEnemyAvatar: '',
                     hudPrecomputed: false,
+                    isOfflineSession: false,
                 });
             },
         }),
         {
             name: 'game-storage',
-            storage: createJSONStorage(() => getStorage()),
+            storage: createJSONStorage(() => getSecureStorage()),
             version: 35, // v35: Add daily clan bank contribution counters
             skipHydration: true,
 
             partialize: (state: any) => ({
-                level: state.level,
-                vipLevel: state.vipLevel,
-                vipExp: state.vipExp,
-                exp: state.exp,
-                gold: state.gold,
-                crystals: state.crystals,
-                shards: state.shards,
-                rating: state.rating,
-                energy: state.energy,
-                maxEnergy: state.maxEnergy,
-                lastEnergyUpdate: state.lastEnergyUpdate,
-                vipEndTime: state.vipEndTime,
-                dailyAdWatchesCount: state.dailyAdWatchesCount,
-                dailyEnergyPurchasesCount: state.dailyEnergyPurchasesCount,
-                dailyGoldContributed: state.dailyGoldContributed,
-                dailyCrystalsContributed: state.dailyCrystalsContributed,
-                name: state.name,
-                lastNameChange: state.lastNameChange,
-                avatar: state.avatar,
-                frame: state.frame,
-                title: state.title,
-                bpLevel: state.bpLevel,
-                bpExp: state.bpExp,
-                dailyQuests: state.dailyQuests,
-                bpDailyQuests: state.bpDailyQuests,
-                weeklyQuests: state.weeklyQuests,
-                friendNotes: state.friendNotes,
-                lastDailyRefresh: state.lastDailyRefresh,
-                lastWeeklyQuestReset: state.lastWeeklyQuestReset,
-                trophies: state.trophies,
-                wins: state.wins,
-                totalBattles: state.totalBattles,
-                claimedSocialRewards: state.claimedSocialRewards,
-                ownedSkins: state.ownedSkins,
-                equippedSkins: state.equippedSkins,
-                usedPromoCodes: state.usedPromoCodes,
-                claimedGifts: state.claimedGifts,
+                playerId: state.playerId,
+                activeScreen: state.activeScreen,
+                onboardingCompleted: state.onboardingCompleted,
                 musicVolume: state.musicVolume,
                 soundVolume: state.soundVolume,
                 graphicsQuality: state.graphicsQuality,
@@ -234,50 +225,12 @@ const store = create<GameStoreState>()(
                 glowEnabled: state.glowEnabled,
                 arenaBgQuality: state.arenaBgQuality,
                 showPing: state.showPing,
-                pveStage: state.pveStage,
-                maxPveStage: state.maxPveStage,
                 isPowerSaving: state.isPowerSaving,
                 hasCustomSettings: state.hasCustomSettings,
                 rendererPreference: state.rendererPreference,
                 fpsCap: state.fpsCap,
-                isMuted: state.isMuted,
-                winStreak: state.winStreak,
-                lossStreak: state.lossStreak,
-                playerId: state.playerId,
-                onboardingCompleted: state.onboardingCompleted,
-                newbieWins: state.newbieWins,
-                activeBuffs: state.activeBuffs,
-                friends: state.friends,
-                clanId: state.clanId,
-                clanCoins: state.clanCoins,
-                heroes: state.heroes,
-                heroTalents: state.heroTalents,
-                pet: state.pet,
-                petCharges: state.petCharges,
-                lastPetTime: state.lastPetTime,
-                inventory: state.inventory,
-                heroEquipment: state.heroEquipment,
-                selectedHeroId: state.selectedHeroId,
-                ownedHeroes: state.ownedHeroes,
-                claimedRewards: state.claimedRewards,
-                coal: state.coal,
-                steel_bars: state.steel_bars,
-                runic_shards: state.runic_shards,
-                ancient_compass: state.ancient_compass,
-                astral_crystal: state.astral_crystal,
-                void_sphere: state.void_sphere,
-                golden_sprout: state.golden_sprout,
-                dragon_scale: state.dragon_scale,
-                lava_heart: state.lava_heart,
-                protection_stones: state.protection_stones,
-                shopRotation: state.shopRotation,
-                shopDiscounts: state.shopDiscounts,
-                shopLastRefreshTime: state.shopLastRefreshTime,
-                lastWheelSpinTime: state.lastWheelSpinTime,
-                lastDailyGiftClaimedTime: state.lastDailyGiftClaimedTime,
-                mail: state.mail,
-                pvpCooldowns: state.pvpCooldowns,
                 lastSavedTimestamp: state.lastSavedTimestamp,
+                isOfflineSession: state.isOfflineSession,
             }),
             migrate: (persistedState: any, version: number) => {
                 if (version < 22) {

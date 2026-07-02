@@ -4,7 +4,6 @@ import { getRankInfo, RANK_SYSTEM } from '../../configs/RankSystem';
 import { syncService } from '../../services/SyncService';
 import { audioService } from '../../services/AudioService';
 import { getCachedRefreshRate } from '../../services/TelemetryService';
-import { safeSetItem } from '../../utils/SafeStorage';
 import { TimeService } from '../../utils/TimeService';
 import { showRewardedVideo, isGroupMember } from '../../utils/VKBridge';
 import { getMskDateKey, calculatePetDailyReward } from '../../ui/components/hud/Bestiary/utils/petRewards';
@@ -451,9 +450,6 @@ export const createPlayerSlice = (set: any, get: any) => {
                 maxEnergy: calculateMaxEnergy(state.isPremium, true),
                 vipEndTime: newEndTime,
             });
-
-            // Продлеваем также локально для обратной совместимости
-            safeSetItem('vipEndTime', newEndTime.toString());
 
             // Синхронизируем
             syncService.debouncedSync();
