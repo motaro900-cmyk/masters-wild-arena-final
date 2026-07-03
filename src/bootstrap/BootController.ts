@@ -17,7 +17,7 @@ export type BootAction =
     | { type: 'HYDRATE' }
     | { type: 'RESOLVE_VK'; payload: { setNotInVk: (val: boolean) => void; setInitError: (err: string) => void } }
     | { type: 'CREATE_SESSION' }
-    | { type: 'LOAD_PROFILE'; payload: { setInitError: (err: string) => void } }
+    | { type: 'LOAD_PROFILE'; payload: { setInitError: (err: string) => void; resolveVkPromise?: Promise<void> } }
     | { type: 'LOAD_DERIVED_DATA' }
     | { type: 'LOAD_OPPONENT' }
     | { type: 'LOAD_CONFIG' }
@@ -308,7 +308,7 @@ class BootController {
                     if (this.state !== 'LOAD') {
                         throw new Error(`[BootController] Invalid boot phase for LOAD_PROFILE: ${this.state}`);
                     }
-                    return await this.loadProfile(action.payload.setInitError);
+                    return await this.loadProfile(action.payload.setInitError, action.payload.resolveVkPromise);
                 }
                 case 'LOAD_DERIVED_DATA': {
                     if (this.state !== 'LOAD') {
@@ -382,29 +382,50 @@ class BootController {
                 setLoadingText('Загрузка локального кэша...');
                 await this.execute({ type: 'HYDRATE' });
 
-                setLoadingText('Авторизация и подключение к VK Bridge...');
-                await this.execute({ type: 'RESOLVE_VK', payload: { setNotInVk, setInitError } });
+                // Resolve player ID and prefixed userId immediately so we can fire Firestore load in parallel
+                const { useGameStore } = await import('../store/useGameStore');
+                const storeState = useGameStore.getState();
+                let initialPlayerId = storeState.playerId;
+                if (!initialPlayerId || initialPlayerId === 'undefined' || initialPlayerId === 'null') {
+                    initialPlayerId = `GUEST-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+                    useGameStore.setState({ playerId: initialPlayerId, isSystemUpdate: true });
+                }
+                const searchParams = new URLSearchParams(window.location.search);
+                const urlVkUserId = searchParams.get('vk_user_id');
+                if (urlVkUserId) {
+                    this.userId = `VK-${urlVkUserId}`;
+                } else {
+                    this.userId = initialPlayerId;
+                }
 
-                setLoadingText('Создание сессионного контекста...');
-                await this.execute({ type: 'CREATE_SESSION' });
-
-                // ── PHASE 2: LOAD ──────────────────────────────────────────
+                // ── PHASE 2: LOAD (Parallelized Boot) ───────────────────────
                 this.transition('LOAD');
 
-                // Parallelize Firestore LoadProfile (network-bound) and Pixi Engine Warmup (GPU-bound)
-                const profilePromise = (async () => {
-                    setLoadingText('Загрузка игрового профиля...');
-                    await this.execute({ type: 'LOAD_PROFILE', payload: { setInitError } });
+                // 1. VK resolution & Session Creation
+                const resolveVkPromise = (async () => {
+                    setLoadingText('Авторизация и подключение к VK Bridge...');
+                    await this.execute({ type: 'RESOLVE_VK', payload: { setNotInVk, setInitError } });
+                    setLoadingText('Создание сессионного контекста...');
+                    await this.execute({ type: 'CREATE_SESSION' });
                 })();
 
+                // 2. Firestore Load Profile (Network-bound) - starts immediately in parallel, awaits VK resolution to finalize
+                const profilePromise = (async () => {
+                    setLoadingText('Загрузка игрового профиля...');
+                    await this.execute({
+                        type: 'LOAD_PROFILE',
+                        payload: { setInitError, resolveVkPromise }
+                    });
+                })();
+
+                // 3. Pixi Engine Warmup (GPU-bound)
                 const enginePromise = (async () => {
                     setLoadingText('Запуск игрового движка...');
                     await this.initializeEngine(container);
                 })();
 
-                await Promise.all([profilePromise, enginePromise]);
+                await Promise.all([resolveVkPromise, profilePromise, enginePromise]);
 
-                const { useGameStore } = await import('../store/useGameStore');
                 const profileState = useGameStore.getState();
 
                 // FATAL: no player identity — game cannot run without this
@@ -847,18 +868,9 @@ class BootController {
         useGameStore.setState(finalPatch);
     }
 
-    public async loadProfile(_setInitError: (err: string) => void): Promise<void> {
-        const { syncService, SyncService } = await import('../services/SyncService');
+    public async loadProfile(_setInitError: (err: string) => void, resolveVkPromise?: Promise<void>): Promise<void> {
+        const { syncService } = await import('../services/SyncService');
         const { useGameStore } = await import('../store/useGameStore');
-        const state = useGameStore.getState();
-
-        let playerId = state.playerId;
-        if (!playerId || playerId === 'undefined' || playerId === 'null' || playerId.includes('undefined')) {
-            playerId = `GUEST-${TimeService.now()}-${Math.random().toString(36).substr(2, 9)}`;
-            useGameStore.setState({ playerId, isSystemUpdate: true });
-        }
-
-        this.userId = SyncService.getPrefixedUserId(this.vkUser, playerId);
 
         const maxAttempts = 2; // Always attempt twice to prevent transient glitches from dropping into offline mode
 
@@ -876,6 +888,15 @@ class BootController {
                 if (i < maxAttempts - 1) {
                     await new Promise((resolve) => setTimeout(resolve, 1500));
                 }
+            }
+        }
+
+        // Await the parallelized VK Auth to resolve so we have this.vkUser fully populated before we merge local state details
+        if (resolveVkPromise) {
+            try {
+                await resolveVkPromise;
+            } catch (vkErr) {
+                console.warn('[BootController] resolveVkPromise failed inside loadProfile, proceeding anyway:', vkErr);
             }
         }
 
