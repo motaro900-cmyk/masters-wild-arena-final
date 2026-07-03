@@ -81,6 +81,29 @@ class BootController {
     // ── Diagnostic system ──────────────────────────────────────────────────
     public bootMode: BootMode = 'STRICT';
     private bootIssues: BootIssue[] = [];
+    private diagnostics: Record<string, { start: number; end?: number; duration?: number; status?: string; error?: string }> = {};
+
+    public startDiagnostic(step: string): void {
+        this.diagnostics[step] = { start: Date.now() };
+        console.log(`[Diagnostics] 🚀 Starting step: ${step} at ${new Date().toISOString()}`);
+    }
+
+    public endDiagnostic(step: string, status: 'SUCCESS' | 'ERROR', errorMsg?: string): void {
+        const diag = this.diagnostics[step];
+        if (!diag) return;
+        diag.end = Date.now();
+        diag.duration = diag.end - diag.start;
+        diag.status = status;
+        if (errorMsg) diag.error = errorMsg;
+        console.log(`[Diagnostics] 🏁 Step ${step} completed in ${diag.duration}ms. Status: ${status}${errorMsg ? ` (Error: ${errorMsg})` : ''}`);
+    }
+
+    public printDiagnosticReport(): void {
+        console.log('[Diagnostics] 📊 STARTUP PERFORMANCE REPORT:');
+        Object.entries(this.diagnostics).forEach(([step, data]) => {
+            console.log(` - ${step.padEnd(25)}: ${String(data.duration ?? 'Pending/Timeout').padStart(6)}ms | Status: ${data.status || 'UNKNOWN'} | Error: ${data.error || '-'}`);
+        });
+    }
 
     public recordBootIssue(issue: Omit<BootIssue, 'phase'> & { phase?: string }): void {
         const entry: BootIssue = {
@@ -316,6 +339,7 @@ class BootController {
         this.initPromise = (async () => {
             try {
                 this.bootStartTime = Date.now();
+                this.startDiagnostic('BootController_Total_Init');
                 console.log('[BootController] Starting boot pipeline...');
                 this.errorText = null;
                 this.bootIssues = [];
@@ -516,8 +540,12 @@ class BootController {
                 // All non-fatal — proceed to READY
                 setLoadingText('Инициализация игровых систем...');
                 await this.execute({ type: 'INITIALIZE_SYSTEMS', payload: { container } });
+                this.endDiagnostic('BootController_Total_Init', 'SUCCESS');
+                this.printDiagnosticReport();
             } catch (err: any) {
                 console.error('[BootController] Fatal boot error:', err);
+                this.endDiagnostic('BootController_Total_Init', 'ERROR', err.message || String(err));
+                this.printDiagnosticReport();
                 this.initPromise = null;
                 this.remoteProfileData = null;
                 // Capture full root cause report
@@ -581,6 +609,7 @@ class BootController {
 
         // 1. Calibrate time in parallel
         const timePromise = (async () => {
+            this.startDiagnostic('/api/time');
             try {
                 const start = Date.now();
                 const response = await fetchWithRetry(
@@ -600,8 +629,10 @@ class BootController {
                     console.log('[BootController] Calibrated server time offset:', this.timeOffset);
                     TimeService.setOffset(this.timeOffset);
                 }
-            } catch (e) {
+                this.endDiagnostic('/api/time', 'SUCCESS');
+            } catch (e: any) {
                 console.warn('[BootController] Calibrate time failed, falling back to local clock');
+                this.endDiagnostic('/api/time', 'ERROR', e.message || String(e));
             }
         })();
 
@@ -611,6 +642,7 @@ class BootController {
                 console.log('[BootController] Localhost detected, skipping signature verify');
                 return;
             }
+            this.startDiagnostic('/api/verify-sign');
             try {
                 const searchParams = window.location.search;
                 const url = `/api/verify-sign${searchParams}`;
@@ -655,7 +687,9 @@ class BootController {
                 if (data && data.valid === false) {
                     throw new Error('Invalid signature');
                 }
+                this.endDiagnostic('/api/verify-sign', 'SUCCESS');
             } catch (err: any) {
+                this.endDiagnostic('/api/verify-sign', 'ERROR', err.message || String(err));
                 if (
                     err.message === 'Standalone launch restricted' ||
                     err.message?.includes('status 400')
@@ -671,7 +705,14 @@ class BootController {
 
         // 3. VK initialization and profile fetch
         const vkPromise = (async () => {
-            await initVK();
+            this.startDiagnostic('VKWebAppInit');
+            try {
+                await initVK();
+                this.endDiagnostic('VKWebAppInit', 'SUCCESS');
+            } catch (e: any) {
+                this.endDiagnostic('VKWebAppInit', 'ERROR', e.message || String(e));
+            }
+
             try {
                 initTelemetry();
             } catch (e) {
@@ -682,12 +723,15 @@ class BootController {
                 return;
             }
 
+            this.startDiagnostic('VKWebAppGetUserInfo');
             try {
                 this.vkUser = await getVkUserInfoWithRetry(3, 1500);
                 if (!this.vkUser) {
                     throw new Error('VK getVkUserInfo returned empty object');
                 }
-            } catch (vkErr) {
+                this.endDiagnostic('VKWebAppGetUserInfo', 'SUCCESS');
+            } catch (vkErr: any) {
+                this.endDiagnostic('VKWebAppGetUserInfo', 'ERROR', vkErr.message || String(vkErr));
                 console.warn('[BootController] getVkUserInfo failed, falling back to URL parameters:', vkErr);
                 const searchParams = new URLSearchParams(window.location.search);
                 const urlVkUserId = searchParams.get('vk_user_id');
@@ -789,13 +833,15 @@ class BootController {
 
         const maxAttempts = 2; // Always attempt twice to prevent transient glitches from dropping into offline mode
 
+        this.startDiagnostic('Firestore_LoadProfile');
         let remoteResult = null;
         let loadError = null;
         for (let i = 0; i < maxAttempts; i++) {
             try {
                 remoteResult = await syncService.loadPlayerData(this.userId);
+                this.endDiagnostic('Firestore_LoadProfile', 'SUCCESS');
                 break;
-            } catch (err) {
+            } catch (err: any) {
                 loadError = err;
                 console.warn(`[BootController] Failed to load remote profile, attempt ${i + 1}/${maxAttempts}...`, err);
                 if (i < maxAttempts - 1) {
@@ -806,6 +852,7 @@ class BootController {
 
         try {
             if (!remoteResult && loadError) {
+                this.endDiagnostic('Firestore_LoadProfile', 'ERROR', loadError.message || String(loadError));
                 throw loadError;
             }
 
