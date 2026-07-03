@@ -290,13 +290,13 @@ class BootController {
                     return await useGameStore.persist.rehydrate();
                 }
                 case 'RESOLVE_VK': {
-                    if (this.state !== 'INIT') {
+                    if (this.state !== 'INIT' && this.state !== 'LOAD') {
                         throw new Error(`[BootController] Invalid boot phase for RESOLVE_VK: ${this.state}`);
                     }
                     return await this.resolveVK(action.payload.setNotInVk, action.payload.setInitError);
                 }
                 case 'CREATE_SESSION': {
-                    if (this.state !== 'INIT') {
+                    if (this.state !== 'INIT' && this.state !== 'LOAD') {
                         throw new Error(`[BootController] Invalid boot phase for CREATE_SESSION: ${this.state}`);
                     }
                     const { useGameStore } = await import('../store/useGameStore');
