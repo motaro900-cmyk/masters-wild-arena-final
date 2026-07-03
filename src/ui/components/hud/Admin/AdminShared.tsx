@@ -201,8 +201,8 @@ export const mapRawPlayerToRealPlayer = (p: any): RealPlayer => {
     const photoVal = p.avatar || p.фото || p.photo || 'https://vk.com/images/camera_100.png';
     const activeScreenVal = p.activeScreen || p.активныйЭкран || 'MAP';
     const lastSeenMillis = p.wasOnline?.toMillis?.() || p.былВСети?.toMillis?.() || p.lastSeen?.toMillis?.() || 0;
-    const statusVal =
-        activeScreenVal === 'BATTLE' ? 'BATTLE' : Date.now() - lastSeenMillis < 300000 ? 'ONLINE' : 'OFFLINE';
+    const isOnline = lastSeenMillis > 0 && (Date.now() - lastSeenMillis < 300000);
+    const statusVal = !isOnline ? 'OFFLINE' : (activeScreenVal === 'BATTLE' ? 'BATTLE' : 'ONLINE');
 
     // Парсим полноеСостояниеJSON / fullStateJSON для получения актуальных значений ресурсов игрока в реальном времени
     let parsedState: any = {};

@@ -219,7 +219,13 @@ export async function updateRemotePlayerData(userId: string, data: any): Promise
                     if (data.ownedHeroes !== undefined) parsed.ownedHeroes = data.ownedHeroes;
                     if (data.talentPoints !== undefined) parsed.talentPoints = Number(data.talentPoints);
                     if (data.hasInfiniteEnergy !== undefined) parsed.hasInfiniteEnergy = !!data.hasInfiniteEnergy;
-                    updatedData.fullStateJSON = JSON.stringify(parsed);
+                    const updatedStr = JSON.stringify(parsed);
+                    if (docData.полноеСостояниеJSON !== undefined) {
+                        updatedData.полноеСостояниеJSON = updatedStr;
+                    }
+                    if (docData.fullStateJSON !== undefined || docData.полноеСостояниеJSON === undefined) {
+                        updatedData.fullStateJSON = updatedStr;
+                    }
                 } catch (e) {
                     console.error('[AdminService] Failed to parse fullStateJSON:', e);
                 }
