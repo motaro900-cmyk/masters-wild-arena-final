@@ -34,10 +34,11 @@ export const InitErrorScreen: React.FC<InitErrorScreenProps> = ({ error, onRetry
                     borderRadius: '12px',
                     border: '1px solid rgba(255,0,0,0.2)',
                     marginBottom: '30px',
-                    maxWidth: '500px',
+                    maxWidth: '800px',
+                    width: '90vw',
                 }}
             >
-                <code style={{ fontSize: '14px', color: '#ff7777', wordBreak: 'break-all' }}>{error}</code>
+                <code style={{ fontSize: '13px', color: '#ff7777', wordBreak: 'break-all', whiteSpace: 'pre-wrap', fontFamily: 'monospace', textAlign: 'left', display: 'block' }}>{error}</code>
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', alignItems: 'center' }}>

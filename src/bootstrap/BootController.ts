@@ -1,4 +1,4 @@
-import { initVK, getVkUserInfo } from '../utils/VKBridge';
+import { initVK, getVkUserInfo, isVkMiniApp } from '../utils/VKBridge';
 import { initTelemetry } from '../services/TelemetryService';
 import { TimeService } from '../utils/TimeService';
 import { safeGetItem } from '../utils/SafeStorage';
@@ -85,7 +85,9 @@ class BootController {
 
     public startDiagnostic(step: string): void {
         this.diagnostics[step] = { start: Date.now() };
-        console.log(`[Diagnostics] 🚀 Starting step: ${step} at ${new Date().toISOString()}`);
+        if (window.location.search.includes('debugStartup=true')) {
+            console.log(`[Diagnostics] 🚀 Starting step: ${step} at ${new Date().toISOString()}`);
+        }
     }
 
     public endDiagnostic(step: string, status: 'SUCCESS' | 'ERROR', errorMsg?: string): void {
@@ -95,7 +97,9 @@ class BootController {
         diag.duration = diag.end - diag.start;
         diag.status = status;
         if (errorMsg) diag.error = errorMsg;
-        console.log(`[Diagnostics] 🏁 Step ${step} completed in ${diag.duration}ms. Status: ${status}${errorMsg ? ` (Error: ${errorMsg})` : ''}`);
+        if (window.location.search.includes('debugStartup=true')) {
+            console.log(`[Diagnostics] 🏁 Step ${step} completed in ${diag.duration}ms. Status: ${status}${errorMsg ? ` (Error: ${errorMsg})` : ''}`);
+        }
     }
 
     public printDiagnosticReport(): void {
@@ -103,6 +107,50 @@ class BootController {
         Object.entries(this.diagnostics).forEach(([step, data]) => {
             console.log(` - ${step.padEnd(25)}: ${String(data.duration ?? 'Pending/Timeout').padStart(6)}ms | Status: ${data.status || 'UNKNOWN'} | Error: ${data.error || '-'}`);
         });
+    }
+
+    public getDiagnosticSummary(): string {
+        const totalDuration = Date.now() - this.bootStartTime;
+        const stepsReport = Object.entries(this.diagnostics).map(([step, data]) => {
+            const dur = data.duration !== undefined ? `${(data.duration / 1000).toFixed(2)}s` : 'Timeout/Pending';
+            return `${step.padEnd(22)}: ${data.status === 'SUCCESS' ? 'OK' : 'FAILED'} (${dur})${data.error ? ` - Error: ${data.error}` : ''}`;
+        }).join('\n');
+
+        const searchParams = new URLSearchParams(window.location.search);
+        const vkParams = Array.from(searchParams.keys())
+            .filter((key) => key.startsWith('vk_') || key === 'sign')
+            .join(', ');
+
+        const connection = (navigator as any).connection;
+        const connectionInfo = connection
+            ? `effectiveType: ${connection.effectiveType}, downlink: ${connection.downlink}Mb/s, rtt: ${connection.rtt}ms`
+            : 'Not available';
+
+        const env = [
+            `User Agent: ${navigator.userAgent}`,
+            `Platform  : ${navigator.platform}`,
+            `Is VK App : ${isVkMiniApp()}`,
+            `Online    : ${navigator.onLine}`,
+            `Connection: ${connectionInfo}`,
+            `Current URL: ${window.location.origin}${window.location.pathname}`,
+            `VK Params : ${vkParams || 'None'}`,
+        ].join('\n- ');
+
+        const failedStep = Object.entries(this.diagnostics).find(([_, d]) => d.status === 'ERROR');
+        const finalStatus = failedStep ? 'FAILED' : 'SUCCESS';
+
+        return [
+            `================ STARTUP REPORT ================`,
+            `Total duration : ${(totalDuration / 1000).toFixed(2)}s`,
+            `------------------------------------------------`,
+            stepsReport,
+            `------------------------------------------------`,
+            `Environment Info:`,
+            `- ${env}`,
+            `================================================`,
+            `Result: ${finalStatus}`,
+            failedStep ? `Failed step: ${failedStep[0]}\nError: ${failedStep[1].error || 'timeout'}` : '',
+        ].filter(Boolean).join('\n');
     }
 
     public recordBootIssue(issue: Omit<BootIssue, 'phase'> & { phase?: string }): void {
@@ -541,11 +589,25 @@ class BootController {
                 setLoadingText('Инициализация игровых систем...');
                 await this.execute({ type: 'INITIALIZE_SYSTEMS', payload: { container } });
                 this.endDiagnostic('BootController_Total_Init', 'SUCCESS');
-                this.printDiagnosticReport();
+
+                if (window.location.search.includes('debugStartup=true')) {
+                    console.log(this.getDiagnosticSummary());
+                } else {
+                    this.printDiagnosticReport();
+                }
             } catch (err: any) {
                 console.error('[BootController] Fatal boot error:', err);
                 this.endDiagnostic('BootController_Total_Init', 'ERROR', err.message || String(err));
-                this.printDiagnosticReport();
+
+                const report = this.getDiagnosticSummary();
+                if (window.location.search.includes('debugStartup=true')) {
+                    console.error(report);
+                    this.errorText = `${err.message || 'Ошибка запуска игры'}\n\n${report}`;
+                } else {
+                    this.printDiagnosticReport();
+                    this.errorText = err.message || 'Ошибка запуска игры';
+                }
+
                 this.initPromise = null;
                 this.remoteProfileData = null;
                 // Capture full root cause report
@@ -569,7 +631,6 @@ class BootController {
                 };
                 console.error('BOOT FAILURE ROOT CAUSE:', rootCause);
                 this.transition('FAILED');
-                this.errorText = err.message || 'Ошибка запуска игры';
                 setInitError(this.errorText ?? 'Ошибка запуска игры');
                 return;
             }
