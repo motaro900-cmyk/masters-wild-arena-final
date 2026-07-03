@@ -405,28 +405,42 @@ export class GameApp {
         // Core manifest assets are already fully loaded and verified by BootController.ready()
         // before GameApp is instantiated, so we skip redundant loadAssets() checks to save CPU cycles.
 
-        // Lazy load item sprites based on current player level (utilizes idle callback to avoid network bottleneck on startup)
-        const triggerPreload = () => {
-            // Network-aware check: skip background preloading on very slow connections or Save Data mode
-            if (typeof navigator !== 'undefined' && (navigator as any).connection) {
-                const conn = (navigator as any).connection;
-                if (conn.saveData || /2g|slow-2g/.test(conn.effectiveType || '')) {
-                    console.log('[GameApp] Skipping background item sprites preloading due to slow connection or save-data mode.');
-                    return;
+        // Lazy load item sprites ONLY after READY — wait for bootController to be ready first,
+        // then use requestIdleCallback so it doesn't compete with boot for network bandwidth.
+        const scheduleItemPreload = () => {
+            const triggerPreload = () => {
+                // Network-aware check: skip background preloading on very slow connections or Save Data mode
+                if (typeof navigator !== 'undefined' && (navigator as any).connection) {
+                    const conn = (navigator as any).connection;
+                    if (conn.saveData || /2g|slow-2g/.test(conn.effectiveType || '')) {
+                        console.log('[GameApp] Skipping background item sprites preloading due to slow connection or save-data mode.');
+                        return;
+                    }
                 }
-            }
+                const currentLevel = useGameStore.getState().level || 1;
+                this.loadItemSpritesForLevel(currentLevel).catch((err) => {
+                    console.error('❌ Background item sprite preloading failed:', err);
+                });
+            };
 
-            const currentLevel = useGameStore.getState().level || 1;
-            this.loadItemSpritesForLevel(currentLevel).catch((err) => {
-                console.error('❌ Background item sprite preloading failed:', err);
-            });
+            if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+                window.requestIdleCallback(() => triggerPreload(), { timeout: 5000 });
+            } else {
+                setTimeout(triggerPreload, 5000);
+            }
         };
 
-        if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
-            window.requestIdleCallback(() => triggerPreload(), { timeout: 3000 });
-        } else {
-            setTimeout(triggerPreload, 3000);
-        }
+        // Only schedule preload after READY — poll until ready, then schedule
+        const waitForReadyThenPreload = () => {
+            const bc = (window as any).bootController;
+            if (bc && bc.isReady && bc.isReady()) {
+                scheduleItemPreload();
+            } else {
+                // Not ready yet — check again in 500ms
+                setTimeout(waitForReadyThenPreload, 500);
+            }
+        };
+        setTimeout(waitForReadyThenPreload, 500);
 
         // Background preload next-scene textures and arena assets (delayed to prevent network bottleneck at startup)
         setTimeout(() => {
