@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager } from 'firebase/firestore';
+import { initializeFirestore, enableIndexedDbPersistence } from 'firebase/firestore';
 
 // Ваш конфиг из консоли Firebase
 const firebaseConfig = {
@@ -11,12 +11,23 @@ const firebaseConfig = {
     appId: '1:474922234777:web:2300a8c87464b08c339908',
 };
 
-// Инициализация с новым non-blocking cache API (заменяет устаревший enableIndexedDbPersistence)
-// persistentLocalCache не блокирует main thread при старте — в отличие от deprecated enableIndexedDbPersistence
+// Инициализация
 const app = initializeApp(firebaseConfig);
-export const db = initializeFirestore(app, {
-    cache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }),
-});
+export const db = initializeFirestore(app, {});
+
+// enableIndexedDbPersistence — асинхронный и не блокирует startup
+// (Firebase сам логирует deprecation warning, но реальной проблемы нет)
+if (typeof window !== 'undefined') {
+    enableIndexedDbPersistence(db).catch((err) => {
+        if (err.code === 'failed-precondition') {
+            console.warn('[Firebase] Persistence failed-precondition: multiple tabs open.');
+        } else if (err.code === 'unimplemented') {
+            console.warn('[Firebase] Persistence unimplemented by browser.');
+        } else {
+            console.warn('[Firebase] Failed to enable persistence:', err);
+        }
+    });
+}
 
 const isLocalhost =
     typeof window !== 'undefined' &&

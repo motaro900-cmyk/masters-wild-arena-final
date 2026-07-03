@@ -436,27 +436,27 @@ export class SyncService {
                 const dbFriendIds = (data.friends || [])
                     .map((f: any) => (typeof f === 'object' ? f.id : f))
                     .filter(Boolean);
-                let resolvedFriends = [];
-                try {
-                    // Задаем таймаут 3 секунды на загрузку профилей друзей, чтобы не блокировать вход
-                    if (dbFriendIds.length > 0) {
-                        let friendTimeoutId: any;
-                        const friendTimeout = new Promise<never>((_, reject) => {
-                            friendTimeoutId = setTimeout(
-                                () => reject(new Error('Firebase friends fetch timeout')),
-                                3000,
-                            );
-                        });
+
+                // BOOT-CRITICAL FIX: Do NOT resolve friend profiles during startup.
+                // resolveFriendProfiles() makes N+1 Firestore requests and can add 1-5s to boot time.
+                // We keep raw friend IDs from the player document and resolve them in the background AFTER READY.
+                // The FriendsWindow will trigger a refresh when it opens, so this is safe.
+                const resolvedFriends: any[] = (data.friends || []).map((f: any) =>
+                    typeof f === 'object' ? f : { id: f }
+                );
+
+                // Schedule background friend profile resolution after boot completes
+                if (dbFriendIds.length > 0) {
+                    setTimeout(async () => {
                         try {
-                            resolvedFriends = await Promise.race([resolveFriendProfiles(dbFriendIds), friendTimeout]);
-                        } finally {
-                            clearTimeout(friendTimeoutId);
+                            const freshFriends = await resolveFriendProfiles(dbFriendIds);
+                            const { useGameStore } = await import('../store/useGameStore');
+                            useGameStore.setState({ friends: freshFriends, isSystemUpdate: true });
+                            console.log('[SyncService] Background friend profiles resolved:', freshFriends.length);
+                        } catch (err) {
+                            console.warn('[SyncService] Background friend resolution failed (non-critical):', err);
                         }
-                    } else {
-                        resolvedFriends = [];
-                    }
-                } catch (friendErr) {
-                    console.error('[SyncService] Failed to resolve friend profiles, using empty list:', friendErr);
+                    }, 3000); // 3s after boot starts — by then READY will have occurred
                 }
 
                 const mergeFriends = (parsed: any) => {
