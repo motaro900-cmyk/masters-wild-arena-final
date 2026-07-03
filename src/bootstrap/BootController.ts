@@ -380,7 +380,7 @@ class BootController {
                 // ── PHASE 1: INIT ──────────────────────────────────────────
                 this.transition('INIT');
                 setLoadingText('Загрузка локального кэша...');
-                await this.execute({ type: 'HYDRATE' });
+                await this.runAction({ type: 'HYDRATE' });
 
                 // Resolve player ID and prefixed userId immediately so we can fire Firestore load in parallel
                 const { useGameStore } = await import('../store/useGameStore');
@@ -404,15 +404,15 @@ class BootController {
                 // 1. VK resolution & Session Creation
                 const resolveVkPromise = (async () => {
                     setLoadingText('Авторизация и подключение к VK Bridge...');
-                    await this.execute({ type: 'RESOLVE_VK', payload: { setNotInVk, setInitError } });
+                    await this.runAction({ type: 'RESOLVE_VK', payload: { setNotInVk, setInitError } });
                     setLoadingText('Создание сессионного контекста...');
-                    await this.execute({ type: 'CREATE_SESSION' });
+                    await this.runAction({ type: 'CREATE_SESSION' });
                 })();
 
                 // 2. Firestore Load Profile (Network-bound) - starts immediately in parallel, awaits VK resolution to finalize
                 const profilePromise = (async () => {
                     setLoadingText('Загрузка игрового профиля...');
-                    await this.execute({
+                    await this.runAction({
                         type: 'LOAD_PROFILE',
                         payload: { setInitError, resolveVkPromise }
                     });
