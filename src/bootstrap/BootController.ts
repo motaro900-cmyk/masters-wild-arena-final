@@ -391,19 +391,7 @@ class BootController {
                 // ── PHASE 2: LOAD ──────────────────────────────────────────
                 this.transition('LOAD');
 
-                // Start parallel asset preload in the background
-                this.assetPreloadPromise = (async () => {
-                    try {
-                        const { AssetLoader } = await import('../engine/systems/AssetLoader');
-                        const manifest = AssetLoader.createGameManifest();
-                        await AssetLoader.getInstance().loadAssets(manifest);
-                        console.log('[BootController] Parallel assets preloading completed successfully.');
-                    } catch (e) {
-                        console.warn('[BootController] Parallel assets preloading error:', e);
-                    }
-                })();
-
-                // Parallelize Firestore LoadProfile (network-bound) and Pixi Engine Warmup (GPU-bound) (saves ~800ms - 1500ms)
+                // Parallelize Firestore LoadProfile (network-bound) and Pixi Engine Warmup (GPU-bound)
                 const profilePromise = (async () => {
                     setLoadingText('Загрузка игрового профиля...');
                     await this.execute({ type: 'LOAD_PROFILE', payload: { setInitError } });
@@ -1273,11 +1261,6 @@ class BootController {
     }
 
     private async initializeEngine(container: HTMLElement): Promise<void> {
-        // Wait for parallel asset preloading to complete if it was started
-        if (this.assetPreloadPromise) {
-            await this.assetPreloadPromise;
-        }
-
         // Parallelize JS chunks downloads to completely eliminate the sequential round-trip waterfall (saves ~1000ms - 1500ms)
         const [
             { initGameSystems },
@@ -1302,9 +1285,11 @@ class BootController {
         // Initialize Game Systems
         initGameSystems(this.timeOffset);
 
-        // Initialize Pixi Engine (subsequent import calls inside game.init will load instantly from the Vite module cache)
+        // Initialize Pixi Engine — WebGL context must exist before PIXI.Assets can load anything
         const game = new GameAppClass();
         await game.init(container);
+        // NOTE: item sprites lazy-preloading is handled inside GameApp.loadAssets()
+        // via requestIdleCallback(3000) AFTER engine is ready — no preload needed here.
     }
 
     private async finalizeStartup(): Promise<void> {
