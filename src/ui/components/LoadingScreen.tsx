@@ -6,12 +6,23 @@ interface LoadingScreenProps {
     loadingText: string;
 }
 
+const GAMEPLAY_TIPS = [
+    'Совет: Снаряжение в игре существенно повышает боевую мощь ваших зверей.',
+    'Совет: Каждый класс зверей имеет уникальные особенности маны и пассивные эффекты.',
+    'Совет: Улучшайте экипировку в Кузнице, чтобы разблокировать дополнительные свойства.',
+    'Совет: Погодные условия на арене (дождь, буря) могут менять ход сражения!',
+    'Совет: Выполняйте ежедневные задания для быстрого прогресса в Боевом Пропуске.',
+    'Совет: Вы можете объединяться с другими игроками в Кланы для общих бонусов.',
+    'Совет: Регулярно забирайте награды из календаря подарков, чтобы не упустить золото и кристаллы.',
+];
+
 /**
  * Полноэкранный загрузочный оверлей с анимацией спиннера
  * и текстом текущего шага инициализации.
  */
 export const LoadingScreen: React.FC<LoadingScreenProps> = ({ isLoading, loadingText }) => {
     const [showSlowWarning, setShowSlowWarning] = React.useState(false);
+    const [currentTipIndex, setCurrentTipIndex] = React.useState(0);
 
     React.useEffect(() => {
         if (!isLoading) {
@@ -19,12 +30,25 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({ isLoading, loading
             return;
         }
 
-        const timer = setTimeout(() => {
+        const warningTimer = setTimeout(() => {
             setShowSlowWarning(true);
         }, 15000);
 
-        return () => clearTimeout(timer);
+        // Cycle through gameplay tips every 2500ms
+        const tipTimer = setInterval(() => {
+            setCurrentTipIndex((prev) => (prev + 1) % GAMEPLAY_TIPS.length);
+        }, 3000);
+
+        return () => {
+            clearTimeout(warningTimer);
+            clearInterval(tipTimer);
+        };
     }, [isLoading]);
+
+    const isMobile = typeof window !== 'undefined' && /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
+    const bgUrl = isMobile
+        ? '/assets/images/backgrounds/bg_main_mobile.webp'
+        : '/assets/images/backgrounds/bg_main.webp';
 
     return (
         <AnimatePresence>
@@ -37,6 +61,9 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({ isLoading, loading
                         position: 'fixed',
                         inset: 0,
                         backgroundColor: '#0c0c0d',
+                        backgroundImage: `url(${bgUrl})`,
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center',
                         display: 'flex',
                         flexDirection: 'column',
                         alignItems: 'center',
@@ -47,13 +74,14 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({ isLoading, loading
                         pointerEvents: 'auto',
                     }}
                 >
-                    {/* Радиальный фон */}
+                    {/* Размытый темный оверлей для читаемости текста */}
                     <div
                         style={{
                             position: 'absolute',
                             inset: 0,
                             background:
-                                'radial-gradient(circle at center, rgba(30,22,12,0.35) 0%, rgba(10,7,5,0.95) 100%)',
+                                'radial-gradient(circle at center, rgba(10,8,6,0.85) 0%, rgba(5,4,3,0.98) 100%)',
+                            backdropFilter: 'blur(3px)',
                             pointerEvents: 'none',
                         }}
                     />
@@ -67,6 +95,7 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({ isLoading, loading
                             justifyContent: 'center',
                             position: 'relative',
                             zIndex: 10,
+                            padding: '0 20px',
                         }}
                     >
                         {/* Логотип */}
@@ -111,9 +140,35 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({ isLoading, loading
                                 textTransform: 'uppercase',
                                 fontFamily: "'Outfit', sans-serif",
                                 animation: 'ls-pulse 2s infinite ease-in-out',
+                                marginBottom: '40px',
                             }}
                         >
                             {loadingText}
+                        </div>
+
+                        {/* Gameplay Tips */}
+                        <div style={{ height: '50px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <AnimatePresence mode="wait">
+                                <motion.div
+                                    key={currentTipIndex}
+                                    initial={{ opacity: 0, y: 5 }}
+                                    animate={{ opacity: 0.8, y: 0 }}
+                                    exit={{ opacity: 0, y: -5 }}
+                                    transition={{ duration: 0.3 }}
+                                    style={{
+                                        fontSize: '13px',
+                                        color: '#FFE07D',
+                                        letterSpacing: '0.05em',
+                                        textAlign: 'center',
+                                        maxWidth: '480px',
+                                        lineHeight: '1.6',
+                                        fontFamily: "'Outfit', sans-serif",
+                                        textShadow: '0 2px 4px rgba(0,0,0,0.8)',
+                                    }}
+                                >
+                                    {GAMEPLAY_TIPS[currentTipIndex]}
+                                </motion.div>
+                            </AnimatePresence>
                         </div>
 
                         {/* Предупреждение о медленном соединении */}
