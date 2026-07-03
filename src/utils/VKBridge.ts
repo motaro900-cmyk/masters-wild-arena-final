@@ -432,6 +432,17 @@ export const getVkFriendsWhoPlay = async (): Promise<number[]> => {
 export const copyToClipboard = (text: string): boolean => {
     if (typeof window === 'undefined') return false;
 
+    // ── 0. Если запущен внутри VK Mini App, используем нативный API VK Bridge для копирования.
+    // Это обходит блокировку Clipboard API со стороны iframe sandbox.
+    if (bridge && isVkMiniApp()) {
+        try {
+            bridge.send('VKWebAppCopyText', { text });
+            return true;
+        } catch (bridgeErr) {
+            console.warn('VKWebAppCopyText failed, trying browser APIs:', bridgeErr);
+        }
+    }
+
     // 1. Попытка через современный Clipboard API
     if (navigator.clipboard && navigator.clipboard.writeText) {
         try {
@@ -527,10 +538,9 @@ export const shareBattleResult = async (params: {
 
     try {
         // Попытка открыть редактор историй на мобильных устройствах
-        const bgPath = params.isVictory
-            ? 'assets/images/sharing/share_victory.png'
-            : 'assets/images/sharing/share_defeat.png';
-        const bgUrl = `${window.location.origin}/${bgPath}`;
+        const bgUrl = params.isVictory
+            ? 'https://sun9-33.userapi.com/s/v1/ig2/-cikeD5OWMw7rAmGdS5R-4Qc7DT4SIpWg1pRLtwFYvxFV0_Kbi4aMAG4EWEvbjGBwT-DyJ6BcTogOAziGIGT6j8C.jpg?quality=95&as=32x57,48x86,72x129,108x193,160x287,240x430,360x645,480x860,540x967,640x1147,720x1290,1080x1935,1280x2293,1429x2560&from=bu&cs=1429x0'
+            : 'https://sun9-44.userapi.com/s/v1/ig2/vBq7o7uaFoArdRighVflBYTaFwa4Vdcy6QCUxv_0pUQv7EQBSPDP_uc-PGhcVGIEiGToCh5ZXrjeKQqtD7Lp_Aos.jpg?quality=95&as=32x57,48x86,72x129,108x193,160x287,240x430,360x645,480x860,540x967,640x1147,720x1290,1080x1935,1280x2293,1429x2560&from=bu&cs=1429x0';
         await bridge.send('VKWebAppShowStoryBox', {
             background_type: 'image',
             url: bgUrl,
@@ -675,12 +685,11 @@ export const openStoryBox = async (isVictory?: boolean): Promise<'shared' | 'can
         return 'shared';
     }
     try {
-        const bgPath = isVictory === true
-            ? 'assets/images/sharing/share_victory.png'
+        const bgUrl = isVictory === true
+            ? 'https://sun9-33.userapi.com/s/v1/ig2/-cikeD5OWMw7rAmGdS5R-4Qc7DT4SIpWg1pRLtwFYvxFV0_Kbi4aMAG4EWEvbjGBwT-DyJ6BcTogOAziGIGT6j8C.jpg?quality=95&as=32x57,48x86,72x129,108x193,160x287,240x430,360x645,480x860,540x967,640x1147,720x1290,1080x1935,1280x2293,1429x2560&from=bu&cs=1429x0'
             : isVictory === false
-              ? 'assets/images/sharing/share_defeat.png'
-              : 'assets/images/backgrounds/bg_main_mobile.webp';
-        const bgUrl = `${window.location.origin}/${bgPath}`;
+              ? 'https://sun9-44.userapi.com/s/v1/ig2/vBq7o7uaFoArdRighVflBYTaFwa4Vdcy6QCUxv_0pUQv7EQBSPDP_uc-PGhcVGIEiGToCh5ZXrjeKQqtD7Lp_Aos.jpg?quality=95&as=32x57,48x86,72x129,108x193,160x287,240x430,360x645,480x860,540x967,640x1147,720x1290,1080x1935,1280x2293,1429x2560&from=bu&cs=1429x0'
+              : `${window.location.origin}/assets/images/backgrounds/bg_main_mobile.webp`;
         await bridge.send('VKWebAppShowStoryBox', {
             background_type: 'image',
             url: bgUrl,
