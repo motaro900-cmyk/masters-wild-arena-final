@@ -48,13 +48,13 @@ export const isVkMiniApp = (): boolean => {
     // ── 3. Мобильный VK webview — AndroidBridge / webkit или UA-сигнатуры
     if (isMobileVKApp()) return true;
 
-    // ── 4. Реферер из домена VK
+    // ── 4. Реферер из домена VK (только в контексте фрейма или WebView)
     const hasVkReferrer =
         !!document.referrer &&
         (document.referrer.includes('vk.com') ||
             document.referrer.includes('vk-apps.com') ||
             document.referrer.includes('vk.ru'));
-    if (hasVkReferrer) return true;
+    if (hasVkReferrer && (window.self !== window.top || isMobileVKApp())) return true;
 
     // ── 5. Прочие маркеры
     const hasVkName = !!(window.name && window.name.includes('fXD'));

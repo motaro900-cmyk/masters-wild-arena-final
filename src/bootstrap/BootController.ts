@@ -38,13 +38,20 @@ const fetchWithRetry = async (
 ): Promise<Response> => {
     let lastErr: any = null;
     for (let i = 0; i < retries; i++) {
+        const start = Date.now();
         try {
+            console.log(`[BootController] Fetching ${url} (Attempt ${i + 1}/${retries})...`);
             const response = await fetch(url, options);
+            const duration = Date.now() - start;
+            console.log(`[BootController] Fetch ${url} (Attempt ${i + 1}/${retries}) resolved in ${duration}ms. Status: ${response.status} (${response.statusText})`);
             if (response.ok) return response;
             throw new Error(`Server returned status ${response.status}`);
-        } catch (err) {
+        } catch (err: any) {
+            const duration = Date.now() - start;
             lastErr = err;
-            console.warn(`[BootController] Fetch attempt ${i + 1}/${retries} failed for ${url}:`, err);
+            console.warn(
+                `[BootController] Fetch attempt ${i + 1}/${retries} failed for ${url} in ${duration}ms. Error: ${err.message || err}`,
+            );
             if (i < retries - 1) {
                 await new Promise((resolve) => setTimeout(resolve, delay));
             }
@@ -581,7 +588,7 @@ class BootController {
                     {
                         method: 'GET',
                         cache: 'no-cache',
-                        signal: AbortSignal.timeout(7000),
+                        signal: AbortSignal.timeout(10000),
                     },
                     2,
                     1500,
@@ -612,14 +619,14 @@ class BootController {
                 let response: Response;
                 try {
                     response = await fetch(url, {
-                        signal: AbortSignal.timeout(10000),
+                        signal: AbortSignal.timeout(15000),
                     });
                 } catch (fetchErr) {
                     // If network error, we can retry using fetchWithRetry
                     response = await fetchWithRetry(
                         url,
                         {
-                            signal: AbortSignal.timeout(10000),
+                            signal: AbortSignal.timeout(15000),
                         },
                         2, // 2 retries left
                         2000,
@@ -637,7 +644,7 @@ class BootController {
                     response = await fetchWithRetry(
                         url,
                         {
-                            signal: AbortSignal.timeout(10000),
+                            signal: AbortSignal.timeout(15000),
                         },
                         2,
                         2000,
@@ -723,7 +730,7 @@ class BootController {
                             'Время ожидания ответа от VK Bridge истекло. Пожалуйста, проверьте соединение с интернетом.',
                         ),
                     ),
-                15000,
+                25000,
             ),
         );
 
