@@ -18,12 +18,9 @@ export type BootAction =
     | { type: 'RESOLVE_VK'; payload: { setNotInVk: (val: boolean) => void; setInitError: (err: string) => void } }
     | { type: 'CREATE_SESSION' }
     | { type: 'LOAD_PROFILE'; payload: { setInitError: (err: string) => void } }
-    | { type: 'LOAD_QUESTS' }
+    | { type: 'LOAD_DERIVED_DATA' }
     | { type: 'LOAD_OPPONENT' }
     | { type: 'LOAD_CONFIG' }
-    | { type: 'LOAD_WEATHER' }
-    | { type: 'PRECOMPUTE_HUD' }
-    | { type: 'INITIALIZE_SYSTEMS'; payload: { container: HTMLElement } }
     | { type: 'MUTATE_STATE'; payload: { patch: any | ((state: any) => any) } }
     | { type: 'SYNC_DATA' }
     | { type: 'BEACON_SYNC' }
@@ -313,11 +310,11 @@ class BootController {
                     }
                     return await this.loadProfile(action.payload.setInitError);
                 }
-                case 'LOAD_QUESTS': {
+                case 'LOAD_DERIVED_DATA': {
                     if (this.state !== 'LOAD') {
-                        throw new Error(`[BootController] Invalid boot phase for LOAD_QUESTS: ${this.state}`);
+                        throw new Error(`[BootController] Invalid boot phase for LOAD_DERIVED_DATA: ${this.state}`);
                     }
-                    return await this.loadQuests();
+                    return await this.loadDerivedData();
                 }
                 case 'LOAD_OPPONENT': {
                     if (this.state !== 'LOAD') {
@@ -334,18 +331,6 @@ class BootController {
                         throw new Error(`[BootController] Invalid boot phase for LOAD_CONFIG: ${this.state}`);
                     }
                     return await this.loadConfig();
-                }
-                case 'LOAD_WEATHER': {
-                    if (this.state !== 'LOAD') {
-                        throw new Error(`[BootController] Invalid boot phase for LOAD_WEATHER: ${this.state}`);
-                    }
-                    return await this.loadWeather();
-                }
-                case 'PRECOMPUTE_HUD': {
-                    return await this.precomputeHUD();
-                }
-                case 'INITIALIZE_SYSTEMS': {
-                    return await this.ready(action.payload.container);
                 }
                 case 'MUTATE_STATE': {
                     const { useGameStore } = await import('../store/useGameStore');
@@ -418,9 +403,19 @@ class BootController {
                     }
                 })();
 
-                // ── LOAD_PROFILE ───────────────────────────────────────────
-                setLoadingText('Загрузка игрового профиля...');
-                await this.execute({ type: 'LOAD_PROFILE', payload: { setInitError } });
+                // Parallelize Firestore LoadProfile (network-bound) and Pixi Engine Warmup (GPU-bound) (saves ~800ms - 1500ms)
+                const profilePromise = (async () => {
+                    setLoadingText('Загрузка игрового профиля...');
+                    await this.execute({ type: 'LOAD_PROFILE', payload: { setInitError } });
+                })();
+
+                const enginePromise = (async () => {
+                    setLoadingText('Запуск игрового движка...');
+                    await this.initializeEngine(container);
+                })();
+
+                await Promise.all([profilePromise, enginePromise]);
+
                 const { useGameStore } = await import('../store/useGameStore');
                 const profileState = useGameStore.getState();
 
@@ -477,18 +472,6 @@ class BootController {
                     console.warn('[BootController] Telemetry failed to load:', telemetryErr);
                 }
 
-                // ── LOAD_QUESTS ────────────────────────────────────────────
-                setLoadingText('Загрузка ежедневных заданий...');
-                await this.execute({ type: 'LOAD_QUESTS' });
-                const questState = useGameStore.getState();
-                if (!(questState.dailyQuests && questState.dailyQuests.length > 0)) {
-                    this.recordBootIssue({
-                        phase: 'LOAD_QUESTS',
-                        severity: 'warning',
-                        message: 'dailyQuests is empty after LOAD_QUESTS',
-                    });
-                }
-
                 // ── LOAD_OPPONENT (Deferred) ──────────────────────────────
                 setLoadingText('Инициализация подбора игроков...');
                 await this.execute({ type: 'LOAD_OPPONENT' });
@@ -497,10 +480,19 @@ class BootController {
                 setLoadingText('Синхронизация игрового конфига...');
                 await this.execute({ type: 'LOAD_CONFIG' });
 
-                // ── LOAD_WEATHER ───────────────────────────────────────────
-                setLoadingText('Определение погодных условий...');
-                await this.execute({ type: 'LOAD_WEATHER' });
-                const weatherState = useGameStore.getState();
+                // ── LOAD_DERIVED_DATA ──────────────────────────────────────
+                setLoadingText('Подготовка интерфейса и квестов...');
+                await this.execute({ type: 'LOAD_DERIVED_DATA' });
+
+                // Validate derived state
+                const finalState = useGameStore.getState();
+                if (!(finalState.dailyQuests && finalState.dailyQuests.length > 0)) {
+                    this.recordBootIssue({
+                        phase: 'LOAD_QUESTS',
+                        severity: 'warning',
+                        message: 'dailyQuests is empty after LOAD_DERIVED_DATA',
+                    });
+                }
                 const weatherMap: Record<string, string> = {
                     forest: 'rain',
                     desert: 'sandstorm',
@@ -510,50 +502,42 @@ class BootController {
                 };
                 if (
                     !(
-                        weatherState.activeMapId &&
-                        weatherState.battleWeatherState &&
-                        weatherMap[weatherState.activeMapId] === weatherState.battleWeatherState
+                        finalState.activeMapId &&
+                        finalState.battleWeatherState &&
+                        weatherMap[finalState.activeMapId] === finalState.battleWeatherState
                     )
                 ) {
-                    // WARNING only — weather is non-critical cosmetic state
                     this.recordBootIssue({
                         phase: 'LOAD_WEATHER',
                         severity: 'warning',
-                        message: `Weather mismatch: map=${weatherState.activeMapId}, got=${weatherState.battleWeatherState}`,
+                        message: `Weather mismatch: map=${finalState.activeMapId}, got=${finalState.battleWeatherState}`,
                     });
                 }
-
-                // ── PRECOMPUTE_HUD ─────────────────────────────────────────
-                setLoadingText('Подготовка интерфейса...');
-                await this.execute({ type: 'PRECOMPUTE_HUD' });
-                const hudState = useGameStore.getState();
                 const { getRankInfo } = await import('../configs/RankSystem');
-                const rankInfo = getRankInfo(hudState.rating || hudState.trophies || 0);
+                const rankInfo = getRankInfo(finalState.rating || finalState.trophies || 0);
                 const avatarMatches =
-                    hudState.hudPlayerAvatar === hudState.avatar ||
-                    (hudState.avatar &&
-                        hudState.avatar.startsWith('sprite:') &&
-                        hudState.hudPlayerAvatar ===
-                            (hudState.vkUser?.photo200 ||
-                                hudState.vkUser?.photo_200 ||
-                                hudState.vkUser?.photo ||
+                    finalState.hudPlayerAvatar === finalState.avatar ||
+                    (finalState.avatar &&
+                        finalState.avatar.startsWith('sprite:') &&
+                        finalState.hudPlayerAvatar ===
+                            (finalState.vkUser?.photo200 ||
+                                finalState.vkUser?.photo_200 ||
+                                finalState.vkUser?.photo ||
                                 '/assets/images/avatars/panda.webp'));
-                const rankMatches = hudState.hudPlayerRank && hudState.hudPlayerRank.name === rankInfo.name;
+                const rankMatches = finalState.hudPlayerRank && finalState.hudPlayerRank.name === rankInfo.name;
                 const opponentResolved =
-                    !hudState.activeRankedOpponent ||
-                    (hudState.hudEnemyLevel === hudState.activeRankedOpponent.level &&
-                        hudState.hudEnemyRating === hudState.activeRankedOpponent.rating);
+                    !finalState.activeRankedOpponent ||
+                    (finalState.hudEnemyLevel === finalState.activeRankedOpponent.level &&
+                        finalState.hudEnemyRating === finalState.activeRankedOpponent.rating);
                 if (!(avatarMatches && rankMatches && opponentResolved)) {
-                    // WARNING only — HUD values are cosmetic, game can recover them
                     this.recordBootIssue({
                         phase: 'PRECOMPUTE_HUD',
                         severity: 'warning',
-                        message: 'HUD derived values have inconsistencies',
+                        message: 'HUD derived values have inconsistencies after LOAD_DERIVED_DATA',
                     });
                 }
 
                 // ── SESSION CHECK ──────────────────────────────────────────
-                const finalState = useGameStore.getState();
                 if (!finalState.sessionToken) {
                     // FATAL — session is required for sync and security
                     this.recordBootIssue({
@@ -585,9 +569,9 @@ class BootController {
                     );
                 }
 
-                // All non-fatal — proceed to READY
+                // All non-fatal — proceed to finalize startup and transition to READY
                 setLoadingText('Инициализация игровых систем...');
-                await this.execute({ type: 'INITIALIZE_SYSTEMS', payload: { container } });
+                await this.finalizeStartup();
                 this.endDiagnostic('BootController_Total_Init', 'SUCCESS');
 
                 if (window.location.search.includes('debugStartup=true')) {
@@ -817,13 +801,7 @@ class BootController {
                 }
             }
 
-            if (this.vkUser) {
-                const { useGameStore } = await import('../store/useGameStore');
-                useGameStore.setState({ vkUser: this.vkUser, isSystemUpdate: true });
-                if (this.vkUser.photo200 || this.vkUser.photo) {
-                    useGameStore.setState({ avatar: this.vkUser.photo200 || this.vkUser.photo, isSystemUpdate: true });
-                }
-            }
+            // Note: vkUser and avatar are assigned to class properties and will be batched into the final setState at the end of resolveVK
         })();
 
         // Timeout fallback for VK Bridge request
@@ -855,11 +833,6 @@ class BootController {
                     photo: '/assets/images/avatars/panda.webp',
                     photo200: '/assets/images/avatars/panda.webp',
                 };
-                const { useGameStore } = await import('../store/useGameStore');
-                useGameStore.setState({ vkUser: this.vkUser, isSystemUpdate: true });
-                if (this.vkUser.photo200 || this.vkUser.photo) {
-                    useGameStore.setState({ avatar: this.vkUser.photo200 || this.vkUser.photo, isSystemUpdate: true });
-                }
                 // Ensure other critical tasks (like verifyPromise) are resolved
                 await Promise.all([timePromise, verifyPromise]);
             } else {
@@ -867,16 +840,23 @@ class BootController {
             }
         }
 
-        // Set explicit authState for debug/telemetry/security observability
+        // Set explicit authState, vkUser, and avatar in a single batched state update
         const { useGameStore } = await import('../store/useGameStore');
-        useGameStore.setState({
+        const finalPatch: any = {
             authState: {
                 vkVerified: !isLocalhost,
                 verifiedAt: Date.now(),
                 source: isLocalhost ? 'localhost' : 'signature',
             },
             isSystemUpdate: true,
-        });
+        };
+        if (this.vkUser) {
+            finalPatch.vkUser = this.vkUser;
+            if (this.vkUser.photo200 || this.vkUser.photo) {
+                finalPatch.avatar = this.vkUser.photo200 || this.vkUser.photo;
+            }
+        }
+        useGameStore.setState(finalPatch);
     }
 
     public async loadProfile(_setInitError: (err: string) => void): Promise<void> {
@@ -1012,10 +992,9 @@ class BootController {
         useGameStore.setState({
             isAdmin,
             isDeveloper: isAdmin,
+            profileStatus: 'loaded',
             isSystemUpdate: true,
         });
-
-        useGameStore.setState({ profileStatus: 'loaded', isSystemUpdate: true });
     }
 
     private async resolveAdminStatus(playerId: string): Promise<boolean> {
@@ -1108,30 +1087,25 @@ class BootController {
         console.log('[BootController] Profile fallbacks applied:', { playerId, name, avatar, level });
     }
 
-    private async loadQuests(): Promise<void> {
+    private async loadDerivedData(): Promise<void> {
         const { useGameStore } = await import('../store/useGameStore');
+        const { getRankInfo } = await import('../configs/RankSystem');
+        const state = useGameStore.getState();
 
-        // Get quests from remote profile data
+        const patch: any = { isSystemUpdate: true };
+
+        // 1. Quests Setup
         const fbQuests = this.remoteProfileData?.dailyQuests;
         const fbBpQuests = this.remoteProfileData?.bpDailyQuests;
         const fbWeekly = this.remoteProfileData?.weeklyQuests;
 
         if (fbQuests && fbQuests.length > 0) {
-            console.log('[BootController] Restoring quests from Firestore snapshot (Daily Quests Rule enforced).');
-            useGameStore.setState({
-                dailyQuests: fbQuests,
-                bpDailyQuests: fbBpQuests || [],
-                weeklyQuests: fbWeekly || [],
-                lastDailyRefresh: this.remoteProfileData.lastDailyRefresh || Date.now(),
-                lastWeeklyQuestReset: this.remoteProfileData.lastWeeklyQuestReset || Date.now(),
-                isSystemUpdate: true,
-            });
-
-            // Verify local state consistency
-            const state = useGameStore.getState();
-            if (!state.dailyQuests || state.dailyQuests.length === 0) {
-                console.warn('[BootController] Quest mismatch: state empty but backend had data. Continuing boot.');
-            }
+            console.log('[BootController] Restoring quests from Firestore (Daily Quests Rule enforced).');
+            patch.dailyQuests = fbQuests;
+            patch.bpDailyQuests = fbBpQuests || [];
+            patch.weeklyQuests = fbWeekly || [];
+            patch.lastDailyRefresh = this.remoteProfileData.lastDailyRefresh || Date.now();
+            patch.lastWeeklyQuestReset = this.remoteProfileData.lastWeeklyQuestReset || Date.now();
         } else {
             console.log('[BootController] Generating quests in memory (Guest/New/Offline).');
             const { QUESTS_POOL, BP_DAILY_QUESTS_POOL } = await import('../configs/QuestsConfig');
@@ -1157,15 +1131,83 @@ class BootController {
                 isClaimed: false,
             }));
 
-            useGameStore.setState({
-                dailyQuests: selected,
-                bpDailyQuests: selectedBp,
-                weeklyQuests: weekly,
-                lastDailyRefresh: Date.now(),
-                lastWeeklyQuestReset: Date.now(),
-                isSystemUpdate: true,
-            });
+            patch.dailyQuests = selected;
+            patch.bpDailyQuests = selectedBp;
+            patch.weeklyQuests = weekly;
+            patch.lastDailyRefresh = Date.now();
+            patch.lastWeeklyQuestReset = Date.now();
         }
+
+        // 2. Weather Setup
+        const activeMapId = state.activeMapId || 'forest';
+        const weatherMap: Record<string, string> = {
+            forest: 'rain',
+            desert: 'sandstorm',
+            lava: 'ashfall',
+            snow: 'blizzard',
+            meadow: 'clear',
+        };
+        let weather = weatherMap[activeMapId];
+        let weatherSource = 'map';
+        if (!weather) {
+            console.warn(`[BootController] Weather mapping missing for map: ${activeMapId}, fallback to clear`);
+            this.recordBootIssue({
+                phase: 'LOAD_WEATHER',
+                severity: 'warning',
+                message: `Weather mapping missing for map: ${activeMapId}, fallback to clear`,
+            });
+            weather = 'clear';
+            weatherSource = 'fallback_unknown_map';
+        }
+        patch.activeMapId = activeMapId;
+        patch.battleWeatherState = weather;
+        patch.weatherSource = weatherSource;
+
+        // 3. HUD Setup
+        const selectedHeroId = state.selectedHeroId || 'panda';
+        const heroLevel = state.heroes?.[selectedHeroId]?.level || 1;
+        const playerRating = state.rating || state.trophies || 0;
+        const playerRank = getRankInfo(playerRating);
+        const rawAvatar = state.avatar;
+        const vkUser = state.vkUser;
+
+        const playerAvatar =
+            rawAvatar && !rawAvatar.startsWith('sprite:')
+                ? rawAvatar
+                : vkUser?.photo200 || vkUser?.photo_200 || vkUser?.photo || '/assets/images/avatars/panda.webp';
+
+        const activeRankedOpponent = state.activeRankedOpponent;
+        let enemyLevel = 1;
+        let enemyRating = 0;
+        if (state.battleMode === 'PVE' && state.activePveEnemy) {
+            enemyLevel = state.activePveEnemy.level || 1;
+            enemyRating = Math.max(0, enemyLevel * 180);
+        } else if ((state.battleMode === 'RANKED' || state.battleMode === 'WARMUP') && activeRankedOpponent) {
+            enemyLevel = activeRankedOpponent.level || 1;
+            enemyRating = activeRankedOpponent.rating || 0;
+        } else {
+            enemyLevel = Math.max(1, heroLevel);
+            enemyRating = Math.max(0, playerRating);
+        }
+
+        const enemyRank = getRankInfo(enemyRating);
+        let enemyAvatar = '/assets/images/avatars/panda.webp';
+        if (state.battleMode === 'PVE' && state.activePveEnemy) {
+            enemyAvatar = state.activePveEnemy.image || '/assets/images/avatars/panda.webp';
+        } else if (activeRankedOpponent?.avatar) {
+            enemyAvatar = activeRankedOpponent.avatar;
+        }
+
+        patch.hudPlayerRank = playerRank;
+        patch.hudPlayerAvatar = playerAvatar;
+        patch.hudEnemyLevel = enemyLevel;
+        patch.hudEnemyRating = enemyRating;
+        patch.hudEnemyRank = enemyRank;
+        patch.hudEnemyAvatar = enemyAvatar;
+        patch.hudPrecomputed = true;
+
+        useGameStore.setState(patch);
+        console.log('[BootController] Quests, weather, and HUD updates batched and applied successfully.');
     }
 
     private async loadOpponent(): Promise<void> {
@@ -1205,95 +1247,6 @@ class BootController {
         console.log('[BootController] Game configurations verified.');
     }
 
-    private async loadWeather(): Promise<void> {
-        const { useGameStore } = await import('../store/useGameStore');
-        const state = useGameStore.getState();
-
-        const activeMapId = state.activeMapId || 'forest';
-
-        const weatherMap: Record<string, string> = {
-            forest: 'rain',
-            desert: 'sandstorm',
-            lava: 'ashfall',
-            snow: 'blizzard',
-            meadow: 'clear',
-        };
-
-        let weather = weatherMap[activeMapId];
-        let weatherSource = 'map';
-        if (!weather) {
-            console.warn(`[BootController] Weather mapping missing for map: ${activeMapId}, fallback to clear`);
-            this.recordBootIssue({
-                phase: 'LOAD_WEATHER',
-                severity: 'warning',
-                message: `Weather mapping missing for map: ${activeMapId}, fallback to clear`,
-            });
-            weather = 'clear';
-            weatherSource = 'fallback_unknown_map';
-        }
-
-        useGameStore.setState({
-            activeMapId,
-            battleWeatherState: weather,
-            weatherSource,
-            isSystemUpdate: true,
-        });
-        console.log('[BootController] Weather derived successfully:', { activeMapId, battleWeatherState: weather });
-    }
-
-    private async precomputeHUD(): Promise<void> {
-        const { useGameStore } = await import('../store/useGameStore');
-        const { getRankInfo } = await import('../configs/RankSystem');
-        const state = useGameStore.getState();
-
-        console.log('[BootController] Precomputing HUD derived values...');
-        const selectedHeroId = state.selectedHeroId || 'panda';
-        const heroLevel = state.heroes?.[selectedHeroId]?.level || 1;
-        const playerRating = state.rating || state.trophies || 0;
-        const playerRank = getRankInfo(playerRating);
-        const rawAvatar = state.avatar;
-        const vkUser = state.vkUser;
-
-        const playerAvatar =
-            rawAvatar && !rawAvatar.startsWith('sprite:')
-                ? rawAvatar
-                : vkUser?.photo200 || vkUser?.photo_200 || vkUser?.photo || '/assets/images/avatars/panda.webp';
-
-        const activeRankedOpponent = state.activeRankedOpponent;
-
-        let enemyLevel = 1;
-        let enemyRating = 0;
-        if (state.battleMode === 'PVE' && state.activePveEnemy) {
-            enemyLevel = state.activePveEnemy.level || 1;
-            enemyRating = Math.max(0, enemyLevel * 180);
-        } else if ((state.battleMode === 'RANKED' || state.battleMode === 'WARMUP') && activeRankedOpponent) {
-            enemyLevel = activeRankedOpponent.level || 1;
-            enemyRating = activeRankedOpponent.rating || 0;
-        } else {
-            enemyLevel = Math.max(1, heroLevel);
-            enemyRating = Math.max(0, playerRating);
-        }
-
-        const enemyRank = getRankInfo(enemyRating);
-        let enemyAvatar = '/assets/images/avatars/panda.webp';
-        if (state.battleMode === 'PVE' && state.activePveEnemy) {
-            enemyAvatar = state.activePveEnemy.image || '/assets/images/avatars/panda.webp';
-        } else if (activeRankedOpponent?.avatar) {
-            enemyAvatar = activeRankedOpponent.avatar;
-        }
-
-        useGameStore.setState({
-            hudPlayerRank: playerRank,
-            hudPlayerAvatar: playerAvatar,
-            hudEnemyLevel: enemyLevel,
-            hudEnemyRating: enemyRating,
-            hudEnemyRank: enemyRank,
-            hudEnemyAvatar: enemyAvatar,
-            hudPrecomputed: true,
-            isSystemUpdate: true,
-        });
-    }
-
     public async calibrateTime(): Promise<void> {
         try {
             const start = Date.now();
@@ -1319,25 +1272,48 @@ class BootController {
         }
     }
 
-    public async ready(container: HTMLElement): Promise<void> {
+    private async initializeEngine(container: HTMLElement): Promise<void> {
         // Wait for parallel asset preloading to complete if it was started
         if (this.assetPreloadPromise) {
             await this.assetPreloadPromise;
         }
 
+        // Parallelize JS chunks downloads to completely eliminate the sequential round-trip waterfall (saves ~1000ms - 1500ms)
+        const [
+            { initGameSystems },
+            { GameApp: GameAppClass },
+            _initSubscriptions,
+            _syncService,
+            _useGameStore,
+            _playerSnapshotService,
+            _sceneManager,
+            _mainScreen
+        ] = await Promise.all([
+            import('./initGameSystems'),
+            import('../GameApp'),
+            import('./initSubscriptions'),
+            import('../services/SyncService'),
+            import('../store/useGameStore'),
+            import('../services/PlayerSnapshotService'),
+            import('../engine/core/SceneManager'),
+            import('../ui/screens/MainScreen')
+        ]);
+
         // Initialize Game Systems
-        const { initGameSystems, setupReferralAndGifts } = await import('./initGameSystems');
         initGameSystems(this.timeOffset);
 
-        // Initialize Pixi Engine
-        const GameAppClass = (await import('../GameApp')).GameApp;
+        // Initialize Pixi Engine (subsequent import calls inside game.init will load instantly from the Vite module cache)
         const game = new GameAppClass();
         await game.init(container);
+    }
 
-        // Setup real-time subscriptions
+    private async finalizeStartup(): Promise<void> {
         const { initSubscriptions } = await import('./initSubscriptions');
         const { SyncService } = await import('../services/SyncService');
         const { useGameStore } = await import('../store/useGameStore');
+        const { setupReferralAndGifts } = await import('./initGameSystems');
+
+        // Setup real-time subscriptions using loaded profile state
         const state = useGameStore.getState();
         const prefixedId = SyncService.getPrefixedUserId(state.vkUser, state.playerId);
         await initSubscriptions(this.userId, prefixedId);
@@ -1346,7 +1322,6 @@ class BootController {
         // Transition to READY status
         this.transition('READY');
 
-        // NOW, since we are READY, direct writes are allowed.
         // Save seen welcome messages flag
         const welcomeKey = `seen_welcome_msgs_${state.playerId}`;
         window.localStorage.setItem(welcomeKey, 'true');
@@ -1361,10 +1336,12 @@ class BootController {
         });
         this.needPostBootSync = false;
 
-        // syncService.startAutoSync(60000); // Disabled periodic auto-sync in favor of event-based sync and beaconFlush
-
         const duration = Date.now() - this.bootStartTime;
         console.log(`[Performance] 🚀 Game successfully booted. Total loading time: ${duration}ms`);
+        if (typeof window !== 'undefined' && (window as any).__bootStart) {
+            const absoluteBoot = performance.now() - (window as any).__bootStart;
+            console.log(`[METRIC] TOTAL_BOOT = ${absoluteBoot.toFixed(1)}ms`);
+        }
 
         // Рекалибровка времени при возвращении во вкладку (защита от накрутки временем в фоне)
         if (typeof document !== 'undefined') {

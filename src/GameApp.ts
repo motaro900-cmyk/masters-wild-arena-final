@@ -113,7 +113,10 @@ export class GameApp {
                     this.applyPerformanceSettings(state.isPowerSaving, state.isMobile);
                 }
                 if (state.level !== prevState.level) {
-                    this.loadItemSpritesForLevel(state.level);
+                    const isReady = (window as any).bootController?.isReady?.() ?? false;
+                    if (isReady) {
+                        this.loadItemSpritesForLevel(state.level);
+                    }
                 }
                 if (state.activeScreen !== prevState.activeScreen) {
                     this.handleScreenTicker(state.activeScreen);
@@ -399,8 +402,8 @@ export class GameApp {
     }
 
     private async loadAssets(): Promise<void> {
-        const manifest = AssetLoader.createGameManifest();
-        await this.assetLoader.loadAssets(manifest);
+        // Core manifest assets are already fully loaded and verified by BootController.ready()
+        // before GameApp is instantiated, so we skip redundant loadAssets() checks to save CPU cycles.
 
         // Lazy load item sprites based on current player level (utilizes idle callback to avoid network bottleneck on startup)
         const triggerPreload = () => {

@@ -11,6 +11,10 @@ interface SafeGameLayoutProps {
 }
 
 export const SafeGameLayout = ({ isPortrait = false, isMobile = false }: SafeGameLayoutProps) => {
+    React.useEffect(() => {
+        console.log('[METRIC] FIRST_INTERACTIVE', performance.now());
+    }, []);
+
     const [dismissedRotationWarning, setDismissedRotationWarning] = React.useState(false);
     const [showItemBuilder, setShowItemBuilder] = React.useState(false);
 
