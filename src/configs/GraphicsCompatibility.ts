@@ -102,3 +102,8 @@ export function getNextRetryVersion(currentVersion: string): string {
     }
     return '1.2.0';
 }
+
+// Eagerly kick off fetch in the background on module import
+if (typeof window !== 'undefined') {
+    fetchCompatibilityRules().catch(() => {});
+}

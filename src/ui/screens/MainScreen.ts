@@ -33,13 +33,12 @@ export class MainScreen extends PIXI.Container {
 
     private async init() {
         try {
-            // [Lead Architect]: High-res background is already preloaded in index.html
-            // and displayed as a placeholder in main.tsx (React).
-            // We just need to load it into PixiJS textures now.
-            console.log('[MainScreen] Loading high-res background:', AssetsMap.BACKGROUNDS.MAIN_MENU);
+            const isMobile = typeof navigator !== 'undefined' && /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            const bgPath = isMobile ? AssetsMap.BACKGROUNDS.MAIN_MENU_MOBILE : AssetsMap.BACKGROUNDS.MAIN_MENU;
+            console.log('[MainScreen] Loading background:', bgPath);
 
-            // 2. Load High-Res background
-            const bgAsset = await PIXI.Assets.load(AssetsMap.BACKGROUNDS.MAIN_MENU);
+            // 2. Load background
+            const bgAsset = await PIXI.Assets.load(bgPath);
             const bgTex = bgAsset instanceof PIXI.Texture ? bgAsset : null;
             if (!bgTex) {
                 throw new Error('Invalid background texture loaded');

@@ -49,6 +49,7 @@ export class SyncService {
     private syncDisabled: boolean = false;
     private warnedNonVK: boolean = false;
     private isDirty: boolean = true;
+    private lastWriteTime: number = 0;
 
     // ─── Helpers ───────────────────────────────────────────────────────────────
 
@@ -191,7 +192,7 @@ export class SyncService {
 
     // ─── Core sync ─────────────────────────────────────────────────────────────
 
-    public async syncPlayerData(): Promise<void> {
+    public async syncPlayerData(force = false): Promise<void> {
         const state = useGameStore.getState();
         if (state.isOfflineSession) {
             console.warn('[SyncService] syncPlayerData: Blocked write since this is an offline session fallback.');
@@ -211,6 +212,16 @@ export class SyncService {
             console.warn('[SyncService] syncPlayerData: skipped, BootController not READY.');
             return Promise.resolve();
         }
+
+        // Throttle Firestore writes: min 15 seconds between non-forced writes to prevent network storms
+        const now = Date.now();
+        const minWriteInterval = 15000;
+        if (!force && (now - this.lastWriteTime < minWriteInterval)) {
+            const remaining = minWriteInterval - (now - this.lastWriteTime);
+            this.debouncedSync(remaining);
+            return Promise.resolve();
+        }
+        this.lastWriteTime = now;
 
         return new Promise<void>((resolve, reject) => {
             this.writeChain = this.writeChain
@@ -365,7 +376,7 @@ export class SyncService {
             clearTimeout(this.syncTimeout);
             this.syncTimeout = null;
         }
-        this.syncPlayerData().catch(() => {});
+        this.syncPlayerData(true).catch(() => {});
     }
 
     public disableSync(): void {

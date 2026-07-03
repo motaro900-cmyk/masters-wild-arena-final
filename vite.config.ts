@@ -130,6 +130,7 @@ export default defineConfig({
     __BUILD_TIME__: buildTime,
   },
   esbuild: {
+    pure: isBuild ? ['console.log', 'console.info', 'console.debug'] : [],
     drop: ['debugger'],
   },
 });

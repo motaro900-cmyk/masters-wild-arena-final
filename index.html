@@ -19,12 +19,20 @@
     href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Montserrat:wght@400;700;900&family=Outfit:wght@400;700;800;900&family=Philosopher:ital,wght@0,400;0,700;1,400;1,700&display=swap"
     rel="stylesheet">
   
-  <!-- Preload Critical Assets -->
-  <link rel="preload" href="/assets/images/backgrounds/bg_main.webp" as="image">
+  <!-- Dynamic device-aware preloading for main menu background -->
   <script>
-    // [Optimization] Immediately "use" the preloaded resource to satisfy browser checks
-    // This prevents the "Preloaded but not used within a few seconds" warning.
-    (new Image()).src = "/assets/images/backgrounds/bg_main.webp";
+    (function() {
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      const bgUrl = isMobile ? "/assets/images/backgrounds/bg_main_mobile.webp" : "/assets/images/backgrounds/bg_main.webp";
+      
+      const link = document.createElement('link');
+      link.rel = 'preload';
+      link.as = 'image';
+      link.href = bgUrl;
+      document.head.appendChild(link);
+
+      (new Image()).src = bgUrl;
+    })();
 
     // [Optimization] Warm up the API serverless functions in parallel with bundle downloads
     fetch('./api/time', { method: 'GET', cache: 'no-cache' }).catch(function() {});

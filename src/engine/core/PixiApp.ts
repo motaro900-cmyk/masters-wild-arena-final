@@ -209,8 +209,8 @@ export class PixiApp {
                     isIOS ||
                     (typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent));
 
-                // Load compatibility rules dynamically
-                await fetchCompatibilityRules();
+                // Load compatibility rules dynamically in background (or reuse pre-fetched rules)
+                fetchCompatibilityRules().catch(() => {});
 
                 const state = useGameStore.getState();
                 const rendererPref = state.rendererPreference || 'auto';
