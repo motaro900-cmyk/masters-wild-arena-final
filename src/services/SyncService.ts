@@ -464,6 +464,7 @@ export class SyncService {
                     parsed.friends = resolvedFriends.map((rf) => {
                         const oldFriend = oldFriends.find((of: any) => of.id === rf.id);
                         return {
+                            ...oldFriend,
                             ...rf,
                             giftSent: oldFriend ? !!oldFriend.giftSent : false,
                             hasGift: oldFriend ? !!oldFriend.hasGift : false,

@@ -424,9 +424,9 @@ export class GameApp {
             };
 
             if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
-                window.requestIdleCallback(() => triggerPreload(), { timeout: 5000 });
+                window.requestIdleCallback(() => triggerPreload(), { timeout: 1500 });
             } else {
-                setTimeout(triggerPreload, 5000);
+                setTimeout(triggerPreload, 1500);
             }
         };
 
@@ -436,11 +436,11 @@ export class GameApp {
             if (bc && bc.isReady && bc.isReady()) {
                 scheduleItemPreload();
             } else {
-                // Not ready yet — check again in 500ms
-                setTimeout(waitForReadyThenPreload, 500);
+                // Not ready yet — check again in 200ms
+                setTimeout(waitForReadyThenPreload, 200);
             }
         };
-        setTimeout(waitForReadyThenPreload, 500);
+        setTimeout(waitForReadyThenPreload, 200);
 
         // Background preload next-scene textures and arena assets (delayed to prevent network bottleneck at startup)
         setTimeout(() => {
@@ -457,7 +457,7 @@ export class GameApp {
             } catch (err) {
                 console.error('❌ Background general asset preloading failed:', err);
             }
-        }, 5000);
+        }, 1000);
     }
 
     private applyPerformanceSettings(isPowerSaving: boolean, isMobile: boolean = false): void {

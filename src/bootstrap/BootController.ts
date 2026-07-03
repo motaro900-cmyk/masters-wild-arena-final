@@ -974,12 +974,20 @@ class BootController {
         // Apply profile fallback generator inside LOAD phase
         await this.fallbackProfileGenerator();
 
-        // Calculate and apply admin status
+        // Calculate and apply admin status in the background to prevent network query from blocking startup
         const finalState = useGameStore.getState();
-        const isAdmin = await this.resolveAdminStatus(finalState.playerId);
+        this.resolveAdminStatus(finalState.playerId).then((isAdmin) => {
+            useGameStore.setState({
+                isAdmin,
+                isDeveloper: isAdmin,
+                isSystemUpdate: true,
+            });
+            console.log('[BootController] Background admin status resolved:', isAdmin);
+        }).catch((err) => {
+            console.warn('[BootController] Background admin status resolution failed:', err);
+        });
+
         useGameStore.setState({
-            isAdmin,
-            isDeveloper: isAdmin,
             profileStatus: 'loaded',
             isSystemUpdate: true,
         });
@@ -1265,6 +1273,7 @@ class BootController {
         const [
             { initGameSystems },
             { GameApp: GameAppClass },
+            { AssetLoader },
             _initSubscriptions,
             _syncService,
             _useGameStore,
@@ -1274,6 +1283,7 @@ class BootController {
         ] = await Promise.all([
             import('./initGameSystems'),
             import('../GameApp'),
+            import('../engine/systems/AssetLoader'),
             import('./initSubscriptions'),
             import('../services/SyncService'),
             import('../store/useGameStore'),
@@ -1288,8 +1298,15 @@ class BootController {
         // Initialize Pixi Engine — WebGL context must exist before PIXI.Assets can load anything
         const game = new GameAppClass();
         await game.init(container);
-        // NOTE: item sprites lazy-preloading is handled inside GameApp.loadAssets()
-        // via requestIdleCallback(3000) AFTER engine is ready — no preload needed here.
+
+        // Preload core manifest assets and items atlas now that Pixi WebGL context is ready
+        try {
+            const manifest = AssetLoader.createGameManifest();
+            await AssetLoader.getInstance().loadAssets(manifest);
+            console.log('[BootController] Critical assets and item atlas preloading completed successfully.');
+        } catch (e) {
+            console.warn('[BootController] Critical assets preloading error:', e);
+        }
     }
 
     private async finalizeStartup(): Promise<void> {
