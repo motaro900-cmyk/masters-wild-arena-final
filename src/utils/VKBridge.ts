@@ -510,10 +510,27 @@ export const shareBattleResult = async (params: {
         return copied ? 'copied' : 'failed';
     }
 
+    // Если не мобильный — сразу переходим к шарингу ссылки на стену (десктопный вариант)
+    if (!isMobilePlatform()) {
+        let shareSuccess = false;
+        try {
+            await bridge.send('VKWebAppShare', {
+                link: `https://vk.com/app${import.meta.env.VITE_VK_APP_ID || '54585995'}`,
+            });
+            shareSuccess = true;
+        } catch (shareErr) {
+            console.warn('VKWebAppShare failed:', shareErr);
+        }
+        const copied = copyToClipboard(text);
+        return shareSuccess ? 'posted' : (copied ? 'copied' : 'failed');
+    }
+
     try {
-        // Попытка открыть редактор историй (в первую очередь для мобильных)
-        // Используем красивый фон из папки backgrounds
-        const bgUrl = `${window.location.origin}/assets/images/backgrounds/bg_main_mobile.webp`;
+        // Попытка открыть редактор историй на мобильных устройствах
+        const bgPath = params.isVictory
+            ? 'assets/images/sharing/share_victory.png'
+            : 'assets/images/sharing/share_defeat.png';
+        const bgUrl = `${window.location.origin}/${bgPath}`;
         await bridge.send('VKWebAppShowStoryBox', {
             background_type: 'image',
             url: bgUrl,
@@ -543,7 +560,7 @@ export const shareBattleResult = async (params: {
             return copied ? 'copied' : 'failed';
         }
 
-        // Пытаемся открыть стандартный шаринг ссылки ВК (работает на десктопе)
+        // Пытаемся открыть стандартный шаринг ссылки ВК в качестве запасного варианта
         let shareSuccess = false;
         try {
             await bridge.send('VKWebAppShare', {
@@ -629,20 +646,41 @@ export const openExternalUrl = async (url: string): Promise<boolean> => {
     }
 };
 
+export const isMobilePlatform = (): boolean => {
+    if (typeof window === 'undefined') return false;
+    const params = new URLSearchParams(window.location.search);
+    const vkPlatform = params.get('vk_platform');
+    
+    // Если vk_platform передан, проверяем начинается ли он с mobile_
+    if (vkPlatform) {
+        return vkPlatform.startsWith('mobile_');
+    }
+    
+    // Вспомогательный чекер по User Agent
+    const ua = navigator.userAgent.toLowerCase();
+    return /mobile|android|iphone|ipad|phone/i.test(ua);
+};
+
 /**
  * Открывает редактор историй ВК с фоном игры.
- * Используется кнопкой "Опубликовать Историю" внутри SharePreviewModal.
+ * Использует разные изображения для победы и поражения.
  */
-export const openStoryBox = async (): Promise<'shared' | 'cancelled' | 'failed'> => {
+export const openStoryBox = async (isVictory?: boolean): Promise<'shared' | 'cancelled' | 'failed'> => {
     if (!bridge || !isVkMiniApp()) {
         console.log('[Mock] VKWebAppShowStoryBox вызван (localhost)');
+        const mockBgName = isVictory === true ? 'share_victory.png' : isVictory === false ? 'share_defeat.png' : 'bg_main_mobile.webp';
         alert(
-            '[Тест] VKWebAppShowStoryBox вызван на localhost с фоном bg_main_mobile.webp! Симулируем успешную публикацию Истории.',
+            `[Тест] VKWebAppShowStoryBox вызван на localhost с фоном: ${mockBgName}! Симулируем успешную публикацию Истории.`,
         );
         return 'shared';
     }
     try {
-        const bgUrl = `${window.location.origin}/assets/images/backgrounds/bg_main_mobile.webp`;
+        const bgPath = isVictory === true
+            ? 'assets/images/sharing/share_victory.png'
+            : isVictory === false
+              ? 'assets/images/sharing/share_defeat.png'
+              : 'assets/images/backgrounds/bg_main_mobile.webp';
+        const bgUrl = `${window.location.origin}/${bgPath}`;
         await bridge.send('VKWebAppShowStoryBox', {
             background_type: 'image',
             url: bgUrl,

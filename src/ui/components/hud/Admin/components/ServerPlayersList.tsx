@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { RealPlayer, mapRawPlayerToRealPlayer } from '../AdminShared';
 import { syncService } from '../../../../../services/SyncService';
 import { useGameStore } from '../../../../../store/useGameStore';
+import { AdminAvatar } from './AdminAvatar';
 
 interface ServerPlayersListProps {
     realPlayers: RealPlayer[];
@@ -390,18 +391,16 @@ export const ServerPlayersList: React.FC<ServerPlayersListProps> = ({
                                 />
 
                                 {/* Avatar */}
-                                <img
-                                    src={p.photo || 'https://vk.com/images/camera_100.png'}
-                                    loading="lazy"
+                                <AdminAvatar
+                                    photo={p.photo}
+                                    name={p.name}
                                     style={{
                                         width: '36px',
                                         height: '36px',
                                         borderRadius: '50%',
                                         flexShrink: 0,
                                         border: `2px solid ${isSelf ? '#f0c040' : isSelected ? '#ff4d4d' : '#1e1e1e'}`,
-                                        objectFit: 'cover',
                                     }}
-                                    alt=""
                                 />
 
                                 {/* Info */}

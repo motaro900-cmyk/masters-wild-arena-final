@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { useGameStore } from '../../../store/useGameStore';
 import { AssetsMap } from '../../../configs/AssetsMap';
-import { openStoryBox, openShareLink, copyToClipboard } from '../../../utils/VKBridge';
+import { openStoryBox, openShareLink, copyToClipboard, isMobilePlatform } from '../../../utils/VKBridge';
 import { audioService } from '../../../services/AudioService';
 import { getHeroExpNeeded } from '../../../features/heroes/leveling/HeroLevelConfig';
 import { HEROES_DB } from '../../../configs/HeroesConfig';
@@ -53,6 +53,11 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
     const [shareNotice, setShareNotice] = useState<'idle' | 'copied' | 'story_ok' | 'story_fail'>('idle');
     const [storyLoading, setStoryLoading] = useState(false);
     const [friendLoading, setFriendLoading] = useState(false);
+    const [isMobile, setIsMobile] = useState(false);
+
+    useEffect(() => {
+        setIsMobile(isMobilePlatform());
+    }, []);
 
     const goToHeroes = useGameStore((state) => state.goToHeroes);
     const trophies = useGameStore((state) => state.trophies);
@@ -1076,57 +1081,59 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
 
                         {/* Кнопки действий */}
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                            {/* Опубликовать Историю */}
-                            <button
-                                disabled={storyLoading}
-                                onClick={async () => {
-                                    setStoryLoading(true);
-                                    try {
-                                        const res = await openStoryBox();
-                                        if (res === 'shared') {
-                                            setShareNotice('story_ok');
-                                        } else if (res === 'failed') {
+                            {/* Опубликовать Историю (только для мобильных устройств) */}
+                            {isMobile && (
+                                <button
+                                    disabled={storyLoading}
+                                    onClick={async () => {
+                                        setStoryLoading(true);
+                                        try {
+                                            const res = await openStoryBox(isVictory);
+                                            if (res === 'shared') {
+                                                setShareNotice('story_ok');
+                                            } else if (res === 'failed') {
+                                                setShareNotice('story_fail');
+                                            }
+                                        } catch (err) {
+                                            console.error('Story share error:', err);
                                             setShareNotice('story_fail');
+                                        } finally {
+                                            setStoryLoading(false);
                                         }
-                                    } catch (err) {
-                                        console.error('Story share error:', err);
-                                        setShareNotice('story_fail');
-                                    } finally {
-                                        setStoryLoading(false);
-                                    }
-                                    // Если 'cancelled' — просто ничего не показываем
-                                }}
-                                style={{
-                                    width: '100%',
-                                    padding: '13px',
-                                    background: storyLoading
-                                        ? 'rgba(59,130,246,0.15)'
-                                        : 'linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 100%)',
-                                    border: '1.5px solid rgba(59,130,246,0.5)',
-                                    borderRadius: '12px',
-                                    color: '#bfdbfe',
-                                    fontSize: '14px',
-                                    fontWeight: 800,
-                                    cursor: storyLoading ? 'wait' : 'pointer',
-                                    fontFamily: "'Cinzel', serif",
-                                    letterSpacing: '0.04em',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    gap: '8px',
-                                    transition: 'all 0.2s',
-                                    opacity: storyLoading ? 0.7 : 1,
-                                }}
-                                onMouseEnter={(e) => {
-                                    if (!storyLoading) e.currentTarget.style.transform = 'scale(1.02)';
-                                }}
-                                onMouseLeave={(e) => {
-                                    e.currentTarget.style.transform = 'scale(1)';
-                                }}
-                            >
-                                <span style={{ fontSize: '18px' }}>📸</span>
-                                {storyLoading ? 'Открываем...' : 'ОПУБЛИКОВАТЬ ИСТОРИЮ'}
-                            </button>
+                                        // Если 'cancelled' — просто ничего не показываем
+                                    }}
+                                    style={{
+                                        width: '100%',
+                                        padding: '13px',
+                                        background: storyLoading
+                                            ? 'rgba(59,130,246,0.15)'
+                                            : 'linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 100%)',
+                                        border: '1.5px solid rgba(59,130,246,0.5)',
+                                        borderRadius: '12px',
+                                        color: '#bfdbfe',
+                                        fontSize: '14px',
+                                        fontWeight: 800,
+                                        cursor: storyLoading ? 'wait' : 'pointer',
+                                        fontFamily: "'Cinzel', serif",
+                                        letterSpacing: '0.04em',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        gap: '8px',
+                                        transition: 'all 0.2s',
+                                        opacity: storyLoading ? 0.7 : 1,
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        if (!storyLoading) e.currentTarget.style.transform = 'scale(1.02)';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        e.currentTarget.style.transform = 'scale(1)';
+                                    }}
+                                >
+                                    <span style={{ fontSize: '18px' }}>📸</span>
+                                    {storyLoading ? 'Открываем...' : 'ОПУБЛИКОВАТЬ ИСТОРИЮ'}
+                                </button>
+                            )}
 
                             {/* Отправить друзьям */}
                             <button

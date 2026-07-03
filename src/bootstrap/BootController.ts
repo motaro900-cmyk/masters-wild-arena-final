@@ -869,8 +869,22 @@ class BootController {
     }
 
     public async loadProfile(_setInitError: (err: string) => void, resolveVkPromise?: Promise<void>): Promise<void> {
-        const { syncService } = await import('../services/SyncService');
+        const { syncService, SyncService } = await import('../services/SyncService');
         const { useGameStore } = await import('../store/useGameStore');
+
+        // Await the parallelized VK Auth to resolve so we have this.vkUser fully populated before we merge local state details
+        if (resolveVkPromise) {
+            try {
+                await resolveVkPromise;
+            } catch (vkErr) {
+                console.warn('[BootController] resolveVkPromise failed inside loadProfile, proceeding anyway:', vkErr);
+            }
+        }
+
+        // Now that VK is resolved, update this.userId to the correct VK prefixed ID!
+        const state = useGameStore.getState();
+        this.userId = SyncService.getPrefixedUserId(state.vkUser, state.playerId);
+        console.log('[BootController] Resolved userId for profile loading:', this.userId);
 
         const maxAttempts = 2; // Always attempt twice to prevent transient glitches from dropping into offline mode
 
@@ -888,15 +902,6 @@ class BootController {
                 if (i < maxAttempts - 1) {
                     await new Promise((resolve) => setTimeout(resolve, 1500));
                 }
-            }
-        }
-
-        // Await the parallelized VK Auth to resolve so we have this.vkUser fully populated before we merge local state details
-        if (resolveVkPromise) {
-            try {
-                await resolveVkPromise;
-            } catch (vkErr) {
-                console.warn('[BootController] resolveVkPromise failed inside loadProfile, proceeding anyway:', vkErr);
             }
         }
 

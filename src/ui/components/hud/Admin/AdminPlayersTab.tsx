@@ -7,6 +7,7 @@ import { AssetsMap } from '../../../../configs/AssetsMap';
 import { getRankInfo } from '../../../../configs/RankSystem';
 import { ServerPlayersList } from './components/ServerPlayersList';
 import { AdminSpectatorModal } from './AdminSpectatorModal';
+import { AdminAvatar } from './components/AdminAvatar';
 import {
     RealPlayer,
     Section,
@@ -379,15 +380,15 @@ export const AdminPlayersTab: React.FC<AdminPlayersTabProps> = ({
                     <>
                         {/* 1. ШАПКА ПРОФИЛЯ */}
                         <div style={{ display: 'flex', gap: '20px', alignItems: 'center', marginBottom: '10px' }}>
-                            <img
-                                src={selectedPlayer.photo}
+                            <AdminAvatar
+                                photo={selectedPlayer.photo}
+                                name={selectedPlayer.name}
                                 style={{
                                     width: '80px',
                                     height: '80px',
                                     borderRadius: '10px',
                                     border: `2px solid ${selectedPlayer.id === localPlayerId ? '#f0c040' : '#222'}`,
                                 }}
-                                alt=""
                             />
                             <div style={{ flex: 1 }}>
                                 <h2

@@ -9,7 +9,23 @@ service cloud.firestore {
     
     match /пользователи/{userId} {
       allow read: if true;
-      allow write: if userId.matches('VK-.*');
+      allow write: if userId.matches('VK-.*') || userId.matches('GUEST-.*') || userId == 'DEVELOPER';
+      allow delete: if false;
+
+      match /почта/{mailId} {
+        allow read, create, update: if true;
+        allow delete: if false;
+      }
+      
+      match /запросы/{requestId} {
+        allow read, create, update: if true;
+        allow delete: if false;
+      }
+    }
+
+    match /пользователи_dev/{userId} {
+      allow read: if true;
+      allow write: if userId.matches('VK-.*') || userId.matches('GUEST-.*') || userId == 'DEVELOPER';
       allow delete: if false;
 
       match /почта/{mailId} {
@@ -28,7 +44,17 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
+    match /чат_dev/{messageId} {
+      allow read, create: if true;
+      allow update, delete: if false;
+    }
+
     match /отзывы/{feedbackId} {
+      allow create: if true;
+      allow read, update, delete: if false;
+    }
+
+    match /отзывы_dev/{feedbackId} {
       allow create: if true;
       allow read, update, delete: if false;
     }

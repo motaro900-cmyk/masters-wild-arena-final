@@ -200,7 +200,22 @@ export const mapRawPlayerToRealPlayer = (p: any): RealPlayer => {
     const nameVal = p.name || p.имя || 'Unknown';
     const photoVal = p.avatar || p.фото || p.photo || 'https://vk.com/images/camera_100.png';
     const activeScreenVal = p.activeScreen || p.активныйЭкран || 'MAP';
-    const lastSeenMillis = p.wasOnline?.toMillis?.() || p.былВСети?.toMillis?.() || p.lastSeen?.toMillis?.() || 0;
+
+    const getTimestampMillis = (ts: any): number => {
+        if (!ts) return 0;
+        if (typeof ts.toMillis === 'function') return ts.toMillis();
+        if (typeof ts.toDate === 'function') return ts.toDate().getTime();
+        if (ts instanceof Date) return ts.getTime();
+        if (typeof ts === 'number') return ts;
+        if (typeof ts === 'string') {
+            const parsed = Date.parse(ts);
+            return isNaN(parsed) ? 0 : parsed;
+        }
+        if (ts.seconds !== undefined) return ts.seconds * 1000;
+        return 0;
+    };
+
+    const lastSeenMillis = getTimestampMillis(p.wasOnline) || getTimestampMillis(p.былВСети) || getTimestampMillis(p.lastSeen) || 0;
     const isOnline = lastSeenMillis > 0 && (Date.now() - lastSeenMillis < 300000);
     const statusVal = !isOnline ? 'OFFLINE' : (activeScreenVal === 'BATTLE' ? 'BATTLE' : 'ONLINE');
 
@@ -222,8 +237,7 @@ export const mapRawPlayerToRealPlayer = (p: any): RealPlayer => {
             ? parsedState.heroEquipment[activeHero]
             : p.снаряжение || p.геройСнаряжение || {});
 
-    const lastSeenDate =
-        (p.wasOnline || p.былВСети || p.lastSeen)?.toDate?.() || (lastSeenMillis ? new Date(lastSeenMillis) : null);
+    const lastSeenDate = lastSeenMillis ? new Date(lastSeenMillis) : null;
     const lastSeenTimeVal = lastSeenDate
         ? lastSeenDate.toLocaleString('ru-RU', {
               day: '2-digit',
