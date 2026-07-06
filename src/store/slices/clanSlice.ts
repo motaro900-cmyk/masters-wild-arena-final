@@ -1,5 +1,5 @@
-import { db, USERS_COLLECTION } from '../../utils/firebase';
-import { doc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
+// firebase/firestore is dynamically imported inside async actions to prevent the 488 kB
+// Firebase bundle from being pulled into the startup bundle via the static import chain.
 import { syncService, SyncService } from '../../services/SyncService';
 
 export const createClanSlice = (set: any, get: any) => ({
@@ -30,6 +30,8 @@ export const createClanSlice = (set: any, get: any) => ({
         }
 
         try {
+            const { db, USERS_COLLECTION } = await import('../../utils/firebase');
+            const { doc, updateDoc, arrayRemove } = await import('firebase/firestore');
             // 1. Удаляем из списка друзей текущего игрока в Firestore
             const currentUserDoc = doc(db, USERS_COLLECTION, currentUserId);
             await updateDoc(currentUserDoc, {
@@ -62,6 +64,8 @@ export const createClanSlice = (set: any, get: any) => ({
         }
 
         try {
+            const { db, USERS_COLLECTION } = await import('../../utils/firebase');
+            const { doc, updateDoc, arrayUnion } = await import('firebase/firestore');
             // 1. Добавляем senderId в список друзей текущего игрока в Firestore
             const currentUserDoc = doc(db, USERS_COLLECTION, currentUserId);
             await updateDoc(currentUserDoc, {

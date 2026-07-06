@@ -302,6 +302,6 @@ export const useUIStore = create<UIStoreState>()(
 );
 
 // [Lead Architect]: Debug exposure only in development
-if (process.env.NODE_ENV === 'development' && typeof window !== 'undefined') {
+if (import.meta.env.DEV && typeof window !== 'undefined') {
     (window as any).uiStore = useUIStore;
 }

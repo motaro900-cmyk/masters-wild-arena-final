@@ -8,7 +8,11 @@ import { ErrorBoundary } from './ui/components/ErrorBoundary';
 import { NotInVkScreen } from './ui/components/NotInVkScreen';
 import { LoadingScreen } from './ui/components/LoadingScreen';
 import { InitErrorScreen } from './ui/components/InitErrorScreen';
-import { SafeGameLayout } from './ui/layouts/SafeGameLayout';
+// SafeGameLayout is lazily loaded to prevent HUD components (GameHUD, framer-motion ~129 kB)
+// from pulling into the startup bundle. It only renders when bootState === 'READY'.
+const SafeGameLayout = React.lazy(() =>
+    import('./ui/layouts/SafeGameLayout').then((m) => ({ default: m.SafeGameLayout }))
+);
 import { AppConfig } from './configs/AppConfig';
 import { bootController, BootState } from './bootstrap/BootController';
 
@@ -382,7 +386,11 @@ export const Root = () => {
                     <div ref={containerRef} style={{ position: 'absolute', inset: 0, pointerEvents: 'auto' }} />
 
                     {/* React HUD layer mounts ONLY when BootController is READY */}
-                    {bootState === 'READY' && <SafeGameLayout isMobile={isMobile} isPortrait={rotated} />}
+                    {bootState === 'READY' && (
+                        <React.Suspense fallback={null}>
+                            <SafeGameLayout isMobile={isMobile} isPortrait={rotated} />
+                        </React.Suspense>
+                    )}
                 </div>
             </div>
 

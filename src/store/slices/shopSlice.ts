@@ -213,7 +213,7 @@ export const createShopSlice = (set: any, get: any) => ({
 
     buyCrystalsPack: async (packId: string) => {
         if (
-            process.env.NODE_ENV !== 'development' &&
+            !import.meta.env.DEV &&
             typeof window !== 'undefined' &&
             !(window as any).vkBridgeInitialized
         ) {

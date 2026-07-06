@@ -7,12 +7,37 @@ import { syncService } from '../../services/SyncService';
 
 export const createInventorySlice = (set: any, get: any) => ({
     // --- СОСТОЯНИЕ ---
-    inventory: [] as any[],
+    inventory: [
+        {
+            id: 'stick',
+            type: 'WEAPONS',
+            rarity: 'COMMON',
+            level: 1,
+            amount: 1,
+            instanceId: 'stick_starting',
+        },
+        {
+            id: 'bandana',
+            type: 'HELMETS',
+            rarity: 'COMMON',
+            level: 1,
+            amount: 1,
+            instanceId: 'bandana_starting',
+        },
+        {
+            id: 'ragged_tunic',
+            type: 'ARMOR',
+            rarity: 'COMMON',
+            level: 1,
+            amount: 1,
+            instanceId: 'tunic_starting',
+        },
+    ] as any[],
     heroEquipment: {
         panda: {
-            WEAPONS: null,
-            HELMETS: null,
-            ARMOR: null,
+            WEAPONS: 'stick_starting',
+            HELMETS: 'bandana_starting',
+            ARMOR: 'tunic_starting',
             SHIELDS: null,
             SHOULDERS: null,
             BOOTS: null,
@@ -29,9 +54,9 @@ export const createInventorySlice = (set: any, get: any) => ({
         },
     } as Record<string, any>,
     // Legacy per-slot shortcut fields (mirrors heroEquipment for selected hero)
-    equippedWeaponId: null as string | null,
-    equippedHelmId: null as string | null,
-    equippedArmorId: null as string | null,
+    equippedWeaponId: 'stick_starting' as string | null,
+    equippedHelmId: 'bandana_starting' as string | null,
+    equippedArmorId: 'tunic_starting' as string | null,
     equippedShieldId: null as string | null,
     equippedShouldersId: null as string | null,
     equippedBootsId: null as string | null,
@@ -222,6 +247,8 @@ export const createInventorySlice = (set: any, get: any) => ({
         const newInventory = [...state.inventory];
         newInventory.splice(itemIndex, 1);
         set({ inventory: newInventory });
+        syncService.logPlayerAction(`Продал предмет: ${data?.name || itemInInv.id}`);
+        syncService.debouncedSync();
     },
 
     // --- ЭКИПИРОВКА ---
@@ -236,6 +263,17 @@ export const createInventorySlice = (set: any, get: any) => ({
 
         const heroId = state.selectedHeroId || 'panda';
         const subTab = data.subTab;
+
+        const playerLevel = state.level || 1;
+        const requiredLevel = data.requiredLevel || 1;
+        if (playerLevel < requiredLevel) {
+            console.warn(`equipItem: Требуемый уровень (${requiredLevel}) выше вашего (${playerLevel})`);
+            state.showConfirm?.(
+                `Недостаточный уровень! Этот предмет требует ${requiredLevel} уровень (ваш: ${playerLevel}).`,
+                () => {}
+            );
+            return;
+        }
 
         const newHeroEquipment = { ...state.heroEquipment };
         Object.entries(newHeroEquipment).forEach(([hId, gear]: [string, any]) => {
@@ -350,11 +388,15 @@ export const createInventorySlice = (set: any, get: any) => ({
         const inv = state.inventory;
         const heroId = state.selectedHeroId || 'panda';
 
+        const playerLevel = state.level || 1;
+
         const findBest = (subTab: string) =>
             inv
                 .filter((i: any) => {
                     const d = ITEMS_DATABASE[String(i.id)];
-                    return d && d.subTab === subTab;
+                    if (!d || d.subTab !== subTab) return false;
+                    const reqLvl = d.requiredLevel || 1;
+                    return playerLevel >= reqLvl;
                 })
                 .sort((a: any, b: any) => {
                     const da = ITEMS_DATABASE[String(a.id)];

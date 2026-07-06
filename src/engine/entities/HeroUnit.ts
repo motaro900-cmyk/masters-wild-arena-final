@@ -270,25 +270,33 @@ export class HeroUnit extends PIXI.Container implements IEffectTarget, IStatusEf
 
         const heroPrefix = `${this.config.id}_`;
 
-        // Prefix frame keys with the hero name/ID to prevent PixiJS cache conflicts
-        const originalFrames = { ...sheet.data.frames };
-        const originalTextures = { ...sheet.textures };
+        // [Race Condition Guard] If this sheet has already been prefixed for THIS hero
+        // (e.g. both player and opponent load the same hero), skip the destructive mutation
+        // and only re-populate posesTextures from the already-correct data.
+        const existingFrameKeys = Object.keys(sheet.data.frames);
+        const alreadyPrefixed = existingFrameKeys.length > 0 && existingFrameKeys.every((k) => k.startsWith(heroPrefix));
 
-        sheet.data.frames = {};
-        sheet.textures = {};
+        if (!alreadyPrefixed) {
+            // Prefix frame keys with the hero name/ID to prevent PixiJS cache conflicts
+            const originalFrames = { ...sheet.data.frames };
+            const originalTextures = { ...sheet.textures };
 
-        for (const key of Object.keys(originalFrames)) {
-            const prefixedKey = key.startsWith(heroPrefix) ? key : `${heroPrefix}${key}`;
+            sheet.data.frames = {};
+            sheet.textures = {};
 
-            sheet.data.frames[prefixedKey] = originalFrames[key];
-            sheet.textures[prefixedKey] = originalTextures[key];
+            for (const key of Object.keys(originalFrames)) {
+                const prefixedKey = key.startsWith(heroPrefix) ? key : `${heroPrefix}${key}`;
 
-            // Re-cache with the prefixed key
-            if (originalTextures[key]) {
-                if (PIXI.Cache.has(key) && PIXI.Cache.get(key) === originalTextures[key]) {
-                    PIXI.Cache.remove(key);
+                sheet.data.frames[prefixedKey] = originalFrames[key];
+                sheet.textures[prefixedKey] = originalTextures[key];
+
+                // Re-cache with the prefixed key
+                if (originalTextures[key]) {
+                    if (PIXI.Cache.has(key) && PIXI.Cache.get(key) === originalTextures[key]) {
+                        PIXI.Cache.remove(key);
+                    }
+                    PIXI.Cache.set(prefixedKey, originalTextures[key]);
                 }
-                PIXI.Cache.set(prefixedKey, originalTextures[key]);
             }
         }
 

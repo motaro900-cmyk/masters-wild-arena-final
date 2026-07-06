@@ -96,24 +96,7 @@ export const initFirebaseProfile = async (
             }
         }
 
-        let isAdminUser = false;
-        try {
-            const { db } = await import('../utils/firebase');
-            const { doc, getDoc } = await import('firebase/firestore');
-            const adminDocRef = doc(db, 'system', 'admins');
-            const adminDocSnap = await getDoc(adminDocRef);
-            if (adminDocSnap.exists()) {
-                const adminData = adminDocSnap.data();
-                const vkIds = adminData?.vkIds || [];
-                const userVkId = state.vkUser?.id || state.vkUser?.uid;
-                if (userVkId && (vkIds.map(Number).includes(Number(userVkId)) || Number(userVkId) === 212359386)) {
-                    isAdminUser = true;
-                }
-            }
-        } catch (err) {
-            console.error('Failed to load admin whitelist from Firestore:', err);
-        }
-
+        const isAdminUser = result.isAdmin || false;
         const userVkId = state.vkUser?.id || state.vkUser?.uid;
         const isHardcodedAdmin = (userVkId && Number(userVkId) === 212359386) || state.playerId === 'MW-UMW2N0RWZ';
         const finalAdminStatus = isAdminUser || isLocalhost || isHardcodedAdmin;

@@ -3,8 +3,8 @@ import { audioService } from '../../services/AudioService';
 import { AssetsMap } from '../../configs/AssetsMap';
 import { BATTLE_PASS_REWARDS } from '../../ui/components/hud/BattlePass/BattlePassShared';
 import { syncService } from '../../services/SyncService';
-import { doc, runTransaction, Timestamp } from 'firebase/firestore';
-import { db, USERS_COLLECTION } from '../../utils/firebase';
+// firebase/firestore is dynamically imported inside async actions to prevent the 488 kB
+// Firebase bundle from being pulled into the startup bundle via the static import chain.
 
 export const WEEKLY_QUESTS_POOL = [
     {
@@ -121,6 +121,8 @@ export const createQuestSlice = (set: any, get: any) => ({
             return;
         }
 
+        const { db, USERS_COLLECTION } = await import('../../utils/firebase');
+        const { doc, runTransaction, Timestamp } = await import('firebase/firestore');
         const playerRef = doc(db, USERS_COLLECTION, userId);
 
         try {

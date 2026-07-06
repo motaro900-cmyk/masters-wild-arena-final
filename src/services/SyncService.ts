@@ -270,7 +270,6 @@ export class SyncService {
         }
 
         try {
-            const playerRef = doc(db, USERS_COLLECTION, userId);
             const selectedHeroId = state.selectedHeroId || 'panda';
             const activeAccountLevel = state.level || 1;
 
@@ -312,7 +311,7 @@ export class SyncService {
                 gold: state.gold || 0,
                 crystals: state.crystals || 0,
                 rating: state.rating || 0,
-                wasOnline: serverTimestamp(),
+                wasOnline: '__serverTimestamp__',
                 activeScreen: state.activeScreen || 'MAIN_MENU',
                 hero: selectedHeroId,
                 avatar: state.avatar || (vkUser ? vkUser.photo200 || vkUser.photo || '' : ''),
@@ -335,7 +334,7 @@ export class SyncService {
                 кристаллы: state.crystals || 0,
                 уровень: activeAccountLevel,
                 рейтинг: state.rating || 0,
-                былВСети: serverTimestamp(),
+                былВСети: '__serverTimestamp__',
                 имя: state.name || 'Мастер',
                 фото: state.avatar || (vkUser ? vkUser.photo200 || vkUser.photo || '' : ''),
                 инвентарь: state.inventory || [],
@@ -343,7 +342,20 @@ export class SyncService {
                 снаряжение: equipmentSlice,
             };
 
-            await setDoc(playerRef, syncData, { merge: true });
+            const response = await fetch('/api/profile-save', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    userId,
+                    isDev: isLocalhost,
+                    syncData,
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error(`Profile save failed: ${response.statusText}`);
+            }
+
             this.isDirty = false;
         } catch (error) {
             console.error('[SyncService] Sync failed:', error);
@@ -415,34 +427,41 @@ export class SyncService {
 
     // ─── Load player data on login ─────────────────────────────────────────────
 
-    public async loadPlayerData(userId: string): Promise<{ data: any; isNew: boolean } | null> {
+    public async loadPlayerData(userId: string): Promise<{ data: any; isNew: boolean; isAdmin?: boolean } | null> {
         try {
-            const playerRef = doc(db, USERS_COLLECTION, userId);
+            const isLocalhost =
+                typeof window !== 'undefined' &&
+                (window.location.hostname === 'localhost' ||
+                    window.location.hostname === '127.0.0.1' ||
+                    window.location.protocol === 'file:');
 
-            // Задаем таймаут 10 секунд на получение документа из Firebase
-            let profileTimeoutId: any;
-            const profileTimeout = new Promise<never>((_, reject) => {
-                profileTimeoutId = setTimeout(() => reject(new Error('Firebase player profile fetch timeout')), 10000);
+            console.log(`[SyncService] Loading profile via proxy for ${userId}`);
+            const response = await fetch(`/api/profile-load?userId=${encodeURIComponent(userId)}&isDev=${isLocalhost}`, {
+                signal: AbortSignal.timeout(10000)
             });
-            let playerSnap;
-            try {
-                playerSnap = await Promise.race([getDoc(playerRef), profileTimeout]);
-            } finally {
-                clearTimeout(profileTimeoutId);
+
+            if (!response.ok) {
+                throw new Error(`Profile load HTTP error: ${response.status} ${response.statusText}`);
             }
 
-            if (playerSnap.exists()) {
-                const data = playerSnap.data();
+            const resData = await response.json();
+
+            if (resData.exists) {
+                const data = resData.data;
                 const wasOnlineMs =
                     data.wasOnline && typeof data.wasOnline.toMillis === 'function'
                         ? data.wasOnline.toMillis()
                         : data.wasOnline?.seconds
                           ? data.wasOnline.seconds * 1000
-                          : data.былВСети && typeof data.былВСети.toMillis === 'function'
-                            ? data.былВСети.toMillis()
-                            : data.былВСети?.seconds
-                              ? data.былВСети.seconds * 1000
-                              : 0;
+                          : typeof data.wasOnline === 'string'
+                            ? new Date(data.wasOnline).getTime()
+                            : data.былВСети && typeof data.былВСети.toMillis === 'function'
+                              ? data.былВСети.toMillis()
+                              : data.былВСети?.seconds
+                                ? data.былВСети.seconds * 1000
+                                : typeof data.былВСети === 'string'
+                                  ? new Date(data.былВСети).getTime()
+                                  : 0;
 
                 const dbFriendIds = (data.friends || [])
                     .map((f: any) => (typeof f === 'object' ? f.id : f))
@@ -515,13 +534,21 @@ export class SyncService {
                             processedData.lastDailyGiftClaimedTime =
                                 typeof data.lastDailyGiftClaimed.toMillis === 'function'
                                     ? data.lastDailyGiftClaimed.toMillis()
-                                    : data.lastDailyGiftClaimed.seconds * 1000;
+                                    : data.lastDailyGiftClaimed.seconds
+                                      ? data.lastDailyGiftClaimed.seconds * 1000
+                                      : typeof data.lastDailyGiftClaimed === 'string'
+                                        ? new Date(data.lastDailyGiftClaimed).getTime()
+                                        : 0;
                         }
                         if (parsed.lastWheelSpinTime === undefined && data.lastWheelSpinTimeServer) {
                             processedData.lastWheelSpinTime =
                                 typeof data.lastWheelSpinTimeServer.toMillis === 'function'
                                     ? data.lastWheelSpinTimeServer.toMillis()
-                                    : data.lastWheelSpinTimeServer.seconds * 1000;
+                                    : data.lastWheelSpinTimeServer.seconds
+                                      ? data.lastWheelSpinTimeServer.seconds * 1000
+                                      : typeof data.lastWheelSpinTimeServer === 'string'
+                                        ? new Date(data.lastWheelSpinTimeServer).getTime()
+                                        : 0;
                         }
                     } catch (e) {
                         console.error('[SyncService] Failed to parse полноеСостояниеJSON:', e);
@@ -552,13 +579,21 @@ export class SyncService {
                             processedData.lastDailyGiftClaimedTime =
                                 typeof data.lastDailyGiftClaimed.toMillis === 'function'
                                     ? data.lastDailyGiftClaimed.toMillis()
-                                    : data.lastDailyGiftClaimed.seconds * 1000;
+                                    : data.lastDailyGiftClaimed.seconds
+                                      ? data.lastDailyGiftClaimed.seconds * 1000
+                                      : typeof data.lastDailyGiftClaimed === 'string'
+                                        ? new Date(data.lastDailyGiftClaimed).getTime()
+                                        : 0;
                         }
                         if (parsed.lastWheelSpinTime === undefined && data.lastWheelSpinTimeServer) {
                             processedData.lastWheelSpinTime =
                                 typeof data.lastWheelSpinTimeServer.toMillis === 'function'
                                     ? data.lastWheelSpinTimeServer.toMillis()
-                                    : data.lastWheelSpinTimeServer.seconds * 1000;
+                                    : data.lastWheelSpinTimeServer.seconds
+                                      ? data.lastWheelSpinTimeServer.seconds * 1000
+                                      : typeof data.lastWheelSpinTimeServer === 'string'
+                                        ? new Date(data.lastWheelSpinTimeServer).getTime()
+                                        : 0;
                         }
                         if (
                             (!processedData.dailyQuests || processedData.dailyQuests.length === 0) &&
@@ -621,15 +656,17 @@ export class SyncService {
                     processedData = legacyData;
                 }
 
-                return { data: processedData, isNew: false };
+                const isAdmin = resData?.isAdmin || false;
+                return { data: processedData, isNew: false, isAdmin };
             }
 
+            const isAdmin = resData?.isAdmin || false;
             const localTimestamp = useGameStore.getState().lastSavedTimestamp || 0;
             if (localTimestamp > TimeService.now() - 60 * 60 * 1000) {
                 console.warn('[SyncService] Blocking reset — local save exists from last hour');
-                return { data: null, isNew: false };
+                return { data: null, isNew: false, isAdmin };
             }
-            return { data: null, isNew: true };
+            return { data: null, isNew: true, isAdmin };
         } catch (error) {
             console.error('[SyncService] Load player data failed:', error);
             return null;
@@ -662,10 +699,31 @@ export class SyncService {
             this.writeChain = this.writeChain
                 .then(async () => {
                     try {
-                        const playerRef = doc(db, USERS_COLLECTION, userId);
+                        const isLocalhost =
+                            typeof window !== 'undefined' &&
+                            (window.location.hostname === 'localhost' ||
+                                window.location.hostname === '127.0.0.1' ||
+                                window.location.protocol === 'file:');
+
                         const merged = [...this.lastActionsCache, ...actionsToFlush].slice(-15);
                         this.lastActionsCache = merged;
-                        await setDoc(playerRef, { lastActions: merged, wasOnline: serverTimestamp() }, { merge: true });
+
+                        const response = await fetch('/api/profile-save', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                userId,
+                                isDev: isLocalhost,
+                                syncData: {
+                                    lastActions: merged,
+                                    wasOnline: '__serverTimestamp__'
+                                }
+                            }),
+                        });
+
+                        if (!response.ok) {
+                            throw new Error(`Logs save failed: ${response.statusText}`);
+                        }
                     } catch (error) {
                         console.error('[SyncService] Failed to flush action logs:', error);
                     }

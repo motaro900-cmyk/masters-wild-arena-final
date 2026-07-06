@@ -1,7 +1,8 @@
 import { Howl, Howler } from 'howler';
 import bridge from '@vkontakte/vk-bridge';
 import { AssetsMap } from '../configs/AssetsMap';
-import { PixiApp } from '../engine/core/PixiApp';
+// PixiApp is dynamically imported inside event handlers to prevent pixi.js (562 kB)
+// from being pulled into the startup bundle via the static import chain.
 import { SoundManager } from '../engine/systems/SoundManager';
 import { AUDIO_DATABASE, AUDIO_BUS_VOLUMES, SoundConfig, AudioBusType } from '../configs/AudioDatabase';
 
@@ -75,11 +76,15 @@ class AudioService {
                     this.isAppHidden = true;
                     safeMute(true);
                     try { SoundManager.getInstance().suspend(); } catch (e) {}
-                    try { PixiApp.getInstance().getApp()?.ticker.stop(); } catch (err) {}
+                    import('../engine/core/PixiApp').then(({ PixiApp }) => {
+                        try { PixiApp.getInstance().getApp()?.ticker.stop(); } catch (err) {}
+                    }).catch(() => {});
                 } else {
                     this.isAppHidden = false;
                     try { SoundManager.getInstance().resume(); } catch (e) {}
-                    try { PixiApp.getInstance().getApp()?.ticker.start(); } catch (err) {}
+                    import('../engine/core/PixiApp').then(({ PixiApp }) => {
+                        try { PixiApp.getInstance().getApp()?.ticker.start(); } catch (err) {}
+                    }).catch(() => {});
                     import('../store/useGameStore').then(({ useGameStore }) => {
                         if (!useGameStore.getState().isMuted) {
                             safeMute(false);
@@ -97,11 +102,15 @@ class AudioService {
                         this.isAppHidden = true;
                         safeMute(true);
                         try { SoundManager.getInstance().suspend(); } catch (e) {}
-                        try { PixiApp.getInstance().getApp()?.ticker.stop(); } catch (err) {}
+                        import('../engine/core/PixiApp').then(({ PixiApp }) => {
+                            try { PixiApp.getInstance().getApp()?.ticker.stop(); } catch (err) {}
+                        }).catch(() => {});
                     } else if (type === 'VKWebAppViewRestore') {
                         this.isAppHidden = false;
                         try { SoundManager.getInstance().resume(); } catch (e) {}
-                        try { PixiApp.getInstance().getApp()?.ticker.start(); } catch (err) {}
+                        import('../engine/core/PixiApp').then(({ PixiApp }) => {
+                            try { PixiApp.getInstance().getApp()?.ticker.start(); } catch (err) {}
+                        }).catch(() => {});
                         import('../store/useGameStore').then(({ useGameStore }) => {
                             if (!useGameStore.getState().isMuted) {
                                 safeMute(false);

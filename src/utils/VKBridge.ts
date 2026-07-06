@@ -212,7 +212,13 @@ export const showRewardedVideo = async (): Promise<boolean> => {
  * @returns orderId если покупка успешна, null если отменена или ошибка
  */
 export const purchaseVotes = async (item: string): Promise<boolean> => {
-    if (!bridge || !isVkMiniApp()) {
+    const isLocalhost =
+        typeof window !== 'undefined' &&
+        (window.location.hostname === 'localhost' ||
+            window.location.hostname === '127.0.0.1' ||
+            window.location.hostname.startsWith('192.168.'));
+
+    if (import.meta.env.DEV === true && isLocalhost && (!bridge || !isVkMiniApp())) {
         // Мок-среда (localhost/dev). PurchaseConfirmOverlay уже запросил подтверждение у пользователя,
         // поэтому не показываем второй диалог — просто симулируем успешный платёж.
         console.log(`[Mock Payment] Simulating successful VK Votes purchase for: "${item}"`);

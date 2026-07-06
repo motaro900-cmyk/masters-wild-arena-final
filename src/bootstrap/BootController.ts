@@ -842,8 +842,8 @@ class BootController {
                     photo: '/assets/images/avatars/panda.webp',
                     photo200: '/assets/images/avatars/panda.webp',
                 };
-                // Ensure other critical tasks (like verifyPromise) are resolved
-                await Promise.all([timePromise, verifyPromise]);
+                // Ensure other critical tasks (like timePromise) are resolved
+                await Promise.all([timePromise]);
             } else {
                 throw err;
             }
@@ -1020,6 +1020,12 @@ class BootController {
     }
 
     private async resolveAdminStatus(playerId: string): Promise<boolean> {
+        const { useGameStore } = await import('../store/useGameStore');
+        const state = useGameStore.getState();
+        if (state.isAdmin) {
+            return true;
+        }
+
         const isLocalhost =
             typeof window !== 'undefined' &&
             (window.location.hostname === 'localhost' ||
@@ -1035,9 +1041,6 @@ class BootController {
             return true;
         }
 
-        const { useGameStore } = await import('../store/useGameStore');
-        const state = useGameStore.getState();
-
         // 2. Hardcoded VK ID bypass
         const userVkId = this.vkUser?.id || this.vkUser?.uid || state.vkUser?.id || state.vkUser?.uid;
         if (userVkId && Number(userVkId) === 212359386) {
@@ -1049,24 +1052,6 @@ class BootController {
         if (isLocalhost) {
             console.debug('[BootController] Admin status GRANTED via localhost bypass');
             return true;
-        }
-
-        // 4. Firestore whitelist query
-        try {
-            const { db } = await import('../utils/firebase');
-            const { doc, getDoc } = await import('firebase/firestore');
-            const adminDocRef = doc(db, 'system', 'admins');
-            const adminDocSnap = await getDoc(adminDocRef);
-            if (adminDocSnap.exists()) {
-                const adminData = adminDocSnap.data();
-                const vkIds = adminData?.vkIds || [];
-                if (userVkId && vkIds.map(Number).includes(Number(userVkId))) {
-                    console.debug('[BootController] Admin status GRANTED via Firestore whitelist');
-                    return true;
-                }
-            }
-        } catch (err) {
-            console.warn('[BootController] Failed to query Firestore admin whitelist:', err);
         }
 
         return false;
