@@ -1,4 +1,28 @@
-import * as Sentry from '@sentry/react';
+// Sentry is dynamically imported to keep it out of the critical startup bundle
+let SentryInstance: any = null;
+let isSentryInitializing = false;
+const pendingTags: Record<string, string> = {};
+
+async function loadSentry(): Promise<any> {
+    if (SentryInstance) return SentryInstance;
+    if (isSentryInitializing) {
+        while (!SentryInstance) {
+            await new Promise((r) => setTimeout(r, 50));
+        }
+        return SentryInstance;
+    }
+    isSentryInitializing = true;
+    try {
+        const Sentry = await import('@sentry/react');
+        SentryInstance = Sentry;
+        return Sentry;
+    } catch (e) {
+        console.warn('[Telemetry] Failed to dynamic import Sentry:', e);
+        isSentryInitializing = false;
+        throw e;
+    }
+}
+
 import { AppConfig } from '../configs/AppConfig';
 
 declare const __BUILD_TIME__: number;
@@ -300,7 +324,11 @@ export async function getDeviceProfile(): Promise<DeviceProfile> {
 export function updateActiveRenderer(rendererName: string) {
     if (deviceProfile) {
         deviceProfile.renderer = rendererName;
-        Sentry.setTag('selected_renderer', rendererName);
+        if (SentryInstance) {
+            SentryInstance.setTag('selected_renderer', rendererName);
+        } else {
+            pendingTags['selected_renderer'] = rendererName;
+        }
     }
 }
 
@@ -313,27 +341,37 @@ export async function initTelemetry() {
 
     const sentryDsn = import.meta.env.VITE_SENTRY_DSN;
     if (sentryDsn) {
-        Sentry.init({
-            dsn: sentryDsn,
-            integrations: [Sentry.browserTracingIntegration(), Sentry.replayIntegration()],
-            tracesSampleRate: 1.0,
-            replaysSessionSampleRate: 0.1,
-            replaysOnErrorSampleRate: 1.0,
-        });
+        try {
+            const Sentry = await loadSentry();
+            Sentry.init({
+                dsn: sentryDsn,
+                integrations: [Sentry.browserTracingIntegration(), Sentry.replayIntegration()],
+                tracesSampleRate: 1.0,
+                replaysSessionSampleRate: 0.1,
+                replaysOnErrorSampleRate: 1.0,
+            });
 
-        // Set global tags for Sentry events
-        Sentry.setTag('gpu_vendor', profile.gpuVendor);
-        Sentry.setTag('gpu_renderer', profile.gpuRenderer);
-        Sentry.setTag('supports_webgpu', profile.webgpuSupported.toString());
-        Sentry.setTag('is_webview', profile.vkWebView.toString());
-        Sentry.setTag('device_model', profile.device);
-        Sentry.setTag('os_version', profile.os);
-        Sentry.setTag('game_version', profile.gameVersion);
-        Sentry.setTag('build_hash', profile.buildHash);
-        Sentry.setTag('screen_resolution', profile.screen);
-        Sentry.setTag('webgl_version', profile.webglVersion);
+            // Set global tags for Sentry events
+            Sentry.setTag('gpu_vendor', profile.gpuVendor);
+            Sentry.setTag('gpu_renderer', profile.gpuRenderer);
+            Sentry.setTag('supports_webgpu', profile.webgpuSupported.toString());
+            Sentry.setTag('is_webview', profile.vkWebView.toString());
+            Sentry.setTag('device_model', profile.device);
+            Sentry.setTag('os_version', profile.os);
+            Sentry.setTag('game_version', profile.gameVersion);
+            Sentry.setTag('build_hash', profile.buildHash);
+            Sentry.setTag('screen_resolution', profile.screen);
+            Sentry.setTag('webgl_version', profile.webglVersion);
 
-        console.log('[Sentry] Telemetry initialized with Sentry tags.');
+            // Apply pending tags
+            for (const [k, v] of Object.entries(pendingTags)) {
+                Sentry.setTag(k, v);
+            }
+
+            console.log('[Sentry] Telemetry initialized with Sentry tags.');
+        } catch (err) {
+            console.warn('[Sentry] Dynamic initialization failed:', err);
+        }
     } else {
         console.warn('[Sentry] DSN is not provided. Remote error monitoring is disabled.');
     }
@@ -342,7 +380,7 @@ export async function initTelemetry() {
 /**
  * Отправляет в Sentry отчет о производительности устройства ("здоровье").
  */
-export function sendPerformanceReport(stats: {
+export async function sendPerformanceReport(stats: {
     avgFPS: number;
     minFPS: number;
     frameDrops: number;
@@ -353,24 +391,29 @@ export function sendPerformanceReport(stats: {
 
     console.log('[Telemetry] Sending Device Health / Performance report:', stats);
 
-    Sentry.withScope((scope) => {
-        scope.setTags({
-            perf_avg_fps: stats.avgFPS.toString(),
-            perf_min_fps: stats.minFPS.toString(),
-            perf_frame_drops: stats.frameDrops.toString(),
-            perf_memory_pressure: stats.memoryPressure.toString(),
-            device_model: deviceProfile?.device || 'unknown',
-            renderer_active: deviceProfile?.renderer || 'unknown',
+    try {
+        const Sentry = await loadSentry();
+        Sentry.withScope((scope: any) => {
+            scope.setTags({
+                perf_avg_fps: stats.avgFPS.toString(),
+                perf_min_fps: stats.minFPS.toString(),
+                perf_frame_drops: stats.frameDrops.toString(),
+                perf_memory_pressure: stats.memoryPressure.toString(),
+                device_model: deviceProfile?.device || 'unknown',
+                renderer_active: deviceProfile?.renderer || 'unknown',
+            });
+
+            scope.setExtra('stats', stats);
+            scope.setExtra('profile', deviceProfile);
+
+            Sentry.captureMessage(
+                `Device Performance Report: ${deviceProfile?.device} (${deviceProfile?.renderer}) - Avg FPS: ${stats.avgFPS}`,
+                'info',
+            );
         });
-
-        scope.setExtra('stats', stats);
-        scope.setExtra('profile', deviceProfile);
-
-        Sentry.captureMessage(
-            `Device Performance Report: ${deviceProfile?.device} (${deviceProfile?.renderer}) - Avg FPS: ${stats.avgFPS}`,
-            'info',
-        );
-    });
+    } catch (err) {
+        console.warn('[Sentry] Failed to send performance report:', err);
+    }
 }
 
 export function getCachedRefreshRate(): number {

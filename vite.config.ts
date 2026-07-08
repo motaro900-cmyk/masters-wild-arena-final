@@ -122,6 +122,7 @@ export default defineConfig({
           'vendor-gsap':     ['gsap'],
           'vendor-framer':   ['framer-motion'],
           'vendor-zustand':  ['zustand'],
+          'vendor-sentry':   ['@sentry/react'],
         },
       },
     },
