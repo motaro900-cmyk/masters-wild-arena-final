@@ -127,8 +127,8 @@ export const LeaderItem: React.FC<LeaderItemProps> = ({ player, onClick }) => {
             {/* АВАТАР И РАМКА */}
             <div
                 style={{
-                    width: '74px',
-                    height: '74px',
+                    width: '84px',
+                    height: '84px',
                     position: 'relative',
                     marginRight: '14px',
                     display: 'flex',
@@ -139,8 +139,8 @@ export const LeaderItem: React.FC<LeaderItemProps> = ({ player, onClick }) => {
             >
                 <div
                     style={{
-                        width: '50px',
-                        height: '50px',
+                        width: '58px',
+                        height: '58px',
                         borderRadius: '50%',
                         overflow: 'hidden',
                         display: 'flex',
@@ -176,7 +176,7 @@ export const LeaderItem: React.FC<LeaderItemProps> = ({ player, onClick }) => {
                     <div
                         style={{
                             position: 'absolute',
-                            inset: '8px',
+                            inset: '11px',
                             borderRadius: '50%',
                             border: `2px solid ${player.isMe ? '#f0c040' : 'rgba(255,255,255,0.2)'}`,
                             zIndex: 15,

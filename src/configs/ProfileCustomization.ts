@@ -308,7 +308,16 @@ export function isTitleUnlocked(
 
 export function resolveAvatarPath(avatarVal: string | undefined | null): string {
     let clean = avatarVal ? avatarVal.trim() : '';
-    if (!clean || clean === '🐺' || clean === 'none' || clean.startsWith('sprite:')) {
+    if (
+        !clean ||
+        clean === '🐺' ||
+        clean === 'none' ||
+        clean === 'avatar' ||
+        clean === 'панда' ||
+        clean === 'панда.png' ||
+        clean === 'панда.webp' ||
+        clean.startsWith('sprite:')
+    ) {
         return resolveAssetPath('/assets/images/avatars/panda.webp');
     }
     if (clean.startsWith('http') || clean.startsWith('data:')) {
@@ -317,5 +326,24 @@ export function resolveAvatarPath(avatarVal: string | undefined | null): string 
     if (clean.startsWith('/')) {
         return resolveAssetPath(clean);
     }
-    return resolveAssetPath(`/assets/images/avatars/${clean.replace(/\.(png|webp)$/, '')}.webp`);
+
+    const cyrillicToLatin: Record<string, string> = {
+        'панда': 'panda',
+        'лев': 'lion',
+        'тигр': 'tiger',
+        'пантера': 'panther',
+        'медведь': 'bear',
+        'кот': 'cat',
+        'обезьяна': 'monkey',
+        'лось': 'moose',
+        'кабан': 'boar',
+        'носорог': 'rhino',
+        'баран': 'ram',
+        'крокодил': 'crocodile'
+    };
+
+    const key = clean.toLowerCase().replace(/\.(png|webp)$/, '');
+    const mapped = cyrillicToLatin[key] || key;
+
+    return resolveAssetPath(`/assets/images/avatars/${mapped}.webp`);
 }
