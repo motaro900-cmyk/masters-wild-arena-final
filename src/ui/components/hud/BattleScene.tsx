@@ -37,6 +37,8 @@ export const BattleScene: React.FC = () => {
         log: 'ПОДГОТОВКА...',
         playerMana: 0,
         playerMaxMana: 100,
+        enemyMana: 0,
+        enemyMaxMana: 100,
         playerStatuses: [],
         enemyStatuses: [],
         playerShield: 0,

@@ -47,7 +47,11 @@ export const ClanLobbyTab: React.FC<ClanLobbyTabProps> = ({
     const addMessage = useGameStore((state) => state.addMessage);
 
     const currentUserName =
-        name && name !== 'Мастер' ? name : vkUser?.firstName ? `${vkUser.firstName} ${vkUser.lastName}` : 'Воин';
+        name && name !== 'Мастер' && name !== 'undefined' && name !== 'undefined undefined'
+            ? name
+            : vkUser
+              ? `${vkUser.firstName || vkUser.first_name || 'Игрок'} ${vkUser.lastName || vkUser.last_name || ''}`.trim()
+              : 'Воин';
 
     const playerMember = members.find((m) => m.name === currentUserName);
     const playerRole = playerMember ? playerMember.role : 'MEMBER';

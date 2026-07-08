@@ -191,7 +191,7 @@ export const ShopBottomShelf: React.FC<ShopBottomShelfProps> = ({
                                 x: { type: 'spring', stiffness: 300, damping: 30 },
                                 opacity: { duration: 0.2 },
                             }}
-                            drag={isMobile ? "x" : undefined}
+                            drag={isMobile ? 'x' : undefined}
                             dragConstraints={{ left: 0, right: 0 }}
                             dragElastic={0.2}
                             onDragEnd={(_, info) => {

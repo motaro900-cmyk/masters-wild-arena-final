@@ -539,7 +539,7 @@ export const shareBattleResult = async (params: {
             console.warn('VKWebAppShare failed:', shareErr);
         }
         const copied = copyToClipboard(text);
-        return shareSuccess ? 'posted' : (copied ? 'copied' : 'failed');
+        return shareSuccess ? 'posted' : copied ? 'copied' : 'failed';
     }
 
     try {
@@ -666,12 +666,12 @@ export const isMobilePlatform = (): boolean => {
     if (typeof window === 'undefined') return false;
     const params = new URLSearchParams(window.location.search);
     const vkPlatform = params.get('vk_platform');
-    
+
     // Если vk_platform передан, проверяем начинается ли он с mobile_
     if (vkPlatform) {
         return vkPlatform.startsWith('mobile_');
     }
-    
+
     // Вспомогательный чекер по User Agent
     const ua = navigator.userAgent.toLowerCase();
     return /mobile|android|iphone|ipad|phone/i.test(ua);
@@ -684,18 +684,20 @@ export const isMobilePlatform = (): boolean => {
 export const openStoryBox = async (isVictory?: boolean): Promise<'shared' | 'cancelled' | 'failed'> => {
     if (!bridge || !isVkMiniApp()) {
         console.log('[Mock] VKWebAppShowStoryBox вызван (localhost)');
-        const mockBgName = isVictory === true ? 'share_victory.png' : isVictory === false ? 'share_defeat.png' : 'bg_main_mobile.webp';
+        const mockBgName =
+            isVictory === true ? 'share_victory.png' : isVictory === false ? 'share_defeat.png' : 'bg_main_mobile.webp';
         alert(
             `[Тест] VKWebAppShowStoryBox вызван на localhost с фоном: ${mockBgName}! Симулируем успешную публикацию Истории.`,
         );
         return 'shared';
     }
     try {
-        const bgUrl = isVictory === true
-            ? 'https://sun9-33.userapi.com/s/v1/ig2/-cikeD5OWMw7rAmGdS5R-4Qc7DT4SIpWg1pRLtwFYvxFV0_Kbi4aMAG4EWEvbjGBwT-DyJ6BcTogOAziGIGT6j8C.jpg?quality=95&as=32x57,48x86,72x129,108x193,160x287,240x430,360x645,480x860,540x967,640x1147,720x1290,1080x1935,1280x2293,1429x2560&from=bu&cs=1429x0'
-            : isVictory === false
-              ? 'https://sun9-44.userapi.com/s/v1/ig2/vBq7o7uaFoArdRighVflBYTaFwa4Vdcy6QCUxv_0pUQv7EQBSPDP_uc-PGhcVGIEiGToCh5ZXrjeKQqtD7Lp_Aos.jpg?quality=95&as=32x57,48x86,72x129,108x193,160x287,240x430,360x645,480x860,540x967,640x1147,720x1290,1080x1935,1280x2293,1429x2560&from=bu&cs=1429x0'
-              : `${window.location.origin}/assets/images/backgrounds/bg_main_mobile.webp`;
+        const bgUrl =
+            isVictory === true
+                ? 'https://sun9-33.userapi.com/s/v1/ig2/-cikeD5OWMw7rAmGdS5R-4Qc7DT4SIpWg1pRLtwFYvxFV0_Kbi4aMAG4EWEvbjGBwT-DyJ6BcTogOAziGIGT6j8C.jpg?quality=95&as=32x57,48x86,72x129,108x193,160x287,240x430,360x645,480x860,540x967,640x1147,720x1290,1080x1935,1280x2293,1429x2560&from=bu&cs=1429x0'
+                : isVictory === false
+                  ? 'https://sun9-44.userapi.com/s/v1/ig2/vBq7o7uaFoArdRighVflBYTaFwa4Vdcy6QCUxv_0pUQv7EQBSPDP_uc-PGhcVGIEiGToCh5ZXrjeKQqtD7Lp_Aos.jpg?quality=95&as=32x57,48x86,72x129,108x193,160x287,240x430,360x645,480x860,540x967,640x1147,720x1290,1080x1935,1280x2293,1429x2560&from=bu&cs=1429x0'
+                  : `${window.location.origin}/assets/images/backgrounds/bg_main_mobile.webp`;
         await bridge.send('VKWebAppShowStoryBox', {
             background_type: 'image',
             url: bgUrl,

@@ -270,7 +270,7 @@ export const createInventorySlice = (set: any, get: any) => ({
             console.warn(`equipItem: Требуемый уровень (${requiredLevel}) выше вашего (${playerLevel})`);
             state.showConfirm?.(
                 `Недостаточный уровень! Этот предмет требует ${requiredLevel} уровень (ваш: ${playerLevel}).`,
-                () => {}
+                () => {},
             );
             return;
         }

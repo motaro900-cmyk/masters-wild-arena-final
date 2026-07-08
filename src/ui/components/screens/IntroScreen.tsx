@@ -602,7 +602,11 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
                                                 gap: '6px',
                                             }}
                                         >
-                                            <img src={AssetsMap.UI.TROPHY_PREMIUM} style={{ width: '16px', height: '16px', objectFit: 'contain' }} alt="trophy" />
+                                            <img
+                                                src={AssetsMap.UI.TROPHY_PREMIUM}
+                                                style={{ width: '16px', height: '16px', objectFit: 'contain' }}
+                                                alt="trophy"
+                                            />
                                             <span>СЛАВА</span>
                                         </div>
                                         <div

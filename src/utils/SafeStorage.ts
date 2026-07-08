@@ -44,7 +44,7 @@ const canUseLocalStorage = (): boolean => {
 };
 
 const computeSignature = (value: string): string => {
-    const salt = "m0t4r0_w1ld_aReNa_2026_sEcReT_sAlT";
+    const salt = 'm0t4r0_w1ld_aReNa_2026_sEcReT_sAlT';
     let hash = 5381;
     const combined = value + salt;
     for (let i = 0; i < combined.length; i++) {
@@ -72,7 +72,9 @@ export const getSecureStorage = (): IStorageLike => {
                     if (parsed.signature === expectedSignature) {
                         return parsed.payload;
                     }
-                    console.warn(`[SecureStorage] Signature verification failed for key: ${key}. Data has been tampered with!`);
+                    console.warn(
+                        `[SecureStorage] Signature verification failed for key: ${key}. Data has been tampered with!`,
+                    );
                     rawStorage.removeItem(key);
                     return null;
                 }
@@ -116,7 +118,7 @@ export const getSecureStorage = (): IStorageLike => {
 
         get length(): number {
             return rawStorage.length;
-        }
+        },
     };
 };
 

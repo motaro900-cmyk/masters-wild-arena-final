@@ -78,7 +78,8 @@ export function applyHitResolution(
             fx.screenShake(shakeIntensity, 0.93, 300);
 
             if (attackerRole === 'WARRIOR') {
-                const crackColor = attackerUnit && (attackerUnit as any).config?.color ? (attackerUnit as any).config.color : 0xd4a373;
+                const crackColor =
+                    attackerUnit && (attackerUnit as any).config?.color ? (attackerUnit as any).config.color : 0xd4a373;
                 spawnEarthquakeFissures(targetUnit.x, targetUnit.y, crackColor);
             }
         } else {
@@ -714,12 +715,27 @@ export function spawnEarthquakeFissures(x: number, y: number, color: number = 0x
         fissure.stroke({ color: color, width: 4 });
 
         const paths = [
-            [{ x: 0, y: 0 }, { x: -30, y: 15 }, { x: -70, y: 10 }, { x: -110, y: 25 }],
-            [{ x: 0, y: 0 }, { x: 40, y: -10 }, { x: 80, y: -5 }, { x: 120, y: -20 }],
-            [{ x: 0, y: 0 }, { x: -10, y: 35 }, { x: 15, y: 70 }, { x: 5, y: 100 }]
+            [
+                { x: 0, y: 0 },
+                { x: -30, y: 15 },
+                { x: -70, y: 10 },
+                { x: -110, y: 25 },
+            ],
+            [
+                { x: 0, y: 0 },
+                { x: 40, y: -10 },
+                { x: 80, y: -5 },
+                { x: 120, y: -20 },
+            ],
+            [
+                { x: 0, y: 0 },
+                { x: -10, y: 35 },
+                { x: 15, y: 70 },
+                { x: 5, y: 100 },
+            ],
         ];
 
-        paths.forEach(path => {
+        paths.forEach((path) => {
             fissure.moveTo(path[0].x, path[0].y);
             for (let i = 1; i < path.length; i++) {
                 fissure.lineTo(path[i].x, path[i].y);
@@ -736,7 +752,7 @@ export function spawnEarthquakeFissures(x: number, y: number, color: number = 0x
                     gsap.killTweensOf(container);
                     container.destroy({ children: true });
                 }
-            }
+            },
         });
     } catch (e) {
         console.error('❌ spawnEarthquakeFissures error:', e);
@@ -766,7 +782,7 @@ export function spawnBastionShield(x: number, y: number, color: number = 0x00d4f
         gsap.to(container, {
             x: x,
             duration: 0.1,
-            ease: 'bounce.out'
+            ease: 'bounce.out',
         });
 
         gsap.to(container, {
@@ -779,7 +795,7 @@ export function spawnBastionShield(x: number, y: number, color: number = 0x00d4f
                     gsap.killTweensOf(container);
                     container.destroy({ children: true });
                 }
-            }
+            },
         });
     } catch (e) {
         console.error('❌ spawnBastionShield error:', e);

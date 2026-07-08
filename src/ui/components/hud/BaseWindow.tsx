@@ -122,160 +122,158 @@ export const BaseWindow: React.FC<BaseWindowProps> = ({
 
     return (
         <motion.div
-                    initial={{ scale: 0.88, opacity: 0, y: 15 }}
-                    animate={{ scale: 1, opacity: 1, y: 0 }}
-                    exit={{ scale: 0.88, opacity: 0, y: 15 }}
-                    transition={{ type: 'spring', damping: 24, stiffness: 280 }}
-                    className="BaseWindow"
+            initial={{ scale: 0.88, opacity: 0, y: 15 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            exit={{ scale: 0.88, opacity: 0, y: 15 }}
+            transition={{ type: 'spring', damping: 24, stiffness: 280 }}
+            className="BaseWindow"
+            style={{
+                width: width,
+                height: height,
+                minHeight: '520px',
+                background: theme.bg,
+                backdropFilter: 'blur(20px)',
+                WebkitBackdropFilter: 'blur(20px)',
+                ...(theme.pattern !== 'none' && { backgroundImage: theme.pattern }),
+                border: isLight ? `4px solid ${theme.border}` : `2px solid ${theme.border}`,
+                borderRadius: '12px',
+                boxShadow: theme.shadow,
+                position: 'relative',
+                display: 'flex',
+                flexDirection: 'column',
+                overflow: 'hidden',
+                pointerEvents: 'auto',
+            }}
+        >
+            {/* Угловые акценты (только в темной теме) */}
+            {!isLight && (
+                <>
+                    <CornerAccent position="tl" color="#fbbf24" />
+                    <CornerAccent position="tr" color="#fbbf24" />
+                    <CornerAccent position="bl" color="rgba(251,191,36,0.5)" />
+                    <CornerAccent position="br" color="rgba(251,191,36,0.5)" />
+                </>
+            )}
+
+            {/* Заголовок окна */}
+            <div
+                style={{
+                    height: '75px',
+                    background: theme.headerBg,
+                    display: 'flex',
+                    alignItems: 'center',
+                    padding: '0 28px',
+                    justifyContent: 'space-between',
+                    borderBottom: `2.5px solid ${isLight ? theme.border : 'rgba(235, 185, 55, 0.45)'}`,
+                    position: 'relative',
+                    zIndex: 15,
+                }}
+            >
+                {/* Слева: дополнительные виджеты (например, время) */}
+                <div style={{ display: 'flex', alignItems: 'center', zIndex: 16 }}>{headerExtra}</div>
+
+                {/* По центру: заголовок окна */}
+                <div
                     style={{
-                        width: width,
-                        height: height,
-                        minHeight: '520px',
-                        background: theme.bg,
-                        backdropFilter: 'blur(20px)',
-                        WebkitBackdropFilter: 'blur(20px)',
-                        ...(theme.pattern !== 'none' && { backgroundImage: theme.pattern }),
-                        border: isLight ? `4px solid ${theme.border}` : `2px solid ${theme.border}`,
-                        borderRadius: '12px',
-                        boxShadow: theme.shadow,
-                        position: 'relative',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        overflow: 'hidden',
-                        pointerEvents: 'auto',
+                        position: 'absolute',
+                        left: '50%',
+                        top: '50%',
+                        transform: 'translate(-50%, -50%)',
+                        pointerEvents: 'none',
+                        textAlign: 'center',
+                        whiteSpace: 'nowrap',
+                        zIndex: 14,
                     }}
                 >
-                    {/* Угловые акценты (только в темной теме) */}
-                    {!isLight && (
-                        <>
-                            <CornerAccent position="tl" color="#fbbf24" />
-                            <CornerAccent position="tr" color="#fbbf24" />
-                            <CornerAccent position="bl" color="rgba(251,191,36,0.5)" />
-                            <CornerAccent position="br" color="rgba(251,191,36,0.5)" />
-                        </>
-                    )}
-
-                    {/* Заголовок окна */}
-                    <div
+                    <h2
                         style={{
-                            height: '75px',
-                            background: theme.headerBg,
-                            display: 'flex',
-                            alignItems: 'center',
-                            padding: '0 28px',
-                            justifyContent: 'space-between',
-                            borderBottom: `2.5px solid ${isLight ? theme.border : 'rgba(235, 185, 55, 0.45)'}`,
-                            position: 'relative',
-                            zIndex: 15,
+                            color: theme.titleColor,
+                            fontSize: '28px',
+                            fontFamily: "'Cinzel', 'Philosopher', serif",
+                            fontWeight: 900,
+                            margin: 0,
+                            textTransform: 'uppercase',
+                            letterSpacing: '2.5px',
+                            textShadow: isLight ? 'none' : '0 2px 10px rgba(0,0,0,0.8), 0 0 15px rgba(251,191,36,0.25)',
                         }}
                     >
-                        {/* Слева: дополнительные виджеты (например, время) */}
-                        <div style={{ display: 'flex', alignItems: 'center', zIndex: 16 }}>{headerExtra}</div>
+                        {displayTitle}
+                    </h2>
+                </div>
 
-                        {/* По центру: заголовок окна */}
+                {/* Справа: доп. виджет (например, пинг) и кнопка закрытия */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '20px', zIndex: 16 }}>
+                    {title === 'НАСТРОЙКИ' && showPing && (
+                        <div style={{ pointerEvents: 'auto' }}>
+                            <PingIndicator />
+                        </div>
+                    )}
+                    <div style={{ position: 'relative', display: 'inline-flex' }}>
                         <div
                             style={{
                                 position: 'absolute',
-                                left: '50%',
-                                top: '50%',
-                                transform: 'translate(-50%, -50%)',
-                                pointerEvents: 'none',
-                                textAlign: 'center',
-                                whiteSpace: 'nowrap',
-                                zIndex: 14,
+                                inset: isMobile ? '-10px' : '-5px',
+                                cursor: 'pointer',
+                                zIndex: 1,
                             }}
-                        >
-                            <h2
-                                style={{
-                                    color: theme.titleColor,
-                                    fontSize: '28px',
-                                    fontFamily: "'Cinzel', 'Philosopher', serif",
-                                    fontWeight: 900,
-                                    margin: 0,
-                                    textTransform: 'uppercase',
-                                    letterSpacing: '2.5px',
-                                    textShadow: isLight
-                                        ? 'none'
-                                        : '0 2px 10px rgba(0,0,0,0.8), 0 0 15px rgba(251,191,36,0.25)',
-                                }}
-                            >
-                                {displayTitle}
-                            </h2>
-                        </div>
-
-                        {/* Справа: доп. виджет (например, пинг) и кнопка закрытия */}
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '20px', zIndex: 16 }}>
-                            {title === 'НАСТРОЙКИ' && showPing && (
-                                <div style={{ pointerEvents: 'auto' }}>
-                                    <PingIndicator />
-                                </div>
-                            )}
-                            <div style={{ position: 'relative', display: 'inline-flex' }}>
-                                <div
-                                    style={{
-                                        position: 'absolute',
-                                        inset: isMobile ? '-10px' : '-5px',
-                                        cursor: 'pointer',
-                                        zIndex: 1,
-                                    }}
-                                    onClick={() => {
-                                        audioService.stopAllSFX();
-                                        audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
-                                        onClose();
-                                    }}
-                                />
-                                <motion.button
-                                    whileHover={{ scale: 1.15 }}
-                                    whileTap={{ scale: 0.85 }}
-                                    onClick={() => {
-                                        audioService.stopAllSFX();
-                                        audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
-                                        onClose();
-                                    }}
-                                    style={{
-                                        background: 'none',
-                                        border: 'none',
-                                        cursor: 'pointer',
-                                        color: theme.titleColor,
-                                        opacity: 0.8,
-                                        transition: 'opacity 0.2s',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        width: isMobile ? '44px' : '32px',
-                                        height: isMobile ? '44px' : '32px',
-                                        marginRight: isMobile ? '10px' : '5px',
-                                    }}
-                                    onMouseEnter={(e) => (e.currentTarget.style.opacity = '1')}
-                                    onMouseLeave={(e) => (e.currentTarget.style.opacity = '0.8')}
-                                >
-                                    <X
-                                        size={isMobile ? 32 : 24}
-                                        style={{
-                                            filter: isLight ? 'none' : 'drop-shadow(0 0 5px rgba(251,191,36,0.35))',
-                                        }}
-                                    />
-                                </motion.button>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Декоративная тонкая полоска под хедером */}
-                    {!isLight && (
-                        <div
-                            style={{
-                                height: '1px',
-                                background: 'linear-gradient(90deg, transparent, rgba(251, 191, 36, 0.4), transparent)',
-                                width: '100%',
-                                position: 'absolute',
-                                top: '75px',
-                                zIndex: 16,
+                            onClick={() => {
+                                audioService.stopAllSFX();
+                                audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
+                                onClose();
                             }}
                         />
-                    )}
+                        <motion.button
+                            whileHover={{ scale: 1.15 }}
+                            whileTap={{ scale: 0.85 }}
+                            onClick={() => {
+                                audioService.stopAllSFX();
+                                audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
+                                onClose();
+                            }}
+                            style={{
+                                background: 'none',
+                                border: 'none',
+                                cursor: 'pointer',
+                                color: theme.titleColor,
+                                opacity: 0.8,
+                                transition: 'opacity 0.2s',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                width: isMobile ? '44px' : '32px',
+                                height: isMobile ? '44px' : '32px',
+                                marginRight: isMobile ? '10px' : '5px',
+                            }}
+                            onMouseEnter={(e) => (e.currentTarget.style.opacity = '1')}
+                            onMouseLeave={(e) => (e.currentTarget.style.opacity = '0.8')}
+                        >
+                            <X
+                                size={isMobile ? 32 : 24}
+                                style={{
+                                    filter: isLight ? 'none' : 'drop-shadow(0 0 5px rgba(251,191,36,0.35))',
+                                }}
+                            />
+                        </motion.button>
+                    </div>
+                </div>
+            </div>
 
-                    {/* Контент окна */}
-                    <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>{children}</div>
+            {/* Декоративная тонкая полоска под хедером */}
+            {!isLight && (
+                <div
+                    style={{
+                        height: '1px',
+                        background: 'linear-gradient(90deg, transparent, rgba(251, 191, 36, 0.4), transparent)',
+                        width: '100%',
+                        position: 'absolute',
+                        top: '75px',
+                        zIndex: 16,
+                    }}
+                />
+            )}
+
+            {/* Контент окна */}
+            <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>{children}</div>
         </motion.div>
     );
 };

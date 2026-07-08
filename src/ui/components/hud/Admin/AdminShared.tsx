@@ -215,9 +215,10 @@ export const mapRawPlayerToRealPlayer = (p: any): RealPlayer => {
         return 0;
     };
 
-    const lastSeenMillis = getTimestampMillis(p.wasOnline) || getTimestampMillis(p.былВСети) || getTimestampMillis(p.lastSeen) || 0;
-    const isOnline = lastSeenMillis > 0 && (Date.now() - lastSeenMillis < 300000);
-    const statusVal = !isOnline ? 'OFFLINE' : (activeScreenVal === 'BATTLE' ? 'BATTLE' : 'ONLINE');
+    const lastSeenMillis =
+        getTimestampMillis(p.wasOnline) || getTimestampMillis(p.былВСети) || getTimestampMillis(p.lastSeen) || 0;
+    const isOnline = lastSeenMillis > 0 && Date.now() - lastSeenMillis < 300000;
+    const statusVal = !isOnline ? 'OFFLINE' : activeScreenVal === 'BATTLE' ? 'BATTLE' : 'ONLINE';
 
     // Парсим полноеСостояниеJSON / fullStateJSON для получения актуальных значений ресурсов игрока в реальном времени
     let parsedState: any = {};

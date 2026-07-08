@@ -413,7 +413,9 @@ export class GameApp {
                 if (typeof navigator !== 'undefined' && (navigator as any).connection) {
                     const conn = (navigator as any).connection;
                     if (conn.saveData || /2g|slow-2g/.test(conn.effectiveType || '')) {
-                        console.log('[GameApp] Skipping background item sprites preloading due to slow connection or save-data mode.');
+                        console.log(
+                            '[GameApp] Skipping background item sprites preloading due to slow connection or save-data mode.',
+                        );
                         return;
                     }
                 }
@@ -449,7 +451,9 @@ export class GameApp {
                 if (typeof navigator !== 'undefined' && (navigator as any).connection) {
                     const conn = (navigator as any).connection;
                     if (conn.saveData || /2g|slow-2g/.test(conn.effectiveType || '')) {
-                        console.log('[GameApp] Skipping general background preloading due to slow connection or save-data mode.');
+                        console.log(
+                            '[GameApp] Skipping general background preloading due to slow connection or save-data mode.',
+                        );
                         return;
                     }
                 }

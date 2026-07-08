@@ -40,7 +40,9 @@ const fetchWithRetry = async (
             console.log(`[BootController] Fetching ${url} (Attempt ${i + 1}/${retries})...`);
             const response = await fetch(url, options);
             const duration = Date.now() - start;
-            console.log(`[BootController] Fetch ${url} (Attempt ${i + 1}/${retries}) resolved in ${duration}ms. Status: ${response.status} (${response.statusText})`);
+            console.log(
+                `[BootController] Fetch ${url} (Attempt ${i + 1}/${retries}) resolved in ${duration}ms. Status: ${response.status} (${response.statusText})`,
+            );
             if (response.ok) return response;
             throw new Error(`Server returned status ${response.status}`);
         } catch (err: any) {
@@ -73,12 +75,14 @@ class BootController {
     private remoteProfileData: any = null;
     private needPostBootSync = false;
     private bootStartTime: number = 0;
-    private assetPreloadPromise: Promise<void> | null = null;
 
     // ── Diagnostic system ──────────────────────────────────────────────────
     public bootMode: BootMode = 'STRICT';
     private bootIssues: BootIssue[] = [];
-    private diagnostics: Record<string, { start: number; end?: number; duration?: number; status?: string; error?: string }> = {};
+    private diagnostics: Record<
+        string,
+        { start: number; end?: number; duration?: number; status?: string; error?: string }
+    > = {};
 
     public startDiagnostic(step: string): void {
         this.diagnostics[step] = { start: Date.now() };
@@ -95,23 +99,29 @@ class BootController {
         diag.status = status;
         if (errorMsg) diag.error = errorMsg;
         if (window.location.search.includes('debugStartup=true')) {
-            console.log(`[Diagnostics] 🏁 Step ${step} completed in ${diag.duration}ms. Status: ${status}${errorMsg ? ` (Error: ${errorMsg})` : ''}`);
+            console.log(
+                `[Diagnostics] 🏁 Step ${step} completed in ${diag.duration}ms. Status: ${status}${errorMsg ? ` (Error: ${errorMsg})` : ''}`,
+            );
         }
     }
 
     public printDiagnosticReport(): void {
         console.log('[Diagnostics] 📊 STARTUP PERFORMANCE REPORT:');
         Object.entries(this.diagnostics).forEach(([step, data]) => {
-            console.log(` - ${step.padEnd(25)}: ${String(data.duration ?? 'Pending/Timeout').padStart(6)}ms | Status: ${data.status || 'UNKNOWN'} | Error: ${data.error || '-'}`);
+            console.log(
+                ` - ${step.padEnd(25)}: ${String(data.duration ?? 'Pending/Timeout').padStart(6)}ms | Status: ${data.status || 'UNKNOWN'} | Error: ${data.error || '-'}`,
+            );
         });
     }
 
     public getDiagnosticSummary(): string {
         const totalDuration = Date.now() - this.bootStartTime;
-        const stepsReport = Object.entries(this.diagnostics).map(([step, data]) => {
-            const dur = data.duration !== undefined ? `${(data.duration / 1000).toFixed(2)}s` : 'Timeout/Pending';
-            return `${step.padEnd(22)}: ${data.status === 'SUCCESS' ? 'OK' : 'FAILED'} (${dur})${data.error ? ` - Error: ${data.error}` : ''}`;
-        }).join('\n');
+        const stepsReport = Object.entries(this.diagnostics)
+            .map(([step, data]) => {
+                const dur = data.duration !== undefined ? `${(data.duration / 1000).toFixed(2)}s` : 'Timeout/Pending';
+                return `${step.padEnd(22)}: ${data.status === 'SUCCESS' ? 'OK' : 'FAILED'} (${dur})${data.error ? ` - Error: ${data.error}` : ''}`;
+            })
+            .join('\n');
 
         const searchParams = new URLSearchParams(window.location.search);
         const vkParams = Array.from(searchParams.keys())
@@ -147,7 +157,9 @@ class BootController {
             `================================================`,
             `Result: ${finalStatus}`,
             failedStep ? `Failed step: ${failedStep[0]}\nError: ${failedStep[1].error || 'timeout'}` : '',
-        ].filter(Boolean).join('\n');
+        ]
+            .filter(Boolean)
+            .join('\n');
     }
 
     public recordBootIssue(issue: Omit<BootIssue, 'phase'> & { phase?: string }): void {
@@ -414,7 +426,7 @@ class BootController {
                     setLoadingText('Загрузка игрового профиля...');
                     await this.runAction({
                         type: 'LOAD_PROFILE',
-                        payload: { setInitError, resolveVkPromise }
+                        payload: { setInitError, resolveVkPromise },
                     });
                 })();
 
@@ -459,39 +471,52 @@ class BootController {
                     });
                 }
 
-                // ── LOAD_TELEMETRY ─────────────────────────────────────────
-                setLoadingText('Анализ производительности устройства...');
-                const { getDeviceProfile } = await import('../services/TelemetryService');
-                try {
-                    const profile = await getDeviceProfile();
-                    console.log(
-                        `[BootController] Device Profile loaded. OS: ${profile.os}, Refresh Rate: ${profile.refreshRate}Hz`,
-                    );
-                    if (!profileState.hasCustomSettings) {
-                        const isMobileOrTablet =
-                            profile.touchDevice || /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
-                        const recommendedFpsCap = isMobileOrTablet ? 60 : profile.refreshRate || 60;
-                        useGameStore.setState({
-                            fpsCap: recommendedFpsCap,
-                            isSystemUpdate: true,
-                        });
-                        console.log(`[BootController] Auto-configured recommended FPS: ${recommendedFpsCap}`);
+                // ── LOAD_TELEMETRY (Deferred — не блокирует READY) ────────
+                // Запускаем фоново: не нужен до появления главного меню
+                Promise.resolve().then(async () => {
+                    setLoadingText('Анализ производительности устройства...');
+                    const { getDeviceProfile } = await import('../services/TelemetryService');
+                    try {
+                        const profile = await getDeviceProfile();
+                        console.log(
+                            `[BootController] Device Profile loaded. OS: ${profile.os}, Refresh Rate: ${profile.refreshRate}Hz`,
+                        );
+                        if (!profileState.hasCustomSettings) {
+                            const isMobileOrTablet =
+                                profile.touchDevice || /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
+                            const recommendedFpsCap = isMobileOrTablet ? 60 : profile.refreshRate || 60;
+                            useGameStore.setState({
+                                fpsCap: recommendedFpsCap,
+                                isSystemUpdate: true,
+                            });
+                            console.log(`[BootController] Auto-configured recommended FPS: ${recommendedFpsCap}`);
+                        }
+                    } catch (telemetryErr) {
+                        console.warn('[BootController] Telemetry failed to load:', telemetryErr);
                     }
-                } catch (telemetryErr) {
-                    console.warn('[BootController] Telemetry failed to load:', telemetryErr);
-                }
+                }).catch(() => {});
 
-                // ── LOAD_OPPONENT (Deferred) ──────────────────────────────
-                setLoadingText('Инициализация подбора игроков...');
-                await this.execute({ type: 'LOAD_OPPONENT' });
+                // ── LOAD_OPPONENT (Deferred — фоново) ────────────────────
+                // Матчмейкинг не нужен для первого рендера главного меню
+                Promise.resolve().then(async () => {
+                    await this.execute({ type: 'LOAD_OPPONENT' });
+                }).catch((e) => {
+                    console.warn('[BootController] Background opponent loading failed:', e);
+                });
 
-                // ── LOAD_CONFIG ────────────────────────────────────────────
-                setLoadingText('Синхронизация игрового конфига...');
-                await this.execute({ type: 'LOAD_CONFIG' });
+                // ── LOAD_CONFIG (Deferred — фоново) ──────────────────────
+                // Конфиг синхронизируется после появления UI — не критично для загрузки
+                Promise.resolve().then(async () => {
+                    await this.execute({ type: 'LOAD_CONFIG' });
+                }).catch((e) => {
+                    console.warn('[BootController] Background config sync failed:', e);
+                });
 
                 // ── LOAD_DERIVED_DATA ──────────────────────────────────────
+                // Остаётся в критическом пути — нужен для HUD (квесты, ранг, аватар)
                 setLoadingText('Подготовка интерфейса и квестов...');
                 await this.execute({ type: 'LOAD_DERIVED_DATA' });
+
 
                 // Validate derived state
                 const finalState = useGameStore.getState();
@@ -744,10 +769,7 @@ class BootController {
                 this.endDiagnostic('/api/verify-sign', 'SUCCESS');
             } catch (err: any) {
                 this.endDiagnostic('/api/verify-sign', 'ERROR', err.message || String(err));
-                if (
-                    err.message === 'Standalone launch restricted' ||
-                    err.message?.includes('status 400')
-                ) {
+                if (err.message === 'Standalone launch restricted' || err.message?.includes('status 400')) {
                     setNotInVk(true);
                     throw new Error('Standalone launch restricted');
                 }
@@ -786,7 +808,6 @@ class BootController {
                 this.endDiagnostic('VKWebAppGetUserInfo', 'SUCCESS');
             } catch (vkErr: any) {
                 this.endDiagnostic('VKWebAppGetUserInfo', 'ERROR', vkErr.message || String(vkErr));
-                console.warn('[BootController] getVkUserInfo failed, falling back to URL parameters:', vkErr);
                 const searchParams = new URLSearchParams(window.location.search);
                 const urlVkUserId = searchParams.get('vk_user_id');
                 if (urlVkUserId) {
@@ -797,16 +818,13 @@ class BootController {
                         photo: '/assets/images/avatars/panda.webp',
                         photo200: '/assets/images/avatars/panda.webp',
                     };
+                } else if (isVkMiniApp()) {
+                    throw new Error(
+                        'Не удалось получить параметры запуска ВКонтакте. Пожалуйста, проверьте соединение и попробуйте снова.',
+                    );
                 } else {
-                    const { isVkMiniApp } = await import('../utils/VKBridge');
-                    if (isVkMiniApp()) {
-                        throw new Error(
-                            'Не удалось получить ваш профиль ВКонтакте и отсутствуют параметры запуска. Проверьте интернет-подключение и попробуйте снова.',
-                        );
-                    } else {
-                        setNotInVk(true);
-                        throw new Error('Standalone launch restricted');
-                    }
+                    setNotInVk(true);
+                    throw new Error('Standalone launch restricted');
                 }
             }
 
@@ -843,7 +861,6 @@ class BootController {
                     photo200: '/assets/images/avatars/panda.webp',
                 };
                 // Ensure other critical tasks (like timePromise) are resolved
-                await Promise.all([timePromise]);
             } else {
                 throw err;
             }
@@ -1002,16 +1019,18 @@ class BootController {
 
         // Calculate and apply admin status in the background to prevent network query from blocking startup
         const finalState = useGameStore.getState();
-        this.resolveAdminStatus(finalState.playerId).then((isAdmin) => {
-            useGameStore.setState({
-                isAdmin,
-                isDeveloper: isAdmin,
-                isSystemUpdate: true,
+        this.resolveAdminStatus(finalState.playerId)
+            .then((isAdmin) => {
+                useGameStore.setState({
+                    isAdmin,
+                    isDeveloper: isAdmin,
+                    isSystemUpdate: true,
+                });
+                console.log('[BootController] Background admin status resolved:', isAdmin);
+            })
+            .catch((err) => {
+                console.warn('[BootController] Background admin status resolution failed:', err);
             });
-            console.log('[BootController] Background admin status resolved:', isAdmin);
-        }).catch((err) => {
-            console.warn('[BootController] Background admin status resolution failed:', err);
-        });
 
         useGameStore.setState({
             profileStatus: 'loaded',
@@ -1290,7 +1309,7 @@ class BootController {
             _useGameStore,
             _playerSnapshotService,
             _sceneManager,
-            _mainScreen
+            _mainScreen,
         ] = await Promise.all([
             import('./initGameSystems'),
             import('../GameApp'),
@@ -1300,7 +1319,7 @@ class BootController {
             import('../store/useGameStore'),
             import('../services/PlayerSnapshotService'),
             import('../engine/core/SceneManager'),
-            import('../ui/screens/MainScreen')
+            import('../ui/screens/MainScreen'),
         ]);
 
         // Initialize Game Systems
@@ -1355,6 +1374,18 @@ class BootController {
             const absoluteBoot = performance.now() - (window as any).__bootStart;
             console.log(`[METRIC] TOTAL_BOOT = ${absoluteBoot.toFixed(1)}ms`);
         }
+
+        // ── BACKGROUND ASSET PRELOAD ─────────────────────────────────────
+        // Запускаем после READY — загружаем фоны экранов и персонажей в фоне,
+        // чтобы City/Forge/Arena открывались мгновенно из кеша браузера.
+        try {
+            const { AssetLoader } = await import('../engine/systems/AssetLoader');
+            AssetLoader.getInstance().startBackgroundPreload();
+            console.log('[BootController] Background asset preload initiated.');
+        } catch (preloadErr) {
+            console.warn('[BootController] Background asset preload failed to start:', preloadErr);
+        }
+
 
         // Рекалибровка времени при возвращении во вкладку (защита от накрутки временем в фоне)
         if (typeof document !== 'undefined') {

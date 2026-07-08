@@ -122,10 +122,10 @@ export const RankingWindow: React.FC = () => {
         }
 
         const currentUserName =
-            playerName && playerName !== 'Мастер'
+            playerName && playerName !== 'Мастер' && playerName !== 'undefined' && playerName !== 'undefined undefined'
                 ? playerName
-                : vkUser?.firstName
-                  ? `${vkUser.firstName} ${vkUser.lastName}`
+                : vkUser
+                  ? `${vkUser.firstName || vkUser.first_name || 'Игрок'} ${vkUser.lastName || vkUser.last_name || ''}`.trim()
                   : 'Воин';
 
         const playerMember: LeaderboardEntry = {
@@ -210,8 +210,14 @@ export const RankingWindow: React.FC = () => {
                         const nameVal = p.name || p.имя || 'Мастер';
                         const firstName = nameVal.split(' ')[0];
                         const isMe = (() => {
-                            const myPrefixedId = vkUser ? `VK-${vkUser.id}` : (playerId?.startsWith('GUEST-') ? playerId : `GUEST-${playerId?.replace(/^MW-/, '') || 'DEVELOPER'}`);
-                            return p.id === myPrefixedId || (vkUser?.id && p.vkId && String(p.vkId) === String(vkUser.id));
+                            const myPrefixedId = vkUser
+                                ? `VK-${vkUser.id}`
+                                : playerId?.startsWith('GUEST-')
+                                  ? playerId
+                                  : `GUEST-${playerId?.replace(/^MW-/, '') || 'DEVELOPER'}`;
+                            return (
+                                p.id === myPrefixedId || (vkUser?.id && p.vkId && String(p.vkId) === String(vkUser.id))
+                            );
                         })();
 
                         return {

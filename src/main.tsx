@@ -11,7 +11,7 @@ import { InitErrorScreen } from './ui/components/InitErrorScreen';
 // SafeGameLayout is lazily loaded to prevent HUD components (GameHUD, framer-motion ~129 kB)
 // from pulling into the startup bundle. It only renders when bootState === 'READY'.
 const SafeGameLayout = React.lazy(() =>
-    import('./ui/layouts/SafeGameLayout').then((m) => ({ default: m.SafeGameLayout }))
+    import('./ui/layouts/SafeGameLayout').then((m) => ({ default: m.SafeGameLayout })),
 );
 import { AppConfig } from './configs/AppConfig';
 import { bootController, BootState } from './bootstrap/BootController';

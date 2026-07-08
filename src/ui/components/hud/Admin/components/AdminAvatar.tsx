@@ -20,7 +20,12 @@ export const AdminAvatar: React.FC<AdminAvatarProps> = ({ photo, name, style }) 
     const [imgSrc, setImgSrc] = useState<string | null>(null);
     const [status, setStatus] = useState<'loading' | 'loaded' | 'error'>('loading');
 
-    const cleanName = name ? name.replace(/\s*\(Я\)\s*$/, '').replace(/\s*\(Вы\)\s*$/, '').trim() : 'Unknown';
+    const cleanName = name
+        ? name
+              .replace(/\s*\(Я\)\s*$/, '')
+              .replace(/\s*\(Вы\)\s*$/, '')
+              .trim()
+        : 'Unknown';
     const firstLetter = cleanName.charAt(0).toUpperCase() || '?';
 
     // Pick a deterministic gradient based on name character code

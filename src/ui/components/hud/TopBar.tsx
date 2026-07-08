@@ -44,10 +44,10 @@ export const TopBar: React.FC<TopBarProps> = ({ onOpenWindow, mode }) => {
                         className="font-header text-[28px] font-black text-white leading-tight uppercase tracking-tight truncate w-[180px]"
                         style={textShadow}
                     >
-                        {name && name !== 'Мастер'
+                        {name && name !== 'Мастер' && name !== 'undefined' && name !== 'undefined undefined'
                             ? name
-                            : vkUser?.firstName
-                              ? `${vkUser.firstName} ${vkUser.lastName}`
+                            : vkUser
+                              ? `${vkUser.firstName || vkUser.first_name || 'Игрок'} ${vkUser.lastName || vkUser.last_name || ''}`.trim()
                               : 'ИГРОК ВК'}
                     </h1>
                     <span className="font-ui text-amber-400 text-[11px] font-black tracking-[0.2em] uppercase">

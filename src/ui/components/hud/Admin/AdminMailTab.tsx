@@ -174,8 +174,15 @@ export const AdminMailTab: React.FC<AdminMailTabProps> = ({ mailRecipient, setMa
                         <button onClick={() => applyMailTemplate('LAG')} style={smallBtnStyle}>
                             ⚙️ Шаблон: Лаги
                         </button>
-                        <button onClick={() => applyMailTemplate('REWARD')} style={{ ...smallBtnStyle, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                            <img src={AssetsMap.UI.TROPHY_PREMIUM} style={{ width: '12px', height: '12px', objectFit: 'contain' }} alt="trophy" />
+                        <button
+                            onClick={() => applyMailTemplate('REWARD')}
+                            style={{ ...smallBtnStyle, display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                        >
+                            <img
+                                src={AssetsMap.UI.TROPHY_PREMIUM}
+                                style={{ width: '12px', height: '12px', objectFit: 'contain' }}
+                                alt="trophy"
+                            />
                             Шаблон: Награда
                         </button>
                         <button onClick={() => applyMailTemplate('WELCOME')} style={smallBtnStyle}>
@@ -304,11 +311,17 @@ export const AdminMailTab: React.FC<AdminMailTabProps> = ({ mailRecipient, setMa
                                 >
                                     <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                                         {a.icon && (a.icon.includes('/assets/') || a.icon.endsWith('.webp')) ? (
-                                            <img src={a.icon} alt="" style={{ width: '16px', height: '16px', objectFit: 'contain' }} />
+                                            <img
+                                                src={a.icon}
+                                                alt=""
+                                                style={{ width: '16px', height: '16px', objectFit: 'contain' }}
+                                            />
                                         ) : (
                                             a.icon
                                         )}
-                                        <span>{a.name} x{a.amount}</span>
+                                        <span>
+                                            {a.name} x{a.amount}
+                                        </span>
                                     </span>
                                     <span
                                         onClick={() => setMailAttachments(mailAttachments.filter((x) => x.id !== a.id))}
@@ -362,7 +375,11 @@ export const AdminMailTab: React.FC<AdminMailTabProps> = ({ mailRecipient, setMa
                                     }}
                                 >
                                     {a.icon && (a.icon.includes('/assets/') || a.icon.endsWith('.webp')) ? (
-                                        <img src={a.icon} alt="" style={{ width: '20px', height: '20px', objectFit: 'contain' }} />
+                                        <img
+                                            src={a.icon}
+                                            alt=""
+                                            style={{ width: '20px', height: '20px', objectFit: 'contain' }}
+                                        />
                                     ) : (
                                         a.icon
                                     )}

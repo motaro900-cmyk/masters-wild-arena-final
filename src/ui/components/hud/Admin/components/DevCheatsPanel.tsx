@@ -136,10 +136,26 @@ export const DevCheatsPanel: React.FC<DevCheatsPanelProps> = ({ selectedPlayer, 
                         e.currentTarget.style.boxShadow = '0 0 10px rgba(234, 179, 8, 0.15)';
                     }}
                 >
-                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '3px', justifyContent: 'center', width: '100%' }}>
-                        <img src={AssetsMap.UI.ICON_GOLD_FULL} alt="gold" style={{ width: '12px', height: '12px', objectFit: 'contain' }} />
-                        +100к, 
-                        <img src={AssetsMap.UI.ICON_ALMAZ_FULL} alt="gems" style={{ width: '12px', height: '12px', objectFit: 'contain', marginLeft: '2px' }} />
+                    <span
+                        style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '3px',
+                            justifyContent: 'center',
+                            width: '100%',
+                        }}
+                    >
+                        <img
+                            src={AssetsMap.UI.ICON_GOLD_FULL}
+                            alt="gold"
+                            style={{ width: '12px', height: '12px', objectFit: 'contain' }}
+                        />
+                        +100к,
+                        <img
+                            src={AssetsMap.UI.ICON_ALMAZ_FULL}
+                            alt="gems"
+                            style={{ width: '12px', height: '12px', objectFit: 'contain', marginLeft: '2px' }}
+                        />
                         +5к
                     </span>
                 </button>
@@ -181,7 +197,11 @@ export const DevCheatsPanel: React.FC<DevCheatsPanelProps> = ({ selectedPlayer, 
                         e.currentTarget.style.boxShadow = '0 0 10px rgba(14, 165, 233, 0.15)';
                     }}
                 >
-                    <img src={AssetsMap.UI.ICON_ENERGY_FULL} style={{ width: '12px', height: '12px', objectFit: 'contain' }} alt="energy" />
+                    <img
+                        src={AssetsMap.UI.ICON_ENERGY_FULL}
+                        style={{ width: '12px', height: '12px', objectFit: 'contain' }}
+                        alt="energy"
+                    />
                     9999 ЭНЕРГИИ
                 </button>
 
@@ -221,7 +241,11 @@ export const DevCheatsPanel: React.FC<DevCheatsPanelProps> = ({ selectedPlayer, 
                         e.currentTarget.style.boxShadow = '0 0 10px rgba(139, 92, 246, 0.15)';
                     }}
                 >
-                    <img src={AssetsMap.UI.ICON_XP} style={{ width: '12px', height: '12px', objectFit: 'contain' }} alt="xp" />
+                    <img
+                        src={AssetsMap.UI.ICON_XP}
+                        style={{ width: '12px', height: '12px', objectFit: 'contain' }}
+                        alt="xp"
+                    />
                     УРОВЕНЬ 100
                 </button>
             </div>

@@ -78,7 +78,7 @@ export const HEROES_DB: IHeroConfig[] = [
         unlockCost: 800,
         unlockGoldCost: 20000,
         requiredTrophies: 400,
-        stats: { hp: 560, attack: 42, defense: 6, speed: 2.10, critChance: 11.5 },
+        stats: { hp: 560, attack: 42, defense: 6, speed: 2.1, critChance: 11.5 },
         baseScale: 0.75,
         anchors: {
             feet: { x: 0.5, y: 0.95 },
@@ -124,7 +124,7 @@ export const HEROES_DB: IHeroConfig[] = [
         unlockCost: 2000,
         unlockGoldCost: 60000,
         requiredTrophies: 2000,
-        stats: { hp: 525, attack: 40, defense: 6, speed: 2.20, critChance: 12.5 },
+        stats: { hp: 525, attack: 40, defense: 6, speed: 2.2, critChance: 12.5 },
         baseScale: 0.82,
         anchors: {
             feet: { x: 0.5, y: 0.95 },
@@ -147,7 +147,7 @@ export const HEROES_DB: IHeroConfig[] = [
         unlockCost: 3500,
         unlockGoldCost: 100000,
         requiredTrophies: 3000,
-        stats: { hp: 805, attack: 34, defense: 11, speed: 1.80, critChance: 8.0 },
+        stats: { hp: 805, attack: 34, defense: 11, speed: 1.8, critChance: 8.0 },
         baseScale: 0.75,
         anchors: {
             feet: { x: 0.5, y: 0.95 },

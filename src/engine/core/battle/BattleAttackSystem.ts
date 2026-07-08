@@ -77,9 +77,11 @@ export async function executeAttack(engine: BattleEngine, attacker: HeroUnit, vi
     const isExecuteRange = victimHP / victimMaxHP < 0.35;
 
     if (isAssassin && isExecuteRange) {
-        finalAttack = Math.round(finalAttack * 1.30);
+        finalAttack = Math.round(finalAttack * 1.3);
         finalCritChance = Math.min(1.0, finalCritChance + 0.15);
-        anyEngine.updateState({ log: `🗡️ [ФАЗА КАЗНИ] ${attacker.config.name} чувствует кровь! Атака +30%, крит +15%!` });
+        anyEngine.updateState({
+            log: `🗡️ [ФАЗА КАЗНИ] ${attacker.config.name} чувствует кровь! Атака +30%, крит +15%!`,
+        });
         anyEngine.addCombatLog(`🗡️ [ФАЗА КАЗНИ] Атака ${attacker.config.name} усилена против раненого врага!`);
     }
 
@@ -300,7 +302,7 @@ export async function executeAttack(engine: BattleEngine, attacker: HeroUnit, vi
 
     // Фиксированный шанс уклонения: 5% базовый, 15% для кинжалов/луков
     const baseDodgeChance = 0.05;
-    const weaponDodgeBonus = (victimWeaponArchetype === 'BOW' || victimWeaponArchetype === 'DAGGER') ? 0.10 : 0.0;
+    const weaponDodgeBonus = victimWeaponArchetype === 'BOW' || victimWeaponArchetype === 'DAGGER' ? 0.1 : 0.0;
     const totalDodgeChance = baseDodgeChance + weaponDodgeBonus;
 
     let hasDodged = Math.random() < totalDodgeChance;
@@ -424,14 +426,24 @@ export async function executeAttack(engine: BattleEngine, attacker: HeroUnit, vi
             if (isPlayer) {
                 const nextAttackerHP = anyEngine.applyDamage('player', counterDamage);
                 anyEngine.totalDamageTaken += counterDamage;
-                anyEngine.onCombatEvent({ type: 'HIT', damage: counterDamage, target: 'player', label: `🛡️ -${counterDamage}` });
+                anyEngine.onCombatEvent({
+                    type: 'HIT',
+                    damage: counterDamage,
+                    target: 'player',
+                    label: `🛡️ -${counterDamage}`,
+                });
                 attacker.animateHitReaction(false);
                 EffectsManager.getInstance().normalHit(attacker);
                 if (nextAttackerHP <= 0) attacker.animateDeath(true);
             } else {
                 const nextAttackerHP = anyEngine.applyDamage('enemy', counterDamage);
                 anyEngine.totalDamageDealt += counterDamage;
-                anyEngine.onCombatEvent({ type: 'HIT', damage: counterDamage, target: 'enemy', label: `🛡️ -${counterDamage}` });
+                anyEngine.onCombatEvent({
+                    type: 'HIT',
+                    damage: counterDamage,
+                    target: 'enemy',
+                    label: `🛡️ -${counterDamage}`,
+                });
                 attacker.animateHitReaction(false);
                 EffectsManager.getInstance().normalHit(attacker);
                 if (nextAttackerHP <= 0) attacker.animateDeath(false);

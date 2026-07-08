@@ -151,7 +151,7 @@ export const useAvatarRenderer = (heroId: string, size: number = 512) => {
         const itemY = rootY + socket.y * normHeight * scaleFactor;
 
         const itemStyle: any = {};
-        if (itemId === 'weapon_moon_sword') {
+        if (itemId === 'sword_silver') {
             itemStyle.filter = 'drop-shadow(0 0 12px rgba(180, 220, 255, 0.95)) brightness(1.2) contrast(1.1)';
         }
 

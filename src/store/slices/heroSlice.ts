@@ -237,7 +237,7 @@ export const createHeroSlice = (set: any, get: any) => {
                 // Таланты атаки
                 if (tId === 'atk_base') total.attack = Math.round(total.attack * (1 + level * 0.05));
                 if (tId === 'atk_crit') total.critChance += level * 2;
-                if (tId === 'atk_pen') total.critDamage += level * 0.10;
+                if (tId === 'atk_pen') total.critDamage += level * 0.1;
 
                 // Таланты защиты
                 if (tId === 'def_base') total.hp = Math.round(total.hp * (1 + level * 0.05));

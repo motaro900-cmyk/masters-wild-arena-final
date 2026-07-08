@@ -416,7 +416,6 @@ export const PreBattleScreen: React.FC<PreBattleScreenProps> = ({
         };
     }, []);
 
-
     return (
         <div
             style={{
@@ -758,8 +757,6 @@ export const PreBattleScreen: React.FC<PreBattleScreenProps> = ({
                     <StatCompareRow label="ЗАЩИТА" playerVal={playerStats.defense} enemyVal={enemyStats.defense} />
                     <StatCompareRow label="СКОРОСТЬ" playerVal={playerStats.speed} enemyVal={enemyStats.speed} />
                 </div>
-
-
 
                 {/* Кнопки */}
                 <div

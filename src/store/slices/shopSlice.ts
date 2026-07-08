@@ -212,11 +212,7 @@ export const createShopSlice = (set: any, get: any) => ({
     },
 
     buyCrystalsPack: async (packId: string) => {
-        if (
-            !import.meta.env.DEV &&
-            typeof window !== 'undefined' &&
-            !(window as any).vkBridgeInitialized
-        ) {
+        if (!import.meta.env.DEV && typeof window !== 'undefined' && !(window as any).vkBridgeInitialized) {
             console.warn('[Shop] Direct purchase blocked outside VK environment');
             return false;
         }

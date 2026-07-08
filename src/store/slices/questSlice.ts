@@ -459,13 +459,13 @@ export const createQuestSlice = (set: any, get: any) => ({
                 instanceId: `dagger_bone_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
             };
             newInventory.push(weaponObj);
-        } else if (rewardId === 'weapon_moon_sword') {
+        } else if (rewardId === 'sword_silver') {
             const weaponObj = {
-                id: 'weapon_moon_sword',
+                id: 'sword_silver',
                 type: 'WEAPONS',
                 rarity: 'EPIC',
                 level: 1,
-                instanceId: `weapon_moon_sword_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+                instanceId: `sword_silver_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
             };
             newInventory.push(weaponObj);
         } else if (rewardId === 'weapon_fire_staff') {

@@ -241,7 +241,6 @@ export class EffectsManager {
         }
     }
 
-
     /**
      * Стоп-кадр (Freeze Frame)
      */

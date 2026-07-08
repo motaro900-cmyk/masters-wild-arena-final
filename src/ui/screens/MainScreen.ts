@@ -33,7 +33,9 @@ export class MainScreen extends PIXI.Container {
 
     private async init() {
         try {
-            const isMobile = typeof navigator !== 'undefined' && /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            const isMobile =
+                typeof navigator !== 'undefined' &&
+                /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
             const bgPath = isMobile ? AssetsMap.BACKGROUNDS.MAIN_MENU_MOBILE : AssetsMap.BACKGROUNDS.MAIN_MENU;
             console.log('[MainScreen] Loading background:', bgPath);
 

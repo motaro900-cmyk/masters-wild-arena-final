@@ -140,30 +140,10 @@ export const HeroDetailsModal = ({ hero, isOwned, onClose, rarityColors, onBuy, 
                     {/* STATS */}
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
                         <DetailStat icon="❤️" label="ЗДОРОВЬЕ (BASE)" value={hero.stats.hp} color="#ef4444" />
-                        <DetailStat
-                            icon="⚔️"
-                            label="СИЛА АТАКИ (BASE)"
-                            value={hero.stats.attack}
-                            color="#f97316"
-                        />
-                        <DetailStat
-                            icon="🛡️"
-                            label="ЗАЩИТА (BASE)"
-                            value={hero.stats.defense}
-                            color="#3b82f6"
-                        />
-                        <DetailStat
-                            icon="🌪️"
-                            label="СКОРОСТЬ (BASE)"
-                            value={hero.stats.speed}
-                            color="#22c55e"
-                        />
-                        <DetailStat
-                            icon="💥"
-                            label="КРИТ. ШАНС"
-                            value={`${hero.stats.critChance}%`}
-                            color="#a855f7"
-                        />
+                        <DetailStat icon="⚔️" label="СИЛА АТАКИ (BASE)" value={hero.stats.attack} color="#f97316" />
+                        <DetailStat icon="🛡️" label="ЗАЩИТА (BASE)" value={hero.stats.defense} color="#3b82f6" />
+                        <DetailStat icon="🌪️" label="СКОРОСТЬ (BASE)" value={hero.stats.speed} color="#22c55e" />
+                        <DetailStat icon="💥" label="КРИТ. ШАНС" value={`${hero.stats.critChance}%`} color="#a855f7" />
                     </div>
 
                     {/* SKILLS PLACEHOLDER */}

@@ -123,7 +123,11 @@ export const PurchaseSuccessModal: React.FC<PurchaseSuccessModalProps> = ({
                             transition={{ duration: 1.1, delay: 0.15 }}
                             style={{ marginBottom: '12px', display: 'flex', justifyContent: 'center' }}
                         >
-                            <img src={AssetsMap.UI.ICON_ALMAZ_FULL} style={{ width: '64px', height: '64px', objectFit: 'contain' }} alt="crystal" />
+                            <img
+                                src={AssetsMap.UI.ICON_ALMAZ_FULL}
+                                style={{ width: '64px', height: '64px', objectFit: 'contain' }}
+                                alt="crystal"
+                            />
                         </motion.div>
 
                         {/* Success badge */}
@@ -201,7 +205,11 @@ export const PurchaseSuccessModal: React.FC<PurchaseSuccessModalProps> = ({
                                 marginBottom: '22px',
                             }}
                         >
-                            <img src={AssetsMap.UI.ICON_ALMAZ_FULL} style={{ width: '32px', height: '32px', objectFit: 'contain' }} alt="crystal" />
+                            <img
+                                src={AssetsMap.UI.ICON_ALMAZ_FULL}
+                                style={{ width: '32px', height: '32px', objectFit: 'contain' }}
+                                alt="crystal"
+                            />
                             <div style={{ textAlign: 'left' }}>
                                 <div
                                     style={{

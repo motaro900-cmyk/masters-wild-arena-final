@@ -53,4 +53,11 @@ export interface IEquipmentStats extends IBaseItem {
     // Обратная совместимость (alias)
     critBonus?: number;
     speedBonus?: number;
+
+    /**
+     * CSS filter string applied to the item sprite image.
+     * Used to visually differentiate items that share the same sprite file.
+     * Example: 'hue-rotate(100deg) saturate(1.8) brightness(1.1)'
+     */
+    imageFilter?: string;
 }

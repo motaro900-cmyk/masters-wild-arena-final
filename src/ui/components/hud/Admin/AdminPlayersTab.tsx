@@ -85,7 +85,11 @@ const RankBadge = ({ name, rating }: { name: string; rating: number }) => (
             width: '100%',
         }}
     >
-        <img src={AssetsMap.UI.TROPHY_PREMIUM} style={{ width: '16px', height: '16px', objectFit: 'contain' }} alt="trophy" />
+        <img
+            src={AssetsMap.UI.TROPHY_PREMIUM}
+            style={{ width: '16px', height: '16px', objectFit: 'contain' }}
+            alt="trophy"
+        />
         <span style={{ flex: 1 }}>
             Текущий ранг: <strong>{name}</strong>
         </span>
@@ -476,7 +480,7 @@ export const AdminPlayersTab: React.FC<AdminPlayersTabProps> = ({
                                                 style={{ width: '12px', height: '12px', objectFit: 'contain' }}
                                             />
                                             <span>Золото</span>
-                                        </div>
+                                        </div>,
                                     )}
                                     {hint('Тратится на снаряжение и клановые постройки')}
                                     <div style={editRow}>
@@ -499,7 +503,7 @@ export const AdminPlayersTab: React.FC<AdminPlayersTabProps> = ({
                                                 style={{ width: '12px', height: '12px', objectFit: 'contain' }}
                                             />
                                             <span>Алмазы</span>
-                                        </div>
+                                        </div>,
                                     )}
                                     {hint('Премиум-валюта магазина')}
                                     <div style={editRow}>
@@ -519,9 +523,13 @@ export const AdminPlayersTab: React.FC<AdminPlayersTabProps> = ({
 
                                     {subTitle(
                                         <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                                            <img src={AssetsMap.UI.ICON_XP} style={{ width: '14px', height: '14px', objectFit: 'contain' }} alt="xp" />
+                                            <img
+                                                src={AssetsMap.UI.ICON_XP}
+                                                style={{ width: '14px', height: '14px', objectFit: 'contain' }}
+                                                alt="xp"
+                                            />
                                             Уровень игрока
-                                        </span>
+                                        </span>,
                                     )}
                                     <div style={editRow}>
                                         <input
@@ -557,9 +565,13 @@ export const AdminPlayersTab: React.FC<AdminPlayersTabProps> = ({
 
                                     {subTitle(
                                         <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                                            <img src={AssetsMap.UI.ICON_ENERGY_FULL} style={{ width: '14px', height: '14px', objectFit: 'contain' }} alt="energy" />
+                                            <img
+                                                src={AssetsMap.UI.ICON_ENERGY_FULL}
+                                                style={{ width: '14px', height: '14px', objectFit: 'contain' }}
+                                                alt="energy"
+                                            />
                                             Быстрый левел-ап
-                                        </span>
+                                        </span>,
                                     )}
                                     <div style={{ display: 'flex', gap: '8px' }}>
                                         <button
@@ -577,12 +589,18 @@ export const AdminPlayersTab: React.FC<AdminPlayersTabProps> = ({
                                     </div>
                                 </Section>
 
-                                <Section title={
-                                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                                        <img src={AssetsMap.UI.TROPHY_PREMIUM} style={{ width: '16px', height: '16px', objectFit: 'contain' }} alt="trophy" />
-                                        Арена и Ранг PvP
-                                    </span>
-                                }>
+                                <Section
+                                    title={
+                                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                                            <img
+                                                src={AssetsMap.UI.TROPHY_PREMIUM}
+                                                style={{ width: '16px', height: '16px', objectFit: 'contain' }}
+                                                alt="trophy"
+                                            />
+                                            Арена и Ранг PvP
+                                        </span>
+                                    }
+                                >
                                     <RankBadge name={rankInfo.name} rating={rating} />
 
                                     {subTitle('🎯 Точное число кубков')}
@@ -997,7 +1015,15 @@ export const AdminPlayersTab: React.FC<AdminPlayersTabProps> = ({
                                                 padding: '8px',
                                             }}
                                         >
-                                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', width: '100%' }}>
+                                            <div
+                                                style={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    gap: '4px',
+                                                    width: '100%',
+                                                }}
+                                            >
                                                 <img
                                                     src={AssetsMap.UI.ICON_GOLD_FULL}
                                                     alt=""
@@ -1027,7 +1053,11 @@ export const AdminPlayersTab: React.FC<AdminPlayersTabProps> = ({
                                                 gap: '4px',
                                             }}
                                         >
-                                            <img src={AssetsMap.UI.ICON_ENERGY_FULL} style={{ width: '12px', height: '12px', objectFit: 'contain' }} alt="energy" />
+                                            <img
+                                                src={AssetsMap.UI.ICON_ENERGY_FULL}
+                                                style={{ width: '12px', height: '12px', objectFit: 'contain' }}
+                                                alt="energy"
+                                            />
                                             9999 энергии
                                         </button>
                                     </div>

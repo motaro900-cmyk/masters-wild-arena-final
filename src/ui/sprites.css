@@ -9,8 +9,6 @@
     filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.8));
 }
 
-
-
 /* Talents Sheet (12 icons, grid 4x4 in 1024x1024 sheet) */
 .sprite-talent {
     width: 100px;
@@ -123,8 +121,6 @@
 .pos-16 {
     background-position: 100% 100%;
 }
-
-
 
 /* Misc UI Icons */
 .sprite-gift {

@@ -31,4 +31,3 @@ export const Layout = {
         container.y = (app?.screen.height ?? window.innerHeight) / 2;
     },
 };
-

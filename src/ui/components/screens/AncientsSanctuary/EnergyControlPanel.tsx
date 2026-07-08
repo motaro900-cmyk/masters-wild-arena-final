@@ -62,7 +62,11 @@ export const EnergyControlPanel: React.FC<EnergyControlPanelProps> = ({
                             ВАША ЭНЕРГИЯ
                         </span>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px' }}>
-                            <img src={AssetsMap.UI.ICON_ENERGY_FULL} style={{ width: '18px', height: '18px', objectFit: 'contain' }} alt="energy" />
+                            <img
+                                src={AssetsMap.UI.ICON_ENERGY_FULL}
+                                style={{ width: '18px', height: '18px', objectFit: 'contain' }}
+                                alt="energy"
+                            />
                             <span style={{ fontSize: '20px', fontWeight: 900, color: '#fff', fontFamily: 'monospace' }}>
                                 {energy}
                             </span>
@@ -182,8 +186,14 @@ export const EnergyControlPanel: React.FC<EnergyControlPanelProps> = ({
                 }}
             >
                 <span>{currentMob.isBoss ? `БОСС: ЭТАЖ ${pveStage}` : `В БОЙ: ЭТАЖ ${pveStage}`}</span>
-                <span style={{ fontSize: '13px', opacity: 0.8, display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
-                    <img src={AssetsMap.UI.ICON_ENERGY_FULL} style={{ width: '13px', height: '13px', objectFit: 'contain' }} alt="energy" />
+                <span
+                    style={{ fontSize: '13px', opacity: 0.8, display: 'inline-flex', alignItems: 'center', gap: '3px' }}
+                >
+                    <img
+                        src={AssetsMap.UI.ICON_ENERGY_FULL}
+                        style={{ width: '13px', height: '13px', objectFit: 'contain' }}
+                        alt="energy"
+                    />
                     10
                 </span>
             </motion.button>

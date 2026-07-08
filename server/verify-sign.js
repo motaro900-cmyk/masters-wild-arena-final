@@ -56,7 +56,7 @@ export default async function handler(req, res) {
         // Reconstruct query string
         const queryString = queryParams
             .reduce((acc, { key, value }, idx) => {
-                return acc + (idx === 0 ? '' : '&') + `${key}=${encodeURIComponent(value)}`;
+                return acc + (idx === 0 ? '' : '&') + `${key}=${value}`;
             }, '');
 
         // Compute HMAC-SHA256 signature

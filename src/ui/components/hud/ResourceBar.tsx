@@ -258,12 +258,20 @@ export const ResourceBar: React.FC<{ onOpenShop?: (tab: string) => void }> = ({ 
                                 <div style={{ marginTop: '5px', height: '1px', background: 'rgba(168,85,247,0.2)' }} />
                                 <div className="flex flex-col gap-1 text-[10px]" style={{ color: '#fff' }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                        <img src={AssetsMap.UI.ICON_ALMAZ_FULL} style={{ width: '12px', height: '12px', objectFit: 'contain' }} alt="crystals" />
+                                        <img
+                                            src={AssetsMap.UI.ICON_ALMAZ_FULL}
+                                            style={{ width: '12px', height: '12px', objectFit: 'contain' }}
+                                            alt="crystals"
+                                        />
                                         <span>Покупка в Банке</span>
                                     </div>
                                     <div>🎁 Награда за достижения</div>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                        <img src={AssetsMap.UI.ICON_ENERGY_FULL} style={{ width: '12px', height: '12px', objectFit: 'contain' }} alt="energy" />
+                                        <img
+                                            src={AssetsMap.UI.ICON_ENERGY_FULL}
+                                            style={{ width: '12px', height: '12px', objectFit: 'contain' }}
+                                            alt="energy"
+                                        />
                                         <span>Покупка энергии и редких вещей</span>
                                     </div>
                                 </div>
@@ -308,7 +316,9 @@ export const ResourceBar: React.FC<{ onOpenShop?: (tab: string) => void }> = ({ 
                         </span>
                     </div>
 
-                    <div style={{ position: 'absolute', right: plusRight, width: plusSize, height: plusSize, zIndex: 5 }}>
+                    <div
+                        style={{ position: 'absolute', right: plusRight, width: plusSize, height: plusSize, zIndex: 5 }}
+                    >
                         <div
                             className="mobile-hit-area"
                             onClick={() => onOpenShop?.(res.key === 'gems' ? 'GEMS' : res.key.toUpperCase())}

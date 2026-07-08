@@ -184,7 +184,11 @@ export const PetStatsCard: React.FC<PetStatsCardProps> = ({ pet, currentTime }) 
                     }}
                 >
                     <span style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#bfdbfe' }}>
-                        <img src={AssetsMap.UI.ICON_XP} style={{ width: '16px', height: '16px', objectFit: 'contain' }} alt="xp" />
+                        <img
+                            src={AssetsMap.UI.ICON_XP}
+                            style={{ width: '16px', height: '16px', objectFit: 'contain' }}
+                            alt="xp"
+                        />
                         ОПЫТ
                     </span>
                     <span style={{ color: '#3b82f6', fontWeight: 900 }}>{pet.exp} / 100</span>

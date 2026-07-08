@@ -273,7 +273,9 @@ export const VIPWindow: React.FC<VIPWindowProps> = () => {
                             ? 'drop-shadow(0 0 14px rgba(240,192,64,0.75)) drop-shadow(0 2px 4px rgba(0,0,0,0.9))'
                             : 'drop-shadow(0 0 10px rgba(200,140,30,0.55)) brightness(0.75) sepia(0.4) drop-shadow(0 2px 4px rgba(0,0,0,0.9))',
                         zIndex: 1,
-                        animation: isActive ? 'floatCrown 3s ease-in-out infinite' : 'floatCrown 5s ease-in-out infinite',
+                        animation: isActive
+                            ? 'floatCrown 3s ease-in-out infinite'
+                            : 'floatCrown 5s ease-in-out infinite',
                     }}
                 />
 
@@ -309,7 +311,8 @@ export const VIPWindow: React.FC<VIPWindowProps> = () => {
                                 fontFamily: "'Cinzel', serif",
                                 letterSpacing: '2.5px',
                                 lineHeight: 1.1,
-                                textShadow: '0 0 18px rgba(240,192,64,0.75), 0 0 6px rgba(240,192,64,0.5), 0 2px 6px rgba(0,0,0,0.95)',
+                                textShadow:
+                                    '0 0 18px rgba(240,192,64,0.75), 0 0 6px rgba(240,192,64,0.5), 0 2px 6px rgba(0,0,0,0.95)',
                             }}
                         >
                             VIP АКТИВЕН
@@ -709,8 +712,7 @@ export const VIPWindow: React.FC<VIPWindowProps> = () => {
                 >
                     {isActive
                         ? '✦ Дикая природа встречает своих лучших охотников с почестями ✦'
-                        : '✦ Величайшие охотники начинали с одного шага вперёд ✦'
-                    }
+                        : '✦ Величайшие охотники начинали с одного шага вперёд ✦'}
                 </span>
             </div>
         </div>

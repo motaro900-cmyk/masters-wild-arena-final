@@ -698,7 +698,12 @@ export const CityScreen: React.FC = () => {
                                             />
                                             <img
                                                 src={AssetsMap.UI.ICON_ALMAZ_FULL}
-                                                style={{ width: '42px', height: '42px', objectFit: 'contain', filter: 'drop-shadow(0 0 10px rgba(255,255,255,0.2))' }}
+                                                style={{
+                                                    width: '42px',
+                                                    height: '42px',
+                                                    objectFit: 'contain',
+                                                    filter: 'drop-shadow(0 0 10px rgba(255,255,255,0.2))',
+                                                }}
                                                 alt="shard"
                                             />
                                             <span

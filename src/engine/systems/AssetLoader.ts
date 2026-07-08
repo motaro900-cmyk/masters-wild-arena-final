@@ -137,7 +137,7 @@ export class AssetLoader {
                     // Find corresponding original path in manifest
                     const idx = optimizedManifest.indexOf(assetPath);
                     const origPath = idx !== -1 ? manifest[idx] : assetPath;
-                    
+
                     // If the optimized path (usually WebP) failed, try to fallback to the PNG version
                     let pngFallbackPath = origPath;
                     if (origPath.endsWith('.webp')) {
@@ -313,7 +313,7 @@ export class AssetLoader {
             const heroPaths: Record<string, string[]> = {
                 panda: [
                     '/assets/characters/panda/panda_poses.png.png',
-                    '/assets/characters/panda/panda_frost_poses.png'
+                    '/assets/characters/panda/panda_frost_poses.png',
                 ],
                 raccoon: ['/assets/characters/raccoon/raccoon_poses.png.png'],
                 minotaur: ['/assets/characters/minotaur/minotaur_poses.png.png'],
@@ -324,12 +324,12 @@ export class AssetLoader {
                 crystal_guardian: ['/assets/characters/minotaur/minotaur_poses.png.png'],
                 storm_caller: ['/assets/characters/raccoon/raccoon_poses.png.png'],
                 nature_warden: ['/assets/characters/panda/panda_poses.png.png'],
-                void_walker: ['/assets/characters/tiger_warrior/tiger_warrior_poses.png.png']
+                void_walker: ['/assets/characters/tiger_warrior/tiger_warrior_poses.png.png'],
             };
 
             const heroesToPreload = new Set<string>();
             heroesToPreload.add(playerHeroId || state.selectedHeroId || 'panda');
-            
+
             if (opponentHeroId) {
                 heroesToPreload.add(opponentHeroId);
             } else if (state.activeRankedOpponent?.selectedHeroId) {

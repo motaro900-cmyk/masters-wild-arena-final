@@ -1,12 +1,15 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { AssetsMap } from '../../../../configs/AssetsMap';
 import { ShopItem } from '../../../../configs/ShopConfig';
 import { BankItemShowcase } from './BankItemShowcase';
 import { getRarityColor } from './shopHelpers';
 import { resolveAssetPath } from '../../../../utils/assetPath';
 
-const ItemSilhouette: React.FC<{ color: string; width: number | string; height: number | string }> = ({ color, width, height }) => (
+const ItemSilhouette: React.FC<{ color: string; width: number | string; height: number | string }> = ({
+    color,
+    width,
+    height,
+}) => (
     <div
         style={{
             width,
@@ -48,12 +51,7 @@ const ItemSilhouette: React.FC<{ color: string; width: number | string; height: 
                 strokeLinejoin="round"
                 fill="rgba(255, 255, 255, 0.05)"
             />
-            <path
-                d="M18 18 L46 46 M46 18 L18 46"
-                stroke={color}
-                strokeWidth="2"
-                strokeLinecap="round"
-            />
+            <path d="M18 18 L46 46 M46 18 L18 46" stroke={color} strokeWidth="2" strokeLinecap="round" />
             <circle cx="32" cy="32" r="6" stroke={color} strokeWidth="2" fill="#151210" />
         </svg>
     </div>
@@ -90,16 +88,37 @@ export const ShopShowcasePanel: React.FC<ShopShowcasePanelProps> = ({
     const [retryCount, setRetryCount] = React.useState(0);
     const [imgSrc, setImgSrc] = React.useState('');
 
+    // [Preload] При монтировании компонента и смене фильтра — предзагружаем
+    // изображения первых видимых предметов чтобы к моменту клика они уже
+    // находились в браузерном кеше (устраняет показ «синего щита»).
+    React.useEffect(() => {
+        const PRELOAD_COUNT = 12;
+        const preloadQueue = filteredItems.slice(0, PRELOAD_COUNT);
+        preloadQueue.forEach((item) => {
+            if (!item.image) return;
+            const img = new Image();
+            img.src = resolveAssetPath(item.image);
+        });
+    }, [filteredItems]);
+
+    const retryTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+
     React.useEffect(() => {
         setSelectedImageLoaded(false);
         setLocalImageError(false);
         setRetryCount(0);
         setImgSrc(resolveAssetPath(selectedItem.image));
+
+        return () => {
+            if (retryTimeoutRef.current) {
+                clearTimeout(retryTimeoutRef.current);
+            }
+        };
     }, [selectedItem.id, selectedItem.image, setSelectedImageLoaded]);
 
     const handleImageError = () => {
         if (retryCount < 2) {
-            setTimeout(() => {
+            retryTimeoutRef.current = setTimeout(() => {
                 setRetryCount((prev) => prev + 1);
                 setImgSrc(resolveAssetPath(selectedItem.image) + `?retry=${Date.now()}`);
             }, 1000);
@@ -162,7 +181,9 @@ export const ShopShowcasePanel: React.FC<ShopShowcasePanelProps> = ({
             }}
         >
             {/* Inline CSS Animations to optimize and ensure presence */}
-            <style dangerouslySetInnerHTML={{ __html: `
+            <style
+                dangerouslySetInnerHTML={{
+                    __html: `
                 @keyframes float-item {
                     0%, 100% { transform: translateY(0px); }
                     50% { transform: translateY(-12px); }
@@ -171,7 +192,9 @@ export const ShopShowcasePanel: React.FC<ShopShowcasePanelProps> = ({
                     0%, 100% { opacity: 0.3; transform: scale(0.95); }
                     50% { opacity: 0.65; transform: scale(1.05); }
                 }
-            ` }} />
+            `,
+                }}
+            />
 
             {/* Decorative Vignette */}
             <div
@@ -233,8 +256,11 @@ export const ShopShowcasePanel: React.FC<ShopShowcasePanelProps> = ({
                         <div
                             style={{
                                 zIndex: 5,
-                                animation:
-                                    isMobile ? undefined : (selectedItem.mainTab === 'SKINS' ? undefined : 'float-item 4s infinite ease-in-out'),
+                                animation: isMobile
+                                    ? undefined
+                                    : selectedItem.mainTab === 'SKINS'
+                                      ? undefined
+                                      : 'float-item 4s infinite ease-in-out',
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
@@ -300,7 +326,12 @@ export const ShopShowcasePanel: React.FC<ShopShowcasePanelProps> = ({
                                                           : '340px',
                                                 objectFit: 'contain',
                                                 objectPosition: 'center',
-                                                filter: `contrast(1.1) brightness(1.15) drop-shadow(0 0 25px ${getRarityColor(selectedItem.rarity)}cc)`,
+                                                // Объединяем imageFilter предмета (если есть) с базовым
+                                                // фильтром редкости — drop-shadow всегда применяется последним
+                                                filter: [
+                                                    (selectedItem as any).imageFilter || 'contrast(1.1) brightness(1.15)',
+                                                    `drop-shadow(0 0 25px ${getRarityColor(selectedItem.rarity)}cc)`,
+                                                ].join(' '),
                                                 display: selectedImageLoaded ? 'block' : 'none',
                                             }}
                                             alt=""

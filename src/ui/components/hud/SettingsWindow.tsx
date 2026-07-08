@@ -887,29 +887,31 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
                 onClick={() => {
                     if (isAdmin) {
                         onOpenAdmin?.();
-                    } else {
-                        const currentId =
-                            useGameStore.getState().vkUser?.id ||
-                            useGameStore.getState().vkUser?.uid ||
-                            'Не найден (локальный игрок)';
-                        useGameStore
-                            .getState()
-                            .showAlert(
-                                `Ваш VK ID: ${currentId}. Скопируйте его и добавьте в Firestore в документ system/admins в массив vkIds.`,
-                            );
                     }
                 }}
                 style={{
                     marginTop: 'auto',
                     textAlign: 'center',
-                    padding: '20px 0',
+                    paddingTop: '20px',
                     opacity: 0.3,
                     fontSize: '11px',
                     fontWeight: 800,
-                    cursor: 'pointer',
+                    cursor: isAdmin ? 'pointer' : 'default',
                 }}
             >
                 VERSION v{AppConfig.VERSION} • MASTERS OF THE WILD • 2026
+            </div>
+
+            {/* ЮРИДИЧЕСКИЕ ССЫЛКИ */}
+            <div
+                style={{
+                    textAlign: 'center',
+                    paddingBottom: '20px',
+                    opacity: 0.4,
+                    fontSize: '11px',
+                    fontWeight: 800,
+                }}
+            >
                 <div
                     style={{
                         marginTop: '5px',
@@ -920,19 +922,13 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
                     }}
                 >
                     <span
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            setOpenDoc('privacy');
-                        }}
+                        onClick={() => setOpenDoc('privacy')}
                         style={{ cursor: 'pointer' }}
                     >
                         Политика конфиденциальности
                     </span>
                     <span
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            setOpenDoc('terms');
-                        }}
+                        onClick={() => setOpenDoc('terms')}
                         style={{ cursor: 'pointer' }}
                     >
                         Пользовательское соглашение

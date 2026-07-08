@@ -11,13 +11,7 @@ export async function castActiveAbility(engine: BattleEngine, isPlayerCast: bool
     const anyEngine = engine as any;
     const manaVal = isPlayerCast ? engine.state.playerMana : (engine.state as any).enemyMana || 0;
 
-    if (
-        !anyEngine.isCombatRunning ||
-        manaVal < 100 ||
-        engine.state.playerHP <= 0 ||
-        engine.state.enemyHP <= 0
-    )
-        return;
+    if (!anyEngine.isCombatRunning || manaVal < 100 || engine.state.playerHP <= 0 || engine.state.enemyHP <= 0) return;
 
     // Сброс маны
     if (isPlayerCast) {

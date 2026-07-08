@@ -31,13 +31,15 @@ export class HeroUnit extends PIXI.Container implements IEffectTarget, IStatusEf
     public heroInstanceId: string = Math.random().toString(36).substr(2, 9);
     public posesTextures: PIXI.Texture[] = [];
     public calculatedBaseScale: number = 1.0;
-    public nextAttackPose: number = 3;
+    public nextAttackPose: number | undefined = 3;
     public idleFrameIdx: number = 0;
     public defendFrameIdx: number = 1;
     public runFrameIdx: number = 2;
     public hitFrameIdx: number = 5;
     public deathFrameIdx: number = 7;
     public attackFrameIdxs: number[] = [3, 4, 6];
+    /** Счётчик ударов для механики Ошеломления (WARRIOR Stagger Breakpoint). Сбрасывается каждые 3 удара. */
+    public staggerCount: number = 0;
     public statusEffectController: StatusEffectController;
 
     public showStunEffect(): void {
@@ -193,7 +195,7 @@ export class HeroUnit extends PIXI.Container implements IEffectTarget, IStatusEf
 
     public resetToIdle() {
         if (this.destroyed || !this.scale) return;
-        
+
         // Резолвим активный промис перед сбросом, чтобы не вешать BattleEngine
         if (this.currentResolve) {
             const res = this.currentResolve;
@@ -274,7 +276,8 @@ export class HeroUnit extends PIXI.Container implements IEffectTarget, IStatusEf
         // (e.g. both player and opponent load the same hero), skip the destructive mutation
         // and only re-populate posesTextures from the already-correct data.
         const existingFrameKeys = Object.keys(sheet.data.frames);
-        const alreadyPrefixed = existingFrameKeys.length > 0 && existingFrameKeys.every((k) => k.startsWith(heroPrefix));
+        const alreadyPrefixed =
+            existingFrameKeys.length > 0 && existingFrameKeys.every((k) => k.startsWith(heroPrefix));
 
         if (!alreadyPrefixed) {
             // Prefix frame keys with the hero name/ID to prevent PixiJS cache conflicts
@@ -561,7 +564,10 @@ export class HeroUnit extends PIXI.Container implements IEffectTarget, IStatusEf
         if (hasPoses) {
             const attackList =
                 this.attackFrameIdxs && this.attackFrameIdxs.length > 0 ? this.attackFrameIdxs : [3, 4, 6];
-            const chosenPose = this.nextAttackPose !== undefined ? this.nextAttackPose : attackList[Math.floor(Math.random() * attackList.length)];
+            const chosenPose =
+                this.nextAttackPose !== undefined
+                    ? this.nextAttackPose
+                    : attackList[Math.floor(Math.random() * attackList.length)];
             this.nextAttackPose = undefined;
             this.setFrame(chosenPose);
 

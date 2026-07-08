@@ -75,7 +75,7 @@ export function subscribeToChat(track: TrackFn, callback: (messages: any[]) => v
         chatRef,
         where('serverTimestamp', '>=', new Date(connectionTime.getTime() - 5000)),
         orderBy('serverTimestamp', 'desc'),
-        limit(50)
+        limit(50),
     );
     return track(
         onSnapshot(

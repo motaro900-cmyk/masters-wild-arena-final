@@ -27,11 +27,20 @@ export const ProfileBar: React.FC<ProfileBarProps> = ({ onOpenProfile }) => {
     const nextRank = rankIndex > 0 ? RANK_SYSTEM[rankIndex - 1] : null;
     const nextRankTrophies = nextRank ? nextRank.minTrophies : rank.minTrophies + 1500;
     const prevRankTrophies = rank.minTrophies;
-    
+
     const tier = {
         name: rank.name,
         color: rank.color,
-        icon: trophies >= 10500 ? '👑' : trophies >= 7500 ? '💎' : trophies >= 4500 ? '🥇' : trophies >= 2000 ? '🥈' : '🥉'
+        icon:
+            trophies >= 10500
+                ? '👑'
+                : trophies >= 7500
+                  ? '💎'
+                  : trophies >= 4500
+                    ? '🥇'
+                    : trophies >= 2000
+                      ? '🥈'
+                      : '🥉',
     };
 
     const divisor = nextRankTrophies - prevRankTrophies;

@@ -319,12 +319,25 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({ onStartBattle, onW
                     >
                         {energyError ? (
                             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
-                                <div style={{ fontSize: '22px', fontWeight: 950, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                <div
+                                    style={{
+                                        fontSize: '22px',
+                                        fontWeight: 950,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '6px',
+                                    }}
+                                >
                                     <span>НУЖНО 10</span>
                                     <img
                                         src={AssetsMap.UI.ICON_ENERGY_FULL}
                                         alt="energy"
-                                        style={{ width: '22px', height: '22px', objectFit: 'contain', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))' }}
+                                        style={{
+                                            width: '22px',
+                                            height: '22px',
+                                            objectFit: 'contain',
+                                            filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))',
+                                        }}
                                     />
                                 </div>
                             </div>

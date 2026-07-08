@@ -255,9 +255,7 @@ export const RewardsTab: React.FC<RewardsTabProps> = ({
                                 const ok = await joinGroup();
                                 if (ok) {
                                     claimGroupReward(true);
-                                    useGameStore
-                                        .getState()
-                                        .showAlert('Награда за вступление в группу: 50 кристаллов!');
+                                    useGameStore.getState().showAlert('Награда за вступление в группу: 50 кристаллов!');
                                 }
                             }}
                             style={{

@@ -185,7 +185,11 @@ export const ClanMembersTab: React.FC<ClanMembersTabProps> = ({
     const name = useGameStore((state) => state.name);
     const vkUser = useGameStore((state) => state.vkUser);
     const currentUserName =
-        name && name !== 'Мастер' ? name : vkUser?.firstName ? `${vkUser.firstName} ${vkUser.lastName}` : 'Воин';
+        name && name !== 'Мастер' && name !== 'undefined' && name !== 'undefined undefined'
+            ? name
+            : vkUser
+              ? `${vkUser.firstName || vkUser.first_name || 'Игрок'} ${vkUser.lastName || vkUser.last_name || ''}`.trim()
+              : 'Воин';
     const currentUserMember = members.find((m) => m.name === currentUserName);
     const currentUserRole = currentUserMember ? currentUserMember.role : 'MEMBER';
 
@@ -506,7 +510,10 @@ export const ClanMembersTab: React.FC<ClanMembersTabProps> = ({
                                     </>
                                 ) : (
                                     <>
-                                        {(clanData?.crystalsBank !== undefined ? clanData.crystalsBank : 250).toLocaleString()}
+                                        {(clanData?.crystalsBank !== undefined
+                                            ? clanData.crystalsBank
+                                            : 250
+                                        ).toLocaleString()}
                                         <CurrencyIcon type="ALMAZ" size={14} />
                                     </>
                                 )}

@@ -60,7 +60,11 @@ export const WindowManager: React.FC<WindowManagerProps> = ({ activeWindow, setA
                     }}
                     onClick={() => setActiveWindow(null)}
                 >
-                    <div className="hud-interactive" style={{ position: 'relative' }} onClick={(e) => e.stopPropagation()}>
+                    <div
+                        className="hud-interactive"
+                        style={{ position: 'relative' }}
+                        onClick={(e) => e.stopPropagation()}
+                    >
                         <React.Suspense fallback={<WindowLoadingSpinner />}>
                             {activeWindow === 'FRIENDS' && (
                                 <BaseWindow
@@ -216,13 +220,20 @@ export const WindowManager: React.FC<WindowManagerProps> = ({ activeWindow, setA
                                                     } else {
                                                         store.equipItem(itemId);
                                                     }
-                                                } else if (item && item.mainTab === 'ALCHEMY' && item.subTab !== 'RESOURCES') {
+                                                } else if (
+                                                    item &&
+                                                    item.mainTab === 'ALCHEMY' &&
+                                                    item.subTab !== 'RESOURCES'
+                                                ) {
                                                     if (itemId === 'protection_stone') return;
 
                                                     let effectDesc = '';
-                                                    if (itemId === 'hp_potion_1') effectDesc = '+10% к макс. здоровью на 1 час';
-                                                    if (itemId === 'hp_potion_2') effectDesc = '+20% к макс. здоровью на 1 час';
-                                                    if (itemId === 'hp_potion_3') effectDesc = '+35% к макс. здоровью на 1 час';
+                                                    if (itemId === 'hp_potion_1')
+                                                        effectDesc = '+10% к макс. здоровью на 1 час';
+                                                    if (itemId === 'hp_potion_2')
+                                                        effectDesc = '+20% к макс. здоровью на 1 час';
+                                                    if (itemId === 'hp_potion_3')
+                                                        effectDesc = '+35% к макс. здоровью на 1 час';
                                                     if (itemId === 'mana_potion_1')
                                                         effectDesc = '+15% к скорости атаки на 1 час';
                                                     if (itemId === 'exp_potion_small') effectDesc = '+2 000 опыта';
@@ -231,9 +242,12 @@ export const WindowManager: React.FC<WindowManagerProps> = ({ activeWindow, setA
 
                                                     useGameStore
                                                         .getState()
-                                                        .showConfirm(`Выпить "${item.name}"?\nЭффект: ${effectDesc}`, () => {
-                                                            useGameStore.getState().useConsumable(itemId);
-                                                        });
+                                                        .showConfirm(
+                                                            `Выпить "${item.name}"?\nЭффект: ${effectDesc}`,
+                                                            () => {
+                                                                useGameStore.getState().useConsumable(itemId);
+                                                            },
+                                                        );
                                                 }
                                             }}
                                         />

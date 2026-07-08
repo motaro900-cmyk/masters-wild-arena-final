@@ -170,9 +170,7 @@ export const ItemTooltipPortal: React.FC<ItemTooltipPortalProps> = ({ hoveredIte
                                     critBonus: '💥',
                                     speedBonus: '💨',
                                 };
-                                const displayValue = statKey === 'critBonus'
-                                    ? `+${Math.round(val * 100)}%`
-                                    : `+${val}`;
+                                const displayValue = statKey === 'critBonus' ? `+${Math.round(val * 100)}%` : `+${val}`;
 
                                 return (
                                     <div
@@ -186,7 +184,12 @@ export const ItemTooltipPortal: React.FC<ItemTooltipPortalProps> = ({ hoveredIte
                                         }}
                                     >
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                            <span style={{ fontSize: '18px', filter: `drop-shadow(0 0 5px ${colors[statKey]}aa)` }}>
+                                            <span
+                                                style={{
+                                                    fontSize: '18px',
+                                                    filter: `drop-shadow(0 0 5px ${colors[statKey]}aa)`,
+                                                }}
+                                            >
                                                 {emojis[statKey]}
                                             </span>
                                             <span style={{ color: 'rgba(255,255,255,0.3)', letterSpacing: '1px' }}>

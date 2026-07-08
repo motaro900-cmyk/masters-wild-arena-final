@@ -87,12 +87,12 @@ export const DraggableItem: React.FC<DraggableItemProps> = React.memo(
                     width: '100%',
                     height: '100%',
                     background: rarity?.bg
-                        ? (isMobile
+                        ? isMobile
                             ? `linear-gradient(135deg, ${rarity.bg} 0%, #120e0b 100%)`
-                            : `linear-gradient(135deg, ${rarity.bg}aa 0%, rgba(18, 14, 11, 0.95) 100%)`)
-                        : (isMobile
-                            ? 'linear-gradient(135deg, #1c1612 0%, #120e0b 100%)'
-                            : 'linear-gradient(135deg, rgba(28, 22, 18, 0.95) 0%, rgba(18, 14, 11, 0.98) 100%)'),
+                            : `linear-gradient(135deg, ${rarity.bg}aa 0%, rgba(18, 14, 11, 0.95) 100%)`
+                        : isMobile
+                          ? 'linear-gradient(135deg, #1c1612 0%, #120e0b 100%)'
+                          : 'linear-gradient(135deg, rgba(28, 22, 18, 0.95) 0%, rgba(18, 14, 11, 0.98) 100%)',
                     borderRadius: '8px',
                     border: `1.5px solid ${isEquippedOnCurrent ? '#f0c040' : 'rgba(240, 192, 64, 0.15)'}`,
                     position: 'relative',

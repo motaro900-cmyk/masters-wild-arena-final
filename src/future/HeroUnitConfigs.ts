@@ -18,7 +18,7 @@ export const WEAPON_VISUAL_CONFIGS: Record<string, WeaponVisualConfig> = {
     staff_sun_burst: { anchorX: 0.5, anchorY: 0.7, angleOffset: -10, scaleMultiplier: 1.0 },
 
     // Bows (held exactly in the middle)
-    bow_griffin: { anchorX: 0.5, anchorY: 0.5, angleOffset: 0, scaleMultiplier: 1.15 },
+    bow_composite: { anchorX: 0.5, anchorY: 0.5, angleOffset: 0, scaleMultiplier: 1.15 },
 
     // Claws (centered)
     claws_ice_fire: { anchorX: 0.5, anchorY: 0.5, angleOffset: 0, scaleMultiplier: 1.0 },
@@ -40,7 +40,7 @@ export function getWeaponVisualConfig(itemId: string): WeaponVisualConfig {
         return WEAPON_VISUAL_CONFIGS['stick_oak'];
     }
     if (idLower.includes('bow')) {
-        return WEAPON_VISUAL_CONFIGS['bow_griffin'];
+        return WEAPON_VISUAL_CONFIGS['bow_composite'];
     }
     if (idLower.includes('claws')) {
         return WEAPON_VISUAL_CONFIGS['claws_ice_fire'];

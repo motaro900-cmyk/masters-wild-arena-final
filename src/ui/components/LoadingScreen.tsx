@@ -149,7 +149,9 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({ isLoading, loading
                         </div>
 
                         {/* Gameplay Tips */}
-                        <div style={{ height: '50px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <div
+                            style={{ height: '50px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                        >
                             <AnimatePresence mode="wait">
                                 <motion.div
                                     key={currentTipIndex}

@@ -331,7 +331,9 @@ export const createChatSlice = (set: any, get: any) => ({
             text,
             userId: state.playerId,
             userName: state.name || 'Мастер',
-            realName: state.vkUser ? `${state.vkUser.firstName || state.vkUser.first_name || ''} ${state.vkUser.lastName || state.vkUser.last_name || ''}`.trim() : '',
+            realName: state.vkUser
+                ? `${state.vkUser.firstName || state.vkUser.first_name || ''} ${state.vkUser.lastName || state.vkUser.last_name || ''}`.trim()
+                : '',
             vkId: state.vkUser?.id || state.vkUser?.uid || '',
             vkAvatar: state.vkUser?.photo200 || state.vkUser?.photo || '',
             avatar: state.avatar || '',

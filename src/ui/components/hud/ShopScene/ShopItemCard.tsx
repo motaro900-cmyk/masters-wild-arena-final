@@ -45,7 +45,11 @@ const getVotesPlural = (num: number) => {
     return 'голосов';
 };
 
-const ItemSilhouette: React.FC<{ color: string; width: number | string; height: number | string }> = ({ color, width, height }) => (
+const ItemSilhouette: React.FC<{ color: string; width: number | string; height: number | string }> = ({
+    color,
+    width,
+    height,
+}) => (
     <div
         style={{
             width,
@@ -87,12 +91,7 @@ const ItemSilhouette: React.FC<{ color: string; width: number | string; height: 
                 strokeLinejoin="round"
                 fill="rgba(255, 255, 255, 0.05)"
             />
-            <path
-                d="M18 18 L46 46 M46 18 L18 46"
-                stroke={color}
-                strokeWidth="2"
-                strokeLinecap="round"
-            />
+            <path d="M18 18 L46 46 M46 18 L18 46" stroke={color} strokeWidth="2" strokeLinecap="round" />
             <circle cx="32" cy="32" r="6" stroke={color} strokeWidth="2" fill="#151210" />
         </svg>
     </div>
@@ -329,7 +328,12 @@ export const ShopItemCard: React.FC<ShopItemCardProps> = React.memo(
                                 height: isMobile ? '60px' : '80px',
                                 filter: isLocked
                                     ? 'grayscale(1) brightness(0.4)'
-                                    : `drop-shadow(0 2px 6px rgba(0,0,0,0.6)) drop-shadow(0 0 4px ${glow}66)`,
+                                    : [
+                                          (item as any).imageFilter || '',
+                                          `drop-shadow(0 2px 6px rgba(0,0,0,0.6)) drop-shadow(0 0 4px ${glow}66)`,
+                                      ]
+                                          .filter(Boolean)
+                                          .join(' '),
                             }}
                         />
                     ) : (
@@ -338,13 +342,20 @@ export const ShopItemCard: React.FC<ShopItemCardProps> = React.memo(
                             const renderSize = isMobile ? 60 : 80;
                             const atlasStyle = getItemAtlasStyle(item as any, renderSize, renderSize);
                             if (atlasStyle) {
+                                // Строим финальный filter: imageFilter предмета + drop-shadow редкости
+                                const baseFilter = isLocked
+                                    ? 'grayscale(1) brightness(0.4)'
+                                    : [
+                                          (item as any).imageFilter || '',
+                                          `drop-shadow(0 2px 6px rgba(0,0,0,0.6)) drop-shadow(0 0 4px ${glow}66)`,
+                                      ]
+                                          .filter(Boolean)
+                                          .join(' ');
                                 return (
                                     <div
                                         style={{
                                             ...atlasStyle,
-                                            filter: isLocked
-                                                ? 'grayscale(1) brightness(0.4)'
-                                                : `drop-shadow(0 2px 6px rgba(0,0,0,0.6)) drop-shadow(0 0 4px ${glow}66)`,
+                                            filter: baseFilter,
                                         }}
                                     />
                                 );
@@ -366,9 +377,15 @@ export const ShopItemCard: React.FC<ShopItemCardProps> = React.memo(
                                                 width: size,
                                                 height: size,
                                                 objectFit: 'contain',
+                                                // imageFilter предмета + drop-shadow редкости для fallback img
                                                 filter: isLocked
                                                     ? 'grayscale(1) brightness(0.4)'
-                                                    : `drop-shadow(0 2px 6px rgba(0,0,0,0.6)) drop-shadow(0 0 4px ${glow}66)`,
+                                                    : [
+                                                          (item as any).imageFilter || '',
+                                                          `drop-shadow(0 2px 6px rgba(0,0,0,0.6)) drop-shadow(0 0 4px ${glow}66)`,
+                                                      ]
+                                                          .filter(Boolean)
+                                                          .join(' '),
                                                 display: imageLoaded ? 'block' : 'none',
                                             }}
                                             alt=""

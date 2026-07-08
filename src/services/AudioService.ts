@@ -75,21 +75,35 @@ class AudioService {
                 if (document.hidden) {
                     this.isAppHidden = true;
                     safeMute(true);
-                    try { SoundManager.getInstance().suspend(); } catch (e) {}
-                    import('../engine/core/PixiApp').then(({ PixiApp }) => {
-                        try { PixiApp.getInstance().getApp()?.ticker.stop(); } catch (err) {}
-                    }).catch(() => {});
+                    try {
+                        SoundManager.getInstance().suspend();
+                    } catch (e) {}
+                    import('../engine/core/PixiApp')
+                        .then(({ PixiApp }) => {
+                            try {
+                                PixiApp.getInstance().getApp()?.ticker.stop();
+                            } catch (err) {}
+                        })
+                        .catch(() => {});
                 } else {
                     this.isAppHidden = false;
-                    try { SoundManager.getInstance().resume(); } catch (e) {}
-                    import('../engine/core/PixiApp').then(({ PixiApp }) => {
-                        try { PixiApp.getInstance().getApp()?.ticker.start(); } catch (err) {}
-                    }).catch(() => {});
-                    import('../store/useGameStore').then(({ useGameStore }) => {
-                        if (!useGameStore.getState().isMuted) {
-                            safeMute(false);
-                        }
-                    }).catch(() => safeMute(false));
+                    try {
+                        SoundManager.getInstance().resume();
+                    } catch (e) {}
+                    import('../engine/core/PixiApp')
+                        .then(({ PixiApp }) => {
+                            try {
+                                PixiApp.getInstance().getApp()?.ticker.start();
+                            } catch (err) {}
+                        })
+                        .catch(() => {});
+                    import('../store/useGameStore')
+                        .then(({ useGameStore }) => {
+                            if (!useGameStore.getState().isMuted) {
+                                safeMute(false);
+                            }
+                        })
+                        .catch(() => safeMute(false));
                 }
             });
 
@@ -101,21 +115,35 @@ class AudioService {
                     if (type === 'VKWebAppViewHide') {
                         this.isAppHidden = true;
                         safeMute(true);
-                        try { SoundManager.getInstance().suspend(); } catch (e) {}
-                        import('../engine/core/PixiApp').then(({ PixiApp }) => {
-                            try { PixiApp.getInstance().getApp()?.ticker.stop(); } catch (err) {}
-                        }).catch(() => {});
+                        try {
+                            SoundManager.getInstance().suspend();
+                        } catch (e) {}
+                        import('../engine/core/PixiApp')
+                            .then(({ PixiApp }) => {
+                                try {
+                                    PixiApp.getInstance().getApp()?.ticker.stop();
+                                } catch (err) {}
+                            })
+                            .catch(() => {});
                     } else if (type === 'VKWebAppViewRestore') {
                         this.isAppHidden = false;
-                        try { SoundManager.getInstance().resume(); } catch (e) {}
-                        import('../engine/core/PixiApp').then(({ PixiApp }) => {
-                            try { PixiApp.getInstance().getApp()?.ticker.start(); } catch (err) {}
-                        }).catch(() => {});
-                        import('../store/useGameStore').then(({ useGameStore }) => {
-                            if (!useGameStore.getState().isMuted) {
-                                safeMute(false);
-                            }
-                        }).catch(() => safeMute(false));
+                        try {
+                            SoundManager.getInstance().resume();
+                        } catch (e) {}
+                        import('../engine/core/PixiApp')
+                            .then(({ PixiApp }) => {
+                                try {
+                                    PixiApp.getInstance().getApp()?.ticker.start();
+                                } catch (err) {}
+                            })
+                            .catch(() => {});
+                        import('../store/useGameStore')
+                            .then(({ useGameStore }) => {
+                                if (!useGameStore.getState().isMuted) {
+                                    safeMute(false);
+                                }
+                            })
+                            .catch(() => safeMute(false));
                     }
                 });
             } catch (err) {
@@ -275,7 +303,7 @@ class AudioService {
                     if (this.loadErrorTimeoutId) clearTimeout(this.loadErrorTimeoutId);
                     this.loadErrorTimeoutId = setTimeout(() => this.nextTrack(), 1000);
                 },
-                onplayerror: () => this.resumeContext()
+                onplayerror: () => this.resumeContext(),
             });
 
             this.music.play();
@@ -358,7 +386,7 @@ class AudioService {
                 sound = new Howl({
                     src: sources,
                     volume: this.getBusVolume(config.bus),
-                    onloaderror: (_id, err) => console.warn(`❌ SFX Load Error: ${randomVariantUrl}`, err)
+                    onloaderror: (_id, err) => console.warn(`❌ SFX Load Error: ${randomVariantUrl}`, err),
                 });
                 this.sfxCache.set(randomVariantUrl, sound);
             } catch (err) {
@@ -375,7 +403,7 @@ class AudioService {
             sound.rate(randomPitch);
 
             // Volume Randomization (90% - 100%)
-            const randomVolumeCoef = 0.90 + Math.random() * 0.10;
+            const randomVolumeCoef = 0.9 + Math.random() * 0.1;
             const finalVolume = config.volume * this.getBusVolume(config.bus) * randomVolumeCoef;
             sound.volume(finalVolume);
 
@@ -387,7 +415,7 @@ class AudioService {
                 priority: config.priority,
                 bus: config.bus,
                 playId: playId,
-                startTime: now
+                startTime: now,
             });
 
             this.lastPlayedTimestamps.set(soundId, now);
@@ -520,7 +548,9 @@ class AudioService {
         this.lootBusVolume = volume;
         this.voiceBusVolume = volume;
         this.sfxCache.forEach((sound) => {
-            try { sound.volume(volume * this.masterVolume); } catch (e) {}
+            try {
+                sound.volume(volume * this.masterVolume);
+            } catch (e) {}
         });
     }
 
@@ -541,7 +571,9 @@ class AudioService {
 
     public stopAllSFX() {
         this.activeInstances.forEach((inst) => {
-            try { inst.howl.stop(inst.playId); } catch (e) {}
+            try {
+                inst.howl.stop(inst.playId);
+            } catch (e) {}
         });
         this.activeInstances = [];
     }
@@ -554,13 +586,20 @@ class AudioService {
 
     private getBusVolume(bus: AudioBusType): number {
         switch (bus) {
-            case 'music': return this.musicBusVolume * this.masterVolume;
-            case 'ambient': return this.ambientBusVolume * this.masterVolume;
-            case 'ui': return this.uiBusVolume * this.masterVolume;
-            case 'combat': return this.combatBusVolume * this.masterVolume;
-            case 'loot': return this.lootBusVolume * this.masterVolume;
-            case 'voice': return this.voiceBusVolume * this.masterVolume;
-            default: return this.masterVolume;
+            case 'music':
+                return this.musicBusVolume * this.masterVolume;
+            case 'ambient':
+                return this.ambientBusVolume * this.masterVolume;
+            case 'ui':
+                return this.uiBusVolume * this.masterVolume;
+            case 'combat':
+                return this.combatBusVolume * this.masterVolume;
+            case 'loot':
+                return this.lootBusVolume * this.masterVolume;
+            case 'voice':
+                return this.voiceBusVolume * this.masterVolume;
+            default:
+                return this.masterVolume;
         }
     }
 

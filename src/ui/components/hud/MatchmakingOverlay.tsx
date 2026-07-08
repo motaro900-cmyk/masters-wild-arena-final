@@ -136,7 +136,7 @@ export const MatchmakingOverlay: React.FC<MatchmakingOverlayProps> = ({ onFound,
 
         Promise.all([searchPromise, minDelayPromise]).then(([found]) => {
             if (isCancelled) return;
-            
+
             // Preload opponent's hero asset as soon as found
             import('../../../engine/systems/AssetLoader')
                 .then(({ AssetLoader }) => {
@@ -192,7 +192,6 @@ export const MatchmakingOverlay: React.FC<MatchmakingOverlayProps> = ({ onFound,
         speed: 1.0,
         crit: 0.1,
     };
-
 
     const renderStatRow = (label: string, pVal: number, eVal: number, maxVal: number) => {
         const pPct = Math.min(100, Math.max(0, (pVal / maxVal) * 100));

@@ -84,7 +84,6 @@ export const GearView = ({
         setTouchStartY(null);
     };
 
-
     const heroesState = useGameStore((s: any) => s.heroes) || {};
     const heroState = heroesState[hero.id] || { level: 1, exp: 0 };
     const heroLevel = heroState.level || 1;
@@ -859,7 +858,8 @@ export const GearView = ({
                                     width: '44px',
                                     height: '44px',
                                     borderRadius: '50%',
-                                    background: 'radial-gradient(circle, rgba(30, 24, 20, 0.95) 0%, rgba(15, 12, 10, 1) 100%)',
+                                    background:
+                                        'radial-gradient(circle, rgba(30, 24, 20, 0.95) 0%, rgba(15, 12, 10, 1) 100%)',
                                     border: '1.5px solid rgba(240, 192, 64, 0.6)',
                                     color: '#f0c040',
                                     fontSize: '18px',
@@ -893,7 +893,8 @@ export const GearView = ({
                                     width: '44px',
                                     height: '44px',
                                     borderRadius: '50%',
-                                    background: 'radial-gradient(circle, rgba(30, 24, 20, 0.95) 0%, rgba(15, 12, 10, 1) 100%)',
+                                    background:
+                                        'radial-gradient(circle, rgba(30, 24, 20, 0.95) 0%, rgba(15, 12, 10, 1) 100%)',
                                     border: '1.5px solid rgba(240, 192, 64, 0.6)',
                                     color: '#f0c040',
                                     fontSize: '18px',
@@ -1020,7 +1021,14 @@ export const GearView = ({
                             }}
                             className="custom-scrollbar"
                         >
-                            <div style={{ textAlign: 'center', marginBottom: '15px', width: '100%', boxSizing: 'border-box' }}>
+                            <div
+                                style={{
+                                    textAlign: 'center',
+                                    marginBottom: '15px',
+                                    width: '100%',
+                                    boxSizing: 'border-box',
+                                }}
+                            >
                                 <h4
                                     style={{
                                         margin: 0,

@@ -165,10 +165,10 @@ export const ClanWindow: React.FC = () => {
         const timer = setTimeout(() => {
             if (clanId) {
                 const currentUserName =
-                    playerName && playerName !== 'Мастер'
+                    playerName && playerName !== 'Мастер' && playerName !== 'undefined' && playerName !== 'undefined undefined'
                         ? playerName
-                        : vkUser?.firstName
-                          ? `${vkUser.firstName} ${vkUser.lastName}`
+                        : vkUser
+                          ? `${vkUser.firstName || vkUser.first_name || 'Игрок'} ${vkUser.lastName || vkUser.last_name || ''}`.trim()
                           : 'Воин';
 
                 const resolvedAvatar =
@@ -258,7 +258,11 @@ export const ClanWindow: React.FC = () => {
         const name = useGameStore.getState().name;
         const vkUser = useGameStore.getState().vkUser;
         const currentUserName =
-            name && name !== 'Мастер' ? name : vkUser?.firstName ? `${vkUser.firstName} ${vkUser.lastName}` : 'Воин';
+            name && name !== 'Мастер' && name !== 'undefined' && name !== 'undefined undefined'
+                ? name
+                : vkUser
+                  ? `${vkUser.firstName || vkUser.first_name || 'Игрок'} ${vkUser.lastName || vkUser.last_name || ''}`.trim()
+                  : 'Воин';
         const playerMember = members.find((m) => m.name === currentUserName);
         const isLeader = playerMember ? playerMember.role === 'LEADER' : !clanId?.startsWith('clan_');
 
@@ -340,10 +344,10 @@ export const ClanWindow: React.FC = () => {
         }
 
         const currentUserName =
-            playerName && playerName !== 'Мастер'
+            playerName && playerName !== 'Мастер' && playerName !== 'undefined' && playerName !== 'undefined undefined'
                 ? playerName
-                : vkUser?.firstName
-                  ? `${vkUser.firstName} ${vkUser.lastName}`
+                : vkUser
+                  ? `${vkUser.firstName || vkUser.first_name || 'Игрок'} ${vkUser.lastName || vkUser.last_name || ''}`.trim()
                   : 'Воин';
 
         let coinsEarned = 0;
@@ -415,10 +419,10 @@ export const ClanWindow: React.FC = () => {
         if (!currentClanData) return;
 
         const currentUserName =
-            playerName && playerName !== 'Мастер'
+            playerName && playerName !== 'Мастер' && playerName !== 'undefined' && playerName !== 'undefined undefined'
                 ? playerName
-                : vkUser?.firstName
-                  ? `${vkUser.firstName} ${vkUser.lastName}`
+                : vkUser
+                  ? `${vkUser.firstName || vkUser.first_name || 'Игрок'} ${vkUser.lastName || vkUser.last_name || ''}`.trim()
                   : 'Воин';
 
         const updatedClanData = { ...currentClanData };
@@ -484,10 +488,10 @@ export const ClanWindow: React.FC = () => {
         }
 
         const currentUserName =
-            playerName && playerName !== 'Мастер'
+            playerName && playerName !== 'Мастер' && playerName !== 'undefined' && playerName !== 'undefined undefined'
                 ? playerName
-                : vkUser?.firstName
-                  ? `${vkUser.firstName} ${vkUser.lastName}`
+                : vkUser
+                  ? `${vkUser.firstName || vkUser.first_name || 'Игрок'} ${vkUser.lastName || vkUser.last_name || ''}`.trim()
                   : 'Воин';
 
         const prevTransactions = currentClanData.bankTransactions || [];
@@ -547,10 +551,10 @@ export const ClanWindow: React.FC = () => {
 
     const handleTransferLeadership = (memberName: string) => {
         const currentUserName =
-            playerName && playerName !== 'Мастер'
+            playerName && playerName !== 'Мастер' && playerName !== 'undefined' && playerName !== 'undefined undefined'
                 ? playerName
-                : vkUser?.firstName
-                  ? `${vkUser.firstName} ${vkUser.lastName}`
+                : vkUser
+                  ? `${vkUser.firstName || vkUser.first_name || 'Игрок'} ${vkUser.lastName || vkUser.last_name || ''}`.trim()
                   : 'Воин';
 
         setMembers((prev) =>
@@ -727,10 +731,10 @@ export const ClanWindow: React.FC = () => {
                             crystals={crystals}
                             playerRole={(() => {
                                 const currentUserName =
-                                    playerName && playerName !== 'Мастер'
+                                    playerName && playerName !== 'Мастер' && playerName !== 'undefined' && playerName !== 'undefined undefined'
                                         ? playerName
-                                        : vkUser?.firstName
-                                          ? `${vkUser.firstName} ${vkUser.lastName}`
+                                        : vkUser
+                                          ? `${vkUser.firstName || vkUser.first_name || 'Игрок'} ${vkUser.lastName || vkUser.last_name || ''}`.trim()
                                           : 'Воин';
                                 const playerMember = members.find((m) => m.name === currentUserName);
                                 return playerMember

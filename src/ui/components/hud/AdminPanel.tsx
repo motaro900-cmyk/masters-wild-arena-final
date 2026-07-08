@@ -156,7 +156,12 @@ const FeedbackTab: React.FC<FeedbackTabProps> = ({
                                 }}
                             >
                                 <span
-                                    style={{ fontSize: '12px', fontWeight: 900, color: col.color, letterSpacing: '0.5px' }}
+                                    style={{
+                                        fontSize: '12px',
+                                        fontWeight: 900,
+                                        color: col.color,
+                                        letterSpacing: '0.5px',
+                                    }}
                                 >
                                     {col.label}
                                 </span>
@@ -177,7 +182,15 @@ const FeedbackTab: React.FC<FeedbackTabProps> = ({
                             </div>
 
                             {/* Cards list */}
-                            <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '0' }}>
+                            <div
+                                style={{
+                                    flex: 1,
+                                    overflowY: 'auto',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    gap: '0',
+                                }}
+                            >
                                 {items.length === 0 ? (
                                     <div
                                         style={{
@@ -220,7 +233,11 @@ const FeedbackTab: React.FC<FeedbackTabProps> = ({
                                                     }}
                                                 >
                                                     <img
-                                                        src={f.vkAvatar || f.avatar || '/assets/images/avatars/panda.webp'}
+                                                        src={
+                                                            f.vkAvatar ||
+                                                            f.avatar ||
+                                                            '/assets/images/avatars/panda.webp'
+                                                        }
                                                         style={{
                                                             width: '20px',
                                                             height: '20px',
@@ -230,7 +247,13 @@ const FeedbackTab: React.FC<FeedbackTabProps> = ({
                                                         }}
                                                         alt=""
                                                     />
-                                                    <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+                                                    <div
+                                                        style={{
+                                                            display: 'flex',
+                                                            flexDirection: 'column',
+                                                            minWidth: 0,
+                                                        }}
+                                                    >
                                                         <span
                                                             style={{
                                                                 fontSize: '11px',
@@ -269,7 +292,14 @@ const FeedbackTab: React.FC<FeedbackTabProps> = ({
                                             </div>
 
                                             {/* Platform / version / vkId */}
-                                            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center' }}>
+                                            <div
+                                                style={{
+                                                    display: 'flex',
+                                                    gap: '6px',
+                                                    flexWrap: 'wrap',
+                                                    alignItems: 'center',
+                                                }}
+                                            >
                                                 {f.platform && (
                                                     <span
                                                         style={{
@@ -334,23 +364,34 @@ const FeedbackTab: React.FC<FeedbackTabProps> = ({
 
                                             {f.debugDump && (
                                                 <details style={{ marginTop: '2px' }}>
-                                                    <summary style={{ fontSize: '9px', color: '#f59e0b', cursor: 'pointer', outline: 'none', userSelect: 'none', fontWeight: 700 }}>
+                                                    <summary
+                                                        style={{
+                                                            fontSize: '9px',
+                                                            color: '#f59e0b',
+                                                            cursor: 'pointer',
+                                                            outline: 'none',
+                                                            userSelect: 'none',
+                                                            fontWeight: 700,
+                                                        }}
+                                                    >
                                                         📄 ДИАГНОСТИКА
                                                     </summary>
-                                                    <pre style={{
-                                                        fontSize: '9px',
-                                                        fontFamily: 'monospace',
-                                                        color: '#aaa',
-                                                        background: '#050505',
-                                                        padding: '6px',
-                                                        borderRadius: '4px',
-                                                        marginTop: '4px',
-                                                        maxHeight: '100px',
-                                                        overflowY: 'auto',
-                                                        whiteSpace: 'pre-wrap',
-                                                        wordBreak: 'break-all',
-                                                        border: '1px solid #222'
-                                                    }}>
+                                                    <pre
+                                                        style={{
+                                                            fontSize: '9px',
+                                                            fontFamily: 'monospace',
+                                                            color: '#aaa',
+                                                            background: '#050505',
+                                                            padding: '6px',
+                                                            borderRadius: '4px',
+                                                            marginTop: '4px',
+                                                            maxHeight: '100px',
+                                                            overflowY: 'auto',
+                                                            whiteSpace: 'pre-wrap',
+                                                            wordBreak: 'break-all',
+                                                            border: '1px solid #222',
+                                                        }}
+                                                    >
                                                         {JSON.stringify(f.debugDump, null, 2)}
                                                     </pre>
                                                 </details>
@@ -458,7 +499,14 @@ const FeedbackTab: React.FC<FeedbackTabProps> = ({
                             }}
                         >
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <span style={{ fontSize: '13px', fontWeight: 900, color: '#f59e0b', letterSpacing: '0.5px' }}>
+                                <span
+                                    style={{
+                                        fontSize: '13px',
+                                        fontWeight: 900,
+                                        color: '#f59e0b',
+                                        letterSpacing: '0.5px',
+                                    }}
+                                >
                                     ОТВЕТИТЬ ИГРОКУ: {replyingItem.userName}
                                 </span>
                                 <button
@@ -476,15 +524,26 @@ const FeedbackTab: React.FC<FeedbackTabProps> = ({
                                 </button>
                             </div>
 
-                            <div style={{ background: 'rgba(255,255,255,0.03)', padding: '12px', borderRadius: '8px', border: '1px solid #222' }}>
-                                <div style={{ fontSize: '10px', color: '#666', marginBottom: '4px' }}>ОТЗЫВ ИГРОКА:</div>
+                            <div
+                                style={{
+                                    background: 'rgba(255,255,255,0.03)',
+                                    padding: '12px',
+                                    borderRadius: '8px',
+                                    border: '1px solid #222',
+                                }}
+                            >
+                                <div style={{ fontSize: '10px', color: '#666', marginBottom: '4px' }}>
+                                    ОТЗЫВ ИГРОКА:
+                                </div>
                                 <div style={{ fontSize: '12px', color: '#ccc', fontStyle: 'italic' }}>
                                     "{replyingItem.text}"
                                 </div>
                             </div>
 
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                                <label style={{ fontSize: '11px', color: '#aaa', fontWeight: 700 }}>ТЕКСТ ОТВЕТА (ПИСЬМО В ИГРЕ):</label>
+                                <label style={{ fontSize: '11px', color: '#aaa', fontWeight: 700 }}>
+                                    ТЕКСТ ОТВЕТА (ПИСЬМО В ИГРЕ):
+                                </label>
                                 <textarea
                                     value={replyText}
                                     onChange={(e) => setReplyText(e.target.value)}

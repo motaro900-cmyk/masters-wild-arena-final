@@ -120,9 +120,7 @@ class BattleResultServiceClass {
         const isVip = storeState.vipLevel > 0 && (storeState.vipEndTime || 0) > Date.now();
         myGoldChange = Math.floor(baseGold * (isVip ? 1.15 : 1.0));
 
-        myExpChange = Math.round(
-            getXPReward(attackerWon, params.myLevel) * (storeState.isPremium ? 1.25 : 1.0),
-        );
+        myExpChange = Math.round(getXPReward(attackerWon, params.myLevel) * (storeState.isPremium ? 1.25 : 1.0));
 
         const serverAttackerWon = serverResult === 'win';
         let myCupsChange = calcCupsChange(params.myRating, opponentRating, serverAttackerWon);

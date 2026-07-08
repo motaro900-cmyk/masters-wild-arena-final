@@ -216,7 +216,7 @@ export class SyncService {
         // Throttle Firestore writes: min 15 seconds between non-forced writes to prevent network storms
         const now = Date.now();
         const minWriteInterval = 15000;
-        if (!force && (now - this.lastWriteTime < minWriteInterval)) {
+        if (!force && now - this.lastWriteTime < minWriteInterval) {
             const remaining = minWriteInterval - (now - this.lastWriteTime);
             this.debouncedSync(remaining);
             return Promise.resolve();
@@ -349,6 +349,7 @@ export class SyncService {
                     userId,
                     isDev: isLocalhost,
                     syncData,
+                    launchParams: typeof window !== 'undefined' ? window.location.search : '',
                 }),
             });
 
@@ -436,9 +437,12 @@ export class SyncService {
                     window.location.protocol === 'file:');
 
             console.log(`[SyncService] Loading profile via proxy for ${userId}`);
-            const response = await fetch(`/api/profile-load?userId=${encodeURIComponent(userId)}&isDev=${isLocalhost}`, {
-                signal: AbortSignal.timeout(10000)
-            });
+            const response = await fetch(
+                `/api/profile-load?userId=${encodeURIComponent(userId)}&isDev=${isLocalhost}`,
+                {
+                    signal: AbortSignal.timeout(10000),
+                },
+            );
 
             if (!response.ok) {
                 throw new Error(`Profile load HTTP error: ${response.status} ${response.statusText}`);
@@ -472,7 +476,7 @@ export class SyncService {
                 // We keep raw friend IDs from the player document and resolve them in the background AFTER READY.
                 // The FriendsWindow will trigger a refresh when it opens, so this is safe.
                 const resolvedFriends: any[] = (data.friends || []).map((f: any) =>
-                    typeof f === 'object' ? f : { id: f }
+                    typeof f === 'object' ? f : { id: f },
                 );
 
                 // Schedule background friend profile resolution after boot completes
@@ -716,8 +720,8 @@ export class SyncService {
                                 isDev: isLocalhost,
                                 syncData: {
                                     lastActions: merged,
-                                    wasOnline: '__serverTimestamp__'
-                                }
+                                    wasOnline: '__serverTimestamp__',
+                                },
                             }),
                         });
 

@@ -147,8 +147,6 @@ export const DailyCalendarTab: React.FC<DailyCalendarTabProps> = ({
                     margin: isMobile ? '8px 0' : '10px 0',
                 }}
             >
-
-
                 {STREAK_REWARDS.map((rewardItem) => {
                     const isCurrent = rewardItem.day === streak && !claimedToday;
                     const isClaimed = rewardItem.day < streak || (rewardItem.day === streak && claimedToday);
@@ -318,7 +316,16 @@ export const DailyCalendarTab: React.FC<DailyCalendarTabProps> = ({
                                 </div>
 
                                 {/* Central Reward Icon with Ambient Pulsing Glow Aura */}
-                                <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 1, width: '100%' }}>
+                                <div
+                                    style={{
+                                        position: 'relative',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        flex: 1,
+                                        width: '100%',
+                                    }}
+                                >
                                     {!isLocked && !isClaimed && (
                                         <div
                                             style={{
@@ -347,12 +354,8 @@ export const DailyCalendarTab: React.FC<DailyCalendarTabProps> = ({
                                             ease: 'easeInOut',
                                         }}
                                         style={{
-                                            width: isDay7
-                                                ? isMobile ? '60px' : '110px'
-                                                : isMobile ? '42px' : '72px',
-                                            height: isDay7
-                                                ? isMobile ? '60px' : '110px'
-                                                : isMobile ? '42px' : '72px',
+                                            width: isDay7 ? (isMobile ? '60px' : '110px') : isMobile ? '42px' : '72px',
+                                            height: isDay7 ? (isMobile ? '60px' : '110px') : isMobile ? '42px' : '72px',
                                             objectFit: 'contain',
                                             filter: isLocked
                                                 ? 'brightness(0.45) saturate(0.45)'
@@ -464,8 +467,22 @@ export const DailyCalendarTab: React.FC<DailyCalendarTabProps> = ({
                             marginBottom: '4px',
                         }}
                     >
-                        <span style={{ color: '#dfc08a', fontSize: '13px', fontWeight: 700, fontFamily: "'Montserrat', sans-serif" }}>
-                            Текущая серия: <span style={{ color: '#ffd700', fontWeight: 900 }}>{streak} {streak === 1 ? 'день' : streak < 5 ? 'дня' : 'дней'}</span> подряд. Получено подарков в цикле: <span style={{ color: '#ffd700', fontWeight: 900 }}>{claimedToday ? streak : streak - 1} / 7</span>
+                        <span
+                            style={{
+                                color: '#dfc08a',
+                                fontSize: '13px',
+                                fontWeight: 700,
+                                fontFamily: "'Montserrat', sans-serif",
+                            }}
+                        >
+                            Текущая серия:{' '}
+                            <span style={{ color: '#ffd700', fontWeight: 900 }}>
+                                {streak} {streak === 1 ? 'день' : streak < 5 ? 'дня' : 'дней'}
+                            </span>{' '}
+                            подряд. Получено подарков в цикле:{' '}
+                            <span style={{ color: '#ffd700', fontWeight: 900 }}>
+                                {claimedToday ? streak : streak - 1} / 7
+                            </span>
                         </span>
                     </div>
                 )}
@@ -524,7 +541,7 @@ export const DailyCalendarTab: React.FC<DailyCalendarTabProps> = ({
                         >
                             Вы уже забрали сегодняшнюю награду!
                         </p>
-                        
+
                         {/* Styled Cooldown Plaque */}
                         <div
                             style={{

@@ -118,20 +118,6 @@ export const weapons: Record<string, IEquipmentStats> = {
         desc: 'Древнее костяное лезвие с магическими рунами.',
     },
 
-    staff_willow: {
-        id: 'staff_willow',
-        name: 'Ивовый Жезл Очищения',
-        requiredLevel: 22,
-        rarity: 'RARE',
-        attackBonus: 186,
-        speedBonus: 0.07,
-        priceGold: 45000,
-        image: '/assets/images/items/weapons/staff.webp',
-        atlasFrame: 'staff.png',
-        mainTab: 'ARSENAL',
-        subTab: 'WEAPONS',
-        desc: 'Жезл из ветви священной ивы, наполненный энергией природы.',
-    },
 
     axe_iron: {
         id: 'axe_iron',
@@ -313,36 +299,6 @@ export const weapons: Record<string, IEquipmentStats> = {
         desc: 'Благородный клинок из лучшей стали империи.',
     },
 
-    weapon_moon_sword: {
-        id: 'weapon_moon_sword',
-        name: 'Эпический Меч Луны',
-        requiredLevel: 46,
-        rarity: 'EPIC',
-        attackBonus: 432,
-        critBonus: 0.08,
-        priceGem: 1100,
-        image: '/assets/images/items/weapons/moon_sword.webp',
-        atlasFrame: 'moon_sword.png',
-        mainTab: 'ARSENAL',
-        subTab: 'WEAPONS',
-        desc: 'Овеянный легендами клинок, вобравший в себя холодное сияние ночной луны.',
-    },
-
-    bow_griffin: {
-        id: 'bow_griffin',
-        name: 'Лук Золотого Грифона',
-        requiredLevel: 47,
-        rarity: 'LEGENDARY',
-        attackBonus: 455,
-        speedBonus: 0.05,
-        critBonus: 0.04,
-        priceGold: 120000,
-        image: '/assets/images/items/weapons/bow.webp',
-        atlasFrame: 'bow.png',
-        mainTab: 'ARSENAL',
-        subTab: 'WEAPONS',
-        desc: 'Тетива этого лука поет, когда стрела летит точно в цель.',
-    },
 
     staff_celestial: {
         id: 'staff_celestial',

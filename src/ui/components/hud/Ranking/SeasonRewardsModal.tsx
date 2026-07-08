@@ -62,10 +62,17 @@ export const SeasonRewardsModal: React.FC<SeasonRewardsModalProps> = ({
                                 marginBottom: '10px',
                             }}
                         >
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                            <div
+                                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                            >
                                 <img
                                     src={AssetsMap.UI.TROPHY_PREMIUM}
-                                    style={{ width: '28px', height: '28px', objectFit: 'contain', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))' }}
+                                    style={{
+                                        width: '28px',
+                                        height: '28px',
+                                        objectFit: 'contain',
+                                        filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))',
+                                    }}
                                     alt="trophy"
                                 />
                                 <span>НАГРАДЫ СЕЗОНА</span>

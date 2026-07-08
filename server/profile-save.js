@@ -3,6 +3,8 @@
  * @purpose: Saves player profile to Firestore using REST API to bypass Russia regional blocks.
  */
 
+import crypto from 'crypto';
+
 const FIREBASE_PROJECT_ID = 'masters-of-the-wilde';
 const FIREBASE_WEB_API_KEY = 'AIzaSyCkdcAHtqY-K_HRfb0FpkVR8lU5tbJfmYE';
 
@@ -66,13 +68,75 @@ export default async function handler(req, res) {
             }
         }
 
-        const { userId, isDev, syncData } = body;
+        const { userId, isDev, syncData, launchParams } = body;
         if (!userId) {
             return res.status(400).json({ error: 'Missing userId parameter' });
         }
         if (!syncData) {
             return res.status(400).json({ error: 'Missing syncData parameter' });
         }
+
+        // --- VK SIGNATURE VALIDATION (Security Layer) ---
+        const host = req.headers.host || '';
+        const isLocal = host.includes('localhost') || host.includes('127.0.0.1');
+
+        if (!isLocal) {
+            if (!launchParams) {
+                return res.status(403).json({ error: 'Forbidden: missing launch parameters' });
+            }
+            const params = new URLSearchParams(launchParams.startsWith('?') ? launchParams : `?${launchParams}`);
+            const query = {};
+            for (const [key, value] of params.entries()) {
+                query[key] = value;
+            }
+
+            const sign = query.sign;
+            if (!sign) {
+                return res.status(403).json({ error: 'Forbidden: missing signature' });
+            }
+
+            const secretKey = process.env.VK_APP_SECRET;
+            if (!secretKey) {
+                return res.status(500).json({ error: 'Server configuration error' });
+            }
+
+            const queryParams = [];
+            for (const key of Object.keys(query)) {
+                if (key.startsWith('vk_')) {
+                    queryParams.push({ key, value: query[key] });
+                }
+            }
+
+            if (queryParams.length === 0) {
+                return res.status(403).json({ error: 'Forbidden: missing VK parameters' });
+            }
+
+            queryParams.sort((a, b) => a.key.localeCompare(b.key));
+            const queryString = queryParams.reduce((acc, { key, value }, idx) => {
+                return acc + (idx === 0 ? '' : '&') + `${key}=${value}`;
+            }, '');
+
+            const paramsHash = crypto
+                .createHmac('sha256', secretKey)
+                .update(queryString)
+                .digest()
+                .toString('base64')
+                .replace(/\+/g, '-')
+                .replace(/\//g, '_')
+                .replace(/=$/, '');
+
+            if (paramsHash !== sign) {
+                return res.status(403).json({ error: 'Forbidden: invalid signature' });
+            }
+
+            // Verify identity: ensure the userId matches the signed vk_user_id
+            const verifiedVkUserId = query.vk_user_id;
+            const expectedUserId = `VK-${verifiedVkUserId}`;
+            if (userId !== expectedUserId) {
+                return res.status(403).json({ error: 'Forbidden: identity mismatch' });
+            }
+        }
+        // -------------------------------------------------
 
         const USERS_COLLECTION = isDev === true ? 'пользователи_dev' : 'пользователи';
         const docPath = `${encodeURIComponent(USERS_COLLECTION)}/${encodeURIComponent(userId)}`;

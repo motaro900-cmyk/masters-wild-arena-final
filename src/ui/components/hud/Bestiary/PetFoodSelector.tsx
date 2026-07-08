@@ -91,9 +91,21 @@ export const PetFoodSelector: React.FC<PetFoodSelectorProps> = ({ gold, crystals
                 >
                     <span style={{ fontSize: '24px' }}>🥩</span>
                     <span style={{ fontSize: '12px', fontWeight: 800, color: '#fff' }}>Мясо</span>
-                    <span style={{ fontSize: '10px', color: '#a7f3d0', display: 'flex', alignItems: 'center', gap: '3px' }}>
+                    <span
+                        style={{
+                            fontSize: '10px',
+                            color: '#a7f3d0',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '3px',
+                        }}
+                    >
                         +30 🍗 +15 ❤️ | +12
-                        <img src={AssetsMap.UI.ICON_XP} style={{ width: '10px', height: '10px', objectFit: 'contain' }} alt="xp" />
+                        <img
+                            src={AssetsMap.UI.ICON_XP}
+                            style={{ width: '10px', height: '10px', objectFit: 'contain' }}
+                            alt="xp"
+                        />
                     </span>
                     <div
                         style={{
@@ -140,9 +152,21 @@ export const PetFoodSelector: React.FC<PetFoodSelectorProps> = ({ gold, crystals
                 >
                     <span style={{ fontSize: '24px' }}>🫐</span>
                     <span style={{ fontSize: '12px', fontWeight: 800, color: '#fff' }}>Черника</span>
-                    <span style={{ fontSize: '10px', color: '#a7f3d0', display: 'flex', alignItems: 'center', gap: '3px' }}>
+                    <span
+                        style={{
+                            fontSize: '10px',
+                            color: '#a7f3d0',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '3px',
+                        }}
+                    >
                         +40 🍗 +25 ❤️ | +22
-                        <img src={AssetsMap.UI.ICON_XP} style={{ width: '10px', height: '10px', objectFit: 'contain' }} alt="xp" />
+                        <img
+                            src={AssetsMap.UI.ICON_XP}
+                            style={{ width: '10px', height: '10px', objectFit: 'contain' }}
+                            alt="xp"
+                        />
                     </span>
                     <div
                         style={{
@@ -190,9 +214,21 @@ export const PetFoodSelector: React.FC<PetFoodSelectorProps> = ({ gold, crystals
                 >
                     <span style={{ fontSize: '24px' }}>🥘</span>
                     <span style={{ fontSize: '12px', fontWeight: 800, color: '#fed7aa' }}>Жаркое Феникса</span>
-                    <span style={{ fontSize: '10px', color: '#fdba74', display: 'flex', alignItems: 'center', gap: '3px' }}>
+                    <span
+                        style={{
+                            fontSize: '10px',
+                            color: '#fdba74',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '3px',
+                        }}
+                    >
                         +65 🍗 +55 ❤️ | +40
-                        <img src={AssetsMap.UI.ICON_XP} style={{ width: '10px', height: '10px', objectFit: 'contain' }} alt="xp" />
+                        <img
+                            src={AssetsMap.UI.ICON_XP}
+                            style={{ width: '10px', height: '10px', objectFit: 'contain' }}
+                            alt="xp"
+                        />
                     </span>
                     <div
                         style={{

@@ -311,8 +311,12 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
         });
     }
 
-    const rewardsList = stats.filter((s) => ['Золото получено', 'Опыт получен', 'Кубки', 'Кристаллы'].includes(s.label));
-    const combatStatsList = stats.filter((s) => ['Нанесено урона', 'Лучший удар', 'Получено урона', 'Ходов сыграно'].includes(s.label));
+    const rewardsList = stats.filter((s) =>
+        ['Золото получено', 'Опыт получен', 'Кубки', 'Кристаллы'].includes(s.label),
+    );
+    const combatStatsList = stats.filter((s) =>
+        ['Нанесено урона', 'Лучший удар', 'Получено урона', 'Ходов сыграно'].includes(s.label),
+    );
 
     return (
         <div
@@ -468,14 +472,17 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
                                                 alignItems: 'center',
                                                 justifyContent: 'center',
                                                 padding: '16px 12px',
-                                                background: 'linear-gradient(180deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%)',
+                                                background:
+                                                    'linear-gradient(180deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%)',
                                                 borderRadius: '16px',
                                                 border: '1.5px solid rgba(196, 139, 59, 0.35)',
                                                 boxShadow: '0 8px 20px rgba(0,0,0,0.4)',
                                                 animationDelay: `${i * 100}ms`,
                                             }}
                                         >
-                                            <div style={{ fontSize: '30px', marginBottom: '6px', lineHeight: 1 }}>{stat.icon}</div>
+                                            <div style={{ fontSize: '30px', marginBottom: '6px', lineHeight: 1 }}>
+                                                {stat.icon}
+                                            </div>
                                             <div
                                                 style={{
                                                     color: 'rgba(255,255,255,0.5)',

@@ -95,7 +95,15 @@ export const AdminSpectatorModal: React.FC<AdminSpectatorModalProps> = ({ player
                         >
                             <div style={{ color: '#888', fontSize: '10px', marginBottom: '5px' }}>РЕСУРСЫ</div>
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                                <div style={{ color: '#ffd700', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                <div
+                                    style={{
+                                        color: '#ffd700',
+                                        fontWeight: 'bold',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '4px',
+                                    }}
+                                >
                                     <img
                                         src={AssetsMap.UI.ICON_GOLD_FULL}
                                         alt="Золото"
@@ -103,7 +111,15 @@ export const AdminSpectatorModal: React.FC<AdminSpectatorModalProps> = ({ player
                                     />
                                     {playerState.золото || 0}
                                 </div>
-                                <div style={{ color: '#00ffff', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                <div
+                                    style={{
+                                        color: '#00ffff',
+                                        fontWeight: 'bold',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '4px',
+                                    }}
+                                >
                                     <img
                                         src={AssetsMap.UI.ICON_ALMAZ_FULL}
                                         alt="Кристаллы"
@@ -111,7 +127,15 @@ export const AdminSpectatorModal: React.FC<AdminSpectatorModalProps> = ({ player
                                     />
                                     {playerState.кристаллы || 0}
                                 </div>
-                                <div style={{ color: '#0ea5e9', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                <div
+                                    style={{
+                                        color: '#0ea5e9',
+                                        fontWeight: 'bold',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '4px',
+                                    }}
+                                >
                                     <img
                                         src={AssetsMap.UI.ICON_ENERGY_FULL}
                                         alt="Энергия"
@@ -119,7 +143,15 @@ export const AdminSpectatorModal: React.FC<AdminSpectatorModalProps> = ({ player
                                     />
                                     {playerState.энергия || 0}/{playerState.максЭнергия || 50}
                                 </div>
-                                <div style={{ color: '#a78bfa', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                <div
+                                    style={{
+                                        color: '#a78bfa',
+                                        fontWeight: 'bold',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '4px',
+                                    }}
+                                >
                                     <img
                                         src={AssetsMap.UI.ICON_XP}
                                         alt="Уровень"

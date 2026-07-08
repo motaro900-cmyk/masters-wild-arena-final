@@ -235,9 +235,7 @@ export const LeaderItem: React.FC<LeaderItemProps> = ({ player, onClick }) => {
                             border: '1px solid rgba(240,192,64,0.35)',
                         }}
                     >
-                        <span style={{ color: '#dfc08a', fontSize: '13px', fontWeight: 800 }}>
-                            Ур. {player.level}
-                        </span>
+                        <span style={{ color: '#dfc08a', fontSize: '13px', fontWeight: 800 }}>Ур. {player.level}</span>
                     </div>
                 </div>
             </div>

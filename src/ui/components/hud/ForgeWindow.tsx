@@ -511,7 +511,12 @@ export const ForgeWindow: React.FC = () => {
                                                         <img
                                                             src={AssetsMap.UI.ICON_GOLD_FULL}
                                                             alt="Золото"
-                                                            style={{ width: '16px', height: '16px', objectFit: 'contain', display: 'inline-block' }}
+                                                            style={{
+                                                                width: '16px',
+                                                                height: '16px',
+                                                                objectFit: 'contain',
+                                                                display: 'inline-block',
+                                                            }}
                                                         />
                                                     </span>
                                                 )}
@@ -528,7 +533,12 @@ export const ForgeWindow: React.FC = () => {
                                                         <img
                                                             src={AssetsMap.UI.ICON_ALMAZ_FULL}
                                                             alt="Кристаллы"
-                                                            style={{ width: '16px', height: '16px', objectFit: 'contain', display: 'inline-block' }}
+                                                            style={{
+                                                                width: '16px',
+                                                                height: '16px',
+                                                                objectFit: 'contain',
+                                                                display: 'inline-block',
+                                                            }}
                                                         />
                                                     </span>
                                                 )}

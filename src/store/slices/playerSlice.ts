@@ -115,15 +115,11 @@ export const createPlayerSlice = (set: any, get: any) => {
         combatPower: (() => {
             const defaultHero = HEROES_DB.find((h) => h.id === 'panda') || HEROES_DB[0];
             const stats = defaultHero.stats;
-            const stamina = stats.stamina;
-            const strength = stats.strength;
-            const agility = stats.agility;
-
-            const hp = Math.round(stamina * 10);
-            const attack = Math.round(strength * 2);
-            const defense = Math.round(stamina * 0.5);
-            const speed = 1 + agility * 0.05;
-            const critChance = agility * 0.5;
+            const hp = stats.hp;
+            const attack = stats.attack;
+            const defense = stats.defense;
+            const speed = stats.speed;
+            const critChance = stats.critChance;
 
             const divisor = 200; // avgItemLevel = 1
             const defMitigation = defense / (defense + divisor);
@@ -519,20 +515,30 @@ export const createPlayerSlice = (set: any, get: any) => {
             }
         },
 
-        canBattle: () => {
+        canBattle: (mode?: 'RANKED' | 'WARMUP' | 'PVE') => {
             const s = get();
+            const actualMode = mode || s.battleMode;
+            if (actualMode === 'PVE') {
+                return s.energy >= BATTLE_CONFIG.ENERGY_COST;
+            }
             return s.energy >= BATTLE_CONFIG.ENERGY_COST && s.dailyBattles < s.dailyBattleLimit;
         },
 
-        recordBattle: () => {
+        recordBattle: (mode?: 'RANKED' | 'WARMUP' | 'PVE') => {
             const s = get();
-            if (!s.canBattle?.()) return false;
+            const actualMode = mode || s.battleMode;
+            if (!s.canBattle?.(actualMode)) return false;
             const wasFull = s.energy >= s.maxEnergy;
-            set((state: any) => ({
-                energy: Math.max(0, state.energy - BATTLE_CONFIG.ENERGY_COST),
-                dailyBattles: state.dailyBattles + 1,
-                lastEnergyUpdate: wasFull ? TimeService.now() : state.lastEnergyUpdate,
-            }));
+            set((state: any) => {
+                const patch: any = {
+                    energy: Math.max(0, state.energy - BATTLE_CONFIG.ENERGY_COST),
+                    lastEnergyUpdate: wasFull ? TimeService.now() : state.lastEnergyUpdate,
+                };
+                if (actualMode !== 'PVE') {
+                    patch.dailyBattles = state.dailyBattles + 1;
+                }
+                return patch;
+            });
             if (get().updateQuestProgress) {
                 get().updateQuestProgress('SPEND_ENERGY', BATTLE_CONFIG.ENERGY_COST);
             }
@@ -780,13 +786,13 @@ export const createPlayerSlice = (set: any, get: any) => {
                 return;
             }
             const currentName = state.name;
-            const newName = currentName === 'Мастер' || !currentName ? user.firstName : currentName;
+            const newName = currentName === 'Мастер' || !currentName ? (user.firstName || user.first_name || 'Игрок ВК') : currentName;
             const newPlayerId = `MW-VK-${uid}`;
 
             set({
                 vkUser: user,
                 name: newName,
-                avatar: user.photo || state.avatar,
+                avatar: user.photo || user.photo_200 || state.avatar,
                 playerId: newPlayerId,
                 isSystemUpdate: true,
             });

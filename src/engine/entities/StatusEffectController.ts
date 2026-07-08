@@ -347,13 +347,13 @@ export class StatusEffectController {
         this.freezeEffectContainer = new PIXI.Container();
         this.freezeEffectContainer.zIndex = 35;
         this.unit.addChild(this.freezeEffectContainer);
-        
+
         // Переводим персонажа в позу Idle при заморозке
         if (typeof (this.unit as any).setFrame === 'function') {
             const idleIdx = (this.unit as any).idleFrameIdx !== undefined ? (this.unit as any).idleFrameIdx : 0;
             (this.unit as any).setFrame(idleIdx);
         }
-        
+
         this.updateTints();
 
         const crystalCount = 6 + Math.floor(Math.random() * 4);

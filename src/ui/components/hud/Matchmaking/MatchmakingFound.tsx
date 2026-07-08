@@ -596,7 +596,6 @@ export const MatchmakingFound: React.FC<MatchmakingFoundProps> = ({
                         />
                     </div>
 
-
                     {/* Reward Box */}
                     <div
                         style={{

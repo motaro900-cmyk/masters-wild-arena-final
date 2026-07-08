@@ -68,7 +68,7 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({
     const [confirmData, setConfirmData] = useState<{
         isOpen: boolean;
         title: string;
-        message: string;
+        message: React.ReactNode;
         onConfirm: () => void;
         variant: 'danger' | 'normal';
     }>({ isOpen: false, title: '', message: '', onConfirm: () => {}, variant: 'normal' });
@@ -258,9 +258,22 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({
             isOpen: true,
             title: 'ПРОДАЖА ВЕЩЕЙ',
             message: (
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap', justifyContent: 'center' }}>
+                <span
+                    style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        flexWrap: 'wrap',
+                        justifyContent: 'center',
+                    }}
+                >
                     Продать все обычные предметы ({junkItems.length} шт.) за {junkGold.toLocaleString('ru-RU')}
-                    <img src={AssetsMap.UI.ICON_GOLD_FULL} alt="золото" style={{ width: '18px', height: '18px', objectFit: 'contain' }} />?
+                    <img
+                        src={AssetsMap.UI.ICON_GOLD_FULL}
+                        alt="золото"
+                        style={{ width: '18px', height: '18px', objectFit: 'contain' }}
+                    />
+                    ?
                 </span>
             ),
             variant: 'danger',
@@ -284,9 +297,22 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({
             isOpen: true,
             title: 'ПРОДАЖА ВЫБРАННЫХ',
             message: (
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap', justifyContent: 'center' }}>
+                <span
+                    style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        flexWrap: 'wrap',
+                        justifyContent: 'center',
+                    }}
+                >
                     Продать {selectedItems.size} шт. за {selectedGold.toLocaleString('ru-RU')}
-                    <img src={AssetsMap.UI.ICON_GOLD_FULL} alt="золото" style={{ width: '18px', height: '18px', objectFit: 'contain' }} />?
+                    <img
+                        src={AssetsMap.UI.ICON_GOLD_FULL}
+                        alt="золото"
+                        style={{ width: '18px', height: '18px', objectFit: 'contain' }}
+                    />
+                    ?
                 </span>
             ),
             variant: 'danger',
@@ -526,7 +552,11 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({
                             <span>✅ {selectedItems.size} шт.</span>
                             <span style={{ opacity: 0.7, display: 'flex', alignItems: 'center', gap: '2px' }}>
                                 +{selectedGold.toLocaleString('ru-RU')}
-                                <img src={AssetsMap.UI.ICON_GOLD_FULL} style={{ width: '13px', height: '13px', objectFit: 'contain' }} alt="золото" />
+                                <img
+                                    src={AssetsMap.UI.ICON_GOLD_FULL}
+                                    style={{ width: '13px', height: '13px', objectFit: 'contain' }}
+                                    alt="золото"
+                                />
                             </span>
                         </button>
                     )}
@@ -560,9 +590,21 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({
                         <span>🗑️</span>
                         <span>ХЛАМ</span>
                         {junkItems.length > 0 && (
-                            <span style={{ opacity: 0.75, fontSize: '11px', display: 'flex', alignItems: 'center', gap: '2px' }}>
+                            <span
+                                style={{
+                                    opacity: 0.75,
+                                    fontSize: '11px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '2px',
+                                }}
+                            >
                                 +{junkGold.toLocaleString('ru-RU')}
-                                <img src={AssetsMap.UI.ICON_GOLD_FULL} style={{ width: '12px', height: '12px', objectFit: 'contain' }} alt="золото" />
+                                <img
+                                    src={AssetsMap.UI.ICON_GOLD_FULL}
+                                    style={{ width: '12px', height: '12px', objectFit: 'contain' }}
+                                    alt="золото"
+                                />
                             </span>
                         )}
                     </button>

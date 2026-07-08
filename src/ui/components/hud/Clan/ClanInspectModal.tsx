@@ -113,7 +113,20 @@ export const ClanInspectModal: React.FC<ClanInspectModalProps> = ({
         const count = clan.membersCount;
         const members: InspectMember[] = [];
 
-        const MOCK_AVATARS = ['panda', 'lion', 'tiger', 'panther', 'bear', 'cat', 'monkey', 'moose', 'boar', 'rhino', 'ram', 'crocodile'];
+        const MOCK_AVATARS = [
+            'panda',
+            'lion',
+            'tiger',
+            'panther',
+            'bear',
+            'cat',
+            'monkey',
+            'moose',
+            'boar',
+            'rhino',
+            'ram',
+            'crocodile',
+        ];
 
         // Лидер клана
         const leaderTrophies = Math.max(clan.minTrophies + 500, Math.floor(clan.totalTrophies * 0.12));

@@ -328,7 +328,8 @@ export const ClanBankTab: React.FC<ClanBankTabProps> = ({
                                     <span style={{ color: '#4ade80', fontWeight: 900 }}>
                                         +{formatIncome(goldHourlyIncomeVal)}
                                     </span>{' '}
-                                    <CurrencyIcon type="GOLD" size={11} />/ч
+                                    <CurrencyIcon type="GOLD" size={11} />
+                                    /ч
                                 </div>
                                 <div style={{ fontSize: '11px', color: '#ccc', fontWeight: 800 }}>
                                     В сутки:{' '}
@@ -404,7 +405,8 @@ export const ClanBankTab: React.FC<ClanBankTabProps> = ({
                                     <span style={{ color: '#60a5fa', fontWeight: 900 }}>
                                         +{formatIncome(crystalsHourlyIncomeVal)}
                                     </span>{' '}
-                                    <CurrencyIcon type="ALMAZ" size={11} />/ч
+                                    <CurrencyIcon type="ALMAZ" size={11} />
+                                    /ч
                                 </div>
                                 <div style={{ fontSize: '11px', color: '#ccc', fontWeight: 800 }}>
                                     В сутки:{' '}
@@ -495,7 +497,15 @@ export const ClanBankTab: React.FC<ClanBankTabProps> = ({
                                             }}
                                         >
                                             <span style={{ color: '#ef4444' }}>Ур. Клана: {p.reqClanLvl}</span>
-                                            <span style={{ color: '#f0c040', marginTop: '1px', display: 'flex', alignItems: 'center', gap: '3px' }}>
+                                            <span
+                                                style={{
+                                                    color: '#f0c040',
+                                                    marginTop: '1px',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: '3px',
+                                                }}
+                                            >
                                                 Цена: {p.cost.toLocaleString()} <CurrencyIcon type="GOLD" size={10} />
                                             </span>
                                         </div>

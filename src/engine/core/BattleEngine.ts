@@ -559,7 +559,7 @@ export class BattleEngine {
         const maxHP = stats ? stats.hp : 100;
         const isTank = unit?.config?.role === 'TANK';
 
-        if (isTank && nextHP > 0 && nextHP / maxHP < 0.50 && !(unit as any).resolveBarrierTriggered) {
+        if (isTank && nextHP > 0 && nextHP / maxHP < 0.5 && !(unit as any).resolveBarrierTriggered) {
             (unit as any).resolveBarrierTriggered = true;
 
             const shieldVal = Math.ceil(maxHP * 0.15);
@@ -570,7 +570,10 @@ export class BattleEngine {
                 (this.state as any).enemyShield = ((this.state as any).enemyShield || 0) + shieldVal;
             }
 
-            stats.defense = Math.round(stats.defense * 1.30);
+            // Guard: stats может быть null если юнит инициализирован не полностью
+            if (stats) {
+                stats.defense = Math.round(stats.defense * 1.3);
+            }
             this.applyStatus(unit, 'STUN_IMMUNITY' as any, 2, 0, target === 'player');
 
             const barrierMsg = `🛡️ [РУБЕЖ СТОЙКОСТИ] ${unit.config.name} активирует барьер! Получен Щит +${shieldVal} и Защита +30%!`;

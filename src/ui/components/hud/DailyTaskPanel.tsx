@@ -37,7 +37,9 @@ export const DailyTaskPanel = React.memo(() => {
         return () => window.removeEventListener('resize', checkLayout);
     }, [isMobileFromStore]);
 
-    const [floatingRewards, setFloatingRewards] = useState<{ id: number; amount: number; type: string; x: number; y: number }[]>([]);
+    const [floatingRewards, setFloatingRewards] = useState<
+        { id: number; amount: number; type: string; x: number; y: number }[]
+    >([]);
 
     const handleClaimReward = (dq: IDailyQuest, qData: any, e: React.MouseEvent) => {
         e.stopPropagation();
@@ -72,7 +74,9 @@ export const DailyTaskPanel = React.memo(() => {
     };
 
     const todayStr = getMoscowDateString();
-    const [lastPassDate, setLastPassDate] = useState(() => storeLastVipQuestPassDate || safeGetItem('lastVipQuestPassDate') || '');
+    const [lastPassDate, setLastPassDate] = useState(
+        () => storeLastVipQuestPassDate || safeGetItem('lastVipQuestPassDate') || '',
+    );
 
     // Sync local state if store value updates
     useEffect(() => {
@@ -102,9 +106,9 @@ export const DailyTaskPanel = React.memo(() => {
         });
 
         // Записываем в Zustand
-        useGameStore.setState({ 
+        useGameStore.setState({
             dailyQuests: updatedQuests,
-            lastVipQuestPassDate: todayStr 
+            lastVipQuestPassDate: todayStr,
         });
 
         // Сохраняем дату авто-прохождения
@@ -245,7 +249,7 @@ export const DailyTaskPanel = React.memo(() => {
                                     { padding: '18px 0 0 0', height: '88px' },
                                     { padding: '12px 0 0 0', height: '94px' },
                                     { padding: '4px 0 0 0', height: '94px' },
-                                    { padding: '2px 0 0 0', height: '94px' }
+                                    { padding: '2px 0 0 0', height: '94px' },
                                 ][index] || { padding: '12px 0 0 0', height: '94px' };
 
                                 return (
@@ -493,11 +497,7 @@ export const DailyTaskPanel = React.memo(() => {
                         style={{
                             position: 'absolute',
                             left: reward.x,
-                            color: reward.type === 'GOLD'
-                                ? '#f1c40f'
-                                : reward.type === 'GEM'
-                                  ? '#00ffff'
-                                  : '#38bdf8',
+                            color: reward.type === 'GOLD' ? '#f1c40f' : reward.type === 'GEM' ? '#00ffff' : '#38bdf8',
                             fontWeight: 900,
                             fontSize: '15px',
                             fontFamily: "'Cinzel', serif",

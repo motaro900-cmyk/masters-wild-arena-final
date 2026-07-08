@@ -251,7 +251,9 @@ export class PixiApp {
                     gpuLower.includes('swiftshader')
                 ) {
                     isWeakGPU = true;
-                    console.log(`[PixiApp] Weak/Integrated GPU detected (${profile.gpuRenderer}). Capping resolution backing store.`);
+                    console.log(
+                        `[PixiApp] Weak/Integrated GPU detected (${profile.gpuRenderer}). Capping resolution backing store.`,
+                    );
                 }
 
                 const resolution = isMobile

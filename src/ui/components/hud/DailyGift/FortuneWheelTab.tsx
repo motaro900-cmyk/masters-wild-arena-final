@@ -43,7 +43,7 @@ export const FortuneWheelTab: React.FC<FortuneWheelTabProps> = ({
             ...reward,
             uniqueId: `${repIdx}-${rewardIdx}`,
             originalIdx: rewardIdx,
-        }))
+        })),
     );
 
     // Taller drum heights (height: 360px on PC, cards: 180x280px)
@@ -222,7 +222,8 @@ export const FortuneWheelTab: React.FC<FortuneWheelTabProps> = ({
                     style={{
                         position: 'absolute',
                         inset: 0,
-                        background: 'linear-gradient(90deg, #0d0603 0%, rgba(13, 6, 3, 0) 18%, rgba(13, 6, 3, 0) 82%, #0d0603 100%)',
+                        background:
+                            'linear-gradient(90deg, #0d0603 0%, rgba(13, 6, 3, 0) 18%, rgba(13, 6, 3, 0) 82%, #0d0603 100%)',
                         pointerEvents: 'none',
                         zIndex: 10,
                     }}
@@ -379,7 +380,15 @@ export const FortuneWheelTab: React.FC<FortuneWheelTabProps> = ({
                                     }}
                                 />
 
-                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', zIndex: 2 }}>
+                                <div
+                                    style={{
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        alignItems: 'center',
+                                        gap: '2px',
+                                        zIndex: 2,
+                                    }}
+                                >
                                     <span
                                         style={{
                                             fontFamily: "'Cinzel', serif",
@@ -453,7 +462,8 @@ export const FortuneWheelTab: React.FC<FortuneWheelTabProps> = ({
                                 fontFamily: "'Montserrat', sans-serif",
                             }}
                         >
-                            Каждые 24 часа вам доступно одно бесплатное вращение Рулетки Удачи. Выигранные награды (Золото, Алмазы или Энергия) мгновенно зачисляются на ваш баланс. Испытайте фортуну!
+                            Каждые 24 часа вам доступно одно бесплатное вращение Рулетки Удачи. Выигранные награды
+                            (Золото, Алмазы или Энергия) мгновенно зачисляются на ваш баланс. Испытайте фортуну!
                         </p>
                     </div>
                 )}
@@ -496,7 +506,7 @@ export const FortuneWheelTab: React.FC<FortuneWheelTabProps> = ({
                         >
                             Вы уже крутили рулетку сегодня!
                         </p>
-                        
+
                         {/* Styled Cooldown Plaque */}
                         <div
                             style={{

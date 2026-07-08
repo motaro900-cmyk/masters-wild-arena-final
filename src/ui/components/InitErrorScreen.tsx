@@ -38,7 +38,19 @@ export const InitErrorScreen: React.FC<InitErrorScreenProps> = ({ error, onRetry
                     width: '90vw',
                 }}
             >
-                <code style={{ fontSize: '13px', color: '#ff7777', wordBreak: 'break-all', whiteSpace: 'pre-wrap', fontFamily: 'monospace', textAlign: 'left', display: 'block' }}>{error}</code>
+                <code
+                    style={{
+                        fontSize: '13px',
+                        color: '#ff7777',
+                        wordBreak: 'break-all',
+                        whiteSpace: 'pre-wrap',
+                        fontFamily: 'monospace',
+                        textAlign: 'left',
+                        display: 'block',
+                    }}
+                >
+                    {error}
+                </code>
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', alignItems: 'center' }}>

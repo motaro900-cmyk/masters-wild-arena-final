@@ -48,7 +48,9 @@ export const ChatInputArea: React.FC<ChatInputAreaProps> = ({
                         flex: 1,
                         height: 42,
                         background: isMobile ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0,0,0,0.7)',
-                        border: isMobile ? '1.5px solid rgba(255, 255, 255, 0.35)' : '1.5px solid rgba(240, 192, 64, 0.45)',
+                        border: isMobile
+                            ? '1.5px solid rgba(255, 255, 255, 0.35)'
+                            : '1.5px solid rgba(240, 192, 64, 0.45)',
                         borderRadius: '10px',
                         display: 'flex',
                         alignItems: 'center',

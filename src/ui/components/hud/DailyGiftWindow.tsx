@@ -162,10 +162,10 @@ export const DailyGiftWindow: React.FC<DailyGiftWindowProps> = ({ onClose }) => 
 
     // Firestore server dates
     const [lastGiftClaimedTime, setLastGiftClaimedTime] = useState<Timestamp | null>(
-        initialGiftTime ? Timestamp.fromMillis(initialGiftTime) : null
+        initialGiftTime ? Timestamp.fromMillis(initialGiftTime) : null,
     );
     const [lastWheelSpinTimeServer, setLastWheelSpinTimeServer] = useState<Timestamp | null>(
-        initialWheelTime ? Timestamp.fromMillis(initialWheelTime) : null
+        initialWheelTime ? Timestamp.fromMillis(initialWheelTime) : null,
     );
     const [dbLoginStreak, setDbLoginStreak] = useState<number>(initialStreak);
     const [isLoading, setIsLoading] = useState(true);
@@ -456,7 +456,14 @@ export const DailyGiftWindow: React.FC<DailyGiftWindowProps> = ({ onClose }) => 
             `}</style>
 
             {/* Tabs Header */}
-            <div style={{ display: 'flex', gap: isMobile ? '12px' : '18px', marginBottom: isMobile ? '10px' : '16px', zIndex: 5 }}>
+            <div
+                style={{
+                    display: 'flex',
+                    gap: isMobile ? '12px' : '18px',
+                    marginBottom: isMobile ? '10px' : '16px',
+                    zIndex: 5,
+                }}
+            >
                 <button
                     onClick={() => {
                         if (isSpinning) return;

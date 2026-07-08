@@ -24,10 +24,16 @@ import { useGraphicsConfig } from '../hooks/useGraphicsConfig';
 import { TimeService } from '../../utils/TimeService';
 
 const AdminPanel = lazyWithRetry(() => import('./hud/AdminPanel').then((m) => ({ default: m.AdminPanel })));
-const VipDailyRewardModal = lazyWithRetry(() => import('./hud/VipDailyRewardModal').then((m) => ({ default: m.VipDailyRewardModal })));
-const MatchmakingOverlay = lazyWithRetry(() => import('./hud/MatchmakingOverlay').then((m) => ({ default: m.MatchmakingOverlay })));
+const VipDailyRewardModal = lazyWithRetry(() =>
+    import('./hud/VipDailyRewardModal').then((m) => ({ default: m.VipDailyRewardModal })),
+);
+const MatchmakingOverlay = lazyWithRetry(() =>
+    import('./hud/MatchmakingOverlay').then((m) => ({ default: m.MatchmakingOverlay })),
+);
 const LevelUpOverlay = lazyWithRetry(() => import('./hud/LevelUpOverlay').then((m) => ({ default: m.LevelUpOverlay })));
-const PlayerInspectModal = lazyWithRetry(() => import('./hud/PlayerInspectModal').then((m) => ({ default: m.PlayerInspectModal })));
+const PlayerInspectModal = lazyWithRetry(() =>
+    import('./hud/PlayerInspectModal').then((m) => ({ default: m.PlayerInspectModal })),
+);
 
 export const GameHUD: React.FC = () => {
     const activeScreen = useGameStore((state) => state.activeScreen);
@@ -40,7 +46,12 @@ export const GameHUD: React.FC = () => {
     const [activeWindow, setRawActiveWindow] = useState<string | null>(null);
     const [showAdmin, setShowAdmin] = useState(false);
     const [devModal, setDevModal] = useState({ isOpen: false, title: '' });
-    const [vipDailyReward, setVipDailyReward] = useState<{ gold: number; crystals: number; energy: number; daysLeft: number } | null>(null);
+    const [vipDailyReward, setVipDailyReward] = useState<{
+        gold: number;
+        crystals: number;
+        energy: number;
+        daysLeft: number;
+    } | null>(null);
     const goToShop = useGameStore((state) => state.goToShop);
     const [prevScreen, setPrevScreen] = useState(activeScreen);
     const gfx = useGraphicsConfig();
@@ -190,7 +201,7 @@ export const GameHUD: React.FC = () => {
 
         const store = useGameStore.getState();
         const lastClaim = store.lastVipMailClaimDate || safeGetItem('lastVipMailClaimDate');
-        
+
         if (lastClaim !== mskDateStr) {
             // Генерируем случайные дары
             const rand = Math.random();
@@ -216,7 +227,7 @@ export const GameHUD: React.FC = () => {
 
             setTimeout(() => {
                 const currentStore = useGameStore.getState();
-                
+
                 // Credit rewards instantly
                 currentStore.addGold(gold);
                 currentStore.addCrystals(crystals);
@@ -227,7 +238,7 @@ export const GameHUD: React.FC = () => {
 
                 useGameStore.setState({ lastVipMailClaimDate: mskDateStr });
                 safeSetItem('lastVipMailClaimDate', mskDateStr);
-                
+
                 // Триггерим фоновую синхронизацию
                 import('../../services/SyncService').then(({ syncService }) => {
                     syncService.debouncedSync();
@@ -630,29 +641,29 @@ export const GameHUD: React.FC = () => {
                             // Используем setRawActiveWindow напрямую, чтобы не вызывать
                             // window.history.back() и избежать двойного срабатывания
                             setRawActiveWindow(null);
- 
+
                             useGameStore.setState({
                                 selectedEnemyId: opp.id,
                                 battleMode: 'RANKED',
                                 activeRankedOpponent: opp,
                             });
- 
+
                             import('../../services/SyncService').then(({ syncService }) => {
                                 syncService.logPlayerAction(`Начал рейтинговый бой против: ${opp.name}`);
                             });
- 
+
                             useGameStore.getState().setScreen('BATTLE');
                         }}
                     />
                 </React.Suspense>
             )}
- 
+
             <UnderDevelopmentModal
                 isOpen={devModal.isOpen}
                 title={devModal.title}
                 onClose={() => setDevModal({ ...devModal, isOpen: false })}
             />
- 
+
             {vipDailyReward && (
                 <div style={{ pointerEvents: 'all', position: 'absolute', inset: 0, zIndex: 99999 }}>
                     <React.Suspense fallback={<WindowLoadingSpinner />}>
@@ -665,7 +676,7 @@ export const GameHUD: React.FC = () => {
                     </React.Suspense>
                 </div>
             )}
- 
+
             <React.Suspense fallback={null}>
                 <LevelUpOverlay />
             </React.Suspense>

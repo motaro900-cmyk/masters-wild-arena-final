@@ -9,12 +9,7 @@ interface VipDailyRewardModalProps {
     onClose: () => void;
 }
 
-export const VipDailyRewardModal: React.FC<VipDailyRewardModalProps> = ({
-    isOpen,
-    rewards,
-    daysLeft,
-    onClose,
-}) => {
+export const VipDailyRewardModal: React.FC<VipDailyRewardModalProps> = ({ isOpen, rewards, daysLeft, onClose }) => {
     return (
         <AnimatePresence>
             {isOpen && (
@@ -62,7 +57,8 @@ export const VipDailyRewardModal: React.FC<VipDailyRewardModalProps> = ({
                             style={{
                                 position: 'absolute',
                                 inset: 0,
-                                background: 'linear-gradient(105deg, transparent 35%, rgba(212,175,55,0.15) 50%, transparent 65%)',
+                                background:
+                                    'linear-gradient(105deg, transparent 35%, rgba(212,175,55,0.15) 50%, transparent 65%)',
                                 pointerEvents: 'none',
                             }}
                         />
@@ -130,28 +126,46 @@ export const VipDailyRewardModal: React.FC<VipDailyRewardModalProps> = ({
                             {/* Gold Reward */}
                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                    <img src={AssetsMap.UI.ICON_GOLD_FULL} style={{ width: '28px', height: '28px', objectFit: 'contain' }} alt="gold" />
+                                    <img
+                                        src={AssetsMap.UI.ICON_GOLD_FULL}
+                                        style={{ width: '28px', height: '28px', objectFit: 'contain' }}
+                                        alt="gold"
+                                    />
                                     <span style={{ color: '#fff', fontSize: '14px', fontWeight: 800 }}>Золото</span>
                                 </div>
-                                <span style={{ color: '#f0c040', fontSize: '16px', fontWeight: 900 }}>+{rewards.gold}</span>
+                                <span style={{ color: '#f0c040', fontSize: '16px', fontWeight: 900 }}>
+                                    +{rewards.gold}
+                                </span>
                             </div>
 
                             {/* Crystals Reward */}
                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                    <img src={AssetsMap.UI.ICON_ALMAZ_FULL} style={{ width: '28px', height: '28px', objectFit: 'contain' }} alt="crystals" />
+                                    <img
+                                        src={AssetsMap.UI.ICON_ALMAZ_FULL}
+                                        style={{ width: '28px', height: '28px', objectFit: 'contain' }}
+                                        alt="crystals"
+                                    />
                                     <span style={{ color: '#fff', fontSize: '14px', fontWeight: 800 }}>Алмазы</span>
                                 </div>
-                                <span style={{ color: '#a78bfa', fontSize: '16px', fontWeight: 900 }}>+{rewards.crystals}</span>
+                                <span style={{ color: '#a78bfa', fontSize: '16px', fontWeight: 900 }}>
+                                    +{rewards.crystals}
+                                </span>
                             </div>
 
                             {/* Energy Reward */}
                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                    <img src={AssetsMap.UI.ICON_ENERGY_FULL || AssetsMap.UI.ICON_ENERGY} style={{ width: '28px', height: '28px', objectFit: 'contain' }} alt="energy" />
+                                    <img
+                                        src={AssetsMap.UI.ICON_ENERGY_FULL}
+                                        style={{ width: '28px', height: '28px', objectFit: 'contain' }}
+                                        alt="energy"
+                                    />
                                     <span style={{ color: '#fff', fontSize: '14px', fontWeight: 800 }}>Энергия</span>
                                 </div>
-                                <span style={{ color: '#38bdf8', fontSize: '16px', fontWeight: 900 }}>+{rewards.energy}</span>
+                                <span style={{ color: '#38bdf8', fontSize: '16px', fontWeight: 900 }}>
+                                    +{rewards.energy}
+                                </span>
                             </div>
                         </div>
 
@@ -189,7 +203,8 @@ export const VipDailyRewardModal: React.FC<VipDailyRewardModalProps> = ({
                                 fontWeight: 600,
                             }}
                         >
-                            Дней VIP-статуса осталось: <span style={{ color: '#ffe07d', fontWeight: 800 }}>{daysLeft}</span>
+                            Дней VIP-статуса осталось:{' '}
+                            <span style={{ color: '#ffe07d', fontWeight: 800 }}>{daysLeft}</span>
                         </p>
                     </motion.div>
                 </motion.div>
