@@ -673,7 +673,7 @@ export class SyncService {
             return { data: null, isNew: true, isAdmin };
         } catch (error) {
             console.error('[SyncService] Load player data failed:', error);
-            return null;
+            throw error;
         }
     }
 
