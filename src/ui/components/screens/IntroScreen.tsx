@@ -135,12 +135,12 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
             // Сохраняем имя и завершаем onboarding
             changeName(nickname);
             const store = useGameStore.getState();
-            if (store.setOnboardingCompleted) {
-                store.setOnboardingCompleted(true);
-            } else {
-                useGameStore.setState({ onboardingCompleted: true });
-                syncService.debouncedSync();
-            }
+            useGameStore.setState({
+                onboardingCompleted: true,
+                tosAcceptedAt: new Date().toISOString(),
+                tosVersion: '1.0.0-20260708',
+            });
+            syncService.debouncedSync();
 
             // Send welcome mail to Firestore
             const currentUserId = SyncService.getPrefixedUserId(store.vkUser, store.playerId);
@@ -783,19 +783,19 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
                         }}
                     >
                         <motion.button
-                            whileHover={{ scale: 1.05, boxShadow: '0 0 50px rgba(200,149,42,0.7)' }}
-                            whileTap={{ scale: 0.95 }}
-                            disabled={isChecking}
+                            whileHover={{ scale: (isChecking || (step === 4 && !legalAccepted)) ? 1 : 1.05, boxShadow: (isChecking || (step === 4 && !legalAccepted)) ? 'none' : '0 0 50px rgba(200,149,42,0.7)' }}
+                            whileTap={{ scale: (isChecking || (step === 4 && !legalAccepted)) ? 1 : 0.95 }}
+                            disabled={isChecking || (step === 4 && !legalAccepted)}
                             onClick={nextStep}
                             style={{
                                 padding: isMobile ? '14px 40px' : '20px 80px',
-                                background: isChecking ? '#333' : 'linear-gradient(135deg, #ffe082, #c8952a)',
+                                background: (isChecking || (step === 4 && !legalAccepted)) ? '#333' : 'linear-gradient(135deg, #ffe082, #c8952a)',
                                 border: 'none',
                                 borderRadius: '12px',
                                 fontSize: isMobile ? '18px' : '24px',
                                 fontWeight: 'bold',
-                                color: isChecking ? '#666' : '#1a0e05',
-                                cursor: isChecking ? 'not-allowed' : 'pointer',
+                                color: (isChecking || (step === 4 && !legalAccepted)) ? '#666' : '#1a0e05',
+                                cursor: (isChecking || (step === 4 && !legalAccepted)) ? 'not-allowed' : 'pointer',
                                 letterSpacing: '0.2em',
                                 boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
                             }}
