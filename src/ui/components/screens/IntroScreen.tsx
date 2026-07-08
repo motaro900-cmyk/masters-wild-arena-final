@@ -140,7 +140,7 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
                 tosAcceptedAt: new Date().toISOString(),
                 tosVersion: '1.0.0-20260708',
             });
-            syncService.debouncedSync();
+            syncService.syncPlayerData(true);
 
             // Send welcome mail to Firestore
             const currentUserId = SyncService.getPrefixedUserId(store.vkUser, store.playerId);
