@@ -907,8 +907,8 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
                 style={{
                     textAlign: 'center',
                     paddingBottom: '20px',
-                    opacity: 0.4,
-                    fontSize: '11px',
+                    opacity: 0.7,
+                    fontSize: '13px',
                     fontWeight: 800,
                 }}
             >
