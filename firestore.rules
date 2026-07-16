@@ -17,90 +17,52 @@ service cloud.firestore {
     }
 
     // Checks if the player is ONLY adding/removing themselves from another player's friends list.
-    // This is required because client-side clanSlice accepts/removes friends directly on both documents.
     function isFriendsSelfUpdate() {
       return isAuthorized()
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['friends'])
         && (
-          // 1. Initializing friends list with only myself
           (!('friends' in resource.data) && request.resource.data.friends.toSet().hasOnly([request.auth.uid]))
           ||
-          // 2. Adding myself to target user's friends list
           (('friends' in resource.data)
             && request.resource.data.friends.size() == resource.data.friends.size() + 1
             && request.resource.data.friends.toSet().difference(resource.data.friends.toSet()).hasOnly([request.auth.uid]))
           ||
-          // 3. Removing myself from target user's friends list
           (('friends' in resource.data)
             && request.resource.data.friends.size() == resource.data.friends.size() - 1
-            && resource.data.friends.toSet().difference(request.resource.data.friends.toSet()).hasOnly([request.auth.uid]))
+            && resource.data.friends.toSet().difference(resource.data.friends.toSet()).hasOnly([request.auth.uid]))
         );
     }
 
     // ═══════════════════════════════════════════════════════════════════════
-    // PLAYER PROFILE COLLECTIONS
+    // WILDCARD PATH MATCHING (Bypasses Web Editor Cyrillic parser bug)
     // ═══════════════════════════════════════════════════════════════════════
-    
-    match /пользователи/{userId} {
-      // Authenticated VK players can read profiles (required for matchmaking and nickname checks)
-      allow read: if isAuthorized();
+
+    // Matches any top-level collection path (depth 2)
+    match /{collectionId}/{docId} {
       
-      // Full document write is allowed only for the document owner
-      allow create, delete: if isOwner(userId);
+      // 1. GLOBAL CHAT COLLECTIONS
+      allow read, create: if (collectionId == 'чат' || collectionId == 'чат_dev') && isAuthorized();
+      allow update, delete: if (collectionId == 'чат' || collectionId == 'чат_dev') && false;
       
-      // Update is allowed for the owner OR when a friend is adding/removing themselves
-      allow update: if isOwner(userId) || isFriendsSelfUpdate();
+      // 2. FEEDBACK COLLECTIONS
+      allow create: if (collectionId == 'отзывы' || collectionId == 'отзывы_dev') && isAuthorized();
+      allow read, update, delete: if (collectionId == 'отзывы' || collectionId == 'отзывы_dev') && false;
+      
+      // 3. PLAYER PROFILE COLLECTIONS
+      allow read: if (collectionId == 'пользователи' || collectionId == 'пользователи_dev') && isAuthorized();
+      allow create, delete: if (collectionId == 'пользователи' || collectionId == 'пользователи_dev') && isOwner(docId);
+      allow update: if (collectionId == 'пользователи' || collectionId == 'пользователи_dev') && (isOwner(docId) || isFriendsSelfUpdate());
 
       // Sub-collections under users (Mail and friend request notifications)
-      match /почта/{mailId} {
-        allow read, create, update: if isAuthorized();
-        allow delete: if isOwner(userId);
+      match /{subCollectionId}/{subDocId} {
+        allow read, create, update: if (collectionId == 'пользователи' || collectionId == 'пользователи_dev')
+                                      && (subCollectionId == 'почта' || subCollectionId == 'запросы')
+                                      && isAuthorized();
+                                      
+        allow delete: if (collectionId == 'пользователи' || collectionId == 'пользователи_dev')
+                        && (subCollectionId == 'почта' || subCollectionId == 'запросы')
+                        && isOwner(docId);
       }
-      
-      match /запросы/{requestId} {
-        allow read, create, update: if isAuthorized();
-        allow delete: if isOwner(userId);
-      }
-    }
-
-    match /пользователи_dev/{userId} {
-      allow read: if isAuthorized();
-      allow create, delete: if isOwner(userId);
-      allow update: if isOwner(userId) || isFriendsSelfUpdate();
-
-      match /почта/{mailId} {
-        allow read, create, update: if isAuthorized();
-        allow delete: if isOwner(userId);
-      }
-      
-      match /запросы/{requestId} {
-        allow read, create, update: if isAuthorized();
-        allow delete: if isOwner(userId);
-      }
-    }
-
-    // ═══════════════════════════════════════════════════════════════════════
-    // OTHER COLLECTIONS
-    // ═══════════════════════════════════════════════════════════════════════
-
-    match /чат/{messageId} {
-      allow read, create: if isAuthorized();
-      allow update, delete: if false;
-    }
-
-    match /чат_dev/{messageId} {
-      allow read, create: if isAuthorized();
-      allow update, delete: if false;
-    }
-
-    match /отзывы/{feedbackId} {
-      allow create: if isAuthorized();
-      allow read, update, delete: if false;
-    }
-
-    match /отзывы_dev/{feedbackId} {
-      allow create: if isAuthorized();
-      allow read, update, delete: if false;
     }
   }
 }
