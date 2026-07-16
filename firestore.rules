@@ -2,60 +2,104 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // ВНИМАНИЕ: В текущей версии игры не используется Firebase Authentication (клиент обращается напрямую без signIn).
-    // Правила типа `request.auth != null` заблокируют все сохранения игроков.
-    // После перехода на Cloud Functions (Этап 4) прямая запись из клиента в `/пользователи` будет запрещена (write: if false),
-    // а все сохранения будут идти через защищенный серверный Admin SDK.
+    // ═══════════════════════════════════════════════════════════════════════
+    // SECURITY HELPER FUNCTIONS
+    // ═══════════════════════════════════════════════════════════════════════
+
+    // Checks if the request is sent by a logged-in (VK authenticated) player.
+    function isAuthorized() {
+      return request.auth != null;
+    }
+
+    // Checks if the logged-in player is the owner of the document.
+    function isOwner(userId) {
+      return isAuthorized() && request.auth.uid == userId;
+    }
+
+    // Checks if the player is ONLY adding/removing themselves from another player's friends list.
+    // This is required because client-side clanSlice accepts/removes friends directly on both documents.
+    function isFriendsSelfUpdate() {
+      return isAuthorized()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['friends'])
+        && (
+          // 1. Initializing friends list with only myself
+          (!('friends' in resource.data) && request.resource.data.friends.toSet().hasOnly([request.auth.uid]))
+          ||
+          // 2. Adding myself to target user's friends list
+          (('friends' in resource.data)
+            && request.resource.data.friends.size() == resource.data.friends.size() + 1
+            && request.resource.data.friends.toSet().difference(resource.data.friends.toSet()).hasOnly([request.auth.uid]))
+          ||
+          // 3. Removing myself from target user's friends list
+          (('friends' in resource.data)
+            && request.resource.data.friends.size() == resource.data.friends.size() - 1
+            && resource.data.friends.toSet().difference(request.resource.data.friends.toSet()).hasOnly([request.auth.uid]))
+        );
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // PLAYER PROFILE COLLECTIONS
+    // ═══════════════════════════════════════════════════════════════════════
     
     match /пользователи/{userId} {
-      allow read: if true;
-      allow write: if userId.matches('VK-.*') || userId.matches('GUEST-.*') || userId == 'DEVELOPER';
-      allow delete: if false;
+      // Authenticated VK players can read profiles (required for matchmaking and nickname checks)
+      allow read: if isAuthorized();
+      
+      // Full document write is allowed only for the document owner
+      allow create, delete: if isOwner(userId);
+      
+      // Update is allowed for the owner OR when a friend is adding/removing themselves
+      allow update: if isOwner(userId) || isFriendsSelfUpdate();
 
+      // Sub-collections under users (Mail and friend request notifications)
       match /почта/{mailId} {
-        allow read, create, update: if true;
-        allow delete: if false;
+        allow read, create, update: if isAuthorized();
+        allow delete: if isOwner(userId);
       }
       
       match /запросы/{requestId} {
-        allow read, create, update: if true;
-        allow delete: if false;
+        allow read, create, update: if isAuthorized();
+        allow delete: if isOwner(userId);
       }
     }
 
     match /пользователи_dev/{userId} {
-      allow read: if true;
-      allow write: if userId.matches('VK-.*') || userId.matches('GUEST-.*') || userId == 'DEVELOPER';
-      allow delete: if false;
+      allow read: if isAuthorized();
+      allow create, delete: if isOwner(userId);
+      allow update: if isOwner(userId) || isFriendsSelfUpdate();
 
       match /почта/{mailId} {
-        allow read, create, update: if true;
-        allow delete: if false;
+        allow read, create, update: if isAuthorized();
+        allow delete: if isOwner(userId);
       }
       
       match /запросы/{requestId} {
-        allow read, create, update: if true;
-        allow delete: if false;
+        allow read, create, update: if isAuthorized();
+        allow delete: if isOwner(userId);
       }
     }
 
+    // ═══════════════════════════════════════════════════════════════════════
+    // OTHER COLLECTIONS
+    // ═══════════════════════════════════════════════════════════════════════
+
     match /чат/{messageId} {
-      allow read, create: if true;
+      allow read, create: if isAuthorized();
       allow update, delete: if false;
     }
 
     match /чат_dev/{messageId} {
-      allow read, create: if true;
+      allow read, create: if isAuthorized();
       allow update, delete: if false;
     }
 
     match /отзывы/{feedbackId} {
-      allow create: if true;
+      allow create: if isAuthorized();
       allow read, update, delete: if false;
     }
 
     match /отзывы_dev/{feedbackId} {
-      allow create: if true;
+      allow create: if isAuthorized();
       allow read, update, delete: if false;
     }
   }

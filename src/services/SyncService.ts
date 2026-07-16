@@ -16,8 +16,6 @@
  *  - AdminService  — список игроков, лидерборд, обратная связь, удалённое обновление
  */
 
-import { db, USERS_COLLECTION } from '../utils/firebase';
-import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import { useGameStore } from '../store/useGameStore';
 import { getVkUserInfo } from '../utils/VKBridge';
 import { TimeService } from '../utils/TimeService';
@@ -151,7 +149,11 @@ export class SyncService {
                 fullStateJSON: this.buildFullStateJSON(state, TimeService.now()),
                 wasOnline: new Date().toISOString(),
                 isDev: isLocalhost,
+                // Required for server-side VK signature verification.
+                // sendBeacon cannot set custom headers, so launchParams travel in the body.
+                launchParams: typeof window !== 'undefined' ? window.location.search : '',
             };
+
 
             const blob = new Blob([JSON.stringify(criticalPayload)], { type: 'application/json' });
             const beaconSent = navigator.sendBeacon?.('/api/beacon-sync', blob);

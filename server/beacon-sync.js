@@ -1,17 +1,18 @@
 /**
  * @owner: @Motaro900 / Backend Team
  * @purpose: Handles persistent saving of game state snapshots on app close via navigator.sendBeacon.
+ *
+ * Migrated from REST API + Web API key to Firebase Admin SDK.
+ * Also adds VK signature verification that was previously absent (only userId prefix was checked).
+ *
+ * sendBeacon does not support custom headers, so launchParams are passed in the request body.
  */
 
-const FIREBASE_PROJECT_ID = 'masters-of-the-wilde';
-const FIREBASE_WEB_API_KEY = 'AIzaSyCkdcAHtqY-K_HRfb0FpkVR8lU5tbJfmYE';
+import { getAdminDb } from './firebaseAdmin.js';
+import { verifyVkSign, setCorsHeaders } from './vkAuth.js';
 
 export default async function handler(req, res) {
-    // CORS headers
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'POST,OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    setCorsHeaders(res);
 
     if (req.method === 'OPTIONS') {
         res.status(200).end();
@@ -44,74 +45,63 @@ export default async function handler(req, res) {
             return res.status(400).json({ error: 'Missing request body' });
         }
 
-        // Validate required fields
         const userId = body.userId;
         if (!userId || !userId.startsWith('VK-')) {
             return res.status(400).json({ error: 'Invalid or missing userId' });
         }
 
-        const USERS_COLLECTION = body.isDev === true ? 'пользователи_dev' : 'пользователи';
+        const host = req.headers.host || '';
 
-        // Parse the embedded fullStateJSON if present
-        let fullStateParsed = null;
-        if (body.fullStateJSON) {
-            try {
-                fullStateParsed = typeof body.fullStateJSON === 'string'
-                    ? JSON.parse(body.fullStateJSON)
-                    : body.fullStateJSON;
-            } catch (e) {
-                console.warn('[beacon-sync] Failed to parse fullStateJSON:', e);
+        // Verify VK signature — previously missing from beacon-sync
+        const auth = verifyVkSign(body.launchParams, host);
+        if (!auth.ok) {
+            console.warn(`[beacon-sync] VK signature verification failed for ${userId}: ${auth.error}`);
+            return res.status(403).json({ error: `Forbidden: ${auth.error}` });
+        }
+
+        // Ensure userId matches the signed VK identity
+        const isLocal = host.includes('localhost') || host.includes('127.0.0.1');
+        if (!isLocal && auth.vkUserId) {
+            const expectedUserId = `VK-${auth.vkUserId}`;
+            if (userId !== expectedUserId) {
+                console.warn(`[beacon-sync] Identity mismatch: requested ${userId}, signed as ${expectedUserId}`);
+                return res.status(403).json({ error: 'Forbidden: identity mismatch' });
             }
         }
 
-        // Build Firestore REST API PATCH payload (merge semantics)
-        // Each field must be typed: https://firebase.google.com/docs/firestore/reference/rest/v1/Value
-        const fields = {
-            beaconSyncAt: { stringValue: new Date().toISOString() },
-            wasOnline: { stringValue: new Date().toISOString() },
+        const USERS_COLLECTION = body.isDev === true ? 'пользователи_dev' : 'пользователи';
+        const db = getAdminDb();
+
+        // Build the minimal beacon snapshot — only fields that meaningfully change at session end
+        const now = new Date().toISOString();
+        const snapshot = {
+            beaconSyncAt: now,
+            wasOnline: now,
+            'былВСети': now,
         };
 
-        if (body.energy !== undefined) fields.energy = { integerValue: String(Math.round(body.energy)) };
-        if (body.gold !== undefined) fields.gold = { integerValue: String(Math.round(body.gold)) };
-        if (body.crystals !== undefined) fields.crystals = { integerValue: String(Math.round(body.crystals)) };
-        if (body.rating !== undefined) fields.rating = { integerValue: String(Math.round(body.rating)) };
-        if (body.wins !== undefined) fields.wins = { integerValue: String(Math.round(body.wins)) };
-        if (body.totalBattles !== undefined) fields.totalBattles = { integerValue: String(Math.round(body.totalBattles)) };
-        if (body.trophies !== undefined) fields.trophies = { integerValue: String(Math.round(body.trophies)) };
+        if (body.energy    !== undefined) snapshot.energy       = Math.round(body.energy);
+        if (body.gold      !== undefined) snapshot.gold         = Math.round(body.gold);
+        if (body.crystals  !== undefined) snapshot.crystals     = Math.round(body.crystals);
+        if (body.rating    !== undefined) snapshot.rating       = Math.round(body.rating);
+        if (body.wins      !== undefined) snapshot.wins         = Math.round(body.wins);
+        if (body.totalBattles !== undefined) snapshot.totalBattles = Math.round(body.totalBattles);
+        if (body.trophies  !== undefined) snapshot.trophies     = Math.round(body.trophies);
 
-        if (fullStateParsed) {
-            fields.fullStateJSON = { stringValue: JSON.stringify(fullStateParsed) };
-        }
-
-        // Firebase Firestore REST API — PATCH with updateMask for merge semantics
-        const docPath = `${encodeURIComponent(USERS_COLLECTION)}/${encodeURIComponent(userId)}`;
-        const updateMask = Object.keys(fields).map(f => `updateMask.fieldPaths=${encodeURIComponent(f)}`).join('&');
-        const url = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents/${docPath}?${updateMask}&key=${FIREBASE_WEB_API_KEY}`;
-
-        const firestoreRes = await fetch(url, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ fields }),
-        });
-
-        if (!firestoreRes.ok) {
-            const errText = await firestoreRes.text();
-            console.error(`[beacon-sync] Firestore PATCH failed (${firestoreRes.status}):`, errText);
-            // If document doesn't exist yet, try creating it
-            if (firestoreRes.status === 404) {
-                const createUrl = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents/${USERS_COLLECTION}?documentId=${encodeURIComponent(userId)}&key=${FIREBASE_WEB_API_KEY}`;
-                const createRes = await fetch(createUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ fields }),
-                });
-                if (!createRes.ok) {
-                    return res.status(500).json({ error: 'Failed to create document' });
-                }
-            } else {
-                return res.status(500).json({ error: `Firestore error: ${firestoreRes.status}` });
+        // Include full state snapshot if present
+        if (body.fullStateJSON) {
+            try {
+                snapshot.fullStateJSON =
+                    typeof body.fullStateJSON === 'string'
+                        ? body.fullStateJSON
+                        : JSON.stringify(body.fullStateJSON);
+            } catch (e) {
+                console.warn('[beacon-sync] Failed to serialize fullStateJSON:', e);
             }
         }
+
+        // Admin SDK set() with merge: true — upsert, preserves all other fields
+        await db.collection(USERS_COLLECTION).doc(userId).set(snapshot, { merge: true });
 
         console.log(`[beacon-sync] ✅ Saved beacon for ${userId}`);
         return res.status(200).json({ ok: true });

@@ -1,5 +1,6 @@
 import { initializeApp } from 'firebase/app';
 import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager } from 'firebase/firestore';
+import { getAuth } from 'firebase/auth';
 
 // Ваш конфиг из консоли Firebase
 const firebaseConfig = {
@@ -18,6 +19,7 @@ export const db = initializeFirestore(app, {
         tabManager: persistentMultipleTabManager(),
     }),
 });
+export const auth = getAuth(app);
 
 const isLocalhost =
     typeof window !== 'undefined' &&

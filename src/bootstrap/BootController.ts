@@ -661,11 +661,19 @@ class BootController {
         // fetchWithRetry is now defined globally in this file
 
         // Helper for getting VK user info with retries
+        // Each individual bridge.send() is capped at 3 seconds to prevent silent hangs
         const getVkUserInfoWithRetry = async (retries: number = 5, delay: number = 2000): Promise<any> => {
             let lastErr: any = null;
             for (let i = 0; i < retries; i++) {
                 try {
-                    const user = await getVkUserInfo();
+                    // Wrap each VKWebAppGetUserInfo call with a 3-second timeout.
+                    // Without this, a stalled Bridge hangs the entire boot silently.
+                    const user = await Promise.race([
+                        getVkUserInfo(),
+                        new Promise<null>((_, reject) =>
+                            setTimeout(() => reject(new Error('VKWebAppGetUserInfo timed out (3s)')), 3000),
+                        ),
+                    ]);
                     if (user) return user;
                     throw new Error('VK getVkUserInfo returned null/empty user info');
                 } catch (err) {
@@ -744,13 +752,12 @@ class BootController {
                     );
                 }
 
-                // If missing VK params (status 400) -> always show NotInVkScreen
-                if (response.status === 400) {
-                    setNotInVk(true);
-                    throw new Error('Standalone launch restricted');
+                // If explicit security issues (400, 401, 403)
+                if (response.status === 400 || response.status === 401 || response.status === 403) {
+                    throw new Error(`SECURITY_ERROR: status ${response.status}`);
                 }
 
-                // If not 400 but still not ok (e.g. 500, etc.), we retry
+                // If some other status is not ok (e.g. 500), retry
                 if (!response.ok) {
                     response = await fetchWithRetry(
                         url,
@@ -762,20 +769,58 @@ class BootController {
                     );
                 }
 
+                // Double check final response status
+                if (response.status === 400 || response.status === 401 || response.status === 403) {
+                    throw new Error(`SECURITY_ERROR: status ${response.status}`);
+                }
+                if (!response.ok) {
+                    throw new Error(`NETWORK_ERROR: status ${response.status}`);
+                }
+
                 const data = await response.json();
                 if (data && data.valid === false) {
-                    throw new Error('Invalid signature');
+                    throw new Error('SECURITY_ERROR: Invalid signature');
                 }
                 this.endDiagnostic('/api/verify-sign', 'SUCCESS');
+
+                // NEW: Obtain Firebase Custom Auth Token and authenticate the client.
+                // This enables authenticated rules check (allow read/write: if request.auth != null).
+                console.log('[BootController] Requesting Custom Auth Token...');
+                const tokenRes = await fetchWithRetry(
+                    `/api/auth-token${searchParams}`,
+                    {
+                        method: 'GET',
+                        cache: 'no-cache',
+                        signal: AbortSignal.timeout(10000),
+                    },
+                    2,
+                    1500,
+                );
+                const tokenData = await tokenRes.json();
+                if (tokenData && tokenData.token) {
+                    const { auth } = await import('../utils/firebase');
+                    const { signInWithCustomToken } = await import('firebase/auth');
+                    await signInWithCustomToken(auth, tokenData.token);
+                    console.log('[BootController] Firebase client authenticated successfully.');
+                } else {
+                    throw new Error('SECURITY_ERROR: Failed to obtain Firebase Auth custom token');
+                }
             } catch (err: any) {
                 this.endDiagnostic('/api/verify-sign', 'ERROR', err.message || String(err));
-                if (err.message === 'Standalone launch restricted' || err.message?.includes('status 400')) {
+                
+                const errMsg = err.message || '';
+                if (
+                    errMsg.includes('SECURITY_ERROR') ||
+                    errMsg.includes('status 400') ||
+                    errMsg.includes('status 401') ||
+                    errMsg.includes('status 403') ||
+                    errMsg === 'Standalone launch restricted'
+                ) {
                     setNotInVk(true);
                     throw new Error('Standalone launch restricted');
                 }
-                throw new Error(
-                    'Ошибка безопасности: параметры запуска не прошли верификацию. Пожалуйста, перезапустите игру из официального приложения ВКонтакте.',
-                );
+                
+                throw new Error(`SERVER_UNAVAILABLE: ${errMsg}`);
             }
         })();
 
@@ -848,7 +893,34 @@ class BootController {
         try {
             await Promise.all([timePromise, verifyPromise, Promise.race([vkPromise, timeoutPromise])]);
         } catch (err: any) {
-            console.warn('[BootController] resolveVK encountered an error/timeout, attempting URL fallback:', err);
+            // Distinguish between two classes of errors:
+            //   1. Security error — server explicitly rejected the VK signature → block boot
+            //   2. Network error  — signature endpoint unreachable / timeout → URL fallback is safe
+            //
+            // VK moderation requirement: an app must NOT continue with an unverified identity
+            // when the backend deliberately signals that the signature is invalid.
+            const isSecurityError = ((): boolean => {
+                const msg = (err?.message || '').toLowerCase();
+                return (
+                    msg.includes('ошибка безопасности') ||
+                    msg.includes('security_error') ||
+                    msg.includes('invalid signature') ||
+                    msg.includes('forbidden') ||
+                    msg.includes('status 403') ||
+                    msg.includes('status 401') ||
+                    msg.includes('status 400') ||
+                    msg.includes('restricted')
+                );
+            })();
+
+            if (isSecurityError) {
+                console.error('[BootController] Security error from verify-sign — blocking boot with unverified identity:', err.message);
+                setNotInVk(true);
+                throw new Error('Standalone launch restricted');
+            }
+
+            // Network error path — safe to fall back to URL parameters
+            console.warn('[BootController] resolveVK network error/timeout, attempting URL fallback:', err.message);
             const searchParams = new URLSearchParams(window.location.search);
             const urlVkUserId = searchParams.get('vk_user_id');
             if (urlVkUserId) {
@@ -860,11 +932,11 @@ class BootController {
                     photo: '/assets/images/avatars/panda.webp',
                     photo200: '/assets/images/avatars/panda.webp',
                 };
-                // Ensure other critical tasks (like timePromise) are resolved
             } else {
                 throw err;
             }
         }
+
 
         // Set explicit authState, vkUser, and avatar in a single batched state update
         const { useGameStore } = await import('../store/useGameStore');
@@ -882,26 +954,40 @@ class BootController {
                 finalPatch.avatar = this.vkUser.photo200 || this.vkUser.photo;
             }
         }
-        useGameStore.setState(finalPatch);
-    }
 
-    public async loadProfile(_setInitError: (err: string) => void, resolveVkPromise?: Promise<void>): Promise<void> {
-        const { syncService, SyncService } = await import('../services/SyncService');
-        const { useGameStore } = await import('../store/useGameStore');
-
-        // Await the parallelized VK Auth to resolve so we have this.vkUser fully populated before we merge local state details
-        if (resolveVkPromise) {
-            try {
-                await resolveVkPromise;
-            } catch (vkErr) {
-                console.warn('[BootController] resolveVkPromise failed inside loadProfile, proceeding anyway:', vkErr);
-            }
+        // If the profile was created offline (new user, Firestore unreachable at boot time)
+        // and VK has now resolved successfully, lift the offline flag and persist the profile.
+        // This ensures a first-launch user's progress is not silently discarded.
+        const wasOffline = useGameStore.getState().isOfflineSession;
+        if (wasOffline && this.vkUser && !isLocalhost) {
+            finalPatch.isOfflineSession = false;
+            console.log('[BootController] VK resolved after offline profile creation — lifting offline flag and scheduling initial sync.');
         }
 
-        // Now that VK is resolved, update this.userId to the correct VK prefixed ID!
-        const state = useGameStore.getState();
-        this.userId = SyncService.getPrefixedUserId(state.vkUser, state.playerId);
-        console.log('[BootController] Resolved userId for profile loading:', this.userId);
+        useGameStore.setState(finalPatch);
+
+        // Fire initial sync after lifting the offline flag so the new profile reaches Firestore.
+        // Runs in background — does not block resolveVK or the boot pipeline.
+        if (wasOffline && this.vkUser && !isLocalhost) {
+            import('../services/SyncService').then(({ syncService }) => {
+                syncService.syncPlayerData().catch((err) => {
+                    console.warn('[BootController] Initial offline→online sync failed (will retry on next boot):', err);
+                });
+            }).catch(() => {});
+        }
+    }
+
+    public async loadProfile(_setInitError: (err: string) => void, _resolveVkPromise?: Promise<void>): Promise<void> {
+        const { syncService } = await import('../services/SyncService');
+        const { useGameStore } = await import('../store/useGameStore');
+
+        // FIX: Do NOT await resolveVkPromise before starting the Firestore load.
+        // this.userId is already set from the URL vk_user_id param before the parallel phase
+        // (see start() lines 405-411). Awaiting VK Bridge resolution here added up to 25 seconds
+        // of unnecessary latency on slow networks / stalled Bridge.
+        // The vkUser photo/name will be merged into the store by resolveVkPromise independently.
+        // If VK resolves after us, fallbackProfileGenerator() will reconcile the name/avatar.
+        console.log('[BootController] Starting profile load with pre-resolved userId:', this.userId);
 
         const maxAttempts = 2; // Always attempt twice to prevent transient glitches from dropping into offline mode
 
@@ -1002,15 +1088,33 @@ class BootController {
             }
 
             if (cacheState && cacheState.lastSavedTimestamp) {
+                // Existing player: restore from local cache in offline mode
                 useGameStore.getState().resetStore();
                 cacheState.vkUser = this.vkUser;
                 cacheState.isOfflineSession = true;
                 cacheState.isSystemUpdate = true;
                 useGameStore.setState(cacheState);
             } else {
-                throw new Error(
-                    'Критическая ошибка: не удалось получить данные профиля из сети и отсутствует локальное сохранение.',
+                // FIX: New player without local cache — Firestore being unreachable is NOT fatal.
+                // A first-time user (e.g. VK moderator) has no localStorage and no remote profile yet.
+                // Throwing here caused a FAILED transition ~46s into boot, showing an error screen
+                // instead of the game. We now create a default profile in memory so the game starts.
+                console.warn(
+                    '[BootController] No remote profile and no local cache. ' +
+                    'Creating default new-player profile (Firestore unavailable or first launch).',
                 );
+                useGameStore.getState().resetStore();
+                const fallbackName =
+                    this.vkUser?.firstName || this.vkUser?.first_name || `Игрок_${this.userId.slice(-4)}`;
+                useGameStore.setState({
+                    name: fallbackName,
+                    onboardingCompleted: false,
+                    tutorialStep: 0,
+                    activeScreen: 'INTRO',
+                    vkUser: this.vkUser,
+                    isOfflineSession: true,
+                    isSystemUpdate: true,
+                });
             }
         }
 

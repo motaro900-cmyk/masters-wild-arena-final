@@ -15,6 +15,7 @@ import timeHandler from './time.js';
 import verifySignHandler from './verify-sign.js';
 import vkPaymentHandler from './vk-payment.js';
 import beaconSyncHandler from './beacon-sync.js';
+import authTokenHandler from './auth-token.js';
 
 dotenv.config();
 
@@ -51,6 +52,7 @@ app.get('/api/time', adaptHandler(timeHandler));
 app.get('/api/verify-sign', adaptHandler(verifySignHandler));
 app.post('/api/vk-payment', adaptHandler(vkPaymentHandler));
 app.post('/api/beacon-sync', adaptHandler(beaconSyncHandler));
+app.get('/api/auth-token', adaptHandler(authTokenHandler));
 
 // SPA Fallback: Route all non-API paths to index.html for client-side routing
 app.get('*', (req, res) => {
