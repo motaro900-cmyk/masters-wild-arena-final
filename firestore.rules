@@ -41,7 +41,11 @@ service cloud.firestore {
     match /{collectionId}/{docId} {
       
       // 1. GLOBAL CHAT COLLECTIONS
-      allow read, create: if (collectionId == 'чат' || collectionId == 'чат_dev') && isAuthorized();
+      allow read: if (collectionId == 'чат' || collectionId == 'чат_dev') && isAuthorized();
+      allow create: if (collectionId == 'чат' || collectionId == 'чат_dev')
+                    && isAuthorized()
+                    && request.resource.data.senderId == request.auth.uid
+                    && request.resource.data.serverTimestamp == request.time;
       allow update, delete: if (collectionId == 'чат' || collectionId == 'чат_dev') && false;
       
       // 2. FEEDBACK COLLECTIONS

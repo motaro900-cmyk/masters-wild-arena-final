@@ -60,7 +60,7 @@ const getPlayerTitle = (_level: number): string => {
     return 'Странник';
 };
 
-const calculateMaxEnergy = (isPremium: boolean, isVip: boolean): number => {
+export const calculateMaxEnergy = (isPremium: boolean, isVip: boolean): number => {
     const base = ENERGY_CONFIG.MAX_ENERGY; // 50
     const premiumBonus = isPremium ? 15 : 0; // +15 for Premium
     const vipBonus = isVip ? 15 : 0; // +15 for VIP

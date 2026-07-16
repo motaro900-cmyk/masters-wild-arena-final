@@ -31,20 +31,24 @@ export const createClanSlice = (set: any, get: any) => ({
 
         try {
             const { db, USERS_COLLECTION } = await import('../../utils/firebase');
-            const { doc, updateDoc, arrayRemove } = await import('firebase/firestore');
+            const { doc, writeBatch, arrayRemove } = await import('firebase/firestore');
+            const batch = writeBatch(db);
+
             // 1. Удаляем из списка друзей текущего игрока в Firestore
             const currentUserDoc = doc(db, USERS_COLLECTION, currentUserId);
-            await updateDoc(currentUserDoc, {
+            batch.update(currentUserDoc, {
                 friends: arrayRemove(targetId),
             });
 
             // 2. Удаляем из списка друзей удаляемого игрока в Firestore
             const targetDocRef = doc(db, USERS_COLLECTION, targetId);
-            await updateDoc(targetDocRef, {
+            batch.update(targetDocRef, {
                 friends: arrayRemove(currentUserId),
             });
+
+            await batch.commit();
         } catch (error) {
-            console.error('[clanSlice] Failed to remove friend in Firestore:', error);
+            console.error('[clanSlice] Failed to remove friend in Firestore via batch:', error);
         }
 
         set((state: any) => ({

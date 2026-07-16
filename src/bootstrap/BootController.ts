@@ -723,71 +723,92 @@ class BootController {
             }
         })();
 
-        // 2. Verify signature in parallel (skipped on localhost)
+        // 2. Verify signature in parallel (skipped on localhost, but auth token is fetched)
         const verifyPromise = (async () => {
-            if (isLocalhost) {
-                console.log('[BootController] Localhost detected, skipping signature verify');
-                return;
-            }
-            this.startDiagnostic('/api/verify-sign');
-            try {
-                const searchParams = window.location.search;
-                const url = `/api/verify-sign${searchParams}`;
-
-                // Perform first fetch attempt manually to inspect the status code
-                let response: Response;
+            if (!isLocalhost) {
+                this.startDiagnostic('/api/verify-sign');
                 try {
-                    response = await fetch(url, {
-                        signal: AbortSignal.timeout(15000),
-                    });
-                } catch (fetchErr) {
-                    // If network error, we can retry using fetchWithRetry
-                    response = await fetchWithRetry(
-                        url,
-                        {
+                    const searchParams = window.location.search;
+                    const url = `/api/verify-sign${searchParams}`;
+
+                    // Perform first fetch attempt manually to inspect the status code
+                    let response: Response;
+                    try {
+                        response = await fetch(url, {
                             signal: AbortSignal.timeout(15000),
-                        },
-                        2, // 2 retries left
-                        2000,
-                    );
-                }
+                        });
+                    } catch (fetchErr) {
+                        // If network error, we can retry using fetchWithRetry
+                        response = await fetchWithRetry(
+                            url,
+                            {
+                                signal: AbortSignal.timeout(15000),
+                            },
+                            2, // 2 retries left
+                            2000,
+                        );
+                    }
 
-                // If explicit security issues (400, 401, 403)
-                if (response.status === 400 || response.status === 401 || response.status === 403) {
-                    throw new Error(`SECURITY_ERROR: status ${response.status}`);
-                }
+                    // If explicit security issues (400, 401, 403)
+                    if (response.status === 400 || response.status === 401 || response.status === 403) {
+                        throw new Error(`SECURITY_ERROR: status ${response.status}`);
+                    }
 
-                // If some other status is not ok (e.g. 500), retry
-                if (!response.ok) {
-                    response = await fetchWithRetry(
-                        url,
-                        {
-                            signal: AbortSignal.timeout(15000),
-                        },
-                        2,
-                        2000,
-                    );
-                }
+                    // If some other status is not ok (e.g. 500), retry
+                    if (!response.ok) {
+                        response = await fetchWithRetry(
+                            url,
+                            {
+                                signal: AbortSignal.timeout(15000),
+                            },
+                            2,
+                            2000,
+                        );
+                    }
 
-                // Double check final response status
-                if (response.status === 400 || response.status === 401 || response.status === 403) {
-                    throw new Error(`SECURITY_ERROR: status ${response.status}`);
-                }
-                if (!response.ok) {
-                    throw new Error(`NETWORK_ERROR: status ${response.status}`);
-                }
+                    // Double check final response status
+                    if (response.status === 400 || response.status === 401 || response.status === 403) {
+                        throw new Error(`SECURITY_ERROR: status ${response.status}`);
+                    }
+                    if (!response.ok) {
+                        throw new Error(`NETWORK_ERROR: status ${response.status}`);
+                    }
 
-                const data = await response.json();
-                if (data && data.valid === false) {
-                    throw new Error('SECURITY_ERROR: Invalid signature');
+                    const data = await response.json();
+                    if (data && data.valid === false) {
+                        throw new Error('SECURITY_ERROR: Invalid signature');
+                    }
+                    this.endDiagnostic('/api/verify-sign', 'SUCCESS');
+                } catch (err: any) {
+                    this.endDiagnostic('/api/verify-sign', 'ERROR', err.message || String(err));
+                    
+                    const errMsg = err.message || '';
+                    if (
+                        errMsg.includes('SECURITY_ERROR') ||
+                        errMsg.includes('status 400') ||
+                        errMsg.includes('status 401') ||
+                        errMsg.includes('status 403') ||
+                        errMsg === 'Standalone launch restricted'
+                    ) {
+                        setNotInVk(true);
+                        throw new Error('Standalone launch restricted');
+                    }
+                    
+                    throw new Error(`SERVER_UNAVAILABLE: ${errMsg}`);
                 }
-                this.endDiagnostic('/api/verify-sign', 'SUCCESS');
+            } else {
+                console.log('[BootController] Localhost detected, skipping signature verify. Moving directly to auth-token fetch.');
+            }
 
-                // NEW: Obtain Firebase Custom Auth Token and authenticate the client.
-                // This enables authenticated rules check (allow read/write: if request.auth != null).
+            // NEW: Obtain Firebase Custom Auth Token and authenticate the client.
+            // This enables authenticated rules check (allow read/write: if request.auth != null).
+            try {
                 console.log('[BootController] Requesting Custom Auth Token...');
+                const queryParams = isLocalhost 
+                    ? `?vk_user_id=${this.userId.replace('VK-', '')}` 
+                    : window.location.search;
                 const tokenRes = await fetchWithRetry(
-                    `/api/auth-token${searchParams}`,
+                    `/api/auth-token${queryParams}`,
                     {
                         method: 'GET',
                         cache: 'no-cache',
@@ -806,21 +827,14 @@ class BootController {
                     throw new Error('SECURITY_ERROR: Failed to obtain Firebase Auth custom token');
                 }
             } catch (err: any) {
-                this.endDiagnostic('/api/verify-sign', 'ERROR', err.message || String(err));
-                
-                const errMsg = err.message || '';
-                if (
-                    errMsg.includes('SECURITY_ERROR') ||
-                    errMsg.includes('status 400') ||
-                    errMsg.includes('status 401') ||
-                    errMsg.includes('status 403') ||
-                    errMsg === 'Standalone launch restricted'
-                ) {
-                    setNotInVk(true);
-                    throw new Error('Standalone launch restricted');
+                console.error('[BootController] Auth Token fetch failed:', err);
+                if (isLocalhost) {
+                    console.warn('[BootController] Localhost auth token fetch failed. Falling back to offline session for local development.');
+                    const { useGameStore } = await import('../store/useGameStore');
+                    useGameStore.setState({ isOfflineSession: true, isSystemUpdate: true });
+                } else {
+                    throw err;
                 }
-                
-                throw new Error(`SERVER_UNAVAILABLE: ${errMsg}`);
             }
         })();
 

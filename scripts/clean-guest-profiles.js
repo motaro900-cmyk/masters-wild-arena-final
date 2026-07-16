@@ -7,7 +7,31 @@
  *   $ env FIREBASE_PROJECT_ID="masters-of-the-wilde" FIREBASE_CLIENT_EMAIL="..." FIREBASE_PRIVATE_KEY="..." node scripts/clean-guest-profiles.js [--dev]
  */
 
-import { getAdminDb } from '../server/firebaseAdmin.js';
+import dotenv from 'dotenv';
+import fs from 'fs';
+import path from 'path';
+
+// Load variables from .env.production if present
+dotenv.config({ path: '.env.production' });
+
+// Auto-detect service account key from Downloads
+const downloadsPath = 'C:/Users/Motar/Downloads';
+const keyFileName = 'masters-of-the-wilde-firebase-adminsdk-fbsvc-c1eec1e84e.json';
+const keyFilePath = path.join(downloadsPath, keyFileName);
+
+if (fs.existsSync(keyFilePath)) {
+    try {
+        const keyData = JSON.parse(fs.readFileSync(keyFilePath, 'utf8'));
+        process.env.FIREBASE_PROJECT_ID = keyData.project_id;
+        process.env.FIREBASE_CLIENT_EMAIL = keyData.client_email;
+        process.env.FIREBASE_PRIVATE_KEY = keyData.private_key;
+        console.log(`🔑 Automatically loaded credentials from: "${keyFilePath}"`);
+    } catch (e) {
+        console.warn(`⚠️ Failed to parse service account JSON from Downloads:`, e);
+    }
+}
+
+const { getAdminDb } = await import('../server/firebaseAdmin.js');
 
 // Get target collection based on flag
 const isDevFlag = process.argv.includes('--dev');

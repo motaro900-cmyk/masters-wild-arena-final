@@ -379,14 +379,18 @@ export const createQuestSlice = (set: any, get: any) => ({
         }
     },
 
-    setPremium: (val: boolean) => {
+    setPremium: async (val: boolean) => {
+        const { calculateMaxEnergy } = await import('./playerSlice');
         if (val) {
             const state = get() as any;
             const cost = 999;
             if (state.crystals >= cost) {
+                const isVip = state.vipLevel > 0 || (state.vipEndTime && state.vipEndTime > Date.now());
+                const newMaxEnergy = calculateMaxEnergy(true, isVip);
                 set({
                     crystals: state.crystals - cost,
                     isPremium: true,
+                    maxEnergy: newMaxEnergy,
                 });
                 syncService.debouncedSync();
                 audioService.playSFX(AssetsMap.AUDIO.SFX_BUY);
@@ -396,7 +400,13 @@ export const createQuestSlice = (set: any, get: any) => ({
                 return false;
             }
         } else {
-            set({ isPremium: false });
+            const state = get() as any;
+            const isVip = state.vipLevel > 0 || (state.vipEndTime && state.vipEndTime > Date.now());
+            const newMaxEnergy = calculateMaxEnergy(false, isVip);
+            set({ 
+                isPremium: false,
+                maxEnergy: newMaxEnergy,
+            });
             syncService.debouncedSync();
             return true;
         }

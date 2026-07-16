@@ -20,6 +20,7 @@ async function inspect() {
     await page.setViewport({ width: 1280, height: 720 });
 
     console.log('🔗 Navigating...');
+    page.on('console', msg => console.log(`[Browser] ${msg.text()}`));
     await page.goto(GAME_URL, { waitUntil: 'networkidle2' });
     await delay(3000);
 

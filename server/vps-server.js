@@ -55,7 +55,7 @@ app.post('/api/beacon-sync', adaptHandler(beaconSyncHandler));
 app.get('/api/auth-token', adaptHandler(authTokenHandler));
 
 // SPA Fallback: Route all non-API paths to index.html for client-side routing
-app.get('*', (req, res) => {
+app.get('*all', (req, res) => {
     res.sendFile(path.join(__dirname, '../dist/index.html'));
 });
 

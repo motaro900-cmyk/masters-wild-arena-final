@@ -882,6 +882,40 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
                 </div>
             </div>
 
+            {/* НАПИСАТЬ В ПОДДЕРЖКУ */}
+            <div
+                style={{
+                    marginTop: '15px',
+                    textAlign: 'center',
+                }}
+            >
+                <motion.button
+                    whileHover={{ scale: 1.03, boxShadow: '0 0 15px rgba(240,192,64,0.3)' }}
+                    whileTap={{ scale: 0.97 }}
+                    onClick={async () => {
+                        const { openExternalUrl } = await import('../../../utils/VKBridge');
+                        openExternalUrl('https://vk.com/im?sel=-238197449');
+                    }}
+                    style={{
+                        padding: '10px 24px',
+                        background: 'linear-gradient(135deg, #e0b034, #8a5a10)',
+                        border: '1px solid #f0c040',
+                        borderRadius: '8px',
+                        color: '#1a0e05',
+                        fontWeight: 900,
+                        fontFamily: "'Cinzel', 'Philosopher', serif",
+                        fontSize: '13px',
+                        cursor: 'pointer',
+                        letterSpacing: '0.05em',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                    }}
+                >
+                    💬 НАПИСАТЬ В ПОДДЕРЖКУ
+                </motion.button>
+            </div>
+
             {/* ВЕРСИЯ КЛИЕНТА */}
             <div
                 onClick={() => {
