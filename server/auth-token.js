@@ -21,7 +21,7 @@ export default async function handler(req, res) {
     }
 
     try {
-        const { launchParams } = req.query;
+        const launchParams = req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '';
         const host = req.headers.host || '';
 
         // Validate the VK launch signature
