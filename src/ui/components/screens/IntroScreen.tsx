@@ -137,6 +137,7 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
             const store = useGameStore.getState();
             useGameStore.setState({
                 onboardingCompleted: true,
+                isOfflineSession: false,
                 tosAcceptedAt: new Date().toISOString(),
                 tosVersion: '1.0.0-20260708',
             });
