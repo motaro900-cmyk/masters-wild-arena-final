@@ -9,7 +9,7 @@
  * authenticated Firestore operations (which can be controlled via firestore.rules).
  */
 
-import { getAdminAuth } from './firebaseAdmin.js';
+import { createFirebaseCustomToken } from './firebaseAdmin.js';
 import { verifyVkSign, setCorsHeaders } from './vkAuth.js';
 
 export default async function handler(req, res) {
@@ -24,7 +24,6 @@ export default async function handler(req, res) {
         const launchParams = req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '';
         const host = req.headers.host || '';
 
-        // Validate the VK launch signature
         const auth = verifyVkSign(launchParams, host);
         if (!auth.ok) {
             console.warn(`[auth-token] VK signature validation failed: ${auth.error}`);
@@ -40,8 +39,7 @@ export default async function handler(req, res) {
         const uid = `VK-${vkUserId}`;
         console.log(`[auth-token] Generating Custom Auth Token for UID: ${uid}`);
 
-        const adminAuth = await getAdminAuth();
-        const token = await adminAuth.createCustomToken(uid);
+        const token = await createFirebaseCustomToken(uid);
 
         console.log(`[auth-token] ✅ Generated Custom Auth Token successfully for ${uid}`);
         return res.status(200).json({ token });

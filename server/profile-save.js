@@ -26,22 +26,11 @@ export default async function handler(req, res) {
     }
 
     try {
-        let body = req.body;
-        if (typeof body === 'string') {
-            try {
-                body = JSON.parse(body);
-            } catch (e) {
-                console.warn('[profile-save] Failed to parse body string:', e);
-                return res.status(400).json({ error: 'Invalid JSON body string' });
-            }
-        }
-
+        const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body || {};
         const { userId, isDev, syncData, launchParams } = body;
-        if (!userId) {
-            return res.status(400).json({ error: 'Missing userId parameter' });
-        }
-        if (!syncData) {
-            return res.status(400).json({ error: 'Missing syncData parameter' });
+
+        if (!userId || !syncData) {
+            return res.status(400).json({ error: 'Missing userId or syncData parameter' });
         }
 
         const host = req.headers.host || '';
@@ -64,7 +53,6 @@ export default async function handler(req, res) {
         }
 
         const USERS_COLLECTION = isDev === true ? 'пользователи_dev' : 'пользователи';
-        const db = await getAdminDb();
 
         // Resolve server-side timestamps for wasOnline / былВСети fields
         const now = new Date().toISOString();
@@ -72,12 +60,9 @@ export default async function handler(req, res) {
         if (resolvedSyncData.wasOnline === '__serverTimestamp__') resolvedSyncData.wasOnline = now;
         if (resolvedSyncData['былВСети'] === '__serverTimestamp__') resolvedSyncData['былВСети'] = now;
 
-        console.log(`[profile-save] Syncing to Firestore: ${USERS_COLLECTION}/${userId}`);
+        console.log(`[profile-save] Syncing to Firestore REST: ${USERS_COLLECTION}/${userId}`);
 
-        // Admin SDK set() with merge: true = upsert semantics
-        // If doc exists: updates only provided fields (like PATCH + updateMask)
-        // If doc missing: creates the document (no separate POST needed)
-        await db.collection(USERS_COLLECTION).doc(userId).set(resolvedSyncData, { merge: true });
+        await saveFirestoreRestDoc(USERS_COLLECTION, userId, resolvedSyncData);
 
         console.log(`[profile-save] ✅ Saved profile successfully for ${userId}`);
         return res.status(200).json({ ok: true });

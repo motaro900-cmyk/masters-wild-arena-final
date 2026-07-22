@@ -8,7 +8,7 @@
  * sendBeacon does not support custom headers, so launchParams are passed in the request body.
  */
 
-import { getAdminDb } from './firebaseAdmin.js';
+import { saveFirestoreRestDoc } from './firebaseAdmin.js';
 import { verifyVkSign, setCorsHeaders } from './vkAuth.js';
 
 export default async function handler(req, res) {
@@ -70,7 +70,6 @@ export default async function handler(req, res) {
         }
 
         const USERS_COLLECTION = body.isDev === true ? 'пользователи_dev' : 'пользователи';
-        const db = await getAdminDb();
 
         // Build the minimal beacon snapshot — only fields that meaningfully change at session end
         const now = new Date().toISOString();
@@ -100,8 +99,7 @@ export default async function handler(req, res) {
             }
         }
 
-        // Admin SDK set() with merge: true — upsert, preserves all other fields
-        await db.collection(USERS_COLLECTION).doc(userId).set(snapshot, { merge: true });
+        await saveFirestoreRestDoc(USERS_COLLECTION, userId, snapshot);
 
         console.log(`[beacon-sync] ✅ Saved beacon for ${userId}`);
         return res.status(200).json({ ok: true });
