@@ -819,22 +819,27 @@ class BootController {
                 );
                 const tokenData = await tokenRes.json();
                 if (tokenData && tokenData.token) {
-                    const { auth } = await import('../utils/firebase');
-                    const { signInWithCustomToken } = await import('firebase/auth');
-                    await signInWithCustomToken(auth, tokenData.token);
-                    console.log('[BootController] Firebase client authenticated successfully.');
+                    let firebaseAuthSuccess = false;
+                    try {
+                        const { auth } = await import('../utils/firebase');
+                        const { signInWithCustomToken } = await import('firebase/auth');
+                        await Promise.race([
+                            signInWithCustomToken(auth, tokenData.token),
+                            new Promise((_, reject) =>
+                                setTimeout(() => reject(new Error('Firebase signInWithCustomToken timed out (2.5s)')), 2500)
+                            ),
+                        ]);
+                        firebaseAuthSuccess = true;
+                        console.log(`[BootController] Firebase client authenticated successfully: ${firebaseAuthSuccess}`);
+                    } catch (clientAuthErr: any) {
+                        firebaseAuthSuccess = false;
+                        console.warn('[BootController] Firebase client SDK auth timed out/failed (TSPU/Direct Google API restriction). Continuing via Vercel Serverless API proxy:', clientAuthErr.message || clientAuthErr);
+                    }
                 } else {
-                    throw new Error('SECURITY_ERROR: Failed to obtain Firebase Auth custom token');
+                    console.warn('[BootController] Custom Auth Token not provided. Continuing via Vercel Serverless API proxy.');
                 }
             } catch (err: any) {
-                console.error('[BootController] Auth Token fetch failed:', err);
-                if (isLocalhost) {
-                    console.warn('[BootController] Localhost auth token fetch failed. Falling back to offline session for local development.');
-                    const { useGameStore } = await import('../store/useGameStore');
-                    useGameStore.setState({ isOfflineSession: true, isSystemUpdate: true });
-                } else {
-                    throw err;
-                }
+                console.warn('[BootController] Auth Token fetch failed. Continuing via Vercel Serverless API proxy:', err.message || err);
             }
         })();
 

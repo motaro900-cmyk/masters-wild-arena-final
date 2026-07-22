@@ -22,9 +22,9 @@ export default async function handler(req, res) {
 
     try {
         const secretKey = process.env.VK_APP_SECRET;
-        if (!secretKey) {
-            console.error('VK_APP_SECRET environment variable is not set');
-            return res.status(500).json({ valid: false, error: 'Server configuration error' });
+        if (!secretKey || secretKey.trim().length === 0) {
+            console.error('[VK AUTH CRITICAL] VK_APP_SECRET environment variable is missing or empty!');
+            return res.status(500).json({ valid: false, error: 'VK configuration missing (VK_APP_SECRET not configured on server)' });
         }
 
         // Vercel parses query parameters into req.query
@@ -70,6 +70,7 @@ export default async function handler(req, res) {
             .replace(/=$/, '');
 
         const isValid = paramsHash === sign;
+        console.log(`[VK AUTH RESULT] valid=${isValid} | vk_user_id=${query.vk_user_id || 'unknown'} | vk_platform=${query.vk_platform || 'unknown'}`);
         return res.status(200).json({ valid: isValid });
     } catch (error) {
         console.error('Signature verification error:', error);
