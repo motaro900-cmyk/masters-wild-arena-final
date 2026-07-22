@@ -3,7 +3,7 @@
  * @purpose: Health check endpoint for verifying production readiness, VK secret configuration, and build status.
  */
 
-import { getAdminDb } from './firebaseAdmin.js';
+import { getAdminDb, getGoogleAccessToken } from './firebaseAdmin.js';
 
 export default async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Credentials', 'true');
@@ -19,18 +19,17 @@ export default async function handler(req, res) {
     const hasVkSecret = Boolean(process.env.VK_APP_SECRET && process.env.VK_APP_SECRET.trim().length > 0);
     let firebaseAdminInitialized = false;
     let firebaseAdminError = null;
+    let oauthTokenActive = false;
 
     try {
-        const db = getAdminDb();
-        if (db) {
-            await db.collection('system').doc('admins').get().catch((err) => {
-                firebaseAdminError = `Firestore fetch failed: ${err.message || err}`;
-            });
+        const { token } = await getGoogleAccessToken();
+        if (token) {
+            oauthTokenActive = true;
             firebaseAdminInitialized = true;
         }
     } catch (err) {
         firebaseAdminInitialized = false;
-        firebaseAdminError = `Admin init failed: ${err.message || String(err)}`;
+        firebaseAdminError = err.message || String(err);
     }
 
     return res.status(200).json({
@@ -38,6 +37,7 @@ export default async function handler(req, res) {
         timestamp: new Date().toISOString(),
         vkSecretConfigured: hasVkSecret,
         firebaseAdminConfigured: firebaseAdminInitialized,
+        oauthTokenActive: oauthTokenActive,
         firebaseAdminError: firebaseAdminError,
         version: '1.1.5',
         environment: process.env.VERCEL_ENV || 'development',
