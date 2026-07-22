@@ -70,7 +70,7 @@ export default async function handler(req, res) {
         }
 
         const USERS_COLLECTION = body.isDev === true ? 'пользователи_dev' : 'пользователи';
-        const db = getAdminDb();
+        const db = await getAdminDb();
 
         // Build the minimal beacon snapshot — only fields that meaningfully change at session end
         const now = new Date().toISOString();

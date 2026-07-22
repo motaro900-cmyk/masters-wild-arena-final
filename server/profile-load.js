@@ -49,7 +49,7 @@ export default async function handler(req, res) {
         }
 
         const USERS_COLLECTION = isDev === 'true' ? 'пользователи_dev' : 'пользователи';
-        const db = getAdminDb();
+        const db = await getAdminDb();
 
         console.log(`[profile-load] Fetching Firestore document: ${USERS_COLLECTION}/${userId}`);
 

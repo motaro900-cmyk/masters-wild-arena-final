@@ -12,10 +12,6 @@
  *   FIREBASE_PRIVATE_KEY  — private key from service account JSON (with \n preserved)
  */
 
-import { initializeApp, cert, getApps, getApp } from 'firebase-admin/app';
-import { getFirestore } from 'firebase-admin/firestore';
-import { getAuth } from 'firebase-admin/auth';
-
 import crypto from 'node:crypto';
 
 function formatPrivateKey(key) {
@@ -71,7 +67,8 @@ export async function getGoogleAccessToken() {
     return { token: data.access_token, projectId };
 }
 
-function getAdminApp() {
+async function getAdminApp() {
+    const { initializeApp, cert, getApps, getApp } = await import('firebase-admin/app');
     if (getApps().length > 0) {
         return getApp();
     }
@@ -100,9 +97,11 @@ let adminDbInstance = null;
  * Returns a Firestore Admin instance.
  * Call once per serverless function invocation — Vercel reuses warm instances.
  */
-export function getAdminDb() {
+export async function getAdminDb() {
     if (!adminDbInstance) {
-        adminDbInstance = getFirestore(getAdminApp());
+        const { getFirestore } = await import('firebase-admin/firestore');
+        const app = await getAdminApp();
+        adminDbInstance = getFirestore(app);
         try {
             adminDbInstance.settings({ ignoreUndefinedProperties: true });
         } catch (e) {}
@@ -113,6 +112,8 @@ export function getAdminDb() {
 /**
  * Returns a Firebase Admin Auth instance.
  */
-export function getAdminAuth() {
-    return getAuth(getAdminApp());
+export async function getAdminAuth() {
+    const { getAuth } = await import('firebase-admin/auth');
+    const app = await getAdminApp();
+    return getAuth(app);
 }

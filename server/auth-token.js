@@ -40,8 +40,8 @@ export default async function handler(req, res) {
         const uid = `VK-${vkUserId}`;
         console.log(`[auth-token] Generating Custom Auth Token for UID: ${uid}`);
 
-        // Generate custom token with a verified identity
-        const token = await getAdminAuth().createCustomToken(uid);
+        const adminAuth = await getAdminAuth();
+        const token = await adminAuth.createCustomToken(uid);
 
         console.log(`[auth-token] ✅ Generated Custom Auth Token successfully for ${uid}`);
         return res.status(200).json({ token });

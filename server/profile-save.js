@@ -64,7 +64,7 @@ export default async function handler(req, res) {
         }
 
         const USERS_COLLECTION = isDev === true ? 'пользователи_dev' : 'пользователи';
-        const db = getAdminDb();
+        const db = await getAdminDb();
 
         // Resolve server-side timestamps for wasOnline / былВСети fields
         const now = new Date().toISOString();
