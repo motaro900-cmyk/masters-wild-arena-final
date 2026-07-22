@@ -83,6 +83,10 @@ export default async function handler(req, res) {
         return res.status(200).json({ exists: true, data, isAdmin });
     } catch (error) {
         console.error('[profile-load] ❌ Error loading profile:', error);
-        return res.status(500).json({ error: error.message || 'Internal server error' });
+        return res.status(500).json({
+            error: error.message || 'Internal server error',
+            code: error.code || null,
+            details: error.details || String(error),
+        });
     }
 }

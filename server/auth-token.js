@@ -47,6 +47,10 @@ export default async function handler(req, res) {
         return res.status(200).json({ token });
     } catch (error) {
         console.error('[auth-token] ❌ Failed to generate custom token:', error);
-        return res.status(500).json({ error: error.message || 'Internal server error' });
+        return res.status(500).json({
+            error: error.message || 'Internal server error',
+            code: error.code || null,
+            details: error.details || String(error),
+        });
     }
 }
