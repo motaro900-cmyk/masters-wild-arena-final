@@ -23,11 +23,14 @@ export default async function handler(req, res) {
     try {
         const db = getAdminDb();
         if (db) {
+            await db.collection('system').doc('admins').get().catch((err) => {
+                firebaseAdminError = `Firestore fetch failed: ${err.message || err}`;
+            });
             firebaseAdminInitialized = true;
         }
     } catch (err) {
         firebaseAdminInitialized = false;
-        firebaseAdminError = err.message || String(err);
+        firebaseAdminError = `Admin init failed: ${err.message || String(err)}`;
     }
 
     return res.status(200).json({
