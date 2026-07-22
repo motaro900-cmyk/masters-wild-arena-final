@@ -150,7 +150,9 @@ export async function fetchFirestoreRestDoc(collectionName, docId) {
 export async function saveFirestoreRestDoc(collectionName, docId, data) {
     const { token, projectId } = await getGoogleAccessToken();
     const fields = toFirestoreFields(data);
-    const url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/${encodeURIComponent(collectionName)}/${encodeURIComponent(docId)}`;
+    const fieldKeys = Object.keys(fields);
+    const maskQuery = fieldKeys.length > 0 ? `?${fieldKeys.map((f) => `updateMask.fieldPaths=${encodeURIComponent(f)}`).join('&')}` : '';
+    const url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/${encodeURIComponent(collectionName)}/${encodeURIComponent(docId)}${maskQuery}`;
     const res = await fetch(url, {
         method: 'PATCH',
         headers: {
@@ -161,6 +163,7 @@ export async function saveFirestoreRestDoc(collectionName, docId, data) {
     });
     if (!res.ok) {
         const errText = await res.text();
+        console.error(`[saveFirestoreRestDoc] ❌ PATCH failed (${res.status}):`, errText);
         throw new Error(`Firestore REST PATCH failed (${res.status}): ${errText}`);
     }
     return true;

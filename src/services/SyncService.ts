@@ -351,7 +351,7 @@ export class SyncService {
                     userId,
                     isDev: isLocalhost,
                     syncData,
-                    launchParams: typeof window !== 'undefined' ? window.location.search : '',
+                    launchParams: typeof window !== 'undefined' ? ((window as any).__INITIAL_SEARCH__ || window.location.search) : '',
                 }),
             });
 
