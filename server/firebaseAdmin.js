@@ -46,18 +46,22 @@ function getAdminApp() {
     });
 }
 
+process.env.FIRESTORE_PREFER_REST = 'true';
+
+let adminDbInstance = null;
+
 /**
  * Returns a Firestore Admin instance.
  * Call once per serverless function invocation — Vercel reuses warm instances.
  */
 export function getAdminDb() {
-    const db = getFirestore(getAdminApp());
-    try {
-        db.settings({ preferRest: true, ignoreUndefinedProperties: true });
-    } catch (e) {
-        // Settings may already be locked on warm instance
+    if (!adminDbInstance) {
+        adminDbInstance = getFirestore(getAdminApp());
+        try {
+            adminDbInstance.settings({ ignoreUndefinedProperties: true });
+        } catch (e) {}
     }
-    return db;
+    return adminDbInstance;
 }
 
 /**
