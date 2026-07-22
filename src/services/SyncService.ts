@@ -439,8 +439,9 @@ export class SyncService {
                     window.location.protocol === 'file:');
 
             console.log(`[SyncService] Loading profile via proxy for ${userId}`);
+            const launchParamsStr = typeof window !== 'undefined' ? window.location.search : '';
             const response = await fetch(
-                `/api/profile-load?userId=${encodeURIComponent(userId)}&isDev=${isLocalhost}`,
+                `/api/profile-load?userId=${encodeURIComponent(userId)}&isDev=${isLocalhost}&launchParams=${encodeURIComponent(launchParamsStr)}`,
                 {
                     signal: AbortSignal.timeout(10000),
                 },
