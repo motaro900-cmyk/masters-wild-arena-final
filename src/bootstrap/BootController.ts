@@ -735,17 +735,17 @@ class BootController {
                     let response: Response;
                     try {
                         response = await fetch(url, {
-                            signal: AbortSignal.timeout(15000),
+                            signal: AbortSignal.timeout(3500),
                         });
                     } catch (fetchErr) {
-                        // If network error, we can retry using fetchWithRetry
+                        // If network error, retry once with short timeout
                         response = await fetchWithRetry(
                             url,
                             {
-                                signal: AbortSignal.timeout(15000),
+                                signal: AbortSignal.timeout(3500),
                             },
-                            2, // 2 retries left
-                            2000,
+                            1,
+                            1000,
                         );
                     }
 
@@ -812,10 +812,10 @@ class BootController {
                     {
                         method: 'GET',
                         cache: 'no-cache',
-                        signal: AbortSignal.timeout(10000),
+                        signal: AbortSignal.timeout(3500),
                     },
-                    2,
-                    1500,
+                    1,
+                    1000,
                 );
                 const tokenData = await tokenRes.json();
                 if (tokenData && tokenData.token) {
