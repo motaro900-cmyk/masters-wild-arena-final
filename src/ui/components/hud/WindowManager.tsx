@@ -17,8 +17,22 @@ const InventoryPanel = lazyWithRetry(() => import('./InventoryPanel'));
 const VIPWindow = lazyWithRetry(() => import('./VIPWindow'));
 const BestiaryWindow = lazyWithRetry(() => import('./BestiaryWindow'));
 const ServerTime = lazyWithRetry(() => import('./ServerTime').then((m) => ({ default: m.ServerTime })));
-import { BaseWindow } from './BaseWindow';
-import { WindowLoadingSpinner } from './WindowLoadingSpinner';
+// Pre-warm lazy window chunks in background so window popups open instantly
+if (typeof window !== 'undefined') {
+    setTimeout(() => {
+        import('./FriendsWindow').catch(() => {});
+        import('./MailWindow').catch(() => {});
+        import('./SettingsWindow').catch(() => {});
+        import('./ProfileCustomizeWindow').catch(() => {});
+        import('./DailyGiftWindow').catch(() => {});
+        import('./RankingWindow').catch(() => {});
+        import('./ClanWindow').catch(() => {});
+        import('./RanksListWindow').catch(() => {});
+        import('./InventoryPanel').catch(() => {});
+        import('./VIPWindow').catch(() => {});
+        import('./BestiaryWindow').catch(() => {});
+    }, 2000);
+}
 
 interface WindowManagerProps {
     activeWindow: string | null;

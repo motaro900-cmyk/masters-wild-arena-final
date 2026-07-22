@@ -165,6 +165,11 @@ export const RanksListWindow: React.FC = () => {
                                                         gold: 50000,
                                                         chest: 'Случайный предмет',
                                                     },
+                                                    МИФИЧЕСКИЙ: {
+                                                        crystals: 5000,
+                                                        gold: 100000,
+                                                        chest: 'Легендарный сундук',
+                                                    },
                                                 };
                                                 const reward = rankRewards[rank.name];
                                                 if (!reward) return null;

@@ -25,7 +25,7 @@ const getRandomItemForRank = (rankName: string): string => {
         weights = { COMMON: 50, RARE: 40, EPIC: 10, LEGENDARY: 0, MYTHIC: 0 };
     } else if (rankName === 'ЭЛИТА' || rankName === 'ЧЕМПИОН') {
         weights = { COMMON: 5, RARE: 20, EPIC: 65, LEGENDARY: 10, MYTHIC: 0 };
-    } else if (rankName === 'МАГИСТР' || rankName === 'ВЛАСТЕЛИН' || rankName === 'ЛЕГЕНДА') {
+    } else if (rankName === 'ВЛАСТЕЛИН' || rankName === 'ЛЕГЕНДА' || rankName === 'МИФИЧЕСКИЙ') {
         weights = { COMMON: 0, RARE: 10, EPIC: 15, LEGENDARY: 55, MYTHIC: 20 };
     }
 
@@ -329,9 +329,9 @@ export const createPlayerSlice = (set: any, get: any) => {
                 ГЕРОЙ: { crystals: 500, gold: 7500, hasItem: true, rewardName: 'Случайный предмет' },
                 ЭЛИТА: { crystals: 750, gold: 10000, hasItem: true, rewardName: 'Случайный предмет' },
                 ЧЕМПИОН: { crystals: 1000, gold: 12500, hasItem: true, rewardName: 'Случайный предмет' },
-                МАГИСТР: { crystals: 1500, gold: 20000, hasItem: true, rewardName: 'Случайный предмет' },
                 ВЛАСТЕЛИН: { crystals: 2000, gold: 25000, hasItem: true, rewardName: 'Случайный предмет' },
                 ЛЕГЕНДА: { crystals: 3000, gold: 50000, hasItem: true, rewardName: 'Случайный предмет' },
+                МИФИЧЕСКИЙ: { crystals: 5000, gold: 100000, hasItem: true, rewardName: 'Легендарный сундук' },
             };
 
             const claimed = [...(state.claimedRankRewards || [])];
