@@ -17,21 +17,26 @@ const InventoryPanel = lazyWithRetry(() => import('./InventoryPanel'));
 const VIPWindow = lazyWithRetry(() => import('./VIPWindow'));
 const BestiaryWindow = lazyWithRetry(() => import('./BestiaryWindow'));
 const ServerTime = lazyWithRetry(() => import('./ServerTime').then((m) => ({ default: m.ServerTime })));
-// Pre-warm lazy window chunks in background so window popups open instantly
+// Pre-warm lazy window chunks in background after boot completes (6s delay, staggered)
 if (typeof window !== 'undefined') {
     setTimeout(() => {
-        import('./FriendsWindow').catch(() => {});
-        import('./MailWindow').catch(() => {});
-        import('./SettingsWindow').catch(() => {});
-        import('./ProfileCustomizeWindow').catch(() => {});
-        import('./DailyGiftWindow').catch(() => {});
-        import('./RankingWindow').catch(() => {});
-        import('./ClanWindow').catch(() => {});
-        import('./RanksListWindow').catch(() => {});
-        import('./InventoryPanel').catch(() => {});
-        import('./VIPWindow').catch(() => {});
-        import('./BestiaryWindow').catch(() => {});
-    }, 2000);
+        const modules = [
+            () => import('./FriendsWindow'),
+            () => import('./MailWindow'),
+            () => import('./SettingsWindow'),
+            () => import('./ProfileCustomizeWindow'),
+            () => import('./DailyGiftWindow'),
+            () => import('./RankingWindow'),
+            () => import('./ClanWindow'),
+            () => import('./RanksListWindow'),
+            () => import('./InventoryPanel'),
+            () => import('./VIPWindow'),
+            () => import('./BestiaryWindow'),
+        ];
+        modules.forEach((mod, idx) => {
+            setTimeout(() => mod().catch(() => {}), idx * 250);
+        });
+    }, 6000);
 }
 
 interface WindowManagerProps {

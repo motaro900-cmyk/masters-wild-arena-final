@@ -60,9 +60,7 @@ export class AssetLoader {
 
         const optimizedManifest = manifest.map((path) => {
             const normalized = path.replace(/\\/g, '/').toLowerCase();
-            const isHeroOrSkin = normalized.includes('characters/') && !normalized.includes('characters/ancients/');
-            const isBoss = normalized.includes('ancient_treant') || normalized.includes('ancient_griffin');
-            const shouldKeepPng = isHeroOrSkin || isBoss;
+            const shouldKeepPng = false;
 
             // 1. Заменяем .png/.jpg на .webp, кроме героев, скинов и боссов
             let newPath = path;
@@ -362,10 +360,7 @@ export class AssetLoader {
                 .map((path) => {
                     if (!path) return '';
                     const normalized = path.replace(/\\/g, '/').toLowerCase();
-                    const isHeroOrSkin =
-                        normalized.includes('characters/') && !normalized.includes('characters/ancients/');
-                    const isBoss = normalized.includes('ancient_treant') || normalized.includes('ancient_griffin');
-                    const shouldKeepPng = isHeroOrSkin || isBoss;
+                    const shouldKeepPng = false;
 
                     let newPath = path;
                     if (!shouldKeepPng) {
