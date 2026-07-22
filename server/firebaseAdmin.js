@@ -16,14 +16,23 @@ import { initializeApp, cert, getApps, getApp } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 import { getAuth } from 'firebase-admin/auth';
 
+function formatPrivateKey(key) {
+    if (!key) return '';
+    let formatted = key.trim();
+    if ((formatted.startsWith('"') && formatted.endsWith('"')) || (formatted.startsWith("'") && formatted.endsWith("'"))) {
+        formatted = formatted.slice(1, -1);
+    }
+    return formatted.replace(/\\n/g, '\n');
+}
+
 function getAdminApp() {
     if (getApps().length > 0) {
         return getApp();
     }
 
-    const projectId = process.env.FIREBASE_PROJECT_ID;
-    const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
-    const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n');
+    const projectId = (process.env.FIREBASE_PROJECT_ID || '').trim();
+    const clientEmail = (process.env.FIREBASE_CLIENT_EMAIL || '').trim();
+    const privateKey = formatPrivateKey(process.env.FIREBASE_PRIVATE_KEY);
 
     if (!projectId || !clientEmail || !privateKey) {
         throw new Error(
