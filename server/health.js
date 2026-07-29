@@ -3,7 +3,7 @@
  * @purpose: Health check endpoint for verifying production readiness, VK secret configuration, and build status.
  */
 
-import { getAdminDb, getGoogleAccessToken } from './firebaseAdmin.js';
+import { getGoogleAccessToken } from './firebaseAdmin.js';
 
 export default async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Credentials', 'true');
