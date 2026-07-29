@@ -54,6 +54,7 @@ export const WindowManager: React.FC<WindowManagerProps> = ({ activeWindow, setA
     const windowHeight = isMobile ? '700px' : '850px';
 
     return (
+        <React.Suspense fallback={<WindowLoadingSpinner />}>
         <AnimatePresence>
             {activeWindow && (
                 <motion.div
@@ -84,7 +85,7 @@ export const WindowManager: React.FC<WindowManagerProps> = ({ activeWindow, setA
                         style={{ position: 'relative' }}
                         onClick={(e) => e.stopPropagation()}
                     >
-                        <React.Suspense fallback={<WindowLoadingSpinner />}>
+
                             {activeWindow === 'FRIENDS' && (
                                 <BaseWindow
                                     key="window-friends"
@@ -285,11 +286,11 @@ export const WindowManager: React.FC<WindowManagerProps> = ({ activeWindow, setA
                                     <BestiaryWindow />
                                 </BaseWindow>
                             )}
-                        </React.Suspense>
                     </div>
                 </motion.div>
             )}
         </AnimatePresence>
+        </React.Suspense>
     );
 };
 

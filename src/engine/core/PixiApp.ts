@@ -155,6 +155,13 @@ export class PixiApp {
         if (this.pixiApp) {
             console.log('[PixiApp] Destroying application...');
             this.updateLoops = [];
+            
+            try {
+                PIXI.Assets.reset();
+            } catch (e) {
+                console.warn('Failed to reset PIXI Assets:', e);
+            }
+
             // [Lead Architect]: texture: false is CRITICAL here to avoid
             // "Texture managed by Assets was destroyed instead of unloaded" warning.
             this.pixiApp.destroy(true, { children: true, texture: false });

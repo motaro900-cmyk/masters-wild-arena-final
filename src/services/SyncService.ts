@@ -418,6 +418,14 @@ export class SyncService {
             clearInterval(this.syncInterval);
             this.syncInterval = null;
         }
+        if (this.syncTimeout) {
+            clearTimeout(this.syncTimeout);
+            this.syncTimeout = null;
+        }
+        if (this.logFlushTimeout) {
+            clearTimeout(this.logFlushTimeout);
+            this.logFlushTimeout = null;
+        }
         this.activeUnsubscribes.forEach((unsub) => {
             try {
                 unsub();

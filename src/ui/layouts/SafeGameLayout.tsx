@@ -22,12 +22,13 @@ export const SafeGameLayout = ({ isPortrait = false, isMobile = false }: SafeGam
         typeof window !== 'undefined' &&
         (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
 
-    const { isBanned, banReason, banUntil, sessionConflict, graphicsQuality } = useGameStore((state) => ({
+    const { isBanned, banReason, banUntil, sessionConflict, graphicsQuality, onboardingCompleted } = useGameStore((state) => ({
         isBanned: state.isBanned,
         banReason: state.banReason,
         banUntil: state.banUntil,
         sessionConflict: state.sessionConflict,
         graphicsQuality: state.graphicsQuality,
+        onboardingCompleted: state.onboardingCompleted,
     }));
 
     React.useEffect(() => {
@@ -91,34 +92,38 @@ export const SafeGameLayout = ({ isPortrait = false, isMobile = false }: SafeGam
                     pointerEvents: 'none',
                 }}
             >
-                <div style={{ position: 'absolute', inset: 0, zIndex: 10, pointerEvents: 'none' }}>
-                    <React.Suspense
-                        fallback={
-                            <div
-                                style={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    height: '100%',
-                                    width: '100%',
-                                    backgroundColor: '#0a0806',
-                                    color: '#f5d37a',
-                                    fontWeight: 'bold',
-                                    fontSize: '20px',
-                                    fontFamily: "'Cinzel', 'Philosopher', serif",
-                                    pointerEvents: 'auto',
-                                }}
+                {onboardingCompleted && (
+                    <>
+                        <div style={{ position: 'absolute', inset: 0, zIndex: 10, pointerEvents: 'none' }}>
+                            <React.Suspense
+                                fallback={
+                                    <div
+                                        style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            height: '100%',
+                                            width: '100%',
+                                            backgroundColor: '#0a0806',
+                                            color: '#f5d37a',
+                                            fontWeight: 'bold',
+                                            fontSize: '20px',
+                                            fontFamily: "'Cinzel', 'Philosopher', serif",
+                                            pointerEvents: 'auto',
+                                        }}
+                                    >
+                                        Загрузка локации...
+                                    </div>
+                                }
                             >
-                                Загрузка локации...
-                            </div>
-                        }
-                    >
-                        <SceneSwitcher />
-                    </React.Suspense>
-                </div>
-                <div style={{ position: 'absolute', inset: 0, zIndex: 100, pointerEvents: 'none' }}>
-                    <GameHUD />
-                </div>
+                                <SceneSwitcher />
+                            </React.Suspense>
+                        </div>
+                        <div style={{ position: 'absolute', inset: 0, zIndex: 100, pointerEvents: 'none' }}>
+                            <GameHUD />
+                        </div>
+                    </>
+                )}
             </div>
 
             {/* ⚠️ Session Conflict Overlay */}

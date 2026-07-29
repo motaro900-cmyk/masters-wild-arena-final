@@ -678,12 +678,14 @@ class BootController {
                 try {
                     // Wrap each VKWebAppGetUserInfo call with a 3-second timeout.
                     // Without this, a stalled Bridge hangs the entire boot silently.
+                    let timeoutId: ReturnType<typeof setTimeout>;
                     const user = await Promise.race([
                         getVkUserInfo(),
-                        new Promise<null>((_, reject) =>
-                            setTimeout(() => reject(new Error('VKWebAppGetUserInfo timed out (3s)')), 3000),
-                        ),
+                        new Promise<null>((_, reject) => {
+                            timeoutId = setTimeout(() => reject(new Error('VKWebAppGetUserInfo timed out (3s)')), 3000);
+                        }),
                     ]);
+                    clearTimeout(timeoutId!);
                     if (user) return user;
                     throw new Error('VK getVkUserInfo returned null/empty user info');
                 } catch (err) {
@@ -814,8 +816,10 @@ class BootController {
                 console.log('[BootController] Localhost detected, skipping signature verify. Moving directly to auth-token fetch.');
             }
 
-            // NEW: Obtain Firebase Custom Auth Token and authenticate the client.
-            // This enables authenticated rules check (allow read/write: if request.auth != null).
+        })();
+
+        // 3. Obtain Firebase Custom Auth Token and authenticate the client in parallel
+        const authTokenPromise = (async () => {
             try {
                 console.log('[BootController] Requesting Custom Auth Token...');
                 const queryParams = isLocalhost 
@@ -837,12 +841,14 @@ class BootController {
                     try {
                         const { auth } = await import('../utils/firebase');
                         const { signInWithCustomToken } = await import('firebase/auth');
+                        let timeoutId: ReturnType<typeof setTimeout>;
                         await Promise.race([
                             signInWithCustomToken(auth, tokenData.token),
-                            new Promise((_, reject) =>
-                                setTimeout(() => reject(new Error('Firebase signInWithCustomToken timed out (2.5s)')), 2500)
-                            ),
+                            new Promise((_, reject) => {
+                                timeoutId = setTimeout(() => reject(new Error('Firebase signInWithCustomToken timed out (2.5s)')), 2500);
+                            }),
                         ]);
+                        clearTimeout(timeoutId!);
                         firebaseAuthSuccess = true;
                         console.log(`[BootController] Firebase client authenticated successfully: ${firebaseAuthSuccess}`);
                     } catch (clientAuthErr: any) {
@@ -911,9 +917,9 @@ class BootController {
             // Note: vkUser and avatar are assigned to class properties and will be batched into the final setState at the end of resolveVK
         })();
 
-        // Timeout fallback for VK Bridge request
-        const timeoutPromise = new Promise<never>((_, reject) =>
-            setTimeout(
+        let mainTimeoutId: ReturnType<typeof setTimeout>;
+        const timeoutPromise = new Promise<never>((_, reject) => {
+            mainTimeoutId = setTimeout(
                 () =>
                     reject(
                         new Error(
@@ -921,13 +927,15 @@ class BootController {
                         ),
                     ),
                 25000,
-            ),
-        );
+            );
+        });
 
         // Await all parallel promises with fallback recovery
         try {
-            await Promise.all([timePromise, verifyPromise, Promise.race([vkPromise, timeoutPromise])]);
+            await Promise.all([timePromise, verifyPromise, authTokenPromise, Promise.race([vkPromise, timeoutPromise])]);
+            clearTimeout(mainTimeoutId!);
         } catch (err: any) {
+            clearTimeout(mainTimeoutId!);
             // Distinguish between two classes of errors:
             //   1. Security error — server explicitly rejected the VK signature → block boot
             //   2. Network error  — signature endpoint unreachable / timeout → URL fallback is safe
