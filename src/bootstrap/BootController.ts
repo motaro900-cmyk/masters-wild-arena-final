@@ -863,9 +863,11 @@ class BootController {
                 return;
             }
 
-            this.startDiagnostic('VKWebAppGetUserInfo');
+            const searchParams = new URLSearchParams(window.location.search);
+            const urlVkUserId = searchParams.get('vk_user_id');
             try {
-                this.vkUser = await getVkUserInfoWithRetry(3, 1500);
+                // If urlVkUserId is present, 1 attempt (2s) is enough to fetch name/photo before using URL fallback
+                this.vkUser = await getVkUserInfoWithRetry(urlVkUserId ? 1 : 2, 1000);
                 if (!this.vkUser) {
                     throw new Error('VK getVkUserInfo returned empty object');
                 }
