@@ -1470,14 +1470,16 @@ class BootController {
         const { useGameStore } = await import('../store/useGameStore');
         const { setupReferralAndGifts } = await import('./initGameSystems');
 
-        // Setup real-time subscriptions using loaded profile state
-        const state = useGameStore.getState();
-        const prefixedId = SyncService.getPrefixedUserId(state.vkUser, state.playerId);
-        await initSubscriptions(this.userId, prefixedId);
+        // Setup referral system and transition to READY status immediately
         setupReferralAndGifts();
 
-        // Transition to READY status
+        // Transition to READY status — game UI shows main menu instantly!
         this.transition('READY');
+
+        // Setup real-time subscriptions asynchronously in background so boot is never blocked
+        initSubscriptions(this.userId, prefixedId).catch((err) => {
+            console.warn('[BootController] Non-critical background subscriptions init warning:', err);
+        });
 
         // Save seen welcome messages flag
         const welcomeKey = `seen_welcome_msgs_${state.playerId}`;

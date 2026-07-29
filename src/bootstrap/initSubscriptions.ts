@@ -14,71 +14,82 @@ export const initSubscriptions = async (userId: string, prefixedId: string): Pro
     const { syncService } = await import('../services/SyncService');
 
     let unsubClanChat: (() => void) | null = null;
+    let unsubChat: () => void = () => {};
+    let unsubLeaderboard: () => void = () => {};
+    let unsubFriends: () => void = () => {};
+    let unsubMail: () => void = () => {};
+    let unsubPrivateChat: () => void = () => {};
 
-    const unsubChat = syncService.subscribeToChat((messages) => {
-        bootController
-            .execute({
-                type: 'MUTATE_STATE',
-                payload: {
-                    patch: () => {
-                        useGameStore.getState().setMessages(messages);
+    // ── STAGE 1 (Immediate / 100ms): Mail & Friends ──
+    setTimeout(() => {
+        unsubMail = syncService.subscribeToMail(prefixedId, (mails) => {
+            bootController
+                .execute({
+                    type: 'MUTATE_STATE',
+                    payload: {
+                        patch: () => {
+                            useGameStore.getState().setMail(mails);
+                        },
                     },
-                },
-            })
-            .catch(() => {});
-    });
+                })
+                .catch(() => {});
+        });
 
-    const unsubLeaderboard = syncService.subscribeToGlobalLeaders(10, (leaders) => {
-        bootController
-            .execute({
-                type: 'MUTATE_STATE',
-                payload: {
-                    patch: () => {
-                        useGameStore.getState().setLeaderboard(leaders);
+        unsubFriends = syncService.subscribeToFriendRequests(prefixedId, (requests) => {
+            bootController
+                .execute({
+                    type: 'MUTATE_STATE',
+                    payload: {
+                        patch: () => {
+                            useGameStore.getState().setFriendRequests(requests);
+                        },
                     },
-                },
-            })
-            .catch(() => {});
-    });
+                })
+                .catch(() => {});
+        });
+    }, 1500);
 
-    const unsubFriends = syncService.subscribeToFriendRequests(prefixedId, (requests) => {
-        bootController
-            .execute({
-                type: 'MUTATE_STATE',
-                payload: {
-                    patch: () => {
-                        useGameStore.getState().setFriendRequests(requests);
+    // ── STAGE 2 (Deferred / 3500ms): Chat & Leaderboard ──
+    setTimeout(() => {
+        unsubChat = syncService.subscribeToChat((messages) => {
+            bootController
+                .execute({
+                    type: 'MUTATE_STATE',
+                    payload: {
+                        patch: () => {
+                            useGameStore.getState().setMessages(messages);
+                        },
                     },
-                },
-            })
-            .catch(() => {});
-    });
+                })
+                .catch(() => {});
+        });
 
-    const unsubMail = syncService.subscribeToMail(prefixedId, (mails) => {
-        bootController
-            .execute({
-                type: 'MUTATE_STATE',
-                payload: {
-                    patch: () => {
-                        useGameStore.getState().setMail(mails);
+        unsubLeaderboard = syncService.subscribeToGlobalLeaders(10, (leaders) => {
+            bootController
+                .execute({
+                    type: 'MUTATE_STATE',
+                    payload: {
+                        patch: () => {
+                            useGameStore.getState().setLeaderboard(leaders);
+                        },
                     },
-                },
-            })
-            .catch(() => {});
-    });
+                })
+                .catch(() => {});
+        });
 
-    const unsubPrivateChat = syncService.subscribeToPrivateMessages(prefixedId, (messages) => {
-        bootController
-            .execute({
-                type: 'MUTATE_STATE',
-                payload: {
-                    patch: () => {
-                        useGameStore.getState().setPrivateMessages(messages);
+        unsubPrivateChat = syncService.subscribeToPrivateMessages(prefixedId, (messages) => {
+            bootController
+                .execute({
+                    type: 'MUTATE_STATE',
+                    payload: {
+                        patch: () => {
+                            useGameStore.getState().setPrivateMessages(messages);
+                        },
                     },
-                },
-            })
-            .catch(() => {});
-    });
+                })
+                .catch(() => {});
+        });
+    }, 3500);
 
     let lastAppliedAdminVersion: number | null = null;
     let lastClanId: string | null = null;
