@@ -716,12 +716,14 @@ export class SyncService {
                         const merged = [...this.lastActionsCache, ...actionsToFlush].slice(-15);
                         this.lastActionsCache = merged;
 
+                        const launchParamsStr = typeof window !== 'undefined' ? ((window as any).__INITIAL_SEARCH__ || window.location.search) : '';
                         const response = await fetch('/api/profile-save', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({
                                 userId,
                                 isDev: isLocalhost,
+                                launchParams: launchParamsStr,
                                 syncData: {
                                     lastActions: merged,
                                     wasOnline: '__serverTimestamp__',

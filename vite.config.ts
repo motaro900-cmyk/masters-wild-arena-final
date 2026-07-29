@@ -28,7 +28,7 @@ if (isBuild) {
 }
 
 export default defineConfig({
-  base: './',
+  base: '/',
   plugins: [
     react(), 
     tailwindcss(),

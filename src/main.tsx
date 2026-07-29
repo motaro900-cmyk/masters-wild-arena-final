@@ -195,34 +195,36 @@ export const Root = () => {
         return unsub;
     }, []);
 
-    // Resize handler
+    // Resize handler (throttled with rAF)
     React.useEffect(() => {
+        let rafId: number | null = null;
         const handleResize = () => {
-            const sw = window.innerWidth;
-            const sh = window.innerHeight;
-            const gw = AppConfig.GAME_WIDTH;
-            const gh = AppConfig.GAME_HEIGHT;
-            const portrait = sw < sh;
-            const isMobileDevice =
-                typeof navigator !== 'undefined' &&
-                /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            if (rafId !== null) return;
+            rafId = requestAnimationFrame(() => {
+                rafId = null;
+                const sw = window.innerWidth;
+                const sh = window.innerHeight;
+                const gw = AppConfig.GAME_WIDTH;
+                const gh = AppConfig.GAME_HEIGHT;
+                const portrait = sw < sh;
+                const isMobileDevice =
+                    typeof navigator !== 'undefined' &&
+                    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
-            let s: number;
-            let isRotated = false;
+                let s: number;
+                let isRotated = false;
 
-            if (portrait && isMobileDevice) {
-                // Мобильный портрет: вписываем горизонтальную игру в вертикальный экран
-                // путем сопоставления gw -> sh и gh -> sw, с последующей ротацией на 90deg.
-                s = Math.min(sh / gw, sw / gh);
-                isRotated = true;
-            } else {
-                // Обычный ландшафт или десктоп
-                s = Math.min(sw / gw, sh / gh);
-            }
+                if (portrait && isMobileDevice) {
+                    s = Math.min(sh / gw, sw / gh);
+                    isRotated = true;
+                } else {
+                    s = Math.min(sw / gw, sh / gh);
+                }
 
-            setScale(s);
-            setRotated(isRotated);
-            window.scrollTo(0, 0);
+                setScale(s);
+                setRotated(isRotated);
+                window.scrollTo(0, 0);
+            });
         };
 
         window.addEventListener('resize', handleResize);
@@ -230,6 +232,7 @@ export const Root = () => {
         handleResize();
 
         return () => {
+            if (rafId !== null) cancelAnimationFrame(rafId);
             window.removeEventListener('resize', handleResize);
             window.removeEventListener('orientationchange', handleResize);
         };
