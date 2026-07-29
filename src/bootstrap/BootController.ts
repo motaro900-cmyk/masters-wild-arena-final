@@ -759,52 +759,50 @@ class BootController {
                         );
                     }
 
-                    // If explicit security issues (400, 401, 403)
-                    if (response.status === 400 || response.status === 401 || response.status === 403) {
-                        throw new Error(`SECURITY_ERROR: status ${response.status}`);
+                    // Only 403 (Forbidden) indicates an explicit security signature rejection
+                    if (response.status === 403) {
+                        throw new Error('SECURITY_ERROR: status 403 Forbidden');
                     }
 
-                    // If some other status is not ok (e.g. 500), retry
+                    // For other non-OK statuses (e.g., 400 missing sign, 500 server issue), retry once
                     if (!response.ok) {
                         response = await fetchWithRetry(
                             url,
                             {
-                                signal: AbortSignal.timeout(15000),
+                                signal: AbortSignal.timeout(3500),
                             },
-                            2,
-                            2000,
+                            1,
+                            1000,
                         );
                     }
 
-                    // Double check final response status
-                    if (response.status === 400 || response.status === 401 || response.status === 403) {
-                        throw new Error(`SECURITY_ERROR: status ${response.status}`);
-                    }
-                    if (!response.ok) {
-                        throw new Error(`NETWORK_ERROR: status ${response.status}`);
+                    if (response.status === 403) {
+                        throw new Error('SECURITY_ERROR: status 403 Forbidden');
                     }
 
-                    const data = await response.json();
-                    if (data && data.valid === false) {
-                        throw new Error('SECURITY_ERROR: Invalid signature');
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data && data.valid === false) {
+                            throw new Error('SECURITY_ERROR: Invalid signature');
+                        }
+                        this.endDiagnostic('/api/verify-sign', 'SUCCESS');
+                    } else {
+                        console.warn(`[BootController] verify-sign returned status ${response.status}, falling back to URL launch params.`);
                     }
-                    this.endDiagnostic('/api/verify-sign', 'SUCCESS');
                 } catch (err: any) {
                     this.endDiagnostic('/api/verify-sign', 'ERROR', err.message || String(err));
                     
                     const errMsg = err.message || '';
                     if (
                         errMsg.includes('SECURITY_ERROR') ||
-                        errMsg.includes('status 400') ||
-                        errMsg.includes('status 401') ||
                         errMsg.includes('status 403') ||
-                        errMsg === 'Standalone launch restricted'
+                        errMsg === 'Invalid signature'
                     ) {
                         setNotInVk(true);
                         throw new Error('Standalone launch restricted');
                     }
                     
-                    throw new Error(`SERVER_UNAVAILABLE: ${errMsg}`);
+                    console.warn('[BootController] Non-fatal signature verify issue, continuing via URL fallback:', errMsg);
                 }
             } else {
                 console.log('[BootController] Localhost detected, skipping signature verify. Moving directly to auth-token fetch.');
