@@ -736,6 +736,12 @@ class BootController {
         // 2. Verify signature in parallel (skipped on localhost, but auth token is fetched)
         const verifyPromise = (async () => {
             if (!isLocalhost) {
+                console.log('[DEBUG VK PARAMS]', {
+                    launchParams: window.location.search,
+                    location: window.location.href,
+                    search: window.location.search,
+                    hash: window.location.hash,
+                });
                 this.startDiagnostic('/api/verify-sign');
                 try {
                     const searchParams = window.location.search;
