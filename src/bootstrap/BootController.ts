@@ -412,31 +412,41 @@ class BootController {
 
                 // ── PHASE 2: LOAD (Parallelized Boot) ───────────────────────
                 this.transition('LOAD');
+                const t0 = performance.now();
 
                 // 1. VK resolution & Session Creation
                 const resolveVkPromise = (async () => {
                     setLoadingText('Авторизация и подключение к VK Bridge...');
+                    const vkStart = performance.now();
                     await this.runAction({ type: 'RESOLVE_VK', payload: { setNotInVk, setInitError } });
+                    console.log(`[BOOT] VK init & auth: ${(performance.now() - vkStart).toFixed(1)}ms`);
                     setLoadingText('Создание сессионного контекста...');
+                    const sessStart = performance.now();
                     await this.runAction({ type: 'CREATE_SESSION' });
+                    console.log(`[BOOT] Session creation: ${(performance.now() - sessStart).toFixed(1)}ms`);
                 })();
 
                 // 2. Firestore Load Profile (Network-bound) - starts immediately in parallel, awaits VK resolution to finalize
                 const profilePromise = (async () => {
                     setLoadingText('Загрузка игрового профиля...');
+                    const profStart = performance.now();
                     await this.runAction({
                         type: 'LOAD_PROFILE',
                         payload: { setInitError, resolveVkPromise },
                     });
+                    console.log(`[BOOT] Profile Load: ${(performance.now() - profStart).toFixed(1)}ms`);
                 })();
 
                 // 3. Pixi Engine Warmup (GPU-bound)
                 const enginePromise = (async () => {
                     setLoadingText('Запуск игрового движка...');
+                    const engStart = performance.now();
                     await this.initializeEngine(container);
+                    console.log(`[BOOT] Engine & Assets: ${(performance.now() - engStart).toFixed(1)}ms`);
                 })();
 
                 await Promise.all([resolveVkPromise, profilePromise, enginePromise]);
+                console.log(`[BOOT] Total parallel load phase: ${(performance.now() - t0).toFixed(1)}ms`);
 
                 const profileState = useGameStore.getState();
 

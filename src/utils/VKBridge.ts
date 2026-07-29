@@ -73,20 +73,24 @@ export const initVK = async (): Promise<boolean> => {
         return true;
     }
 
-    // На мобильных устройствах с 3G инициализация VK Bridge может занять 5-10 сек.
-    // Увеличиваем timeout до 12s чтобы дать Bridge время ответить.
+    // Cap VK Bridge init timeout to 2.5s to prevent startup delay
     let timeoutId: any;
     const timeoutPromise = new Promise<boolean>((resolve) => {
         timeoutId = setTimeout(() => {
-            console.warn('⚠️ VK Bridge Init Timeout (12s). Starting anyway...');
+            console.warn('⚠️ VK Bridge Init Timeout (2.5s). Continuing anyway...');
             resolve(false);
-        }, 12000);
+        }, 2500);
     });
 
     const initPromise = (async () => {
         try {
             await bridge.send('VKWebAppInit');
             (window as any).vkBridgeInitialized = true;
+            if (timeoutId) clearTimeout(timeoutId);
+            
+            // Request orientation lock non-blocking in background
+            bridge.send('VKWebAppLockOrientation' as any, { orientation: 'landscape' }).catch(() => {});
+            
             // Запрашиваем полный экран сразу после инициализации
             try {
                 await bridge.send('VKWebAppResizeTo' as any, {
@@ -94,22 +98,12 @@ export const initVK = async (): Promise<boolean> => {
                     height: window.innerHeight,
                 });
             } catch {
-                // Игнорируем если платформа не поддерживает
-            }
-            // Запрашиваем ландшафтную ориентацию на мобильных
-            try {
-                if ((bridge.supports as any)('VKWebAppLockOrientation')) {
-                    await bridge.send('VKWebAppLockOrientation' as any, {
-                        orientation: 'landscape',
-                    });
-                    console.log('[VK Bridge] Orientation locked to landscape');
-                }
-            } catch (err) {
-                console.warn('[VK Bridge] Failed to lock orientation:', err);
+                // Ignore if not supported
             }
             return true;
-        } catch (error) {
-            console.warn('VKWebAppInit failed:', error);
+        } catch (e) {
+            console.warn('[VKBridge] VKWebAppInit failed:', e);
+            if (timeoutId) clearTimeout(timeoutId);
             return false;
         }
     })();
