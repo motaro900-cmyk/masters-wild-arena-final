@@ -10,7 +10,7 @@
  * If the document does not exist, it is created automatically (no separate POST needed).
  */
 
-import { getAdminDb } from './firebaseAdmin.js';
+import { saveFirestoreRestDoc } from './firebaseAdmin.js';
 import { verifyVkSign, setCorsHeaders } from './vkAuth.js';
 
 export default async function handler(req, res) {

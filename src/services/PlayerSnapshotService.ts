@@ -99,10 +99,15 @@ class PlayerSnapshotServiceClass {
                 maxEnergy: state.maxEnergy || 0,
             };
 
-            const playerRef = doc(db, USERS_COLLECTION, userId);
-            await setDoc(playerRef, snapshotData, { merge: true });
+            try {
+                const playerRef = doc(db, USERS_COLLECTION, userId);
+                await setDoc(playerRef, snapshotData, { merge: true });
+            } catch (directErr) {
+                // If direct client Firestore is locked (permission-denied), delegate save via Serverless API proxy
+                syncService.syncPlayerData();
+            }
         } catch (error) {
-            console.error('[PlayerSnapshotService] Failed to save snapshot:', error);
+            console.warn('[PlayerSnapshotService] Snapshot save skipped:', error);
         }
     }
 
@@ -161,7 +166,7 @@ class PlayerSnapshotServiceClass {
                 attacks: results,
             };
         } catch (error) {
-            console.error('[PlayerSnapshotService] Failed to apply pending results:', error);
+            console.warn('[PlayerSnapshotService] Pending results read skipped (direct client Firestore locked):', error);
             return null;
         }
     }
