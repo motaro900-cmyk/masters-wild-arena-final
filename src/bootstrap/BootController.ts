@@ -1470,6 +1470,9 @@ class BootController {
         const { useGameStore } = await import('../store/useGameStore');
         const { setupReferralAndGifts } = await import('./initGameSystems');
 
+        const state = useGameStore.getState();
+        const prefixedId = SyncService.getPrefixedUserId(state.vkUser, state.playerId);
+
         // Setup referral system and transition to READY status immediately
         setupReferralAndGifts();
 
