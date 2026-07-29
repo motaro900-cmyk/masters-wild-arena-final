@@ -79,6 +79,7 @@ export class AssetLoader {
                     newPath.includes('images/items/') ||
                     newPath.includes('characters/') ||
                     newPath.includes('avatars/') ||
+                    newPath.includes('images/ui/') ||
                     newPath.includes('frames/'))
             ) {
                 newPath = getOptimizedMobilePath(newPath);
@@ -187,8 +188,6 @@ export class AssetLoader {
             AssetsMap.UI.BAR_GEM,
             AssetsMap.UI.BAR_ENERGY,
             AssetsMap.UI.ICON_MAIL,
-            AssetsMap.UI.ICON_DAILY_CHEST,
-            AssetsMap.UI.PANEL_QUEST,
         ];
     }
 
