@@ -124,6 +124,7 @@ export default defineConfig({
       output: {
         manualChunks: {
           'vendor-core': ['react', 'react-dom', 'zustand'],
+          'vendor-ui': ['lucide-react'],
           'vendor-pixi': ['pixi.js'],
         },
       },
