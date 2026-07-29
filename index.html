@@ -33,7 +33,7 @@
     })();
 
     // [Optimization] Warm up the API serverless functions in parallel with bundle downloads
-    fetch('./api/time', { method: 'GET', cache: 'no-cache' }).catch(function() {});
+    fetch('/api/time', { method: 'GET', cache: 'no-cache' }).catch(function() {});
   </script>
   
   <style>
