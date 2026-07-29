@@ -123,13 +123,8 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: {
-          'vendor-react':    ['react', 'react-dom'],
-          'vendor-firebase': ['firebase/app', 'firebase/firestore', 'firebase/functions'],
-          'vendor-pixi':     ['pixi.js'],
-          'vendor-gsap':     ['gsap'],
-          'vendor-framer':   ['framer-motion'],
-          'vendor-zustand':  ['zustand'],
-          'vendor-sentry':   ['@sentry/react'],
+          'vendor-core': ['react', 'react-dom', 'zustand'],
+          'vendor-pixi': ['pixi.js'],
         },
       },
     },
