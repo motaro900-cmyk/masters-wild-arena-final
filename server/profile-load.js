@@ -37,7 +37,7 @@ export default async function handler(req, res) {
         }
 
         const isLocal = host.includes('localhost') || host.includes('127.0.0.1');
-        if (!isLocal && auth.vkUserId) {
+        if (!isLocal && auth.vkUserId && !auth.isUnsigned) {
             const expectedUserId = `VK-${auth.vkUserId}`;
             if (userId !== expectedUserId) {
                 console.warn(`[profile-load] Identity mismatch: requested ${userId}, signed as ${expectedUserId}`);

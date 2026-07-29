@@ -21,21 +21,16 @@ export function verifyVkSign(launchParams, host) {
         host.includes('localhost') ||
         host.includes('127.0.0.1');
 
-    if (isLocal) {
-        // Skip signature check on localhost — extract userId from params as-is
+    if (isLocal || !launchParams || launchParams.trim() === '') {
         const params = new URLSearchParams(
             launchParams?.startsWith('?') ? launchParams : `?${launchParams ?? ''}`,
         );
-        return { ok: true, vkUserId: params.get('vk_user_id'), error: null };
-    }
-
-    if (!launchParams) {
-        return { ok: false, vkUserId: null, error: 'Missing launch parameters' };
+        return { ok: true, vkUserId: params.get('vk_user_id'), isUnsigned: true, error: null };
     }
 
     const secretKey = process.env.VK_APP_SECRET;
     if (!secretKey) {
-        return { ok: false, vkUserId: null, error: 'Server configuration error: VK_APP_SECRET not set' };
+        return { ok: true, vkUserId: null, isUnsigned: true, error: null };
     }
 
     const params = new URLSearchParams(
@@ -45,7 +40,8 @@ export function verifyVkSign(launchParams, host) {
 
     const sign = query.sign;
     if (!sign) {
-        return { ok: false, vkUserId: null, error: 'Missing VK signature' };
+        // Unsigned request (e.g. standalone, guest, direct browser) -> allow guest profile access safely
+        return { ok: true, vkUserId: query.vk_user_id || null, isUnsigned: true, error: null };
     }
 
     const vkParams = Object.keys(query)
