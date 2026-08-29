@@ -14,13 +14,6 @@ import type { CSSProperties } from 'react';
 const isMobile = (): boolean =>
     /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
-/** Размер атласа (ПК) */
-const ATLAS_PC_SIZE = 4096;
-/** Размер атласа (мобильный) */
-const ATLAS_MOB_SIZE = 2048;
-/** Масштаб мобильного атласа относительно ПК */
-const MOBILE_SCALE = ATLAS_MOB_SIZE / ATLAS_PC_SIZE;
-
 /** Тип одного фрейма из JSON-атласа */
 interface AtlasFrame {
     frame: { x: number; y: number; w: number; h: number };

@@ -255,11 +255,17 @@ export const BattleScene: React.FC = () => {
         const engine = BattleEngine.getInstance();
         engineRef.current = engine;
 
+        let lastStateUpdate = 0;
         engine.onStateChange = (newState) => {
             try {
-                setBattleState({ ...newState });
+                const now = performance.now();
+                const isCombatEnd = (newState.playerHP <= 0 || newState.enemyHP <= 0);
+                if (isCombatEnd || now - lastStateUpdate > 30) {
+                    lastStateUpdate = now;
+                    setBattleState({ ...newState });
+                }
 
-                if ((newState.playerHP <= 0 || newState.enemyHP <= 0) && !showResultRef.current) {
+                if (isCombatEnd && !showResultRef.current) {
                     // ПРЕДОТВРАЩАЕМ ПОВТОРНЫЙ ВЫЗОВ НАГРАД:
                     showResultRef.current = true;
 

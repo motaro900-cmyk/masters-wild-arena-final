@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { useGameStore } from '../../../store/useGameStore';
-import { AssetsMap } from '../../../configs/AssetsMap';
 import { syncService } from '../../../services/SyncService';
 
 // Import sub-components

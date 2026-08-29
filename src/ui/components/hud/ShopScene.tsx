@@ -4,7 +4,6 @@ import { AssetsMap } from '../../../configs/AssetsMap';
 import { ResourceBar } from './ResourceBar';
 import '../../styles/shop-scene.css';
 
-import { ShopItem } from '../../../configs/ShopConfig';
 import { useGameStore } from '../../../store/useGameStore';
 import { ITEMS_DATABASE, calculateItemPower } from '../../../game/configs/ItemsConfig';
 
@@ -90,21 +89,6 @@ export const ShopScene: React.FC = () => {
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [exitShop]);
-
-    const getSectionTitle = (main: string) => {
-        switch (main) {
-            case 'ARSENAL':
-                return 'МАГАЗИН';
-            case 'ALCHEMY':
-                return 'АЛХИМИЯ';
-            case 'SKINS':
-                return 'ОБЛИКИ';
-            case 'BANK':
-                return 'БАНК';
-            default:
-                return 'МАГАЗИН';
-        }
-    };
 
     return (
         <motion.div

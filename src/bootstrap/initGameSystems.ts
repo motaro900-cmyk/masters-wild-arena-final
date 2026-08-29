@@ -105,14 +105,36 @@ export const setupReferralAndGifts = (): void => {
         } else {
             setTimeout(async () => {
                 const store = useGameStore.getState();
-                const updatedGifts = [...(store.claimedGifts || []), requestId];
-                useGameStore.setState({
-                    claimedGifts: updatedGifts,
-                });
-                store.addGold(5000);
-                const { syncService: liveSyncService } = await import('../services/SyncService');
-                liveSyncService.debouncedSync();
-                useGameStore.getState().showAlert('Вы получили подарок от друга: 5,000 золота! 💰');
+                const userId = store.vkUser?.id ? `VK-${store.vkUser.id}` : 'DEVELOPER';
+                const isDev = import.meta.env.DEV === true;
+                const opId = `gift_${requestId}_${Date.now()}`;
+                const launchParams = window.location.search || '';
+
+                try {
+                    const res = await fetch('/api/game/reward/claim', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            userId,
+                            isDev,
+                            rewardType: 'REFERRAL_GIFT',
+                            rewardKey: requestId,
+                            operationId: opId,
+                            launchParams,
+                        }),
+                    });
+                    if (res.ok) {
+                        const data = await res.json();
+                        const updatedGifts = [...(store.claimedGifts || []), requestId];
+                        useGameStore.setState({
+                            claimedGifts: updatedGifts,
+                            gold: data.data?.gold ?? (store.gold + 5000),
+                        });
+                        useGameStore.getState().showAlert('Вы получили подарок от друга: 5,000 золота! 💰');
+                    }
+                } catch (err) {
+                    console.warn('Failed to claim referral gift on server:', err);
+                }
             }, 3000);
         }
     }

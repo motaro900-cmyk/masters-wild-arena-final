@@ -1,5 +1,3 @@
-import { db, USERS_COLLECTION } from '../utils/firebase';
-import { collection, getDocs, query, where, orderBy, limit } from 'firebase/firestore';
 import { HEROES_DB } from '../configs/HeroesConfig';
 import { ITEMS_DATABASE } from '../game/configs/ItemsConfig';
 import { getRandomBotName } from '../data/botNames';
@@ -322,42 +320,14 @@ class MatchmakingServiceClass {
         myStats?: any,
     ): Promise<MatchOpponent | null> {
         try {
-            const playersRef = collection(db, USERS_COLLECTION);
-            // Ищем игроков в динамическом диапазоне кубков в зависимости от текущего рейтинга игрока
-            let range = 100;
-            if (myRating < 100) range = 30;
-            else if (myRating < 300) range = 60;
-            else if (myRating < 600) range = 100;
-            else range = 150;
+            const res = await fetch('/api/leaderboard/top?limit=50');
+            if (!res.ok) return null;
+            const data = await res.json();
+            if (!data.ok || !Array.isArray(data.leaderboard) || data.leaderboard.length === 0) return null;
 
-            const minRating = Math.max(0, myRating - range);
-            const maxRating = myRating + range;
-
-            const q = query(
-                playersRef,
-                where('rating', '>=', minRating),
-                where('rating', '<=', maxRating),
-                orderBy('rating'),
-                limit(20),
-            );
-
-            let snapshot = await getDocs(q);
-            if (snapshot.empty) {
-                const qLegacy = query(
-                    playersRef,
-                    where('рейтинг', '>=', minRating),
-                    where('рейтинг', '<=', maxRating),
-                    orderBy('рейтинг'),
-                    limit(20),
-                );
-                snapshot = await getDocs(qLegacy);
-            }
-
-            if (snapshot.empty) return null;
-
-            const candidates = snapshot.docs
-                .map((d) => ({ id: d.id, ...d.data() }) as any)
-                .filter((p) => {
+            const candidates = data.leaderboard
+                .map((p: any) => ({ id: p.userId, ...p }))
+                .filter((p: any) => {
                     // Исключаем себя (сравнение с учетом префиксов и без)
                     const cleanPId = p.id.replace('VK-', '').replace('GUEST-', '');
                     const cleanMyId = myUserId.replace('VK-', '').replace('GUEST-', '');

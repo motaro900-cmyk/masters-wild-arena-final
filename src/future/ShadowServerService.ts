@@ -1,6 +1,3 @@
-import { db } from '../utils/firebase';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-
 export interface BattleResultReport {
     attackerWon: boolean;
     myRating: number;
@@ -158,20 +155,9 @@ export class ShadowServerService {
 
         const isValid = anomalies.length === 0;
 
-        // Log to securityLogs collection if any anomaly is found
+        // Log anomalies
         if (!isValid) {
             console.error(`[ShadowServer] Security anomalies found for user ${userId}:`, anomalies);
-            try {
-                const logsRef = collection(db, 'securityLogs');
-                await addDoc(logsRef, {
-                    userId,
-                    anomalies,
-                    report,
-                    timestamp: serverTimestamp(),
-                });
-            } catch (err) {
-                console.error('[ShadowServer] Failed to write security log:', err);
-            }
         } else {
             console.log(`[ShadowServer] Battle result validation passed for ${userId}`);
         }

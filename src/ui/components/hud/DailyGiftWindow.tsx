@@ -4,25 +4,9 @@ import { useGameStore } from '../../../store/useGameStore';
 import { AssetsMap } from '../../../configs/AssetsMap';
 import { audioService } from '../../../services/AudioService';
 import { GiftCongratsModal } from './DailyGift/GiftCongratsModal';
-import { db, USERS_COLLECTION } from '../../../utils/firebase';
-import { syncService, SyncService } from '../../../services/SyncService';
-import { doc, updateDoc, serverTimestamp, Timestamp } from 'firebase/firestore';
 import { showRewardedVideo } from '../../../utils/VKBridge';
 import { DailyCalendarTab } from './DailyGift/DailyCalendarTab';
 import { FortuneWheelTab } from './DailyGift/FortuneWheelTab';
-
-// Pure helper functions outside component to satisfy react-hooks/purity
-const getRandomSectorIndex = () => Math.floor(Math.random() * 8);
-const rollMegaChest = () => {
-    const rand = Math.random();
-    if (rand < 0.3333) {
-        return { type: 'CRYSTAL' as RewardType, amount: 50 };
-    } else if (rand < 0.6666) {
-        return { type: 'GOLD' as RewardType, amount: 1000 };
-    } else {
-        return { type: 'ENERGY' as RewardType, amount: 50 };
-    }
-};
 
 interface DailyGiftWindowProps {
     onClose: () => void;
@@ -86,10 +70,7 @@ export const getSectorBg = (type: RewardType, index: number) => {
     }
 };
 
-export const DailyGiftWindow: React.FC<DailyGiftWindowProps> = ({ onClose }) => {
-    const addGold = useGameStore((state) => state.addGold);
-    const addCrystals = useGameStore((state) => state.addCrystals);
-    const addEnergy = useGameStore((state) => state.addEnergy);
+export const DailyGiftWindow: React.FC<DailyGiftWindowProps> = ({ onClose: _onClose }) => {
     const setCanClaimDailyGift = useGameStore((state) => state.setCanClaimDailyGift);
 
     // Tab control
@@ -160,13 +141,9 @@ export const DailyGiftWindow: React.FC<DailyGiftWindowProps> = ({ onClose }) => 
     // Server time offset
     const [timeOffset, setTimeOffset] = useState<number>(0);
 
-    // Firestore server dates
-    const [lastGiftClaimedTime, setLastGiftClaimedTime] = useState<Timestamp | null>(
-        initialGiftTime ? Timestamp.fromMillis(initialGiftTime) : null,
-    );
-    const [lastWheelSpinTimeServer, setLastWheelSpinTimeServer] = useState<Timestamp | null>(
-        initialWheelTime ? Timestamp.fromMillis(initialWheelTime) : null,
-    );
+    // Server dates
+    const [lastGiftClaimedTime, setLastGiftClaimedTime] = useState<number | null>(initialGiftTime || null);
+    const [lastWheelSpinTimeServer, setLastWheelSpinTimeServer] = useState<number | null>(initialWheelTime || null);
     const [dbLoginStreak, setDbLoginStreak] = useState<number>(initialStreak);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -194,7 +171,7 @@ export const DailyGiftWindow: React.FC<DailyGiftWindowProps> = ({ onClose }) => 
         if (isLoading) return;
 
         const updateTimers = () => {
-            const nowSeconds = Math.floor((Date.now() + timeOffset) / 1000);
+            const nowMs = Date.now() + timeOffset;
 
             // 1. Daily Gift Check
             if (!lastGiftClaimedTime) {
@@ -202,7 +179,7 @@ export const DailyGiftWindow: React.FC<DailyGiftWindowProps> = ({ onClose }) => 
                 setClaimedToday(false);
                 setCanClaimDailyGift(true);
             } else {
-                const diffSeconds = nowSeconds - lastGiftClaimedTime.seconds;
+                const diffSeconds = Math.max(0, (nowMs - lastGiftClaimedTime) / 1000);
                 const hoursSinceLast = diffSeconds / 3600;
 
                 if (hoursSinceLast < 24) {
@@ -227,7 +204,7 @@ export const DailyGiftWindow: React.FC<DailyGiftWindowProps> = ({ onClose }) => 
                 setIsFreeSpinAvailable(true);
                 setWheelTimeLeft('');
             } else {
-                const diffSeconds = nowSeconds - lastWheelSpinTimeServer.seconds;
+                const diffSeconds = Math.max(0, (nowMs - lastWheelSpinTimeServer) / 1000);
                 if (diffSeconds >= 24 * 3600) {
                     setIsFreeSpinAvailable(true);
                     setWheelTimeLeft('');
@@ -275,64 +252,61 @@ export const DailyGiftWindow: React.FC<DailyGiftWindowProps> = ({ onClose }) => 
             }
         }
 
-        audioService.playSFX(AssetsMap.AUDIO.SFX_BUY || AssetsMap.AUDIO.SFX_CLICK);
-        const currentReward = STREAK_REWARDS[streak - 1];
-
-        let claimedType = currentReward.type;
-        let claimedAmount = double ? currentReward.amount * 2 : currentReward.amount;
-        let isFromChest = false;
-
-        // Award rewards
-        if (currentReward.type === 'GOLD') {
-            addGold(claimedAmount);
-        } else if (currentReward.type === 'CRYSTAL') {
-            addCrystals(claimedAmount);
-        } else if (currentReward.type === 'ENERGY') {
-            addEnergy(claimedAmount);
-        } else if (currentReward.type === 'MEGA_CHEST') {
-            isFromChest = true;
-            const rolled = rollMegaChest();
-            claimedType = rolled.type;
-            claimedAmount = double ? rolled.amount * 2 : rolled.amount;
-            if (rolled.type === 'CRYSTAL') addCrystals(claimedAmount);
-            else if (rolled.type === 'GOLD') addGold(claimedAmount);
-            else if (rolled.type === 'ENERGY') addEnergy(claimedAmount);
-        }
-
         try {
-            const state = useGameStore.getState();
-            const userId = SyncService.getPrefixedUserId(state.vkUser, state.playerId);
-            const userDocRef = doc(db, USERS_COLLECTION, userId);
+            const store = useGameStore.getState();
+            const launchParams = typeof window !== 'undefined' ? window.location.search : '';
+            const userId = store.vkUser?.id ? `VK-${store.vkUser.id}` : store.playerId || 'DEVELOPER';
 
-            await updateDoc(userDocRef, {
-                lastDailyGiftClaimed: serverTimestamp(),
-                loginStreak: streak,
+            const res = await fetch('/api/game/daily-gift/claim', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    userId,
+                    isDev: true,
+                    double,
+                    operationId: `daily_gift_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+                    launchParams,
+                }),
             });
-        } catch (e) {
-            console.error('Failed to update daily gift in Firestore:', e);
+
+            if (res.ok) {
+                const json = await res.json();
+                if (json.ok && json.data) {
+                    const { streak: newStreak, awarded, gold, crystals, energy, lastDailyGiftClaimedTime: sTime } = json.data;
+                    useGameStore.setState({
+                        gold,
+                        crystals,
+                        energy,
+                        loginStreak: newStreak,
+                        lastDailyGiftClaimedTime: sTime,
+                    });
+                    setLastGiftClaimedTime(sTime);
+                    setDbLoginStreak(newStreak);
+
+                    const awardedType = awarded.crystals > 0 ? 'CRYSTAL' : awarded.energy > 0 ? 'ENERGY' : 'GOLD';
+                    const awardedAmount = awarded.crystals || awarded.energy || awarded.gold || 500;
+
+                    audioService.playSFX(AssetsMap.AUDIO.SFX_BUY || AssetsMap.AUDIO.SFX_CLICK);
+                    setRewardClaimed({
+                        type: awardedType as RewardType,
+                        amount: awardedAmount,
+                        isFromChest: newStreak === 7,
+                        label: awardedType === 'GOLD' ? 'Золота' : awardedType === 'CRYSTAL' ? 'Алмазов' : 'Энергии',
+                        icon: getRewardIcon(awardedType as RewardType),
+                    });
+                    setClaimedToday(true);
+                    setCanClaimDailyGift(false);
+                    useGameStore.getState().updateQuestProgress('OPEN_CHEST', 1);
+                }
+            } else {
+                const errData = await res.json().catch(() => ({}));
+                alert(errData.error || 'Не удалось получить ежедневный подарок');
+            }
+        } catch (err) {
+            console.error('Daily gift claim error:', err);
+        } finally {
+            setIsClaiming(false);
         }
-
-        // eslint-disable-next-line react-hooks/purity
-        const nowMs = Date.now();
-        useGameStore.setState({
-            lastDailyGiftClaimedTime: nowMs,
-            loginStreak: streak,
-        });
-        setLastGiftClaimedTime(Timestamp.fromMillis(nowMs));
-        setDbLoginStreak(streak);
-
-        setRewardClaimed({
-            type: claimedType,
-            amount: claimedAmount,
-            isFromChest,
-            label: claimedType === 'GOLD' ? 'Золота' : claimedType === 'CRYSTAL' ? 'Алмазов' : 'Энергии',
-            icon: getRewardIcon(claimedType as RewardType),
-        });
-        setClaimedToday(true);
-        setCanClaimDailyGift(false);
-        useGameStore.getState().updateQuestProgress('OPEN_CHEST', 1);
-        await syncService.syncPlayerData();
-        setIsClaiming(false);
     };
 
     const getRewardIcon = (type: RewardType) => {
@@ -349,83 +323,91 @@ export const DailyGiftWindow: React.FC<DailyGiftWindowProps> = ({ onClose }) => 
     };
 
     // Spin the wheel handler
-    const handleSpinWheel = () => {
+    const handleSpinWheel = async () => {
         if (isSpinning) return;
         if (!isFreeSpinAvailable) return;
 
         const store = useGameStore.getState();
+        const launchParams = typeof window !== 'undefined' ? window.location.search : '';
+        const userId = store.vkUser?.id ? `VK-${store.vkUser.id}` : store.playerId || 'DEVELOPER';
 
-        setIsSpinning(true);
-        audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
-
-        // Generate target sector index
-        const sectorIndex = getRandomSectorIndex();
-        setTargetSectorIndex(sectorIndex);
-        const sectorDegrees = 45;
-        const targetAngle = 360 - sectorIndex * sectorDegrees - 22.5;
-
-        // Add 5 full rotations (1800 deg) for a premium feel
-        const finalRotation = wheelRotation + 1800 + targetAngle - (wheelRotation % 360);
-        setWheelRotation(finalRotation);
-
-        // Tick sounds
-        let tickCount = 0;
-        const tickInterval = setInterval(() => {
-            if (tickCount < 18) {
-                audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
-                tickCount++;
-            } else {
-                clearInterval(tickInterval);
-            }
-        }, 180);
-
-        setTimeout(async () => {
-            clearInterval(tickInterval);
-            setIsSpinning(false);
-            const wonReward = WHEEL_REWARDS[sectorIndex];
-
-            // Award reward
-            if (wonReward.type === 'GOLD') {
-                store.addGold(wonReward.amount);
-            } else if (wonReward.type === 'CRYSTAL') {
-                store.addCrystals(wonReward.amount);
-            } else if (wonReward.type === 'ENERGY') {
-                store.addEnergy(wonReward.amount);
-            }
-
-            try {
-                const userId = SyncService.getPrefixedUserId(store.vkUser, store.playerId);
-                const userDocRef = doc(db, USERS_COLLECTION, userId);
-
-                await updateDoc(userDocRef, {
-                    lastWheelSpinTimeServer: serverTimestamp(),
-                });
-            } catch (e) {
-                console.error('Failed to update wheel spin in Firestore:', e);
-            }
-
-            const nowMs = Date.now();
-            useGameStore.setState({ lastWheelSpinTime: nowMs });
-            setLastWheelSpinTimeServer(Timestamp.fromMillis(nowMs));
-
-            audioService.playSFX(AssetsMap.AUDIO.SFX_BUY || AssetsMap.AUDIO.SFX_CLICK);
-
-            let labelText = '';
-            if (wonReward.type === 'GOLD') labelText = 'Золота';
-            else if (wonReward.type === 'CRYSTAL') labelText = 'Алмазов';
-            else if (wonReward.type === 'ENERGY') labelText = 'Энергии';
-
-            setRewardClaimed({
-                type: wonReward.type,
-                amount: wonReward.amount,
-                isFromChest: false,
-                label: labelText,
-                icon: wonReward.icon,
+        try {
+            const res = await fetch('/api/game/wheel/spin', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    userId,
+                    isDev: true,
+                    operationId: `wheel_spin_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+                    launchParams,
+                }),
             });
 
-            useGameStore.getState().updateQuestProgress('OPEN_CHEST', 1);
-            await syncService.syncPlayerData();
-        }, 4100);
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}));
+                alert(err.error || 'Колесо недоступно');
+                return;
+            }
+
+            const json = await res.json();
+            if (!json.ok || !json.data) return;
+
+            const { sectorIndex, reward, gold, crystals, energy, lastWheelSpinTime: sTime } = json.data;
+
+            setIsSpinning(true);
+            audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
+
+            setTargetSectorIndex(sectorIndex);
+            const sectorDegrees = 45;
+            const targetAngle = 360 - sectorIndex * sectorDegrees - 22.5;
+
+            // Add 5 full rotations (1800 deg) for a premium feel
+            const finalRotation = wheelRotation + 1800 + targetAngle - (wheelRotation % 360);
+            setWheelRotation(finalRotation);
+
+            // Tick sounds
+            let tickCount = 0;
+            const tickInterval = setInterval(() => {
+                if (tickCount < 18) {
+                    audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
+                    tickCount++;
+                } else {
+                    clearInterval(tickInterval);
+                }
+            }, 180);
+
+            setTimeout(async () => {
+                clearInterval(tickInterval);
+                setIsSpinning(false);
+
+                useGameStore.setState({
+                    gold,
+                    crystals,
+                    energy,
+                    lastWheelSpinTime: sTime,
+                });
+                setLastWheelSpinTimeServer(sTime);
+
+                audioService.playSFX(AssetsMap.AUDIO.SFX_BUY || AssetsMap.AUDIO.SFX_CLICK);
+
+                let labelText = '';
+                if (reward.type === 'GOLD') labelText = 'Золота';
+                else if (reward.type === 'CRYSTAL') labelText = 'Алмазов';
+                else if (reward.type === 'ENERGY') labelText = 'Энергии';
+
+                setRewardClaimed({
+                    type: reward.type,
+                    amount: reward.amount,
+                    isFromChest: false,
+                    label: labelText,
+                    icon: getRewardIcon(reward.type as RewardType),
+                });
+
+                useGameStore.getState().updateQuestProgress('OPEN_CHEST', 1);
+            }, 4100);
+        } catch (e) {
+            console.error('Wheel spin error:', e);
+        }
     };
 
     return (

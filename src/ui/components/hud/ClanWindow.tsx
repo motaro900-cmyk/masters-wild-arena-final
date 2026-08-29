@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../../../store/useGameStore';
 import { useShallow } from 'zustand/react/shallow';
-import { ClanMember, ClanData, CurrencyIcon, TabButton, EMBLEMS, ActionButton, ShopItem } from './Clan/ClanShared';
+import { ClanMember, ClanData, CurrencyIcon, TabButton, EMBLEMS, ShopItem } from './Clan/ClanShared';
 import { ClanBrowseTab } from './Clan/ClanBrowseTab';
 import { ClanCreateTab } from './Clan/ClanCreateTab';
 import { ClanLobbyTab } from './Clan/ClanLobbyTab';

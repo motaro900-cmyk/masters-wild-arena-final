@@ -8,11 +8,11 @@ module.exports = {
     {
       name: 'masters-wild-arena',
       script: 'server/vps-server.js',
-      instances: 'max',            // Run in cluster mode utilizing all CPU cores
-      exec_mode: 'cluster',
+      instances: 1,                // Run in single-process mode for in-memory mutex & atomic JSON storage safety
+      exec_mode: 'fork',
       autorestart: true,           // Autorestart on crash
       watch: false,                // Do not watch files in production
-      max_memory_restart: '1G',    // Restart if memory exceeds 1GB
+      max_memory_restart: '500M',  // Restart if memory exceeds 500MB
       env: {
         NODE_ENV: 'development',
         PORT: 3000

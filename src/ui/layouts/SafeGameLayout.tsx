@@ -4,6 +4,7 @@ import { useGameStore } from '../../store/useGameStore';
 import { SceneSwitcher } from '../components/SceneSwitcher';
 import { GameHUD } from '../components/GameHUD';
 import { ItemBuilder } from '../../components/dev/ItemBuilder';
+import { PerformanceHUD } from '../components/debug/PerformanceHUD';
 
 interface SafeGameLayoutProps {
     isPortrait?: boolean;
@@ -455,6 +456,8 @@ export const SafeGameLayout = ({ isPortrait = false, isMobile = false }: SafeGam
                     {showItemBuilder && <ItemBuilder onClose={() => setShowItemBuilder(false)} />}
                 </>
             )}
+
+            <PerformanceHUD />
         </div>
     );
 };

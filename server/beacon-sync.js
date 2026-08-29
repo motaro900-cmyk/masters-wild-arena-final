@@ -1,13 +1,10 @@
 /**
  * @owner: @Motaro900 / Backend Team
  * @purpose: Handles persistent saving of game state snapshots on app close via navigator.sendBeacon.
- *
- * Migrated from REST API + Web API key to Firebase Admin SDK.
- * Also adds VK signature verification that was previously absent (only userId prefix was checked).
- *
- * sendBeacon does not support custom headers, so launchParams are passed in the request body.
+ *           Saves locally to VPS disk (with optional Firestore mirror).
  */
 
+import { saveLocalDoc } from './localStore.js';
 import { saveFirestoreRestDoc } from './firebaseAdmin.js';
 import { verifyVkSign, setCorsHeaders } from './vkAuth.js';
 
@@ -99,9 +96,17 @@ export default async function handler(req, res) {
             }
         }
 
-        await saveFirestoreRestDoc(USERS_COLLECTION, userId, snapshot);
+        // 1. Primary: Save locally on VPS disk
+        await saveLocalDoc(USERS_COLLECTION, userId, snapshot);
+        console.log(`[beacon-sync] ✅ Saved beacon locally for ${userId}`);
 
-        console.log(`[beacon-sync] ✅ Saved beacon for ${userId}`);
+        // 2. Secondary (Optional): Mirror to Firestore if configured
+        if (process.env.FIREBASE_PRIVATE_KEY && process.env.FIREBASE_CLIENT_EMAIL) {
+            saveFirestoreRestDoc(USERS_COLLECTION, userId, snapshot).catch((err) => {
+                console.warn(`[beacon-sync] Firestore mirror skipped/failed for ${userId}:`, err.message || err);
+            });
+        }
+
         return res.status(200).json({ ok: true });
     } catch (error) {
         console.error('[beacon-sync] ❌ Error saving beacon:', error);

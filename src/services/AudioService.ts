@@ -4,7 +4,7 @@ import { AssetsMap } from '../configs/AssetsMap';
 // PixiApp is dynamically imported inside event handlers to prevent pixi.js (562 kB)
 // from being pulled into the startup bundle via the static import chain.
 import { SoundManager } from '../engine/systems/SoundManager';
-import { AUDIO_DATABASE, AUDIO_BUS_VOLUMES, SoundConfig, AudioBusType } from '../configs/AudioDatabase';
+import { AUDIO_DATABASE, AUDIO_BUS_VOLUMES, AudioBusType } from '../configs/AudioDatabase';
 
 interface ActiveSoundInstance {
     howl: Howl;

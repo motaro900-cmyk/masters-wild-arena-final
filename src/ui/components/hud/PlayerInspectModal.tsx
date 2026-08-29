@@ -12,7 +12,6 @@ import { ITEMS_DATABASE } from '../../../game/configs/ItemsConfig';
 import { calculateTotalPower } from './Matchmaking/utils/matchmakingUtils';
 import { audioService } from '../../../services/AudioService';
 import { AssetsMap } from '../../../configs/AssetsMap';
-import { resolveAvatarPath } from '../../../configs/ProfileCustomization';
 import { getItemAtlasStyle } from '../../../utils/itemAtlas';
 
 const getTemplateId = (id: string) => {
@@ -213,7 +212,6 @@ const Diamond: React.FC<{ size?: number; style?: React.CSSProperties }> = ({ siz
 /* ══════════════════════════════════════════════════════════════════════════ */
 export const PlayerInspectModal: React.FC = () => {
     const inspectPlayerId = useGameStore((s) => s.inspectPlayerId);
-    const isMobile = useGameStore((s) => s.isMobile);
     const inspectPlayerName = useGameStore((s) => s.inspectPlayerName);
     const myPlayerId = useGameStore((s) => s.playerId);
     const myVkUser = useGameStore((s) => s.vkUser);

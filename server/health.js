@@ -1,9 +1,9 @@
 /**
  * @owner: @Motaro900 / Backend Team
- * @purpose: Health check endpoint for verifying production readiness, VK secret configuration, and build status.
+ * @purpose: Pure standalone health check endpoint for Russian VPS hosting.
  */
 
-import { getGoogleAccessToken } from './firebaseAdmin.js';
+const START_TIME = Date.now();
 
 export default async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Credentials', 'true');
@@ -17,29 +17,14 @@ export default async function handler(req, res) {
     }
 
     const hasVkSecret = Boolean(process.env.VK_APP_SECRET && process.env.VK_APP_SECRET.trim().length > 0);
-    let firebaseAdminInitialized = false;
-    let firebaseAdminError = null;
-    let oauthTokenActive = false;
-
-    try {
-        const { token } = await getGoogleAccessToken();
-        if (token) {
-            oauthTokenActive = true;
-            firebaseAdminInitialized = true;
-        }
-    } catch (err) {
-        firebaseAdminInitialized = false;
-        firebaseAdminError = err.message || String(err);
-    }
+    const uptimeSec = Math.floor((Date.now() - START_TIME) / 1000);
 
     return res.status(200).json({
         status: 'ok',
-        timestamp: new Date().toISOString(),
+        version: '1.2.0-rc1',
+        uptime: uptimeSec,
+        storage: 'local_json_atomic',
         vkSecretConfigured: hasVkSecret,
-        firebaseAdminConfigured: firebaseAdminInitialized,
-        oauthTokenActive: oauthTokenActive,
-        firebaseAdminError: firebaseAdminError,
-        version: '1.1.5',
-        environment: process.env.VERCEL_ENV || 'development',
+        timestamp: new Date().toISOString(),
     });
 }

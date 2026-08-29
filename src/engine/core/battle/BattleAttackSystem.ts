@@ -1,4 +1,3 @@
-import { gsap } from 'gsap';
 import { HeroUnit } from '../../entities/HeroUnit';
 import { EffectsManager } from '../../systems/EffectsManager';
 import { audioService } from '../../../services/AudioService';

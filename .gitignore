@@ -39,3 +39,8 @@ build/
 
 # QA Reports and generated smoke test screenshots
 docs/reports/
+
+# Environment and server data
+.env
+.env.*
+server/data/

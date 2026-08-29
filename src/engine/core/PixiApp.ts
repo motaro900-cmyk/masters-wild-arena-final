@@ -81,13 +81,26 @@ export class PixiApp {
 
         if (typeof window !== 'undefined') {
             document.addEventListener('visibilitychange', () => {
-                this.updateTickerState();
+                const isHidden = typeof document !== 'undefined' && document.hidden;
+                if (isHidden) {
+                    if (this.pixiApp?.ticker?.started) {
+                        this.pixiApp.ticker.stop();
+                    }
+                    gsap.ticker.sleep();
+                } else {
+                    gsap.ticker.wake();
+                    this.updateTickerState();
+                }
             });
 
             this.storeUnsubscribe = useGameStore.subscribe((state: any, prevState: any) => {
-                this.updateTickerState();
-                if (state && prevState && state.graphicsQuality !== prevState.graphicsQuality) {
-                    this.applyQualityFilter(state.graphicsQuality);
+                if (state && prevState) {
+                    if (state.activeScreen !== prevState.activeScreen) {
+                        this.updateTickerState();
+                    }
+                    if (state.graphicsQuality !== prevState.graphicsQuality) {
+                        this.applyQualityFilter(state.graphicsQuality);
+                    }
                 }
             });
         }

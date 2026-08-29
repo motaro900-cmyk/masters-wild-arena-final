@@ -64,7 +64,6 @@ describe('inventorySlice', () => {
             // stick is starting, let's make sure it's unequipped first
             state.heroEquipment.panda.WEAPONS = null;
 
-            const initialGoldCount = 0;
             state.addGold.mockImplementation((price: number) => {
                 get().gold = (get().gold || 0) + price;
             });

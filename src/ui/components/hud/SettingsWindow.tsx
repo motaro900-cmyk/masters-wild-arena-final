@@ -131,27 +131,11 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
     const handleClearCache = async () => {
         try {
             const store = useGameStore.getState() as any;
-            const { syncService, SyncService } = await import('../../../services/SyncService');
-            const { db, USERS_COLLECTION } = await import('../../../utils/firebase');
-            const { doc, deleteDoc } = await import('firebase/firestore');
+            const { syncService } = await import('../../../services/SyncService');
 
-            // Disable all synchronization before deleting document and reloading page
+            // Disable all synchronization before resetting and reloading page
             syncService.disableSync();
             syncService.stopAutoSync();
-
-            // 1. Удаляем документы пользователя из Firebase (чтобы сбросить аватар и имя)
-            const userId = SyncService.getPrefixedUserId(store.vkUser, store.playerId);
-            if (userId) {
-                const playerRef = doc(db, USERS_COLLECTION, userId);
-                await deleteDoc(playerRef);
-                console.log('Player doc deleted:', userId);
-            }
-
-            // 2. Удаляем сообщения этого игрока и дефолтного "Мастер" из чата
-            await syncService.deletePlayerMessages('Мастер');
-            if (store.name && store.name !== 'Мастер') {
-                await syncService.deletePlayerMessages(store.name);
-            }
 
             // 3. Сбрасываем прогресс в памяти
             if (store.resetAllProgress) store.resetAllProgress();

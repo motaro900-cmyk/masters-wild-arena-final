@@ -489,9 +489,37 @@ export const createPlayerSlice = (set: any, get: any) => {
                 return;
             }
 
-            get().addCrystals(50);
-            set({ claimedSocialRewards: [...rewards, 'favorites'] });
-            syncService.debouncedSync();
+            try {
+                const userId = state.vkUser?.id ? `VK-${state.vkUser.id}` : 'DEVELOPER';
+                const isDev = import.meta.env.DEV === true;
+                const opId = `social_fav_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+                const launchParams = window.location.search || '';
+
+                const res = await fetch('/api/game/reward/claim', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        userId,
+                        isDev,
+                        rewardType: 'SOCIAL_FAVORITE',
+                        operationId: opId,
+                        launchParams,
+                    }),
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    set({
+                        crystals: data.data?.crystals ?? (state.crystals + 50),
+                        claimedSocialRewards: [...rewards, 'favorites'],
+                    });
+                }
+            } catch (err) {
+                console.warn('claimFavoriteReward server sync failed, falling back:', err);
+                get().addCrystals(50);
+                set({ claimedSocialRewards: [...rewards, 'favorites'] });
+                syncService.debouncedSync();
+            }
         },
 
         claimGroupReward: async (force: boolean = false) => {
@@ -507,6 +535,32 @@ export const createPlayerSlice = (set: any, get: any) => {
                     return;
                 }
 
+                const userId = state.vkUser?.id ? `VK-${state.vkUser.id}` : 'DEVELOPER';
+                const isDev = import.meta.env.DEV === true;
+                const opId = `social_group_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+                const launchParams = window.location.search || '';
+
+                const res = await fetch('/api/game/reward/claim', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        userId,
+                        isDev,
+                        rewardType: 'SOCIAL_GROUP',
+                        operationId: opId,
+                        launchParams,
+                    }),
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    set({
+                        crystals: data.data?.crystals ?? (state.crystals + 50),
+                        claimedSocialRewards: [...rewards, 'group'],
+                    });
+                }
+            } catch (err) {
+                console.warn('claimGroupReward server sync failed, falling back:', err);
                 get().addCrystals(50);
                 set({ claimedSocialRewards: [...rewards, 'group'] });
                 syncService.debouncedSync();

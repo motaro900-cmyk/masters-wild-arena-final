@@ -66,13 +66,10 @@ export const createQuestSlice = (set: any, get: any) => ({
         }
         isRefreshingDaily = true;
         lastDailyRefreshAttempt = now;
-        const { SyncService } = await import('../../services/SyncService');
         const { TimeService } = await import('../../utils/TimeService');
         const { useGameStore } = await import('../useGameStore');
 
         const state = useGameStore.getState();
-        const userId = SyncService.getPrefixedUserId(state.vkUser, state.playerId);
-
         const serverDate = new Date(TimeService.now());
 
         const isNewDayMSK = (lastTs: number) => {
@@ -101,128 +98,22 @@ export const createQuestSlice = (set: any, get: any) => ({
             return { selected, selectedBp };
         };
 
-        // If not a VK user, run local-only refresh and update state (which persists to localStorage)
-        if (!userId.startsWith('VK-')) {
-            console.log('[questSlice] Local-only refresh for non-VK/Guest/Developer user:', userId);
-            const lastDailyRefresh = state.lastDailyRefresh || 0;
-            const existingQuests = state.dailyQuests || [];
+        const lastDailyRefresh = state.lastDailyRefresh || 0;
+        const existingQuests = state.dailyQuests || [];
+        const existingBpQuests = state.bpDailyQuests || [];
 
-            if (existingQuests.length === 0 || isNewDayMSK(lastDailyRefresh)) {
-                const { selected, selectedBp } = generateQuestsLocally();
-                set({
-                    dailyQuests: selected,
-                    bpDailyQuests: selectedBp,
-                    lastDailyRefresh: serverDate.getTime(),
-                    dailyAdWatchesCount: 0,
-                });
-                console.log('[questSlice] Quests generated locally for Guest/Developer user');
-            }
-            isRefreshingDaily = false;
-            return;
-        }
-
-        const { db, USERS_COLLECTION } = await import('../../utils/firebase');
-        const { doc, runTransaction, Timestamp } = await import('firebase/firestore');
-        const playerRef = doc(db, USERS_COLLECTION, userId);
-
-        try {
-            await runTransaction(db, async (transaction) => {
-                const docSnap = await transaction.get(playerRef);
-
-                // If document does not exist yet (brand new player), initialize quests in both database and state
-                if (!docSnap.exists()) {
-                    const { selected, selectedBp } = generateQuestsLocally();
-                    transaction.set(playerRef, {
-                        dailyQuests: selected,
-                        bpDailyQuests: selectedBp,
-                        dailyAdWatchesCount: 0,
-                        lastResetDate: Timestamp.fromDate(serverDate),
-                        lastDailyRefresh: serverDate.getTime(),
-                    });
-
-                    set({
-                        dailyQuests: selected,
-                        bpDailyQuests: selectedBp,
-                        lastDailyRefresh: serverDate.getTime(),
-                        dailyAdWatchesCount: 0,
-                    });
-                    console.log('[questSlice] Brand new player — initialized quests in Firestore & state');
-                    return;
-                }
-
-                const data = docSnap.data();
-                const lastResetDateTs = data.lastResetDate;
-
-                let shouldReset = false;
-                let lastResetDate: Date | null = null;
-                if (lastResetDateTs) {
-                    if (typeof lastResetDateTs.toDate === 'function') {
-                        lastResetDate = lastResetDateTs.toDate();
-                    } else if (lastResetDateTs instanceof Date) {
-                        lastResetDate = lastResetDateTs;
-                    } else if (typeof lastResetDateTs === 'number' || typeof lastResetDateTs === 'string') {
-                        lastResetDate = new Date(lastResetDateTs);
-                    }
-                }
-
-                if (!lastResetDate || isNaN(lastResetDate.getTime())) {
-                    shouldReset = true;
-                } else {
-                    const MSK_OFFSET = 3 * 60 * 60 * 1000;
-                    const lastMSK = lastResetDate.getTime() + MSK_OFFSET;
-                    const serverMSK = serverDate.getTime() + MSK_OFFSET;
-                    const DAY_MS = 24 * 60 * 60 * 1000;
-                    shouldReset = Math.floor(serverMSK / DAY_MS) > Math.floor(lastMSK / DAY_MS);
-                }
-
-                // Force reset if quests are empty even though lastResetDate is today
-                // (happens when fullStateJSON had empty dailyQuests or bpDailyQuests saved)
-                const existingQuests = data.dailyQuests;
-                const existingBpQuests = data.bpDailyQuests;
-                if (
-                    !shouldReset &&
-                    (!existingQuests ||
-                        existingQuests.length === 0 ||
-                        !existingBpQuests ||
-                        existingBpQuests.length === 0)
-                ) {
-                    console.log('[questSlice] dailyQuests or bpDailyQuests empty in Firebase — forcing reset');
-                    shouldReset = true;
-                }
-
-                if (shouldReset) {
-                    const { selected, selectedBp } = generateQuestsLocally();
-
-                    transaction.update(playerRef, {
-                        dailyQuests: selected,
-                        bpDailyQuests: selectedBp,
-                        dailyAdWatchesCount: 0,
-                        lastResetDate: Timestamp.fromDate(serverDate),
-                        lastDailyRefresh: serverDate.getTime(),
-                    });
-
-                    set({
-                        dailyQuests: selected,
-                        bpDailyQuests: selectedBp,
-                        lastDailyRefresh: serverDate.getTime(),
-                        dailyAdWatchesCount: 0,
-                    });
-                } else {
-                    console.log('[questSlice] dailyQuests up to date in Firebase — loading from Firebase');
-                    set({
-                        dailyQuests: data.dailyQuests || [],
-                        bpDailyQuests: data.bpDailyQuests || [],
-                        lastDailyRefresh: data.lastDailyRefresh || serverDate.getTime(),
-                        dailyAdWatchesCount: data.dailyAdWatchesCount || 0,
-                    });
-                }
+        if (existingQuests.length === 0 || existingBpQuests.length === 0 || isNewDayMSK(lastDailyRefresh)) {
+            const { selected, selectedBp } = generateQuestsLocally();
+            set({
+                dailyQuests: selected,
+                bpDailyQuests: selectedBp,
+                lastDailyRefresh: serverDate.getTime(),
+                dailyAdWatchesCount: 0,
             });
-        } catch (err) {
-            console.error('[questSlice] Transaction refreshDailyQuests failed:', err);
-        } finally {
-            // Always release mutex so future calls can proceed
-            isRefreshingDaily = false;
+            syncService.debouncedSync();
         }
+
+        isRefreshingDaily = false;
     },
 
     updateQuestProgress: (type: string, amount: number) => {

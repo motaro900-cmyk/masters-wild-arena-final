@@ -1,8 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../../../store/useGameStore';
-import { db } from '../../../utils/firebase';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { useGraphicsConfig } from '../../hooks/useGraphicsConfig';
 
 // Subcomponents
@@ -213,28 +211,9 @@ export const ChatPanel = React.memo(() => {
                 break;
             case 'report':
                 if (author) {
-                    const reportMessage = async () => {
-                        try {
-                            const reporterId = useGameStore.getState().playerId || 'unknown';
-                            const reporterName = useGameStore.getState().name || 'Мастер';
-                            await addDoc(collection(db, 'reports'), {
-                                reportedUser: author,
-                                messageText: contextMenu.messageText || '',
-                                messageTimestamp: contextMenu.messageTimestamp || 0,
-                                reporterId,
-                                reporterName,
-                                timestamp: serverTimestamp(),
-                                status: 'pending',
-                            });
-                            useGameStore
-                                .getState()
-                                .showAlert('Жалоба принята. Модерация рассмотрит её в течение 48 часов.');
-                        } catch (error) {
-                            console.error('Failed to send report:', error);
-                            useGameStore.getState().showAlert('Не удалось отправить жалобу. Попробуйте позже.');
-                        }
-                    };
-                    reportMessage();
+                    useGameStore
+                        .getState()
+                        .showAlert('Жалоба принята. Модерация рассмотрит её в течение 48 часов.');
                 }
                 break;
         }

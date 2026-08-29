@@ -3,13 +3,11 @@ import { gsap } from 'gsap';
 import { HeroUnit } from '../entities/HeroUnit';
 import { EffectsManager } from '../systems/EffectsManager';
 import { AssetsMap } from '../../configs/AssetsMap';
-import { audioService } from '../../services/AudioService';
 import { PixiApp } from './PixiApp';
 import { useGameStore } from '../../store/useGameStore';
 import { ATB_THRESHOLD as ATB_THRESHOLD_CONST } from '../../game/configs/GameConstants';
 import {
     getAbilityConfig,
-    getAbilityConfigByRole,
     type StatusType,
     type PassiveContext,
 } from '../../configs/AbilityConfig';
@@ -86,7 +84,6 @@ export class BattleEngine {
     public enemyStats: ICombatStats | null = null;
     private currentArenaBgUrl: string | null = null;
     private activeRafIds: number[] = [];
-    private tweensCancelled: boolean = false;
 
     public isCombatRunning: boolean = false;
     public isInitialized: boolean = false;
@@ -155,14 +152,10 @@ export class BattleEngine {
             this.maxSingleHitDamage = 0;
             this.localCombatLogs = [];
             this.isCombatEndChecked = false;
-            this.tweensCancelled = false;
             this.activeRafIds = [];
 
             const pCrit = Number(playerStats?.critChance) || 10;
-            const pDodge = Number(playerStats?.evasion ?? playerStats?.dodge) || 5;
-
             const eCrit = Number(enemyStats?.critChance ?? enemyStats?.crit) || 10;
-            const eDodge = Number(enemyStats?.dodge ?? enemyStats?.evasion) || 5;
 
             this.playerStats = {
                 hp: Number(playerStats?.hp) || 100,
@@ -226,13 +219,13 @@ export class BattleEngine {
             await this.enemy.updateEquipment({});
 
             const q = state.graphicsQuality;
-            let maxParticles = 20; // default for 'LOW'
+            let maxParticles = 0; // 0 for 'LOW' to maximize mobile framerate
             if (q === 'MEDIUM') {
-                maxParticles = 40;
+                maxParticles = state.isMobile ? 15 : 30;
             } else if (q === 'HIGH') {
-                maxParticles = 80;
+                maxParticles = state.isMobile ? 25 : 60;
             } else if (q === 'ULTRA') {
-                maxParticles = 130;
+                maxParticles = state.isMobile ? 40 : 100;
             }
 
             // Create background particles container & array
@@ -674,7 +667,6 @@ export class BattleEngine {
     }
 
     public cancelTweens(): void {
-        this.tweensCancelled = true;
         this.activeRafIds.forEach((id) => {
             cancelAnimationFrame(id);
         });

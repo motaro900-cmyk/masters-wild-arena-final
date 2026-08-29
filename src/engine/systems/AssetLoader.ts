@@ -59,7 +59,6 @@ export class AssetLoader {
         preloadItemsAtlas();
 
         const optimizedManifest = manifest.map((path) => {
-            const normalized = path.replace(/\\/g, '/').toLowerCase();
             const shouldKeepPng = false;
 
             // 1. Заменяем .png/.jpg на .webp, кроме героев, скинов и боссов
@@ -358,7 +357,6 @@ export class AssetLoader {
             const optimizedList = preloadList
                 .map((path) => {
                     if (!path) return '';
-                    const normalized = path.replace(/\\/g, '/').toLowerCase();
                     const shouldKeepPng = false;
 
                     let newPath = path;

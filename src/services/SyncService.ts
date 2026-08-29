@@ -21,13 +21,6 @@ import { getVkUserInfo } from '../utils/VKBridge';
 import { TimeService } from '../utils/TimeService';
 import { bootController } from '../bootstrap/BootController';
 
-// --- Sub-service imports ---
-import * as Chat from './ChatService';
-import * as Mail from './MailService';
-import * as Social from './SocialService';
-import * as Admin from './AdminService';
-import { resolveFriendProfiles } from './SocialService';
-
 export class SyncService {
     // Anchor to window so HMR module reloads reuse the same instance
     private static get instance(): SyncService {
@@ -452,7 +445,7 @@ export class SyncService {
             const response = await fetch(
                 `/api/profile-load?userId=${encodeURIComponent(userId)}&isDev=${isLocalhost}&launchParams=${encodeURIComponent(launchParamsStr)}`,
                 {
-                    signal: AbortSignal.timeout(10000),
+                    signal: AbortSignal.timeout(3500),
                 },
             );
 
@@ -495,6 +488,7 @@ export class SyncService {
                 if (dbFriendIds.length > 0) {
                     setTimeout(async () => {
                         try {
+                            const { resolveFriendProfiles } = await import('./SocialService');
                             const freshFriends = await resolveFriendProfiles(dbFriendIds);
                             const { useGameStore } = await import('../store/useGameStore');
                             useGameStore.setState({ friends: freshFriends, isSystemUpdate: true });
@@ -753,105 +747,160 @@ export class SyncService {
     // ─── Façade: Chat ──────────────────────────────────────────────────────────
 
     public async sendChatMessage(message: any): Promise<void> {
+        const Chat = await import('./ChatService');
         return Chat.sendChatMessage(message);
     }
     public async deletePlayerMessages(playerName: string): Promise<void> {
+        const Chat = await import('./ChatService');
         return Chat.deletePlayerMessages(playerName);
     }
     public async wipeGlobalChat(): Promise<void> {
+        const Chat = await import('./ChatService');
         return Chat.wipeGlobalChat();
     }
     public subscribeToChat(callback: (messages: any[]) => void): () => void {
-        return Chat.subscribeToChat(this.trackUnsubscribe.bind(this), callback);
+        let unsub = () => {};
+        import('./ChatService').then((Chat) => {
+            unsub = Chat.subscribeToChat(this.trackUnsubscribe.bind(this), callback);
+        });
+        return () => unsub();
     }
     public async sendPrivateMessage(senderId: string, recipientId: string, message: any): Promise<void> {
+        const Chat = await import('./ChatService');
         return Chat.sendPrivateMessage(senderId, recipientId, message);
     }
     public subscribeToPrivateMessages(userId: string, callback: (messages: any[]) => void): () => void {
-        return Chat.subscribeToPrivateMessages(this.trackUnsubscribe.bind(this), userId, callback);
+        let unsub = () => {};
+        import('./ChatService').then((Chat) => {
+            unsub = Chat.subscribeToPrivateMessages(this.trackUnsubscribe.bind(this), userId, callback);
+        });
+        return () => unsub();
     }
     public subscribeToClanChat(clanId: string, callback: (messages: any[]) => void): () => void {
-        return Chat.subscribeToClanChat(this.trackUnsubscribe.bind(this), clanId, callback);
+        let unsub = () => {};
+        import('./ChatService').then((Chat) => {
+            unsub = Chat.subscribeToClanChat(this.trackUnsubscribe.bind(this), clanId, callback);
+        });
+        return () => unsub();
     }
 
     // ─── Façade: Mail ──────────────────────────────────────────────────────────
 
     public async sendMail(userId: string, mailData: any): Promise<void> {
+        const Mail = await import('./MailService');
         return Mail.sendMail(userId, mailData);
     }
     public async updateMail(userId: string, mailId: string, updates: Partial<any>): Promise<void> {
+        const Mail = await import('./MailService');
         return Mail.updateMail(userId, mailId, updates);
     }
     public async deleteMail(userId: string, mailId: string): Promise<void> {
+        const Mail = await import('./MailService');
         return Mail.deleteMail(userId, mailId);
     }
     public async updateMultipleMails(userId: string, mailIds: string[], updates: Partial<any>): Promise<void> {
+        const Mail = await import('./MailService');
         return Mail.updateMultipleMails(userId, mailIds, updates);
     }
     public subscribeToMail(userId: string, callback: (mails: any[]) => void): () => void {
-        return Mail.subscribeToMail(this.trackUnsubscribe.bind(this), userId, callback);
+        let unsub = () => {};
+        import('./MailService').then((Mail) => {
+            unsub = Mail.subscribeToMail(this.trackUnsubscribe.bind(this), userId, callback);
+        });
+        return () => unsub();
     }
 
     // ─── Façade: Social ────────────────────────────────────────────────────────
 
     public async sendFriendRequest(targetId: string, senderData: any): Promise<boolean> {
+        const Social = await import('./SocialService');
         return Social.sendFriendRequest(targetId, senderData);
     }
     public subscribeToFriendRequests(userId: string, callback: (requests: any[]) => void): () => void {
-        return Social.subscribeToFriendRequests(this.trackUnsubscribe.bind(this), userId, callback);
+        let unsub = () => {};
+        import('./SocialService').then((Social) => {
+            unsub = Social.subscribeToFriendRequests(this.trackUnsubscribe.bind(this), userId, callback);
+        });
+        return () => unsub();
     }
     public async deleteFriendRequest(userId: string, requestId: string): Promise<void> {
+        const Social = await import('./SocialService');
         return Social.deleteFriendRequest(userId, requestId);
     }
     public subscribeToOwnProfile(userId: string, callback: (data: any) => void): () => void {
-        return Social.subscribeToOwnProfile(this.trackUnsubscribe.bind(this), userId, callback);
+        let unsub = () => {};
+        import('./SocialService').then((Social) => {
+            unsub = Social.subscribeToOwnProfile(this.trackUnsubscribe.bind(this), userId, callback);
+        });
+        return () => unsub();
     }
     public async isNicknameUnique(name: string, currentUserId?: string, guestUserId?: string): Promise<boolean> {
+        const Social = await import('./SocialService');
         return Social.isNicknameUnique(name, currentUserId, guestUserId);
     }
     public async getPlayerIdByName(name: string): Promise<string | null> {
+        const Social = await import('./SocialService');
         return Social.getPlayerIdByName(name);
     }
     public async resolveFriendProfiles(friendIds: string[]): Promise<any[]> {
+        const Social = await import('./SocialService');
         return Social.resolveFriendProfiles(friendIds);
     }
 
     // ─── Façade: Admin ─────────────────────────────────────────────────────────
 
     public async getAllPlayers(): Promise<any[]> {
+        const Admin = await import('./AdminService');
         return Admin.getAllPlayers();
     }
     public subscribeToAllPlayers(callback: (players: any[]) => void): () => void {
-        return Admin.subscribeToAllPlayers(this.trackUnsubscribe.bind(this), callback);
+        let unsub = () => {};
+        import('./AdminService').then((Admin) => {
+            unsub = Admin.subscribeToAllPlayers(this.trackUnsubscribe.bind(this), callback);
+        });
+        return () => unsub();
     }
     public async sendFeedback(data: any): Promise<void> {
+        const Admin = await import('./AdminService');
         return Admin.sendFeedback(data);
     }
     public async getAllFeedback(): Promise<any[]> {
+        const Admin = await import('./AdminService');
         return Admin.getAllFeedback();
     }
     public async deleteFeedback(id: string): Promise<void> {
+        const Admin = await import('./AdminService');
         return Admin.deleteFeedback(id);
     }
     public async searchPlayerById(playerId: string): Promise<any | null> {
+        const Admin = await import('./AdminService');
         return Admin.searchPlayerById(playerId);
     }
     public async searchPlayersGlobal(searchTerm: string): Promise<any[]> {
+        const Admin = await import('./AdminService');
         return Admin.searchPlayersGlobal(searchTerm);
     }
     public async getGlobalPlayers(limitCount = 20): Promise<any[]> {
+        const Admin = await import('./AdminService');
         return Admin.getGlobalPlayers(limitCount);
     }
     public subscribeToGlobalLeaders(limitCount = 50, callback: (leaders: any[]) => void): () => void {
-        return Admin.subscribeToGlobalLeaders(this.trackUnsubscribe.bind(this), limitCount, callback);
+        let unsub = () => {};
+        import('./AdminService').then((Admin) => {
+            unsub = Admin.subscribeToGlobalLeaders(this.trackUnsubscribe.bind(this), limitCount, callback);
+        });
+        return () => unsub();
     }
     public async updateRemotePlayerData(userId: string, data: any): Promise<void> {
+        const Admin = await import('./AdminService');
         return Admin.updateRemotePlayerData(userId, data);
     }
     public async sendBroadcastMail(mailData: any): Promise<void> {
+        const Admin = await import('./AdminService');
         return Admin.sendBroadcastMail(mailData);
     }
     public async distributeSeasonRewards(): Promise<number> {
+        const Admin = await import('./AdminService');
         return Admin.distributeSeasonRewards();
     }
 

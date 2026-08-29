@@ -3,6 +3,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../../../store/useGameStore';
 import { ITEMS_DATABASE } from '../../../game/configs/ItemsConfig';
 import { lazyWithRetry } from '../../../utils/LazyWithRetry';
+import { BaseWindow } from './BaseWindow';
+import { WindowLoadingSpinner } from './WindowLoadingSpinner';
+import { useGraphicsConfig } from '../../hooks/useGraphicsConfig';
 
 // Window Components
 const FriendsWindow = lazyWithRetry(() => import('./FriendsWindow'));
@@ -47,6 +50,7 @@ interface WindowManagerProps {
 
 export const WindowManager: React.FC<WindowManagerProps> = ({ activeWindow, setActiveWindow, setShowAdmin }) => {
     const isMobile = useGameStore((state: any) => state.isMobile);
+    const gfx = useGraphicsConfig();
 
     // PC: 1280x850px (fits 1920x1080 perfectly)
     // Mobile: 980x700px (more compact, leaves margins on smaller phone displays)
@@ -71,9 +75,9 @@ export const WindowManager: React.FC<WindowManagerProps> = ({ activeWindow, setA
                         right: 0,
                         bottom: 0,
                         zIndex: 100,
-                        backgroundColor: 'rgba(0, 0, 0, 0.6)',
-                        backdropFilter: 'blur(4px)',
-                        WebkitBackdropFilter: 'blur(4px)',
+                        backgroundColor: gfx.isLow ? 'rgba(0, 0, 0, 0.75)' : 'rgba(0, 0, 0, 0.6)',
+                        backdropFilter: gfx.isLow ? 'none' : 'blur(4px)',
+                        WebkitBackdropFilter: gfx.isLow ? 'none' : 'blur(4px)',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',

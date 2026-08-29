@@ -26,19 +26,41 @@ export type BootAction =
     | { type: 'BEACON_SYNC' }
     | { type: 'FLUSH_LOGS'; payload: { text: string } };
 
+// Safe fetch with AbortSignal timeout
+export const fetchWithTimeout = async (
+    url: string,
+    options: RequestInit = {},
+    timeoutMs: number = 3000,
+): Promise<Response> => {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+        const response = await fetch(url, {
+            ...options,
+            signal: controller.signal,
+        });
+        clearTimeout(timer);
+        return response;
+    } catch (err) {
+        clearTimeout(timer);
+        throw err;
+    }
+};
+
 // Helper for fetching with retries (used by resolveVK and calibrateTime)
 const fetchWithRetry = async (
     url: string,
     options: RequestInit = {},
-    retries: number = 3,
-    delay: number = 1500,
+    retries: number = 2,
+    delay: number = 1000,
+    timeoutMs: number = 2500,
 ): Promise<Response> => {
     let lastErr: any = null;
     for (let i = 0; i < retries; i++) {
         const start = Date.now();
         try {
             console.log(`[BootController] Fetching ${url} (Attempt ${i + 1}/${retries})...`);
-            const response = await fetch(url, options);
+            const response = await fetchWithTimeout(url, options, timeoutMs);
             const duration = Date.now() - start;
             console.log(
                 `[BootController] Fetch ${url} (Attempt ${i + 1}/${retries}) resolved in ${duration}ms. Status: ${response.status} (${response.statusText})`,
@@ -818,51 +840,6 @@ class BootController {
 
         })();
 
-        // 3. Obtain Firebase Custom Auth Token and authenticate the client in parallel
-        const authTokenPromise = (async () => {
-            try {
-                console.log('[BootController] Requesting Custom Auth Token...');
-                const queryParams = isLocalhost 
-                    ? `?vk_user_id=${this.userId.replace('VK-', '')}` 
-                    : window.location.search;
-                const tokenRes = await fetchWithRetry(
-                    `/api/auth-token${queryParams}`,
-                    {
-                        method: 'GET',
-                        cache: 'no-cache',
-                        signal: AbortSignal.timeout(3500),
-                    },
-                    1,
-                    1000,
-                );
-                const tokenData = await tokenRes.json();
-                if (tokenData && tokenData.token) {
-                    let firebaseAuthSuccess = false;
-                    try {
-                        const { auth } = await import('../utils/firebase');
-                        const { signInWithCustomToken } = await import('firebase/auth');
-                        let timeoutId: ReturnType<typeof setTimeout>;
-                        await Promise.race([
-                            signInWithCustomToken(auth, tokenData.token),
-                            new Promise((_, reject) => {
-                                timeoutId = setTimeout(() => reject(new Error('Firebase signInWithCustomToken timed out (2.5s)')), 2500);
-                            }),
-                        ]);
-                        clearTimeout(timeoutId!);
-                        firebaseAuthSuccess = true;
-                        console.log(`[BootController] Firebase client authenticated successfully: ${firebaseAuthSuccess}`);
-                    } catch (clientAuthErr: any) {
-                        firebaseAuthSuccess = false;
-                        console.warn('[BootController] Firebase client SDK auth timed out/failed (TSPU/Direct Google API restriction). Continuing via Vercel Serverless API proxy:', clientAuthErr.message || clientAuthErr);
-                    }
-                } else {
-                    console.warn('[BootController] Custom Auth Token not provided. Continuing via Vercel Serverless API proxy.');
-                }
-            } catch (err: any) {
-                console.warn('[BootController] Auth Token fetch failed. Continuing via Vercel Serverless API proxy:', err.message || err);
-            }
-        })();
-
         // 3. VK initialization and profile fetch
         const vkPromise = (async () => {
             this.startDiagnostic('VKWebAppInit');
@@ -926,13 +903,13 @@ class BootController {
                             'Время ожидания ответа от VK Bridge истекло. Пожалуйста, проверьте соединение с интернетом.',
                         ),
                     ),
-                25000,
+                3000,
             );
         });
 
         // Await all parallel promises with fallback recovery
         try {
-            await Promise.all([timePromise, verifyPromise, authTokenPromise, Promise.race([vkPromise, timeoutPromise])]);
+            await Promise.all([timePromise, verifyPromise, Promise.race([vkPromise, timeoutPromise])]);
             clearTimeout(mainTimeoutId!);
         } catch (err: any) {
             clearTimeout(mainTimeoutId!);

@@ -1,14 +1,15 @@
 import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { X } from 'lucide-react';
 import { useGameStore } from '../../../store/useGameStore';
 import { audioService } from '../../../services/AudioService';
 import { AssetsMap } from '../../../configs/AssetsMap';
 import { PingIndicator } from './PingIndicator';
+import { useGraphicsConfig } from '../../hooks/useGraphicsConfig';
 
 interface BaseWindowProps {
     title: string;
-    isOpen: boolean;
+    isOpen?: boolean;
     onClose: () => void;
     children: React.ReactNode;
     width?: string;
@@ -52,15 +53,72 @@ const CornerAccent: React.FC<{ position: 'tl' | 'tr' | 'bl' | 'br'; color: strin
     return <div style={style} />;
 };
 
+class WindowContentErrorBoundary extends React.Component<
+    { children: React.ReactNode; onClose: () => void },
+    { hasError: boolean; error: any }
+> {
+    constructor(props: any) {
+        super(props);
+        this.state = { hasError: false, error: null };
+    }
+    static getDerivedStateFromError(error: any) {
+        return { hasError: true, error };
+    }
+    componentDidCatch(error: any, errorInfo: any) {
+        console.error('[WindowContentErrorBoundary] Error in window content:', error, errorInfo);
+    }
+    render() {
+        if (this.state.hasError) {
+            return (
+                <div
+                    style={{
+                        padding: '40px 20px',
+                        textAlign: 'center',
+                        color: '#f87171',
+                        fontFamily: 'sans-serif',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        height: '100%',
+                    }}
+                >
+                    <h3 style={{ marginBottom: '12px' }}>Временная ошибка отображения окна</h3>
+                    <p style={{ color: '#aaa', fontSize: '13px', maxWidth: '400px', marginBottom: '20px' }}>
+                        {this.state.error?.message || 'Не удалось загрузить содержимое. Попробуйте снова позже.'}
+                    </p>
+                    <button
+                        onClick={this.props.onClose}
+                        style={{
+                            padding: '8px 20px',
+                            background: '#d97706',
+                            color: '#fff',
+                            border: 'none',
+                            borderRadius: '6px',
+                            cursor: 'pointer',
+                            fontWeight: 'bold',
+                        }}
+                    >
+                        ЗАКРЫТЬ
+                    </button>
+                </div>
+            );
+        }
+        return this.props.children;
+    }
+}
+
 export const BaseWindow: React.FC<BaseWindowProps> = ({
     title,
-    isOpen,
+    isOpen = true,
     onClose,
     children,
     width = '850px',
     height = 'auto',
     headerExtra,
 }) => {
+    if (!isOpen) return null;
+
     const { uiTheme, language, isMobile, showPing } = useGameStore((state: any) => ({
         uiTheme: state.uiTheme,
         language: state.language || 'RU',
@@ -120,6 +178,8 @@ export const BaseWindow: React.FC<BaseWindowProps> = ({
             : '0 0 45px rgba(0, 0, 0, 0.95), 0 10px 60px rgba(0, 0, 0, 0.85), inset 0 0 25px rgba(251, 191, 36, 0.05)',
     };
 
+    const gfx = useGraphicsConfig();
+
     return (
         <motion.div
             initial={{ scale: 0.88, opacity: 0, y: 15 }}
@@ -132,12 +192,12 @@ export const BaseWindow: React.FC<BaseWindowProps> = ({
                 height: height,
                 minHeight: '520px',
                 background: theme.bg,
-                backdropFilter: 'blur(20px)',
-                WebkitBackdropFilter: 'blur(20px)',
+                backdropFilter: gfx.isLow ? 'none' : gfx.backdropBlur || 'blur(10px)',
+                WebkitBackdropFilter: gfx.isLow ? 'none' : gfx.backdropBlur || 'blur(10px)',
                 ...(theme.pattern !== 'none' && { backgroundImage: theme.pattern }),
                 border: isLight ? `4px solid ${theme.border}` : `2px solid ${theme.border}`,
                 borderRadius: '12px',
-                boxShadow: theme.shadow,
+                boxShadow: gfx.isLow ? '0 10px 30px rgba(0,0,0,0.8)' : theme.shadow,
                 position: 'relative',
                 display: 'flex',
                 flexDirection: 'column',
@@ -273,7 +333,9 @@ export const BaseWindow: React.FC<BaseWindowProps> = ({
             )}
 
             {/* Контент окна */}
-            <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>{children}</div>
+            <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
+                <WindowContentErrorBoundary onClose={onClose}>{children}</WindowContentErrorBoundary>
+            </div>
         </motion.div>
     );
 };

@@ -1,5 +1,3 @@
-import { db, USERS_COLLECTION } from '../utils/firebase';
-import { collection, doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { matchmakingService } from './MatchmakingService';
 import { useGameStore } from '../store/useGameStore';
 
@@ -157,16 +155,8 @@ class BattleResultServiceClass {
         return { myCupsChange, myGoldChange, myExpChange, serverResult };
     }
 
-    public async writePendingResult(targetUserId: string, data: any): Promise<void> {
-        try {
-            const pendingRef = doc(collection(db, USERS_COLLECTION, targetUserId, 'pendingResults'));
-            await setDoc(pendingRef, {
-                ...data,
-                timestamp: serverTimestamp(),
-            });
-        } catch (error) {
-            console.error('[BattleResultService] Failed to write pending result:', error);
-        }
+    public async writePendingResult(_targetUserId: string, _data: any): Promise<void> {
+        // Pending results handled server-side
     }
 }
 

@@ -1,6 +1,4 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { doc, onSnapshot } from 'firebase/firestore';
-import { db, USERS_COLLECTION } from '../../../../utils/firebase';
 import { BaseWindow } from '../BaseWindow';
 import { AssetsMap } from '../../../../configs/AssetsMap';
 
@@ -17,21 +15,27 @@ export const AdminSpectatorModal: React.FC<AdminSpectatorModalProps> = ({ player
     useEffect(() => {
         if (!playerId) return;
 
-        const unsubscribe = onSnapshot(
-            doc(db, USERS_COLLECTION, playerId),
-            (docSnap) => {
-                if (docSnap.exists()) {
-                    setPlayerState(docSnap.data());
-                } else {
-                    setPlayerState(null);
+        let active = true;
+        const fetchPlayer = async () => {
+            if (!active) return;
+            try {
+                const res = await fetch(`/api/profile-load?userId=${encodeURIComponent(playerId)}&isDev=true`);
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.exists && data.data) {
+                        setPlayerState(data.data);
+                    }
                 }
-            },
-            (error) => {
-                console.error('[AdminSpectator] onSnapshot error:', error);
-            },
-        );
+            } catch {}
+        };
 
-        return () => unsubscribe();
+        fetchPlayer();
+        const interval = setInterval(fetchPlayer, 3000);
+
+        return () => {
+            active = false;
+            clearInterval(interval);
+        };
     }, [playerId]);
 
     useEffect(() => {

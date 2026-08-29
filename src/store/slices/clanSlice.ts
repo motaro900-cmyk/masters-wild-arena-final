@@ -1,5 +1,8 @@
-// firebase/firestore is dynamically imported inside async actions to prevent the 488 kB
-// Firebase bundle from being pulled into the startup bundle via the static import chain.
+/**
+ * @owner: @Motaro900 / Frontend Team
+ * @purpose: Clan and friends store slice (zero Firebase dependencies).
+ */
+
 import { syncService, SyncService } from '../../services/SyncService';
 
 export const createClanSlice = (set: any, get: any) => ({
@@ -22,38 +25,10 @@ export const createClanSlice = (set: any, get: any) => ({
     },
 
     removeFriend: async (id: string) => {
-        const state = get();
-        const currentUserId = SyncService.getPrefixedUserId(state.vkUser, state.playerId);
-        let targetId = id;
-        if (!targetId.startsWith('VK-') && !targetId.startsWith('GUEST-') && targetId !== 'DEVELOPER') {
-            targetId = SyncService.getPrefixedUserId(null, targetId);
-        }
-
-        try {
-            const { db, USERS_COLLECTION } = await import('../../utils/firebase');
-            const { doc, writeBatch, arrayRemove } = await import('firebase/firestore');
-            const batch = writeBatch(db);
-
-            // 1. Удаляем из списка друзей текущего игрока в Firestore
-            const currentUserDoc = doc(db, USERS_COLLECTION, currentUserId);
-            batch.update(currentUserDoc, {
-                friends: arrayRemove(targetId),
-            });
-
-            // 2. Удаляем из списка друзей удаляемого игрока в Firestore
-            const targetDocRef = doc(db, USERS_COLLECTION, targetId);
-            batch.update(targetDocRef, {
-                friends: arrayRemove(currentUserId),
-            });
-
-            await batch.commit();
-        } catch (error) {
-            console.error('[clanSlice] Failed to remove friend in Firestore via batch:', error);
-        }
-
         set((state: any) => ({
-            friends: state.friends.filter((f: any) => f.id !== id && f.id !== targetId),
+            friends: state.friends.filter((f: any) => f.id !== id),
         }));
+        syncService.debouncedSync();
     },
 
     acceptFriendRequest: async (id: string) => {
@@ -61,38 +36,11 @@ export const createClanSlice = (set: any, get: any) => ({
         const request = state.friendRequests.find((r: any) => r.id === id);
         if (!request) return;
 
-        const currentUserId = SyncService.getPrefixedUserId(state.vkUser, state.playerId);
-        let senderId = id;
-        if (!senderId.startsWith('VK-') && !senderId.startsWith('GUEST-') && senderId !== 'DEVELOPER') {
-            senderId = SyncService.getPrefixedUserId(null, senderId);
-        }
-
-        try {
-            const { db, USERS_COLLECTION } = await import('../../utils/firebase');
-            const { doc, updateDoc, arrayUnion } = await import('firebase/firestore');
-            // 1. Добавляем senderId в список друзей текущего игрока в Firestore
-            const currentUserDoc = doc(db, USERS_COLLECTION, currentUserId);
-            await updateDoc(currentUserDoc, {
-                friends: arrayUnion(senderId),
-            });
-
-            // 2. Добавляем текущего игрока в список друзей отправителя
-            const senderDocRef = doc(db, USERS_COLLECTION, senderId);
-            await updateDoc(senderDocRef, {
-                friends: arrayUnion(currentUserId),
-            });
-
-            // 3. Удаляем запрос после обоих обновлений
-            await syncService.deleteFriendRequest(currentUserId, id);
-        } catch (error) {
-            console.error('[clanSlice] Failed to accept friend request in Firestore:', error);
-        }
-
-        const updatedRequest = { ...request, id: senderId };
         set((state: any) => ({
-            friends: [...state.friends, updatedRequest],
+            friends: [...state.friends, request],
             friendRequests: state.friendRequests.filter((r: any) => r.id !== id),
         }));
+        syncService.debouncedSync();
     },
 
     declineFriendRequest: (id: string) => {
