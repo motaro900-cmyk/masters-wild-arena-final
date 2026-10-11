@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../../store/useGameStore';
 import { SceneSwitcher } from '../components/SceneSwitcher';
 import { GameHUD } from '../components/GameHUD';
-import { ItemBuilder } from '../../components/dev/ItemBuilder';
 import { PerformanceHUD } from '../components/debug/PerformanceHUD';
 
 interface SafeGameLayoutProps {
@@ -17,11 +16,7 @@ export const SafeGameLayout = ({ isPortrait = false, isMobile = false }: SafeGam
     }, []);
 
     const [dismissedRotationWarning, setDismissedRotationWarning] = React.useState(false);
-    const [showItemBuilder, setShowItemBuilder] = React.useState(false);
 
-    const isDev =
-        typeof window !== 'undefined' &&
-        (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
 
     const { isBanned, banReason, banUntil, sessionConflict, graphicsQuality, onboardingCompleted } = useGameStore((state) => ({
         isBanned: state.isBanned,
@@ -430,32 +425,7 @@ export const SafeGameLayout = ({ isPortrait = false, isMobile = false }: SafeGam
                 )}
             </AnimatePresence>
 
-            {isDev && (
-                <>
-                    <button
-                        onClick={() => setShowItemBuilder(true)}
-                        style={{
-                            position: 'fixed',
-                            bottom: '10px',
-                            left: '10px',
-                            zIndex: 999999,
-                            background: 'linear-gradient(135deg, #1e1b4b 0%, #311042 100%)',
-                            color: '#f0c040',
-                            border: '1px solid rgba(240, 192, 64, 0.4)',
-                            borderRadius: '8px',
-                            padding: '6px 12px',
-                            fontSize: '12px',
-                            fontWeight: 'bold',
-                            cursor: 'pointer',
-                            boxShadow: '0 4px 15px rgba(0,0,0,0.6)',
-                            pointerEvents: 'auto',
-                        }}
-                    >
-                        🛠️ Item Builder
-                    </button>
-                    {showItemBuilder && <ItemBuilder onClose={() => setShowItemBuilder(false)} />}
-                </>
-            )}
+            
 
             <PerformanceHUD />
         </div>

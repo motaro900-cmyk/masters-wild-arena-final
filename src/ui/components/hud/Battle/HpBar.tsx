@@ -14,6 +14,20 @@ export const HpBar = React.memo<HpBarProps>(({ current, max, reverse = false, is
     const pct = Math.max(0, Math.min(100, (Math.max(0, current) / Math.max(1, max)) * 100));
     const shieldPct = Math.max(0, Math.min(100 - pct, (shield / Math.max(1, max)) * 100));
 
+    // Ghost damage trail for delayed smooth red lerp
+    const [ghostPct, setGhostPct] = React.useState(pct);
+
+    React.useEffect(() => {
+        if (pct < ghostPct) {
+            const timer = setTimeout(() => {
+                setGhostPct(pct);
+            }, 300);
+            return () => clearTimeout(timer);
+        } else {
+            setGhostPct(pct);
+        }
+    }, [pct, ghostPct]);
+
     let barColor: string;
     let borderColor: string;
     let glowColor: string;
@@ -54,16 +68,31 @@ export const HpBar = React.memo<HpBarProps>(({ current, max, reverse = false, is
                     overflow: 'hidden',
                 }}
             >
+                {/* Ghost damage trail (delayed lerp) */}
+                <motion.div
+                    animate={{ width: `${ghostPct}%` }}
+                    transition={{ duration: 0.55, ease: 'easeOut' }}
+                    style={{
+                        position: 'absolute',
+                        top: 0,
+                        bottom: 0,
+                        left: reverse ? undefined : 0,
+                        right: reverse ? 0 : undefined,
+                        background: 'linear-gradient(90deg, #f59e0b 0%, #ef4444 100%)',
+                        opacity: 0.8,
+                        zIndex: 1,
+                    }}
+                />
                 <motion.div
                     animate={{ width: `${pct}%` }}
-                    transition={{ duration: 0.4, ease: 'easeOut' }}
+                    transition={{ duration: 0.25, ease: 'easeOut' }}
                     style={{
                         height: '100%',
                         background: barColor,
                         position: 'relative',
                         overflow: 'hidden',
                         minWidth: 0,
-                        transition: 'width 0.4s ease-out',
+                        zIndex: 2,
                     }}
                 >
                     {/* Top highlight sheen */}

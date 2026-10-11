@@ -32,6 +32,7 @@ export interface BattleState {
     playerStatuses: Array<{ type: string; stacks: number; duration: number }>;
     enemyStatuses: Array<{ type: string; stacks: number; duration: number }>;
     playerShield: number;
+    enemyShield?: number;
 }
 
 export interface ICombatStats {
@@ -282,6 +283,7 @@ export class BattleEngine {
                 playerMana: 0,
                 playerMaxMana: 100,
                 playerShield: 0,
+                enemyShield: 0,
                 log: 'БИТВА НАЧИНАЕТСЯ!',
             });
             this.addCombatLog('--- НАЧАЛО БОЯ ---');
@@ -560,7 +562,7 @@ export class BattleEngine {
                 const currentShield = this.state.playerShield || 0;
                 this.updateState({ playerShield: currentShield + shieldVal });
             } else {
-                (this.state as any).enemyShield = ((this.state as any).enemyShield || 0) + shieldVal;
+                this.updateState({ enemyShield: (this.state.enemyShield || 0) + shieldVal });
             }
 
             // Guard: stats может быть null если юнит инициализирован не полностью

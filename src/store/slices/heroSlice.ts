@@ -115,9 +115,15 @@ export const createHeroSlice = (set: any, get: any) => {
                     return state;
                 }
 
+                if (currentLevel >= 5) {
+                    console.warn('upgradeTalent: достигнут максимальный уровень таланта (5)');
+                    return state;
+                }
+
                 get().updateQuestProgress('UPGRADE', 1);
 
                 return {
+                    talentPoints: Math.max(0, (state.talentPoints || 0) - cost),
                     heroTalents: {
                         ...state.heroTalents,
                         [heroId]: {
@@ -131,9 +137,25 @@ export const createHeroSlice = (set: any, get: any) => {
         },
         resetTalents: (heroId: string) => {
             set((state: any) => {
+                const currentHeroTalents = state.heroTalents[heroId] || {};
+                const getTalentUpgradeCost = (tId: string): number => {
+                    if (['atk_base', 'def_base', 'mas_base'].includes(tId)) return 1;
+                    if (['atk_crit', 'atk_pen', 'def_res', 'def_eva', 'mas_spd', 'mas_focus'].includes(tId)) return 2;
+                    if (['atk_ult', 'def_ult', 'mas_ult'].includes(tId)) return 3;
+                    return 1;
+                };
+
+                let pointsToRefund = 0;
+                Object.entries(currentHeroTalents).forEach(([tId, lvl]: [string, any]) => {
+                    pointsToRefund += (lvl || 0) * getTalentUpgradeCost(tId);
+                });
+
                 const talents = { ...state.heroTalents };
                 talents[heroId] = {};
-                return { heroTalents: talents };
+                return {
+                    heroTalents: talents,
+                    talentPoints: (state.talentPoints || 0) + pointsToRefund,
+                };
             });
             syncService.debouncedSync();
         },

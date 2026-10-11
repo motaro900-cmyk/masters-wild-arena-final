@@ -17,7 +17,7 @@
  */
 
 import { useGameStore } from '../store/useGameStore';
-import { getVkUserInfo } from '../utils/VKBridge';
+import { getVkUserInfo, vkStorageGet, vkStorageSet } from '../utils/VKBridge';
 import { TimeService } from '../utils/TimeService';
 import { bootController } from '../bootstrap/BootController';
 
@@ -337,25 +337,52 @@ export class SyncService {
                 снаряжение: equipmentSlice,
             };
 
-            const response = await fetch('/api/profile-save', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    userId,
-                    isDev: isLocalhost,
-                    syncData,
-                    launchParams: typeof window !== 'undefined' ? ((window as any).__INITIAL_SEARCH__ || window.location.search) : '',
-                }),
-            });
+            // 1. VK Cloud Storage (100% offline-compatible Russian cloud)
+            try {
+                const compactState = {
+                    gold: state.gold || 0,
+                    crystals: state.crystals || 0,
+                    level: activeAccountLevel,
+                    rating: state.rating || 0,
+                    inventory: state.inventory || [],
+                    heroEquipment: state.heroEquipment,
+                    equippedWeaponId: state.equippedWeaponId,
+                    equippedArmorId: state.equippedArmorId,
+                    selectedHeroId: state.selectedHeroId,
+                    onboardingCompleted: state.onboardingCompleted,
+                    lastSavedTimestamp: Date.now(),
+                };
+                const jsonStr = JSON.stringify(compactState);
+                if (jsonStr.length < 4000) {
+                    vkStorageSet('motw_profile', jsonStr).catch(() => {});
+                }
+            } catch (vkStorageErr) {
+                // non-fatal
+            }
 
-            if (!response.ok) {
-                throw new Error(`Profile save failed: ${response.statusText}`);
+            // 2. Server API sync (non-fatal if serverless or network down)
+            try {
+                const response = await fetch('/api/profile-save', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        userId,
+                        isDev: isLocalhost,
+                        syncData,
+                        launchParams: typeof window !== 'undefined' ? ((window as any).__INITIAL_SEARCH__ || window.location.search) : '',
+                    }),
+                });
+
+                if (response.ok) {
+                    this.isDirty = false;
+                }
+            } catch (netErr) {
+                console.warn('[SyncService] Server sync skipped (offline session safe):', netErr);
             }
 
             this.isDirty = false;
         } catch (error) {
-            console.error('[SyncService] Sync failed:', error);
-            throw error;
+            console.error('[SyncService] Sync non-fatal warning:', error);
         }
     }
 
@@ -433,6 +460,20 @@ export class SyncService {
 
     public async loadPlayerData(userId: string): Promise<{ data: any; isNew: boolean; isAdmin?: boolean } | null> {
         try {
+            // 1. Try reading from VK Cloud Storage first (fastest, RF-native, 100% offline-compatible)
+            try {
+                const vkData = await vkStorageGet(['motw_profile']);
+                if (vkData && vkData['motw_profile']) {
+                    const parsed = JSON.parse(vkData['motw_profile']);
+                    if (parsed && (parsed.lastSavedTimestamp || parsed.level)) {
+                        console.log('[SyncService] ✅ Loaded profile from VK Cloud Storage!');
+                        return { data: parsed, isNew: false };
+                    }
+                }
+            } catch (vkErr) {
+                console.warn('[SyncService] VK Cloud Storage read non-fatal:', vkErr);
+            }
+
             const isLocalhost =
                 typeof window !== 'undefined' &&
                 (window.location.hostname === 'localhost' ||
@@ -445,12 +486,12 @@ export class SyncService {
             const response = await fetch(
                 `/api/profile-load?userId=${encodeURIComponent(userId)}&isDev=${isLocalhost}&launchParams=${encodeURIComponent(launchParamsStr)}`,
                 {
-                    signal: AbortSignal.timeout(3500),
+                    signal: AbortSignal.timeout(2000),
                 },
             );
 
             if (!response.ok) {
-                throw new Error(`Profile load HTTP error: ${response.status} ${response.statusText}`);
+                return null;
             }
 
             const resData = await response.json();

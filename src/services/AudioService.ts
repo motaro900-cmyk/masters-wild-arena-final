@@ -149,6 +149,21 @@ class AudioService {
             } catch (err) {
                 console.warn('Failed to subscribe to VK Bridge lifecycle events:', err);
             }
+
+            // Mobile iOS/VK Web Audio unlock on first user gesture
+            if (typeof window !== 'undefined') {
+                const unlockAudio = () => {
+                    try {
+                        if (Howler.ctx && Howler.ctx.state === 'suspended') {
+                            Howler.ctx.resume().catch(() => {});
+                        }
+                    } catch (e) {}
+                    window.removeEventListener('pointerdown', unlockAudio);
+                    window.removeEventListener('touchstart', unlockAudio);
+                };
+                window.addEventListener('pointerdown', unlockAudio, { once: true, passive: true });
+                window.addEventListener('touchstart', unlockAudio, { once: true, passive: true });
+            }
         }
     }
 

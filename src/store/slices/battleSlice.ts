@@ -172,23 +172,29 @@ export const createBattleSlice = (set: any, get: any) => ({
             isBoss,
         };
 
+        const currentEnergy = get().energy ?? 0;
+        const newEnergy = Math.max(0, currentEnergy - 10);
+
         set({
             activeScreen: 'BATTLE',
             activePveEnemy: enemy,
             selectedEnemyId: mobId,
             battleMode: 'PVE',
+            currentPveBattleStage: stage,
+            energy: newEnergy,
         });
         syncService.logPlayerAction(`Начал бой против моба: ${enemy.name}`);
         syncService.debouncedSync();
     },
 
     completePveBattle: (win: boolean) => {
+        const foughtStage = get().currentPveBattleStage || get().pveStage;
         const { pveStage, maxPveStage, winStreak } = get();
         if (win) {
-            const nextStage = pveStage + 1;
-            const isBoss = pveStage % 5 === 0;
+            const nextStage = foughtStage >= pveStage ? foughtStage + 1 : pveStage;
+            const isBoss = foughtStage % 5 === 0;
             const newStreak = winStreak + 1;
-            const xpReward = Math.min(50 + pveStage * 5, 500);
+            const xpReward = Math.min(50 + foughtStage * 5, 500);
 
             const activeHeroId = get().selectedHeroId || 'panda';
             get().addHeroExp(activeHeroId, xpReward);
@@ -214,16 +220,16 @@ export const createBattleSlice = (set: any, get: any) => ({
             const rareRoll = Math.random();
             const rareChance = isBoss ? 0.6 : 0.25;
             if (rareRoll < rareChance) {
-                if (pveStage <= 5) compassGained = 1;
-                else if (pveStage <= 10) crystalGained = 1;
-                else if (pveStage <= 15) sphereGained = 1;
-                else if (pveStage <= 20) sproutGained = 1;
-                else if (pveStage <= 25) scaleGained = 1;
+                if (foughtStage <= 5) compassGained = 1;
+                else if (foughtStage <= 10) crystalGained = 1;
+                else if (foughtStage <= 15) sphereGained = 1;
+                else if (foughtStage <= 20) sproutGained = 1;
+                else if (foughtStage <= 25) scaleGained = 1;
                 else heartGained = 1;
             }
 
             const baseGold = Math.min(
-                100 + pveStage * 30,
+                100 + foughtStage * 30,
                 5000, // максимум 5к золота за 1 PvE бой
             );
             const isVip = get().vipLevel > 0 && (get().vipEndTime || 0) > Date.now();
@@ -278,24 +284,26 @@ export const createBattleSlice = (set: any, get: any) => ({
                 wins: (state.wins || 0) + 1,
                 totalBattles: (state.totalBattles || 0) + 1,
                 pveLoot: loot,
+                currentPveBattleStage: null,
             }));
 
             get().updateQuestProgress('WIN', 1);
             get().updateQuestProgress('WIN_STREAK', newStreak);
             get().updateQuestProgress('PLAY', 1);
 
-            syncService.logPlayerAction(`Победа в бою (Этап PvE: ${pveStage})`);
+            syncService.logPlayerAction(`Победа в бою (Этап PvE: ${foughtStage})`);
         } else {
             set((state: any) => ({
                 winStreak: 0,
                 lossStreak: (state.lossStreak || 0) + 1,
                 totalBattles: (state.totalBattles || 0) + 1,
                 pveLoot: null,
+                currentPveBattleStage: null,
             }));
             get().updateQuestProgress('WIN_STREAK', 0);
             get().updateQuestProgress('PLAY', 1);
 
-            syncService.logPlayerAction(`Поражение в бою (Этап PvE: ${pveStage})`);
+            syncService.logPlayerAction(`Поражение в бою (Этап PvE: ${foughtStage})`);
         }
 
         syncService.syncPlayerData();

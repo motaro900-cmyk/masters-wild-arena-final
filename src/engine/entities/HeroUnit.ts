@@ -171,6 +171,7 @@ export class HeroUnit extends PIXI.Container implements IEffectTarget, IStatusEf
     private weaponTrailPositions: PIXI.Point[] = [];
     private weaponTrailGraphics: PIXI.Graphics | null = null;
     public isMob: boolean = false;
+    private shadowGraphics: PIXI.Graphics | null = null;
 
     public attackCounter: number = 0;
     public statusEffects: any[] = [];
@@ -490,10 +491,20 @@ export class HeroUnit extends PIXI.Container implements IEffectTarget, IStatusEf
     }
 
     private createShadow() {
+        if (this.shadowGraphics && !this.shadowGraphics.destroyed) {
+            if (this.shadowGraphics.parent) {
+                this.shadowGraphics.parent.removeChild(this.shadowGraphics);
+            }
+            this.shadowGraphics.destroy();
+            this.shadowGraphics = null;
+        }
         const shadow = new PIXI.Graphics();
-        shadow.ellipse(0, 0, 60, 20).fill({ color: 0x000000, alpha: 0.3 });
+        // Layered soft shadow: outer ambient + inner contact occlusion
+        shadow.ellipse(0, 0, 75, 24).fill({ color: 0x000000, alpha: 0.18 });
+        shadow.ellipse(0, 0, 50, 16).fill({ color: 0x000000, alpha: 0.32 });
         shadow.zIndex = 1;
         this.addChild(shadow);
+        this.shadowGraphics = shadow;
     }
 
     // --- Equipment Delegation (dormant — visual overlay system in src/future/HeroEquipmentManager.ts) ---
@@ -797,6 +808,12 @@ export class HeroUnit extends PIXI.Container implements IEffectTarget, IStatusEf
             this.bodyContainer.scale.x = (this.bodyContainer.scale.x >= 0 ? 1 : -1) * (baseScale + breathX);
         }
 
+        // Dynamic shadow breathing scale
+        if (this.shadowGraphics && !this.shadowGraphics.destroyed) {
+            const shadowScale = 1 + breathX * 0.4;
+            this.shadowGraphics.scale.set(shadowScale, shadowScale);
+        }
+
         // Update Status Effects
         this.statusEffectController.update(dt);
 
@@ -906,6 +923,14 @@ export class HeroUnit extends PIXI.Container implements IEffectTarget, IStatusEf
             }
             this.weaponTrailGraphics.destroy();
             this.weaponTrailGraphics = null;
+        }
+
+        if (this.shadowGraphics) {
+            if (this.shadowGraphics.parent) {
+                this.shadowGraphics.parent.removeChild(this.shadowGraphics);
+            }
+            this.shadowGraphics.destroy();
+            this.shadowGraphics = null;
         }
 
         gsap.killTweensOf(this);

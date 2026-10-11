@@ -17,12 +17,6 @@ const rawAssetsMap = {
         EXP_BAR_BG: '/assets/images/ui/exp.png',
         ICON_SETTINGS_PROFILE: '/assets/images/ui/settingprofile.webp', // was .png
         ICON_CROWN: '/assets/images/ui/ICON_CROWN.webp', // was .png
-        HUB_BASE: '/assets/images/ui/hub_panel_base.png',
-        HUB_FRAME: '/assets/images/ui/hub_avatar_frame.png',
-        HUB_XP_EMPTY: '/assets/images/ui/hub_xp_bar_empty.png',
-        HUB_XP_FILL: '/assets/images/ui/hub_xp_fill.png',
-        HUB_VIP_BADGE: '/assets/images/ui/hub_vip_badge.png',
-        HUB_ICON_EDIT: '/assets/images/ui/hub_icon_edit.png',
         PANEL_CHAT: '/assets/images/ui/chat_panel_full.webp',
         PANEL_CHAT_CLEAN: '/assets/images/ui/chat_panel_clean.png',
         PANEL_QUEST: '/assets/images/ui/Zadanie.webp',
@@ -85,7 +79,6 @@ const rawAssetsMap = {
         BANK_ENERGY_LARGE: '/assets/images/shop/bank_energy_3.webp',
         SLOT_BG: '/assets/images/ui/slot_bg.webp',
         EQUIPMENT_PANEL: '/assets/images/ui/equipment_panel.webp',
-        HERO_PEDESTAL: '/assets/images/ui/hero_pedestal.webp',
 
         // Blueprint icons (moved to /assets/images/ui/blueprints/)
         BLUEPRINT_HELMET: '/assets/images/ui/blueprints/blueprint_helmet.webp',
@@ -184,11 +177,6 @@ const rawAssetsMap = {
         SFX_EQUIP: '/assets/audio/sfx/click.mp3',
         SFX_ATTACK: '/assets/audio/sfx/click.mp3',
         SFX_HIT: '/assets/audio/sfx/impact_hit.mp3',
-    },
-    SHEETS: {
-        BOOTS: '/assets/images/sheets/boots_sprite.webp',
-        PANTS: '/assets/images/sheets/pants_sprite.webp',
-        WEAPONS: '/assets/images/sheets/weapons_sprite.webp',
     },
 };
 

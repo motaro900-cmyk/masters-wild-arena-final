@@ -87,6 +87,20 @@ export const initVK = async (): Promise<boolean> => {
             await bridge.send('VKWebAppInit');
             (window as any).vkBridgeInitialized = true;
             if (timeoutId) clearTimeout(timeoutId);
+
+            // Subscribe to VK Config updates (Safe Area Insets on iOS/Android)
+            bridge.subscribe((e: any) => {
+                if (e?.detail?.type === 'VKWebAppUpdateConfig') {
+                    const insets = e.detail.data?.insets;
+                    if (insets && typeof document !== 'undefined') {
+                        const root = document.documentElement;
+                        if (insets.top !== undefined) root.style.setProperty('--vk-safe-area-inset-top', `${insets.top}px`);
+                        if (insets.bottom !== undefined) root.style.setProperty('--vk-safe-area-inset-bottom', `${insets.bottom}px`);
+                        if (insets.left !== undefined) root.style.setProperty('--vk-safe-area-inset-left', `${insets.left}px`);
+                        if (insets.right !== undefined) root.style.setProperty('--vk-safe-area-inset-right', `${insets.right}px`);
+                    }
+                }
+            });
             
             // Request orientation lock non-blocking in background
             bridge.send('VKWebAppLockOrientation' as any, { orientation: 'landscape' }).catch(() => {});
@@ -736,3 +750,61 @@ export const openShareLink = async (): Promise<boolean> => {
         return false;
     }
 };
+
+/**
+ * ─── VK CLOUD STORAGE API (100% автономное сохранение в РФ) ─────────────────
+ * Позволяет бесплатно сохранять и читать данные профиля на серверах ВКонтакте.
+ * Не требует внешних VPS или зарубежных облаков, 100% совместимо с 152-ФЗ.
+ */
+
+export const vkStorageGet = async (keys: string[]): Promise<Record<string, string>> => {
+    if (!bridge || !isVkMiniApp() || !keys || keys.length === 0) {
+        return {};
+    }
+    try {
+        const response = await bridge.send('VKWebAppStorageGet', { keys });
+        if (response && Array.isArray(response.keys)) {
+            const result: Record<string, string> = {};
+            response.keys.forEach((item: { key: string; value: string }) => {
+                if (item && item.key) {
+                    result[item.key] = item.value || '';
+                }
+            });
+            return result;
+        }
+        return {};
+    } catch (err) {
+        console.warn('[VKBridge] VKWebAppStorageGet error:', err);
+        return {};
+    }
+};
+
+export const vkStorageSet = async (key: string, value: string): Promise<boolean> => {
+    if (!bridge || !isVkMiniApp() || !key) {
+        return false;
+    }
+    try {
+        const response = await bridge.send('VKWebAppStorageSet', {
+            key,
+            value: String(value).slice(0, 4096), // Лимит VK Storage на одно значение — 4096 байт
+        });
+        return response?.result === true;
+    } catch (err) {
+        console.warn('[VKBridge] VKWebAppStorageSet error:', err);
+        return false;
+    }
+};
+
+export const vkStorageGetKeys = async (count = 20, offset = 0): Promise<string[]> => {
+    if (!bridge || !isVkMiniApp()) {
+        return [];
+    }
+    try {
+        const response = await bridge.send('VKWebAppStorageGetKeys', { count, offset });
+        return response?.keys || [];
+    } catch (err) {
+        console.warn('[VKBridge] VKWebAppStorageGetKeys error:', err);
+        return [];
+    }
+};
+

@@ -14,6 +14,9 @@ function getOptimizedMobilePath(path: string): string {
     ) {
         return path;
     }
+    if (lowerPath.endsWith('.png.png')) {
+        return path.replace(/\.png\.png$/i, '.png_mobile.webp');
+    }
     if (lowerPath.endsWith('.webp')) {
         return path.substring(0, path.length - 5) + '_mobile.webp';
     }
@@ -59,9 +62,19 @@ export class AssetLoader {
         preloadItemsAtlas();
 
         const optimizedManifest = manifest.map((path) => {
-            const shouldKeepPng = false;
+            if (!path || typeof path !== 'string') return '';
+            const normalized = path.replace(/\\/g, '/').toLowerCase();
 
-            // 1. Заменяем .png/.jpg на .webp, кроме героев, скинов и боссов
+            // Do not alter json descriptors
+            if (normalized.endsWith('.json')) {
+                return path;
+            }
+
+            // Атласы персонажей с расширением .png.png или боссов сохраняем в оригинальном расширении
+            const isCharacterAtlas = normalized.includes('_poses.png.png') || normalized.endsWith('.png.png');
+            const isBoss = normalized.includes('ancient_treant') || normalized.includes('ancient_griffin');
+            const shouldKeepPng = isCharacterAtlas || isBoss;
+
             let newPath = path;
             if (!shouldKeepPng) {
                 newPath = path.replace(/\.(png|jpg|jpeg)$/i, '.webp');

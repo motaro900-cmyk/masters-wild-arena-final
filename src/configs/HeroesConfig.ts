@@ -124,7 +124,7 @@ export const HEROES_DB: IHeroConfig[] = [
         unlockCost: 2000,
         unlockGoldCost: 60000,
         requiredTrophies: 2000,
-        stats: { hp: 525, attack: 40, defense: 6, speed: 2.2, critChance: 12.5 },
+        stats: { hp: 640, attack: 44, defense: 7, speed: 2.25, critChance: 13.5 },
         baseScale: 0.82,
         anchors: {
             feet: { x: 0.5, y: 0.95 },

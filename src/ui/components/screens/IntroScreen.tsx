@@ -6,6 +6,24 @@ import { useGameStore } from '../../../store/useGameStore';
 import { syncService, SyncService } from '../../../services/SyncService';
 import { LegalModal } from '../LegalDocuments';
 
+const FANTASY_NAMES = [
+    'Ярополк',
+    'Лютоволк',
+    'Радомир',
+    'Громобой',
+    'Святогор',
+    'Буревестник',
+    'Добрыня',
+    'Пересвет',
+    'Берсерк',
+    'Остроухий',
+    'Огнегрив',
+    'Северный_Волк',
+    'Игрок_OPER',
+    'Следопыт',
+    'Зверобой',
+];
+
 interface IntroScreenProps {
     onComplete: () => void;
 }
@@ -16,7 +34,9 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
     const [nickname, setNickname] = useState(storeName && storeName !== 'Мастер' ? storeName : '');
     const [isChecking, setIsChecking] = useState(false);
     const [error, setError] = useState('');
-    const [legalAccepted, setLegalAccepted] = useState(false);
+    const [termsAccepted, setTermsAccepted] = useState(false);
+    const [privacyAccepted, setPrivacyAccepted] = useState(false);
+    const legalAccepted = termsAccepted && privacyAccepted;
     const [openDoc, setOpenDoc] = useState<'privacy' | 'terms' | null>(null);
     const [isTransitioning, setIsTransitioning] = useState(false);
     const isMobile = useGameStore((state) => state.isMobile);
@@ -31,7 +51,9 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
             const currentStoreName = useGameStore.getState().name;
             const vkUser = useGameStore.getState().vkUser;
             const defaultName =
-                currentStoreName && currentStoreName !== 'Мастер' ? currentStoreName : vkUser?.firstName || '';
+                currentStoreName && currentStoreName !== 'Мастер'
+                    ? currentStoreName
+                    : vkUser?.firstName || vkUser?.first_name || '';
 
             if (defaultName) {
                 setTimeout(() => {
@@ -75,9 +97,9 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
         }
 
         // Проверка на разрешенные символы
-        const nameRegex = /^[a-zA-Zа-яА-Я0-9\s]+$/;
+        const nameRegex = /^[a-zA-Zа-яА-Я0-9_\s-]+$/;
         if (!nameRegex.test(cleanName)) {
-            return 'Только буквы и цифры';
+            return 'Разрешены буквы, цифры, дефис и подчеркивание';
         }
 
         // Проверка на уникальность
@@ -668,6 +690,42 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
                                     )}
                                 </div>
 
+                                <div style={{ display: 'flex', justifyContent: 'center', marginTop: '-10px', marginBottom: '15px' }}>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
+                                            const pick = FANTASY_NAMES[Math.floor(Math.random() * FANTASY_NAMES.length)];
+                                            setNickname(pick);
+                                            setError('');
+                                        }}
+                                        style={{
+                                            background: 'rgba(240, 192, 64, 0.12)',
+                                            border: '1px solid rgba(240, 192, 64, 0.4)',
+                                            borderRadius: '12px',
+                                            padding: isMobile ? '6px 14px' : '8px 18px',
+                                            color: '#ffd700',
+                                            fontFamily: "'Cinzel', serif",
+                                            fontSize: isMobile ? '12px' : '14px',
+                                            fontWeight: 700,
+                                            cursor: 'pointer',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '8px',
+                                            transition: 'all 0.2s',
+                                        }}
+                                        onMouseEnter={(e) => {
+                                            e.currentTarget.style.background = 'rgba(240, 192, 64, 0.25)';
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            e.currentTarget.style.background = 'rgba(240, 192, 64, 0.12)';
+                                        }}
+                                    >
+                                        <span style={{ fontSize: '16px' }}>🎲</span>
+                                        <span>Случайное имя</span>
+                                    </button>
+                                </div>
+
                                 {error && (
                                     <motion.div
                                         initial={{ opacity: 0, y: -10 }}
@@ -687,75 +745,120 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
                                     </motion.div>
                                 )}
 
-                                {/* LEGAL CONSENT */}
-                                <div
-                                    style={{
-                                        marginTop: isMobile ? '12px' : '20px',
-                                        display: 'flex',
-                                        alignItems: 'flex-start',
-                                        gap: '12px',
-                                        background: legalAccepted ? 'rgba(240,192,64,0.07)' : 'rgba(255,255,255,0.03)',
-                                        border: `1px solid ${legalAccepted ? 'rgba(240,192,64,0.35)' : 'rgba(255,255,255,0.1)'}`,
-                                        borderRadius: '14px',
-                                        padding: isMobile ? '10px 12px' : '14px 18px',
-                                        cursor: 'pointer',
-                                        transition: 'all 0.2s',
-                                    }}
-                                    onClick={() => {
-                                        setLegalAccepted(!legalAccepted);
-                                        setError('');
-                                    }}
-                                >
+                                {/* LEGAL CONSENT (152-FZ / 233-FZ Compliant: Separate Unchecked Checkboxes) */}
+                                <div style={{ marginTop: isMobile ? '10px' : '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                    {/* Checkbox 1: Terms of Service */}
                                     <div
                                         style={{
-                                            width: '22px',
-                                            height: '22px',
-                                            borderRadius: '6px',
-                                            border: `2px solid ${legalAccepted ? '#f0c040' : 'rgba(255,255,255,0.3)'}`,
-                                            background: legalAccepted ? '#f0c040' : 'transparent',
                                             display: 'flex',
                                             alignItems: 'center',
-                                            justifyContent: 'center',
-                                            flexShrink: 0,
-                                            marginTop: '1px',
+                                            gap: '10px',
+                                            background: termsAccepted ? 'rgba(240,192,64,0.07)' : 'rgba(255,255,255,0.03)',
+                                            border: `1px solid ${termsAccepted ? 'rgba(240,192,64,0.35)' : 'rgba(255,255,255,0.1)'}`,
+                                            borderRadius: '12px',
+                                            padding: isMobile ? '8px 10px' : '10px 14px',
+                                            cursor: 'pointer',
                                             transition: 'all 0.2s',
                                         }}
-                                    >
-                                        {legalAccepted && (
-                                            <span style={{ color: '#1a0e05', fontSize: '14px', fontWeight: 900 }}>
-                                                ✓
-                                            </span>
-                                        )}
-                                    </div>
-                                    <div
-                                        style={{
-                                            fontSize: isMobile ? '12px' : '13px',
-                                            color: 'rgba(255,255,255,0.65)',
-                                            lineHeight: 1.5,
-                                            textAlign: 'left',
+                                        onClick={() => {
+                                            setTermsAccepted(!termsAccepted);
+                                            setError('');
                                         }}
                                     >
-                                        Я прочитал(а) и принимаю{' '}
-                                        <span
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                setOpenDoc('terms');
+                                        <div
+                                            style={{
+                                                width: '20px',
+                                                height: '20px',
+                                                borderRadius: '5px',
+                                                border: `2px solid ${termsAccepted ? '#f0c040' : 'rgba(255,255,255,0.3)'}`,
+                                                background: termsAccepted ? '#f0c040' : 'transparent',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                flexShrink: 0,
+                                                transition: 'all 0.2s',
                                             }}
-                                            style={{ color: '#f0c040', textDecoration: 'underline', cursor: 'pointer' }}
                                         >
-                                            Пользовательское соглашение
-                                        </span>{' '}
-                                        и{' '}
-                                        <span
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                setOpenDoc('privacy');
+                                            {termsAccepted && (
+                                                <span style={{ color: '#1a0e05', fontSize: '13px', fontWeight: 900 }}>✓</span>
+                                            )}
+                                        </div>
+                                        <div
+                                            style={{
+                                                fontSize: isMobile ? '11.5px' : '12.5px',
+                                                color: 'rgba(255,255,255,0.7)',
+                                                lineHeight: 1.4,
+                                                textAlign: 'left',
                                             }}
-                                            style={{ color: '#f0c040', textDecoration: 'underline', cursor: 'pointer' }}
                                         >
-                                            Политику конфиденциальности
-                                        </span>{' '}
-                                        игры Masters of the Wild.
+                                            Я принимаю условия{' '}
+                                            <span
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setOpenDoc('terms');
+                                                }}
+                                                style={{ color: '#f0c040', textDecoration: 'underline', cursor: 'pointer', fontWeight: 600 }}
+                                            >
+                                                Пользовательского соглашения
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    {/* Checkbox 2: 152-FZ Privacy Policy Consent */}
+                                    <div
+                                        style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '10px',
+                                            background: privacyAccepted ? 'rgba(240,192,64,0.07)' : 'rgba(255,255,255,0.03)',
+                                            border: `1px solid ${privacyAccepted ? 'rgba(240,192,64,0.35)' : 'rgba(255,255,255,0.1)'}`,
+                                            borderRadius: '12px',
+                                            padding: isMobile ? '8px 10px' : '10px 14px',
+                                            cursor: 'pointer',
+                                            transition: 'all 0.2s',
+                                        }}
+                                        onClick={() => {
+                                            setPrivacyAccepted(!privacyAccepted);
+                                            setError('');
+                                        }}
+                                    >
+                                        <div
+                                            style={{
+                                                width: '20px',
+                                                height: '20px',
+                                                borderRadius: '5px',
+                                                border: `2px solid ${privacyAccepted ? '#f0c040' : 'rgba(255,255,255,0.3)'}`,
+                                                background: privacyAccepted ? '#f0c040' : 'transparent',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                flexShrink: 0,
+                                                transition: 'all 0.2s',
+                                            }}
+                                        >
+                                            {privacyAccepted && (
+                                                <span style={{ color: '#1a0e05', fontSize: '13px', fontWeight: 900 }}>✓</span>
+                                            )}
+                                        </div>
+                                        <div
+                                            style={{
+                                                fontSize: isMobile ? '11.5px' : '12.5px',
+                                                color: 'rgba(255,255,255,0.7)',
+                                                lineHeight: 1.4,
+                                                textAlign: 'left',
+                                            }}
+                                        >
+                                            Я даю согласие на обработку данных (152-ФЗ) согласно{' '}
+                                            <span
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setOpenDoc('privacy');
+                                                }}
+                                                style={{ color: '#f0c040', textDecoration: 'underline', cursor: 'pointer', fontWeight: 600 }}
+                                            >
+                                                Политике конфиденциальности
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
 

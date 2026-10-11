@@ -156,15 +156,15 @@
       });
     })();
 
-    // [Recovery] Detect module load failure (e.g. CDN/Cert errors)
+    // [Recovery] Detect critical script load failure only (not non-critical images or stylesheets)
     window.addEventListener('error', function(e) {
-      if (e.target && (e.target.src || e.target.href)) {
+      if (e.target && e.target.tagName === 'SCRIPT' && e.target.src && e.target.src.includes('main.tsx')) {
         const root = document.getElementById('root');
         if (root && root.innerHTML.includes('Загрузка ресурсов')) {
           root.innerHTML = `
-            <div style="color: #ff4444; padding: 40px; text-align: center; font-family: sans-serif; background: #0a0a1a; position: fixed; inset: 0; z-index: 9999; display: flex; flex-direction: column; align-items: center; justifyContent: center;">
-              <h2 style="font-family: 'Cinzel', serif; color: #f0c040;">Ошибка загрузки файлов игры</h2>
-              <p style="color: #aaa; max-width: 500px; margin: 20px 0;">Не удалось загрузить компоненты игры. Это может быть связано с плохим соединением или проблемами с сертификатом безопасности (Let's Encrypt).</p>
+            <div style="color: #ff4444; padding: 40px; text-align: center; font-family: sans-serif; background: #0a0a1a; position: fixed; inset: 0; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+              <h2 style="font-family: 'Cinzel', serif; color: #f0c040;">Ошибка загрузки игры</h2>
+              <p style="color: #aaa; max-width: 500px; margin: 20px 0;">Не удалось загрузить основной скрипт игры. Проверьте соединение с интернетом.</p>
               <button onclick="window.location.reload()" style="padding: 12px 24px; background: #f0c040; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">ПОПРОБОВАТЬ СНОВА</button>
             </div>
           `;

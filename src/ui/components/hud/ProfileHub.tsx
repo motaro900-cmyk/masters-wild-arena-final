@@ -225,13 +225,19 @@ export const ProfileHub: React.FC = () => {
                             <span
                                 style={{
                                     fontFamily: "'Cinzel', serif",
-                                    fontSize: '22px',
+                                    fontSize: name && name.length > 10 ? '17px' : '22px',
                                     fontWeight: 900,
                                     color: '#fff',
                                     textShadow: '0 2px 4px rgba(0,0,0,1)',
-                                    letterSpacing: '2px',
+                                    letterSpacing: '1px',
                                     lineHeight: '1.1',
+                                    maxWidth: '190px',
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                    whiteSpace: 'nowrap',
+                                    display: 'inline-block',
                                 }}
+                                title={name || 'Мастер'}
                             >
                                 {name || 'Мастер'}
                             </span>
@@ -245,6 +251,11 @@ export const ProfileHub: React.FC = () => {
                                 textShadow: '0 1px 2px rgba(0,0,0,1)',
                                 letterSpacing: '1px',
                                 marginTop: '1px',
+                                maxWidth: '190px',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap',
+                                display: 'inline-block',
                             }}
                         >
                             {title || 'Странник'}

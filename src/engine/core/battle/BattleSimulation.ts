@@ -158,13 +158,8 @@ export function skipToEndOfBattle(engine: BattleEngine) {
                     });
                 }
                 if (status.type === 'NATURE_REGEN') {
-                    const avgItemLevel = pStats.avgItemLevel || 1;
-                    const itemLevelFactor = 1 - (avgItemLevel - 1) * 0.03;
-                    const regenPercent = (playerHeroId === 'lion_knight' ? 0.04 : 0.05) * itemLevelFactor;
-                    const baseHeal = Math.ceil(pStats.hp * regenPercent);
-                    const effectiveDef = pStats.defense * 0.5;
-                    const mitigation = effectiveDef / (effectiveDef + pDivisor);
-                    const healAmount = Math.max(1, Math.ceil(baseHeal * (1 - mitigation)));
+                    const regenPercent = playerHeroId === 'lion_knight' ? 0.04 : 0.05;
+                    const healAmount = Math.max(1, Math.ceil(pStats.hp * regenPercent));
                     pHP = Math.min(pStats.hp, pHP + healAmount);
                 }
             }
@@ -329,13 +324,8 @@ export function skipToEndOfBattle(engine: BattleEngine) {
                     }
                     if (status.type === 'NATURE_REGEN') {
                         const enemyHeroId = anyEngine.enemy?.config?.id || '';
-                        const avgItemLevel = eStats.avgItemLevel || 1;
-                        const itemLevelFactor = 1 - (avgItemLevel - 1) * 0.03;
-                        const regenPercent = (enemyHeroId === 'lion_knight' ? 0.04 : 0.05) * itemLevelFactor;
-                        const baseHeal = Math.ceil(eStats.hp * regenPercent);
-                        const effectiveDef = eStats.defense * 0.5;
-                        const mitigation = effectiveDef / (effectiveDef + eDivisor);
-                        const healAmount = Math.max(1, Math.ceil(baseHeal * (1 - mitigation)));
+                        const regenPercent = enemyHeroId === 'lion_knight' ? 0.04 : 0.05;
+                        const healAmount = Math.max(1, Math.ceil(eStats.hp * regenPercent));
                         eHP = Math.min(eStats.hp, eHP + healAmount);
                     }
                 }

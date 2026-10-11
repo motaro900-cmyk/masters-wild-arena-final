@@ -333,13 +333,13 @@ export const ForgeScreen: React.FC = () => {
         if (lvl === 1) return 1.0;
         if (lvl === 2) return 1.15;
         if (lvl === 3) return 1.35;
-        if (lvl === 4) return 1.6;
-        if (lvl === 5) return 1.9;
-        if (lvl === 6) return 2.25;
-        if (lvl === 7) return 2.65;
-        if (lvl === 8) return 3.1;
-        if (lvl === 9) return 3.6;
-        if (lvl === 10) return 4.2;
+        if (lvl === 4) return 1.5;
+        if (lvl === 5) return 1.65;
+        if (lvl === 6) return 1.8;
+        if (lvl === 7) return 2.0;
+        if (lvl === 8) return 2.2;
+        if (lvl === 9) return 2.45;
+        if (lvl === 10) return 2.75;
         return 1.0;
     };
 

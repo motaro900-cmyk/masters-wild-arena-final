@@ -304,15 +304,15 @@ export const createInventorySlice = (set: any, get: any) => ({
 
         const itemName = data.name || templateId;
         syncService.logPlayerAction(`Надел снаряжение: ${itemName}`);
-        syncService.debouncedSync();
 
         // Пересчёт combat power
         const newStats = get().getCalculatedStats?.(heroId)?.total;
         if (newStats) {
             const avgItemLevel = newStats.avgItemLevel || 1;
             const divisor = 200 + (avgItemLevel - 1) * 25;
-            const defMitigation = newStats.defense / (newStats.defense + divisor);
-            const effectiveEHP = newStats.hp / Math.max(0.01, 1 - defMitigation);
+            const safeDefense = Math.max(0, newStats.defense || 0);
+            const defMitigation = safeDefense / (safeDefense + divisor);
+            const effectiveEHP = (newStats.hp || 1) / Math.max(0.01, 1 - defMitigation);
             set({
                 combatPower: Math.floor(
                     newStats.attack * 12 +
@@ -322,6 +322,7 @@ export const createInventorySlice = (set: any, get: any) => ({
                 ),
             });
         }
+        syncService.debouncedSync();
     },
 
     unequipItem: (id: string) => {
@@ -354,15 +355,15 @@ export const createInventorySlice = (set: any, get: any) => ({
 
         const itemName = data?.name || templateId;
         syncService.logPlayerAction(`Снял снаряжение: ${itemName}`);
-        syncService.debouncedSync();
 
         // Пересчёт combat power
         const newStatsAfterUnequip = get().getCalculatedStats?.(heroId)?.total;
         if (newStatsAfterUnequip) {
             const avgItemLevel = newStatsAfterUnequip.avgItemLevel || 1;
             const divisor = 200 + (avgItemLevel - 1) * 25;
-            const defMitigation = newStatsAfterUnequip.defense / (newStatsAfterUnequip.defense + divisor);
-            const effectiveEHP = newStatsAfterUnequip.hp / Math.max(0.01, 1 - defMitigation);
+            const safeDefense = Math.max(0, newStatsAfterUnequip.defense || 0);
+            const defMitigation = safeDefense / (safeDefense + divisor);
+            const effectiveEHP = (newStatsAfterUnequip.hp || 1) / Math.max(0.01, 1 - defMitigation);
             set({
                 combatPower: Math.floor(
                     newStatsAfterUnequip.attack * 12 +
@@ -372,6 +373,7 @@ export const createInventorySlice = (set: any, get: any) => ({
                 ),
             });
         }
+        syncService.debouncedSync();
     },
 
     getHeroByItemId: (itemId: string) => {

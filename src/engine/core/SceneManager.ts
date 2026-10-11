@@ -57,8 +57,12 @@ export class SceneManager {
             try {
                 const app = pixi.getApp();
                 if (app && app.renderer && (app.renderer as any).textureGC) {
-                    (app.renderer as any).textureGC.run();
-                    console.log('[SceneManager] Triggered manual texture GC');
+                    const tgc = (app.renderer as any).textureGC;
+                    const prevIdle = tgc.maxIdle;
+                    tgc.maxIdle = 0;
+                    tgc.run();
+                    tgc.maxIdle = prevIdle;
+                    console.log('[SceneManager] Triggered forced immediate texture GC');
                 }
             } catch (gcErr) {
                 console.warn('Failed to run manual texture GC:', gcErr);

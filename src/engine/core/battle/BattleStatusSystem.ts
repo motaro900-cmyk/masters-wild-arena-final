@@ -200,11 +200,7 @@ export async function resolvePeriodicDamage(engine: BattleEngine, unit: HeroUnit
             const { timeScale } = useGameStore.getState();
             const maxHP = isPlayer ? anyEngine.playerStats!.hp : anyEngine.enemyStats!.hp;
             const heroId = isPlayer ? anyEngine.player?.config?.id : anyEngine.enemy?.config?.id;
-            const targetStats = isPlayer ? engine.playerStats : engine.enemyStats;
-            const targetAvgItemLevel = targetStats ? targetStats.avgItemLevel || 1 : 1;
-            const itemLevelFactor = 1 - (targetAvgItemLevel - 1) * 0.03;
-            const regenPercent = (heroId === 'lion_knight' ? 0.04 : 0.05) * itemLevelFactor;
-
+            const regenPercent = heroId === 'lion_knight' ? 0.04 : 0.05;
             const baseHeal = Math.ceil(maxHP * regenPercent);
             const healAmount = Math.max(1, baseHeal);
 

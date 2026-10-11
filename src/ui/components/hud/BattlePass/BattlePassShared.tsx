@@ -109,7 +109,7 @@ export const BATTLE_PASS_REWARDS: Reward[] = [
     {
         level: 3,
         free: { id: 'gems_30', name: '30 Алмазов', icon: '💎', amount: 30, type: 'GEMS' },
-        premium: { id: 'energy_20', name: '20 Энергии', icon: '⚡', amount: 20, type: 'ENERGY' },
+        premium: { id: 'energy_20_lvl3', name: '20 Энергии', icon: '⚡', amount: 20, type: 'ENERGY' },
     },
     {
         level: 4,
@@ -123,13 +123,13 @@ export const BATTLE_PASS_REWARDS: Reward[] = [
     },
     {
         level: 6,
-        free: { id: 'energy_20', name: '20 Энергии', icon: '⚡', amount: 20, type: 'ENERGY' },
+        free: { id: 'energy_20_lvl6', name: '20 Энергии', icon: '⚡', amount: 20, type: 'ENERGY' },
         premium: { id: 'gold_800', name: '800 Золота', icon: '💰', amount: 800, type: 'GOLD' },
     },
     {
         level: 7,
         free: { id: 'gems_40', name: '40 Алмазов', icon: '💎', amount: 40, type: 'GEMS' },
-        premium: { id: 'energy_30', name: '30 Энергии', icon: '⚡', amount: 30, type: 'ENERGY' },
+        premium: { id: 'energy_30_lvl7', name: '30 Энергии', icon: '⚡', amount: 30, type: 'ENERGY' },
     },
     {
         level: 8,
@@ -153,7 +153,7 @@ export const BATTLE_PASS_REWARDS: Reward[] = [
     },
     {
         level: 12,
-        free: { id: 'energy_30', name: '30 Энергии', icon: '⚡', amount: 30, type: 'ENERGY' },
+        free: { id: 'energy_30_lvl12', name: '30 Энергии', icon: '⚡', amount: 30, type: 'ENERGY' },
         premium: { id: 'gold_1200', name: '1200 Золота', icon: '💰', amount: 1200, type: 'GOLD' },
     },
     {

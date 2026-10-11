@@ -276,7 +276,7 @@ export const createForgeSlice = (set: any, get: any) => ({
     // --- REFORGE ---
     reforgeItem: (itemId: string) => {
         const state = get();
-        const invItemIndex = state.inventory.findIndex((i: any) => String(i.id) === itemId);
+        const invItemIndex = state.inventory.findIndex((i: any) => i.instanceId === itemId || String(i.id) === itemId);
         if (invItemIndex === -1) return false;
 
         const costGold = 500;
@@ -304,11 +304,11 @@ export const createForgeSlice = (set: any, get: any) => ({
     // --- USE CONSUMABLE ---
     useConsumable: (itemId: string) => {
         const state = get() as any;
-        const invItemIndex = state.inventory.findIndex((i: any) => String(i.id) === itemId);
+        const invItemIndex = state.inventory.findIndex((i: any) => i.instanceId === itemId || String(i.id) === itemId);
         if (invItemIndex === -1) return false;
 
         const invItem = state.inventory[invItemIndex];
-        const itemConfig = ITEMS_DATABASE[itemId] as any;
+        const itemConfig = (ITEMS_DATABASE[invItem.id] || ITEMS_DATABASE[itemId]) as any;
         if (!itemConfig) return false;
 
         const newInventory = [...state.inventory];

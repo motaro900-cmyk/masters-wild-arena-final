@@ -890,9 +890,9 @@ export const createPlayerSlice = (set: any, get: any) => {
                 return { success: false, message: 'Имя содержит недопустимые слова' };
             }
 
-            const nameRegex = /^[a-zA-Zа-яА-Я0-9\s]+$/;
+            const nameRegex = /^[a-zA-Zа-яА-Я0-9_\s-]+$/;
             if (!nameRegex.test(cleanName)) {
-                return { success: false, message: 'Только буквы и цифры' };
+                return { success: false, message: 'Разрешены буквы, цифры, пробел, дефис и подчеркивание' };
             }
 
             set({ name: cleanName, lastNameChange: now });

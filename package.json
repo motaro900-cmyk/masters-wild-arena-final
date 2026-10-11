@@ -12,7 +12,8 @@
     "format": "prettier --write \"src/**/*.{ts,tsx,json,css}\"",
     "test": "vitest run",
     "test:qa": "node src/qa/full_test.js",
-    "test:visual": "node src/qa/full_test.js --headed"
+    "test:visual": "node src/qa/full_test.js --headed",
+    "ship": "node scripts/deploy-to-vps.js"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
