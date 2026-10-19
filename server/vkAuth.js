@@ -15,13 +15,22 @@ import crypto from 'crypto';
  * @param {string} host - Request host header (used to detect localhost)
  * @returns {{ ok: boolean, vkUserId: string|null, isUnsigned?: boolean, error: string|null }}
  */
-export function verifyVkSign(launchParams, host) {
+export function verifyVkSign(launchParams, host, userId) {
     const isLocal =
         Boolean(host) &&
         (host.includes('localhost') ||
          host.includes('127.0.0.1'));
 
     const secretKey = process.env.VK_APP_SECRET;
+
+    // Support guest mode for web domain players
+    const isGuest =
+        (typeof userId === 'string' && (userId.startsWith('GUEST-') || userId.startsWith('MW-'))) ||
+        (typeof launchParams === 'string' && (launchParams.includes('guest=1') || launchParams.includes('GUEST-') || launchParams.includes('MW-')));
+
+    if (isGuest) {
+        return { ok: true, vkUserId: null, isGuest: true, isUnsigned: true, error: null };
+    }
 
     if (!launchParams || launchParams.trim() === '') {
         if (isLocal || !secretKey) {
@@ -39,7 +48,7 @@ export function verifyVkSign(launchParams, host) {
 
     // If no signature provided
     if (!sign) {
-        if (isLocal || !secretKey) {
+        if (isLocal || !secretKey || query.guest === '1') {
             return { ok: true, vkUserId: query.vk_user_id || null, isUnsigned: true, error: null };
         }
         return { ok: false, vkUserId: null, isUnsigned: true, error: 'Missing VK signature' };

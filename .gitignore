@@ -29,8 +29,8 @@ dist-ssr
 
 .vercel
 
-# Generated assets
-public/assets/
+# Generated assets (tracked for reliable deployment)
+# public/assets/
 
 # Temporary files folder
 temp/

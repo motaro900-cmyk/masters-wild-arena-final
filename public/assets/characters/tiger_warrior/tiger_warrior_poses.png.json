@@ -1,0 +1,183 @@
+{
+  "frames": {
+    "5_hit.png": {
+      "frame": {
+        "x": 97,
+        "y": 97,
+        "w": 684,
+        "h": 341
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 2,
+        "y": 2,
+        "w": 684,
+        "h": 341
+      },
+      "sourceSize": {
+        "w": 686,
+        "h": 343
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.95
+      }
+    },
+    "1_defend.png": {
+      "frame": {
+        "x": 975,
+        "y": 97,
+        "w": 626,
+        "h": 406
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 1,
+        "w": 626,
+        "h": 406
+      },
+      "sourceSize": {
+        "w": 626,
+        "h": 407
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.95
+      }
+    },
+    "3_attack1.png": {
+      "frame": {
+        "x": 97,
+        "y": 632,
+        "w": 621,
+        "h": 378
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 621,
+        "h": 378
+      },
+      "sourceSize": {
+        "w": 621,
+        "h": 378
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.95
+      }
+    },
+    "6_attack3.png": {
+      "frame": {
+        "x": 97,
+        "y": 1204,
+        "w": 470,
+        "h": 463
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 1,
+        "y": 1,
+        "w": 470,
+        "h": 463
+      },
+      "sourceSize": {
+        "w": 472,
+        "h": 465
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.95
+      }
+    },
+    "4_attack2.png": {
+      "frame": {
+        "x": 761,
+        "y": 1204,
+        "w": 469,
+        "h": 457
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 469,
+        "h": 457
+      },
+      "sourceSize": {
+        "w": 469,
+        "h": 457
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.95
+      }
+    },
+    "2_run.png": {
+      "frame": {
+        "x": 1424,
+        "y": 697,
+        "w": 522,
+        "h": 372
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 522,
+        "h": 372
+      },
+      "sourceSize": {
+        "w": 522,
+        "h": 373
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.95
+      }
+    },
+    "0_idle.png": {
+      "frame": {
+        "x": 1424,
+        "y": 1263,
+        "w": 428,
+        "h": 446
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 1,
+        "w": 428,
+        "h": 446
+      },
+      "sourceSize": {
+        "w": 429,
+        "h": 447
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.95
+      }
+    }
+  },
+  "meta": {
+    "app": "http://free-tex-packer.com",
+    "version": "0.6.7",
+    "image": "tiger_warrior_poses.png.png",
+    "format": "RGBA8888",
+    "size": {
+      "w": 2048,
+      "h": 2048
+    },
+    "scale": 1
+  }
+}

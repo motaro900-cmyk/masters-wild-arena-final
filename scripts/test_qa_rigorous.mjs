@@ -50,7 +50,8 @@ async function runScenario(scenarioName, url, customActions = null) {
       '--use-gl=angle',
       '--use-angle=d3d11',
       '--ignore-gpu-blocklist',
-      '--window-size=1440,900'
+      '--window-size=1440,900',
+      '--host-resolver-rules=MAP mastersofthewild.ru 76.76.21.21'
     ],
     defaultViewport: {
       width: 1440,

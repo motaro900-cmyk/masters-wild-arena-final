@@ -16,7 +16,7 @@ export async function handleGetMail(req, res) {
     const cleanId = sanitizeDocId(userId);
     if (!cleanId) return res.status(400).json({ error: 'Invalid user ID' });
 
-    const auth = verifyVkSign(launchParams, req.headers.host);
+    const auth = verifyVkSign(launchParams, req.headers.host, cleanId);
     if (!auth.ok) return res.status(403).json({ error: `Forbidden: ${auth.error}` });
     if (auth.vkUserId && cleanId !== `VK-${auth.vkUserId}`) {
         return res.status(403).json({ error: 'Forbidden: identity mismatch' });
@@ -42,7 +42,7 @@ export async function handleClaimMail(req, res) {
     if (!cleanId) return res.status(400).json({ error: 'Invalid user ID' });
     if (!mailId) return res.status(400).json({ error: 'Missing mailId' });
 
-    const auth = verifyVkSign(launchParams, req.headers.host);
+    const auth = verifyVkSign(launchParams, req.headers.host, cleanId);
     if (!auth.ok) return res.status(403).json({ error: `Forbidden: ${auth.error}` });
     if (auth.vkUserId && cleanId !== `VK-${auth.vkUserId}`) {
         return res.status(403).json({ error: 'Forbidden: identity mismatch' });

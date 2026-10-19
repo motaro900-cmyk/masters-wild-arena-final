@@ -50,7 +50,7 @@ export default async function handler(req, res) {
         const host = req.headers.host || '';
 
         // Verify VK signature — previously missing from beacon-sync
-        const auth = verifyVkSign(body.launchParams, host);
+        const auth = verifyVkSign(body.launchParams, host, userId);
         if (!auth.ok) {
             console.warn(`[beacon-sync] VK signature verification failed for ${userId}: ${auth.error}`);
             return res.status(403).json({ error: `Forbidden: ${auth.error}` });

@@ -38,7 +38,7 @@ export default async function handler(req, res) {
         const host = req.headers.host || '';
 
         // Verify VK launch parameters signature
-        const auth = verifyVkSign(launchParams, host);
+        const auth = verifyVkSign(launchParams, host, cleanUserId);
         if (!auth.ok) {
             console.warn(`[profile-save] VK signature verification failed for ${cleanUserId}: ${auth.error}`);
             return res.status(403).json({ error: `Forbidden: ${auth.error}` });
