@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "gpuRules": [
+    {
+      "match": "xclipse",
+      "disable": ["webgpu"],
+      "reason": "Android WebView rendering issues"
+    },
+    {
+      "match": "mali",
+      "disable": ["webgpu"],
+      "reason": "Unstable Mali WebGPU drivers"
+    },
+    {
+      "match": "adreno",
+      "disable": ["webgpu"],
+      "reason": "Unstable Adreno WebGPU drivers"
+    },
+    {
+      "match": "powervr",
+      "disable": ["webgpu"],
+      "reason": "Unstable PowerVR WebGPU drivers"
+    }
+  ]
+}
