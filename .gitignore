@@ -45,3 +45,6 @@ docs/reports/
 .env
 .env.*
 server/data/
+assets-src/audio-master-backup/
+.agent/
+.agents/

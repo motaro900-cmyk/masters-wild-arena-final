@@ -2,6 +2,7 @@
 /**
  * @owner: @Motaro900 / DevOps Team
  * @purpose: 1-Click Automated Deployment to VPS for Masters of the Wild
+ *           Fixes: ESM package.json sync, data preservation, Nginx reload
  */
 
 const fs = require('fs');
@@ -56,31 +57,47 @@ async function main() {
   console.log('🏗️  Шаг 1: Сборка production-билда (Vite)...');
   execSync('npm run build', { cwd: ROOT_DIR, stdio: 'inherit' });
 
-  console.log('\n📦 Шаг 2: Загрузка обновлений на сервер...');
+  console.log('\n📦 Шаг 2: Подготовка и загрузка файлов на сервер...');
   
-  // Копирование dist
+  // Убеждаемся, что каталоги на сервере созданы
+  execSync(`ssh ${config.vpsUser}@${config.vpsHost} "mkdir -p ${config.remotePath}/dist ${config.remotePath}/server/data"`, {
+    stdio: 'inherit'
+  });
+
+  // Загрузка dist/
   console.log('📤 Загрузка dist/...');
   execSync(`scp -r dist/* ${config.vpsUser}@${config.vpsHost}:${config.remotePath}/dist/`, {
     cwd: ROOT_DIR,
     stdio: 'inherit'
   });
 
-  // Копирование server и конфига PM2
-  console.log('📤 Загрузка backend и ecosystem.config.cjs...');
-  execSync(`scp -r server ${config.vpsUser}@${config.vpsHost}:${config.remotePath}/`, {
-    cwd: ROOT_DIR,
-    stdio: 'inherit'
-  });
-  execSync(`scp ecosystem.config.cjs ${config.vpsUser}@${config.vpsHost}:${config.remotePath}/`, {
+  // Упаковка backend без боевых баз данных пользователей (защита от затирания данных)
+  console.log('📦 Упаковка серверной части (с сохранением баз данных пользователей)...');
+  const tempArchive = path.join(ROOT_DIR, 'server-bundle.tar.gz');
+  if (fs.existsSync(tempArchive)) fs.unlinkSync(tempArchive);
+
+  execSync('tar -czf server-bundle.tar.gz --exclude="server/data/пользователи*" --exclude="server/node_modules" server ecosystem.config.cjs', {
     cwd: ROOT_DIR,
     stdio: 'inherit'
   });
 
-  console.log('\n🔄 Шаг 3: Перезапуск процессов на сервере...');
+  console.log('📤 Загрузка архива сервера...');
+  execSync(`scp server-bundle.tar.gz ${config.vpsUser}@${config.vpsHost}:${config.remotePath}/`, {
+    cwd: ROOT_DIR,
+    stdio: 'inherit'
+  });
+
+  if (fs.existsSync(tempArchive)) fs.unlinkSync(tempArchive);
+
+  console.log('\n🔄 Шаг 3: Распаковка и перезапуск процессов на сервере...');
   const remoteCmd = `
     cd ${config.remotePath} &&
-    npm install --prefix server express cors helmet dotenv &&
-    pm2 reload ecosystem.config.cjs || pm2 start ecosystem.config.cjs &&
+    tar -xzf server-bundle.tar.gz &&
+    rm server-bundle.tar.gz &&
+    cd server &&
+    npm install --omit=dev &&
+    cd .. &&
+    (pm2 reload ecosystem.config.cjs || pm2 start ecosystem.config.cjs --env production) &&
     pm2 save &&
     systemctl reload nginx
   `.replace(/\n/g, ' ');

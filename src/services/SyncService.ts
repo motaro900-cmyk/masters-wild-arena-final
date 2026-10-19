@@ -20,6 +20,7 @@ import { useGameStore } from '../store/useGameStore';
 import { getVkUserInfo, vkStorageGet, vkStorageSet } from '../utils/VKBridge';
 import { TimeService } from '../utils/TimeService';
 import { bootController } from '../bootstrap/BootController';
+import { safeGetItem, safeSetItem } from '../utils/SafeStorage';
 
 export class SyncService {
     // Anchor to window so HMR module reloads reuse the same instance
@@ -337,27 +338,85 @@ export class SyncService {
                 снаряжение: equipmentSlice,
             };
 
-            // 1. VK Cloud Storage (100% offline-compatible Russian cloud)
+            // 1. SafeStorage: Мгновенное локальное зеркало полного профиля
             try {
-                const compactState = {
+                safeSetItem('motw_local_profile', JSON.stringify({ ...syncData, lastSavedTimestamp: Date.now() }));
+            } catch (safeErr) {
+                console.warn('[SyncService] SafeStorage local mirror write non-fatal:', safeErr);
+            }
+
+            // 2. VK Cloud Storage: Шардированное сохранение в пределах 4 КБ на ключ
+            try {
+                const coreData = {
                     gold: state.gold || 0,
                     crystals: state.crystals || 0,
+                    shards: state.shards || 0,
                     level: activeAccountLevel,
+                    exp: state.exp || 0,
                     rating: state.rating || 0,
-                    inventory: state.inventory || [],
-                    heroEquipment: state.heroEquipment,
-                    equippedWeaponId: state.equippedWeaponId,
-                    equippedArmorId: state.equippedArmorId,
+                    trophies: state.trophies || 0,
+                    energy: state.energy || 0,
+                    maxEnergy: state.maxEnergy || 0,
+                    lastEnergyUpdate: state.lastEnergyUpdate || 0,
                     selectedHeroId: state.selectedHeroId,
                     onboardingCompleted: state.onboardingCompleted,
+                    loginStreak: state.loginStreak || 0,
+                    lastDailyGiftClaimedTime: state.lastDailyGiftClaimedTime || 0,
+                    lastWheelSpinTime: state.lastWheelSpinTime || 0,
+                    pveStage: state.pveStage || 1,
+                    maxPveStage: state.maxPveStage || 1,
+                    wins: state.wins || 0,
+                    totalBattles: state.totalBattles || 0,
+                    name: state.name || 'Мастер',
+                    avatar: state.avatar || '',
                     lastSavedTimestamp: Date.now(),
                 };
-                const jsonStr = JSON.stringify(compactState);
-                if (jsonStr.length < 4000) {
-                    vkStorageSet('motw_profile', jsonStr).catch(() => {});
+
+                const heroesData = {
+                    heroes: state.heroes || {},
+                    heroTalents: state.heroTalents || {},
+                    ownedHeroes: state.ownedHeroes || [state.selectedHeroId],
+                    heroEquipment: state.heroEquipment || {},
+                    equippedWeaponId: state.equippedWeaponId || null,
+                    equippedArmorId: state.equippedArmorId || null,
+                    pet: state.pet || null,
+                };
+
+                const compactInventory = (state.inventory || []).map((item: any) => ({
+                    id: item.id,
+                    uid: item.uid || item.id,
+                    name: item.name,
+                    type: item.type,
+                    subTab: item.subTab,
+                    rarity: item.rarity,
+                    level: item.level,
+                    requiredLevel: item.requiredLevel,
+                    upgradeLevel: item.upgradeLevel || 0,
+                    stats: item.stats,
+                    icon: item.icon,
+                }));
+                const invData = { inventory: compactInventory };
+
+                const progData = {
+                    dailyQuests: state.dailyQuests || [],
+                    bpLevel: state.bpLevel || 1,
+                    bpExp: state.bpExp || 0,
+                    claimedRewards: state.claimedRewards || {},
+                    claimedRankRewards: state.claimedRankRewards || [],
+                };
+
+                vkStorageSet('motw_core', JSON.stringify(coreData)).catch(() => {});
+                vkStorageSet('motw_heroes', JSON.stringify(heroesData)).catch(() => {});
+                vkStorageSet('motw_inv', JSON.stringify(invData)).catch(() => {});
+                vkStorageSet('motw_prog', JSON.stringify(progData)).catch(() => {});
+
+                // Обратная совместимость с компактным форматом
+                const legacyCompact = JSON.stringify({ ...coreData, heroEquipment: heroesData.heroEquipment, inventory: compactInventory });
+                if (legacyCompact.length < 3900) {
+                    vkStorageSet('motw_profile', legacyCompact).catch(() => {});
                 }
             } catch (vkStorageErr) {
-                // non-fatal
+                console.warn('[SyncService] VK Storage write non-fatal:', vkStorageErr);
             }
 
             // 2. Server API sync (non-fatal if serverless or network down)
@@ -460,18 +519,42 @@ export class SyncService {
 
     public async loadPlayerData(userId: string): Promise<{ data: any; isNew: boolean; isAdmin?: boolean } | null> {
         try {
-            // 1. Try reading from VK Cloud Storage first (fastest, RF-native, 100% offline-compatible)
+            // 1. VK Cloud Storage: Читаем все шарды за 1 вызов VKWebAppStorageGet
             try {
-                const vkData = await vkStorageGet(['motw_profile']);
-                if (vkData && vkData['motw_profile']) {
-                    const parsed = JSON.parse(vkData['motw_profile']);
-                    if (parsed && (parsed.lastSavedTimestamp || parsed.level)) {
-                        console.log('[SyncService] ✅ Loaded profile from VK Cloud Storage!');
-                        return { data: parsed, isNew: false };
+                const vkData = await vkStorageGet(['motw_core', 'motw_heroes', 'motw_inv', 'motw_prog', 'motw_profile']);
+                if (vkData && (vkData['motw_core'] || vkData['motw_profile'])) {
+                    let merged: any = {};
+                    if (vkData['motw_core']) {
+                        const core = JSON.parse(vkData['motw_core']);
+                        const heroes = vkData['motw_heroes'] ? JSON.parse(vkData['motw_heroes']) : {};
+                        const inv = vkData['motw_inv'] ? JSON.parse(vkData['motw_inv']) : {};
+                        const prog = vkData['motw_prog'] ? JSON.parse(vkData['motw_prog']) : {};
+                        merged = { ...core, ...heroes, ...inv, ...prog };
+                    } else if (vkData['motw_profile']) {
+                        merged = JSON.parse(vkData['motw_profile']);
+                    }
+
+                    if (merged && (merged.lastSavedTimestamp || merged.level)) {
+                        console.log('[SyncService] ✅ 100% Loaded profile from VK Cloud Storage!');
+                        return { data: merged, isNew: false };
                     }
                 }
             } catch (vkErr) {
                 console.warn('[SyncService] VK Cloud Storage read non-fatal:', vkErr);
+            }
+
+            // 2. SafeStorage Fallback: Локальное зеркало, если в VK Cloud пусто
+            try {
+                const localRaw = safeGetItem('motw_local_profile');
+                if (localRaw) {
+                    const localParsed = JSON.parse(localRaw);
+                    if (localParsed && (localParsed.lastSavedTimestamp || localParsed.level)) {
+                        console.log('[SyncService] ✅ Loaded profile from local SafeStorage mirror!');
+                        return { data: localParsed, isNew: false };
+                    }
+                }
+            } catch (localErr) {
+                console.warn('[SyncService] SafeStorage local mirror read non-fatal:', localErr);
             }
 
             const isLocalhost =
@@ -719,8 +802,8 @@ export class SyncService {
             }
             return { data: null, isNew: true, isAdmin };
         } catch (error) {
-            console.error('[SyncService] Load player data failed:', error);
-            throw error;
+            console.warn('[SyncService] Load player data non-fatal fallback (Zero-Server safe):', error);
+            return { data: null, isNew: true };
         }
     }
 

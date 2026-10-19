@@ -9,6 +9,7 @@
  */
 
 import type { CSSProperties } from 'react';
+import { resolveAssetPath } from './assetPath';
 
 /** Определяет мобильное устройство по userAgent (аналогично AssetLoader.ts) */
 const isMobile = (): boolean =>
@@ -42,9 +43,11 @@ export async function loadItemsAtlas(): Promise<AtlasData> {
     if (_atlasData) return _atlasData;
     if (_loadPromise) return _loadPromise;
 
-    const jsonPath = isMobile()
-        ? '/assets/images/items/weapons/items_mobile.json'
-        : '/assets/images/items/weapons/items.json';
+    const jsonPath = resolveAssetPath(
+        isMobile()
+            ? 'assets/images/items/weapons/items_mobile.json'
+            : 'assets/images/items/weapons/items.json',
+    );
 
     _loadPromise = fetch(jsonPath)
         .then((r) => r.json())
@@ -106,9 +109,11 @@ export function getAtlasFrameStyle(frameKey: string, renderW = 64, renderH = 64)
     const bgX = -Math.round(fx * fitScale);
     const bgY = -Math.round(fy * fitScale);
 
-    const atlasUrl = mobile
-        ? '/assets/images/items/weapons/items_mobile.webp'
-        : '/assets/images/items/weapons/items.webp';
+    const atlasUrl = resolveAssetPath(
+        mobile
+            ? 'assets/images/items/weapons/items_mobile.webp'
+            : 'assets/images/items/weapons/items.webp',
+    );
 
     return {
         backgroundImage: `url('${atlasUrl}')`,

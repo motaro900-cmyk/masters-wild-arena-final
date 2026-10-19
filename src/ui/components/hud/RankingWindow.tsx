@@ -234,7 +234,19 @@ export const RankingWindow: React.FC = () => {
                             isVipActive: p.isVipActive || false,
                         };
                     });
-                    setGlobalLeaders(mappedLeaders);
+
+                    if (mappedLeaders.length === 0) {
+                        const MOCK_GLOBAL_LEADERS: LeaderboardEntry[] = [
+                            { id: 'bot_1', rank: 1, name: 'Громобой', level: 48, trophies: 3450, avatar: resolveAvatarPath('/assets/characters/minotaur/minotaur_base.webp'), frame: 'frame_gold', change: 'up', isMe: false, vipLevel: 2, isVipActive: true },
+                            { id: 'bot_2', rank: 2, name: 'Тень_Леса', level: 44, trophies: 3210, avatar: resolveAvatarPath('/assets/characters/raccoon/raccoon_base.webp'), frame: 'frame_silver', change: 'down', isMe: false, vipLevel: 1, isVipActive: true },
+                            { id: 'bot_3', rank: 3, name: 'Медвежуть', level: 41, trophies: 2980, avatar: resolveAvatarPath('/assets/characters/panda/panda_base.webp'), frame: 'frame_bronze', change: 'stable', isMe: false, vipLevel: 1, isVipActive: true },
+                            { id: 'bot_4', rank: 4, name: 'Лунный_Клык', level: 36, trophies: 2750, avatar: resolveAvatarPath('/assets/characters/tiger_warrior/tiger_warrior_base.webp'), frame: 'none', change: 'up', isMe: false, vipLevel: 0, isVipActive: false },
+                            { id: 'bot_5', rank: 5, name: 'Панда_Мастер', level: 32, trophies: 2420, avatar: resolveAvatarPath('/assets/characters/panda/panda_base.webp'), frame: 'none', change: 'stable', isMe: false, vipLevel: 0, isVipActive: false },
+                        ];
+                        setGlobalLeaders(MOCK_GLOBAL_LEADERS);
+                    } else {
+                        setGlobalLeaders(mappedLeaders);
+                    }
                     setIsLoading(false);
                 });
             } catch (e) {

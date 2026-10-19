@@ -257,51 +257,95 @@ export const DailyGiftWindow: React.FC<DailyGiftWindowProps> = ({ onClose: _onCl
             const launchParams = typeof window !== 'undefined' ? window.location.search : '';
             const userId = store.vkUser?.id ? `VK-${store.vkUser.id}` : store.playerId || 'DEVELOPER';
 
-            const res = await fetch('/api/game/daily-gift/claim', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    userId,
-                    isDev: true,
-                    double,
-                    operationId: `daily_gift_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
-                    launchParams,
-                }),
-            });
+            let serverSuccess = false;
+            let finalStreak = (store.loginStreak || 0) + 1;
+            if (finalStreak > 7) finalStreak = 1;
+            let awardedType: RewardType = 'GOLD';
+            let awardedAmount = 500;
 
-            if (res.ok) {
-                const json = await res.json();
-                if (json.ok && json.data) {
-                    const { streak: newStreak, awarded, gold, crystals, energy, lastDailyGiftClaimedTime: sTime } = json.data;
-                    useGameStore.setState({
-                        gold,
-                        crystals,
-                        energy,
-                        loginStreak: newStreak,
-                        lastDailyGiftClaimedTime: sTime,
-                    });
-                    setLastGiftClaimedTime(sTime);
-                    setDbLoginStreak(newStreak);
+            try {
+                const res = await fetch('/api/game/daily-gift/claim', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        userId,
+                        isDev: true,
+                        double,
+                        operationId: `daily_gift_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+                        launchParams,
+                    }),
+                    signal: AbortSignal.timeout(2000),
+                });
 
-                    const awardedType = awarded.crystals > 0 ? 'CRYSTAL' : awarded.energy > 0 ? 'ENERGY' : 'GOLD';
-                    const awardedAmount = awarded.crystals || awarded.energy || awarded.gold || 500;
-
-                    audioService.playSFX(AssetsMap.AUDIO.SFX_BUY || AssetsMap.AUDIO.SFX_CLICK);
-                    setRewardClaimed({
-                        type: awardedType as RewardType,
-                        amount: awardedAmount,
-                        isFromChest: newStreak === 7,
-                        label: awardedType === 'GOLD' ? 'Золота' : awardedType === 'CRYSTAL' ? 'Алмазов' : 'Энергии',
-                        icon: getRewardIcon(awardedType as RewardType),
-                    });
-                    setClaimedToday(true);
-                    setCanClaimDailyGift(false);
-                    useGameStore.getState().updateQuestProgress('OPEN_CHEST', 1);
+                if (res.ok) {
+                    const json = await res.json();
+                    if (json.ok && json.data) {
+                        const { streak: newStreak, awarded, gold, crystals, energy, lastDailyGiftClaimedTime: sTime } = json.data;
+                        useGameStore.setState({
+                            gold,
+                            crystals,
+                            energy,
+                            loginStreak: newStreak,
+                            lastDailyGiftClaimedTime: sTime,
+                        });
+                        setLastGiftClaimedTime(sTime);
+                        setDbLoginStreak(newStreak);
+                        finalStreak = newStreak;
+                        awardedType = (awarded.crystals > 0 ? 'CRYSTAL' : awarded.energy > 0 ? 'ENERGY' : 'GOLD') as RewardType;
+                        awardedAmount = awarded.crystals || awarded.energy || awarded.gold || 500;
+                        serverSuccess = true;
+                    }
                 }
-            } else {
-                const errData = await res.json().catch(() => ({}));
-                alert(errData.error || 'Не удалось получить ежедневный подарок');
+            } catch (netErr) {
+                console.warn('[DailyGift] Server claim unreachable, using client zero-server fallback:', netErr);
             }
+
+            if (!serverSuccess) {
+                const multiplier = double ? 2 : 1;
+                const giftDef = STREAK_REWARDS[finalStreak - 1] || STREAK_REWARDS[0];
+                awardedType = giftDef.type;
+                awardedAmount = (giftDef.amount || 500) * multiplier;
+
+                const nowMs = Date.now();
+                const curGold = store.gold || 0;
+                const curCrystals = store.crystals || 0;
+                const curEnergy = store.energy || 0;
+
+                const updates: any = {
+                    loginStreak: finalStreak,
+                    lastDailyGiftClaimedTime: nowMs,
+                };
+                if (awardedType === 'GOLD') updates.gold = curGold + awardedAmount;
+                if (awardedType === 'CRYSTAL') updates.crystals = curCrystals + awardedAmount;
+                if (awardedType === 'ENERGY') updates.energy = curEnergy + awardedAmount;
+                if (awardedType === 'MEGA_CHEST') {
+                    updates.gold = curGold + 2500 * multiplier;
+                    updates.crystals = curCrystals + 25 * multiplier;
+                    updates.energy = curEnergy + 25 * multiplier;
+                    awardedAmount = 2500 * multiplier;
+                }
+
+                useGameStore.setState(updates);
+                setLastGiftClaimedTime(nowMs);
+                setDbLoginStreak(finalStreak);
+            }
+
+            audioService.playSFX(AssetsMap.AUDIO.SFX_BUY || AssetsMap.AUDIO.SFX_CLICK);
+            setRewardClaimed({
+                type: awardedType,
+                amount: awardedAmount,
+                isFromChest: finalStreak === 7,
+                label: awardedType === 'GOLD' ? 'Золота' : awardedType === 'CRYSTAL' ? 'Алмазов' : 'Энергии',
+                icon: getRewardIcon(awardedType),
+            });
+            setClaimedToday(true);
+            setCanClaimDailyGift(false);
+            useGameStore.getState().updateQuestProgress('OPEN_CHEST', 1);
+
+            // Мгновенное сохранение в VK Storage
+            import('../../../services/SyncService').then(({ syncService }) => {
+                syncService.immediateSync();
+            }).catch(() => {});
         } catch (err) {
             console.error('Daily gift claim error:', err);
         } finally {
@@ -332,27 +376,47 @@ export const DailyGiftWindow: React.FC<DailyGiftWindowProps> = ({ onClose: _onCl
         const userId = store.vkUser?.id ? `VK-${store.vkUser.id}` : store.playerId || 'DEVELOPER';
 
         try {
-            const res = await fetch('/api/game/wheel/spin', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    userId,
-                    isDev: true,
-                    operationId: `wheel_spin_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
-                    launchParams,
-                }),
-            });
+            let sectorIndex = Math.floor(Math.random() * WHEEL_REWARDS.length);
+            let wonReward = WHEEL_REWARDS[sectorIndex];
+            const nowMs = Date.now();
 
-            if (!res.ok) {
-                const err = await res.json().catch(() => ({}));
-                alert(err.error || 'Колесо недоступно');
-                return;
+            try {
+                const res = await fetch('/api/game/wheel/spin', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        userId,
+                        isDev: true,
+                        operationId: `wheel_spin_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+                        launchParams,
+                    }),
+                    signal: AbortSignal.timeout(2000),
+                });
+
+                if (res.ok) {
+                    const json = await res.json();
+                    if (json.ok && json.data) {
+                        sectorIndex = json.data.sectorIndex;
+                        wonReward = json.data.reward;
+                        useGameStore.setState({
+                            gold: json.data.gold,
+                            crystals: json.data.crystals,
+                            energy: json.data.energy,
+                            lastWheelSpinTime: json.data.lastWheelSpinTime,
+                        });
+                    }
+                } else {
+                    throw new Error('Server wheel unavailable');
+                }
+            } catch (netErr) {
+                console.warn('[DailyGift] Wheel server unreachable, using local spin fallback:', netErr);
+                const curStore = useGameStore.getState();
+                const updates: any = { lastWheelSpinTime: nowMs };
+                if (wonReward.type === 'GOLD') updates.gold = (curStore.gold || 0) + wonReward.amount;
+                if (wonReward.type === 'CRYSTAL') updates.crystals = (curStore.crystals || 0) + wonReward.amount;
+                if (wonReward.type === 'ENERGY') updates.energy = (curStore.energy || 0) + wonReward.amount;
+                useGameStore.setState(updates);
             }
-
-            const json = await res.json();
-            if (!json.ok || !json.data) return;
-
-            const { sectorIndex, reward, gold, crystals, energy, lastWheelSpinTime: sTime } = json.data;
 
             setIsSpinning(true);
             audioService.playSFX(AssetsMap.AUDIO.SFX_CLICK);
@@ -380,30 +444,29 @@ export const DailyGiftWindow: React.FC<DailyGiftWindowProps> = ({ onClose: _onCl
                 clearInterval(tickInterval);
                 setIsSpinning(false);
 
-                useGameStore.setState({
-                    gold,
-                    crystals,
-                    energy,
-                    lastWheelSpinTime: sTime,
-                });
-                setLastWheelSpinTimeServer(sTime);
+                setLastWheelSpinTimeServer(nowMs);
 
                 audioService.playSFX(AssetsMap.AUDIO.SFX_BUY || AssetsMap.AUDIO.SFX_CLICK);
 
                 let labelText = '';
-                if (reward.type === 'GOLD') labelText = 'Золота';
-                else if (reward.type === 'CRYSTAL') labelText = 'Алмазов';
-                else if (reward.type === 'ENERGY') labelText = 'Энергии';
+                if (wonReward.type === 'GOLD') labelText = 'Золота';
+                else if (wonReward.type === 'CRYSTAL') labelText = 'Алмазов';
+                else if (wonReward.type === 'ENERGY') labelText = 'Энергии';
 
                 setRewardClaimed({
-                    type: reward.type,
-                    amount: reward.amount,
+                    type: wonReward.type,
+                    amount: wonReward.amount,
                     isFromChest: false,
                     label: labelText,
-                    icon: getRewardIcon(reward.type as RewardType),
+                    icon: getRewardIcon(wonReward.type as RewardType),
                 });
 
                 useGameStore.getState().updateQuestProgress('OPEN_CHEST', 1);
+
+                // Сохранение в VK Storage
+                import('../../../services/SyncService').then(({ syncService }) => {
+                    syncService.immediateSync();
+                }).catch(() => {});
             }, 4100);
         } catch (e) {
             console.error('Wheel spin error:', e);

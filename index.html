@@ -12,17 +12,19 @@
   <meta name="description" content="Управляйте героями, сражайтесь в автоматических битвах и покоряйте рейтинги в Masters of the Wild!" />
   <meta property="og:title" content="Masters of the Wild — Арена Животных" />
   <meta property="og:description" content="Соберите свою команду диких зверей и станьте легендой арены!" />
-  <meta property="og:image" content="/assets/images/ui/promo_banner.png" />
-  <link rel="icon" href="data:," />
+  <meta name="referrer" content="strict-origin-when-cross-origin" />
+  <meta name="theme-color" content="#0a0a1a" />
+  <meta name="color-scheme" content="dark" />
+  <link rel="icon" type="image/webp" href="./assets/images/ui/icons/Gold.webp" />
   <!-- Self-hosted local fonts for 100% stability and compliance in Russia -->
-  <link rel="stylesheet" href="/assets/fonts/fonts.css" />
-  <link rel="stylesheet" href="/assets/fonts/fonts-secondary.css" media="print" onload="this.media='all'" />
+  <link rel="stylesheet" href="./assets/fonts/fonts.css" />
+  <link rel="stylesheet" href="./assets/fonts/fonts-secondary.css" media="print" onload="this.media='all'" />
   
   <!-- Dynamic device-aware preloading for main menu background -->
   <script>
     (function() {
       const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-      const bgUrl = isMobile ? "/assets/images/backgrounds/bg_main_mobile.webp" : "/assets/images/backgrounds/bg_main.webp";
+      const bgUrl = isMobile ? "./assets/images/backgrounds/bg_main_mobile.webp" : "./assets/images/backgrounds/bg_main.webp";
       
       const link = document.createElement('link');
       link.rel = 'preload';

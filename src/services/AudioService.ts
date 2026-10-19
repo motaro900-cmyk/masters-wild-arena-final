@@ -531,16 +531,16 @@ class AudioService {
     public playStrikeSFX(weaponArchetype: 'SWORD' | 'BOW' | 'STAFF' | 'DAGGER' | 'OTHER') {
         switch (weaponArchetype) {
             case 'SWORD':
-                this.playSFXById('combat_hit_normal');
+                this.playSFXById('combat_strike_sword');
                 break;
             case 'BOW':
-                this.playSFXById('combat_dodge_swoosh'); // или специфический звук лука
+                this.playSFXById('combat_strike_bow');
                 break;
             case 'STAFF':
-                this.playSFXById('magic_heal');
+                this.playSFXById('combat_strike_staff');
                 break;
             case 'DAGGER':
-                this.playSFXById('combat_hit_normal');
+                this.playSFXById('combat_strike_dagger');
                 break;
             default:
                 this.playSFXById('combat_hit_normal');

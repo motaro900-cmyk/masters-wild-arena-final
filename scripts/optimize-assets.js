@@ -82,6 +82,13 @@ async function processFile(filePath) {
         return;
     }
 
+    // 0. Audio Rule: Handled by optimize-audio.js (do not overwrite optimized audio if it exists)
+    if (normalizedRelative.startsWith('audio/')) {
+        if (fs.existsSync(destPath)) {
+            return;
+        }
+    }
+
     // 1. Direct Copy Rule: audio/, fx/, ui/, resources/, shop/, sheets/, frames/, myicons/
     const isDirectCopy = 
         normalizedRelative.startsWith('audio/') ||
