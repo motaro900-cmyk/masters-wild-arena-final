@@ -82,26 +82,58 @@ export const NotInVkScreen: React.FC = () => {
                     Для игры в <strong style={{ color: '#ffd700' }}>Masters of the Wild</strong> используйте официальное
                     мини-приложение ВКонтакте. Гостевой доступ к веб-версии отключен разработчиком.
                 </p>
-                <button
-                    onClick={() => { window.location.href = 'https://vk.com/app54585995'; }}
-                    style={{
-                        padding: '16px 45px',
-                        background: 'linear-gradient(135deg, #ffe082, #c8952a)',
-                        border: 'none',
-                        borderRadius: '12px',
-                        fontSize: '18px',
-                        fontWeight: 'bold',
-                        color: '#1a0e05',
-                        cursor: 'pointer',
-                        letterSpacing: '0.15em',
-                        boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
-                        transition: 'transform 0.2s',
-                    }}
-                    onMouseOver={(e) => (e.currentTarget.style.transform = 'scale(1.05)')}
-                    onMouseOut={(e) => (e.currentTarget.style.transform = 'scale(1)')}
-                >
-                    ИГРАТЬ В ВК
-                </button>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '14px' }}>
+                    <button
+                        onClick={() => { window.location.href = 'https://vk.com/app54585995'; }}
+                        style={{
+                            padding: '16px 45px',
+                            background: 'linear-gradient(135deg, #ffe082, #c8952a)',
+                            border: 'none',
+                            borderRadius: '12px',
+                            fontSize: '18px',
+                            fontWeight: 'bold',
+                            color: '#1a0e05',
+                            cursor: 'pointer',
+                            letterSpacing: '0.15em',
+                            boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
+                            transition: 'transform 0.2s',
+                            width: '100%',
+                            maxWidth: '340px',
+                        }}
+                        onMouseOver={(e) => (e.currentTarget.style.transform = 'scale(1.05)')}
+                        onMouseOut={(e) => (e.currentTarget.style.transform = 'scale(1)')}
+                    >
+                        ИГРАТЬ В ВК
+                    </button>
+                    <button
+                        onClick={() => {
+                            const url = new URL(window.location.href);
+                            url.searchParams.set('guest', '1');
+                            window.location.href = url.toString();
+                        }}
+                        style={{
+                            background: 'transparent',
+                            border: '1px solid rgba(200,149,42,0.4)',
+                            color: 'rgba(255,255,255,0.7)',
+                            padding: '10px 24px',
+                            borderRadius: '10px',
+                            cursor: 'pointer',
+                            fontSize: '14px',
+                            letterSpacing: '0.08em',
+                            transition: 'all 0.2s',
+                        }}
+                        onMouseOver={(e) => {
+                            e.currentTarget.style.borderColor = '#ffd700';
+                            e.currentTarget.style.color = '#ffd700';
+                        }}
+                        onMouseOut={(e) => {
+                            e.currentTarget.style.borderColor = 'rgba(200,149,42,0.4)';
+                            e.currentTarget.style.color = 'rgba(255,255,255,0.7)';
+                        }}
+                    >
+                        ИГРАТЬ В БРАУЗЕРЕ (ГОСТЬ)
+                    </button>
+                </div>
             </div>
         </div>
     );
