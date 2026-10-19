@@ -9,12 +9,16 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const DATA_DIR = path.resolve(__dirname, 'data');
+const isServerless = Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
+const DATA_DIR = isServerless ? path.resolve('/tmp', 'data') : path.resolve(__dirname, 'data');
 
-// Ensure base data directory exists
-if (!fs.existsSync(DATA_DIR)) {
-    fs.mkdirSync(DATA_DIR, { recursive: true });
+// Ensure base data directory exists safely
+try {
+    if (!fs.existsSync(DATA_DIR)) {
+        fs.mkdirSync(DATA_DIR, { recursive: true });
+    }
+} catch (e) {
+    // Non-fatal fallback for read-only environments
 }
 
 function sanitizeKey(key) {
@@ -23,8 +27,12 @@ function sanitizeKey(key) {
 
 function getCollectionDir(collectionName) {
     const dir = path.join(DATA_DIR, sanitizeKey(collectionName));
-    if (!fs.existsSync(dir)) {
-        fs.mkdirSync(dir, { recursive: true });
+    try {
+        if (!fs.existsSync(dir)) {
+            fs.mkdirSync(dir, { recursive: true });
+        }
+    } catch (e) {
+        // Non-fatal fallback
     }
     return dir;
 }

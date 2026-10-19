@@ -70,10 +70,12 @@ export class AssetLoader {
                 return path;
             }
 
-            // Атласы персонажей с расширением .png.png или боссов сохраняем в оригинальном расширении
+            // Атласы персонажей с расширением .png.png, скины/герои и боссы сохраняются в .png
             const isCharacterAtlas = normalized.includes('_poses.png.png') || normalized.endsWith('.png.png');
+            const isHeroOrSkin =
+                normalized.includes('characters/') && !normalized.includes('characters/ancients/');
             const isBoss = normalized.includes('ancient_treant') || normalized.includes('ancient_griffin');
-            const shouldKeepPng = isCharacterAtlas || isBoss;
+            const shouldKeepPng = isCharacterAtlas || isHeroOrSkin || isBoss;
 
             let newPath = path;
             if (!shouldKeepPng) {
@@ -321,19 +323,19 @@ export class AssetLoader {
             // 2. Изображения спрайтшитов только необходимых героев (оптимизация VRAM OOM)
             const heroPaths: Record<string, string[]> = {
                 panda: [
-                    '/assets/characters/panda/panda_poses.png',
+                    '/assets/characters/panda/panda_poses.png.png',
                     '/assets/characters/panda/panda_frost_poses.png',
                 ],
-                raccoon: ['/assets/characters/raccoon/raccoon_poses.png'],
-                minotaur: ['/assets/characters/minotaur/minotaur_poses.png'],
-                tiger_warrior: ['/assets/characters/tiger_warrior/tiger_warrior_poses.png'],
-                lion_knight: ['/assets/characters/lion_knight/lion_knight_poses.png'],
-                wolf_knight: ['/assets/characters/raccoon/raccoon_poses.png'], // Фоллбек
-                shadow_dancer: ['/assets/characters/panda/panda_poses.png'],
-                crystal_guardian: ['/assets/characters/minotaur/minotaur_poses.png'],
-                storm_caller: ['/assets/characters/raccoon/raccoon_poses.png'],
-                nature_warden: ['/assets/characters/panda/panda_poses.png'],
-                void_walker: ['/assets/characters/tiger_warrior/tiger_warrior_poses.png'],
+                raccoon: ['/assets/characters/raccoon/raccoon_poses.png.png'],
+                minotaur: ['/assets/characters/minotaur/minotaur_poses.png.png'],
+                tiger_warrior: ['/assets/characters/tiger_warrior/tiger_warrior_poses.png.png'],
+                lion_knight: ['/assets/characters/lion_knight/lion_knight_poses.png.png'],
+                wolf_knight: ['/assets/characters/raccoon/raccoon_poses.png.png'], // Фоллбек
+                shadow_dancer: ['/assets/characters/panda/panda_poses.png.png'],
+                crystal_guardian: ['/assets/characters/minotaur/minotaur_poses.png.png'],
+                storm_caller: ['/assets/characters/raccoon/raccoon_poses.png.png'],
+                nature_warden: ['/assets/characters/panda/panda_poses.png.png'],
+                void_walker: ['/assets/characters/tiger_warrior/tiger_warrior_poses.png.png'],
             };
 
             const heroesToPreload = new Set<string>();
@@ -370,7 +372,12 @@ export class AssetLoader {
             const optimizedList = preloadList
                 .map((path) => {
                     if (!path) return '';
-                    const shouldKeepPng = false;
+                    const normalized = path.replace(/\\/g, '/').toLowerCase();
+                    const isCharacterAtlas = normalized.includes('_poses.png.png') || normalized.endsWith('.png.png');
+                    const isHeroOrSkin =
+                        normalized.includes('characters/') && !normalized.includes('characters/ancients/');
+                    const isBoss = normalized.includes('ancient_treant') || normalized.includes('ancient_griffin');
+                    const shouldKeepPng = isCharacterAtlas || isHeroOrSkin || isBoss;
 
                     let newPath = path;
                     if (!shouldKeepPng) {

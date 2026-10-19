@@ -112,14 +112,18 @@ async function packageForVkHosting() {
                 const ext = path.extname(entry.name).toLowerCase();
                 let buffer;
 
-                // 1. Skip duplicate PNGs if a matching WebP exists (saving ~25 MB of unneeded duplicates)
+                // 1. Skip duplicate PNGs only if a matching WebP exists and it is NOT a character/boss asset
                 if (ext === '.png') {
-                    // Check standard webp equivalent
+                    const isCharacter = relPath.includes('characters/');
+                    const isBoss = relPath.includes('ancient_treant') || relPath.includes('ancient_griffin');
+                    const isDoublePng = fullPath.toLowerCase().endsWith('.png.png');
                     const webpEquivalent = fullPath.replace(/\.png$/i, '.webp');
-                    // Check double extension webp equivalent (e.g. .png.png -> .webp)
-                    const cleanWebpEquivalent = fullPath.replace(/\.png\.png$/i, '.webp');
-                    
-                    if (fs.existsSync(webpEquivalent) || fs.existsSync(cleanWebpEquivalent)) {
+                    const cleanWebpEquivalent = isDoublePng ? fullPath.replace(/\.png\.png$/i, '.webp') : null;
+
+                    const hasWebp = (!isCharacter && !isBoss && fs.existsSync(webpEquivalent)) ||
+                                    (cleanWebpEquivalent && fs.existsSync(cleanWebpEquivalent));
+
+                    if (hasWebp) {
                         skippedDuplicatesCount++;
                         continue;
                     }
@@ -131,7 +135,7 @@ async function packageForVkHosting() {
                             .resize(1024, 1024, { fit: 'inside', withoutEnlargement: true })
                             .png({ compressionLevel: 9, palette: true })
                             .toBuffer();
-                    } else if (relPath.includes('characters/') && (relPath.includes('_poses') || relPath.includes('_frost_'))) {
+                    } else if (relPath.includes('characters/') && (relPath.includes('_poses') || relPath.includes('_frost_') || relPath.includes('_base'))) {
                         buffer = await sharp(fullPath)
                             .png({ compressionLevel: 9, palette: true })
                             .toBuffer();

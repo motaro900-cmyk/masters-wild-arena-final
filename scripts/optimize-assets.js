@@ -221,6 +221,14 @@ async function processFile(filePath) {
         ensureDirExists(destPath);
         fs.copyFileSync(filePath, destPath);
 
+        // Also generate PC WebP equivalent for hero base/skin images to guarantee dual-format availability
+        if (fileName.includes('_base') || fileName.includes('_frost')) {
+            const outputWebp = path.join(destDir, `${fileName}.webp`);
+            await sharp(buffer)
+                .webp({ quality: QUALITY_PC })
+                .toFile(outputWebp);
+        }
+
         // Generate _mobile.webp (downscaled 512x512, Q=85)
         const outputMobile = path.join(destDir, `${fileName}_mobile.webp`);
         await sharp(buffer)

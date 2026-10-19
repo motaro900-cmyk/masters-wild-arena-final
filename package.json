@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "npm run optimize && vite build",
+    "build": "vite build",
+    "build:all": "npm run optimize && vite build",
     "build:vk": "npm run build && node scripts/package-vk-hosting.js",
     "package:vk": "node scripts/package-vk-hosting.js",
     "preview": "vite preview",

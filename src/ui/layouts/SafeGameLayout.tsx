@@ -88,37 +88,35 @@ export const SafeGameLayout = ({ isPortrait = false, isMobile = false }: SafeGam
                     pointerEvents: 'none',
                 }}
             >
-                {onboardingCompleted && (
-                    <>
-                        <div style={{ position: 'absolute', inset: 0, zIndex: 10, pointerEvents: 'none' }}>
-                            <React.Suspense
-                                fallback={
-                                    <div
-                                        style={{
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            height: '100%',
-                                            width: '100%',
-                                            backgroundColor: '#0a0806',
-                                            color: '#f5d37a',
-                                            fontWeight: 'bold',
-                                            fontSize: '20px',
-                                            fontFamily: "'Cinzel', 'Philosopher', serif",
-                                            pointerEvents: 'auto',
-                                        }}
-                                    >
-                                        Загрузка локации...
-                                    </div>
-                                }
+                <div style={{ position: 'absolute', inset: 0, zIndex: 10, pointerEvents: 'none' }}>
+                    <React.Suspense
+                        fallback={
+                            <div
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    height: '100%',
+                                    width: '100%',
+                                    backgroundColor: '#0a0806',
+                                    color: '#f5d37a',
+                                    fontWeight: 'bold',
+                                    fontSize: '20px',
+                                    fontFamily: "'Cinzel', 'Philosopher', serif",
+                                    pointerEvents: 'auto',
+                                }}
                             >
-                                <SceneSwitcher />
-                            </React.Suspense>
-                        </div>
-                        <div style={{ position: 'absolute', inset: 0, zIndex: 100, pointerEvents: 'none' }}>
-                            <GameHUD />
-                        </div>
-                    </>
+                                Загрузка локации...
+                            </div>
+                        }
+                    >
+                        <SceneSwitcher />
+                    </React.Suspense>
+                </div>
+                {onboardingCompleted && (
+                    <div style={{ position: 'absolute', inset: 0, zIndex: 100, pointerEvents: 'none' }}>
+                        <GameHUD />
+                    </div>
                 )}
             </div>
 

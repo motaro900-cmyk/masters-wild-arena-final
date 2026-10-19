@@ -17,14 +17,14 @@ import crypto from 'crypto';
  */
 export function verifyVkSign(launchParams, host) {
     const isLocal =
-        !host ||
-        host.includes('localhost') ||
-        host.includes('127.0.0.1');
+        Boolean(host) &&
+        (host.includes('localhost') ||
+         host.includes('127.0.0.1'));
 
     const secretKey = process.env.VK_APP_SECRET;
 
     if (!launchParams || launchParams.trim() === '') {
-        if (isLocal && !secretKey) {
+        if (isLocal || !secretKey) {
             return { ok: true, vkUserId: null, isUnsigned: true, error: null };
         }
         return { ok: false, vkUserId: null, isUnsigned: true, error: 'Missing launch parameters' };
@@ -39,10 +39,10 @@ export function verifyVkSign(launchParams, host) {
 
     // If no signature provided
     if (!sign) {
-        if (isLocal && !secretKey) {
+        if (isLocal || !secretKey) {
             return { ok: true, vkUserId: query.vk_user_id || null, isUnsigned: true, error: null };
         }
-        return { ok: false, vkUserId: null, isUnsigned: true, error: 'Signature missing for VK identity' };
+        return { ok: false, vkUserId: null, isUnsigned: true, error: 'Missing VK signature' };
     }
 
     // If signature provided but secret key is not set on server
