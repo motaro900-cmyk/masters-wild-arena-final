@@ -89,8 +89,9 @@ async function processFile(filePath) {
         }
     }
 
-    // 1. Direct Copy Rule: audio/, fx/, ui/, resources/, shop/, sheets/, frames/, myicons/
+    // 1. Direct Copy Rule: fonts/, audio/, fx/, ui/, resources/, shop/, sheets/, frames/, myicons/
     const isDirectCopy = 
+        normalizedRelative.startsWith('fonts/') ||
         normalizedRelative.startsWith('audio/') ||
         normalizedRelative.startsWith('fx/') ||
         normalizedRelative.includes('images/ui/') ||
