@@ -48,12 +48,42 @@ export const createBattleSlice = (set: any, get: any) => ({
         }
     },
 
-    setScreen: (screen: string) => set({ activeScreen: screen }),
-    goToHeroes: (tab = 'LIST') => set({ activeScreen: 'HEROES', heroesInitialTab: tab }),
-    goToCity: () => set({ activeScreen: 'CITY' }),
-    goToForge: () => set({ activeScreen: 'FORGE' }),
-    goToArena: () => set({ activeScreen: 'BATTLE' }),
-    goToMainMenu: () => set({ activeScreen: 'MAIN_MENU' }),
+    setScreen: (screen: string) => {
+        if (get().activeScreen === 'SHOP' && screen !== 'SHOP') {
+            try { get().exitShop?.(); } catch (e) {}
+        }
+        set({ activeScreen: screen });
+    },
+    goToHeroes: (tab = 'LIST') => {
+        if (get().activeScreen === 'SHOP') {
+            try { get().exitShop?.(); } catch (e) {}
+        }
+        set({ activeScreen: 'HEROES', heroesInitialTab: tab });
+    },
+    goToCity: () => {
+        if (get().activeScreen === 'SHOP') {
+            try { get().exitShop?.(); } catch (e) {}
+        }
+        set({ activeScreen: 'CITY' });
+    },
+    goToForge: () => {
+        if (get().activeScreen === 'SHOP') {
+            try { get().exitShop?.(); } catch (e) {}
+        }
+        set({ activeScreen: 'FORGE' });
+    },
+    goToArena: () => {
+        if (get().activeScreen === 'SHOP') {
+            try { get().exitShop?.(); } catch (e) {}
+        }
+        set({ activeScreen: 'BATTLE' });
+    },
+    goToMainMenu: () => {
+        if (get().activeScreen === 'SHOP') {
+            try { get().exitShop?.(); } catch (e) {}
+        }
+        set({ activeScreen: 'MAIN_MENU' });
+    },
 
     setGodMode: (val: boolean) => set({ isGodMode: val }),
     setOneShot: (val: boolean) => set({ isOneShot: val }),

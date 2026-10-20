@@ -165,7 +165,7 @@ export const AUDIO_DATABASE: Record<string, SoundConfig> = {
     combat_strike_sword: {
         id: 'combat_strike_sword',
         variants: ['/assets/audio/sfx/strike_sword.mp3'],
-        volume: 0.9,
+        volume: 0.65,
         bus: 'combat',
         priority: 80,
         cooldown: 100,

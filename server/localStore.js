@@ -198,3 +198,24 @@ export async function getLocalCollection(collectionName, limitCount = 100) {
         return [];
     }
 }
+
+/**
+ * Deletes a document from local VPS disk (and its backup file).
+ */
+export async function deleteLocalDoc(collectionName, docId) {
+    try {
+        const filePath = getDocFilePath(collectionName, docId);
+        const backupPath = `${filePath}.bak`;
+
+        if (fs.existsSync(filePath)) {
+            await fs.promises.unlink(filePath);
+        }
+        if (fs.existsSync(backupPath)) {
+            await fs.promises.unlink(backupPath);
+        }
+        return { success: true };
+    } catch (err) {
+        console.error(`[LocalStore] ❌ Error deleting ${collectionName}/${docId}:`, err.message);
+        return { success: false, error: err.message };
+    }
+}

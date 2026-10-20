@@ -7,14 +7,18 @@ import { verifyVkSign, setCorsHeaders } from '../vkAuth.js';
 import { runAtomicTransaction } from './transactionManager.js';
 import { sanitizeDocId } from '../securityMiddleware.js';
 
-const ENERGY_REGEN_INTERVAL_MS = 6 * 60 * 1000; // 1 energy per 6 minutes (360,000 ms)
-const DEFAULT_MAX_ENERGY = 100;
+const BASE_ENERGY_REGEN_INTERVAL_MS = 2.5 * 60 * 1000; // 1 energy per 2.5 minutes (150,000 ms)
+const PREMIUM_ENERGY_REGEN_INTERVAL_MS = 1.25 * 60 * 1000; // 1 energy per 1.25 minutes (75,000 ms)
+const DEFAULT_MAX_ENERGY = 50;
+const PREMIUM_MAX_ENERGY = 100;
 
 /**
  * Calculates current energy using server time elapsed since lastEnergyUpdate
  */
 export function calculateServerEnergy(profile, serverNow = Date.now()) {
-    const maxEnergy = profile.maxEnergy || DEFAULT_MAX_ENERGY;
+    const isPremium = Boolean(profile.isPremium || (profile.vipEndTime && profile.vipEndTime > serverNow));
+    const maxEnergy = profile.maxEnergy || (isPremium ? PREMIUM_MAX_ENERGY : DEFAULT_MAX_ENERGY);
+    const regenInterval = isPremium ? PREMIUM_ENERGY_REGEN_INTERVAL_MS : BASE_ENERGY_REGEN_INTERVAL_MS;
     const storedEnergy = typeof profile.energy === 'number' ? profile.energy : maxEnergy;
     const lastUpdate = profile.lastEnergyUpdate || serverNow;
 
@@ -27,11 +31,11 @@ export function calculateServerEnergy(profile, serverNow = Date.now()) {
     }
 
     const elapsedMs = Math.max(0, serverNow - lastUpdate);
-    const regenerated = Math.floor(elapsedMs / ENERGY_REGEN_INTERVAL_MS);
+    const regenerated = Math.floor(elapsedMs / regenInterval);
     const newEnergy = Math.min(maxEnergy, storedEnergy + regenerated);
-    const remainderMs = elapsedMs % ENERGY_REGEN_INTERVAL_MS;
+    const remainderMs = elapsedMs % regenInterval;
     const newLastUpdate = newEnergy >= maxEnergy ? serverNow : serverNow - remainderMs;
-    const nextRegenInMs = newEnergy >= maxEnergy ? 0 : ENERGY_REGEN_INTERVAL_MS - remainderMs;
+    const nextRegenInMs = newEnergy >= maxEnergy ? 0 : regenInterval - remainderMs;
 
     return {
         energy: newEnergy,

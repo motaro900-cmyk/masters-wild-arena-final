@@ -23,13 +23,17 @@ export function verifyVkSign(launchParams, host, userId) {
 
     const secretKey = process.env.VK_APP_SECRET;
 
-    // Support guest mode for web domain players
-    const isGuest =
-        (typeof userId === 'string' && (userId.startsWith('GUEST-') || userId.startsWith('MW-'))) ||
-        (typeof launchParams === 'string' && (launchParams.includes('guest=1') || launchParams.includes('GUEST-') || launchParams.includes('MW-')));
+    const isVkUser = typeof userId === 'string' && userId.startsWith('VK-');
 
-    if (isGuest) {
-        return { ok: true, vkUserId: null, isGuest: true, isUnsigned: true, error: null };
+    // Support guest mode for web domain players (STRICTLY prohibited for VK-* user IDs)
+    if (!isVkUser) {
+        const isGuest =
+            (typeof userId === 'string' && (userId.startsWith('GUEST-') || userId.startsWith('MW-'))) ||
+            (typeof launchParams === 'string' && (launchParams.includes('guest=1') || launchParams.includes('GUEST-') || launchParams.includes('MW-')));
+
+        if (isGuest) {
+            return { ok: true, vkUserId: null, isGuest: true, isUnsigned: true, error: null };
+        }
     }
 
     if (!launchParams || launchParams.trim() === '') {
@@ -87,9 +91,13 @@ export function verifyVkSign(launchParams, host, userId) {
         .toString('base64')
         .replace(/\+/g, '-')
         .replace(/\//g, '_')
-        .replace(/=$/, '');
+        .replace(/=+$/, '');
 
-    if (expectedHash !== sign) {
+    const cleanSign = typeof sign === 'string' ? sign.replace(/=+$/, '') : '';
+    const hashBuf = Buffer.from(expectedHash, 'utf8');
+    const signBuf = Buffer.from(cleanSign, 'utf8');
+
+    if (hashBuf.length !== signBuf.length || !crypto.timingSafeEqual(hashBuf, signBuf)) {
         return { ok: false, vkUserId: null, error: 'Invalid VK signature' };
     }
 

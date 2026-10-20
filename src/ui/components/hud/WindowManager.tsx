@@ -74,7 +74,7 @@ export const WindowManager: React.FC<WindowManagerProps> = ({ activeWindow, setA
                         left: 0,
                         right: 0,
                         bottom: 0,
-                        zIndex: 100,
+                        zIndex: 20001,
                         backgroundColor: gfx.isLow ? 'rgba(0, 0, 0, 0.75)' : 'rgba(0, 0, 0, 0.6)',
                         backdropFilter: gfx.isLow ? 'none' : 'blur(4px)',
                         WebkitBackdropFilter: gfx.isLow ? 'none' : 'blur(4px)',

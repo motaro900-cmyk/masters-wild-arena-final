@@ -201,7 +201,7 @@ export async function executeAttack(engine: BattleEngine, attacker: HeroUnit, vi
 
         let damage = stats.attack * 2.5 * (0.9 + Math.random() * 0.2);
         if (isPlayer && isOneShot) damage = 999999;
-        const finalDamage = Math.ceil(Math.max(1, damage - targetStats.defense * 0.5));
+        const finalDamage = Math.ceil(Math.max(1, damage - Math.max(0, targetStats.defense || 0) * 0.5));
 
         const hasStunImmunity = victim.statusEffects.some((s: any) => s.type === 'STUN_IMMUNITY');
 
@@ -339,15 +339,15 @@ export async function executeAttack(engine: BattleEngine, attacker: HeroUnit, vi
     if (instinctEvent?.type === 'RAGE') damage *= 1.5;
     if (isPlayer && isOneShot) damage = 999999;
 
-    let targetDefense = targetStats.defense;
+    let targetDefense = Math.max(0, targetStats.defense || 0);
     if (attackerWeaponArchetype === 'STAFF') {
         targetDefense *= 0.5;
         anyEngine.addCombatLog(`✨ [Магия] Атака посохом игнорирует 50% защиты цели!`);
     }
 
     const targetAvgItemLevel = targetStats.avgItemLevel || 1;
-    const divisor = 200 + (targetAvgItemLevel - 1) * 25;
-    const mitigation = targetDefense / (targetDefense + divisor);
+    const divisor = Math.max(50, 200 + (targetAvgItemLevel - 1) * 25);
+    const mitigation = Math.max(0, Math.min(0.85, targetDefense / (targetDefense + divisor)));
     let mitigated = damage * (1 - mitigation);
     if (!isPlayer && isGodMode) mitigated = 0;
     if (instinctEvent?.type === 'SHIELD') mitigated *= 0.5;

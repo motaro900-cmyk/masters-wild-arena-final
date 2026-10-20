@@ -16,6 +16,7 @@ import beaconSyncHandler from './beacon-sync.js';
 import authTokenHandler from './auth-token.js';
 import profileSaveHandler from './profile-save.js';
 import profileLoadHandler from './profile-load.js';
+import profileDeleteHandler from './profile-delete.js';
 import healthHandler from './health.js';
 import logErrorHandler from './log-error.js';
 import { createRateLimiter } from './securityMiddleware.js';
@@ -102,6 +103,7 @@ router.post('/beacon-sync', profileLimiter, adaptHandler(beaconSyncHandler));
 router.get('/auth-token', profileLimiter, adaptHandler(authTokenHandler));
 router.post('/profile-save', profileLimiter, adaptHandler(profileSaveHandler));
 router.get('/profile-load', profileLimiter, adaptHandler(profileLoadHandler));
+router.post('/profile-delete', profileLimiter, adaptHandler(profileDeleteHandler));
 router.get('/health', publicLimiter, adaptHandler(healthHandler));
 router.post('/log-error', logLimiter, adaptHandler(logErrorHandler));
 

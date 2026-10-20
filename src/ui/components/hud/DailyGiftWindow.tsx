@@ -269,7 +269,7 @@ export const DailyGiftWindow: React.FC<DailyGiftWindowProps> = ({ onClose: _onCl
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         userId,
-                        isDev: true,
+                        isDev: typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'),
                         double,
                         operationId: `daily_gift_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
                         launchParams,
@@ -386,7 +386,7 @@ export const DailyGiftWindow: React.FC<DailyGiftWindowProps> = ({ onClose: _onCl
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         userId,
-                        isDev: true,
+                        isDev: typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'),
                         operationId: `wheel_spin_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
                         launchParams,
                     }),

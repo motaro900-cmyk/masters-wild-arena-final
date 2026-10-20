@@ -50,8 +50,7 @@ async function runScenario(scenarioName, url, customActions = null) {
       '--use-gl=angle',
       '--use-angle=d3d11',
       '--ignore-gpu-blocklist',
-      '--window-size=1440,900',
-      '--host-resolver-rules=MAP mastersofthewild.ru 76.76.21.21'
+      '--window-size=1440,900'
     ],
     defaultViewport: {
       width: 1440,
@@ -260,8 +259,25 @@ async function runAllTests() {
       results.screenshots.push(ssPathEarly);
       console.log(`📸 Saved VK early screenshot: ${ssPathEarly}`);
 
-      // Wait up to 10 more seconds
-      await delay(6000);
+      // Wait for game transition
+      console.log('⏳ Waiting for VK timeout recovery and transition to game canvas...');
+      let loaded = false;
+      for (let i = 0; i < 15; i++) {
+        await delay(1000);
+        const state = await page.evaluate(() => {
+          const text = document.body.innerText || '';
+          const hasCanvas = !!document.querySelector('canvas');
+          const isNotInTown = text.includes('Загрузка') || text.includes('Loading') || text.includes('КОНТЕКСТА');
+          return { hasCanvas, textLength: text.length, isNotInTown, snippet: text.slice(0, 150) };
+        });
+        if (state.hasCanvas && !state.isNotInTown) {
+          console.log(`🎮 Game canvas detected in Scenario 3 at ${i + 5}s! DOM snippet: ${state.snippet.replace(/\n/g, ' ')}`);
+          loaded = true;
+          break;
+        }
+      }
+
+      await delay(2000);
       const ssPathSettled = path.join(SCREENSHOT_DIR, '03_scenario3_settled.png');
       await page.screenshot({ path: ssPathSettled, fullPage: false });
       results.screenshots.push(ssPathSettled);

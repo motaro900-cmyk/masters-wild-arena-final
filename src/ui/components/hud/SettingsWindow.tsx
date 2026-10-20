@@ -150,6 +150,49 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
         }
     };
 
+    const handleDeleteAccount = async () => {
+        try {
+            const store = useGameStore.getState() as any;
+            const { syncService } = await import('../../../services/SyncService');
+
+            syncService.disableSync();
+            syncService.stopAutoSync();
+
+            const userId = store.userId || localStorage.getItem('motw_userId');
+            if (userId) {
+                try {
+                    const launchParams = window.location.search || '';
+                    await fetch('/api/profile-delete', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ userId, launchParams }),
+                    });
+                } catch (e) {
+                    console.warn('[SettingsWindow] Server profile delete failed:', e);
+                }
+            }
+
+            try {
+                const { vkBridge } = await import('../../../utils/VKBridge');
+                if (vkBridge && typeof vkBridge.send === 'function') {
+                    await vkBridge.send('VKWebAppStorageSet', { key: 'motw_core', value: '' }).catch(() => {});
+                    await vkBridge.send('VKWebAppStorageSet', { key: 'motw_heroes', value: '' }).catch(() => {});
+                    await vkBridge.send('VKWebAppStorageSet', { key: 'motw_inv', value: '' }).catch(() => {});
+                    await vkBridge.send('VKWebAppStorageSet', { key: 'motw_prog', value: '' }).catch(() => {});
+                }
+            } catch (e) {}
+
+            if (store.resetAllProgress) store.resetAllProgress();
+            if (store.resetChat) store.resetChat();
+            localStorage.clear();
+            sessionStorage.clear();
+            window.location.reload();
+        } catch (error) {
+            console.error('Ошибка при удалении аккаунта:', error);
+            useGameStore.getState().showAlert('Произошла ошибка при удалении аккаунта.');
+        }
+    };
+
     const handleFullscreenToggle = () => {
         if (!document.fullscreenElement) {
             document.documentElement.requestFullscreen().catch((e) => console.warn('Fullscreen error:', e));
@@ -841,7 +884,7 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
                             setTimeout(() => setConfirmWipeProgress(false), 4000);
                             return;
                         }
-                        handleClearCache();
+                        handleDeleteAccount();
                     }}
                     style={{
                         width: '100%',

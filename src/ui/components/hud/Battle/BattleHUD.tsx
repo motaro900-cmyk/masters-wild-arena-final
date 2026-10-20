@@ -111,12 +111,13 @@ export const BattleHUD = React.memo<BattleHUDProps>(
         const enemyName = battleMode === 'PVE' && activePveEnemy ? activePveEnemy.name : enemyData.name;
         const lastLog = liveLog.length > 0 ? liveLog[liveLog.length - 1] : null;
 
-        // Enemy Avatar
+        // Enemy Avatar - authoritative per-battle resolution
         const enemyAvatar =
-            precomputedEnemyAvatar ||
-            (battleMode === 'PVE'
-                ? enemyData.image || '/assets/images/avatars/panda.webp'
-                : activeRankedOpponent?.avatar || enemyData.image || '/assets/images/avatars/panda.webp');
+            (battleMode === 'PVE' && activePveEnemy?.image)
+                ? activePveEnemy.image
+                : activeRankedOpponent?.avatar
+                  ? activeRankedOpponent.avatar
+                  : enemyData?.image || precomputedEnemyAvatar || '/assets/images/characters/minotaur/minotaur_base.png';
 
         return (
             <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 100 }}>

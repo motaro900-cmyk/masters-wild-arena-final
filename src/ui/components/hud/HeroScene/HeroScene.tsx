@@ -342,7 +342,7 @@ export const HeroScene: React.FC = () => {
                                             setHeroGalleryId(h.id);
                                         }}
                                     />
-                                ) : activeTab === 'HERO' ? (
+                                ) : activeTab === 'HERO' || activeTab === 'GEAR' ? (
                                     <GearView
                                         hero={selectedHero}
                                         stats={stats}

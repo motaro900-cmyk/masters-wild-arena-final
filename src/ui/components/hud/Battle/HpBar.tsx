@@ -176,12 +176,13 @@ export const HpBar = React.memo<HpBarProps>(({ current, max, reverse = false, is
                     justifyContent: 'center',
                     fontSize: '14px',
                     fontWeight: 900,
-                    fontFamily: "'Outfit', 'Cinzel', sans-serif",
-                    color: '#fff',
-                    textShadow: '0 0 5px rgba(0,0,0,1), 1px 1px 3px rgba(0,0,0,1)',
+                    fontFamily: "'Philosopher', 'Cinzel', sans-serif",
+                    color: '#ffffff',
+                    textShadow: '0 0 8px rgba(0,0,0,1), 1px 1px 3px rgba(0,0,0,1), 0 0 2px #000',
                     letterSpacing: '0.8px',
                     userSelect: 'none',
                     pointerEvents: 'none',
+                    zIndex: 10,
                 }}
             >
                 ❤️ {Math.max(0, current)} {shield > 0 ? `[+🛡️ ${shield}]` : ''} / {max}

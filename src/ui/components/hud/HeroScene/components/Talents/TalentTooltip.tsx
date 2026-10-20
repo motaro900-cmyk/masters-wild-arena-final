@@ -48,7 +48,25 @@ export const TalentTooltip = ({ talent, pos, color }: any) => {
                         boxShadow: `inset 0 0 15px ${color}22`,
                     }}
                 >
-                    <div className={talent.iconClass} style={{ width: '60px', height: '60px' }} />
+                    <div style={{ fontSize: '44px' }}>
+                        {(() => {
+                            const emojiMap: Record<string, string> = {
+                                atk_base: '🔥',
+                                atk_crit: '🐾',
+                                atk_pen: '🐯',
+                                atk_ult: '⚡',
+                                def_base: '🛡️',
+                                def_res: '🌀',
+                                def_eva: '🔮',
+                                def_ult: '🐦',
+                                mas_base: '🧘',
+                                mas_spd: '🌙',
+                                mas_focus: '🪷',
+                                mas_ult: '💧',
+                            };
+                            return emojiMap[talent.id] || '✨';
+                        })()}
+                    </div>
                 </div>
                 <div>
                     <div

@@ -99,11 +99,19 @@ export async function handleRewardClaim(req, res) {
                 profile.claimedRankRewards.push(rewardKey);
                 reason = `rank_up_${rewardKey}`;
             } else if (rewardType === 'QUEST') {
-                // Fixed quest reward lookup
+                if (!profile.claimedQuests) profile.claimedQuests = [];
+                const questId = String(rewardKey || '').trim();
+                if (!questId) {
+                    return { success: false, error: 'Invalid quest key' };
+                }
+                if (profile.claimedQuests.includes(questId)) {
+                    return { success: false, error: 'Quest reward already claimed' };
+                }
                 goldAward = 250;
                 crystalsAward = 5;
                 expAward = 100;
-                reason = `quest_${rewardKey}`;
+                profile.claimedQuests.push(questId);
+                reason = `quest_${questId}`;
             } else if (rewardType === 'SOCIAL_FAVORITE') {
                 if (!profile.claimedSocialRewards) profile.claimedSocialRewards = [];
                 if (profile.claimedSocialRewards.includes('favorites')) {

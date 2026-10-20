@@ -5,7 +5,7 @@ import { TextStyle } from 'pixi.js';
  */
 export const TextStyles = {
     panelTitle: new TextStyle({
-        fontFamily: 'Cinzel, serif',
+        fontFamily: ['Philosopher', 'Cinzel', 'serif'],
         fontSize: 22,
         fontWeight: '700',
         fill: '#f0c040',
@@ -38,7 +38,7 @@ export const TextStyles = {
     }),
 
     resourceValue: new TextStyle({
-        fontFamily: 'Cinzel, serif',
+        fontFamily: ['Philosopher', 'Cinzel', 'serif'],
         fontSize: 18,
         fontWeight: '700',
         fill: '#f0c040',
@@ -51,7 +51,7 @@ export const TextStyles = {
     }),
 
     buttonLabel: new TextStyle({
-        fontFamily: 'Cinzel, serif',
+        fontFamily: ['Philosopher', 'Cinzel', 'serif'],
         fontSize: 16,
         fontWeight: '700',
         fill: '#fff8e8',

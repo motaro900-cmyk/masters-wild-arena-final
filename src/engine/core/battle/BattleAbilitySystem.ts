@@ -66,7 +66,7 @@ export async function castActiveAbility(engine: BattleEngine, isPlayerCast: bool
     }
 
     const rawDmg = casterStats.attack * damageMultiplier * (0.9 + Math.random() * 0.2);
-    const mitigated = Math.max(1, rawDmg - targetStats.defense * 0.25);
+    const mitigated = Math.max(1, rawDmg - Math.max(0, targetStats.defense || 0) * 0.25);
     const finalDamage = Math.ceil(mitigated);
 
     if (isPlayerCast) {

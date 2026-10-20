@@ -164,12 +164,12 @@ export async function resolvePeriodicDamage(engine: BattleEngine, unit: HeroUnit
                 tickDamage = Math.ceil(targetMaxHP * 0.035);
             }
 
-            const targetDefense = targetStats ? targetStats.defense : 0;
+            const targetDefense = Math.max(0, targetStats ? targetStats.defense : 0);
             const defMultiplier = status.type === 'POISON' ? 0.5 : 0.25;
             const effectiveDef = targetDefense * defMultiplier;
             const targetAvgItemLevel = targetStats ? targetStats.avgItemLevel || 1 : 1;
             const divisor = 200 + (targetAvgItemLevel - 1) * 25;
-            const mitigation = effectiveDef / (effectiveDef + divisor);
+            const mitigation = Math.max(0, Math.min(0.85, effectiveDef / (effectiveDef + divisor)));
             const finalDamage = Math.max(1, Math.ceil(tickDamage * (1 - mitigation)));
 
             engine.applyDamage(isPlayer ? 'player' : 'enemy', finalDamage);

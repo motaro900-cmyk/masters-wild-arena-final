@@ -252,12 +252,12 @@ export function skipToEndOfBattle(engine: BattleEngine) {
                         if (isCrit) baseDmg *= pStats.critDamage || 1.5;
                         if (isOneShot) baseDmg = 999999;
 
-                        let targetDefense = eStats.defense * Math.max(0, 1 - (pStats.penetration || 0) / 100);
+                        let targetDefense = Math.max(0, eStats.defense * Math.max(0, 1 - (pStats.penetration || 0) / 100));
                         if (playerWeaponArchetype === 'STAFF') {
                             targetDefense *= 0.5;
                         }
 
-                        const defReduction = targetDefense / (targetDefense + eDivisor);
+                        const defReduction = Math.max(0, Math.min(0.85, targetDefense / (targetDefense + eDivisor)));
                         const mitigated = Math.max(0, baseDmg * (1 - defReduction));
                         const blockCheck = Math.random() < (eStats.defense > 0 ? 0.15 : 0.05);
 
@@ -350,8 +350,8 @@ export function skipToEndOfBattle(engine: BattleEngine) {
                         const isCrit = Math.random() < eStats.critChance;
                         if (isCrit) baseDmg *= eStats.critDamage || 1.5;
 
-                        let targetDefense = pStats.defense * Math.max(0, 1 - (eStats.penetration || 0) / 100);
-                        const pDefReduction = targetDefense / (targetDefense + pDivisor);
+                        let targetDefense = Math.max(0, pStats.defense * Math.max(0, 1 - (eStats.penetration || 0) / 100));
+                        const pDefReduction = Math.max(0, Math.min(0.85, targetDefense / (targetDefense + pDivisor)));
                         let mitigated = Math.max(0, baseDmg * (1 - pDefReduction));
                         if (isGodMode) mitigated = 0;
 

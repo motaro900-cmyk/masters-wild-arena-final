@@ -68,21 +68,13 @@ export default async function handler(req, res) {
 
         const USERS_COLLECTION = body.isDev === true ? 'пользователи_dev' : 'пользователи';
 
-        // Build the minimal beacon snapshot — only fields that meaningfully change at session end
+        // Build the minimal beacon snapshot — only session timestamps
         const now = new Date().toISOString();
         const snapshot = {
             beaconSyncAt: now,
             wasOnline: now,
             'былВСети': now,
         };
-
-        if (body.energy    !== undefined) snapshot.energy       = Math.round(body.energy);
-        if (body.gold      !== undefined) snapshot.gold         = Math.round(body.gold);
-        if (body.crystals  !== undefined) snapshot.crystals     = Math.round(body.crystals);
-        if (body.rating    !== undefined) snapshot.rating       = Math.round(body.rating);
-        if (body.wins      !== undefined) snapshot.wins         = Math.round(body.wins);
-        if (body.totalBattles !== undefined) snapshot.totalBattles = Math.round(body.totalBattles);
-        if (body.trophies  !== undefined) snapshot.trophies     = Math.round(body.trophies);
 
         // Include full state snapshot if present
         if (body.fullStateJSON) {

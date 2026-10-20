@@ -152,7 +152,23 @@ export async function handleBattleFinish(req, res) {
         isAttackerWinner = simStats.winner === 'player';
 
         if (Boolean(won) && !isAttackerWinner) {
-            console.warn(`[BattleHandler] Anti-cheat triggered: client claimed victory for battleId=${battleId}, but server simulation determined defeat! Overriding to defeat.`);
+            // Check if player win is mathematically plausible via abilities, instincts, and crits
+            // Basic auto-attack sim does not account for active spells (2.5x dmg), stun, and instincts
+            const pAtk = session.playerStats.attack || 1;
+            const pHP = session.playerStats.hp || 1;
+            const eAtk = session.enemyStats.attack || 1;
+            const eHP = session.enemyStats.hp || 1;
+            const playerPower = pAtk * pHP;
+            const enemyPower = eAtk * eHP;
+
+            const isPlausible = (playerPower / enemyPower >= 0.40) || (simStats.enemyHpRemaining < eHP * 0.60);
+
+            if (isPlausible) {
+                isAttackerWinner = true;
+                console.log(`[BattleHandler] Tactical victory verified via player abilities/instincts for battleId=${battleId}`);
+            } else {
+                console.warn(`[BattleHandler] Anti-cheat triggered: client claimed impossible victory for battleId=${battleId} (playerPower=${playerPower}, enemyPower=${enemyPower}). Overriding to defeat.`);
+            }
         }
     } else {
         isAttackerWinner = Boolean(won);

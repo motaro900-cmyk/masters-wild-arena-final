@@ -1,4 +1,5 @@
 import React from 'react';
+import ReactDOM from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../../store/useGameStore';
 import { SceneSwitcher } from '../components/SceneSwitcher';
@@ -114,7 +115,7 @@ export const SafeGameLayout = ({ isPortrait = false, isMobile = false }: SafeGam
                     </React.Suspense>
                 </div>
                 {onboardingCompleted && (
-                    <div style={{ position: 'absolute', inset: 0, zIndex: 100, pointerEvents: 'none' }}>
+                    <div style={{ position: 'absolute', inset: 0, zIndex: 20000, pointerEvents: 'none' }}>
                         <GameHUD />
                     </div>
                 )}
@@ -327,101 +328,90 @@ export const SafeGameLayout = ({ isPortrait = false, isMobile = false }: SafeGam
                 )}
             </AnimatePresence>
 
-            {/* 🔄 Screen Rotation Warning Overlay */}
-            <AnimatePresence>
-                {isPortrait && isMobile && !dismissedRotationWarning && (
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        style={{
-                            position: 'absolute',
-                            inset: 0,
-                            zIndex: 99999,
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            backdropFilter: 'blur(12px)',
-                            backgroundColor: 'rgba(10, 10, 14, 0.9)',
-                            color: '#fff',
-                            fontFamily: "'Outfit', 'Inter', sans-serif",
-                            padding: '24px',
-                            textAlign: 'center',
-                            pointerEvents: 'auto',
-                        }}
-                    >
-                        <div
+            {/* 🔄 Screen Rotation Warning Overlay (Rendered via Portal to prevent sideways 90deg scaling traps) */}
+            {typeof document !== 'undefined' && ReactDOM.createPortal(
+                <AnimatePresence>
+                    {isPortrait && isMobile && !dismissedRotationWarning && (
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
                             style={{
-                                fontSize: '64px',
-                                marginBottom: '20px',
-                                animation: 'spin-device 2s ease-in-out infinite',
+                                position: 'fixed',
+                                inset: 0,
+                                zIndex: 9999999,
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                backdropFilter: 'blur(16px)',
+                                backgroundColor: 'rgba(10, 10, 14, 0.95)',
+                                color: '#fff',
+                                fontFamily: "'Philosopher', 'Outfit', sans-serif",
+                                padding: '24px',
+                                textAlign: 'center',
+                                pointerEvents: 'auto',
                             }}
                         >
-                            🔄
-                        </div>
-                        <h2
-                            style={{
-                                fontSize: '28px',
-                                fontWeight: 800,
-                                background: 'linear-gradient(135deg, #FFE07D 0%, #F59E0B 100%)',
-                                WebkitBackgroundClip: 'text',
-                                WebkitTextFillColor: 'transparent',
-                                margin: '0 0 12px 0',
-                                textTransform: 'uppercase',
-                                letterSpacing: '1px',
-                            }}
-                        >
-                            Поверните устройство
-                        </h2>
-                        <p
-                            style={{
-                                fontSize: '16px',
-                                color: '#A1A1AA',
-                                maxWidth: '300px',
-                                lineHeight: 1.5,
-                                margin: '0 0 32px 0',
-                            }}
-                        >
-                            Игра создана для горизонтального режима. Пожалуйста, переверните телефон для лучшего
-                            игрового опыта.
-                        </p>
-                        <button
-                            onClick={() => setDismissedRotationWarning(true)}
-                            style={{
-                                padding: '12px 24px',
-                                borderRadius: '12px',
-                                border: '2px solid rgba(245, 158, 11, 0.3)',
-                                backgroundColor: 'rgba(245, 158, 11, 0.1)',
-                                color: '#FFE07D',
-                                fontWeight: 700,
-                                fontSize: '14px',
-                                cursor: 'pointer',
-                                transition: 'all 0.2s ease',
-                                textTransform: 'uppercase',
-                                letterSpacing: '0.5px',
-                            }}
-                            onMouseEnter={(e) => {
-                                e.currentTarget.style.backgroundColor = 'rgba(245, 158, 11, 0.2)';
-                                e.currentTarget.style.borderColor = 'rgba(245, 158, 11, 0.6)';
-                            }}
-                            onMouseLeave={(e) => {
-                                e.currentTarget.style.backgroundColor = 'rgba(245, 158, 11, 0.1)';
-                                e.currentTarget.style.borderColor = 'rgba(245, 158, 11, 0.3)';
-                            }}
-                        >
-                            Играть в портретном
-                        </button>
-                        <style>{`
-                            @keyframes spin-device {
-                                0% { transform: rotate(0deg); }
-                                50% { transform: rotate(-90deg); }
-                                100% { transform: rotate(0deg); }
-                            }
-                        `}</style>
-                    </motion.div>
-                )}
-            </AnimatePresence>
+                            <div
+                                style={{
+                                    fontSize: '64px',
+                                    marginBottom: '20px',
+                                    animation: 'spin-device 2s ease-in-out infinite',
+                                }}
+                            >
+                                🔄
+                            </div>
+                            <h2
+                                style={{
+                                    fontSize: '28px',
+                                    fontWeight: 800,
+                                    background: 'linear-gradient(135deg, #FFE07D 0%, #F59E0B 100%)',
+                                    WebkitBackgroundClip: 'text',
+                                    WebkitTextFillColor: 'transparent',
+                                    margin: '0 0 12px 0',
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '1px',
+                                }}
+                            >
+                                Поверните устройство
+                            </h2>
+                            <p
+                                style={{
+                                    fontSize: '16px',
+                                    color: '#A1A1AA',
+                                    maxWidth: '320px',
+                                    lineHeight: 1.5,
+                                    margin: '0 0 32px 0',
+                                }}
+                            >
+                                Игра создана для горизонтального режима. Пожалуйста, переверните телефон для лучшего
+                                игрового опыта.
+                            </p>
+                            <button
+                                onClick={() => setDismissedRotationWarning(true)}
+                                style={{
+                                    minHeight: '48px',
+                                    padding: '14px 28px',
+                                    borderRadius: '14px',
+                                    border: '2px solid rgba(245, 158, 11, 0.4)',
+                                    backgroundColor: 'rgba(245, 158, 11, 0.15)',
+                                    color: '#FFE07D',
+                                    fontWeight: 800,
+                                    fontSize: '15px',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.2s ease',
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.8px',
+                                }}
+                            >
+                                Продолжить все равно
+                            </button>
+                        </motion.div>
+                    )}
+                </AnimatePresence>,
+                document.body
+            )}
 
             
 

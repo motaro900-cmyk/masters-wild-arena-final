@@ -37,7 +37,7 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
     const [termsAccepted, setTermsAccepted] = useState(false);
     const [privacyAccepted, setPrivacyAccepted] = useState(false);
     const legalAccepted = termsAccepted && privacyAccepted;
-    const [openDoc, setOpenDoc] = useState<'privacy' | 'terms' | null>(null);
+    const [openDoc, setOpenDoc] = useState<'privacy' | 'terms' | 'consent' | null>(null);
     const [isTransitioning, setIsTransitioning] = useState(false);
     const isMobile = useGameStore((state) => state.isMobile);
     const backgroundSrc = isMobile ? AssetsMap.BACKGROUNDS.MAIN_MENU_MOBILE : AssetsMap.BACKGROUNDS.MAIN_MENU;
@@ -848,7 +848,17 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
                                                 textAlign: 'left',
                                             }}
                                         >
-                                            Я даю согласие на обработку данных (152-ФЗ) согласно{' '}
+                                            Я даю согласие на обработку данных (152-ФЗ / 233-ФЗ) согласно{' '}
+                                            <span
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setOpenDoc('consent');
+                                                }}
+                                                style={{ color: '#f0c040', textDecoration: 'underline', cursor: 'pointer', fontWeight: 600 }}
+                                            >
+                                                Согласию на обработку данных
+                                            </span>
+                                            {' '}и{' '}
                                             <span
                                                 onClick={(e) => {
                                                     e.stopPropagation();
@@ -856,7 +866,7 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
                                                 }}
                                                 style={{ color: '#f0c040', textDecoration: 'underline', cursor: 'pointer', fontWeight: 600 }}
                                             >
-                                                Политике конфиденциальности
+                                                Политике
                                             </span>
                                         </div>
                                     </div>
