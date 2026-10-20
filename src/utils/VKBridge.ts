@@ -1,3 +1,4 @@
+import { Howler } from 'howler';
 import bridge from '@vkontakte/vk-bridge';
 import { useGameStore } from '../store/useGameStore';
 
@@ -25,6 +26,25 @@ const isMobileVKApp = (): boolean => {
             (window as any).webkit.messageHandlers &&
             (window as any).webkit.messageHandlers.VKWebAppAPI !== undefined);
     return hasMobileUA || hasMobileBridge;
+};
+
+
+const withAudioMuted = async <T>(fn: () => Promise<T>): Promise<T> => {
+    try {
+        if (typeof Howler !== 'undefined') {
+            Howler.mute(true);
+        }
+    } catch {}
+    try {
+        return await fn();
+    } finally {
+        try {
+            if (typeof Howler !== 'undefined') {
+                const isMuted = useGameStore.getState().isMuted;
+                Howler.mute(isMuted);
+            }
+        } catch {}
+    }
 };
 
 export const isVkMiniApp = (): boolean => {
@@ -204,10 +224,12 @@ export const showRewardedVideo = async (): Promise<boolean> => {
     }
 
     try {
-        const result = await bridge.send('VKWebAppShowNativeAds', {
-            ad_format: 'reward',
+        return await withAudioMuted(async () => {
+            const result = await bridge.send('VKWebAppShowNativeAds', {
+                ad_format: 'reward',
+            });
+            return result.result === true;
         });
-        return result.result === true;
     } catch (error) {
         console.warn('VKWebAppShowNativeAds failed:', error);
         return false;

@@ -309,11 +309,14 @@ export const GameHUD: React.FC = () => {
                 activeWindow !== 'RANKED_LOBBY' &&
                 !showSummonOverlay && (
                     <div
-                        className="tutorial-resource-bar absolute top-[20px] right-[25px] hud-interactive flex flex-col items-end gap-1"
+                        className="tutorial-resource-bar absolute top-[20px] hud-interactive flex flex-col items-end gap-1"
                         style={{
                             zIndex: 10000,
                             transform: `scale(${hudScale})`,
                             transformOrigin: 'top right',
+                            right: typeof window !== 'undefined' && (window.location.search.includes('vk_') || window.innerWidth < 768)
+                                ? 'max(calc(env(safe-area-inset-right, 0px) + 96px), 96px)'
+                                : 'max(calc(env(safe-area-inset-right, 0px) + 25px), 25px)',
                         }}
                     >
                         <ResourceBar

@@ -87,10 +87,12 @@ export function applyHitResolution(
             fx.screenShake(shakeIntensity, 0.95, 150);
         }
 
-        // 6. Стоп-кадр (Freeze Frame) для Критов
+        // 6. Стоп-кадр (Freeze Frame) - Золотой стандарт Porsuk Games (35-80мс)
         if (hitType === 'CRIT') {
             const freezeDuration = attackerRole === 'TANK' ? 80 : attackerRole === 'ASSASSIN' ? 50 : 65;
-            fx.freezeFrame(freezeDuration, 0.05);
+            fx.freezeFrame(freezeDuration, 0.04);
+        } else if (hitType === 'HIT') {
+            fx.freezeFrame(35, 0.08);
         }
 
         // 7. Взрыв искр/частиц (Particle Burst)

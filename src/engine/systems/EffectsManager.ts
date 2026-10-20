@@ -298,6 +298,25 @@ export class EffectsManager {
                 gsap.killTweensOf(target, { x: true });
             }
 
+            const origScaleX = target.scale.x;
+            const origScaleY = target.scale.y;
+
+            // Squash & Stretch по Porsuk Games при ударе
+            gsap.to(target.scale, {
+                x: origScaleX * 0.88,
+                y: origScaleY * 1.12,
+                duration: 0.07,
+                yoyo: true,
+                repeat: 1,
+                ease: 'power2.out',
+                onComplete: () => {
+                    if (!target.destroyed) {
+                        target.scale.x = origScaleX;
+                        target.scale.y = origScaleY;
+                    }
+                }
+            });
+
             gsap.to(target, {
                 x: target.defaultX + distance * direction,
                 duration: 0.08,
