@@ -442,7 +442,7 @@ export const GameHUD: React.FC = () => {
                                     border: '2px solid #f0c040',
                                     borderRadius: '10px',
                                     color: '#f0c040',
-                                    fontFamily: "'Cinzel', serif",
+                                    fontFamily: "'Cinzel', 'Philosopher', serif",
                                     fontSize: '20px',
                                     fontWeight: 'bold',
                                     textShadow: '0 2px 10px rgba(0,0,0,1)',
@@ -536,7 +536,7 @@ export const GameHUD: React.FC = () => {
                             />
                             <div
                                 style={{
-                                    fontFamily: "'Cinzel', serif",
+                                    fontFamily: "'Cinzel', 'Philosopher', serif",
                                     fontSize: '20px',
                                     fontWeight: 900,
                                     color: '#f0c040',

@@ -247,7 +247,7 @@ export const LevelUpOverlay: React.FC = () => {
                             border: '2px solid #fbbf24',
                             borderRadius: '12px',
                             color: '#ffffff',
-                            fontFamily: "'Cinzel', serif",
+                            fontFamily: "'Cinzel', 'Philosopher', serif",
                             fontSize: '16px',
                             fontWeight: 900,
                             cursor: 'pointer',

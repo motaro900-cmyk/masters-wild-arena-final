@@ -158,7 +158,7 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
             syncService.disableSync();
             syncService.stopAutoSync();
 
-            const userId = store.userId || localStorage.getItem('motw_userId');
+            const userId = syncService.getCurrentUserId() || (store.vkUser ? `VK-${store.vkUser.id}` : store.playerId);
             if (userId) {
                 try {
                     const launchParams = window.location.search || '';
@@ -253,7 +253,7 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
                         <span style={{ fontSize: '18px' }}>🔊</span>
                         <span
                             style={{
-                                fontFamily: "'Cinzel', serif",
+                                fontFamily: "'Cinzel', 'Philosopher', serif",
                                 fontSize: '15px',
                                 fontWeight: 800,
                                 color: colors.accent,
@@ -552,7 +552,7 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
                             <span style={{ fontSize: '18px' }}>👤</span>
                             <span
                                 style={{
-                                    fontFamily: "'Cinzel', serif",
+                                    fontFamily: "'Cinzel', 'Philosopher', serif",
                                     fontSize: '15px',
                                     fontWeight: 800,
                                     color: colors.accent,
@@ -631,7 +631,7 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
                         <span style={{ fontSize: '18px' }}>🌐</span>
                         <span
                             style={{
-                                fontFamily: "'Cinzel', serif",
+                                fontFamily: "'Cinzel', 'Philosopher', serif",
                                 fontSize: '15px',
                                 fontWeight: 800,
                                 color: colors.accent,
@@ -655,7 +655,7 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
                                 fontWeight: 900,
                                 cursor: 'pointer',
                                 transition: 'all 0.2s ease',
-                                fontFamily: "'Cinzel', serif",
+                                fontFamily: "'Cinzel', 'Philosopher', serif",
                             }}
                         >
                             РУССКИЙ
@@ -673,7 +673,7 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
                                 fontWeight: 900,
                                 cursor: 'pointer',
                                 transition: 'all 0.2s ease',
-                                fontFamily: "'Cinzel', serif",
+                                fontFamily: "'Cinzel', 'Philosopher', serif",
                             }}
                         >
                             ENGLISH

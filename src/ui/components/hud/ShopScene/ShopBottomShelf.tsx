@@ -58,7 +58,7 @@ export const ShopBottomShelf: React.FC<ShopBottomShelfProps> = ({
                     border: '1px solid rgba(240, 192, 64, 0.25)',
                     borderRadius: '8px',
                     fontSize: '13px',
-                    fontFamily: "'Cinzel', serif",
+                    fontFamily: "'Cinzel', 'Philosopher', serif",
                     fontWeight: 800,
                     textTransform: 'uppercase',
                     textShadow: '0 2px 4px rgba(0,0,0,1)',

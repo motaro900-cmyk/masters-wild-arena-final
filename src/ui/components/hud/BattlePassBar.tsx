@@ -87,7 +87,7 @@ export const BattlePassBar: React.FC = () => {
                 >
                     <span
                         style={{
-                            fontFamily: "'Cinzel', serif",
+                            fontFamily: "'Cinzel', 'Philosopher', serif",
                             fontSize: 38, // Увеличили с 34
                             fontWeight: 900,
                             color: '#ffffff',
@@ -160,7 +160,7 @@ export const BattlePassBar: React.FC = () => {
                         left: '50%',
                         top: '18%',
                         transform: 'translateX(-50%)',
-                        fontFamily: "'Cinzel', serif",
+                        fontFamily: "'Cinzel', 'Philosopher', serif",
                         fontSize: 18, // Увеличили с 16
                         fontWeight: 900,
                         color: '#f0c040',

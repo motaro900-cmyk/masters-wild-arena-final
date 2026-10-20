@@ -25,7 +25,7 @@ export const TabButton: React.FC<{
             color: active ? '#ffffff' : '#c8a870',
             fontWeight: 900,
             fontSize: '14px',
-            fontFamily: "'Cinzel', serif",
+            fontFamily: "'Cinzel', 'Philosopher', serif",
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',

@@ -86,7 +86,7 @@ export const PurchaseModal = ({ hero, onClose, rarityColors }: any) => {
                     >
                         ПОДТВЕРЖДЕНИЕ ПОКУПКИ
                     </div>
-                    <div style={{ color: '#fff', fontSize: '30px', fontWeight: 900, fontFamily: "'Cinzel', serif" }}>
+                    <div style={{ color: '#fff', fontSize: '30px', fontWeight: 900, fontFamily: "'Cinzel', 'Philosopher', serif" }}>
                         {hero.name}
                     </div>
                 </div>
@@ -335,7 +335,7 @@ export const PurchaseModal = ({ hero, onClose, rarityColors }: any) => {
                         fontSize: '12px',
                         fontWeight: 900,
                         cursor: 'pointer',
-                        fontFamily: "'Cinzel', serif",
+                        fontFamily: "'Cinzel', 'Philosopher', serif",
                         letterSpacing: '2px',
                         marginTop: '-4px',
                     }}

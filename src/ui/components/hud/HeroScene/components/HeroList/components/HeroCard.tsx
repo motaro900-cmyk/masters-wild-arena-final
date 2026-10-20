@@ -257,7 +257,7 @@ export const HeroCard = memo(function HeroCard({
                                     style={{
                                         fontSize: '9px',
                                         fontWeight: 900,
-                                        fontFamily: "'Cinzel', serif",
+                                        fontFamily: "'Cinzel', 'Philosopher', serif",
                                         color: '#f0c040',
                                         letterSpacing: '1px',
                                         textAlign: 'center',
@@ -394,7 +394,7 @@ export const HeroCard = memo(function HeroCard({
                             color: '#fffdf9',
                             fontSize: '16.5px',
                             fontWeight: 900,
-                            fontFamily: "'Cinzel', serif",
+                            fontFamily: "'Cinzel', 'Philosopher', serif",
                             letterSpacing: '0.7px',
                             whiteSpace: 'nowrap',
                             overflow: 'hidden',

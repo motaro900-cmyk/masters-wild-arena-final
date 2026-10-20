@@ -532,6 +532,7 @@ export const createPlayerSlice = (set: any, get: any) => {
                 const isMember = force || (await isGroupMember());
                 if (!isMember) {
                     console.warn('claimGroupReward: пользователь не состоит в группе');
+                    get().showAlert('Для получения бонуса необходимо подписаться на официальное сообщество игры!');
                     return;
                 }
 

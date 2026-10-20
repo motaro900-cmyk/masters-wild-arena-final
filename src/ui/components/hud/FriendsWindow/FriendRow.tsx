@@ -197,7 +197,7 @@ export const FriendRow: React.FC<FriendRowProps> = ({
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 2 }}>
                     <span
                         style={{
-                            fontFamily: "'Cinzel', serif",
+                            fontFamily: "'Cinzel', 'Philosopher', serif",
                             fontSize: 15,
                             fontWeight: 700,
                             color: isLight ? '#5d4037' : '#fff',

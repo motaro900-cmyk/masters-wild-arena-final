@@ -297,7 +297,7 @@ export const ChatPanel = React.memo(() => {
                     borderBottom: 'none',
                     borderRadius: '8px 8px 0 0',
                     cursor: 'pointer',
-                    fontFamily: "'Cinzel', serif",
+                    fontFamily: "'Cinzel', 'Philosopher', serif",
                     fontSize: 11,
                     fontWeight: 800,
                     color: '#f0c040',
@@ -342,7 +342,7 @@ export const ChatPanel = React.memo(() => {
                             padding: '6px 16px',
                             fontSize: '13px',
                             fontWeight: 750,
-                            fontFamily: "'Philosopher', 'Cinzel', serif",
+                            fontFamily: "'Philosopher', 'Cinzel', 'Philosopher', serif",
                             color: activeChatTab === tab.id ? '#ffd700' : '#c5b49f',
                             textShadow:
                                 activeChatTab === tab.id ? '0 1px 1.5px rgba(0,0,0,0.9)' : '0 1px 1px rgba(0,0,0,0.7)',
@@ -444,7 +444,7 @@ export const ChatPanel = React.memo(() => {
                                         color: '#f0c040',
                                         fontSize: '11px',
                                         fontWeight: 900,
-                                        fontFamily: "'Cinzel', serif",
+                                        fontFamily: "'Cinzel', 'Philosopher', serif",
                                         letterSpacing: '1px',
                                     }}
                                 >

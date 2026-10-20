@@ -124,6 +124,8 @@ export const initVK = async (): Promise<boolean> => {
             
             // Request orientation lock non-blocking in background
             bridge.send('VKWebAppLockOrientation' as any, { orientation: 'landscape' }).catch(() => {});
+            // VK Direct Games: Disable swipe back on iOS/Android to prevent accidental mini-app dismissal during gameplay
+            bridge.send('VKWebAppDisableSwipeBack' as any).catch(() => {});
             
             // Запрашиваем полный экран сразу после инициализации
             try {
@@ -258,28 +260,30 @@ export const purchaseVotes = async (item: string): Promise<boolean> => {
     }
 
     try {
-        // VKWebAppShowOrderBox возвращает { success: boolean, order_id: string }
-        // Документация: https://dev.vk.com/ru/bridge/VKWebAppShowOrderBox
-        const orderResult = await bridge.send('VKWebAppShowOrderBox', {
-            type: 'item',
-            item: item,
+        return await withAudioMuted(async () => {
+            // VKWebAppShowOrderBox возвращает { success: boolean, order_id: string }
+            // Документация: https://dev.vk.com/ru/bridge/VKWebAppShowOrderBox
+            const orderResult = await bridge.send('VKWebAppShowOrderBox', {
+                type: 'item',
+                item: item,
+            });
+
+            // VK может возвращать success как boolean, status как 'success' или просто order_id при успехе
+            const isSuccess =
+                (orderResult as any).success === true ||
+                (orderResult as any).status === 'success' ||
+                !!(orderResult as any).order_id;
+
+            if (!isSuccess) {
+                console.warn('VKWebAppShowOrderBox: check failed', orderResult);
+                return false;
+            }
+
+            const orderId = (orderResult as any).order_id;
+            console.log(`VKWebAppShowOrderBox: purchase successful, order_id=${orderId}`);
+            // order_id есть — платёж прошёл, начисляем кристаллы
+            return true;
         });
-
-        // VK может возвращать success как boolean, status как 'success' или просто order_id при успехе
-        const isSuccess =
-            (orderResult as any).success === true ||
-            (orderResult as any).status === 'success' ||
-            !!(orderResult as any).order_id;
-
-        if (!isSuccess) {
-            console.warn('VKWebAppShowOrderBox: check failed', orderResult);
-            return false;
-        }
-
-        const orderId = (orderResult as any).order_id;
-        console.log(`VKWebAppShowOrderBox: purchase successful, order_id=${orderId}`);
-        // order_id есть — платёж прошёл, начисляем кристаллы
-        return true;
     } catch (error: any) {
         console.warn('VKWebAppShowOrderBox failed:', error);
 
@@ -656,11 +660,13 @@ export const showInterstitialAd = async (force: boolean = false): Promise<boolea
     }
 
     try {
-        const result = await bridge.send('VKWebAppShowNativeAds', {
-            ad_format: 'interstitial',
+        return await withAudioMuted(async () => {
+            const result = await bridge.send('VKWebAppShowNativeAds', {
+                ad_format: 'interstitial',
+            });
+            lastInterstitialTime = now;
+            return result.result === true;
         });
-        lastInterstitialTime = now;
-        return result.result === true;
     } catch (error) {
         console.warn('VKWebAppShowNativeAds (interstitial) failed:', error);
         return false;
@@ -722,12 +728,13 @@ export const openStoryBox = async (isVictory?: boolean): Promise<'shared' | 'can
         return 'shared';
     }
     try {
+        const origin = typeof window !== 'undefined' ? window.location.origin : 'https://mastersofthewild.ru';
         const bgUrl =
             isVictory === true
-                ? 'https://sun9-33.userapi.com/s/v1/ig2/-cikeD5OWMw7rAmGdS5R-4Qc7DT4SIpWg1pRLtwFYvxFV0_Kbi4aMAG4EWEvbjGBwT-DyJ6BcTogOAziGIGT6j8C.jpg?quality=95&as=32x57,48x86,72x129,108x193,160x287,240x430,360x645,480x860,540x967,640x1147,720x1290,1080x1935,1280x2293,1429x2560&from=bu&cs=1429x0'
+                ? `${origin}/assets/images/sharing/share_victory.png`
                 : isVictory === false
-                  ? 'https://sun9-44.userapi.com/s/v1/ig2/vBq7o7uaFoArdRighVflBYTaFwa4Vdcy6QCUxv_0pUQv7EQBSPDP_uc-PGhcVGIEiGToCh5ZXrjeKQqtD7Lp_Aos.jpg?quality=95&as=32x57,48x86,72x129,108x193,160x287,240x430,360x645,480x860,540x967,640x1147,720x1290,1080x1935,1280x2293,1429x2560&from=bu&cs=1429x0'
-                  : `${window.location.origin}/assets/images/backgrounds/bg_main_mobile.webp`;
+                  ? `${origin}/assets/images/sharing/share_defeat.png`
+                  : `${origin}/assets/images/backgrounds/bg_main_mobile.webp`;
         await bridge.send('VKWebAppShowStoryBox', {
             background_type: 'image',
             url: bgUrl,
@@ -759,7 +766,7 @@ export const openShareLink = async (): Promise<boolean> => {
     if (!bridge || !isVkMiniApp()) {
         console.log('[Mock] VKWebAppShare вызван (localhost)');
         copyToClipboard(link);
-        alert(`[Тест] VKWebAppShare вызван на localhost для ссылки: ${link}. Ссылка скопирована в буфер обмена!`);
+        console.info('[VKBridge] Mock VKWebAppShare called for link: ' + link);
         return true;
     }
     try {

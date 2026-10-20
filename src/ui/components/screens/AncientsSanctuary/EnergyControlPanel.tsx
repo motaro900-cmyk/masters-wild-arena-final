@@ -182,7 +182,7 @@ export const EnergyControlPanel: React.FC<EnergyControlPanelProps> = ({
                     gap: '10px',
                     boxShadow: !hasEnoughEnergy ? '0 4px 10px rgba(0,0,0,0.4)' : '0 0 15px rgba(251, 191, 36, 0.35)',
                     letterSpacing: '2px',
-                    fontFamily: "'Cinzel', serif",
+                    fontFamily: "'Cinzel', 'Philosopher', serif",
                 }}
             >
                 <span>{currentMob.isBoss ? `БОСС: ЭТАЖ ${pveStage}` : `В БОЙ: ЭТАЖ ${pveStage}`}</span>

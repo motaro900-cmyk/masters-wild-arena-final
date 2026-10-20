@@ -412,18 +412,19 @@ class AudioService {
 
         // 5. Запуск воспроизведения с рандомизацией
         try {
-            // Pitch Randomization
+            // Регистрация инстанса
+            const playId = sound.play();
+
+            // Pitch Randomization (точечно для созданного playId, чтобы не сбивать другие голоса)
             const pitchRange = config.pitchRange || [0.95, 1.05];
             const randomPitch = pitchRange[0] + Math.random() * (pitchRange[1] - pitchRange[0]);
-            sound.rate(randomPitch);
+            sound.rate(randomPitch, playId);
 
             // Volume Randomization (90% - 100%)
             const randomVolumeCoef = 0.9 + Math.random() * 0.1;
             const finalVolume = config.volume * this.getBusVolume(config.bus) * randomVolumeCoef;
-            sound.volume(finalVolume);
+            sound.volume(finalVolume, playId);
 
-            // Регистрация инстанса
-            const playId = sound.play();
             this.activeInstances.push({
                 howl: sound,
                 soundId: soundId,

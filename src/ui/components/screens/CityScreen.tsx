@@ -288,7 +288,7 @@ export const CityScreen: React.FC = () => {
                         border: '2px solid #c8a870',
                         borderRadius: '8px',
                         color: '#f0c040',
-                        fontFamily: "'Cinzel', serif",
+                        fontFamily: "'Cinzel', 'Philosopher', serif",
                         fontSize: isMobile ? '16px' : '14px',
                         fontWeight: 'bold',
                         cursor: 'pointer',
@@ -394,7 +394,7 @@ export const CityScreen: React.FC = () => {
                         <h3
                             style={{
                                 color: '#f0c040',
-                                fontFamily: "'Cinzel', serif",
+                                fontFamily: "'Cinzel', 'Philosopher', serif",
                                 fontSize: '24px',
                                 marginBottom: '20px',
                                 letterSpacing: '2px',
@@ -415,7 +415,7 @@ export const CityScreen: React.FC = () => {
                                 borderRadius: '8px',
                                 fontWeight: 'bold',
                                 cursor: 'pointer',
-                                fontFamily: "'Cinzel', serif",
+                                fontFamily: "'Cinzel', 'Philosopher', serif",
                                 letterSpacing: '1px',
                                 transition: 'transform 0.2s',
                             }}
@@ -449,8 +449,8 @@ export const CityScreen: React.FC = () => {
                     <div
                         style={{
                             position: 'absolute',
-                            top: '40px',
-                            right: '40px',
+                            top: '24px',
+                            right: '120px',
                             display: 'flex',
                             alignItems: 'center',
                             gap: '12px',
@@ -472,7 +472,7 @@ export const CityScreen: React.FC = () => {
                                 color: '#fff',
                                 fontSize: '22px',
                                 fontWeight: 'bold',
-                                fontFamily: "'Cinzel', serif",
+                                fontFamily: "'Cinzel', 'Philosopher', serif",
                             }}
                         >
                             {crystals}
@@ -510,7 +510,7 @@ export const CityScreen: React.FC = () => {
                             borderRadius: '8px',
                             boxShadow: '0 4px 10px rgba(0,0,0,0.6)',
                             color: '#f0c040',
-                            fontFamily: "'Cinzel', serif",
+                            fontFamily: "'Cinzel', 'Philosopher', serif",
                             fontSize: '20px',
                             fontWeight: 700,
                             letterSpacing: '2px',
@@ -558,7 +558,7 @@ export const CityScreen: React.FC = () => {
                                 background: 'linear-gradient(to bottom, #fff 20%, #f0c040 100%)',
                                 WebkitBackgroundClip: 'text',
                                 WebkitTextFillColor: 'transparent',
-                                fontFamily: "'Cinzel', serif",
+                                fontFamily: "'Cinzel', 'Philosopher', serif",
                                 fontSize: '44px',
                                 marginBottom: '6px',
                                 letterSpacing: '6px',
@@ -572,7 +572,7 @@ export const CityScreen: React.FC = () => {
                             style={{
                                 color: 'rgba(255,255,255,0.8)',
                                 fontSize: '13px',
-                                fontFamily: "'Cinzel', serif",
+                                fontFamily: "'Cinzel', 'Philosopher', serif",
                                 letterSpacing: '2px',
                                 textShadow: '0 2px 4px rgba(0,0,0,0.9)',
                             }}
@@ -639,7 +639,7 @@ export const CityScreen: React.FC = () => {
                                     animate={{ y: 0, opacity: 1, transition: { delay: 0.2 } }}
                                     style={{
                                         color: '#f0c040',
-                                        fontFamily: "'Cinzel', serif",
+                                        fontFamily: "'Cinzel', 'Philosopher', serif",
                                         fontSize: '42px',
                                         marginBottom: '40px',
                                         letterSpacing: '4px',
@@ -750,7 +750,7 @@ export const CityScreen: React.FC = () => {
                                         borderRadius: '10px',
                                         fontWeight: 'bold',
                                         cursor: 'pointer',
-                                        fontFamily: "'Cinzel', serif",
+                                        fontFamily: "'Cinzel', 'Philosopher', serif",
                                         fontSize: '18px',
                                         letterSpacing: '2px',
                                         boxShadow: '0 5px 15px rgba(200,168,112,0.3)',

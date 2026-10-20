@@ -48,7 +48,7 @@ export const ProfilePreviewCard: React.FC<ProfilePreviewCardProps> = ({
         >
             <div
                 style={{
-                    fontFamily: "'Cinzel', serif",
+                    fontFamily: "'Cinzel', 'Philosopher', serif",
                     fontSize: '16px',
                     fontWeight: 900,
                     color: colors.accent,
@@ -170,7 +170,7 @@ export const ProfilePreviewCard: React.FC<ProfilePreviewCardProps> = ({
                     <span
                         style={{
                             position: 'relative',
-                            fontFamily: "'Cinzel', serif",
+                            fontFamily: "'Cinzel', 'Philosopher', serif",
                             fontSize: '16px',
                             fontWeight: 900,
                             color: '#fff',
@@ -290,7 +290,7 @@ export const ProfilePreviewCard: React.FC<ProfilePreviewCardProps> = ({
                         style={{
                             position: 'relative',
                             zIndex: 1,
-                            fontFamily: "'Cinzel', serif",
+                            fontFamily: "'Cinzel', 'Philosopher', serif",
                             fontSize: vipLevel > 0 ? '16px' : '11px',
                             fontWeight: 900,
                             color: vipLevel > 0 ? '#fff' : '#ccc',

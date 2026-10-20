@@ -22,7 +22,7 @@ export const QuestSection: React.FC<{
             style={{
                 fontSize: '24px',
                 color: '#f0c040',
-                fontFamily: "'Cinzel', serif",
+                fontFamily: "'Cinzel', 'Philosopher', serif",
                 margin: '0 0 10px 0',
                 letterSpacing: '2px',
                 textShadow: '0 2px 5px rgba(0,0,0,0.9)',
@@ -98,7 +98,7 @@ export const QuestSection: React.FC<{
                             fontWeight: 900,
                             marginBottom: '4px',
                             color: quest.canClaim && !quest.isClaimed ? '#ffd700' : '#fff',
-                            fontFamily: "'Cinzel', serif",
+                            fontFamily: "'Cinzel', 'Philosopher', serif",
                             textShadow: '0 1px 2px rgba(0,0,0,0.8)',
                         }}
                     >
@@ -109,7 +109,7 @@ export const QuestSection: React.FC<{
                             fontSize: '13px',
                             color: '#c8a870',
                             marginBottom: '12px',
-                            fontFamily: "'Cinzel', serif",
+                            fontFamily: "'Cinzel', 'Philosopher', serif",
                         }}
                     >
                         {quest.description}
@@ -144,7 +144,7 @@ export const QuestSection: React.FC<{
                                 fontSize: '12px',
                                 fontWeight: 900,
                                 color: '#ffd700',
-                                fontFamily: "'Cinzel', serif",
+                                fontFamily: "'Cinzel', 'Philosopher', serif",
                             }}
                         >
                             {quest.progress} / {quest.target}
@@ -161,7 +161,7 @@ export const QuestSection: React.FC<{
                         gap: '6px',
                     }}
                 >
-                    <div style={{ fontSize: '16px', fontWeight: 950, color: '#f0c040', fontFamily: "'Cinzel', serif" }}>
+                    <div style={{ fontSize: '16px', fontWeight: 950, color: '#f0c040', fontFamily: "'Cinzel', 'Philosopher', serif" }}>
                         +{quest.rewardXp} XP
                     </div>
                     {quest.isClaimed ? (
@@ -170,7 +170,7 @@ export const QuestSection: React.FC<{
                                 fontSize: '11px',
                                 color: '#10b981',
                                 fontWeight: 900,
-                                fontFamily: "'Cinzel', serif",
+                                fontFamily: "'Cinzel', 'Philosopher', serif",
                                 letterSpacing: '1px',
                             }}
                         >
@@ -189,7 +189,7 @@ export const QuestSection: React.FC<{
                                 color: '#1a0d00',
                                 fontWeight: 900,
                                 fontSize: '12px',
-                                fontFamily: "'Cinzel', serif",
+                                fontFamily: "'Cinzel', 'Philosopher', serif",
                                 cursor: 'pointer',
                                 boxShadow: '0 4px 10px rgba(0,0,0,0.5)',
                             }}
@@ -202,7 +202,7 @@ export const QuestSection: React.FC<{
                                 fontSize: '10px',
                                 color: 'rgba(200, 168, 112, 0.4)',
                                 fontWeight: 900,
-                                fontFamily: "'Cinzel', serif",
+                                fontFamily: "'Cinzel', 'Philosopher', serif",
                                 letterSpacing: '1px',
                             }}
                         >

@@ -286,7 +286,7 @@ export const BestiaryWindow: React.FC = () => {
                 {/* Pet Identity Header */}
                 <h2
                     style={{
-                        fontFamily: "'Cinzel', serif",
+                        fontFamily: "'Cinzel', 'Philosopher', serif",
                         fontSize: isMobile ? '24px' : '36px',
                         color: '#f0c040',
                         marginTop: '25px',
@@ -457,7 +457,7 @@ export const BestiaryWindow: React.FC = () => {
                         >
                             <h3
                                 style={{
-                                    fontFamily: "'Cinzel', serif",
+                                    fontFamily: "'Cinzel', 'Philosopher', serif",
                                     fontSize: '28px',
                                     color: '#f0c040',
                                     margin: 0,

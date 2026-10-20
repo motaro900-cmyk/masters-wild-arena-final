@@ -55,7 +55,7 @@ export const TalentsView = ({ hero, isCompact = false }: any) => {
                             fontSize: '11px',
                             color: '#a88020',
                             fontWeight: 'bold',
-                            fontFamily: "'Cinzel', serif",
+                            fontFamily: "'Cinzel', 'Philosopher', serif",
                         }}
                     >
                         ДОСТУПНЫЕ ОЧКИ:
@@ -65,7 +65,7 @@ export const TalentsView = ({ hero, isCompact = false }: any) => {
                             color: '#fff',
                             fontSize: '22px',
                             fontWeight: 900,
-                            fontFamily: "'Cinzel', serif",
+                            fontFamily: "'Cinzel', 'Philosopher', serif",
                             textShadow: '0 0 10px rgba(240,192,64,0.6)',
                         }}
                     >
@@ -103,7 +103,7 @@ export const TalentsView = ({ hero, isCompact = false }: any) => {
                                     cursor: 'pointer',
                                     fontWeight: 900,
                                     fontSize: '10px',
-                                    fontFamily: "'Cinzel', serif",
+                                    fontFamily: "'Cinzel', 'Philosopher', serif",
                                     letterSpacing: '1px',
                                     transition: 'all 0.2s ease',
                                 }}
@@ -300,7 +300,7 @@ export const TalentsView = ({ hero, isCompact = false }: any) => {
                             fontSize: '11px',
                             fontWeight: 900,
                             cursor: 'pointer',
-                            fontFamily: "'Cinzel', serif",
+                            fontFamily: "'Cinzel', 'Philosopher', serif",
                             letterSpacing: '1px',
                         }}
                     >
@@ -402,7 +402,7 @@ export const TalentsView = ({ hero, isCompact = false }: any) => {
                             color: '#fff',
                             fontSize: '48px',
                             fontWeight: 950,
-                            fontFamily: "'Cinzel', serif",
+                            fontFamily: "'Cinzel', 'Philosopher', serif",
                             textShadow: '0 0 25px rgba(240,192,64,0.6)',
                             lineHeight: 1,
                         }}
@@ -415,7 +415,7 @@ export const TalentsView = ({ hero, isCompact = false }: any) => {
                             fontSize: '15px',
                             fontWeight: 900,
                             letterSpacing: '1px',
-                            fontFamily: "'Cinzel', serif",
+                            fontFamily: "'Cinzel', 'Philosopher', serif",
                             textTransform: 'uppercase',
                             marginTop: '4px',
                         }}
@@ -487,7 +487,7 @@ export const TalentsView = ({ hero, isCompact = false }: any) => {
                                         color: '#fff',
                                         fontSize: '20px',
                                         fontWeight: 900,
-                                        fontFamily: "'Cinzel', serif",
+                                        fontFamily: "'Cinzel', 'Philosopher', serif",
                                         letterSpacing: '2px',
                                         textShadow: `0 0 10px ${branch.color}44`,
                                     }}
@@ -692,7 +692,7 @@ export const TalentsView = ({ hero, isCompact = false }: any) => {
                         fontSize: '16px',
                         fontWeight: 900,
                         cursor: 'pointer',
-                        fontFamily: "'Cinzel', serif",
+                        fontFamily: "'Cinzel', 'Philosopher', serif",
                         letterSpacing: '2px',
                         backdropFilter: 'blur(10px)',
                     }}

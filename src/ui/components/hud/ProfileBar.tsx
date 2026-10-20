@@ -77,7 +77,7 @@ export const ProfileBar: React.FC<ProfileBarProps> = ({ onOpenProfile }) => {
                 <h2
                     className="text-[24px] font-bold leading-none mb-1.5"
                     style={{
-                        fontFamily: "'Cinzel Decorative', 'Cinzel', serif",
+                        fontFamily: "'Cinzel Decorative', 'Cinzel', 'Philosopher', serif",
                         color: '#ffffff',
                         textShadow: '0 2px 0 rgba(0,0,0,0.95), 0 0 6px rgba(0,0,0,0.6)',
                     }}
@@ -109,7 +109,7 @@ export const ProfileBar: React.FC<ProfileBarProps> = ({ onOpenProfile }) => {
                         <span
                             className="text-[22px] font-bold leading-none"
                             style={{
-                                fontFamily: "'Cinzel', serif",
+                                fontFamily: "'Cinzel', 'Philosopher', serif",
                                 color: '#fdf5e6',
                                 textShadow: '0 0 10px rgba(255,255,255,0.3)',
                             }}
@@ -161,7 +161,7 @@ export const ProfileBar: React.FC<ProfileBarProps> = ({ onOpenProfile }) => {
                             fill="#ffd700"
                         />
                     </svg>
-                    <span className="text-[18px] font-black text-white" style={{ fontFamily: "'Cinzel', serif" }}>
+                    <span className="text-[18px] font-black text-white" style={{ fontFamily: "'Cinzel', 'Philosopher', serif" }}>
                         {trophies}
                     </span>
                 </div>

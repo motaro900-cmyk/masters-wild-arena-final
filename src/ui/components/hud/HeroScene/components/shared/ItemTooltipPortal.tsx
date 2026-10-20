@@ -113,7 +113,7 @@ export const ItemTooltipPortal: React.FC<ItemTooltipPortalProps> = ({ hoveredIte
                                     fontSize: '26px',
                                     fontWeight: 900,
                                     color: '#fff',
-                                    fontFamily: "'Cinzel', serif",
+                                    fontFamily: "'Cinzel', 'Philosopher', serif",
                                     lineHeight: 1.1,
                                 }}
                             >

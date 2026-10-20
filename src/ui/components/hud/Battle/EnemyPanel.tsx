@@ -224,7 +224,7 @@ export const EnemyPanel = React.memo<EnemyPanelProps>(
                         <span
                             style={{
                                 position: 'relative',
-                                fontFamily: "'Cinzel', serif",
+                                fontFamily: "'Cinzel', 'Philosopher', serif",
                                 fontSize: '15px',
                                 fontWeight: 900,
                                 color: '#fff',
@@ -254,7 +254,7 @@ export const EnemyPanel = React.memo<EnemyPanelProps>(
                             color: currentAttacker === 'enemy' ? '#fca5a5' : '#fff',
                             fontSize: '14px',
                             fontWeight: 900,
-                            fontFamily: "'Cinzel', serif",
+                            fontFamily: "'Cinzel', 'Philosopher', serif",
                             textTransform: 'uppercase',
                             letterSpacing: '1px',
                             textShadow: '0 2px 5px rgba(0,0,0,1)',

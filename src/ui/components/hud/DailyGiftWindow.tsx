@@ -245,7 +245,7 @@ export const DailyGiftWindow: React.FC<DailyGiftWindowProps> = ({ onClose: _onCl
             if (!success) {
                 // Ad failed or closed early
                 setIsClaiming(false);
-                alert(
+                useGameStore.getState().showAlert(
                     'Не удалось посмотреть рекламу до конца или видео недоступно. Попробуйте еще раз или заберите обычную награду.',
                 );
                 return;
@@ -540,7 +540,7 @@ export const DailyGiftWindow: React.FC<DailyGiftWindowProps> = ({ onClose: _onCl
                         border: activeTab === 'CALENDAR' ? '2px solid #ffd700' : '1.5px solid rgba(240, 192, 64, 0.2)',
                         borderRadius: '12px',
                         color: activeTab === 'CALENDAR' ? '#1c1002' : '#c8a870',
-                        fontFamily: "'Cinzel', serif",
+                        fontFamily: "'Cinzel', 'Philosopher', serif",
                         fontWeight: 900,
                         fontSize: isMobile ? '12px' : '13px',
                         cursor: 'pointer',
@@ -586,7 +586,7 @@ export const DailyGiftWindow: React.FC<DailyGiftWindowProps> = ({ onClose: _onCl
                         border: activeTab === 'WHEEL' ? '2px solid #ffd700' : '1.5px solid rgba(240, 192, 64, 0.2)',
                         borderRadius: '12px',
                         color: activeTab === 'WHEEL' ? '#1c1002' : '#c8a870',
-                        fontFamily: "'Cinzel', serif",
+                        fontFamily: "'Cinzel', 'Philosopher', serif",
                         fontWeight: 900,
                         fontSize: isMobile ? '12px' : '13px',
                         cursor: 'pointer',

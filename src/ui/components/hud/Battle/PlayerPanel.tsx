@@ -232,7 +232,7 @@ export const PlayerPanel = React.memo<PlayerPanelProps>(
                         <span
                             style={{
                                 position: 'relative',
-                                fontFamily: "'Cinzel', serif",
+                                fontFamily: "'Cinzel', 'Philosopher', serif",
                                 fontSize: '15px',
                                 fontWeight: 900,
                                 color: '#fff',
@@ -262,7 +262,7 @@ export const PlayerPanel = React.memo<PlayerPanelProps>(
                             color: currentAttacker === 'player' ? '#fcd34d' : '#fff',
                             fontSize: '14px',
                             fontWeight: 900,
-                            fontFamily: "'Cinzel', serif",
+                            fontFamily: "'Cinzel', 'Philosopher', serif",
                             textTransform: 'uppercase',
                             letterSpacing: '1px',
                             textShadow: '0 2px 5px rgba(0,0,0,1)',

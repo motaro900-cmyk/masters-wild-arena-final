@@ -88,7 +88,7 @@ export const VipDailyRewardModal: React.FC<VipDailyRewardModalProps> = ({ isOpen
                                 fontSize: '22px',
                                 fontWeight: 900,
                                 color: '#FFE07D',
-                                fontFamily: "'Cinzel', serif",
+                                fontFamily: "'Cinzel', 'Philosopher', serif",
                                 textShadow: '0 2px 8px rgba(212,175,55,0.4)',
                                 letterSpacing: '0.04em',
                             }}
@@ -184,7 +184,7 @@ export const VipDailyRewardModal: React.FC<VipDailyRewardModalProps> = ({ isOpen
                                 fontSize: '15px',
                                 fontWeight: 900,
                                 cursor: 'pointer',
-                                fontFamily: "'Cinzel', serif",
+                                fontFamily: "'Cinzel', 'Philosopher', serif",
                                 letterSpacing: '0.1em',
                                 boxShadow: '0 4px 15px rgba(212,175,55,0.25)',
                                 transition: 'all 0.2s',

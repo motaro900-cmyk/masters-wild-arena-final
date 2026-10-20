@@ -209,7 +209,7 @@ export const FriendsWindow: React.FC<FriendsWindowProps> = () => {
                                 background: activeTab === tab.id ? colors.accent : 'rgba(255,255,255,0.03)',
                                 border: `1px solid ${activeTab === tab.id ? colors.accent : colors.border}`,
                                 color: activeTab === tab.id ? '#000' : colors.text,
-                                fontFamily: "'Cinzel', serif",
+                                fontFamily: "'Cinzel', 'Philosopher', serif",
                                 fontSize: 10,
                                 fontWeight: 900,
                                 position: 'relative',
@@ -398,7 +398,7 @@ export const FriendsWindow: React.FC<FriendsWindowProps> = () => {
                         </motion.div>
                         <div
                             style={{
-                                fontFamily: "'Cinzel', serif",
+                                fontFamily: "'Cinzel', 'Philosopher', serif",
                                 fontSize: 22,
                                 color: colors.accent,
                                 marginBottom: 8,
@@ -432,7 +432,7 @@ export const FriendsWindow: React.FC<FriendsWindowProps> = () => {
                                 color: '#1a1008',
                                 fontWeight: 950,
                                 cursor: 'pointer',
-                                fontFamily: "'Cinzel', serif",
+                                fontFamily: "'Cinzel', 'Philosopher', serif",
                                 fontSize: 15,
                                 boxShadow: '0 8px 20px rgba(0,0,0,0.4)',
                                 letterSpacing: '1px',

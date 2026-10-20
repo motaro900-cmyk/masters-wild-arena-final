@@ -451,7 +451,7 @@ export const PreBattleScreen: React.FC<PreBattleScreenProps> = ({
                     style={{
                         fontSize: '28px',
                         color: '#fbbf24',
-                        fontFamily: "'Cinzel', serif",
+                        fontFamily: "'Cinzel', 'Philosopher', serif",
                         fontWeight: 900,
                         marginBottom: '20px',
                         letterSpacing: '2px',
@@ -487,7 +487,7 @@ export const PreBattleScreen: React.FC<PreBattleScreenProps> = ({
                                 color: '#fef3c7',
                                 fontSize: '20px',
                                 fontWeight: 900,
-                                fontFamily: "'Cinzel', serif",
+                                fontFamily: "'Cinzel', 'Philosopher', serif",
                                 marginBottom: '10px',
                             }}
                         >
@@ -612,7 +612,7 @@ export const PreBattleScreen: React.FC<PreBattleScreenProps> = ({
                                     color: '#fbbf24',
                                     fontWeight: 900,
                                     textShadow: '0 0 10px rgba(251,191,36,0.4)',
-                                    fontFamily: "'Cinzel', serif",
+                                    fontFamily: "'Cinzel', 'Philosopher', serif",
                                 }}
                             >
                                 Уровень: {heroLevel}
@@ -661,7 +661,7 @@ export const PreBattleScreen: React.FC<PreBattleScreenProps> = ({
                                 color: '#fef3c7',
                                 fontSize: '20px',
                                 fontWeight: 900,
-                                fontFamily: "'Cinzel', serif",
+                                fontFamily: "'Cinzel', 'Philosopher', serif",
                                 marginBottom: '10px',
                             }}
                         >
@@ -733,7 +733,7 @@ export const PreBattleScreen: React.FC<PreBattleScreenProps> = ({
                                     color: '#f87171',
                                     fontWeight: 900,
                                     textShadow: '0 0 10px rgba(248,113,113,0.4)',
-                                    fontFamily: "'Cinzel', serif",
+                                    fontFamily: "'Cinzel', 'Philosopher', serif",
                                 }}
                             >
                                 Уровень: {enemyLevel}
@@ -788,7 +788,7 @@ export const PreBattleScreen: React.FC<PreBattleScreenProps> = ({
                             fontWeight: 'bold',
                             cursor: 'pointer',
                             transition: 'all 0.2s',
-                            fontFamily: "'Cinzel', serif",
+                            fontFamily: "'Cinzel', 'Philosopher', serif",
                             opacity: 1,
                         }}
                     >
@@ -840,7 +840,7 @@ export const PreBattleScreen: React.FC<PreBattleScreenProps> = ({
                             cursor: isStarting ? 'not-allowed' : 'pointer',
                             transition: 'all 0.2s',
                             boxShadow: isStarting ? 'none' : '0 10px 20px rgba(245, 158, 11, 0.4)',
-                            fontFamily: "'Cinzel', serif",
+                            fontFamily: "'Cinzel', 'Philosopher', serif",
                             opacity: isStarting ? 0.7 : 1,
                         }}
                     >

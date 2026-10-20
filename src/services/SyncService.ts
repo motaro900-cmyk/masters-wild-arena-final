@@ -395,7 +395,22 @@ export class SyncService {
                     stats: item.stats,
                     icon: item.icon,
                 }));
-                const invData = { inventory: compactInventory };
+                let invData: any = { inventory: compactInventory };
+                let invJson = JSON.stringify(invData);
+
+                // VK Cloud Storage 4KB limit safety: prune static metadata if size approaches 4096 bytes
+                if (invJson.length >= 3850) {
+                    const minimalInventory = (state.inventory || []).map((item: any) => ({
+                        id: item.id,
+                        uid: item.uid || item.id,
+                        upgradeLevel: item.upgradeLevel || 0,
+                        level: item.level,
+                        quantity: item.quantity,
+                        stats: item.stats,
+                    }));
+                    invData = { inventory: minimalInventory };
+                    invJson = JSON.stringify(invData);
+                }
 
                 const progData = {
                     dailyQuests: state.dailyQuests || [],
@@ -407,7 +422,7 @@ export class SyncService {
 
                 vkStorageSet('motw_core', JSON.stringify(coreData)).catch(() => {});
                 vkStorageSet('motw_heroes', JSON.stringify(heroesData)).catch(() => {});
-                vkStorageSet('motw_inv', JSON.stringify(invData)).catch(() => {});
+                vkStorageSet('motw_inv', invJson).catch(() => {});
                 vkStorageSet('motw_prog', JSON.stringify(progData)).catch(() => {});
 
                 // Обратная совместимость с компактным форматом

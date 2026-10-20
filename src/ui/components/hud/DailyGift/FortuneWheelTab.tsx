@@ -130,7 +130,7 @@ export const FortuneWheelTab: React.FC<FortuneWheelTabProps> = ({
                     style={{
                         margin: 0,
                         color: '#FFE07D',
-                        fontFamily: "'Cinzel', serif",
+                        fontFamily: "'Cinzel', 'Philosopher', serif",
                         fontSize: isMobile ? '16px' : '26px',
                         fontWeight: 900,
                         textShadow: '0 2px 6px rgba(0,0,0,0.95)',
@@ -355,7 +355,7 @@ export const FortuneWheelTab: React.FC<FortuneWheelTabProps> = ({
                                 >
                                     <span
                                         style={{
-                                            fontFamily: "'Cinzel', serif",
+                                            fontFamily: "'Cinzel', 'Philosopher', serif",
                                             fontSize: isMobile ? '8.5px' : '11px',
                                             color: isCenterItem ? '#ffd700' : '#dfc08a',
                                             fontWeight: 900,
@@ -391,7 +391,7 @@ export const FortuneWheelTab: React.FC<FortuneWheelTabProps> = ({
                                 >
                                     <span
                                         style={{
-                                            fontFamily: "'Cinzel', serif",
+                                            fontFamily: "'Cinzel', 'Philosopher', serif",
                                             fontSize: isMobile ? '20px' : '26px',
                                             color: '#ffffff',
                                             fontWeight: 950,
@@ -481,7 +481,7 @@ export const FortuneWheelTab: React.FC<FortuneWheelTabProps> = ({
                             border: '2px solid #fff2a3',
                             borderRadius: '14px',
                             color: '#211000',
-                            fontFamily: "'Cinzel', serif",
+                            fontFamily: "'Cinzel', 'Philosopher', serif",
                             fontWeight: 950,
                             fontSize: isMobile ? '14px' : '18px',
                             cursor: isSpinning ? 'default' : 'pointer',
@@ -527,7 +527,7 @@ export const FortuneWheelTab: React.FC<FortuneWheelTabProps> = ({
                                     color: '#dfc08a',
                                     fontWeight: 900,
                                     letterSpacing: '1px',
-                                    fontFamily: "'Cinzel', serif",
+                                    fontFamily: "'Cinzel', 'Philosopher', serif",
                                 }}
                             >
                                 СЛЕДУЮЩИЙ СПИН ЧЕРЕЗ:

@@ -1,0 +1,706 @@
+{
+  "passed": 100,
+  "failed": 0,
+  "results": [
+    {
+      "id": 1,
+      "domain": "Network & Rage Quit",
+      "title": "pagehide event registered for beacon sync",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 2,
+      "domain": "Network & Rage Quit",
+      "title": "beforeunload event registered for beacon sync",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 3,
+      "domain": "Network & Rage Quit",
+      "title": "visibilitychange hidden triggers immediate state sync",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 4,
+      "domain": "Network & Rage Quit",
+      "title": "sendBeacon with fetch keepalive fallback",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 5,
+      "domain": "Network & Rage Quit",
+      "title": "Server /api/beacon-sync verifies VK HMAC signature",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 6,
+      "domain": "Network & Rage Quit",
+      "title": "Rage-quit in battle: deterministic simulation protects state",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 7,
+      "domain": "Network & Rage Quit",
+      "title": "Abrupt disconnect during transaction: mutex releases in finally block",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 8,
+      "domain": "Network & Rage Quit",
+      "title": "Offline session flag blocks remote sync corruption",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 9,
+      "domain": "Network & Rage Quit",
+      "title": "SafeStorage fallback for Private Browsing quota exceeded",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 10,
+      "domain": "Network & Rage Quit",
+      "title": "Timestamp conflict resolution prevents zeroing balances",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 11,
+      "domain": "Database Purity",
+      "title": "VPS localStore operates autonomously without cloud",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 12,
+      "domain": "Database Purity",
+      "title": "Zero hardcoded Firebase private keys in client bundle",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 13,
+      "domain": "Database Purity",
+      "title": "Firestore REST mirror fails gracefully if blocked by RKN",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 14,
+      "domain": "Database Purity",
+      "title": "Atomic writes via .tmp and .bak snapshots in localStore",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 15,
+      "domain": "Database Purity",
+      "title": "Automatic recovery from .bak on corrupted document via restoreDocBackup",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 16,
+      "domain": "Database Purity",
+      "title": "Directory isolation with sanitizeKey",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 17,
+      "domain": "Database Purity",
+      "title": "Path traversal defense in sanitizeDocId",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 18,
+      "domain": "Database Purity",
+      "title": "Guest profile cleaner script exists",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 19,
+      "domain": "Database Purity",
+      "title": "Strict prefix separation between VK-* and GUEST-*",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 20,
+      "domain": "Database Purity",
+      "title": "Right to be forgotten endpoint /api/profile-delete unlinks docs",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 21,
+      "domain": "Anti-Cheat & Combat",
+      "title": "HMAC-SHA256 signature verification uses crypto.timingSafeEqual",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 22,
+      "domain": "Anti-Cheat & Combat",
+      "title": "Buffer length check before timingSafeEqual prevents RangeError",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 23,
+      "domain": "Anti-Cheat & Combat",
+      "title": "Replay defense: vk_ts validated within 7-day window (604800 sec)",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 24,
+      "domain": "Anti-Cheat & Combat",
+      "title": "Client DevTools gold injection wiped by server authority",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 25,
+      "domain": "Anti-Cheat & Combat",
+      "title": "Prototype pollution guard in sync payload",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 26,
+      "domain": "Anti-Cheat & Combat",
+      "title": "Battle outcome verified by deterministic server simulation",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 27,
+      "domain": "Anti-Cheat & Combat",
+      "title": "Client false victory spoofing detected and overridden with defeat",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 28,
+      "domain": "Anti-Cheat & Combat",
+      "title": "Battle stalemate capped at 8000 ticks with Rage mechanic",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 29,
+      "domain": "Anti-Cheat & Combat",
+      "title": "Dynamic armor divisor formula K=200+25*(L-1) synchronized",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 30,
+      "domain": "Anti-Cheat & Combat",
+      "title": "ParticlePool eliminates GC spikes during combat animations",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 31,
+      "domain": "Whale Economy",
+      "title": "Official VKWebAppShowOrderBox used for votes purchase",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 32,
+      "domain": "Whale Economy",
+      "title": "Server order verification handles signature and item_id",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 33,
+      "domain": "Whale Economy",
+      "title": "Order idempotency: duplicate order_id returns cached success",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 34,
+      "domain": "Whale Economy",
+      "title": "VIP daily rewards modal with status calculation",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 35,
+      "domain": "Whale Economy",
+      "title": "Audio muted when opening payments order box",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 36,
+      "domain": "Whale Economy",
+      "title": "Endgame gold sinks: Upgrade gold costs scale exponentially",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 37,
+      "domain": "Whale Economy",
+      "title": "Shop scene offers premium crystal item packages",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 38,
+      "domain": "Whale Economy",
+      "title": "VIP perks explicitly detailed in VIPWindow",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 39,
+      "domain": "Whale Economy",
+      "title": "Zero-negative-balance enforcement on all transactions",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 40,
+      "domain": "Whale Economy",
+      "title": "Purchases require explicit user confirmation overlay",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 41,
+      "domain": "F2P Experience",
+      "title": "Base hero Feng Long stats defined and balanced",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 42,
+      "domain": "F2P Experience",
+      "title": "Story skip button enabled for under 8-second time-to-battle",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 43,
+      "domain": "F2P Experience",
+      "title": "Energy base capacity is 50 units (server energyHandler)",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 44,
+      "domain": "F2P Experience",
+      "title": "Energy regeneration interval is 150 seconds (2.5 min)",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 45,
+      "domain": "F2P Experience",
+      "title": "0-Energy warmup mode (РАЗМИНКА) available",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 46,
+      "domain": "F2P Experience",
+      "title": "Daily quests faucet configured in QuestsConfig",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 47,
+      "domain": "F2P Experience",
+      "title": "Hero unlock pricing progression: Rikki (20k), Gromm (40k), Varkan (60k)",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 48,
+      "domain": "F2P Experience",
+      "title": "Fortune Wheel 24-hour free spin available (handleWheelSpin)",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 49,
+      "domain": "F2P Experience",
+      "title": "Matchmaking MMR rating search band bounded",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 50,
+      "domain": "F2P Experience",
+      "title": "Active welcome mail with gold and crystals delivered on first boot",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 51,
+      "domain": "Hardcore Grinder",
+      "title": "Inventory maximum slots limit enforced (MAX_SLOTS = 100)",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 52,
+      "domain": "Hardcore Grinder",
+      "title": "PixiApp ticker properly stopped on unmount to prevent memory leaks",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 53,
+      "domain": "Hardcore Grinder",
+      "title": "Chat flood cooldown of 2000ms enforced with HTTP 429",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 54,
+      "domain": "Hardcore Grinder",
+      "title": "Chat message length capped at 300 chars with HTML escaping",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 55,
+      "domain": "Hardcore Grinder",
+      "title": "Max weapon/item level capped at 10 on server",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 56,
+      "domain": "Hardcore Grinder",
+      "title": "EXP progression curves scale exponentially to cap level",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 57,
+      "domain": "Hardcore Grinder",
+      "title": "Clan creation validates name, tag, and cost",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 58,
+      "domain": "Hardcore Grinder",
+      "title": "Concurrent transactions serialized via acquireUserLock",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 59,
+      "domain": "Hardcore Grinder",
+      "title": "Audit logger writes timestamps, user ID, and op changes",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 60,
+      "domain": "Hardcore Grinder",
+      "title": "Client action log buffer flushed periodically",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 61,
+      "domain": "Mobile UI",
+      "title": "SafeGameLayout calculates viewport aspect ratio and scaling",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 62,
+      "domain": "Mobile UI",
+      "title": "Landscape orientation prompt overlay with z-index 999999",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 63,
+      "domain": "Mobile UI",
+      "title": "Mobile touch target CSS rule meets 44x44px minimum",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 64,
+      "domain": "Mobile UI",
+      "title": "PixiApp resolution capped at 1.0 to prevent mobile GPU OOM",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 65,
+      "domain": "Mobile UI",
+      "title": "WebGL context loss recovery listeners registered",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 66,
+      "domain": "Mobile UI",
+      "title": "Philosopher Cyrillic font integrated into tailwind config",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 67,
+      "domain": "Mobile UI",
+      "title": "ActionButtons HUD uses responsive font-fantasy fallback",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 68,
+      "domain": "Mobile UI",
+      "title": "ItemTooltipPortal renders within mobile screen bounds",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 69,
+      "domain": "Mobile UI",
+      "title": "Texture atlases compiled to lightweight WebP files",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 70,
+      "domain": "Mobile UI",
+      "title": "Global design tokens define Dark Fantasy aesthetic variables",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 71,
+      "domain": "Audio Engine",
+      "title": "AudioContext resumed on user interaction via resumeContext()",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 72,
+      "domain": "Audio Engine",
+      "title": "Background music playlist contains all 8 dark fantasy tracks",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 73,
+      "domain": "Audio Engine",
+      "title": "AudioDatabase defines volume configs and bus assignments",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 74,
+      "domain": "Audio Engine",
+      "title": "AudioService activeInstances capped at 24 concurrent voices",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 75,
+      "domain": "Audio Engine",
+      "title": "Pitch randomization applies per playId avoiding voice alteration",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 76,
+      "domain": "Audio Engine",
+      "title": "Crossfade on music transition smoothly fades old music",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 77,
+      "domain": "Audio Engine",
+      "title": "BattleScene unmount restores city playlist rotation",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 78,
+      "domain": "Audio Engine",
+      "title": "withAudioMuted helper mutes Howler during interstitial ads",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 79,
+      "domain": "Audio Engine",
+      "title": "AudioService respects browser page visibility",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 80,
+      "domain": "Audio Engine",
+      "title": "AudioDatabase contains specialized combat SFX definitions",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 81,
+      "domain": "RF Legal",
+      "title": "Privacy Policy text available inside in-app modal",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 82,
+      "domain": "RF Legal",
+      "title": "Terms of Service text available inside in-app modal",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 83,
+      "domain": "RF Legal",
+      "title": "233-FZ Consent to personal data processing explicitly separated",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 84,
+      "domain": "RF Legal",
+      "title": "Consent checkboxes start unchecked by default in IntroScreen",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 85,
+      "domain": "RF Legal",
+      "title": "Zero external CDN scripts in index.html (RF data localization)",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 86,
+      "domain": "RF Legal",
+      "title": "Zero external Google Fonts links in index.html",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 87,
+      "domain": "RF Legal",
+      "title": "Local font files served directly from public/assets/fonts/",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 88,
+      "domain": "RF Legal",
+      "title": "Account deletion endpoint /api/profile-delete complies with 152-FZ Art. 21",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 89,
+      "domain": "RF Legal",
+      "title": "Dark fantasy content respects Russian 12+ age rating standards",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 90,
+      "domain": "RF Legal",
+      "title": "Single one-off payment terms without hidden recurring subscription",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 91,
+      "domain": "VK Catalog",
+      "title": "Safe Area 96px top-right padding clear for native capsule (... X)",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 92,
+      "domain": "VK Catalog",
+      "title": "VKWebAppInit called immediately upon application bootstrap",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 93,
+      "domain": "VK Catalog",
+      "title": "No premature VKWebAppGetAuthToken calls before user interaction",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 94,
+      "domain": "VK Catalog",
+      "title": "Iframe headers allow embedding: frame-ancestors *",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 95,
+      "domain": "VK Catalog",
+      "title": "Iframe headers set X-Frame-Options: ALLOWALL",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 96,
+      "domain": "VK Catalog",
+      "title": "Strict payments routing through VKWebAppShowOrderBox only",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 97,
+      "domain": "VK Catalog",
+      "title": "VK Stories loot sharing available via VKWebAppShowStoryBox",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 98,
+      "domain": "VK Catalog",
+      "title": "Performance: HTML5 build bundles code-split vendor chunks",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 99,
+      "domain": "VK Catalog",
+      "title": "Version JSON endpoint exposed for cache busting verification",
+      "status": "PASS",
+      "details": "Assertion verified"
+    },
+    {
+      "id": 100,
+      "domain": "VK Catalog",
+      "title": "Official game community URL configured to vk.ru/motw_official_game",
+      "status": "PASS",
+      "details": "Assertion verified"
+    }
+  ]
+}

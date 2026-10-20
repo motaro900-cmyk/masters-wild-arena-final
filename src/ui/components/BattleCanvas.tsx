@@ -84,7 +84,7 @@ export function BattleCanvas() {
                     left: '50%',
                     transform: 'translateX(-50%)',
                     color: '#f0c040',
-                    fontFamily: "'Cinzel', serif",
+                    fontFamily: "'Cinzel', 'Philosopher', serif",
                     fontSize: '24px',
                     fontWeight: 'bold',
                     textShadow: '0 2px 10px #000',

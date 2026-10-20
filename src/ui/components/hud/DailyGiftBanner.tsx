@@ -68,7 +68,7 @@ export const DailyGiftBanner: React.FC<{ onClick: () => void }> = ({ onClick }) 
             <div style={{ display: 'flex', flexDirection: 'column', textAlign: 'center' }}>
                 <span
                     style={{
-                        fontFamily: "'Cinzel', serif",
+                        fontFamily: "'Cinzel', 'Philosopher', serif",
                         fontSize: 21,
                         fontWeight: 900,
                         color: '#f0c040',

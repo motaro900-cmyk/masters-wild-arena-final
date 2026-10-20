@@ -84,7 +84,7 @@ const UpdateModal: React.FC = () => {
                         textTransform: 'uppercase',
                         letterSpacing: '2px',
                         textShadow: '0 2px 4px rgba(0,0,0,0.8)',
-                        fontFamily: "'Cinzel', serif",
+                        fontFamily: "'Cinzel', 'Philosopher', serif",
                     }}
                 >
                     Обновление игры
@@ -128,7 +128,7 @@ const UpdateModal: React.FC = () => {
                         cursor: isReloading ? 'not-allowed' : 'pointer',
                         transition: 'all 0.2s',
                         boxShadow: '0 8px 16px rgba(245, 158, 11, 0.4)',
-                        fontFamily: "'Cinzel', serif",
+                        fontFamily: "'Cinzel', 'Philosopher', serif",
                         letterSpacing: '1.5px',
                         opacity: isReloading ? 0.7 : 1,
                     }}

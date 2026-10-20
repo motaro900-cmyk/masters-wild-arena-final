@@ -81,7 +81,7 @@ export const ChatInputArea: React.FC<ChatInputAreaProps> = ({
                                     fontSize: '10px',
                                     color: '#f0c040',
                                     fontWeight: 900,
-                                    fontFamily: "'Cinzel', serif",
+                                    fontFamily: "'Cinzel', 'Philosopher', serif",
                                     letterSpacing: '0.5px',
                                 }}
                             >
@@ -125,7 +125,7 @@ export const ChatInputArea: React.FC<ChatInputAreaProps> = ({
                             outline: 'none',
                             color: '#ffffff',
                             fontSize: isMobile ? 14 : 13,
-                            fontFamily: "'Cinzel', serif",
+                            fontFamily: "'Cinzel', 'Philosopher', serif",
                         }}
                     />
 

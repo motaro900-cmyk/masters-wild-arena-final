@@ -157,7 +157,7 @@ export const MobStatsCard: React.FC<MobStatsCardProps> = ({ selectedMob, selecte
                         fontSize: '11px',
                         color: '#b8860b',
                         letterSpacing: '1px',
-                        fontFamily: "'Cinzel', serif",
+                        fontFamily: "'Cinzel', 'Philosopher', serif",
                         fontWeight: 700,
                         textAlign: 'center',
                         textTransform: 'uppercase',
@@ -214,7 +214,7 @@ export const MobStatsCard: React.FC<MobStatsCardProps> = ({ selectedMob, selecte
                                             fontWeight: 700,
                                             fontSize: '10px',
                                             letterSpacing: '0.5px',
-                                            fontFamily: "'Cinzel', serif",
+                                            fontFamily: "'Cinzel', 'Philosopher', serif",
                                         }}
                                     >
                                         {stat.label}
@@ -263,7 +263,7 @@ export const MobStatsCard: React.FC<MobStatsCardProps> = ({ selectedMob, selecte
                             fontSize: '11px',
                             color: '#b8860b',
                             letterSpacing: '1px',
-                            fontFamily: "'Cinzel', serif",
+                            fontFamily: "'Cinzel', 'Philosopher', serif",
                             fontWeight: 700,
                             textAlign: 'center',
                             textTransform: 'uppercase',
@@ -406,7 +406,7 @@ export const MobStatsCard: React.FC<MobStatsCardProps> = ({ selectedMob, selecte
                             color: '#6b7280',
                             fontWeight: 700,
                             letterSpacing: '1px',
-                            fontFamily: "'Cinzel', serif",
+                            fontFamily: "'Cinzel', 'Philosopher', serif",
                         }}
                     >
                         РЕКОМЕНДУЕМАЯ МОЩЬ
@@ -416,7 +416,7 @@ export const MobStatsCard: React.FC<MobStatsCardProps> = ({ selectedMob, selecte
                             fontSize: '20px',
                             color: '#fff',
                             fontWeight: 900,
-                            fontFamily: "'Cinzel', serif",
+                            fontFamily: "'Cinzel', 'Philosopher', serif",
                             letterSpacing: '1px',
                             display: 'flex',
                             alignItems: 'center',

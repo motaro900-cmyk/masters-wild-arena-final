@@ -104,7 +104,7 @@ export const ClanSuccessModal: React.FC<ClanSuccessModalProps> = ({
                                 animate={{ y: 0, opacity: 1 }}
                                 transition={{ delay: 0.3 }}
                                 style={{
-                                    fontFamily: "'Cinzel', serif",
+                                    fontFamily: "'Cinzel', 'Philosopher', serif",
                                     color: colors.accent,
                                     fontSize: '42px',
                                     margin: 0,

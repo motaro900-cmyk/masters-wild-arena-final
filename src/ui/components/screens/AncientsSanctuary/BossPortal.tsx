@@ -75,7 +75,7 @@ export const BossPortal: React.FC<BossPortalProps> = ({ selectedMob }) => {
                         letterSpacing: '2px',
                         color: selectedMob.isBoss ? '#f87171' : '#fbbf24',
                         fontWeight: 900,
-                        fontFamily: "'Cinzel', serif",
+                        fontFamily: "'Cinzel', 'Philosopher', serif",
                         textTransform: 'uppercase',
                     }}
                 >
@@ -85,7 +85,7 @@ export const BossPortal: React.FC<BossPortalProps> = ({ selectedMob }) => {
                     style={{
                         margin: 0,
                         fontSize: '30px',
-                        fontFamily: "'Cinzel', serif",
+                        fontFamily: "'Cinzel', 'Philosopher', serif",
                         color: '#fff',
                         textShadow: '0 2px 8px rgba(0,0,0,0.9)',
                         fontWeight: 700,

@@ -19,6 +19,7 @@ const TEST_SECRET = 'vk_test_secret_key_1234567890';
 process.env.VK_APP_SECRET = TEST_SECRET;
 
 // Import handlers
+import { deleteLocalDoc } from '../../server/localStore.js';
 import { handleEnergySync, handleEnergySpend } from '../../server/game/energyHandler.js';
 import { handleRewardClaim } from '../../server/game/rewardHandler.js';
 import { handleInventoryEquip, handleInventorySell, handleInventoryUpgrade } from '../../server/game/inventoryHandler.js';
@@ -95,6 +96,8 @@ async function runAdversarialAudit() {
 
     try {
         const vkUserId = '888999';
+        // Clean up test player data for idempotent test execution
+        await deleteLocalDoc('пользователи_dev', `VK-${vkUserId}`);
         const nowSec = Math.floor(Date.now() / 1000);
         const validParams = {
             vk_app_id: '52297839',

@@ -53,7 +53,7 @@ export const FoundPlayerCard: React.FC<FoundPlayerCardProps> = ({ foundPlayer, c
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 2 }}>
                     <span
                         style={{
-                            fontFamily: "'Cinzel', serif",
+                            fontFamily: "'Cinzel', 'Philosopher', serif",
                             fontSize: 15,
                             fontWeight: 700,
                             color: colors.accent,
@@ -93,7 +93,7 @@ export const FoundPlayerCard: React.FC<FoundPlayerCardProps> = ({ foundPlayer, c
                     fontWeight: 900,
                     cursor: 'pointer',
                     fontSize: 10,
-                    fontFamily: "'Cinzel', serif",
+                    fontFamily: "'Cinzel', 'Philosopher', serif",
                 }}
             >
                 ДОБАВИТЬ

@@ -55,7 +55,7 @@ export const FilterBar = ({ activeFilter, onSelect }: any) => {
                             justifyContent: 'center',
                             cursor: 'pointer',
                             fontWeight: 900,
-                            fontFamily: "'Cinzel', serif",
+                            fontFamily: "'Cinzel', 'Philosopher', serif",
                             filter: isActive
                                 ? 'brightness(1.3) drop-shadow(0 0 5px rgba(255,200,0,0.5))'
                                 : 'brightness(0.8)',

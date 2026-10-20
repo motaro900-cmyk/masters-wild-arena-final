@@ -110,7 +110,7 @@ export const AnimatingXPBar: React.FC<AnimatingXPBarProps> = ({
                             color: textColor,
                             fontSize: '14px',
                             fontWeight: 800,
-                            fontFamily: "'Cinzel', serif",
+                            fontFamily: "'Cinzel', 'Philosopher', serif",
                             letterSpacing: '1.5px',
                             transition: 'transform 0.2s',
                             transform: isLevelUp ? 'scale(1.2)' : 'scale(1)',
@@ -125,7 +125,7 @@ export const AnimatingXPBar: React.FC<AnimatingXPBarProps> = ({
                                 color: '#10b981',
                                 fontSize: '12px',
                                 fontWeight: 900,
-                                fontFamily: "'Cinzel', serif",
+                                fontFamily: "'Cinzel', 'Philosopher', serif",
                                 letterSpacing: '1px',
                                 marginLeft: '8px',
                                 textShadow: '0 0 8px rgba(16,185,129,0.6)',
@@ -140,7 +140,7 @@ export const AnimatingXPBar: React.FC<AnimatingXPBarProps> = ({
                         color: '#d1d5db',
                         fontSize: '13px',
                         fontWeight: 700,
-                        fontFamily: "'Cinzel', serif",
+                        fontFamily: "'Cinzel', 'Philosopher', serif",
                         letterSpacing: '0.5px',
                     }}
                 >

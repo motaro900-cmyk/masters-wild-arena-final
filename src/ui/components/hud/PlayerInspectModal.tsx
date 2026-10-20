@@ -115,7 +115,7 @@ const SectionLabel: React.FC<{ children: React.ReactNode }> = ({ children }) => 
                 fontWeight: 900,
                 textTransform: 'uppercase',
                 letterSpacing: '1.8px',
-                fontFamily: "'Cinzel', serif",
+                fontFamily: "'Cinzel', 'Philosopher', serif",
             }}
         >
             {children}
@@ -636,7 +636,7 @@ export const PlayerInspectModal: React.FC = () => {
                             fontWeight: 800,
                             letterSpacing: '0.8px',
                             textTransform: 'uppercase',
-                            fontFamily: "'Cinzel', serif",
+                            fontFamily: "'Cinzel', 'Philosopher', serif",
                             whiteSpace: 'nowrap',
                         }}
                     >
@@ -860,7 +860,7 @@ export const PlayerInspectModal: React.FC = () => {
                                 style={{
                                     color: '#f0c040',
                                     fontWeight: 800,
-                                    fontFamily: "'Cinzel', serif",
+                                    fontFamily: "'Cinzel', 'Philosopher', serif",
                                     letterSpacing: '2px',
                                     fontSize: '13px',
                                 }}
@@ -880,7 +880,7 @@ export const PlayerInspectModal: React.FC = () => {
                                             color: '#fff',
                                             fontSize: '26px',
                                             fontWeight: 900,
-                                            fontFamily: "'Cinzel', serif",
+                                            fontFamily: "'Cinzel', 'Philosopher', serif",
                                             letterSpacing: '0.5px',
                                             textShadow: '0 2px 12px rgba(0,0,0,0.9)',
                                             whiteSpace: 'nowrap',
@@ -921,7 +921,7 @@ export const PlayerInspectModal: React.FC = () => {
                                                     fontSize: '9px',
                                                     fontWeight: 900,
                                                     color: '#fff',
-                                                    fontFamily: "'Cinzel', serif",
+                                                    fontFamily: "'Cinzel', 'Philosopher', serif",
                                                     zIndex: 1,
                                                 }}
                                             >
@@ -1014,7 +1014,7 @@ export const PlayerInspectModal: React.FC = () => {
                                                         fontSize: '18px',
                                                         fontWeight: 900,
                                                         color: '#fde68a',
-                                                        fontFamily: "'Cinzel', serif",
+                                                        fontFamily: "'Cinzel', 'Philosopher', serif",
                                                         textShadow:
                                                             '0 0 14px rgba(240,192,64,0.55), 0 2px 4px rgba(0,0,0,0.9)',
                                                         lineHeight: 1,
@@ -1173,7 +1173,7 @@ export const PlayerInspectModal: React.FC = () => {
                                             fontSize: '11.5px',
                                             cursor: 'pointer',
                                             transition: 'all .22s ease',
-                                            fontFamily: "'Cinzel', serif",
+                                            fontFamily: "'Cinzel', 'Philosopher', serif",
                                             letterSpacing: '1.2px',
                                             boxShadow: active
                                                 ? '0 2px 14px rgba(240,192,64,0.3), inset 0 1px 0 rgba(255,255,255,0.3)'
@@ -1287,7 +1287,7 @@ export const PlayerInspectModal: React.FC = () => {
                                                             color: '#fff',
                                                             fontSize: '16px',
                                                             fontWeight: 800,
-                                                            fontFamily: "'Cinzel', serif",
+                                                            fontFamily: "'Cinzel', 'Philosopher', serif",
                                                             whiteSpace: 'nowrap',
                                                             overflow: 'hidden',
                                                             textOverflow: 'ellipsis',
@@ -1966,7 +1966,7 @@ export const PlayerInspectModal: React.FC = () => {
                                                                 fontWeight: 800,
                                                                 letterSpacing: '0.6px',
                                                                 textTransform: 'uppercase',
-                                                                fontFamily: "'Cinzel', serif",
+                                                                fontFamily: "'Cinzel', 'Philosopher', serif",
                                                             }}
                                                         >
                                                             {s.label}
@@ -2032,7 +2032,7 @@ export const PlayerInspectModal: React.FC = () => {
                                                         fontSize: '18px',
                                                         fontWeight: 800,
                                                         color: '#fff',
-                                                        fontFamily: "'Cinzel', serif",
+                                                        fontFamily: "'Cinzel', 'Philosopher', serif",
                                                         textShadow: '0 2px 8px rgba(0,0,0,0.8)',
                                                     }}
                                                 >
@@ -2047,7 +2047,7 @@ export const PlayerInspectModal: React.FC = () => {
                                                         fontSize: '9.5px',
                                                         color: '#f0c040',
                                                         fontWeight: 800,
-                                                        fontFamily: "'Cinzel', serif",
+                                                        fontFamily: "'Cinzel', 'Philosopher', serif",
                                                     }}
                                                 >
                                                     УР. {heroLevel}
@@ -2217,7 +2217,7 @@ export const PlayerInspectModal: React.FC = () => {
                                             cursor: 'pointer',
                                             boxShadow:
                                                 '0 4px 18px rgba(240,192,64,0.28), inset 0 1px 0 rgba(255,255,255,0.3)',
-                                            fontFamily: "'Cinzel', serif",
+                                            fontFamily: "'Cinzel', 'Philosopher', serif",
                                             letterSpacing: '0.5px',
                                             display: 'flex',
                                             alignItems: 'center',

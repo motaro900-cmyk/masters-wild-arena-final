@@ -75,7 +75,7 @@ export const LocalStatRow: React.FC<LocalStatRowProps> = ({ label, pVal, eVal, i
                         color: '#ffd700',
                         fontSize: '11px',
                         fontWeight: 950,
-                        fontFamily: "'Cinzel', serif",
+                        fontFamily: "'Cinzel', 'Philosopher', serif",
                         letterSpacing: '1px',
                         textTransform: 'uppercase',
                         textShadow: '0 1.5px 3px rgba(0,0,0,0.95)',

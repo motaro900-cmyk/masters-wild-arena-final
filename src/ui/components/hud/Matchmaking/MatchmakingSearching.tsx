@@ -207,7 +207,7 @@ export const MatchmakingSearching: React.FC<MatchmakingSearchingProps> = ({
                     <span
                         style={{
                             color: '#fff',
-                            fontFamily: "'Cinzel', serif",
+                            fontFamily: "'Cinzel', 'Philosopher', serif",
                             fontSize: '28px',
                             fontWeight: 900,
                             letterSpacing: '3px',
@@ -256,7 +256,7 @@ export const MatchmakingSearching: React.FC<MatchmakingSearchingProps> = ({
                 <div
                     style={{
                         color: '#ffd700',
-                        fontFamily: "'Cinzel', serif",
+                        fontFamily: "'Cinzel', 'Philosopher', serif",
                         fontSize: '20px',
                         fontWeight: 900,
                         marginBottom: '24px',
@@ -289,7 +289,7 @@ export const MatchmakingSearching: React.FC<MatchmakingSearchingProps> = ({
                         color: '#fbbf24',
                         fontSize: '24px',
                         fontWeight: 900,
-                        fontFamily: "'Cinzel', serif",
+                        fontFamily: "'Cinzel', 'Philosopher', serif",
                         letterSpacing: '2px',
                         marginBottom: '15px',
                         display: 'flex',
@@ -341,7 +341,7 @@ export const MatchmakingSearching: React.FC<MatchmakingSearchingProps> = ({
                             color: '#c8a870',
                             fontSize: '15px',
                             fontWeight: 900,
-                            fontFamily: "'Cinzel', serif",
+                            fontFamily: "'Cinzel', 'Philosopher', serif",
                             letterSpacing: '1.5px',
                             textShadow: '0 2px 4px rgba(0,0,0,0.9)',
                             display: 'flex',
@@ -369,7 +369,7 @@ export const MatchmakingSearching: React.FC<MatchmakingSearchingProps> = ({
                             color: '#c8a870',
                             fontSize: '15px',
                             fontWeight: 900,
-                            fontFamily: "'Cinzel', serif",
+                            fontFamily: "'Cinzel', 'Philosopher', serif",
                             letterSpacing: '1.5px',
                             textShadow: '0 2px 4px rgba(0,0,0,0.9)',
                             display: 'flex',
@@ -429,7 +429,7 @@ export const MatchmakingSearching: React.FC<MatchmakingSearchingProps> = ({
                         border: '2px solid #8b0000',
                         borderRadius: '12px',
                         color: '#ffd700',
-                        fontFamily: "'Cinzel', serif",
+                        fontFamily: "'Cinzel', 'Philosopher', serif",
                         fontSize: '15px',
                         fontWeight: 950,
                         cursor: 'pointer',

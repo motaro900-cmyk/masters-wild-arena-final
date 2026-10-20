@@ -59,7 +59,7 @@ export const ClanCreateTab: React.FC<ClanCreateTabProps> = ({ colors, error, set
             <div style={{ textAlign: 'center' }}>
                 <h2
                     style={{
-                        fontFamily: "'Cinzel', serif",
+                        fontFamily: "'Cinzel', 'Philosopher', serif",
                         color: colors.accent,
                         fontSize: '32px',
                         margin: 0,

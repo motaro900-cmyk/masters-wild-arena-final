@@ -414,7 +414,7 @@ export const UnderDevelopmentModal: React.FC<{
                                 color: '#f0c040',
                                 fontSize: isMobile ? '24px' : '32px',
                                 margin: '0 0 15px 0',
-                                fontFamily: "'Cinzel', serif",
+                                fontFamily: "'Cinzel', 'Philosopher', serif",
                                 letterSpacing: '4px',
                                 textShadow: '0 4px 10px rgba(0,0,0,0.5)',
                             }}
@@ -451,7 +451,7 @@ export const UnderDevelopmentModal: React.FC<{
                                 fontWeight: 900,
                                 cursor: 'pointer',
                                 letterSpacing: '2px',
-                                fontFamily: "'Cinzel', serif",
+                                fontFamily: "'Cinzel', 'Philosopher', serif",
                                 textShadow: '0 2px 4px rgba(0,0,0,0.5)',
                             }}
                         >
@@ -563,7 +563,7 @@ export const ConfirmDialog: React.FC<{
                                 color: variant === 'danger' ? '#ef4444' : '#f0c040',
                                 fontSize: '24px',
                                 margin: '0 0 15px 0',
-                                fontFamily: "'Cinzel', serif",
+                                fontFamily: "'Cinzel', 'Philosopher', serif",
                                 letterSpacing: '2px',
                             }}
                         >

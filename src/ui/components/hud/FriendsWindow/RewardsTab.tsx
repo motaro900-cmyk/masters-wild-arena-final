@@ -38,7 +38,7 @@ export const RewardsTab: React.FC<RewardsTabProps> = ({
         >
             <div
                 style={{
-                    fontFamily: "'Cinzel', serif",
+                    fontFamily: "'Cinzel', 'Philosopher', serif",
                     fontSize: 20,
                     color: colors.accent,
                     marginBottom: 8,
@@ -103,7 +103,7 @@ export const RewardsTab: React.FC<RewardsTabProps> = ({
                                 padding: '2px 10px',
                                 borderRadius: 10,
                                 marginBottom: 5,
-                                fontFamily: "'Cinzel', serif",
+                                fontFamily: "'Cinzel', 'Philosopher', serif",
                                 textShadow: '0 1px 2px rgba(0,0,0,0.8)',
                             }}
                         >
@@ -177,7 +177,7 @@ export const RewardsTab: React.FC<RewardsTabProps> = ({
                     color: '#1a1008',
                     fontWeight: 950,
                     cursor: 'pointer',
-                    fontFamily: "'Cinzel', serif",
+                    fontFamily: "'Cinzel', 'Philosopher', serif",
                     fontSize: 14,
                     boxShadow: '0 8px 20px rgba(0,0,0,0.5)',
                     letterSpacing: '1px',
@@ -193,7 +193,7 @@ export const RewardsTab: React.FC<RewardsTabProps> = ({
             <div style={{ textAlign: 'center', width: '100%' }}>
                 <div
                     style={{
-                        fontFamily: "'Cinzel', serif",
+                        fontFamily: "'Cinzel', 'Philosopher', serif",
                         fontSize: 16,
                         color: colors.accent,
                         marginBottom: 15,
@@ -227,7 +227,7 @@ export const RewardsTab: React.FC<RewardsTabProps> = ({
                                 color: colors.accent,
                                 fontSize: 11,
                                 fontWeight: 950,
-                                fontFamily: "'Cinzel', serif",
+                                fontFamily: "'Cinzel', 'Philosopher', serif",
                                 letterSpacing: '0.5px',
                                 cursor: 'pointer',
                                 display: 'flex',
@@ -268,7 +268,7 @@ export const RewardsTab: React.FC<RewardsTabProps> = ({
                                 color: '#38bdf8',
                                 fontSize: 11,
                                 fontWeight: 950,
-                                fontFamily: "'Cinzel', serif",
+                                fontFamily: "'Cinzel', 'Philosopher', serif",
                                 letterSpacing: '0.5px',
                                 cursor: 'pointer',
                                 display: 'flex',
@@ -300,7 +300,7 @@ export const RewardsTab: React.FC<RewardsTabProps> = ({
                             fontSize: 13,
                             fontWeight: 900,
                             color: colors.accent,
-                            fontFamily: "'Cinzel', serif",
+                            fontFamily: "'Cinzel', 'Philosopher', serif",
                             letterSpacing: '1px',
                             opacity: 0.7,
                             textShadow: '0 1px 2px rgba(0,0,0,0.8)',

@@ -147,7 +147,7 @@ export const ShopDetailPanel: React.FC<ShopDetailPanelProps> = ({
                                 fontWeight: 900,
                                 letterSpacing: '1.5px',
                                 textTransform: 'uppercase',
-                                fontFamily: "'Cinzel', serif",
+                                fontFamily: "'Cinzel', 'Philosopher', serif",
                             }}
                         >
                             {rarityTranslation[selectedItem.rarity] || selectedItem.rarity}
@@ -312,7 +312,7 @@ export const ShopDetailPanel: React.FC<ShopDetailPanelProps> = ({
                                                 fontWeight: 900,
                                                 letterSpacing: '0.8px',
                                                 textTransform: 'uppercase',
-                                                fontFamily: "'Cinzel', serif",
+                                                fontFamily: "'Cinzel', 'Philosopher', serif",
                                             }}
                                         >
                                             Также в Боевом Пропуске

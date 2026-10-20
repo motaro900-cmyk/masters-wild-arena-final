@@ -191,7 +191,11 @@ export const BattleScene: React.FC = () => {
 
         return () => {
             // Revert to city theme when leaving battle
-            audioService.playMusic(AssetsMap.AUDIO.MUSIC_MAIN);
+            if (AssetsMap?.AUDIO?.MUSIC_LIST) {
+                audioService.playPlaylist(AssetsMap.AUDIO.MUSIC_LIST);
+            } else {
+                audioService.playMusic(AssetsMap.AUDIO.MUSIC_MAIN);
+            }
             audioService.stopAllSFX();
         };
     }, []);
@@ -368,11 +372,13 @@ export const BattleScene: React.FC = () => {
                                 const newRating = newTrophies;
                                 store.checkRankUpRewards(newRating);
 
-                                if (isVictory) {
-                                    store.updateQuestProgress('WIN', 1);
+                                if (!isWarmup) {
+                                    if (isVictory) {
+                                        store.updateQuestProgress('WIN', 1);
+                                    }
+                                    store.updateQuestProgress('PLAY', 1);
+                                    store.updateQuestProgress('WIN_STREAK', newStreak);
                                 }
-                                store.updateQuestProgress('PLAY', 1);
-                                store.updateQuestProgress('WIN_STREAK', newStreak);
 
                                 const { syncService } = await import('../../../services/SyncService');
                                 syncService.syncPlayerData();
@@ -842,7 +848,7 @@ export const BattleScene: React.FC = () => {
                                     '2px 2px 0px #000, -2px -2px 0px #000, 2px -2px 0px #000, -2px 2px 0px #000',
                                 fontStyle: dmg.fontStyle || 'normal',
                                 zIndex: 1000,
-                                fontFamily: "'Cinzel', serif",
+                                fontFamily: "'Cinzel', 'Philosopher', serif",
                                 willChange: 'transform, opacity',
                                 maxWidth: dmg.maxWidth || 'none',
                                 textAlign: (dmg.textAlign || 'center') as any,
@@ -902,7 +908,7 @@ export const BattleScene: React.FC = () => {
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            fontFamily: "'Cinzel', serif",
+                            fontFamily: "'Cinzel', 'Philosopher', serif",
                             textShadow: timeScale >= 1.2 ? '0 0 10px rgba(251, 191, 36, 0.6)' : 'none',
                             transition: 'border 0.2s, background 0.2s, box-shadow 0.2s',
                         }}

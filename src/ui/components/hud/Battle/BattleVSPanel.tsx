@@ -56,7 +56,7 @@ export const BattleVSPanel = React.memo<BattleVSPanelProps>(({ timeLeft, lastLog
                 <CornerAccent position="br" color="rgba(240,180,40,0.5)" />
                 <div
                     style={{
-                        fontFamily: "'Cinzel', serif",
+                        fontFamily: "'Cinzel', 'Philosopher', serif",
                         fontSize: '32px',
                         fontWeight: 900,
                         color: '#fcd34d',

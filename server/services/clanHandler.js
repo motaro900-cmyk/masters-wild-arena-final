@@ -34,10 +34,12 @@ export async function handleCreateClan(req, res) {
     if (!cleanId) return res.status(400).json({ error: 'Invalid user ID' });
     if (!clanName || !clanTag) return res.status(400).json({ error: 'Missing clan name or tag' });
 
-    const auth = verifyVkSign(launchParams, req.headers.host);
+    const auth = verifyVkSign(launchParams, req.headers.host, cleanId);
     if (!auth.ok) return res.status(403).json({ error: `Forbidden: ${auth.error}` });
-    if (auth.vkUserId && cleanId !== `VK-${auth.vkUserId}`) {
-        return res.status(403).json({ error: 'Forbidden: identity mismatch' });
+    if (cleanId.startsWith('VK-')) {
+        if (auth.isUnsigned || !auth.vkUserId || cleanId !== `VK-${auth.vkUserId}`) {
+            return res.status(403).json({ error: 'Forbidden: identity mismatch' });
+        }
     }
 
     const cleanClanName = String(clanName).trim().slice(0, 24);
@@ -129,10 +131,12 @@ export async function handleJoinClan(req, res) {
     if (!cleanId) return res.status(400).json({ error: 'Invalid user ID' });
     if (!clanId) return res.status(400).json({ error: 'Missing clanId' });
 
-    const auth = verifyVkSign(launchParams, req.headers.host);
+    const auth = verifyVkSign(launchParams, req.headers.host, cleanId);
     if (!auth.ok) return res.status(403).json({ error: `Forbidden: ${auth.error}` });
-    if (auth.vkUserId && cleanId !== `VK-${auth.vkUserId}`) {
-        return res.status(403).json({ error: 'Forbidden: identity mismatch' });
+    if (cleanId.startsWith('VK-')) {
+        if (auth.isUnsigned || !auth.vkUserId || cleanId !== `VK-${auth.vkUserId}`) {
+            return res.status(403).json({ error: 'Forbidden: identity mismatch' });
+        }
     }
 
     const clanDoc = await getLocalDoc(CLANS_COLLECTION, clanId);
@@ -198,10 +202,12 @@ export async function handleLeaveClan(req, res) {
     const cleanId = sanitizeDocId(userId);
     if (!cleanId) return res.status(400).json({ error: 'Invalid user ID' });
 
-    const auth = verifyVkSign(launchParams, req.headers.host);
+    const auth = verifyVkSign(launchParams, req.headers.host, cleanId);
     if (!auth.ok) return res.status(403).json({ error: `Forbidden: ${auth.error}` });
-    if (auth.vkUserId && cleanId !== `VK-${auth.vkUserId}`) {
-        return res.status(403).json({ error: 'Forbidden: identity mismatch' });
+    if (cleanId.startsWith('VK-')) {
+        if (auth.isUnsigned || !auth.vkUserId || cleanId !== `VK-${auth.vkUserId}`) {
+            return res.status(403).json({ error: 'Forbidden: identity mismatch' });
+        }
     }
 
     const result = await runAtomicTransaction(

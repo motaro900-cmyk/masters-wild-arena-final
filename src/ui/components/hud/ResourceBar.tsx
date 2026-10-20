@@ -115,7 +115,7 @@ export const ResourceBar: React.FC<{ onOpenShop?: (tab: string) => void }> = ({ 
                                     marginBottom: '8px',
                                     textAlign: 'center',
                                     textTransform: 'uppercase',
-                                    fontFamily: "'Cinzel', serif",
+                                    fontFamily: "'Cinzel', 'Philosopher', serif",
                                 }}
                             >
                                 Восстановление Энергии
@@ -188,7 +188,7 @@ export const ResourceBar: React.FC<{ onOpenShop?: (tab: string) => void }> = ({ 
                                     marginBottom: '8px',
                                     textAlign: 'center',
                                     textTransform: 'uppercase',
-                                    fontFamily: "'Cinzel', serif",
+                                    fontFamily: "'Cinzel', 'Philosopher', serif",
                                 }}
                             >
                                 Золото
@@ -246,7 +246,7 @@ export const ResourceBar: React.FC<{ onOpenShop?: (tab: string) => void }> = ({ 
                                     marginBottom: '8px',
                                     textAlign: 'center',
                                     textTransform: 'uppercase',
-                                    fontFamily: "'Cinzel', serif",
+                                    fontFamily: "'Cinzel', 'Philosopher', serif",
                                 }}
                             >
                                 Кристаллы

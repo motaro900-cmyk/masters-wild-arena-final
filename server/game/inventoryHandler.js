@@ -29,10 +29,12 @@ export async function handleInventoryEquip(req, res) {
     if (!cleanId) return res.status(400).json({ error: 'Invalid user ID' });
     if (!instanceId || !slot) return res.status(400).json({ error: 'Missing instanceId or slot' });
 
-    const auth = verifyVkSign(launchParams, req.headers.host);
+    const auth = verifyVkSign(launchParams, req.headers.host, cleanId);
     if (!auth.ok) return res.status(403).json({ error: `Forbidden: ${auth.error}` });
-    if (auth.vkUserId && cleanId !== `VK-${auth.vkUserId}`) {
-        return res.status(403).json({ error: 'Forbidden: identity mismatch' });
+    if (cleanId.startsWith('VK-')) {
+        if (auth.isUnsigned || !auth.vkUserId || cleanId !== `VK-${auth.vkUserId}`) {
+            return res.status(403).json({ error: 'Forbidden: identity mismatch' });
+        }
     }
 
     const result = await runAtomicTransaction(
@@ -93,10 +95,12 @@ export async function handleInventorySell(req, res) {
     if (!cleanId) return res.status(400).json({ error: 'Invalid user ID' });
     if (!instanceId) return res.status(400).json({ error: 'Missing instanceId' });
 
-    const auth = verifyVkSign(launchParams, req.headers.host);
+    const auth = verifyVkSign(launchParams, req.headers.host, cleanId);
     if (!auth.ok) return res.status(403).json({ error: `Forbidden: ${auth.error}` });
-    if (auth.vkUserId && cleanId !== `VK-${auth.vkUserId}`) {
-        return res.status(403).json({ error: 'Forbidden: identity mismatch' });
+    if (cleanId.startsWith('VK-')) {
+        if (auth.isUnsigned || !auth.vkUserId || cleanId !== `VK-${auth.vkUserId}`) {
+            return res.status(403).json({ error: 'Forbidden: identity mismatch' });
+        }
     }
 
     const result = await runAtomicTransaction(
@@ -164,10 +168,12 @@ export async function handleInventoryUpgrade(req, res) {
     if (!cleanId) return res.status(400).json({ error: 'Invalid user ID' });
     if (!instanceId) return res.status(400).json({ error: 'Missing instanceId' });
 
-    const auth = verifyVkSign(launchParams, req.headers.host);
+    const auth = verifyVkSign(launchParams, req.headers.host, cleanId);
     if (!auth.ok) return res.status(403).json({ error: `Forbidden: ${auth.error}` });
-    if (auth.vkUserId && cleanId !== `VK-${auth.vkUserId}`) {
-        return res.status(403).json({ error: 'Forbidden: identity mismatch' });
+    if (cleanId.startsWith('VK-')) {
+        if (auth.isUnsigned || !auth.vkUserId || cleanId !== `VK-${auth.vkUserId}`) {
+            return res.status(403).json({ error: 'Forbidden: identity mismatch' });
+        }
     }
 
     const result = await runAtomicTransaction(

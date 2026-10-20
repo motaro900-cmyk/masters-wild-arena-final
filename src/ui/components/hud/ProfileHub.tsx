@@ -141,7 +141,7 @@ export const ProfileHub: React.FC = () => {
                         <span
                             style={{
                                 position: 'relative',
-                                fontFamily: "'Cinzel', serif",
+                                fontFamily: "'Cinzel', 'Philosopher', serif",
                                 fontSize: '16px',
                                 fontWeight: 900,
                                 color: '#fff',
@@ -196,7 +196,7 @@ export const ProfileHub: React.FC = () => {
                     <span
                         style={{
                             position: 'relative',
-                            fontFamily: "'Cinzel', serif",
+                            fontFamily: "'Cinzel', 'Philosopher', serif",
                             fontSize: '16px',
                             fontWeight: 900,
                             color: vipLevel > 0 ? '#fff' : '#d0d0d0',
@@ -224,7 +224,7 @@ export const ProfileHub: React.FC = () => {
                         <div className="flex items-center gap-2">
                             <span
                                 style={{
-                                    fontFamily: "'Cinzel', serif",
+                                    fontFamily: "'Cinzel', 'Philosopher', serif",
                                     fontSize: name && name.length > 10 ? '17px' : '22px',
                                     fontWeight: 900,
                                     color: '#fff',
@@ -244,7 +244,7 @@ export const ProfileHub: React.FC = () => {
                         </div>
                         <span
                             style={{
-                                fontFamily: "'Cinzel', serif",
+                                fontFamily: "'Cinzel', 'Philosopher', serif",
                                 fontSize: '14px',
                                 fontWeight: 500,
                                 color: '#ffd700',
@@ -295,7 +295,7 @@ export const ProfileHub: React.FC = () => {
                     <div className="absolute inset-0 flex items-center justify-center z-10">
                         <span
                             style={{
-                                fontFamily: "'Cinzel', serif",
+                                fontFamily: "'Cinzel', 'Philosopher', serif",
                                 fontSize: '10px',
                                 fontWeight: 900,
                                 color: '#fff',
@@ -330,7 +330,7 @@ export const ProfileHub: React.FC = () => {
                         >
                             <span
                                 style={{
-                                    fontFamily: "'Cinzel', serif",
+                                    fontFamily: "'Cinzel', 'Philosopher', serif",
                                     fontSize: '12px',
                                     fontWeight: 700,
                                     color: '#f0c040',
@@ -340,7 +340,7 @@ export const ProfileHub: React.FC = () => {
                             </span>
                             <span
                                 style={{
-                                    fontFamily: "'Cinzel', serif",
+                                    fontFamily: "'Cinzel', 'Philosopher', serif",
                                     fontSize: '10px',
                                     fontWeight: 500,
                                     color: '#d0d0d0',

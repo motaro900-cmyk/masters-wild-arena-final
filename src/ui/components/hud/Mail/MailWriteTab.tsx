@@ -59,7 +59,7 @@ export const MailWriteTab: React.FC<MailWriteTabProps> = ({
         >
             <h3
                 style={{
-                    fontFamily: "'Cinzel', serif",
+                    fontFamily: "'Cinzel', 'Philosopher', serif",
                     fontSize: '18px',
                     color: colors.accent,
                     letterSpacing: '1px',
@@ -261,7 +261,7 @@ export const MailWriteTab: React.FC<MailWriteTabProps> = ({
                     fontWeight: 900,
                     color: '#1a1008',
                     cursor: 'pointer',
-                    fontFamily: "'Cinzel', serif",
+                    fontFamily: "'Cinzel', 'Philosopher', serif",
                     fontSize: '14px',
                     boxShadow: '0 4px 15px rgba(200, 120, 32, 0.3)',
                     marginTop: '5px',

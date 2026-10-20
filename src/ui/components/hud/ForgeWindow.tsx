@@ -166,7 +166,7 @@ export const ForgeWindow: React.FC = () => {
                 >
                     <h3
                         style={{
-                            fontFamily: "'Cinzel', serif",
+                            fontFamily: "'Cinzel', 'Philosopher', serif",
                             color: '#f0c040',
                             fontSize: isMobile ? '16px' : '18px',
                             margin: 0,
@@ -371,7 +371,7 @@ export const ForgeWindow: React.FC = () => {
                             >
                                 <h2
                                     style={{
-                                        fontFamily: "'Cinzel', serif",
+                                        fontFamily: "'Cinzel', 'Philosopher', serif",
                                         fontSize: isMobile ? '22px' : '28px',
                                         color: '#fff',
                                         margin: '0 0 5px 0',
@@ -419,7 +419,7 @@ export const ForgeWindow: React.FC = () => {
                                             color: '#10b981',
                                             fontSize: '48px',
                                             fontWeight: 900,
-                                            fontFamily: "'Cinzel', serif",
+                                            fontFamily: "'Cinzel', 'Philosopher', serif",
                                             textShadow: '0 0 20px rgba(16,185,129,0.8)',
                                             zIndex: 10,
                                         }}

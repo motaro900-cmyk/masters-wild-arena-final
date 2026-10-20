@@ -85,7 +85,7 @@ export const GiftCongratsModal: React.FC<GiftCongratsModalProps> = ({ rewardClai
 
                 <h3
                     style={{
-                        fontFamily: "'Cinzel', serif",
+                        fontFamily: "'Cinzel', 'Philosopher', serif",
                         color: '#ffd700',
                         fontSize: '26px',
                         fontWeight: 950,
@@ -140,7 +140,7 @@ export const GiftCongratsModal: React.FC<GiftCongratsModalProps> = ({ rewardClai
                             fontSize: '22px',
                             color: '#ffffff',
                             fontWeight: 950,
-                            fontFamily: "'Cinzel', serif",
+                            fontFamily: "'Cinzel', 'Philosopher', serif",
                             textShadow: '0 2px 6px rgba(0,0,0,0.98), 0 0 8px rgba(255,255,255,0.45)',
                             letterSpacing: '1px',
                         }}
@@ -159,7 +159,7 @@ export const GiftCongratsModal: React.FC<GiftCongratsModalProps> = ({ rewardClai
                         border: '2px solid #ffd700',
                         borderRadius: '12px',
                         color: '#1c1002',
-                        fontFamily: "'Cinzel', serif",
+                        fontFamily: "'Cinzel', 'Philosopher', serif",
                         fontWeight: 950,
                         fontSize: '15px',
                         cursor: 'pointer',

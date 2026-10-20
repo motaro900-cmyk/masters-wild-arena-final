@@ -191,7 +191,7 @@ export const DailyTaskPanel = React.memo(() => {
                 <h3
                     style={{
                         margin: 0,
-                        fontFamily: "'Cinzel', serif",
+                        fontFamily: "'Cinzel', 'Philosopher', serif",
                         fontSize: 18,
                         fontWeight: 900,
                         color: '#3a220b',
@@ -500,7 +500,7 @@ export const DailyTaskPanel = React.memo(() => {
                             color: reward.type === 'GOLD' ? '#f1c40f' : reward.type === 'GEM' ? '#00ffff' : '#38bdf8',
                             fontWeight: 900,
                             fontSize: '15px',
-                            fontFamily: "'Cinzel', serif",
+                            fontFamily: "'Cinzel', 'Philosopher', serif",
                             textShadow: '0 2px 6px #000, 0 0 10px rgba(0,0,0,0.8)',
                             pointerEvents: 'none',
                             zIndex: 1000,

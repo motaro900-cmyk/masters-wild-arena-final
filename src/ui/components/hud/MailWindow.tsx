@@ -227,7 +227,7 @@ export const MailWindow: React.FC<MailWindowProps> = () => {
                                         borderRadius: '10px',
                                         fontSize: isMobile ? '11.5px' : '13px',
                                         fontWeight: 800,
-                                        fontFamily: "'Cinzel', serif",
+                                        fontFamily: "'Cinzel', 'Philosopher', serif",
                                         cursor: 'pointer',
                                         position: 'relative',
                                         transition: '0.3s',
@@ -290,7 +290,7 @@ export const MailWindow: React.FC<MailWindowProps> = () => {
                             fontSize: '11px',
                             fontWeight: 800,
                             cursor: 'pointer',
-                            fontFamily: "'Cinzel', serif",
+                            fontFamily: "'Cinzel', 'Philosopher', serif",
                         }}
                     >
                         ← НАЗАД
@@ -388,7 +388,7 @@ export const MailWindow: React.FC<MailWindowProps> = () => {
                                     fontWeight: 800,
                                     cursor: 'pointer',
                                     fontSize: '12px',
-                                    fontFamily: "'Cinzel', serif",
+                                    fontFamily: "'Cinzel', 'Philosopher', serif",
                                 }}
                             >
                                 НАПИСАТЬ
@@ -411,7 +411,7 @@ export const MailWindow: React.FC<MailWindowProps> = () => {
                                     fontWeight: 800,
                                     cursor: 'pointer',
                                     fontSize: '12px',
-                                    fontFamily: "'Cinzel', serif",
+                                    fontFamily: "'Cinzel', 'Philosopher', serif",
                                 }}
                             >
                                 УДАЛИТЬ БЕЗ НАГРАД
@@ -428,7 +428,7 @@ export const MailWindow: React.FC<MailWindowProps> = () => {
                                     color: '#1a1008',
                                     cursor: 'pointer',
                                     fontSize: '14px',
-                                    fontFamily: "'Cinzel', serif",
+                                    fontFamily: "'Cinzel', 'Philosopher', serif",
                                 }}
                             >
                                 ЗАБРАТЬ ВСЁ
@@ -453,7 +453,7 @@ export const MailWindow: React.FC<MailWindowProps> = () => {
                                 fontWeight: 800,
                                 cursor: 'pointer',
                                 fontSize: '12px',
-                                fontFamily: "'Cinzel', serif",
+                                fontFamily: "'Cinzel', 'Philosopher', serif",
                                 transition: '0.2s',
                             }}
                             onMouseEnter={(e) => {

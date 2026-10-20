@@ -74,7 +74,7 @@ export const ChestOpeningOverlay: React.FC<ChestOpeningOverlayProps> = ({
                                 color: '#f0c040',
                                 fontSize: '32px',
                                 fontWeight: 900,
-                                fontFamily: "'Cinzel', serif",
+                                fontFamily: "'Cinzel', 'Philosopher', serif",
                                 textShadow: '0 2px 10px rgba(240, 192, 64, 0.3)',
                             }}
                         >
@@ -215,7 +215,7 @@ export const ChestOpeningOverlay: React.FC<ChestOpeningOverlayProps> = ({
                         color: '#f0c040',
                         fontSize: '11px',
                         fontWeight: 900,
-                        fontFamily: "'Cinzel', serif",
+                        fontFamily: "'Cinzel', 'Philosopher', serif",
                     }}
                 >
                     {isUpgrade ? `L${prevLvl} ➔ L${newLvl}` : `L${newLvl}`}
@@ -228,7 +228,7 @@ export const ChestOpeningOverlay: React.FC<ChestOpeningOverlayProps> = ({
                         fontSize: '11px',
                         fontWeight: 900,
                         letterSpacing: '2px',
-                        fontFamily: "'Cinzel', serif",
+                        fontFamily: "'Cinzel', 'Philosopher', serif",
                         textTransform: 'uppercase',
                         marginTop: '10px',
                     }}
@@ -281,7 +281,7 @@ export const ChestOpeningOverlay: React.FC<ChestOpeningOverlayProps> = ({
                         color: '#fff',
                         fontSize: '20px',
                         fontWeight: 950,
-                        fontFamily: "'Cinzel', serif",
+                        fontFamily: "'Cinzel', 'Philosopher', serif",
                         textAlign: 'center',
                         textTransform: 'uppercase',
                     }}
@@ -324,7 +324,7 @@ export const ChestOpeningOverlay: React.FC<ChestOpeningOverlayProps> = ({
                         fontSize: '13px',
                         fontWeight: 900,
                         color: '#f0c040',
-                        fontFamily: "'Cinzel', serif",
+                        fontFamily: "'Cinzel', 'Philosopher', serif",
                     }}
                 >
                     <span>МОЩЬ:</span>
@@ -444,7 +444,7 @@ export const ChestOpeningOverlay: React.FC<ChestOpeningOverlayProps> = ({
                             color: '#f0c040',
                             fontSize: '22px',
                             fontWeight: 900,
-                            fontFamily: "'Cinzel', serif",
+                            fontFamily: "'Cinzel', 'Philosopher', serif",
                             letterSpacing: '4px',
                             textShadow: '0 0 15px rgba(240, 192, 64, 0.6)',
                             textAlign: 'center',
@@ -501,7 +501,7 @@ export const ChestOpeningOverlay: React.FC<ChestOpeningOverlayProps> = ({
                                           : RARITY_COLORS[openingResult.item?.rarity || 'COMMON']?.color || '#fff',
                                 fontSize: '28px',
                                 fontWeight: 900,
-                                fontFamily: "'Cinzel', serif",
+                                fontFamily: "'Cinzel', 'Philosopher', serif",
                                 letterSpacing: '3px',
                                 textShadow: '0 0 20px rgba(0,0,0,0.8)',
                                 margin: '0 0 8px 0',
@@ -550,7 +550,7 @@ export const ChestOpeningOverlay: React.FC<ChestOpeningOverlayProps> = ({
                             fontWeight: 900,
                             letterSpacing: '2px',
                             cursor: 'pointer',
-                            fontFamily: "'Cinzel', serif",
+                            fontFamily: "'Cinzel', 'Philosopher', serif",
                             boxShadow: '0 0 20px rgba(240,192,64,0.4), 0 10px 20px rgba(0,0,0,0.5)',
                         }}
                     >

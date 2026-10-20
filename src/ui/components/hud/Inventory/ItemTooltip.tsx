@@ -150,7 +150,7 @@ export const ItemTooltip: React.FC<ItemTooltipProps> = ({ item }) => {
                         fontSize: isMobile ? '10px' : '12px',
                         fontWeight: 900,
                         letterSpacing: '3px',
-                        fontFamily: "'Cinzel', serif",
+                        fontFamily: "'Cinzel', 'Philosopher', serif",
                         marginBottom: '6px',
                     }}
                 >
@@ -163,7 +163,7 @@ export const ItemTooltip: React.FC<ItemTooltipProps> = ({ item }) => {
                         color: '#fff',
                         fontSize: isMobile ? '18px' : '24px',
                         fontWeight: 900,
-                        fontFamily: "'Cinzel', serif",
+                        fontFamily: "'Cinzel', 'Philosopher', serif",
                         textTransform: 'uppercase',
                         letterSpacing: '1px',
                     }}

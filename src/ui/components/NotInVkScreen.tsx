@@ -23,7 +23,7 @@ export const NotInVkScreen: React.FC = () => {
                 color: '#fff',
                 textAlign: 'center',
                 padding: '24px',
-                fontFamily: "'Cinzel', serif",
+                fontFamily: "'Cinzel', 'Philosopher', serif",
                 position: 'fixed',
                 top: 0,
                 left: 0,

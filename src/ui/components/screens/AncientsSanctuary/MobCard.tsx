@@ -60,13 +60,13 @@ export const MobCard: React.FC<MobCardProps> = ({ selectedMob, selectedFloor, pv
                         letterSpacing: '2px',
                         color: selectedMob.isBoss ? '#ef4444' : '#fbbf24',
                         fontWeight: 900,
-                        fontFamily: "'Cinzel', serif",
+                        fontFamily: "'Cinzel', 'Philosopher', serif",
                         display: 'flex',
                         alignItems: 'center',
                         gap: '6px',
                     }}
                 >
-                    <span style={{ fontSize: '7px' }}>▲</span>{' '}
+                    <span style={{ fontSize: '10px' }}>▲</span>{' '}
                     {selectedMob.isBoss
                         ? 'ЛЕГЕНДАРНЫЙ БОСС'
                         : selectedFloor === pveStage
@@ -77,7 +77,7 @@ export const MobCard: React.FC<MobCardProps> = ({ selectedMob, selectedFloor, pv
                     style={{
                         margin: 0,
                         fontSize: '24px',
-                        fontFamily: "'Cinzel', serif",
+                        fontFamily: "'Cinzel', 'Philosopher', serif",
                         color: '#fff',
                         textShadow: '0 2px 4px rgba(0,0,0,0.8)',
                     }}

@@ -116,7 +116,7 @@ export const SkinsView = ({ hero }: { hero: any }) => {
                                 color: displaySkin?.color || '#fff',
                                 fontSize: '16px',
                                 fontWeight: 900,
-                                fontFamily: "'Cinzel', serif",
+                                fontFamily: "'Cinzel', 'Philosopher', serif",
                                 letterSpacing: '0.5px',
                             }}
                         >
@@ -199,7 +199,7 @@ export const SkinsView = ({ hero }: { hero: any }) => {
                             color: '#fff',
                             fontSize: '22px',
                             fontWeight: 900,
-                            fontFamily: "'Cinzel', serif",
+                            fontFamily: "'Cinzel', 'Philosopher', serif",
                             letterSpacing: '3px',
                             textTransform: 'uppercase',
                         }}
@@ -366,7 +366,7 @@ export const SkinsView = ({ hero }: { hero: any }) => {
                                             color: skin.color || '#fff',
                                             fontSize: '12px',
                                             fontWeight: 800,
-                                            fontFamily: "'Cinzel', serif",
+                                            fontFamily: "'Cinzel', 'Philosopher', serif",
                                             letterSpacing: '0.3px',
                                             marginBottom: '3px',
                                             whiteSpace: 'nowrap',
@@ -424,7 +424,7 @@ export const SkinsView = ({ hero }: { hero: any }) => {
                                                 textAlign: 'center',
                                                 fontSize: '10px',
                                                 fontWeight: 900,
-                                                fontFamily: "'Cinzel', serif",
+                                                fontFamily: "'Cinzel', 'Philosopher', serif",
                                                 letterSpacing: '0.8px',
                                                 background: isActive ? `${color}22` : 'rgba(255,255,255,0.05)',
                                                 border: isActive

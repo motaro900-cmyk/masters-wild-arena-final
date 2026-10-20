@@ -98,7 +98,7 @@ const SideMenuItem: React.FC<{
     >
         <span
             style={{
-                fontFamily: "'Cinzel', serif",
+                fontFamily: "'Cinzel', 'Philosopher', serif",
                 fontSize: 17,
                 fontWeight: 800,
                 color: isActive ? '#f0c040' : '#c8a870',

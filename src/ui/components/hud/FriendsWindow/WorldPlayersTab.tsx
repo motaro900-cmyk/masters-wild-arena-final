@@ -91,7 +91,7 @@ export const WorldPlayersTab: React.FC<WorldPlayersTabProps> = ({
                             <div style={{ flex: 1 }}>
                                 <div
                                     style={{
-                                        fontFamily: "'Cinzel', serif",
+                                        fontFamily: "'Cinzel', 'Philosopher', serif",
                                         fontSize: 13,
                                         fontWeight: 700,
                                         color: '#fff',

@@ -596,7 +596,7 @@ export const ClanWindow: React.FC = () => {
                 }}
             >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                    <h2 style={{ margin: 0, fontFamily: "'Cinzel', serif", fontSize: '24px', color: colors.accent }}>
+                    <h2 style={{ margin: 0, fontFamily: "'Cinzel', 'Philosopher', serif", fontSize: '24px', color: colors.accent }}>
                         {view === 'BROWSE'
                             ? 'ПОИСК КЛАНОВ'
                             : view === 'CREATE'

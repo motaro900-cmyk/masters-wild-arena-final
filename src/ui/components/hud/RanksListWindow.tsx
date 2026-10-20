@@ -91,7 +91,7 @@ export const RanksListWindow: React.FC = () => {
                                             color: isReached ? rank.color : '#888',
                                             fontSize: '22px',
                                             fontWeight: 900,
-                                            fontFamily: "'Cinzel', serif",
+                                            fontFamily: "'Cinzel', 'Philosopher', serif",
                                         }}
                                     >
                                         {rank.name}

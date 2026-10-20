@@ -70,8 +70,8 @@ export function simulateDeterministicBattle(playerStats, enemyStats, seed = 1234
 
     let pHP = playerStats.hp;
     let eHP = enemyStats.hp;
-    const pDivisor = 200;
-    const eDivisor = 200;
+    const pDivisor = Math.max(50, 200 + ((playerStats.avgItemLevel || playerStats.level || 1) - 1) * 25);
+    const eDivisor = Math.max(50, 200 + ((enemyStats.avgItemLevel || enemyStats.level || 1) - 1) * 25);
 
     const ATB_THRESHOLD = 1000;
     let playerTicks = 0;

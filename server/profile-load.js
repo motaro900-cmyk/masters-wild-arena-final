@@ -37,11 +37,10 @@ export default async function handler(req, res) {
             return res.status(403).json({ error: `Forbidden: ${auth.error}` });
         }
 
-        if (auth.vkUserId) {
-            const expectedUserId = `VK-${auth.vkUserId}`;
-            if (cleanUserId !== expectedUserId) {
-                console.warn(`[profile-load] Identity mismatch: requested ${cleanUserId}, signed as ${expectedUserId}`);
-                return res.status(403).json({ error: 'Forbidden: identity mismatch' });
+        if (cleanUserId.startsWith('VK-')) {
+            if (auth.isUnsigned || !auth.vkUserId || cleanUserId !== `VK-${auth.vkUserId}`) {
+                console.warn(`[profile-load] Identity mismatch or unsigned VK request: requested ${cleanUserId}`);
+                return res.status(403).json({ error: 'Forbidden: identity mismatch or unsigned VK request' });
             }
         }
 

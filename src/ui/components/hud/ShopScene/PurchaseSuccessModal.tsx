@@ -165,7 +165,7 @@ export const PurchaseSuccessModal: React.FC<PurchaseSuccessModalProps> = ({
                                 fontSize: '22px',
                                 fontWeight: 900,
                                 color: '#FFE07D',
-                                fontFamily: "'Cinzel', serif",
+                                fontFamily: "'Cinzel', 'Philosopher', serif",
                                 textShadow: '0 2px 8px rgba(212,175,55,0.35)',
                                 letterSpacing: '0.04em',
                             }}
@@ -216,7 +216,7 @@ export const PurchaseSuccessModal: React.FC<PurchaseSuccessModalProps> = ({
                                         fontSize: '28px',
                                         fontWeight: 900,
                                         color: '#c4b5fd',
-                                        fontFamily: "'Cinzel', serif",
+                                        fontFamily: "'Cinzel', 'Philosopher', serif",
                                         lineHeight: 1,
                                     }}
                                 >
@@ -269,7 +269,7 @@ export const PurchaseSuccessModal: React.FC<PurchaseSuccessModalProps> = ({
                                 fontSize: '16px',
                                 fontWeight: 900,
                                 cursor: 'pointer',
-                                fontFamily: "'Cinzel', serif",
+                                fontFamily: "'Cinzel', 'Philosopher', serif",
                                 letterSpacing: '0.12em',
                                 boxShadow: '0 4px 20px rgba(212,175,55,0.3)',
                                 transition: 'box-shadow 0.2s',

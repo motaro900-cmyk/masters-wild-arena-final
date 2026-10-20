@@ -503,7 +503,7 @@ export const MatchmakingFound: React.FC<MatchmakingFoundProps> = ({
                         style={{
                             fontSize: '24px',
                             color: '#fbbf24',
-                            fontFamily: "'Cinzel', serif",
+                            fontFamily: "'Cinzel', 'Philosopher', serif",
                             fontWeight: 900,
                             letterSpacing: '2px',
                             textShadow: '0 2px 10px rgba(251, 191, 36, 0.4)',
@@ -775,7 +775,7 @@ export const MatchmakingFound: React.FC<MatchmakingFoundProps> = ({
                             cursor: isStarting ? 'not-allowed' : 'pointer',
                             transition: 'all 0.2s',
                             boxShadow: isStarting ? 'none' : '0 8px 16px rgba(245, 158, 11, 0.4)',
-                            fontFamily: "'Cinzel', serif",
+                            fontFamily: "'Cinzel', 'Philosopher', serif",
                             letterSpacing: '1.5px',
                             marginBottom: '0px',
                             opacity: isStarting ? 0.7 : 1,

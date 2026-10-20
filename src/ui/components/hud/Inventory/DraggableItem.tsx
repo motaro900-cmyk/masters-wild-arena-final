@@ -261,7 +261,7 @@ export const DraggableItem: React.FC<DraggableItemProps> = React.memo(
                                 fontWeight: 900,
                                 color: '#f0c040',
                                 textShadow: '0 1px 2px rgba(0,0,0,0.8)',
-                                fontFamily: "'Cinzel', serif",
+                                fontFamily: "'Cinzel', 'Philosopher', serif",
                             }}
                         >
                             {Math.round(

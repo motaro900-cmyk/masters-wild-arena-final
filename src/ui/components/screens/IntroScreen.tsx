@@ -36,7 +36,8 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
     const [error, setError] = useState('');
     const [termsAccepted, setTermsAccepted] = useState(false);
     const [privacyAccepted, setPrivacyAccepted] = useState(false);
-    const legalAccepted = termsAccepted && privacyAccepted;
+    const [consentAccepted, setConsentAccepted] = useState(false);
+    const legalAccepted = termsAccepted && privacyAccepted && consentAccepted;
     const [openDoc, setOpenDoc] = useState<'privacy' | 'terms' | 'consent' | null>(null);
     const [isTransitioning, setIsTransitioning] = useState(false);
     const isMobile = useGameStore((state) => state.isMobile);
@@ -212,12 +213,12 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
                 display: 'flex',
                 flexDirection: 'column',
                 backgroundColor: '#000',
-                fontFamily: "'Cinzel', serif",
+                fontFamily: "'Cinzel', 'Philosopher', serif",
                 pointerEvents: 'auto',
             }}
         >
             {/* Возрастной ценз для модерации VK */}
-            <div className="absolute top-4 right-4 bg-black/60 text-gray-400 text-xs font-bold border border-gray-700 px-2 py-1 rounded z-20">
+            <div className="absolute top-4 left-4 bg-black/60 text-gray-400 text-xs font-bold border border-gray-700 px-2 py-1 rounded z-20">
                 12+
             </div>
             {/* BACKGROUND IMAGE */}
@@ -693,7 +694,7 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
                                             fontSize: 'clamp(18px, 4vw, 36px)',
                                             color: '#fff',
                                             textAlign: 'center',
-                                            fontFamily: "'Cinzel', serif",
+                                            fontFamily: "'Cinzel', 'Philosopher', serif",
                                             outline: 'none',
                                             transition: 'all 0.3s ease',
                                             boxShadow: 'inset 0 0 30px rgba(0,0,0,0.8), 0 0 20px rgba(200,149,42,0.1)',
@@ -736,7 +737,7 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
                                             borderRadius: '12px',
                                             padding: isMobile ? '6px 14px' : '8px 18px',
                                             color: '#ffd700',
-                                            fontFamily: "'Cinzel', serif",
+                                            fontFamily: "'Cinzel', 'Philosopher', serif",
                                             fontSize: isMobile ? '12px' : '14px',
                                             fontWeight: 700,
                                             cursor: 'pointer',
@@ -786,8 +787,8 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
                                             gap: '10px',
                                             background: termsAccepted ? 'rgba(240,192,64,0.07)' : 'rgba(255,255,255,0.03)',
                                             border: `1px solid ${termsAccepted ? 'rgba(240,192,64,0.35)' : 'rgba(255,255,255,0.1)'}`,
-                                            borderRadius: '12px',
-                                            padding: isMobile ? '8px 10px' : '10px 14px',
+                                            borderRadius: '10px',
+                                            padding: isMobile ? '6px 8px' : '8px 12px',
                                             cursor: 'pointer',
                                             transition: 'all 0.2s',
                                         }}
@@ -798,36 +799,25 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
                                     >
                                         <div
                                             style={{
-                                                width: '20px',
-                                                height: '20px',
-                                                borderRadius: '5px',
+                                                width: '18px',
+                                                height: '18px',
+                                                borderRadius: '4px',
                                                 border: `2px solid ${termsAccepted ? '#f0c040' : 'rgba(255,255,255,0.3)'}`,
                                                 background: termsAccepted ? '#f0c040' : 'transparent',
                                                 display: 'flex',
                                                 alignItems: 'center',
                                                 justifyContent: 'center',
                                                 flexShrink: 0,
-                                                transition: 'all 0.2s',
                                             }}
                                         >
                                             {termsAccepted && (
-                                                <span style={{ color: '#1a0e05', fontSize: '13px', fontWeight: 900 }}>✓</span>
+                                                <span style={{ color: '#1a0e05', fontSize: '12px', fontWeight: 900 }}>✓</span>
                                             )}
                                         </div>
-                                        <div
-                                            style={{
-                                                fontSize: isMobile ? '11.5px' : '12.5px',
-                                                color: 'rgba(255,255,255,0.7)',
-                                                lineHeight: 1.4,
-                                                textAlign: 'left',
-                                            }}
-                                        >
+                                        <div style={{ fontSize: isMobile ? '11px' : '12px', color: 'rgba(255,255,255,0.7)', lineHeight: 1.3, textAlign: 'left' }}>
                                             Я принимаю условия{' '}
                                             <span
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    setOpenDoc('terms');
-                                                }}
+                                                onClick={(e) => { e.stopPropagation(); setOpenDoc('terms'); }}
                                                 style={{ color: '#f0c040', textDecoration: 'underline', cursor: 'pointer', fontWeight: 600 }}
                                             >
                                                 Пользовательского соглашения
@@ -835,7 +825,7 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
                                         </div>
                                     </div>
 
-                                    {/* Checkbox 2: 152-FZ Privacy Policy Consent */}
+                                    {/* Checkbox 2: Privacy Policy */}
                                     <div
                                         style={{
                                             display: 'flex',
@@ -843,8 +833,8 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
                                             gap: '10px',
                                             background: privacyAccepted ? 'rgba(240,192,64,0.07)' : 'rgba(255,255,255,0.03)',
                                             border: `1px solid ${privacyAccepted ? 'rgba(240,192,64,0.35)' : 'rgba(255,255,255,0.1)'}`,
-                                            borderRadius: '12px',
-                                            padding: isMobile ? '8px 10px' : '10px 14px',
+                                            borderRadius: '10px',
+                                            padding: isMobile ? '6px 8px' : '8px 12px',
                                             cursor: 'pointer',
                                             transition: 'all 0.2s',
                                         }}
@@ -855,49 +845,74 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
                                     >
                                         <div
                                             style={{
-                                                width: '20px',
-                                                height: '20px',
-                                                borderRadius: '5px',
+                                                width: '18px',
+                                                height: '18px',
+                                                borderRadius: '4px',
                                                 border: `2px solid ${privacyAccepted ? '#f0c040' : 'rgba(255,255,255,0.3)'}`,
                                                 background: privacyAccepted ? '#f0c040' : 'transparent',
                                                 display: 'flex',
                                                 alignItems: 'center',
                                                 justifyContent: 'center',
                                                 flexShrink: 0,
-                                                transition: 'all 0.2s',
                                             }}
                                         >
                                             {privacyAccepted && (
-                                                <span style={{ color: '#1a0e05', fontSize: '13px', fontWeight: 900 }}>✓</span>
+                                                <span style={{ color: '#1a0e05', fontSize: '12px', fontWeight: 900 }}>✓</span>
                                             )}
                                         </div>
+                                        <div style={{ fontSize: isMobile ? '11px' : '12px', color: 'rgba(255,255,255,0.7)', lineHeight: 1.3, textAlign: 'left' }}>
+                                            Я ознакомлен с{' '}
+                                            <span
+                                                onClick={(e) => { e.stopPropagation(); setOpenDoc('privacy'); }}
+                                                style={{ color: '#f0c040', textDecoration: 'underline', cursor: 'pointer', fontWeight: 600 }}
+                                            >
+                                                Политикой конфиденциальности
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    {/* Checkbox 3: 233-FZ Consent to Personal Data Processing */}
+                                    <div
+                                        style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '10px',
+                                            background: consentAccepted ? 'rgba(240,192,64,0.07)' : 'rgba(255,255,255,0.03)',
+                                            border: `1px solid ${consentAccepted ? 'rgba(240,192,64,0.35)' : 'rgba(255,255,255,0.1)'}`,
+                                            borderRadius: '10px',
+                                            padding: isMobile ? '6px 8px' : '8px 12px',
+                                            cursor: 'pointer',
+                                            transition: 'all 0.2s',
+                                        }}
+                                        onClick={() => {
+                                            setConsentAccepted(!consentAccepted);
+                                            setError('');
+                                        }}
+                                    >
                                         <div
                                             style={{
-                                                fontSize: isMobile ? '11.5px' : '12.5px',
-                                                color: 'rgba(255,255,255,0.7)',
-                                                lineHeight: 1.4,
-                                                textAlign: 'left',
+                                                width: '18px',
+                                                height: '18px',
+                                                borderRadius: '4px',
+                                                border: `2px solid ${consentAccepted ? '#f0c040' : 'rgba(255,255,255,0.3)'}`,
+                                                background: consentAccepted ? '#f0c040' : 'transparent',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                flexShrink: 0,
                                             }}
                                         >
+                                            {consentAccepted && (
+                                                <span style={{ color: '#1a0e05', fontSize: '12px', fontWeight: 900 }}>✓</span>
+                                            )}
+                                        </div>
+                                        <div style={{ fontSize: isMobile ? '11px' : '12px', color: 'rgba(255,255,255,0.7)', lineHeight: 1.3, textAlign: 'left' }}>
                                             Я даю согласие на обработку данных (152-ФЗ / 233-ФЗ) согласно{' '}
                                             <span
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    setOpenDoc('consent');
-                                                }}
+                                                onClick={(e) => { e.stopPropagation(); setOpenDoc('consent'); }}
                                                 style={{ color: '#f0c040', textDecoration: 'underline', cursor: 'pointer', fontWeight: 600 }}
                                             >
-                                                Согласию на обработку данных
-                                            </span>
-                                            {' '}и{' '}
-                                            <span
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    setOpenDoc('privacy');
-                                                }}
-                                                style={{ color: '#f0c040', textDecoration: 'underline', cursor: 'pointer', fontWeight: 600 }}
-                                            >
-                                                Политике
+                                                Согласию на обработку ПД
                                             </span>
                                         </div>
                                     </div>
@@ -905,7 +920,7 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
 
                                 <p
                                     style={{
-                                        marginTop: isMobile ? '15px' : '25px',
+                                        marginTop: isMobile ? '12px' : '20px',
                                         color: 'rgba(255,255,255,0.3)',
                                         fontSize: isMobile ? '11px' : '13px',
                                         letterSpacing: '0.1em',
@@ -928,19 +943,19 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
                         }}
                     >
                         <motion.button
-                            whileHover={{ scale: (isChecking || (step === 4 && !legalAccepted)) ? 1 : 1.05, boxShadow: (isChecking || (step === 4 && !legalAccepted)) ? 'none' : '0 0 50px rgba(200,149,42,0.7)' }}
-                            whileTap={{ scale: (isChecking || (step === 4 && !legalAccepted)) ? 1 : 0.95 }}
-                            disabled={isChecking || (step === 4 && !legalAccepted)}
+                            whileHover={{ scale: isChecking ? 1 : 1.05, boxShadow: isChecking ? 'none' : '0 0 50px rgba(200,149,42,0.7)' }}
+                            whileTap={{ scale: isChecking ? 1 : 0.95 }}
+                            disabled={isChecking}
                             onClick={nextStep}
                             style={{
                                 padding: isMobile ? '14px 40px' : '20px 80px',
-                                background: (isChecking || (step === 4 && !legalAccepted)) ? '#333' : 'linear-gradient(135deg, #ffe082, #c8952a)',
+                                background: isChecking ? '#333' : 'linear-gradient(135deg, #ffe082, #c8952a)',
                                 border: 'none',
                                 borderRadius: '12px',
                                 fontSize: isMobile ? '18px' : '24px',
                                 fontWeight: 'bold',
-                                color: (isChecking || (step === 4 && !legalAccepted)) ? '#666' : '#1a0e05',
-                                cursor: (isChecking || (step === 4 && !legalAccepted)) ? 'not-allowed' : 'pointer',
+                                color: isChecking ? '#666' : '#1a0e05',
+                                cursor: isChecking ? 'not-allowed' : 'pointer',
                                 letterSpacing: '0.2em',
                                 boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
                             }}

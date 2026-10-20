@@ -43,10 +43,12 @@ export async function handleRewardClaim(req, res) {
     if (!cleanId) return res.status(400).json({ error: 'Invalid user ID' });
     if (!operationId) return res.status(400).json({ error: 'Missing operationId idempotency key' });
 
-    const auth = verifyVkSign(launchParams, req.headers.host);
+    const auth = verifyVkSign(launchParams, req.headers.host, cleanId);
     if (!auth.ok) return res.status(403).json({ error: `Forbidden: ${auth.error}` });
-    if (auth.vkUserId && cleanId !== `VK-${auth.vkUserId}`) {
-        return res.status(403).json({ error: 'Forbidden: identity mismatch' });
+    if (cleanId.startsWith('VK-')) {
+        if (auth.isUnsigned || !auth.vkUserId || cleanId !== `VK-${auth.vkUserId}`) {
+            return res.status(403).json({ error: 'Forbidden: identity mismatch' });
+        }
     }
 
     const result = await runAtomicTransaction(
@@ -101,8 +103,13 @@ export async function handleRewardClaim(req, res) {
             } else if (rewardType === 'QUEST') {
                 if (!profile.claimedQuests) profile.claimedQuests = [];
                 const questId = String(rewardKey || '').trim();
-                if (!questId) {
-                    return { success: false, error: 'Invalid quest key' };
+                const VALID_QUEST_IDS = new Set([
+                    'LOGIN', 'PLAY', 'WIN', 'DAMAGE', 'EQUIP', 'FORGE',
+                    'DAILY_1', 'DAILY_2', 'DAILY_3', 'PVP_STREAK',
+                    'FIRST_STEP', 'WARRIOR_WORD', 'DESTROYER'
+                ]);
+                if (!questId || !VALID_QUEST_IDS.has(questId)) {
+                    return { success: false, error: 'Invalid or unauthorized quest key' };
                 }
                 if (profile.claimedQuests.includes(questId)) {
                     return { success: false, error: 'Quest reward already claimed' };
@@ -130,11 +137,14 @@ export async function handleRewardClaim(req, res) {
                 reason = 'social_group_reward';
             } else if (rewardType === 'REFERRAL_GIFT') {
                 if (!profile.claimedGifts) profile.claimedGifts = [];
-                const giftId = String(rewardKey || '');
+                const giftId = String(rewardKey || '').trim();
                 if (!giftId || profile.claimedGifts.includes(giftId)) {
                     return { success: false, error: 'Referral gift already claimed or invalid' };
                 }
-                goldAward = 5000;
+                if (profile.claimedGifts.length >= 5) {
+                    return { success: false, error: 'Maximum referral gifts limit reached (5/5)' };
+                }
+                goldAward = 1000;
                 profile.claimedGifts.push(giftId);
                 reason = `referral_gift_${giftId}`;
             } else {

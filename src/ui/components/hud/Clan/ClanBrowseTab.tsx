@@ -106,7 +106,7 @@ const ClanCard: React.FC<ClanCardProps> = ({ clan, onJoin, onInspect, colors, pl
                             fontSize: '20px',
                             fontWeight: 900,
                             color: colors.accent,
-                            fontFamily: "'Cinzel', serif",
+                            fontFamily: "'Cinzel', 'Philosopher', serif",
                             letterSpacing: '0.5px',
                         }}
                     >
@@ -546,7 +546,7 @@ export const ClanBrowseTab: React.FC<ClanBrowseTabProps> = ({
                                         fontSize: '18px',
                                         fontWeight: 900,
                                         color: colors.accent,
-                                        fontFamily: "'Cinzel', serif",
+                                        fontFamily: "'Cinzel', 'Philosopher', serif",
                                         letterSpacing: '1px',
                                     }}
                                 >

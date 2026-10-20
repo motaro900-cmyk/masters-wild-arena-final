@@ -74,7 +74,7 @@ export const TalentTooltip = ({ talent, pos, color }: any) => {
                             color: '#fff',
                             fontSize: '28px',
                             fontWeight: 900,
-                            fontFamily: "'Cinzel', serif",
+                            fontFamily: "'Cinzel', 'Philosopher', serif",
                             textShadow: '0 2px 10px rgba(0,0,0,0.5)',
                         }}
                     >
@@ -140,7 +140,7 @@ export const TalentTooltip = ({ talent, pos, color }: any) => {
                                 fontSize: '24px',
                                 color: '#fff',
                                 fontWeight: 900,
-                                fontFamily: "'Cinzel', serif",
+                                fontFamily: "'Cinzel', 'Philosopher', serif",
                                 marginTop: '5px',
                             }}
                         >
@@ -157,7 +157,7 @@ export const TalentTooltip = ({ talent, pos, color }: any) => {
                                 fontSize: '24px',
                                 color: isMax ? '#888' : '#fbbf24',
                                 fontWeight: 900,
-                                fontFamily: "'Cinzel', serif",
+                                fontFamily: "'Cinzel', 'Philosopher', serif",
                                 marginTop: '5px',
                             }}
                         >
@@ -182,7 +182,7 @@ export const TalentTooltip = ({ talent, pos, color }: any) => {
                         fontWeight: 900,
                         textAlign: 'center',
                         letterSpacing: '1.5px',
-                        fontFamily: "'Cinzel', serif",
+                        fontFamily: "'Cinzel', 'Philosopher', serif",
                         boxShadow: '0 10px 20px rgba(0,0,0,0.3)',
                     }}
                 >
@@ -203,7 +203,7 @@ export const TalentTooltip = ({ talent, pos, color }: any) => {
                         fontWeight: 900,
                         textAlign: 'center',
                         letterSpacing: '1.5px',
-                        fontFamily: "'Cinzel', serif",
+                        fontFamily: "'Cinzel', 'Philosopher', serif",
                         boxShadow: '0 10px 20px rgba(0,0,0,0.3)',
                     }}
                 >

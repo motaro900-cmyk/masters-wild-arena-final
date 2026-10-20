@@ -88,7 +88,7 @@ export const PurchaseConfirmOverlay: React.FC<PurchaseConfirmOverlayProps> = ({
                         color: rarityColor,
                         fontWeight: 900,
                         letterSpacing: '2px',
-                        fontFamily: "'Cinzel', serif",
+                        fontFamily: "'Cinzel', 'Philosopher', serif",
                     }}
                 >
                     ПОДТВЕРЖДЕНИЕ ПОКУПКИ

@@ -181,7 +181,7 @@ export const HeroCard = ({
                         color: '#ffffff',
                         fontSize: '18px',
                         margin: '0 0 8px 0',
-                        fontFamily: "'Cinzel', serif",
+                        fontFamily: "'Cinzel', 'Philosopher', serif",
                         letterSpacing: '1px',
                         textShadow: `0 2px 8px rgba(0,0,0,0.9), 0 0 20px ${color}66`,
                         opacity: 1,
@@ -251,7 +251,7 @@ export const HeroCard = ({
                                     fontSize: '13px',
                                     fontWeight: 900,
                                     cursor: canAfford ? 'pointer' : 'default',
-                                    fontFamily: "'Cinzel', serif",
+                                    fontFamily: "'Cinzel', 'Philosopher', serif",
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
@@ -284,7 +284,7 @@ export const HeroCard = ({
                                         color: 'rgba(220,200,160,0.9)',
                                         fontSize: '11px',
                                         fontWeight: 900,
-                                        fontFamily: "'Cinzel', serif",
+                                        fontFamily: "'Cinzel', 'Philosopher', serif",
                                         marginBottom: '6px',
                                     }}
                                 >
@@ -388,7 +388,7 @@ export const HeroCard = ({
                             fontWeight: 900,
                             cursor: 'pointer',
                             letterSpacing: '1.5px',
-                            fontFamily: "'Cinzel', serif",
+                            fontFamily: "'Cinzel', 'Philosopher', serif",
                             textShadow: '0 1px 4px rgba(0,0,0,0.5)',
                             boxShadow: isActive ? '0 4px 15px rgba(34,197,94,0.4)' : 'none',
                         }}

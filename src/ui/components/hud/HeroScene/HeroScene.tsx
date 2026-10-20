@@ -244,7 +244,7 @@ export const HeroScene: React.FC = () => {
                                     border: '2px solid #c8a870',
                                     borderRadius: '8px',
                                     color: '#f0c040',
-                                    fontFamily: "'Cinzel', serif",
+                                    fontFamily: "'Cinzel', 'Philosopher', serif",
                                     fontSize: isMobile ? '16px' : '14px',
                                     fontWeight: 'bold',
                                     cursor: 'pointer',

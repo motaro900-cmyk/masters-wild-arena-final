@@ -270,7 +270,7 @@ export const ClanInspectModal: React.FC<ClanInspectModalProps> = ({
                             <h3
                                 style={{
                                     margin: 0,
-                                    fontFamily: "'Cinzel', serif",
+                                    fontFamily: "'Cinzel', 'Philosopher', serif",
                                     fontSize: '26px',
                                     color: colors.accent,
                                     fontWeight: 900,
@@ -341,7 +341,7 @@ export const ClanInspectModal: React.FC<ClanInspectModalProps> = ({
                 <h4
                     style={{
                         margin: '0 0 10px 0',
-                        fontFamily: "'Cinzel', serif",
+                        fontFamily: "'Cinzel', 'Philosopher', serif",
                         color: colors.accent,
                         fontSize: '16px',
                         letterSpacing: '0.5px',

@@ -308,7 +308,7 @@ export const VIPWindow: React.FC<VIPWindowProps> = () => {
                                 color: '#ffd700',
                                 fontSize: isMobile ? '24px' : '32px',
                                 fontWeight: 950,
-                                fontFamily: "'Cinzel', serif",
+                                fontFamily: "'Cinzel', 'Philosopher', serif",
                                 letterSpacing: '2.5px',
                                 lineHeight: 1.1,
                                 textShadow:
@@ -368,7 +368,7 @@ export const VIPWindow: React.FC<VIPWindowProps> = () => {
                             color: 'rgba(200, 160, 60, 0.8)',
                             fontSize: isMobile ? '18px' : '22px',
                             fontWeight: 900,
-                            fontFamily: "'Cinzel', serif",
+                            fontFamily: "'Cinzel', 'Philosopher', serif",
                             letterSpacing: '2px',
                             lineHeight: 1.2,
                             textShadow: '0 2px 8px rgba(0,0,0,0.98)',
@@ -384,7 +384,7 @@ export const VIPWindow: React.FC<VIPWindowProps> = () => {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 <h3
                     style={{
-                        fontFamily: "'Cinzel', serif",
+                        fontFamily: "'Cinzel', 'Philosopher', serif",
                         color: '#ffd700',
                         fontSize: '12.5px',
                         fontWeight: 955,
@@ -458,7 +458,7 @@ export const VIPWindow: React.FC<VIPWindowProps> = () => {
                                     color: isActive ? '#ffffff' : '#dfc08a',
                                     fontSize: '11.5px',
                                     fontWeight: 900,
-                                    fontFamily: "'Cinzel', serif",
+                                    fontFamily: "'Cinzel', 'Philosopher', serif",
                                     letterSpacing: '0.5px',
                                     flex: 1,
                                     textShadow: '0 2px 4px rgba(0,0,0,0.95), 0 0 4px rgba(0,0,0,0.8)',
@@ -485,7 +485,7 @@ export const VIPWindow: React.FC<VIPWindowProps> = () => {
                                         : '1px solid rgba(255,255,255,0.06)',
                                     color: isActive ? '#34d399' : '#8c8276',
                                     textShadow: isActive ? '0 0 6px rgba(52,211,153,0.45)' : 'none',
-                                    fontFamily: "'Cinzel', serif",
+                                    fontFamily: "'Cinzel', 'Philosopher', serif",
                                 }}
                             >
                                 {!isActive && <Lock size={9} color="#8c8276" style={{ flexShrink: 0 }} />}
@@ -500,7 +500,7 @@ export const VIPWindow: React.FC<VIPWindowProps> = () => {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 <h3
                     style={{
-                        fontFamily: "'Cinzel', serif",
+                        fontFamily: "'Cinzel', 'Philosopher', serif",
                         color: '#ffd700',
                         fontSize: '12.5px',
                         fontWeight: 955,
@@ -615,7 +615,7 @@ export const VIPWindow: React.FC<VIPWindowProps> = () => {
                                             boxShadow: '0 2px 8px rgba(0,0,0,0.5)',
                                             border: isBest ? '1px solid rgba(168,85,247,0.5)' : '1px solid #ffd700',
                                             borderTop: 'none',
-                                            fontFamily: "'Cinzel', serif",
+                                            fontFamily: "'Cinzel', 'Philosopher', serif",
                                         }}
                                     >
                                         {isBest ? `${pkg.discount} • ВЫБОР` : pkg.discount}
@@ -625,7 +625,7 @@ export const VIPWindow: React.FC<VIPWindowProps> = () => {
                                 {/* Label */}
                                 <span
                                     style={{
-                                        fontFamily: "'Cinzel', serif",
+                                        fontFamily: "'Cinzel', 'Philosopher', serif",
                                         fontSize: isMobile ? '14px' : '17px',
                                         fontWeight: 955,
                                         letterSpacing: '1.2px',
@@ -674,7 +674,7 @@ export const VIPWindow: React.FC<VIPWindowProps> = () => {
                                             fontWeight: 955,
                                             fontSize: '16.5px',
                                             textShadow: '0 0 8px rgba(192,132,252,0.38)',
-                                            fontFamily: "'Cinzel', serif",
+                                            fontFamily: "'Cinzel', 'Philosopher', serif",
                                         }}
                                     >
                                         {pkg.price}
@@ -703,7 +703,7 @@ export const VIPWindow: React.FC<VIPWindowProps> = () => {
                         color: 'rgba(240, 200, 80, 0.55)',
                         fontSize: '11px',
                         fontStyle: 'italic',
-                        fontFamily: "'Cinzel', serif",
+                        fontFamily: "'Cinzel', 'Philosopher', serif",
                         textAlign: 'center',
                         letterSpacing: '0.5px',
                         lineHeight: 1.6,

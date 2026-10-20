@@ -42,10 +42,12 @@ export async function handleBattleStart(req, res) {
     const cleanId = sanitizeDocId(userId);
     if (!cleanId) return res.status(400).json({ error: 'Invalid user ID' });
 
-    const auth = verifyVkSign(launchParams, req.headers.host);
+    const auth = verifyVkSign(launchParams, req.headers.host, cleanId);
     if (!auth.ok) return res.status(403).json({ error: `Forbidden: ${auth.error}` });
-    if (auth.vkUserId && cleanId !== `VK-${auth.vkUserId}`) {
-        return res.status(403).json({ error: 'Forbidden: identity mismatch' });
+    if (cleanId.startsWith('VK-')) {
+        if (auth.isUnsigned || !auth.vkUserId || cleanId !== `VK-${auth.vkUserId}`) {
+            return res.status(403).json({ error: 'Forbidden: identity mismatch' });
+        }
     }
 
     const battleId = `battle_${cleanId}_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
@@ -131,23 +133,33 @@ export async function handleBattleFinish(req, res) {
     if (!cleanId) return res.status(400).json({ error: 'Invalid user ID' });
     if (!battleId) return res.status(400).json({ error: 'Missing battleId' });
 
-    const auth = verifyVkSign(launchParams, req.headers.host);
+    const auth = verifyVkSign(launchParams, req.headers.host, cleanId);
     if (!auth.ok) return res.status(403).json({ error: `Forbidden: ${auth.error}` });
-    if (auth.vkUserId && cleanId !== `VK-${auth.vkUserId}`) {
-        return res.status(403).json({ error: 'Forbidden: identity mismatch' });
+    if (cleanId.startsWith('VK-')) {
+        if (auth.isUnsigned || !auth.vkUserId || cleanId !== `VK-${auth.vkUserId}`) {
+            return res.status(403).json({ error: 'Forbidden: identity mismatch' });
+        }
     }
 
     const session = activeBattleSessions.get(battleId);
-    if (!session && !operationId) {
+    if (!session) {
         return res.status(400).json({ error: 'Invalid or expired battle session' });
     }
 
-    const opponentRating = session ? session.opponentRating : 1000;
+    // Anti-speedhack: battle cannot finish in under 2 seconds
+    if (session.startedAt && Date.now() - session.startedAt < 2000) {
+        return res.status(400).json({ error: 'Battle completed suspiciously fast (speedhack rejected)' });
+    }
+
+    // Session is consumed
+    activeBattleSessions.delete(battleId);
+
+    const opponentRating = session.opponentRating || 1000;
     
     // Run deterministic combat simulation on the server
     let isAttackerWinner = false;
     let simStats = null;
-    if (session && session.playerStats && session.enemyStats) {
+    if (session.playerStats && session.enemyStats) {
         simStats = simulateDeterministicBattle(session.playerStats, session.enemyStats, session.seed);
         isAttackerWinner = simStats.winner === 'player';
 
@@ -171,7 +183,7 @@ export async function handleBattleFinish(req, res) {
             }
         }
     } else {
-        isAttackerWinner = Boolean(won);
+        isAttackerWinner = false;
     }
 
     const result = await runAtomicTransaction(

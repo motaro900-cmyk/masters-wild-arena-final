@@ -22,7 +22,7 @@ export const ForgeHeader: React.FC<ForgeHeaderProps> = ({ goToCity }) => {
                     borderRadius: '8px',
                     cursor: 'pointer',
                     color: '#fff',
-                    fontFamily: "'Cinzel', serif",
+                    fontFamily: "'Cinzel', 'Philosopher', serif",
                     fontSize: '12px',
                     fontWeight: 700,
                     padding: '8px 16px',

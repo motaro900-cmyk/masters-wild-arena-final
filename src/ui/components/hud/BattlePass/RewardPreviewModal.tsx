@@ -110,7 +110,7 @@ export const RewardPreviewModal: React.FC<{ item: any; onClose: () => void }> = 
                             fontSize: '11px',
                             fontWeight: 900,
                             color: '#f0c040',
-                            fontFamily: "'Cinzel', serif",
+                            fontFamily: "'Cinzel', 'Philosopher', serif",
                             letterSpacing: '3px',
                             textTransform: 'uppercase',
                         }}
@@ -121,7 +121,7 @@ export const RewardPreviewModal: React.FC<{ item: any; onClose: () => void }> = 
                         style={{
                             fontSize: '28px',
                             color: '#fff',
-                            fontFamily: "'Cinzel', serif",
+                            fontFamily: "'Cinzel', 'Philosopher', serif",
                             margin: '5px 0 0 0',
                             textShadow: '0 2px 4px rgba(0,0,0,0.9)',
                         }}
@@ -133,7 +133,7 @@ export const RewardPreviewModal: React.FC<{ item: any; onClose: () => void }> = 
                             fontSize: '12px',
                             fontWeight: 900,
                             color: 'rgba(255,255,255,0.4)',
-                            fontFamily: "'Cinzel', serif",
+                            fontFamily: "'Cinzel', 'Philosopher', serif",
                             letterSpacing: '1px',
                         }}
                     >
@@ -190,7 +190,7 @@ export const RewardPreviewModal: React.FC<{ item: any; onClose: () => void }> = 
                         color: '#c8a870',
                         lineHeight: '1.6',
                         margin: '0 0 10px 0',
-                        fontFamily: "'Cinzel', serif",
+                        fontFamily: "'Cinzel', 'Philosopher', serif",
                         fontWeight: 900,
                     }}
                 >
@@ -209,7 +209,7 @@ export const RewardPreviewModal: React.FC<{ item: any; onClose: () => void }> = 
                         color: '#1a0d00',
                         fontWeight: 900,
                         fontSize: '14px',
-                        fontFamily: "'Cinzel', serif",
+                        fontFamily: "'Cinzel', 'Philosopher', serif",
                         cursor: 'pointer',
                         boxShadow: '0 5px 15px rgba(0,0,0,0.4)',
                         letterSpacing: '1px',

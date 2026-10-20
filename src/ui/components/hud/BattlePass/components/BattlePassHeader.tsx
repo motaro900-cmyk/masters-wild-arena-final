@@ -81,7 +81,7 @@ export const BattlePassHeader: React.FC<BattlePassHeaderProps> = ({
                 >
                     <span
                         style={{
-                            fontFamily: "'Cinzel', serif",
+                            fontFamily: "'Cinzel', 'Philosopher', serif",
                             fontSize: 38,
                             fontWeight: 900,
                             color: '#ffffff',
@@ -148,7 +148,7 @@ export const BattlePassHeader: React.FC<BattlePassHeaderProps> = ({
                         left: '48%',
                         top: '18%',
                         transform: 'translateX(-50%)',
-                        fontFamily: "'Cinzel', serif",
+                        fontFamily: "'Cinzel', 'Philosopher', serif",
                         fontSize: 18,
                         fontWeight: 900,
                         color: '#f0c040',
@@ -244,7 +244,7 @@ export const BattlePassHeader: React.FC<BattlePassHeaderProps> = ({
                             style={{
                                 fontSize: '12px',
                                 fontWeight: 900,
-                                fontFamily: "'Cinzel', serif",
+                                fontFamily: "'Cinzel', 'Philosopher', serif",
                                 letterSpacing: '1px',
                             }}
                         >
@@ -295,7 +295,7 @@ export const BattlePassHeader: React.FC<BattlePassHeaderProps> = ({
                             color: '#ffd700',
                             fontSize: '13px',
                             fontWeight: 900,
-                            fontFamily: "'Cinzel', serif",
+                            fontFamily: "'Cinzel', 'Philosopher', serif",
                             cursor: 'pointer',
                             letterSpacing: '1.5px',
                             display: 'flex',

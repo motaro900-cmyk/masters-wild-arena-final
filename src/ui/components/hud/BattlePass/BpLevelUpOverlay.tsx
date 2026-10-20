@@ -68,7 +68,7 @@ export const BpLevelUpOverlay: React.FC<{ level: number; onClose: () => void }> 
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0, transition: { delay: 0.2 } }}
                     style={{
-                        fontFamily: "'Cinzel', serif",
+                        fontFamily: "'Cinzel', 'Philosopher', serif",
                         color: '#f0c040',
                         fontSize: '54px',
                         margin: 0,
@@ -129,7 +129,7 @@ export const BpLevelUpOverlay: React.FC<{ level: number; onClose: () => void }> 
                             fontWeight: 900,
                             color: '#f0c040',
                             lineHeight: 1,
-                            fontFamily: "'Cinzel', serif",
+                            fontFamily: "'Cinzel', 'Philosopher', serif",
                         }}
                     >
                         {level}
@@ -150,7 +150,7 @@ export const BpLevelUpOverlay: React.FC<{ level: number; onClose: () => void }> 
                         color: '#1a0d00',
                         fontWeight: 900,
                         fontSize: '18px',
-                        fontFamily: "'Cinzel', serif",
+                        fontFamily: "'Cinzel', 'Philosopher', serif",
                         cursor: 'pointer',
                         boxShadow: '0 10px 30px rgba(240,192,64,0.4), inset 0 0 8px rgba(255,255,255,0.6)',
                         textTransform: 'uppercase',

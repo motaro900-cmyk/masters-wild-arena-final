@@ -219,7 +219,7 @@ export const AdvancedSettingsBlock: React.FC<AdvancedSettingsBlockProps> = ({
                 <span style={{ fontSize: '18px' }}>👁️</span>
                 <span
                     style={{
-                        fontFamily: "'Cinzel', serif",
+                        fontFamily: "'Cinzel', 'Philosopher', serif",
                         fontSize: '15px',
                         fontWeight: 800,
                         color: colors.accent,
@@ -290,7 +290,7 @@ export const AdvancedSettingsBlock: React.FC<AdvancedSettingsBlockProps> = ({
                         <span style={{ fontSize: '18px' }}>{g.icon}</span>
                         <span
                             style={{
-                                fontFamily: "'Cinzel', serif",
+                                fontFamily: "'Cinzel', 'Philosopher', serif",
                                 fontSize: '10px',
                                 fontWeight: 900,
                                 color: graphicsQuality === g.id ? g.color : '#dfc08a',
@@ -331,7 +331,7 @@ export const AdvancedSettingsBlock: React.FC<AdvancedSettingsBlockProps> = ({
                     border: '1.5px solid rgba(240,192,64,0.15)',
                     borderRadius: '10px',
                     color: colors.accent,
-                    fontFamily: "'Cinzel', serif",
+                    fontFamily: "'Cinzel', 'Philosopher', serif",
                     fontSize: '11px',
                     fontWeight: 900,
                     cursor: 'pointer',
@@ -703,7 +703,7 @@ export const AdvancedSettingsBlock: React.FC<AdvancedSettingsBlockProps> = ({
                                     'linear-gradient(90deg, rgba(240,192,64,0.1) 0%, rgba(240,192,64,0.2) 50%, rgba(240,192,64,0.1) 100%)',
                                 border: `1.5px dashed ${colors.accent}`,
                                 color: colors.accent,
-                                fontFamily: "'Cinzel', serif",
+                                fontFamily: "'Cinzel', 'Philosopher', serif",
                                 fontSize: '12px',
                                 fontWeight: 900,
                                 letterSpacing: '1px',
@@ -735,7 +735,7 @@ export const AdvancedSettingsBlock: React.FC<AdvancedSettingsBlockProps> = ({
             >
                 <div
                     style={{
-                        fontFamily: "'Cinzel', serif",
+                        fontFamily: "'Cinzel', 'Philosopher', serif",
                         fontSize: '12px',
                         fontWeight: 800,
                         color: colors.accent,
@@ -1073,7 +1073,7 @@ export const AdvancedSettingsBlock: React.FC<AdvancedSettingsBlockProps> = ({
                         background: 'rgba(255,255,255,0.03)',
                         border: '1.5px solid rgba(240,192,64,0.3)',
                         color: colors.accent,
-                        fontFamily: "'Cinzel', serif",
+                        fontFamily: "'Cinzel', 'Philosopher', serif",
                         fontSize: '10px',
                         fontWeight: 900,
                         cursor: 'pointer',

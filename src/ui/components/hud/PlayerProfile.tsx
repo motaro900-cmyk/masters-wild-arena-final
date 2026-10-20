@@ -83,7 +83,7 @@ export const PlayerProfile: React.FC<PlayerProfileProps> = ({ onOpenProfile }) =
             <div className="flex-1 flex flex-col pl-6">
                 <h2
                     className="text-[28px] font-black uppercase text-white"
-                    style={{ fontFamily: "'Cinzel', serif", textShadow: '0 2px 10px #000' }}
+                    style={{ fontFamily: "'Cinzel', 'Philosopher', serif", textShadow: '0 2px 10px #000' }}
                 >
                     <span
                         style={{

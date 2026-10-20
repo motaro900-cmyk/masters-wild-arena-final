@@ -470,7 +470,7 @@ export const ShopItemCard: React.FC<ShopItemCardProps> = React.memo(
                         {item.priceVotes !== undefined ? (
                             <span
                                 style={{
-                                    fontSize: isMobile ? '8.5px' : '10px',
+                                    fontSize: isMobile ? '12px' : '13px',
                                     color: '#c8a870',
                                     fontWeight: 900,
                                     marginLeft: '3px',

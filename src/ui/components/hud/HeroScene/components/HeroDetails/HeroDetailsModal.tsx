@@ -107,7 +107,7 @@ export const HeroDetailsModal = ({ hero, isOwned, onClose, rarityColors, onBuy, 
                                 fontSize: '64px',
                                 color: '#fff',
                                 margin: 0,
-                                fontFamily: "'Cinzel', serif",
+                                fontFamily: "'Cinzel', 'Philosopher', serif",
                                 textShadow: `0 0 20px ${color}44`,
                             }}
                         >

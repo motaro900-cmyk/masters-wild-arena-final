@@ -52,7 +52,7 @@ export function verifyVkSign(launchParams, host, userId) {
 
     // If no signature provided
     if (!sign) {
-        if (isLocal || !secretKey || query.guest === '1') {
+        if (isLocal || !secretKey || (!isVkUser && query.guest === '1')) {
             return { ok: true, vkUserId: query.vk_user_id || null, isUnsigned: true, error: null };
         }
         return { ok: false, vkUserId: null, isUnsigned: true, error: 'Missing VK signature' };

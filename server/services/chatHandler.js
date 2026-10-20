@@ -11,6 +11,31 @@ import { getLocalDoc } from '../localStore.js';
 const MAX_MESSAGES_PER_ROOM = 100;
 const ALLOWED_ROOMS = new Set(['global', 'clan', 'trade']);
 
+// 436-FZ and VK Catalog compliance: Russian profanity filter (censor roots)
+const PROFANITY_PATTERNS = [
+    /х[уy][йяеёюи]/gi,
+    /п[иiеe][зz]д/gi,
+    /[еeё][бb][аaллыяиеё]/gi,
+    /б[лl][яy][дьт]/gi,
+    /с[уy]к[аaи]/gi,
+    /г[оo]вн/gi,
+    /шл[юy]х/gi,
+    /мр[аa]з/gi,
+    /п[иi][дd][аoо][рr]/gi,
+    /чм[оo]/gi,
+    /з[аa]л[уy]п/gi,
+    /г[аa]нд[оo]н/gi,
+];
+
+function censorProfanity(input) {
+    if (!input || typeof input !== 'string') return '';
+    let result = input;
+    for (const pattern of PROFANITY_PATTERNS) {
+        result = result.replace(pattern, (match) => '*'.repeat(match.length));
+    }
+    return result;
+}
+
 const chatRooms = {
     global: [
         {
@@ -80,10 +105,12 @@ export async function handleSendMessage(req, res) {
     const cleanId = sanitizeDocId(userId);
     if (!cleanId) return res.status(400).json({ error: 'Invalid user ID' });
 
-    const auth = verifyVkSign(launchParams, req.headers.host);
+    const auth = verifyVkSign(launchParams, req.headers.host, cleanId);
     if (!auth.ok) return res.status(403).json({ error: `Forbidden: ${auth.error}` });
-    if (auth.vkUserId && cleanId !== `VK-${auth.vkUserId}`) {
-        return res.status(403).json({ error: 'Forbidden: identity mismatch' });
+    if (cleanId.startsWith('VK-')) {
+        if (auth.isUnsigned || !auth.vkUserId || cleanId !== `VK-${auth.vkUserId}`) {
+            return res.status(403).json({ error: 'Forbidden: identity mismatch' });
+        }
     }
 
     if (!ALLOWED_ROOMS.has(room)) {
@@ -123,7 +150,15 @@ export async function handleSendMessage(req, res) {
     }
     userLastMessageTime.set(cleanId, now);
 
-    const safeText = escapeHtml(text.trim());
+    const censored = censorProfanity(text.trim());
+    const safeText = escapeHtml(censored);
+
+    let verifiedChannel = 'player';
+    if (channel === 'clan' && room === 'clan') {
+        verifiedChannel = 'clan';
+    } else if ((channel === 'system' || channel === 'herald') && profile && (profile.isAdmin || profile.isDeveloper)) {
+        verifiedChannel = channel;
+    }
 
     const messageObj = {
         id: `msg_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
@@ -131,7 +166,7 @@ export async function handleSendMessage(req, res) {
         senderName: escapeHtml(String(senderName).slice(0, 30)),
         text: safeText,
         timestamp: now,
-        channel: ['system', 'herald', 'clan', 'player'].includes(channel) ? channel : 'player',
+        channel: verifiedChannel,
         room,
     };
 

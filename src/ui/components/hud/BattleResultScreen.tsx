@@ -385,7 +385,7 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
                         letterSpacing: '0.15em',
                         textShadow: '0 4px 15px rgba(0,0,0,0.85), 0 2px 4px rgba(0,0,0,0.8)',
                         lineHeight: 1,
-                        fontFamily: "'Cinzel', serif",
+                        fontFamily: "'Cinzel', 'Philosopher', serif",
                         textTransform: 'uppercase',
                     }}
                 >
@@ -397,7 +397,7 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
                         fontSize: '24px',
                         marginTop: '15px',
                         letterSpacing: '0.2em',
-                        fontFamily: "'Cinzel', serif",
+                        fontFamily: "'Cinzel', 'Philosopher', serif",
                         textShadow: '0 2px 4px rgba(0,0,0,0.8)',
                     }}
                 >
@@ -446,7 +446,7 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
                                         fontWeight: 800,
                                         color: '#fbbf24',
                                         letterSpacing: '2px',
-                                        fontFamily: "'Cinzel', serif",
+                                        fontFamily: "'Cinzel', 'Philosopher', serif",
                                         textAlign: 'center',
                                         textTransform: 'uppercase',
                                         marginBottom: '14px',
@@ -488,7 +488,7 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
                                                     color: 'rgba(255,255,255,0.5)',
                                                     fontSize: '11px',
                                                     fontWeight: 700,
-                                                    fontFamily: "'Cinzel', serif",
+                                                    fontFamily: "'Cinzel', 'Philosopher', serif",
                                                     textTransform: 'uppercase',
                                                     marginBottom: '4px',
                                                     letterSpacing: '0.05em',
@@ -501,7 +501,7 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
                                                     color: '#ffffff',
                                                     fontWeight: 900,
                                                     fontSize: '18px',
-                                                    fontFamily: "'Cinzel', serif",
+                                                    fontFamily: "'Cinzel', 'Philosopher', serif",
                                                     whiteSpace: 'nowrap',
                                                 }}
                                             >
@@ -530,7 +530,7 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
                                     fontWeight: 800,
                                     color: 'rgba(255,255,255,0.5)',
                                     letterSpacing: '2px',
-                                    fontFamily: "'Cinzel', serif",
+                                    fontFamily: "'Cinzel', 'Philosopher', serif",
                                     textAlign: 'center',
                                     textTransform: 'uppercase',
                                     marginBottom: '14px',
@@ -567,7 +567,7 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
                                                     color: 'rgba(255,255,255,0.7)',
                                                     fontSize: '14px',
                                                     fontWeight: 700,
-                                                    fontFamily: "'Cinzel', serif",
+                                                    fontFamily: "'Cinzel', 'Philosopher', serif",
                                                 }}
                                             >
                                                 {stat.label}
@@ -578,7 +578,7 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
                                                 color: '#ffffff',
                                                 fontWeight: 900,
                                                 fontSize: '17px',
-                                                fontFamily: "'Cinzel', serif",
+                                                fontFamily: "'Cinzel', 'Philosopher', serif",
                                             }}
                                         >
                                             {stat.value}
@@ -605,7 +605,7 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
                                 fontWeight: 800,
                                 color: 'rgba(255,255,255,0.4)',
                                 letterSpacing: '2px',
-                                fontFamily: "'Cinzel', serif",
+                                fontFamily: "'Cinzel', 'Philosopher', serif",
                                 textAlign: 'center',
                                 textTransform: 'uppercase',
                                 marginBottom: '16px',
@@ -680,7 +680,7 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
                                     fontWeight: 800,
                                     color: '#fbbf24',
                                     letterSpacing: '2px',
-                                    fontFamily: "'Cinzel', serif",
+                                    fontFamily: "'Cinzel', 'Philosopher', serif",
                                     textAlign: 'center',
                                     textTransform: 'uppercase',
                                     marginBottom: '12px',
@@ -810,7 +810,7 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
                                     fontSize: '12px',
                                     fontWeight: 800,
                                     letterSpacing: '0.1em',
-                                    fontFamily: "'Cinzel', serif",
+                                    fontFamily: "'Cinzel', 'Philosopher', serif",
                                 }}
                             >
                                 СОВЕТ МУДРЕЦА
@@ -820,7 +820,7 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
                                     color: '#fff',
                                     fontSize: '18px',
                                     fontWeight: 'bold',
-                                    fontFamily: "'Cinzel', serif",
+                                    fontFamily: "'Cinzel', 'Philosopher', serif",
                                 }}
                             >
                                 {recommendation.text}
@@ -846,7 +846,7 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
                             cursor: 'pointer',
                             letterSpacing: '0.05em',
                             boxShadow: '0 4px 15px rgba(139,28,28,0.3)',
-                            fontFamily: "'Cinzel', serif",
+                            fontFamily: "'Cinzel', 'Philosopher', serif",
                             transition: 'transform 0.2s, filter 0.2s',
                         }}
                         onMouseEnter={(e) => {
@@ -903,7 +903,7 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
                         cursor: 'pointer',
                         letterSpacing: '0.15em',
                         transition: 'all 0.2s',
-                        fontFamily: "'Cinzel', serif",
+                        fontFamily: "'Cinzel', 'Philosopher', serif",
                         boxShadow: '0 8px 24px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.05)',
                         textShadow: '0 2px 4px rgba(0,0,0,0.8)',
                     }}
@@ -945,7 +945,7 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
                         cursor: 'pointer',
                         letterSpacing: '0.1em',
                         boxShadow: '0 8px 24px rgba(0,0,0,0.6)',
-                        fontFamily: "'Cinzel', serif",
+                        fontFamily: "'Cinzel', 'Philosopher', serif",
                         textShadow: '0 2px 4px rgba(0,0,0,0.5)',
                     }}
                     onMouseEnter={(e) => {
@@ -1011,7 +1011,7 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
                                 <div
                                     style={{
                                         color: '#fbbf24',
-                                        fontFamily: "'Cinzel', serif",
+                                        fontFamily: "'Cinzel', 'Philosopher', serif",
                                         fontSize: '16px',
                                         fontWeight: 900,
                                         letterSpacing: '0.05em',
@@ -1121,7 +1121,7 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
                                         fontSize: '14px',
                                         fontWeight: 800,
                                         cursor: storyLoading ? 'wait' : 'pointer',
-                                        fontFamily: "'Cinzel', serif",
+                                        fontFamily: "'Cinzel', 'Philosopher', serif",
                                         letterSpacing: '0.04em',
                                         display: 'flex',
                                         alignItems: 'center',
@@ -1167,7 +1167,7 @@ export const BattleResultScreen: React.FC<BattleResultScreenProps> = ({ data, on
                                     fontSize: '14px',
                                     fontWeight: 800,
                                     cursor: friendLoading ? 'wait' : 'pointer',
-                                    fontFamily: "'Cinzel', serif",
+                                    fontFamily: "'Cinzel', 'Philosopher', serif",
                                     letterSpacing: '0.04em',
                                     display: 'flex',
                                     alignItems: 'center',

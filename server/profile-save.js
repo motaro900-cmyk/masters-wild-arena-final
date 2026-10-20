@@ -45,11 +45,10 @@ export default async function handler(req, res) {
         }
 
         // Ensure userId matches the VK identity that signed the request
-        if (auth.vkUserId) {
-            const expectedUserId = `VK-${auth.vkUserId}`;
-            if (cleanUserId !== expectedUserId) {
-                console.warn(`[profile-save] Identity mismatch: requested ${cleanUserId}, signed as ${expectedUserId}`);
-                return res.status(403).json({ error: 'Forbidden: identity mismatch' });
+        if (cleanUserId.startsWith('VK-')) {
+            if (auth.isUnsigned || !auth.vkUserId || cleanUserId !== `VK-${auth.vkUserId}`) {
+                console.warn(`[profile-save] Identity mismatch or unsigned VK request: requested ${cleanUserId}`);
+                return res.status(403).json({ error: 'Forbidden: identity mismatch or unsigned VK request' });
             }
         }
 

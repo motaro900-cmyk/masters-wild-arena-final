@@ -77,7 +77,7 @@ export const PurchaseModal: React.FC<{ onClose: () => void; onBuy: () => void }>
                         style={{
                             fontSize: '42px',
                             color: '#ffd700',
-                            fontFamily: "'Cinzel', serif",
+                            fontFamily: "'Cinzel', 'Philosopher', serif",
                             margin: 0,
                             textShadow: '0 2px 5px rgba(0,0,0,0.9)',
                         }}
@@ -89,7 +89,7 @@ export const PurchaseModal: React.FC<{ onClose: () => void; onBuy: () => void }>
                             fontSize: '15px',
                             color: '#c8a870',
                             marginTop: '10px',
-                            fontFamily: "'Cinzel', serif",
+                            fontFamily: "'Cinzel', 'Philosopher', serif",
                             letterSpacing: '1.5px',
                             fontWeight: 900,
                         }}
@@ -120,7 +120,7 @@ export const PurchaseModal: React.FC<{ onClose: () => void; onBuy: () => void }>
                                     gap: '15px',
                                     fontSize: '18px',
                                     fontWeight: 900,
-                                    fontFamily: "'Cinzel', serif",
+                                    fontFamily: "'Cinzel', 'Philosopher', serif",
                                     color: '#fff',
                                 }}
                             >
@@ -136,7 +136,7 @@ export const PurchaseModal: React.FC<{ onClose: () => void; onBuy: () => void }>
                                 color: '#ff4444',
                                 fontSize: '14px',
                                 fontWeight: 900,
-                                fontFamily: "'Cinzel', serif",
+                                fontFamily: "'Cinzel', 'Philosopher', serif",
                                 letterSpacing: '1px',
                                 marginTop: '30px',
                                 textShadow: '0 2px 4px rgba(0,0,0,0.8)',
@@ -171,7 +171,7 @@ export const PurchaseModal: React.FC<{ onClose: () => void; onBuy: () => void }>
                             style={{
                                 fontSize: '28px',
                                 fontWeight: 900,
-                                fontFamily: "'Cinzel', serif",
+                                fontFamily: "'Cinzel', 'Philosopher', serif",
                                 color: '#fff',
                                 display: 'flex',
                                 alignItems: 'center',
@@ -209,7 +209,7 @@ export const PurchaseModal: React.FC<{ onClose: () => void; onBuy: () => void }>
                                 color: hasEnough ? '#1a0d00' : 'rgba(255, 255, 255, 0.2)',
                                 fontWeight: 900,
                                 fontSize: '18px',
-                                fontFamily: "'Cinzel', serif",
+                                fontFamily: "'Cinzel', 'Philosopher', serif",
                                 cursor: hasEnough ? 'pointer' : 'default',
                                 boxShadow: hasEnough
                                     ? '0 10px 30px rgba(240,192,64,0.4), inset 0 0 8px rgba(255,255,255,0.6)'

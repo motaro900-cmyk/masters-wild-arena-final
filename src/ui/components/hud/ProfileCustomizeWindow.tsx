@@ -162,7 +162,7 @@ export const ProfileCustomizeWindow: React.FC<ProfileCustomizeWindowProps> = () 
                                     fontSize: '14px',
                                     fontWeight: 900,
                                     letterSpacing: '1.2px',
-                                    fontFamily: "'Cinzel', serif",
+                                    fontFamily: "'Cinzel', 'Philosopher', serif",
                                     borderRadius: '8px',
                                     cursor: 'pointer',
                                     transition: 'all 0.2s',

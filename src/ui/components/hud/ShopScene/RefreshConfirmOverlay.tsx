@@ -54,7 +54,7 @@ export const RefreshConfirmOverlay: React.FC<RefreshConfirmOverlayProps> = ({
                         color: '#f0c040',
                         fontWeight: 900,
                         letterSpacing: '2px',
-                        fontFamily: "'Cinzel', serif",
+                        fontFamily: "'Cinzel', 'Philosopher', serif",
                     }}
                 >
                     ОБНОВЛЕНИЕ АССОРТИМЕНТА

@@ -53,7 +53,7 @@ export const BattlePassSidePanel: React.FC = () => {
                 <div>
                     <span
                         style={{
-                            fontFamily: "'Cinzel', serif",
+                            fontFamily: "'Cinzel', 'Philosopher', serif",
                             fontWeight: 950,
                             fontSize: '15px',
                             color: '#ffd700',
@@ -67,7 +67,7 @@ export const BattlePassSidePanel: React.FC = () => {
                     </span>
                     <span
                         style={{
-                            fontFamily: "'Cinzel', serif",
+                            fontFamily: "'Cinzel', 'Philosopher', serif",
                             fontWeight: 900,
                             fontSize: '12px',
                             color: '#f59e0b',
@@ -94,7 +94,7 @@ export const BattlePassSidePanel: React.FC = () => {
             >
                 <span
                     style={{
-                        fontFamily: "'Cinzel', serif",
+                        fontFamily: "'Cinzel', 'Philosopher', serif",
                         fontWeight: 950,
                         fontSize: '14px',
                         color: '#f0c040',
@@ -137,7 +137,7 @@ export const BattlePassSidePanel: React.FC = () => {
                 <div>
                     <span
                         style={{
-                            fontFamily: "'Cinzel', serif",
+                            fontFamily: "'Cinzel', 'Philosopher', serif",
                             fontWeight: 950,
                             fontSize: '15px',
                             color: '#c8a870',
@@ -151,7 +151,7 @@ export const BattlePassSidePanel: React.FC = () => {
                     </span>
                     <span
                         style={{
-                            fontFamily: "'Cinzel', serif",
+                            fontFamily: "'Cinzel', 'Philosopher', serif",
                             fontWeight: 900,
                             fontSize: '12px',
                             color: '#a3a3a3',

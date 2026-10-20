@@ -64,7 +64,7 @@ export const ClanSettingsModal: React.FC<ClanSettingsModalProps> = ({
                                 color: colors.accent,
                                 fontSize: '26px',
                                 marginBottom: '28px',
-                                fontFamily: "'Cinzel', serif",
+                                fontFamily: "'Cinzel', 'Philosopher', serif",
                                 textAlign: 'center',
                                 fontWeight: 900,
                                 letterSpacing: '1px',

@@ -207,7 +207,7 @@ export const HeroSceneSidebar: React.FC<HeroSceneSidebarProps> = ({ activeTab, s
                                           : 'rgba(255, 254, 250, 0.6)',
                                     fontSize: isMobile ? '13px' : '15px',
                                     fontWeight: 900,
-                                    fontFamily: "'Cinzel', serif",
+                                    fontFamily: "'Cinzel', 'Philosopher', serif",
                                     letterSpacing: isMobile ? '1px' : '2px',
                                     textShadow: isActive ? '0 0 8px rgba(240, 192, 64, 0.35)' : 'none',
                                     transition: 'color 0.2s ease',

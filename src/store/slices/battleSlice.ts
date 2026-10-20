@@ -203,7 +203,11 @@ export const createBattleSlice = (set: any, get: any) => ({
         };
 
         const currentEnergy = get().energy ?? 0;
-        const newEnergy = Math.max(0, currentEnergy - 10);
+        if (currentEnergy < 10) {
+            get().showAlert('Недостаточно энергии! Требуется 10 энергии для экспедиции.');
+            return;
+        }
+        const newEnergy = currentEnergy - 10;
 
         set({
             activeScreen: 'BATTLE',

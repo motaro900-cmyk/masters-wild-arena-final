@@ -4,9 +4,10 @@
  *           Saves locally to VPS disk (with optional Firestore mirror).
  */
 
-import { saveLocalDoc } from './localStore.js';
+import { saveLocalDoc, getLocalDoc } from './localStore.js';
 import { saveFirestoreRestDoc } from './firebaseAdmin.js';
 import { verifyVkSign, setCorsHeaders } from './vkAuth.js';
+import { hasPrototypePollution } from './securityMiddleware.js';
 
 export default async function handler(req, res) {
     setCorsHeaders(res);
@@ -58,17 +59,16 @@ export default async function handler(req, res) {
 
         // Ensure userId matches the signed VK identity
         const isLocal = host.includes('localhost') || host.includes('127.0.0.1');
-        if (!isLocal && auth.vkUserId) {
-            const expectedUserId = `VK-${auth.vkUserId}`;
-            if (userId !== expectedUserId) {
-                console.warn(`[beacon-sync] Identity mismatch: requested ${userId}, signed as ${expectedUserId}`);
-                return res.status(403).json({ error: 'Forbidden: identity mismatch' });
+        if (!isLocal && userId.startsWith('VK-')) {
+            if (auth.isUnsigned || !auth.vkUserId || userId !== `VK-${auth.vkUserId}`) {
+                console.warn(`[beacon-sync] Identity mismatch or unsigned VK request: requested ${userId}`);
+                return res.status(403).json({ error: 'Forbidden: identity mismatch or unsigned VK request' });
             }
         }
 
         const USERS_COLLECTION = body.isDev === true ? 'пользователи_dev' : 'пользователи';
 
-        // Build the minimal beacon snapshot — only session timestamps
+        // Build the minimal beacon snapshot — strictly timestamps and session indicators
         const now = new Date().toISOString();
         const snapshot = {
             beaconSyncAt: now,
@@ -76,15 +76,17 @@ export default async function handler(req, res) {
             'былВСети': now,
         };
 
-        // Include full state snapshot if present
+        // If client passed fullStateJSON, check for prototype pollution before storing
         if (body.fullStateJSON) {
             try {
-                snapshot.fullStateJSON =
-                    typeof body.fullStateJSON === 'string'
-                        ? body.fullStateJSON
-                        : JSON.stringify(body.fullStateJSON);
+                const parsed = typeof body.fullStateJSON === 'string' ? JSON.parse(body.fullStateJSON) : body.fullStateJSON;
+                if (!hasPrototypePollution(parsed)) {
+                    snapshot.fullStateJSON = JSON.stringify(parsed);
+                } else {
+                    console.warn('[beacon-sync] Security alert: Prototype pollution blocked in beacon payload');
+                }
             } catch (e) {
-                console.warn('[beacon-sync] Failed to serialize fullStateJSON:', e);
+                console.warn('[beacon-sync] Failed to parse/validate fullStateJSON:', e);
             }
         }
 

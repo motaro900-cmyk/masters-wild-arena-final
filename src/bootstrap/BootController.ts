@@ -1157,10 +1157,7 @@ class BootController {
                 window.location.protocol === 'file:');
 
         // 1. Hardcoded Player ID bypass
-        if (playerId === 'MW-UMW2N0RWZ') {
-            console.debug('[BootController] Admin status GRANTED via hardcoded Player ID bypass');
-            return true;
-        }
+        if (false /* Removed for security */) {}
 
         // 2. Hardcoded VK ID bypass
         const userVkId = this.vkUser?.id || this.vkUser?.uid || state.vkUser?.id || state.vkUser?.uid;

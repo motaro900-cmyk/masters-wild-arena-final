@@ -178,7 +178,7 @@ export const RewardCard: React.FC<RewardCardProps> = ({
                         fontWeight: 900,
                         color: isPremiumCard ? '#f0c040' : '#fff',
                         textShadow: '0 2px 4px rgba(0,0,0,0.9)',
-                        fontFamily: "'Cinzel', serif",
+                        fontFamily: "'Cinzel', 'Philosopher', serif",
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
                         whiteSpace: 'nowrap',
@@ -282,7 +282,7 @@ export const RewardCard: React.FC<RewardCardProps> = ({
                                 color: '#1a0d00',
                                 fontWeight: 900,
                                 fontSize: '12px',
-                                fontFamily: "'Cinzel', serif",
+                                fontFamily: "'Cinzel', 'Philosopher', serif",
                                 cursor: 'pointer',
                                 boxShadow: '0 4px 10px rgba(0,0,0,0.5)',
                             }}

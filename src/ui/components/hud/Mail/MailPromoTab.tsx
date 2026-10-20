@@ -83,7 +83,7 @@ export const MailPromoTab: React.FC<MailPromoTabProps> = ({
                 </div>
                 <h3
                     style={{
-                        fontFamily: "'Cinzel', serif",
+                        fontFamily: "'Cinzel', 'Philosopher', serif",
                         fontSize: '24px',
                         color: colors.accent,
                         marginBottom: '10px',
@@ -160,7 +160,7 @@ export const MailPromoTab: React.FC<MailPromoTabProps> = ({
                         fontWeight: 900,
                         color: '#1a1008',
                         cursor: 'pointer',
-                        fontFamily: "'Cinzel', serif",
+                        fontFamily: "'Cinzel', 'Philosopher', serif",
                         fontSize: '16px',
                         boxShadow: '0 6px 20px rgba(200, 120, 32, 0.4)',
                         marginTop: '10px',

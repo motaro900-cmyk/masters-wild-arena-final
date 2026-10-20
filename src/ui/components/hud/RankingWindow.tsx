@@ -316,7 +316,7 @@ export const RankingWindow: React.FC = () => {
                             border: activeTab === tab ? 'none' : '1px solid rgba(240,192,64,0.3)',
                             borderRadius: '8px',
                             color: activeTab === tab ? '#000' : '#dfc08a',
-                            fontFamily: "'Cinzel', serif",
+                            fontFamily: "'Cinzel', 'Philosopher', serif",
                             fontSize: '14px',
                             fontWeight: 800,
                             cursor: 'pointer',
@@ -354,7 +354,7 @@ export const RankingWindow: React.FC = () => {
                     >
                         Текущий Сезон
                     </div>
-                    <div style={{ color: '#fff', fontSize: '16px', fontWeight: 800, fontFamily: "'Cinzel', serif" }}>
+                    <div style={{ color: '#fff', fontSize: '16px', fontWeight: 800, fontFamily: "'Cinzel', 'Philosopher', serif" }}>
                         СЕЗОН I · РАССВЕТ ДИКОГО ЛЕСА
                     </div>
                 </div>
@@ -453,7 +453,7 @@ export const RankingWindow: React.FC = () => {
                             padding: '100px',
                             color: '#f0c040',
                             fontWeight: 900,
-                            fontFamily: "'Cinzel', serif",
+                            fontFamily: "'Cinzel', 'Philosopher', serif",
                         }}
                     >
                         ЗАГРУЗКА ЛИДЕРОВ...
@@ -483,7 +483,7 @@ export const RankingWindow: React.FC = () => {
                                 padding: '100px 20px',
                                 color: '#dfc08a',
                                 fontWeight: 800,
-                                fontFamily: "'Cinzel', serif",
+                                fontFamily: "'Cinzel', 'Philosopher', serif",
                                 fontSize: '16px',
                             }}
                         >
@@ -501,7 +501,7 @@ export const RankingWindow: React.FC = () => {
                                 padding: '100px 20px',
                                 color: '#dfc08a',
                                 fontWeight: 800,
-                                fontFamily: "'Cinzel', serif",
+                                fontFamily: "'Cinzel', 'Philosopher', serif",
                                 fontSize: '16px',
                             }}
                         >

@@ -129,7 +129,7 @@ export const ClanLobbyTab: React.FC<ClanLobbyTabProps> = ({
                             style={{
                                 margin: 0,
                                 color: colors.accent,
-                                fontFamily: "'Cinzel', serif",
+                                fontFamily: "'Cinzel', 'Philosopher', serif",
                                 fontSize: '32px',
                             }}
                         >
@@ -229,7 +229,7 @@ export const ClanLobbyTab: React.FC<ClanLobbyTabProps> = ({
                                     borderRadius: '10px',
                                     fontSize: '12px',
                                     fontWeight: 900,
-                                    fontFamily: "'Cinzel', serif",
+                                    fontFamily: "'Cinzel', 'Philosopher', serif",
                                     cursor: 'pointer',
                                     display: 'flex',
                                     alignItems: 'center',
@@ -253,7 +253,7 @@ export const ClanLobbyTab: React.FC<ClanLobbyTabProps> = ({
                                 borderRadius: '10px',
                                 fontSize: '12px',
                                 fontWeight: 900,
-                                fontFamily: "'Cinzel', serif",
+                                fontFamily: "'Cinzel', 'Philosopher', serif",
                                 cursor: 'pointer',
                                 opacity: 0.9,
                                 boxShadow: '0 4px 15px rgba(239,68,68,0.15)',

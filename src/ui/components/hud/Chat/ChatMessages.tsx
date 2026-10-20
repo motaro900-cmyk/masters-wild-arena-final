@@ -164,7 +164,7 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
                                     style={{
                                         fontSize: '12px',
                                         fontWeight: 800,
-                                        fontFamily: "'Cinzel', serif",
+                                        fontFamily: "'Cinzel', 'Philosopher', serif",
                                         textAlign: 'center',
                                         letterSpacing: '1px',
                                     }}
@@ -225,7 +225,7 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
                                                 color: '#f0c040',
                                                 fontWeight: 800,
                                                 fontSize: '13px',
-                                                fontFamily: "'Cinzel', serif",
+                                                fontFamily: "'Cinzel', 'Philosopher', serif",
                                                 marginBottom: '2px',
                                             }}
                                         >
@@ -276,7 +276,7 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
                         style={{
                             fontSize: '12px',
                             fontWeight: 800,
-                            fontFamily: "'Cinzel', serif",
+                            fontFamily: "'Cinzel', 'Philosopher', serif",
                             textAlign: 'center',
                             letterSpacing: '1px',
                         }}
@@ -437,7 +437,7 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
                                     padding: '2px 7px',
                                     borderRadius: '6px',
                                     border: '1px solid rgba(240, 192, 64, 0.3)',
-                                    fontFamily: "'Cinzel', serif",
+                                    fontFamily: "'Cinzel', 'Philosopher', serif",
                                     textTransform: 'uppercase',
                                     letterSpacing: '0.5px',
                                 }}

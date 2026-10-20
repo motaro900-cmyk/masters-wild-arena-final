@@ -247,7 +247,7 @@ export const AncientsSanctuaryScreen: React.FC = () => {
                             color: '#fff',
                             fontSize: '12px',
                             fontWeight: 700,
-                            fontFamily: "'Cinzel', serif",
+                            fontFamily: "'Cinzel', 'Philosopher', serif",
                             cursor: 'pointer',
                             display: 'flex',
                             alignItems: 'center',
@@ -270,7 +270,7 @@ export const AncientsSanctuaryScreen: React.FC = () => {
                             WebkitBackgroundClip: 'text',
                             WebkitTextFillColor: 'transparent',
                             textShadow: '0 2px 10px rgba(0,0,0,0.7)',
-                            fontFamily: "'Cinzel', serif",
+                            fontFamily: "'Cinzel', 'Philosopher', serif",
                             fontWeight: 900,
                         }}
                     >
@@ -282,7 +282,7 @@ export const AncientsSanctuaryScreen: React.FC = () => {
                             fontSize: '10px',
                             color: '#a3a3a3',
                             letterSpacing: '1.5px',
-                            fontFamily: "'Cinzel', serif",
+                            fontFamily: "'Cinzel', 'Philosopher', serif",
                         }}
                     >
                         СВЯЩЕННЫЕ РУИНЫ ВЕЛИКИХ ХРАНИТЕЛЕЙ
@@ -355,7 +355,7 @@ export const AncientsSanctuaryScreen: React.FC = () => {
                                 color: '#b8860b',
                                 letterSpacing: '1px',
                                 fontWeight: 700,
-                                fontFamily: "'Cinzel', serif",
+                                fontFamily: "'Cinzel', 'Philosopher', serif",
                                 textTransform: 'uppercase',
                                 textAlign: 'center',
                             }}
@@ -451,7 +451,7 @@ export const AncientsSanctuaryScreen: React.FC = () => {
                                 color: '#b8860b',
                                 letterSpacing: '1px',
                                 fontWeight: 700,
-                                fontFamily: "'Cinzel', serif",
+                                fontFamily: "'Cinzel', 'Philosopher', serif",
                                 textTransform: 'uppercase',
                                 textAlign: 'center',
                             }}
@@ -565,7 +565,7 @@ export const AncientsSanctuaryScreen: React.FC = () => {
                                         justifyContent: 'center',
                                         fontSize: '13px',
                                         fontWeight: 900,
-                                        fontFamily: "'Cinzel', serif",
+                                        fontFamily: "'Cinzel', 'Philosopher', serif",
                                         cursor: isLocked ? 'not-allowed' : 'pointer',
                                         boxShadow: isSelected ? '0 0 15px rgba(240,192,64,0.3)' : 'none',
                                         transition: 'all 0.2s ease',
@@ -651,7 +651,7 @@ export const AncientsSanctuaryScreen: React.FC = () => {
                                         fontSize: '14px',
                                         fontWeight: 900,
                                         color: isPowerEnough ? '#10b981' : '#f87171',
-                                        fontFamily: "'Cinzel', serif",
+                                        fontFamily: "'Cinzel', 'Philosopher', serif",
                                         display: 'flex',
                                         alignItems: 'center',
                                         gap: '6px',

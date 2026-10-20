@@ -64,7 +64,7 @@ export const FloorRouteTimeline: React.FC<FloorRouteTimelineProps> = ({
                     fontSize: '11px',
                     color: '#888',
                     letterSpacing: '1px',
-                    fontFamily: "'Cinzel', serif",
+                    fontFamily: "'Cinzel', 'Philosopher', serif",
                     fontWeight: 700,
                     marginBottom: '4px',
                 }}
@@ -167,7 +167,7 @@ export const FloorRouteTimeline: React.FC<FloorRouteTimelineProps> = ({
                                         fontSize: '13px',
                                         fontWeight: 800,
                                         color: isSelected ? '#fbbf24' : isCurrent ? '#fcd34d' : '#fff',
-                                        fontFamily: "'Cinzel', serif",
+                                        fontFamily: "'Cinzel', 'Philosopher', serif",
                                         letterSpacing: '0.3px',
                                     }}
                                 >

@@ -120,7 +120,7 @@ export const MailInboxTab: React.FC<MailInboxTabProps> = ({
                                     </div>
                                     <div
                                         style={{
-                                            fontFamily: "'Cinzel', serif",
+                                            fontFamily: "'Cinzel', 'Philosopher', serif",
                                             fontSize: '14px',
                                             fontWeight: 700,
                                             color: m.isRead ? '#aaa' : '#fff',
@@ -195,7 +195,7 @@ export const MailInboxTab: React.FC<MailInboxTabProps> = ({
                                 </div>
                                 <h2
                                     style={{
-                                        fontFamily: "'Cinzel', serif",
+                                        fontFamily: "'Cinzel', 'Philosopher', serif",
                                         fontSize: '22px',
                                         margin: '5px 0',
                                         color: '#fff',
@@ -274,7 +274,7 @@ export const MailInboxTab: React.FC<MailInboxTabProps> = ({
                                     fontWeight: 900,
                                     color: '#1a1008',
                                     cursor: 'pointer',
-                                    fontFamily: "'Cinzel', serif",
+                                    fontFamily: "'Cinzel', 'Philosopher', serif",
                                 }}
                             >
                                 ЗАБРАТЬ
@@ -317,7 +317,7 @@ export const MailInboxTab: React.FC<MailInboxTabProps> = ({
                                     fontWeight: 800,
                                     color: colors.text,
                                     cursor: 'pointer',
-                                    fontFamily: "'Cinzel', serif",
+                                    fontFamily: "'Cinzel', 'Philosopher', serif",
                                 }}
                             >
                                 В АРХИВ

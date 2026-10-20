@@ -28,7 +28,7 @@ export const DismantleConfirmModal: React.FC<DismantleConfirmModalProps> = ({
                         style={styles.modalContent}
                         onClick={(e) => e.stopPropagation()}
                     >
-                        <h3 style={{ margin: '0 0 10px 0', color: '#ff4444', fontFamily: "'Cinzel', serif" }}>
+                        <h3 style={{ margin: '0 0 10px 0', color: '#ff4444', fontFamily: "'Cinzel', 'Philosopher', serif" }}>
                             РАЗОБРАТЬ ПРЕДМЕТ?
                         </h3>
                         <p style={{ fontSize: 13, opacity: 0.8, marginBottom: 20 }}>
@@ -104,7 +104,7 @@ export const ReforgeConfirmModal: React.FC<ReforgeConfirmModalProps> = ({
                         style={styles.modalContent}
                         onClick={(e) => e.stopPropagation()}
                     >
-                        <h3 style={{ margin: '0 0 10px 0', color: '#f0c040', fontFamily: "'Cinzel', serif" }}>
+                        <h3 style={{ margin: '0 0 10px 0', color: '#f0c040', fontFamily: "'Cinzel', 'Philosopher', serif" }}>
                             ПЕРЕКОВАТЬ ПРЕДМЕТ?
                         </h3>
                         <p style={{ fontSize: 13, opacity: 0.8, marginBottom: 20 }}>
@@ -229,7 +229,7 @@ export const ForgeStatusModal: React.FC<ForgeStatusModalProps> = ({
                             style={{
                                 margin: '0 0 10px 0',
                                 color: getHeaderColor(),
-                                fontFamily: "'Cinzel', serif",
+                                fontFamily: "'Cinzel', 'Philosopher', serif",
                                 letterSpacing: '1.5px',
                             }}
                         >

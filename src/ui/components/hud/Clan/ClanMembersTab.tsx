@@ -75,7 +75,7 @@ const MemberRow: React.FC<MemberRowProps> = ({ member, onClick, colors }) => {
             <div style={{ display: 'flex', alignItems: 'center', gap: '15px', flex: 1 }}>
                 <AvatarFrame avatarFilename={member.avatar || 'panda'} frameFilename={frame} size={64} />
                 <div>
-                    <div style={{ color: '#fff', fontWeight: 800, fontSize: '17px', fontFamily: "'Cinzel', serif" }}>
+                    <div style={{ color: '#fff', fontWeight: 800, fontSize: '17px', fontFamily: "'Cinzel', 'Philosopher', serif" }}>
                         {member.name}
                     </div>
                     <div
@@ -322,7 +322,7 @@ export const ClanMembersTab: React.FC<ClanMembersTabProps> = ({
                                     color: colors.accent,
                                     fontSize: '28px',
                                     marginBottom: '2px',
-                                    fontFamily: "'Cinzel', serif",
+                                    fontFamily: "'Cinzel', 'Philosopher', serif",
                                     letterSpacing: '1px',
                                 }}
                             >
@@ -423,7 +423,7 @@ export const ClanMembersTab: React.FC<ClanMembersTabProps> = ({
                                     color: colors.accent,
                                     fontSize: '24px',
                                     marginBottom: '8px',
-                                    fontFamily: "'Cinzel', serif",
+                                    fontFamily: "'Cinzel', 'Philosopher', serif",
                                 }}
                             >
                                 Выплата Зарплаты

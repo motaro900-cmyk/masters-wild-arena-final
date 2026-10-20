@@ -64,7 +64,7 @@ export const HeroTooltip = ({ hero, mousePos, rarityColors }: any) => {
                 style={{
                     color: '#fff',
                     fontSize: '20px',
-                    fontFamily: "'Cinzel', serif",
+                    fontFamily: "'Cinzel', 'Philosopher', serif",
                     marginBottom: '8px',
                     textShadow: '0 2px 4px rgba(0,0,0,0.5)',
                 }}

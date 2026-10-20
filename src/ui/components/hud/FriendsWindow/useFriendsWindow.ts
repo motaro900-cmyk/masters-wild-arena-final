@@ -105,14 +105,8 @@ export const useFriendsWindow = () => {
         }
     }, [vkFriendsSynced]);
 
-    useEffect(() => {
-        if (activeTab === 'ALL' || activeTab === 'ONLINE') {
-            const timer = setTimeout(() => {
-                syncVkFriends();
-            }, 0);
-            return () => clearTimeout(timer);
-        }
-    }, [activeTab, syncVkFriends]);
+    // VK Compliance Rule 4.6: No automatic VKWebAppGetAuthToken on tab mount/switch without user gesture
+    // syncVkFriends is triggered only by explicit user action.
 
     useEffect(() => {
         if (activeTab === 'WORLD') {
@@ -205,5 +199,6 @@ export const useFriendsWindow = () => {
         setFriendNote,
         handleSearch,
         handleSendFriendRequest,
+        syncVkFriends,
     };
 };

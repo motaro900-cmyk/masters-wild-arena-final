@@ -16,7 +16,7 @@ export const TabButton = ({ active, onClick, label, icon }: any) => (
         <span style={{ fontSize: '24px' }}>{icon}</span>
         <span
             style={{
-                fontFamily: "'Cinzel', serif",
+                fontFamily: "'Cinzel', 'Philosopher', serif",
                 fontSize: '20px',
                 fontWeight: 900,
                 color: active ? '#fff' : '#c8a870',

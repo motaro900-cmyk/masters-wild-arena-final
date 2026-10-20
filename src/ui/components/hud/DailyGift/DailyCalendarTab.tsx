@@ -103,7 +103,7 @@ export const DailyCalendarTab: React.FC<DailyCalendarTabProps> = ({
                     style={{
                         margin: 0,
                         color: '#FFE07D',
-                        fontFamily: "'Cinzel', serif",
+                        fontFamily: "'Cinzel', 'Philosopher', serif",
                         fontSize: isMobile ? '16px' : '26px',
                         fontWeight: 900,
                         textShadow: '0 2px 6px rgba(0,0,0,0.95)',
@@ -280,7 +280,7 @@ export const DailyCalendarTab: React.FC<DailyCalendarTabProps> = ({
                                             letterSpacing: '1px',
                                             boxShadow: '0 3px 8px rgba(229, 169, 16, 0.45)',
                                             zIndex: 3,
-                                            fontFamily: "'Cinzel', serif",
+                                            fontFamily: "'Cinzel', 'Philosopher', serif",
                                             textShadow: '0 1px 0 rgba(255,255,255,0.4)',
                                         }}
                                     >
@@ -303,7 +303,7 @@ export const DailyCalendarTab: React.FC<DailyCalendarTabProps> = ({
                                 >
                                     <span
                                         style={{
-                                            fontFamily: "'Cinzel', serif",
+                                            fontFamily: "'Cinzel', 'Philosopher', serif",
                                             fontSize: isMobile ? '10px' : '14px',
                                             color: titleColor,
                                             fontWeight: 900,
@@ -427,7 +427,7 @@ export const DailyCalendarTab: React.FC<DailyCalendarTabProps> = ({
                                             fontWeight: 900,
                                             marginTop: '6px',
                                             letterSpacing: '1px',
-                                            fontFamily: "'Cinzel', serif",
+                                            fontFamily: "'Cinzel', 'Philosopher', serif",
                                             textShadow: '0 2px 3px rgba(0,0,0,0.98)',
                                         }}
                                     >
@@ -511,7 +511,7 @@ export const DailyCalendarTab: React.FC<DailyCalendarTabProps> = ({
                                 border: '2px solid #fff2a3',
                                 borderRadius: '14px',
                                 color: '#211000',
-                                fontFamily: "'Cinzel', serif",
+                                fontFamily: "'Cinzel', 'Philosopher', serif",
                                 fontWeight: 950,
                                 fontSize: isMobile ? '13px' : '18px',
                                 cursor: isClaiming ? 'default' : 'pointer',
@@ -562,7 +562,7 @@ export const DailyCalendarTab: React.FC<DailyCalendarTabProps> = ({
                                     color: '#dfc08a',
                                     fontWeight: 900,
                                     letterSpacing: '1px',
-                                    fontFamily: "'Cinzel', serif",
+                                    fontFamily: "'Cinzel', 'Philosopher', serif",
                                 }}
                             >
                                 СЛЕДУЮЩИЙ ПОДАРОК ЧЕРЕЗ:

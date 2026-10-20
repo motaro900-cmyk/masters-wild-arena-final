@@ -7,8 +7,9 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        header: ['"Philosopher"', 'serif'],
-        ui: ['"Exo 2"', 'sans-serif'],
+        header: ['"Cinzel"', '"Philosopher"', 'serif'],
+        ui: ['"Montserrat"', '"Nunito"', 'sans-serif'],
+        display: ['"Russo One"', 'sans-serif'],
       },
       dropShadow: {
         'text': '0 2px 4px rgba(0,0,0,1)',

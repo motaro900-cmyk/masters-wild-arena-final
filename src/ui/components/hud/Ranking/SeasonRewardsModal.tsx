@@ -55,7 +55,7 @@ export const SeasonRewardsModal: React.FC<SeasonRewardsModalProps> = ({
                                 color: '#f0c040',
                                 fontSize: '28px',
                                 textAlign: 'center',
-                                fontFamily: "'Cinzel', serif",
+                                fontFamily: "'Cinzel', 'Philosopher', serif",
                                 fontWeight: 900,
                                 letterSpacing: '2px',
                                 textShadow: '0 0 15px rgba(240,192,64,0.6)',
@@ -112,7 +112,7 @@ export const SeasonRewardsModal: React.FC<SeasonRewardsModalProps> = ({
                                     color: '#d1d5db',
                                     fontSize: '14px',
                                     fontWeight: 700,
-                                    fontFamily: "'Cinzel', serif",
+                                    fontFamily: "'Cinzel', 'Philosopher', serif",
                                     letterSpacing: '0.5px',
                                 }}
                             >
@@ -184,7 +184,7 @@ export const SeasonRewardsModal: React.FC<SeasonRewardsModalProps> = ({
                                                 fontSize: '18px',
                                                 fontWeight: 800,
                                                 color: r.textColor,
-                                                fontFamily: "'Cinzel', serif",
+                                                fontFamily: "'Cinzel', 'Philosopher', serif",
                                             }}
                                         >
                                             {r.rank}
@@ -248,7 +248,7 @@ export const SeasonRewardsModal: React.FC<SeasonRewardsModalProps> = ({
                                 boxShadow: '0 4px 15px rgba(251,191,36,0.3)',
                                 textShadow: '0 1px 2px rgba(0,0,0,0.6)',
                                 transition: 'transform 0.1s',
-                                fontFamily: "'Cinzel', serif",
+                                fontFamily: "'Cinzel', 'Philosopher', serif",
                                 letterSpacing: '1px',
                             }}
                             onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.02)')}
