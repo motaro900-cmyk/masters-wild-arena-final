@@ -258,6 +258,37 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
                     padding: isMobile ? '20px 12px 10px 12px' : '40px',
                 }}
             >
+                {step < 4 && (
+                    <button
+                        onClick={() => {
+                            audioService.playClick();
+                            setStep(4);
+                        }}
+                        style={{
+                            position: 'absolute',
+                            top: isMobile ? '12px' : '24px',
+                            right: isMobile ? '16px' : '32px',
+                            zIndex: 50,
+                            padding: '8px 16px',
+                            borderRadius: '10px',
+                            fontSize: '12px',
+                            fontWeight: 700,
+                            color: '#FFE082',
+                            backgroundColor: 'rgba(0,0,0,0.65)',
+                            border: '1px solid rgba(255, 224, 130, 0.4)',
+                            backdropFilter: 'blur(8px)',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.6px',
+                        }}
+                    >
+                        <span>Пропустить</span>
+                        <span>⏩</span>
+                    </button>
+                )}
                 <div
                     style={{
                         width: '100%',
