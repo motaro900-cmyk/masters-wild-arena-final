@@ -670,6 +670,8 @@ export const createPlayerSlice = (set: any, get: any) => {
                 START: { gold: 1000, crystals: 10 },
                 WILD: { energy: 10 },
                 DIAMONDS: { crystals: 25 },
+                WILD_REBIRTH: { gold: 5000, crystals: 200, energy: 30 },
+                ARGON4: { gold: 10000, crystals: 500, energy: 50 },
                 // NOTE: dev/test promo codes must NOT be added here — use Firebase Remote Config
             };
 

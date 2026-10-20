@@ -360,7 +360,7 @@ export const addToFavorites = async (): Promise<boolean> => {
  * @param groupId ID группы ВК (числовой)
  */
 export const joinGroup = async (groupId: number = 238197449): Promise<boolean> => {
-    const groupUrl = `https://vk.com/beasts_arena`;
+    const groupUrl = `https://vk.ru/motw_official_game`;
 
     if (!bridge || !isVkMiniApp()) {
         window.open(groupUrl, '_blank');
