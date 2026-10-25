@@ -3,7 +3,7 @@
  * Zero-latency, zero-asset Web Audio API sound design for standalone web play.
  * Generates tactile UI clicks, hover whooshes, heroic duel horns, and victory fanfares.
  */
-import { audioService } from '../services/AudioService';
+import { useGameStore } from '../store/useGameStore';
 
 class ProceduralAudioEngine {
     private ctx: AudioContext | null = null;
@@ -27,7 +27,11 @@ class ProceduralAudioEngine {
     }
 
     private isMuted(): boolean {
-        return audioService.isMuted();
+        try {
+            return !!useGameStore.getState().isMuted;
+        } catch {
+            return false;
+        }
     }
 
     /**

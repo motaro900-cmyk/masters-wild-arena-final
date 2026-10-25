@@ -2,8 +2,7 @@ import * as PIXI from 'pixi.js';
 import { AssetsMap } from '../../configs/AssetsMap';
 
 /**
- * MainScreen — Главное меню игры.
- * Переписано для поддержки адаптивной верстки.
+ * MainScreen — Главное меню игры (PixiJS v8 compatible).
  */
 export class MainScreen extends PIXI.Container {
     private bg: PIXI.Sprite;
@@ -14,12 +13,8 @@ export class MainScreen extends PIXI.Container {
         super();
         this.label = 'MainScreen';
 
-        // [Lead Architect]: Сначала создаем спрайт с пустой текстурой,
-        // чтобы он сразу был в дереве объектов.
-        this.bg = new PIXI.Sprite(PIXI.Texture.EMPTY);
+        this.bg = new PIXI.Sprite();
         this.bg.anchor.set(0.5);
-        this.bg.width = 1920;
-        this.bg.height = 1080;
         this.bg.position.set(1920 / 2, 1080 / 2);
 
         this.rays = new PIXI.Graphics();
@@ -39,34 +34,24 @@ export class MainScreen extends PIXI.Container {
             const bgPath = isMobile ? AssetsMap.BACKGROUNDS.MAIN_MENU_MOBILE : AssetsMap.BACKGROUNDS.MAIN_MENU;
             console.log('[MainScreen] Loading background:', bgPath);
 
-            // 2. Load background
             const bgAsset = await PIXI.Assets.load(bgPath);
-            const bgTex = bgAsset instanceof PIXI.Texture ? bgAsset : null;
-            if (!bgTex) {
+            if (bgAsset && bgAsset instanceof PIXI.Texture) {
+                this.bg.texture = bgAsset;
+                try {
+                    this.bg.width = 1920;
+                    this.bg.height = 1080;
+                } catch {
+                    // Fallback scale if width setter issues
+                    this.bg.scale.set(1920 / (bgAsset.width || 1920));
+                }
+            } else {
                 throw new Error('Invalid background texture loaded');
             }
 
-            console.log('[MainScreen] Background loaded successfully:', bgTex.width, 'x', bgTex.height);
-
-            this.bg.texture = bgTex;
-            this.bg.width = 1920;
-            this.bg.height = 1080;
-
-            // Плавное появление (только если до этого был пустой фон или мобильный был слишком прозрачным)
-            const startAlpha = this.bg.alpha;
-            this.bg.alpha = startAlpha;
-
-            const fadeIn = () => {
-                if (this.bg.alpha < 1) {
-                    this.bg.alpha += 0.05;
-                    requestAnimationFrame(fadeIn);
-                }
-            };
-            fadeIn();
-
+            console.log('[MainScreen] Background loaded successfully');
             this.render();
         } catch (e) {
-            console.error('[MainScreen] Lobby assets loading error:', e);
+            console.warn('[MainScreen] Lobby background fallback:', e);
             const fallback = new PIXI.Graphics().rect(0, 0, 1920, 1080).fill({ color: 0x0a0a1a });
             this.addChildAt(fallback, 0);
         }
@@ -76,9 +61,6 @@ export class MainScreen extends PIXI.Container {
         const sw = 1920;
         const sh = 1080;
 
-        console.log('[MainScreen] Rendering rays...');
-
-        // Отрисовка лучей света
         this.rays.clear();
         for (let i = 0; i < 5; i++) {
             this.rays
