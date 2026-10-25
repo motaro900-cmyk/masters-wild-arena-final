@@ -128,20 +128,24 @@ export const PortalCabinet: React.FC<PortalCabinetProps> = ({
 
                     {/* Header: Title & Player ID */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '25px' }}>
-                        <span style={{ fontSize: '28px' }}>👤</span>
+                        <div style={{ width: 38, height: 38, borderRadius: 10, background: 'rgba(212, 175, 55, 0.12)', border: '1px solid rgba(212, 175, 55, 0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFE07D" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+                            </svg>
+                        </div>
                         <div>
                             <h2
                                 style={{
                                     margin: 0,
                                     fontFamily: "'Philosopher', 'Cinzel', serif",
-                                    fontSize: '26px',
+                                    fontSize: '24px',
                                     color: '#FFE07D',
                                 }}
                             >
                                 Личный Кабинет Воина
                             </h2>
                             <p style={{ margin: '2px 0 0 0', fontSize: '13px', color: '#9c8e7e' }}>
-                                Сервер S1: Wild Lands • ID: #WILD-89412
+                                Сервер: RU-Central-1 • ID: {localStorage.getItem('mow_guest_id') || 'MOW-84120'}
                             </p>
                         </div>
                     </div>
@@ -265,7 +269,7 @@ export const PortalCabinet: React.FC<PortalCabinetProps> = ({
                         >
                             {/* Gold */}
                             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                <span style={{ fontSize: '24px' }}>🪙</span>
+                                <img src="/assets/images/ui/icons/Gold.webp" alt="Gold" style={{ width: 24, height: 24, objectFit: 'contain' }} />
                                 <div>
                                     <div style={{ fontSize: '11px', color: '#8c7e6f', textTransform: 'uppercase' }}>Золото</div>
                                     <div style={{ fontSize: '16px', fontWeight: 800, color: '#ffe599' }}>
@@ -276,7 +280,7 @@ export const PortalCabinet: React.FC<PortalCabinetProps> = ({
 
                             {/* Crystals */}
                             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                <span style={{ fontSize: '24px' }}>💎</span>
+                                <img src="/assets/images/ui/icons/almaz.webp" alt="Gems" style={{ width: 24, height: 24, objectFit: 'contain' }} />
                                 <div>
                                     <div style={{ fontSize: '11px', color: '#8c7e6f', textTransform: 'uppercase' }}>Кристаллы</div>
                                     <div style={{ fontSize: '16px', fontWeight: 800, color: '#60a5fa' }}>
@@ -287,7 +291,7 @@ export const PortalCabinet: React.FC<PortalCabinetProps> = ({
 
                             {/* Energy */}
                             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                <span style={{ fontSize: '24px' }}>⚡</span>
+                                <img src="/assets/images/ui/icons/energy.webp" alt="Energy" style={{ width: 24, height: 24, objectFit: 'contain' }} />
                                 <div>
                                     <div style={{ fontSize: '11px', color: '#8c7e6f', textTransform: 'uppercase' }}>Энергия</div>
                                     <div style={{ fontSize: '16px', fontWeight: 800, color: '#34d399' }}>
@@ -298,7 +302,7 @@ export const PortalCabinet: React.FC<PortalCabinetProps> = ({
 
                             {/* PvP Trophies */}
                             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                <span style={{ fontSize: '24px' }}>🏆</span>
+                                <img src="/assets/images/ui/rank_01.webp" alt="Rank" style={{ width: 24, height: 24, objectFit: 'contain' }} />
                                 <div>
                                     <div style={{ fontSize: '11px', color: '#8c7e6f', textTransform: 'uppercase' }}>Рейтинг PvP</div>
                                     <div style={{ fontSize: '16px', fontWeight: 800, color: '#f59e0b' }}>
