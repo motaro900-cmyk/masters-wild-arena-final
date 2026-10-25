@@ -1,10 +1,10 @@
 /**
  * PORTAL BEAST CODEX (Интерактивный Бестиарий Портала)
- * 5 Легендарных Зверей с 3D Parallax эффектом наклона карточки,
- * тактическим радаром характеристик, демонстрацией навыков и рыком зверя.
+ * Официальные игровые персонажи Masters of the Wild (Фэн Лун, Аурелиус, Варкан, Рикки, Громм)
+ * 3D Parallax эффект, многослойный композит спрайта и локации, тактические статы и способности.
  */
 import React, { useState, useRef, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { proceduralAudio } from '../../utils/ProceduralAudio';
 import { useGameStore } from '../../store/useGameStore';
 
@@ -13,16 +13,18 @@ export interface IPortalBeast {
     name: string;
     title: string;
     avatar: string;
-    splashArt: string;
+    sprite: string;
+    backdrop: string;
     element: string;
     elementColor: string;
     role: string;
+    rarity: string;
     stats: {
+        hp: number;
         attack: number;
         defense: number;
         speed: number;
-        magic: number;
-        durability: number;
+        critChance: number;
     };
     skills: {
         name: string;
@@ -40,11 +42,13 @@ export const PORTAL_BEASTS: IPortalBeast[] = [
         name: 'Фэн Лун',
         title: 'Защитник Севера & Повелитель Льда',
         avatar: '/assets/images/avatars/panda.webp',
-        splashArt: '/assets/promo/frost_panda_aaa_master.jpg',
+        sprite: '/assets/characters/panda/panda_frost.png',
+        backdrop: '/assets/images/backgrounds/bg_main.webp',
         element: 'Холод & Лед',
         elementColor: '#60a5fa',
         role: 'Несокрушимый Танк',
-        stats: { attack: 78, defense: 96, speed: 64, magic: 82, durability: 98 },
+        rarity: 'ЛЕГЕНДАРНЫЙ',
+        stats: { hp: 770, attack: 32, defense: 12, speed: 1.95, critChance: 9.5 },
         skills: [
             { name: 'Ледяной Разлом', icon: '❄️', cooldown: '8 сек', desc: 'Сотрясает землю волной абсолютного нуля, сковывая врагов в ледяные глыбы.' },
             { name: 'Бамбуковый Щит', icon: '🛡️', cooldown: '12 сек', desc: 'Окутывает союзников непробиваемым куполом ци, отражая 40% урона обратно.' },
@@ -54,15 +58,17 @@ export const PORTAL_BEASTS: IPortalBeast[] = [
         quote: '«Тверже скалы, холоднее ледника. Мой щит — щит моих братьев!»',
     },
     {
-        id: 'lion',
+        id: 'lion_knight',
         name: 'Аурелиус',
         title: 'Паладин Солнца & Владыка Прайда',
         avatar: '/assets/images/avatars/lion.webp',
-        splashArt: '/assets/promo/lion_knight_aaa_master.jpg',
+        sprite: '/assets/characters/lion_knight/lion_knight_base.png',
+        backdrop: '/assets/images/backgrounds/bg_city_hub.webp',
         element: 'Солнечный Свет',
         elementColor: '#fbbf24',
         role: 'Универсальный Лидер',
-        stats: { attack: 92, defense: 88, speed: 76, magic: 75, durability: 90 },
+        rarity: 'МИФИЧЕСКИЙ',
+        stats: { hp: 920, attack: 36, defense: 15, speed: 1.75, critChance: 7.0 },
         skills: [
             { name: 'Клинок Рассвета', icon: '⚔️', cooldown: '6 сек', desc: 'Освященный рубящий выпад, пробивающий любую броню вспышкой солнечного огня.' },
             { name: 'Рев Света', icon: '🦁', cooldown: '15 сек', desc: 'Боевой рык, вселяющий ужас во врагов и дарующий союзникам +35% к силе атаки.' },
@@ -72,15 +78,17 @@ export const PORTAL_BEASTS: IPortalBeast[] = [
         quote: '«Свет не просит прощения у тьмы. В атаку, сыны Солнца!»',
     },
     {
-        id: 'tiger',
+        id: 'tiger_warrior',
         name: 'Варкан',
         title: 'Кровавый Берсерк & Повелитель Джунглей',
         avatar: '/assets/images/avatars/tiger.webp',
-        splashArt: '/assets/promo/tiger_berserker_aaa_master.jpg',
+        sprite: '/assets/characters/tiger_warrior/tiger_warrior_base.png',
+        backdrop: '/assets/images/backgrounds/bg_main.webp',
         element: 'Первобытная Ярость',
         elementColor: '#f97316',
         role: 'Взрывной Урон (DPS)',
-        stats: { attack: 99, defense: 68, speed: 91, magic: 55, durability: 79 },
+        rarity: 'ЭПИЧЕСКИЙ',
+        stats: { hp: 640, attack: 44, defense: 7, speed: 2.25, critChance: 13.5 },
         skills: [
             { name: 'Когтистый Вихрь', icon: '🩸', cooldown: '5 сек', desc: 'Серия молниеносных рассечений с эффектом глубокого кровотечения.' },
             { name: 'Жажда Битвы', icon: '🔥', cooldown: '10 сек', desc: 'Каждая потерянная единица HP конвертируется в +1.5% к критическому шансу.' },
@@ -90,33 +98,17 @@ export const PORTAL_BEASTS: IPortalBeast[] = [
         quote: '«Вся их броня — лишь консервная банка для моих когтей!»',
     },
     {
-        id: 'panther',
-        name: 'Рикки',
-        title: 'Теневой Клинок & Ночной Призрак',
-        avatar: '/assets/images/avatars/panther.webp',
-        splashArt: '/assets/promo/frost_panda_aaa_master.jpg',
-        element: 'Астральная Тень',
-        elementColor: '#a855f7',
-        role: 'Скрытный Ассасин',
-        stats: { attack: 94, defense: 60, speed: 98, magic: 70, durability: 65 },
-        skills: [
-            { name: 'Теневой Шаг', icon: '🌑', cooldown: '7 сек', desc: 'Исчезает из поля зрения и появляется за спиной самого опасного мага противника.' },
-            { name: 'Ядовитый Веер', icon: '🗡️', cooldown: '11 сек', desc: 'Метает отравленные сюрикены, снижающие скорость передвижения и силу цели.' },
-            { name: 'Танец Затмения', icon: '✨', cooldown: '20 сек', desc: 'Серия ударов из теней, делающая Рикки неуязвимым во время применения.' },
-        ],
-        lore: 'Бывший мастер гильдии Невидимых Когтей. Ее шаги беззвучны, а силуэт сливается с лунным светом. Никто не видел ее лица до удара.',
-        quote: '«Ты услышишь свист лезвия лишь за мгновение до вечного сна.»',
-    },
-    {
-        id: 'bear',
+        id: 'minotaur',
         name: 'Громм',
-        title: 'Железный Молот & Землетрясец',
+        title: 'Хранитель Лабиринта & Землетрясец',
         avatar: '/assets/images/avatars/bear.webp',
-        splashArt: '/assets/promo/tiger_berserker_aaa_master.jpg',
+        sprite: '/assets/characters/minotaur/minotaur_base.png',
+        backdrop: '/assets/images/backgrounds/bg_forge.webp',
         element: 'Скала & Гром',
         elementColor: '#eab308',
         role: 'Массивный Брузер',
-        stats: { attack: 86, defense: 92, speed: 52, magic: 65, durability: 95 },
+        rarity: 'ЭПИЧЕСКИЙ',
+        stats: { hp: 1120, attack: 28, defense: 18, speed: 1.45, critChance: 4.0 },
         skills: [
             { name: 'Удар Тектоники', icon: '🔨', cooldown: '8 сек', desc: 'Мощный удар кулаком о землю, раскалывающий строй врага и сбивающий с ног.' },
             { name: 'Каменная Кожа', icon: '🪨', cooldown: '14 сек', desc: 'Уплотняет шкуру до прочности гранита, поглощая до 3000 единиц любого урона.' },
@@ -124,6 +116,26 @@ export const PORTAL_BEASTS: IPortalBeast[] = [
         ],
         lore: 'Древний хранитель Медвежьего Ущелья. Говорят, что когда Громм вступает в бой, само сердце континента начинает биться быстрее.',
         quote: '«Земля подо мной дрожит, и враги мои падут прахом!»',
+    },
+    {
+        id: 'raccoon',
+        name: 'Рикки',
+        title: 'Теневой Клинок & Дикий Страж',
+        avatar: '/assets/images/avatars/panther.webp',
+        sprite: '/assets/characters/raccoon/raccoon_base.png',
+        backdrop: '/assets/images/backgrounds/bg_city_hub.webp',
+        element: 'Астральная Тень',
+        elementColor: '#a855f7',
+        role: 'Скрытный Ассасин',
+        rarity: 'РЕДКИЙ',
+        stats: { hp: 560, attack: 42, defense: 6, speed: 2.1, critChance: 11.5 },
+        skills: [
+            { name: 'Теневой Шаг', icon: '🌑', cooldown: '7 сек', desc: 'Исчезает из поля зрения и появляется за спиной самого опасного мага противника.' },
+            { name: 'Ядовитый Веер', icon: '🗡️', cooldown: '11 сек', desc: 'Метает отравленные сюрикены, снижающие скорость передвижения и силу цели.' },
+            { name: 'Танец Затмения', icon: '✨', cooldown: '20 сек', desc: 'Серия ударов из теней, делающая Рикки неуязвимым во время применения.' },
+        ],
+        lore: 'Бывший мастер гильдии Невидимых Когтей. Ее шаги беззвучны, а силуэт сливается с лунным светом. Никто не видел ее лица до удара.',
+        quote: '«Ты услышишь свист лезвия лишь за мгновение до вечного сна.»',
     },
 ];
 
@@ -150,7 +162,7 @@ export const PortalBeastCodex: React.FC<PortalBeastCodexProps> = ({ onSelectAndP
         const deltaX = (x - centerX) / centerX;
         const deltaY = (y - centerY) / centerY;
 
-        const maxTilt = 12;
+        const maxTilt = 10;
         setTilt({
             rx: -deltaY * maxTilt,
             ry: deltaX * maxTilt,
@@ -187,14 +199,14 @@ export const PortalBeastCodex: React.FC<PortalBeastCodexProps> = ({ onSelectAndP
             id="beasts"
             style={{
                 position: 'relative',
-                padding: '100px 24px',
-                backgroundColor: '#09070e',
-                borderTop: '1px solid rgba(200, 168, 112, 0.15)',
-                borderBottom: '1px solid rgba(200, 168, 112, 0.15)',
+                padding: '90px 24px',
+                backgroundColor: '#0a0812',
+                borderTop: '1px solid rgba(212, 175, 55, 0.2)',
+                borderBottom: '1px solid rgba(212, 175, 55, 0.2)',
                 overflow: 'hidden',
             }}
         >
-            {/* Background ambient runes */}
+            {/* Background ambient radial glow */}
             <div
                 style={{
                     position: 'absolute',
@@ -202,7 +214,7 @@ export const PortalBeastCodex: React.FC<PortalBeastCodexProps> = ({ onSelectAndP
                     right: '-10%',
                     width: '600px',
                     height: '600px',
-                    background: `radial-gradient(circle, ${selectedBeast.elementColor}15 0%, rgba(0,0,0,0) 70%)`,
+                    background: `radial-gradient(circle, ${selectedBeast.elementColor}20 0%, rgba(0,0,0,0) 70%)`,
                     pointerEvents: 'none',
                     filter: 'blur(90px)',
                     transition: 'background 0.8s ease',
@@ -211,16 +223,16 @@ export const PortalBeastCodex: React.FC<PortalBeastCodexProps> = ({ onSelectAndP
 
             <div style={{ maxWidth: '1240px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
                 {/* Section Header */}
-                <div style={{ textAlign: 'center', marginBottom: '50px' }}>
+                <div style={{ textAlign: 'center', marginBottom: '45px' }}>
                     <div
                         style={{
                             display: 'inline-flex',
                             alignItems: 'center',
                             gap: '8px',
-                            padding: '6px 16px',
+                            padding: '6px 18px',
                             borderRadius: '30px',
-                            background: 'rgba(212, 175, 55, 0.1)',
-                            border: '1px solid rgba(212, 175, 55, 0.3)',
+                            background: 'rgba(212, 175, 55, 0.12)',
+                            border: '1px solid rgba(212, 175, 55, 0.35)',
                             color: '#d4af37',
                             fontSize: '12px',
                             fontWeight: 700,
@@ -229,18 +241,18 @@ export const PortalBeastCodex: React.FC<PortalBeastCodexProps> = ({ onSelectAndP
                             marginBottom: '14px',
                         }}
                     >
-                        <span>📜</span> КОДЕКС ЗВЕРЕЙ ДИКИХ ЗЕМЕЛЬ
+                        <span>📜</span> КОДЕКС ЗВЕРЕЙ & ОФИЦИАЛЬНЫЕ ГЕРОИ
                     </div>
                     <h2
                         style={{
-                            margin: '0 0 16px 0',
+                            margin: '0 0 14px 0',
                             fontFamily: "'Philosopher', 'Cinzel', serif",
                             fontSize: 'clamp(28px, 4vw, 44px)',
                             color: '#f9f5ea',
                             textShadow: '0 4px 14px rgba(0,0,0,0.8)',
                         }}
                     >
-                        Легендарные Воины Природы
+                        Воины Вселенной Masters of the Wild
                     </h2>
                     <p
                         style={{
@@ -251,8 +263,8 @@ export const PortalBeastCodex: React.FC<PortalBeastCodexProps> = ({ onSelectAndP
                             lineHeight: 1.7,
                         }}
                     >
-                        Каждый зверь наделен уникальным элементом, набором тактических навыков и древним происхождением. 
-                        Выберите своего защитника перед выходом на арену.
+                        Подлинные персонажи игры с детальной боевой механикой, набором способностей
+                        и глубокой историей. Выберите своего зверя и сразу отправляйтесь на боевую арену.
                     </p>
                 </div>
 
@@ -279,12 +291,12 @@ export const PortalBeastCodex: React.FC<PortalBeastCodexProps> = ({ onSelectAndP
                                     gap: '12px',
                                     padding: '8px 18px',
                                     background: isSelected
-                                        ? 'linear-gradient(135deg, rgba(212, 175, 55, 0.25) 0%, rgba(20, 15, 25, 0.95) 100%)'
-                                        : 'rgba(20, 16, 26, 0.7)',
+                                        ? 'linear-gradient(135deg, rgba(212, 175, 55, 0.3) 0%, rgba(30, 22, 40, 0.95) 100%)'
+                                        : 'rgba(20, 16, 26, 0.75)',
                                     border: isSelected
                                         ? '1.5px solid #d4af37'
                                         : '1px solid rgba(255, 255, 255, 0.1)',
-                                    borderRadius: '12px',
+                                    borderRadius: '14px',
                                     cursor: 'pointer',
                                     transition: 'all 0.25s ease',
                                     boxShadow: isSelected
@@ -296,9 +308,9 @@ export const PortalBeastCodex: React.FC<PortalBeastCodexProps> = ({ onSelectAndP
                                     src={beast.avatar}
                                     alt={beast.name}
                                     style={{
-                                        width: '36px',
-                                        height: '36px',
-                                        borderRadius: '8px',
+                                        width: '38px',
+                                        height: '38px',
+                                        borderRadius: '10px',
                                         objectFit: 'cover',
                                         border: `1.5px solid ${isSelected ? beast.elementColor : 'rgba(255,255,255,0.2)'}`,
                                     }}
@@ -323,16 +335,16 @@ export const PortalBeastCodex: React.FC<PortalBeastCodexProps> = ({ onSelectAndP
                     })}
                 </div>
 
-                {/* Main Beast Showcase (2 Columns: 3D Holographic Card + Detail Intel) */}
+                {/* Main Beast Showcase (2 Columns: Authentic Composite 3D Card + Full Dossier) */}
                 <div
                     style={{
                         display: 'grid',
-                        gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+                        gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))',
                         gap: '36px',
                         alignItems: 'center',
                     }}
                 >
-                    {/* Left: 3D Parallax Card */}
+                    {/* Left: 3D Parallax Composite Card */}
                     <div style={{ perspective: '1000px', display: 'flex', justifyContent: 'center' }}>
                         <div
                             ref={cardRef}
@@ -342,29 +354,65 @@ export const PortalBeastCodex: React.FC<PortalBeastCodexProps> = ({ onSelectAndP
                                 position: 'relative',
                                 width: '100%',
                                 maxWidth: '420px',
-                                height: '520px',
-                                borderRadius: '20px',
+                                height: '540px',
+                                borderRadius: '22px',
                                 transform: `rotateX(${tilt.rx}deg) rotateY(${tilt.ry}deg)`,
                                 transformStyle: 'preserve-3d',
                                 transition: tilt.active ? 'none' : 'transform 0.5s ease',
-                                boxShadow: `0 25px 60px rgba(0, 0, 0, 0.9), 0 0 35px ${selectedBeast.elementColor}33`,
-                                border: '2px solid rgba(212, 175, 55, 0.5)',
+                                boxShadow: `0 25px 70px rgba(0, 0, 0, 0.95), 0 0 40px ${selectedBeast.elementColor}33`,
+                                border: '2px solid rgba(212, 175, 55, 0.55)',
                                 overflow: 'hidden',
                                 cursor: 'pointer',
+                                background: '#07050b',
                             }}
                         >
-                            {/* Beast Master Artwork */}
+                            {/* In-Game Authentic Backdrop */}
                             <img
-                                src={selectedBeast.splashArt}
-                                alt={selectedBeast.name}
+                                src={selectedBeast.backdrop}
+                                alt="Game Background"
                                 style={{
+                                    position: 'absolute',
+                                    inset: 0,
                                     width: '100%',
                                     height: '100%',
                                     objectFit: 'cover',
-                                    filter: 'contrast(1.05) brightness(0.95)',
-                                    transform: 'scale(1.04)',
+                                    filter: 'brightness(0.55) contrast(1.15)',
+                                    transform: 'scale(1.05)',
                                 }}
                             />
+
+                            {/* Radial Glow matching character element */}
+                            <div
+                                style={{
+                                    position: 'absolute',
+                                    inset: 0,
+                                    background: `radial-gradient(circle at 50% 55%, ${selectedBeast.elementColor}35 0%, rgba(0,0,0,0.6) 75%)`,
+                                    pointerEvents: 'none',
+                                }}
+                            />
+
+                            {/* Authentic Character Sprite (No Watermarks, High-Res Transparent) */}
+                            <div
+                                style={{
+                                    position: 'absolute',
+                                    inset: '40px 10px 90px 10px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    zIndex: 2,
+                                }}
+                            >
+                                <img
+                                    src={selectedBeast.sprite}
+                                    alt={selectedBeast.name}
+                                    style={{
+                                        maxHeight: '100%',
+                                        maxWidth: '100%',
+                                        objectFit: 'contain',
+                                        filter: 'drop-shadow(0 15px 25px rgba(0,0,0,0.9)) drop-shadow(0 0 15px rgba(212, 175, 55, 0.3))',
+                                    }}
+                                />
+                            </div>
 
                             {/* Holographic Specular Glare */}
                             {tilt.active && (
@@ -372,98 +420,120 @@ export const PortalBeastCodex: React.FC<PortalBeastCodexProps> = ({ onSelectAndP
                                     style={{
                                         position: 'absolute',
                                         inset: 0,
-                                        background: `radial-gradient(circle at ${tilt.glareX}% ${tilt.glareY}%, rgba(255, 255, 255, 0.28) 0%, rgba(255, 255, 255, 0) 65%)`,
+                                        background: `radial-gradient(circle at ${tilt.glareX}% ${tilt.glareY}%, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0) 65%)`,
                                         pointerEvents: 'none',
                                         mixBlendMode: 'overlay',
+                                        zIndex: 3,
                                     }}
                                 />
                             )}
 
-                            {/* Bottom Card Overlay Badge */}
+                            {/* Top Badges (Rarity & Roar) */}
+                            <div
+                                style={{
+                                    position: 'absolute',
+                                    top: '18px',
+                                    left: '18px',
+                                    right: '18px',
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center',
+                                    zIndex: 4,
+                                }}
+                            >
+                                <div
+                                    style={{
+                                        padding: '4px 12px',
+                                        borderRadius: '8px',
+                                        background: 'rgba(10, 8, 14, 0.85)',
+                                        border: `1.5px solid ${selectedBeast.elementColor}`,
+                                        fontSize: '11px',
+                                        fontWeight: 800,
+                                        color: selectedBeast.elementColor,
+                                        letterSpacing: '1px',
+                                    }}
+                                >
+                                    {selectedBeast.rarity}
+                                </div>
+
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleRoar();
+                                    }}
+                                    title="Боевой рык зверя"
+                                    style={{
+                                        width: '42px',
+                                        height: '42px',
+                                        borderRadius: '50%',
+                                        background: 'rgba(10, 8, 14, 0.85)',
+                                        border: '1.5px solid rgba(212, 175, 55, 0.7)',
+                                        color: '#f3e8d2',
+                                        fontSize: '18px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        cursor: 'pointer',
+                                        boxShadow: '0 4px 12px rgba(0,0,0,0.7)',
+                                        transform: roaring ? 'scale(1.2)' : 'scale(1)',
+                                        transition: 'all 0.2s ease',
+                                    }}
+                                >
+                                    🔊
+                                </button>
+                            </div>
+
+                            {/* Bottom Card Title Overlay */}
                             <div
                                 style={{
                                     position: 'absolute',
                                     bottom: 0,
                                     left: 0,
                                     right: 0,
-                                    padding: '24px',
-                                    background: 'linear-gradient(to top, rgba(5, 4, 8, 0.98) 0%, rgba(5, 4, 8, 0.7) 60%, transparent 100%)',
-                                    color: '#fff',
+                                    padding: '22px',
+                                    background: 'linear-gradient(to top, rgba(6, 4, 10, 0.98) 0%, rgba(6, 4, 10, 0.8) 60%, transparent 100%)',
+                                    zIndex: 4,
                                 }}
                             >
                                 <div
                                     style={{
                                         display: 'inline-block',
-                                        padding: '4px 10px',
-                                        borderRadius: '6px',
-                                        background: `${selectedBeast.elementColor}22`,
-                                        border: `1px solid ${selectedBeast.elementColor}88`,
                                         fontSize: '11px',
                                         fontWeight: 700,
                                         color: selectedBeast.elementColor,
-                                        marginBottom: '6px',
+                                        marginBottom: '4px',
                                         textTransform: 'uppercase',
                                         letterSpacing: '1px',
                                     }}
                                 >
-                                    {selectedBeast.element}
+                                    {selectedBeast.element} • {selectedBeast.role}
                                 </div>
                                 <h3
                                     style={{
-                                        margin: '0 0 4px 0',
+                                        margin: '0 0 2px 0',
                                         fontFamily: "'Philosopher', serif",
-                                        fontSize: '28px',
+                                        fontSize: '26px',
                                         color: '#FFE07D',
                                         textShadow: '0 2px 8px rgba(0,0,0,0.8)',
                                     }}
                                 >
                                     {selectedBeast.name}
                                 </h3>
-                                <p style={{ margin: 0, fontSize: '13px', color: '#c4b5a2', fontStyle: 'italic' }}>
+                                <p style={{ margin: 0, fontSize: '12px', color: '#c4b5a2', fontStyle: 'italic' }}>
                                     {selectedBeast.title}
                                 </p>
                             </div>
-
-                            {/* Top Roar Button */}
-                            <button
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleRoar();
-                                }}
-                                title="Услышать боевой зов"
-                                style={{
-                                    position: 'absolute',
-                                    top: '16px',
-                                    right: '16px',
-                                    width: '42px',
-                                    height: '42px',
-                                    borderRadius: '50%',
-                                    background: 'rgba(10, 8, 14, 0.8)',
-                                    border: '1.5px solid rgba(212, 175, 55, 0.6)',
-                                    color: '#f3e8d2',
-                                    fontSize: '18px',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    cursor: 'pointer',
-                                    boxShadow: '0 4px 12px rgba(0,0,0,0.6)',
-                                    transform: roaring ? 'scale(1.2)' : 'scale(1)',
-                                    transition: 'all 0.2s ease',
-                                }}
-                            >
-                                🔊
-                            </button>
                         </div>
                     </div>
 
-                    {/* Right: Detailed Dossier & Skills */}
+                    {/* Right: Full Dossier (Stats, Skills, Lore, CTA) */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                         {/* Quote Box */}
                         <div
                             style={{
                                 padding: '16px 20px',
-                                borderRadius: '12px',
-                                background: 'rgba(25, 20, 32, 0.7)',
+                                borderRadius: '14px',
+                                background: 'rgba(25, 20, 32, 0.8)',
                                 borderLeft: `4px solid ${selectedBeast.elementColor}`,
                                 fontStyle: 'italic',
                                 color: '#e8dcce',
@@ -474,75 +544,83 @@ export const PortalBeastCodex: React.FC<PortalBeastCodexProps> = ({ onSelectAndP
                             {selectedBeast.quote}
                         </div>
 
-                        {/* Lore summary */}
-                        <p style={{ margin: 0, color: '#b9ac9a', fontSize: '14px', lineHeight: 1.7 }}>
-                            {selectedBeast.lore}
-                        </p>
-
-                        {/* Tactical Stats */}
+                        {/* Lore narrative */}
                         <div
                             style={{
-                                background: 'rgba(15, 12, 20, 0.8)',
-                                border: '1px solid rgba(212, 175, 55, 0.25)',
+                                padding: '16px 20px',
                                 borderRadius: '14px',
-                                padding: '18px',
+                                background: 'rgba(18, 14, 24, 0.75)',
+                                border: '1px solid rgba(255, 255, 255, 0.08)',
+                                color: '#b9ac9a',
+                                fontSize: '13px',
+                                lineHeight: 1.7,
                             }}
                         >
-                            <h4
-                                style={{
-                                    margin: '0 0 14px 0',
-                                    fontSize: '13px',
-                                    textTransform: 'uppercase',
-                                    letterSpacing: '1px',
-                                    color: '#d4af37',
-                                    display: 'flex',
-                                    justifyContent: 'space-between',
-                                }}
-                            >
-                                <span>Боевые Параметры</span>
-                                <span style={{ color: selectedBeast.elementColor }}>{selectedBeast.role}</span>
-                            </h4>
+                            <span style={{ color: '#d4af37', fontWeight: 700 }}>История Героя: </span>
+                            {selectedBeast.lore}
+                        </div>
+
+                        {/* Tactical Stats Radar Bars */}
+                        <div
+                            style={{
+                                background: 'rgba(18, 14, 24, 0.85)',
+                                border: '1.5px solid rgba(212, 175, 55, 0.3)',
+                                borderRadius: '16px',
+                                padding: '20px',
+                            }}
+                        >
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+                                <span style={{ fontSize: '13px', textTransform: 'uppercase', letterSpacing: '1px', color: '#d4af37', fontWeight: 800 }}>
+                                    Боевые Характеристики
+                                </span>
+                                <span style={{ fontSize: '12px', color: selectedBeast.elementColor, fontWeight: 700 }}>
+                                    {selectedBeast.role}
+                                </span>
+                            </div>
 
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                                 {[
-                                    { label: 'Атака', val: selectedBeast.stats.attack, color: '#ef4444' },
-                                    { label: 'Защита', val: selectedBeast.stats.defense, color: '#3b82f6' },
-                                    { label: 'Скорость', val: selectedBeast.stats.speed, color: '#10b981' },
-                                    { label: 'Магия / Ци', val: selectedBeast.stats.magic, color: '#a855f7' },
-                                    { label: 'Живучесть', val: selectedBeast.stats.durability, color: '#eab308' },
-                                ].map((stat) => (
-                                    <div key={stat.label} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                        <span style={{ width: '85px', fontSize: '12px', color: '#c4b8a7' }}>{stat.label}</span>
-                                        <div
-                                            style={{
-                                                flex: 1,
-                                                height: '7px',
-                                                backgroundColor: 'rgba(255,255,255,0.08)',
-                                                borderRadius: '4px',
-                                                overflow: 'hidden',
-                                            }}
-                                        >
-                                            <motion.div
-                                                initial={{ width: 0 }}
-                                                animate={{ width: `${stat.val}%` }}
-                                                transition={{ duration: 0.6, ease: 'easeOut' }}
+                                    { label: 'Здоровье (HP)', val: selectedBeast.stats.hp, max: 1200, color: '#10b981' },
+                                    { label: 'Атака (ATK)', val: selectedBeast.stats.attack, max: 50, color: '#ef4444' },
+                                    { label: 'Броня (DEF)', val: selectedBeast.stats.defense, max: 20, color: '#3b82f6' },
+                                    { label: 'Скорость (SPD)', val: selectedBeast.stats.speed, max: 2.5, color: '#a855f7' },
+                                    { label: 'Крит (CRIT %)', val: selectedBeast.stats.critChance, max: 20, color: '#f59e0b' },
+                                ].map((stat) => {
+                                    const percent = Math.min(100, Math.round((stat.val / stat.max) * 100));
+                                    return (
+                                        <div key={stat.label} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                            <span style={{ width: '120px', fontSize: '12px', color: '#c4b8a7' }}>{stat.label}</span>
+                                            <div
                                                 style={{
-                                                    height: '100%',
-                                                    backgroundColor: stat.color,
+                                                    flex: 1,
+                                                    height: '7px',
+                                                    backgroundColor: 'rgba(255,255,255,0.08)',
                                                     borderRadius: '4px',
-                                                    boxShadow: `0 0 8px ${stat.color}88`,
+                                                    overflow: 'hidden',
                                                 }}
-                                            />
+                                            >
+                                                <motion.div
+                                                    initial={{ width: 0 }}
+                                                    animate={{ width: `${percent}%` }}
+                                                    transition={{ duration: 0.5, ease: 'easeOut' }}
+                                                    style={{
+                                                        height: '100%',
+                                                        backgroundColor: stat.color,
+                                                        borderRadius: '4px',
+                                                        boxShadow: `0 0 8px ${stat.color}88`,
+                                                    }}
+                                                />
+                                            </div>
+                                            <span style={{ width: '45px', textAlign: 'right', fontSize: '12px', fontWeight: 800, color: '#fff' }}>
+                                                {stat.val}
+                                            </span>
                                         </div>
-                                        <span style={{ width: '32px', textAlign: 'right', fontSize: '12px', fontWeight: 700, color: '#fff' }}>
-                                            {stat.val}
-                                        </span>
-                                    </div>
-                                ))}
+                                    );
+                                })}
                             </div>
                         </div>
 
-                        {/* Unique Skills Accordion / Badges */}
+                        {/* Signature Skills */}
                         <div>
                             <h4
                                 style={{
@@ -551,9 +629,10 @@ export const PortalBeastCodex: React.FC<PortalBeastCodexProps> = ({ onSelectAndP
                                     textTransform: 'uppercase',
                                     letterSpacing: '1px',
                                     color: '#d4af37',
+                                    fontWeight: 700,
                                 }}
                             >
-                                Особые Навыки и Способности
+                                Способности & Боевые Руны
                             </h4>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                                 {selectedBeast.skills.map((skill) => (
@@ -562,7 +641,7 @@ export const PortalBeastCodex: React.FC<PortalBeastCodexProps> = ({ onSelectAndP
                                         style={{
                                             padding: '10px 14px',
                                             borderRadius: '10px',
-                                            background: 'rgba(20, 16, 26, 0.6)',
+                                            background: 'rgba(20, 16, 26, 0.7)',
                                             border: '1px solid rgba(255, 255, 255, 0.08)',
                                             display: 'flex',
                                             gap: '12px',
@@ -586,11 +665,11 @@ export const PortalBeastCodex: React.FC<PortalBeastCodexProps> = ({ onSelectAndP
                             </div>
                         </div>
 
-                        {/* CTA Button: Вступить в бой этим зверем */}
+                        {/* CTA Button: Вступить в бой за этого героя */}
                         <button
                             onClick={handlePlayWithBeast}
                             style={{
-                                marginTop: '10px',
+                                marginTop: '8px',
                                 width: '100%',
                                 padding: '16px',
                                 background: 'linear-gradient(135deg, #d4af37 0%, #aa8022 100%)',
@@ -598,7 +677,7 @@ export const PortalBeastCodex: React.FC<PortalBeastCodexProps> = ({ onSelectAndP
                                 border: 'none',
                                 borderRadius: '12px',
                                 fontSize: '15px',
-                                fontWeight: 800,
+                                fontWeight: 900,
                                 textTransform: 'uppercase',
                                 letterSpacing: '1.5px',
                                 cursor: 'pointer',

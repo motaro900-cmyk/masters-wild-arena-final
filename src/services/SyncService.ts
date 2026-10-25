@@ -119,7 +119,7 @@ export class SyncService {
             }
             const isReady = bootController.isReady();
             if (!isReady) {
-                console.warn('[SyncService] Blocked beacon sync: Profile is not ready.');
+                // Silent in portal/pre-boot
                 return;
             }
             const userId = this.getCurrentUserId();
@@ -207,7 +207,7 @@ export class SyncService {
         if (this.syncDisabled) return Promise.resolve();
 
         if (bootController.getState() !== 'READY') {
-            console.warn('[SyncService] syncPlayerData: skipped, BootController not READY.');
+            // Silent in portal/pre-boot
             return Promise.resolve();
         }
 

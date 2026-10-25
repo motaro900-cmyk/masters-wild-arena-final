@@ -1,6 +1,6 @@
 /**
  * PORTAL HEADER (Шапка игрового портала)
- * Навигация, статус игрового сервера, быстрый вход в бой и PWA установка.
+ * Навигация, статус игрового сервера, личный кабинет, быстрый вход в бой и PWA установка.
  */
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -8,12 +8,14 @@ import { proceduralAudio } from '../../utils/ProceduralAudio';
 
 interface PortalHeaderProps {
     onLaunchGame: () => void;
+    onOpenCabinet: () => void;
     installPrompt?: any;
     onInstallPwa?: () => void;
 }
 
 export const PortalHeader: React.FC<PortalHeaderProps> = ({
     onLaunchGame,
+    onOpenCabinet,
     installPrompt,
     onInstallPwa,
 }) => {
@@ -37,10 +39,10 @@ export const PortalHeader: React.FC<PortalHeaderProps> = ({
                 right: 0,
                 height: '70px',
                 zIndex: 1000,
-                backgroundColor: 'rgba(7, 5, 11, 0.88)',
+                backgroundColor: 'rgba(7, 5, 11, 0.92)',
                 backdropFilter: 'blur(16px)',
-                borderBottom: '1px solid rgba(200, 168, 112, 0.25)',
-                boxShadow: '0 10px 30px rgba(0, 0, 0, 0.8)',
+                borderBottom: '1px solid rgba(212, 175, 55, 0.25)',
+                boxShadow: '0 10px 30px rgba(0, 0, 0, 0.85)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
@@ -48,7 +50,7 @@ export const PortalHeader: React.FC<PortalHeaderProps> = ({
             }}
         >
             {/* Left: Brand Logo & Server Badge */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
                 <a
                     href="#hero"
                     onClick={(e) => {
@@ -58,16 +60,31 @@ export const PortalHeader: React.FC<PortalHeaderProps> = ({
                     style={{
                         display: 'flex',
                         alignItems: 'center',
-                        gap: '10px',
+                        gap: '12px',
                         textDecoration: 'none',
+                        color: 'inherit',
                     }}
                 >
-                    <span style={{ fontSize: '24px' }}>🐺</span>
+                    <div
+                        style={{
+                            width: '38px',
+                            height: '38px',
+                            borderRadius: '10px',
+                            background: 'linear-gradient(135deg, #d4af37 0%, #aa8022 100%)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            boxShadow: '0 0 15px rgba(212, 175, 55, 0.4)',
+                            fontSize: '20px',
+                        }}
+                    >
+                        🐾
+                    </div>
                     <div>
                         <div
                             style={{
-                                fontFamily: "'Cinzel', serif",
-                                fontSize: '15px',
+                                fontFamily: "'Philosopher', 'Cinzel', serif",
+                                fontSize: '16px',
                                 fontWeight: 800,
                                 letterSpacing: '2px',
                                 color: '#FFE07D',
@@ -81,20 +98,20 @@ export const PortalHeader: React.FC<PortalHeaderProps> = ({
                             style={{
                                 fontFamily: "'Montserrat', sans-serif",
                                 fontSize: '10px',
-                                color: '#9ca3af',
+                                color: '#a69a89',
                                 letterSpacing: '1px',
                                 textTransform: 'uppercase',
                             }}
                         >
-                            Официальный портал арены
+                            Официальный портал игры
                         </div>
                     </div>
                 </a>
 
-                {/* Server Status Badge (Desktop) */}
+                {/* Server Status Badge */}
                 <div
                     style={{
-                        display: 'none',
+                        display: 'flex',
                         alignItems: 'center',
                         gap: '6px',
                         padding: '4px 10px',
@@ -106,36 +123,34 @@ export const PortalHeader: React.FC<PortalHeaderProps> = ({
                         fontFamily: "'Montserrat', sans-serif",
                         fontWeight: 600,
                     }}
-                    className="desktop-server-badge"
                 >
                     <span
                         style={{
-                            width: '7px',
-                            height: '7px',
+                            width: '6px',
+                            height: '6px',
                             borderRadius: '50%',
-                            background: '#22c55e',
-                            boxShadow: '0 0 8px #22c55e',
+                            backgroundColor: '#4ade80',
+                            boxShadow: '0 0 8px #4ade80',
                         }}
                     />
-                    <span>S1: Туманная Долина (Онлайн: 1,420)</span>
+                    <span>S1: Wild Lands (Онлайн: 1,482)</span>
                 </div>
             </div>
 
-            {/* Center: Desktop Navigation Links */}
+            {/* Center: Desktop Navigation Links with exact IDs */}
             <nav
                 style={{
                     display: 'flex',
                     alignItems: 'center',
                     gap: '24px',
                 }}
-                className="desktop-nav"
             >
                 {[
                     { label: 'Главная', id: 'hero' },
-                    { label: 'Звери и Навыки', id: 'codex' },
-                    { label: 'Саундтреки', id: 'ost' },
+                    { label: 'Звери и Навыки', id: 'beasts' },
+                    { label: 'Саундтреки', id: 'music' },
                     { label: 'Награды', id: 'rewards' },
-                    { label: 'Зал Славы', id: 'arena' },
+                    { label: 'Зал Славы', id: 'leaderboard' },
                 ].map((item) => (
                     <button
                         key={item.id}
@@ -161,8 +176,35 @@ export const PortalHeader: React.FC<PortalHeaderProps> = ({
                 ))}
             </nav>
 
-            {/* Right: Actions (PWA + Launch Game Button) */}
+            {/* Right: Actions (Личный Кабинет + PWA + Launch Game) */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                {/* Личный Кабинет Button */}
+                <button
+                    onClick={() => {
+                        proceduralAudio.playClick(1.1);
+                        onOpenCabinet();
+                    }}
+                    style={{
+                        padding: '9px 16px',
+                        borderRadius: '10px',
+                        border: '1.5px solid rgba(212, 175, 55, 0.5)',
+                        background: 'linear-gradient(135deg, rgba(30, 22, 40, 0.85) 0%, rgba(15, 11, 22, 0.95) 100%)',
+                        color: '#FFE07D',
+                        fontSize: '13px',
+                        fontWeight: 700,
+                        fontFamily: "'Philosopher', serif",
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        boxShadow: '0 4px 15px rgba(0,0,0,0.5)',
+                        transition: 'all 0.2s ease',
+                    }}
+                >
+                    <span>👤</span>
+                    <span>Личный Кабинет</span>
+                </button>
+
                 {installPrompt && onInstallPwa && (
                     <button
                         onClick={onInstallPwa}
@@ -213,103 +255,7 @@ export const PortalHeader: React.FC<PortalHeaderProps> = ({
                     <span>⚔️</span>
                     <span>В БОЙ!</span>
                 </motion.button>
-
-                {/* Mobile Menu Toggle Button */}
-                <button
-                    onClick={() => {
-                        proceduralAudio.playClick(0.9);
-                        setMobileMenuOpen(!mobileMenuOpen);
-                    }}
-                    style={{
-                        display: 'none',
-                        background: 'rgba(255, 255, 255, 0.08)',
-                        border: '1px solid rgba(255, 255, 255, 0.15)',
-                        borderRadius: '8px',
-                        width: '38px',
-                        height: '38px',
-                        color: '#FFE07D',
-                        fontSize: '20px',
-                        cursor: 'pointer',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                    }}
-                    className="mobile-menu-toggle"
-                >
-                    {mobileMenuOpen ? '✕' : '☰'}
-                </button>
             </div>
-
-            {/* Mobile Dropdown Menu */}
-            <AnimatePresence>
-                {mobileMenuOpen && (
-                    <motion.div
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                        style={{
-                            position: 'absolute',
-                            top: '70px',
-                            left: 0,
-                            right: 0,
-                            backgroundColor: 'rgba(10, 7, 14, 0.98)',
-                            backdropFilter: 'blur(20px)',
-                            borderBottom: '2px solid rgba(200, 168, 112, 0.4)',
-                            padding: '20px',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: '14px',
-                        }}
-                    >
-                        <div
-                            style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '8px',
-                                fontSize: '12px',
-                                color: '#4ade80',
-                                paddingBottom: '10px',
-                                borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
-                            }}
-                        >
-                            <span
-                                style={{
-                                    width: '8px',
-                                    height: '8px',
-                                    borderRadius: '50%',
-                                    background: '#22c55e',
-                                }}
-                            />
-                            <span>Сервер: S1 Туманная Долина (Онлайн)</span>
-                        </div>
-
-                        {[
-                            { label: 'Главная', id: 'hero' },
-                            { label: 'Звери и Навыки', id: 'codex' },
-                            { label: 'Саундтреки', id: 'ost' },
-                            { label: 'Награды и Чекин', id: 'rewards' },
-                            { label: 'Зал Славы', id: 'arena' },
-                        ].map((item) => (
-                            <button
-                                key={item.id}
-                                onClick={() => scrollTo(item.id)}
-                                style={{
-                                    background: 'none',
-                                    border: 'none',
-                                    color: '#f3e8d2',
-                                    fontSize: '16px',
-                                    fontWeight: 700,
-                                    fontFamily: "'Philosopher', serif",
-                                    textAlign: 'left',
-                                    padding: '8px 0',
-                                    cursor: 'pointer',
-                                }}
-                            >
-                                {item.label}
-                            </button>
-                        ))}
-                    </motion.div>
-                )}
-            </AnimatePresence>
         </header>
     );
 };

@@ -1,15 +1,16 @@
 /**
  * PORTAL PAGE (Главная страница студийного игрового портала)
  * Сборка всех ключевых модулей: Header, Hero, Бестиарий, OST-плеер,
- * Ежедневные Награды, Зал Чемпионов и Юридический Подвал.
+ * Ежедневные Награды, Зал Чемпионов, Личный Кабинет и Юридический Подвал.
  */
-import React from 'react';
+import React, { useState } from 'react';
 import { PortalHeader } from './components/PortalHeader';
 import { PortalHero } from './components/PortalHero';
 import { PortalBeastCodex } from './components/PortalBeastCodex';
 import { PortalOSTPlayer } from './components/PortalOSTPlayer';
 import { PortalDailyCheckIn } from './components/PortalDailyCheckIn';
 import { PortalHallOfFame } from './components/PortalHallOfFame';
+import { PortalCabinet } from './components/PortalCabinet';
 import { PortalFooter } from './components/PortalFooter';
 
 interface PortalPageProps {
@@ -29,6 +30,8 @@ export const PortalPage: React.FC<PortalPageProps> = ({
     onInstallPwa,
     isGameActive = false,
 }) => {
+    const [isCabinetOpen, setIsCabinetOpen] = useState(false);
+
     const handleExploreBeasts = () => {
         const el = document.getElementById('beasts');
         if (el) {
@@ -62,6 +65,7 @@ export const PortalPage: React.FC<PortalPageProps> = ({
             {/* 1. Sticky Navigation Header */}
             <PortalHeader
                 onLaunchGame={onLaunchGame}
+                onOpenCabinet={() => setIsCabinetOpen(true)}
                 installPrompt={installPrompt}
                 onInstallPwa={onInstallPwa}
             />
@@ -69,10 +73,11 @@ export const PortalPage: React.FC<PortalPageProps> = ({
             {/* 2. Hero Section */}
             <PortalHero
                 onLaunchGame={onLaunchGame}
+                onOpenCabinet={() => setIsCabinetOpen(true)}
                 onExploreBeasts={handleExploreBeasts}
             />
 
-            {/* 3. Interactive Beast Codex (3D Parallax & Skills) */}
+            {/* 3. Interactive Beast Codex (Authentic Game Sprites & 3D Cards) */}
             <PortalBeastCodex onSelectAndPlay={onSelectAndPlay} />
 
             {/* 4. OST Sanctuary (8-Track Web Audio Player & Canvas FFT) */}
@@ -86,6 +91,16 @@ export const PortalPage: React.FC<PortalPageProps> = ({
 
             {/* 7. Footer (152-ФЗ, 436-ФЗ 12+, Studio Imprint) */}
             <PortalFooter onLaunchGame={onLaunchGame} />
+
+            {/* 8. Personal Player Cabinet Modal */}
+            <PortalCabinet
+                isOpen={isCabinetOpen}
+                onClose={() => setIsCabinetOpen(false)}
+                onLaunchGame={(heroId) => {
+                    if (heroId) onSelectAndPlay(heroId);
+                    else onLaunchGame();
+                }}
+            />
         </div>
     );
 };
