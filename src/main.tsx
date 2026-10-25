@@ -9,6 +9,7 @@ import { NotInVkScreen } from './ui/components/NotInVkScreen';
 import { LoadingScreen } from './ui/components/LoadingScreen';
 import { InitErrorScreen } from './ui/components/InitErrorScreen';
 import { StandaloneWebHUD } from './ui/components/StandaloneWebHUD';
+import { PortalPage } from './portal/PortalPage';
 // SafeGameLayout is lazily loaded to prevent HUD components (GameHUD, framer-motion ~129 kB)
 // from pulling into the startup bundle. It only renders when bootState === 'READY'.
 const SafeGameLayout = React.lazy(() =>
@@ -156,6 +157,23 @@ const UpdateModal: React.FC = () => {
 
 export const Root = () => {
     const containerRef = React.useRef<HTMLDivElement>(null);
+
+    const checkInitialViewMode = (): 'PORTAL' | 'GAME' => {
+        if (typeof window === 'undefined') return 'PORTAL';
+        const params = new URLSearchParams(window.location.search);
+        if (
+            params.has('play') ||
+            params.has('duel') ||
+            params.has('vk_user_id') ||
+            params.has('viewer_id') ||
+            params.has('tgWebAppStartParam')
+        ) {
+            return 'GAME';
+        }
+        return 'PORTAL';
+    };
+
+    const [viewMode, setViewMode] = React.useState<'PORTAL' | 'GAME'>(checkInitialViewMode);
     const [bootState, setBootState] = React.useState<BootState>(bootController.getState());
     const [initError, setInitError] = React.useState<string | null>(null);
     const [notInVk, setNotInVk] = React.useState(false);
@@ -185,6 +203,25 @@ export const Root = () => {
             }
         };
     }, [isMobile]);
+
+    // Toggle portal-mode body class for smooth scrolling vs game canvas lock
+    React.useEffect(() => {
+        if (typeof document !== 'undefined') {
+            const isPortal = viewMode === 'PORTAL';
+            document.body.classList.toggle('portal-mode', isPortal);
+            document.documentElement.classList.toggle('portal-mode', isPortal);
+            const root = document.getElementById('root');
+            if (root) root.classList.toggle('portal-mode', isPortal);
+        }
+        return () => {
+            if (typeof document !== 'undefined') {
+                document.body.classList.remove('portal-mode');
+                document.documentElement.classList.remove('portal-mode');
+                const root = document.getElementById('root');
+                if (root) root.classList.remove('portal-mode');
+            }
+        };
+    }, [viewMode]);
 
     // Subscribe to boot controller changes
     React.useEffect(() => {
@@ -319,7 +356,9 @@ export const Root = () => {
     }, [bootState]);
 
     const handleRetry = React.useCallback(() => {
+        if (viewMode !== 'GAME') return;
         if (!containerRef.current) return;
+        if (bootController.isReady()) return;
         setInitError(null);
         bootController.reset();
         bootController.start(containerRef.current, setLoadingText, setInitError, setNotInVk).catch(() => {});
@@ -327,9 +366,43 @@ export const Root = () => {
 
     // Start BootController
     React.useEffect(() => {
+        if (viewMode !== 'GAME') return;
         if (!containerRef.current) return;
+        if (bootController.isReady()) return;
         bootController.start(containerRef.current, setLoadingText, setInitError, setNotInVk).catch(() => {});
-    }, []);
+    }, [viewMode]);
+
+    const handleLaunchGame = (heroId?: string) => {
+        if (heroId) {
+            const store: any = useGameStore.getState();
+            store.setSelectedHeroId?.(heroId);
+        }
+        const url = new URL(window.location.href);
+        url.searchParams.set('play', '1');
+        window.history.pushState({}, '', url.toString());
+        setViewMode('GAME');
+    };
+
+    const handleBackToPortal = () => {
+        const url = new URL(window.location.href);
+        url.searchParams.delete('play');
+        url.searchParams.delete('duel');
+        window.history.pushState({}, '', url.pathname + (url.search ? url.search : ''));
+        setViewMode('PORTAL');
+    };
+
+    if (viewMode === 'PORTAL') {
+        return (
+            <ErrorBoundary>
+                <PortalPage
+                    onLaunchGame={() => handleLaunchGame()}
+                    onSelectAndPlay={(id) => handleLaunchGame(id)}
+                    onChallengePlayer={(_name) => handleLaunchGame()}
+                    isGameActive={false}
+                />
+            </ErrorBoundary>
+        );
+    }
 
     if (notInVk) return <NotInVkScreen />;
     if (initError || bootState === 'FAILED')
@@ -421,7 +494,7 @@ export const Root = () => {
 
             <LoadingScreen isLoading={isAppLoading} loadingText={loadingText} />
             {showUpdateModal && <UpdateModal />}
-            <StandaloneWebHUD />
+            <StandaloneWebHUD onBackToPortal={handleBackToPortal} />
         </ErrorBoundary>
     );
 };

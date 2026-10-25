@@ -158,3 +158,6 @@ export class DuelChallengeService {
         }
     }
 }
+
+export const duelChallengeService = DuelChallengeService;
+

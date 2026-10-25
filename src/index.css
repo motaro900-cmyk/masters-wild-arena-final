@@ -902,3 +902,19 @@ h6 {
     background: rgba(240, 192, 64, 0.35);
     border-radius: 2px;
 }
+
+
+/* ─── PORTAL MODE SCROLL OVERRIDE ──────────────────────────────────────── */
+html.portal-mode,
+body.portal-mode,
+#root.portal-mode {
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    height: auto !important;
+    min-height: 100vh !important;
+    width: 100% !important;
+    user-select: auto !important;
+    -webkit-user-select: auto !important;
+    touch-action: auto !important;
+    overscroll-behavior: auto !important;
+}

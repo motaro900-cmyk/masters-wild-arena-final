@@ -9,7 +9,11 @@ import { DuelChallengeModal } from './DuelChallengeModal';
 import { RestingEnergyModal } from './RestingEnergyModal';
 import { BeastCodexModal } from './BeastCodexModal';
 
-export const StandaloneWebHUD: React.FC = () => {
+interface StandaloneWebHUDProps {
+    onBackToPortal?: () => void;
+}
+
+export const StandaloneWebHUD: React.FC<StandaloneWebHUDProps> = ({ onBackToPortal }) => {
     const [isFullscreen, setIsFullscreen] = useState(false);
     const [showToast, setShowToast] = useState(false);
     const [toastMessage, setToastMessage] = useState('');
@@ -244,6 +248,36 @@ export const StandaloneWebHUD: React.FC = () => {
                     pointerEvents: 'auto',
                 }}
             >
+                {/* Back to Portal Button */}
+                {onBackToPortal && (
+                    <button
+                        onClick={() => {
+                            proceduralAudio.playClick(1.0);
+                            onBackToPortal();
+                        }}
+                        title="Вернуться на Главный Портал"
+                        style={{
+                            padding: isMobile ? '6px 8px' : '8px 12px',
+                            borderRadius: '12px',
+                            border: '1.5px solid rgba(212, 175, 55, 0.6)',
+                            background: 'linear-gradient(135deg, rgba(212, 175, 55, 0.3) 0%, rgba(20, 15, 25, 0.9) 100%)',
+                            backdropFilter: 'blur(12px)',
+                            color: '#FFE07D',
+                            fontSize: isMobile ? '11px' : '12px',
+                            fontWeight: 800,
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            transition: 'all 0.2s',
+                            boxShadow: '0 4px 15px rgba(212, 175, 55, 0.25)',
+                            fontFamily: "'Philosopher', serif",
+                        }}
+                    >
+                        🏛️ <span>{!isMobile && 'В Портал'}</span>
+                    </button>
+                )}
+
                 {/* Beast Codex Button */}
                 <button
                     onClick={handleOpenCodex}
