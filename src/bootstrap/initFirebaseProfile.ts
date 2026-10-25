@@ -63,10 +63,31 @@ export const initFirebaseProfile = async (
             return null;
         }
         if (!isVk && !state.vkUser) {
-            console.warn('❌ Blocked access: Guest access is forbidden in production.');
-            clearTimeout(timeoutId);
-            setNotInVk(true);
-            return null;
+            const { getTelegramUser } = await import('../utils/TelegramBridge');
+            const tgUser = getTelegramUser();
+            if (tgUser) {
+                const adaptedUser = {
+                    id: 'tg_' + tgUser.id,
+                    firstName: tgUser.first_name || 'Воин',
+                    lastName: tgUser.last_name || '',
+                    photo: tgUser.photo_url || '/assets/images/avatars/panda.webp',
+                    photo200: tgUser.photo_url || '/assets/images/avatars/panda.webp',
+                };
+                useGameStore.setState({ vkUser: adaptedUser as any });
+                console.log('✅ Telegram user initialized into profile:', adaptedUser.firstName);
+            } else {
+                const guestId = localStorage.getItem('motw_guest_id') || ('guest_' + Math.random().toString(36).slice(2, 10));
+                localStorage.setItem('motw_guest_id', guestId);
+                const guestUser = {
+                    id: guestId,
+                    firstName: 'Игрок',
+                    lastName: '',
+                    photo: '/assets/images/avatars/panda.webp',
+                    photo200: '/assets/images/avatars/panda.webp',
+                };
+                useGameStore.setState({ vkUser: guestUser as any });
+                console.log('✅ Standalone guest initialized into profile:', guestUser.id);
+            }
         }
     }
 

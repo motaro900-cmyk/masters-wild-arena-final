@@ -1,4 +1,5 @@
 import { initVK, getVkUserInfo, isVkMiniApp } from '../utils/VKBridge';
+import { initTelegramWebApp, isTelegramMiniApp, getTelegramUser } from '../utils/TelegramBridge';
 import { initTelemetry } from '../services/TelemetryService';
 import { TimeService } from '../utils/TimeService';
 import { safeGetItem } from '../utils/SafeStorage';
@@ -690,6 +691,7 @@ class BootController {
     }
 
     public async resolveVK(setNotInVk: (val: boolean) => void, _setInitError: (err: string) => void): Promise<void> {
+        try { initTelegramWebApp(); } catch (e) { console.warn('TG init err:', e); }
         // fetchWithRetry is now defined globally in this file
 
         // Helper for getting VK user info with retries
@@ -868,6 +870,15 @@ class BootController {
                         photo: '/assets/images/avatars/panda.webp',
                         photo200: '/assets/images/avatars/panda.webp',
                     };
+                } else if (isTelegramMiniApp()) {
+                    const tg = getTelegramUser();
+                    this.vkUser = {
+                        id: 'tg_' + (tg?.id || Date.now()),
+                        firstName: tg?.first_name || 'Воин',
+                        lastName: tg?.last_name || '',
+                        photo: tg?.photo_url || '/assets/images/avatars/panda.webp',
+                        photo200: tg?.photo_url || '/assets/images/avatars/panda.webp',
+                    };
                 } else if (isVkMiniApp()) {
                     this.vkUser = {
                         id: 'vk_' + Date.now(),
@@ -918,7 +929,7 @@ class BootController {
                 );
             })();
 
-            if (isSecurityError) {
+            if (isSecurityError && !isTelegramMiniApp() && isVkMiniApp()) {
                 console.error('[BootController] Security error from verify-sign — blocking boot with unverified identity:', err.message);
                 setNotInVk(true);
                 throw new Error('Standalone launch restricted');
