@@ -8,9 +8,10 @@ import { proceduralAudio } from '../../utils/ProceduralAudio';
 
 interface PortalFooterProps {
     onLaunchGame: () => void;
+    onOpenLegal?: (tab: 'privacy' | 'terms' | 'cookies' | 'age') => void;
 }
 
-export const PortalFooter: React.FC<PortalFooterProps> = ({ onLaunchGame }) => {
+export const PortalFooter: React.FC<PortalFooterProps> = ({ onLaunchGame, onOpenLegal }) => {
     const scrollTo = (id: string) => {
         proceduralAudio.playClick(1.0);
         const el = document.getElementById(id);
@@ -234,15 +235,24 @@ export const PortalFooter: React.FC<PortalFooterProps> = ({ onLaunchGame }) => {
                             Правовая Информация
                         </h4>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                            <a href="#privacy" style={{ color: '#9c8e7e', textDecoration: 'none' }}>
+                            <button
+                                onClick={() => onOpenLegal?.('privacy')}
+                                style={{ background: 'none', border: 'none', padding: 0, color: '#9c8e7e', cursor: 'pointer', textAlign: 'left', fontSize: '13px' }}
+                            >
                                 Политика конфиденциальности (152-ФЗ)
-                            </a>
-                            <a href="#terms" style={{ color: '#9c8e7e', textDecoration: 'none' }}>
+                            </button>
+                            <button
+                                onClick={() => onOpenLegal?.('terms')}
+                                style={{ background: 'none', border: 'none', padding: 0, color: '#9c8e7e', cursor: 'pointer', textAlign: 'left', fontSize: '13px' }}
+                            >
                                 Пользовательское соглашение
-                            </a>
-                            <a href="#cookies" style={{ color: '#9c8e7e', textDecoration: 'none' }}>
+                            </button>
+                            <button
+                                onClick={() => onOpenLegal?.('cookies')}
+                                style={{ background: 'none', border: 'none', padding: 0, color: '#9c8e7e', cursor: 'pointer', textAlign: 'left', fontSize: '13px' }}
+                            >
                                 Использование файлов cookie
-                            </a>
+                            </button>
                             <div style={{ marginTop: '10px', display: 'flex', alignItems: 'center', gap: '10px' }}>
                                 <div
                                     style={{
@@ -260,9 +270,12 @@ export const PortalFooter: React.FC<PortalFooterProps> = ({ onLaunchGame }) => {
                                 >
                                     12+
                                 </div>
-                                <span style={{ fontSize: '11px', color: '#73685c' }}>
+                                <button
+                                    onClick={() => onOpenLegal?.('age')}
+                                    style={{ background: 'none', border: 'none', padding: 0, fontSize: '11px', color: '#73685c', cursor: 'pointer', textAlign: 'left' }}
+                                >
                                     Знак информационной продукции (ФЗ № 436-ФЗ)
-                                </span>
+                                </button>
                             </div>
                         </div>
                     </div>

@@ -1,17 +1,19 @@
 /**
  * PORTAL PAGE (Главная страница студийного игрового портала)
- * Сборка всех ключевых модулей: Header, Hero, Бестиарий, OST-плеер,
- * Ежедневные Награды, Зал Чемпионов, Личный Кабинет и Юридический Подвал.
+ * Сборка всех ключевых модулей: Header, Hero, Бестиарий, Новости, OST-плеер,
+ * Ежедневные Награды, Зал Чемпионов, Личный Кабинет и Юридический Подвал (152-ФЗ / 436-ФЗ).
  */
 import React, { useState } from 'react';
 import { PortalHeader } from './components/PortalHeader';
 import { PortalHero } from './components/PortalHero';
 import { PortalBeastCodex } from './components/PortalBeastCodex';
+import { PortalNews } from './components/PortalNews';
 import { PortalOSTPlayer } from './components/PortalOSTPlayer';
 import { PortalDailyCheckIn } from './components/PortalDailyCheckIn';
 import { PortalHallOfFame } from './components/PortalHallOfFame';
 import { PortalCabinet } from './components/PortalCabinet';
 import { PortalFooter } from './components/PortalFooter';
+import { PortalLegalModal } from './components/PortalLegalModal';
 
 interface PortalPageProps {
     onLaunchGame: () => void;
@@ -31,6 +33,7 @@ export const PortalPage: React.FC<PortalPageProps> = ({
     isGameActive = false,
 }) => {
     const [isCabinetOpen, setIsCabinetOpen] = useState(false);
+    const [legalTab, setLegalTab] = useState<'privacy' | 'terms' | 'cookies' | 'age' | null>(null);
 
     const handleExploreBeasts = () => {
         const el = document.getElementById('beasts');
@@ -80,19 +83,25 @@ export const PortalPage: React.FC<PortalPageProps> = ({
             {/* 3. Interactive Beast Codex (Authentic Game Sprites & 3D Cards) */}
             <PortalBeastCodex onSelectAndPlay={onSelectAndPlay} />
 
-            {/* 4. OST Sanctuary (8-Track Web Audio Player & Canvas FFT) */}
+            {/* 4. Chronicles & News Hub (Steam/Battle.net standard) */}
+            <PortalNews onLaunchGame={onLaunchGame} />
+
+            {/* 5. OST Sanctuary (8-Track Web Audio Player & Canvas FFT) */}
             <PortalOSTPlayer isGameActive={isGameActive} />
 
-            {/* 5. Daily Rewards Retention Hub (7-Day Calendar) */}
+            {/* 6. Daily Rewards Retention Hub (7-Day Calendar) */}
             <PortalDailyCheckIn />
 
-            {/* 6. Hall of Fame (Top 10 Leaderboard & P2P Duels) */}
+            {/* 7. Hall of Fame (Top 10 Leaderboard & P2P Duels) */}
             <PortalHallOfFame onChallengePlayer={onChallengePlayer} />
 
-            {/* 7. Footer (152-ФЗ, 436-ФЗ 12+, Studio Imprint) */}
-            <PortalFooter onLaunchGame={onLaunchGame} />
+            {/* 8. Footer (152-ФЗ, 436-ФЗ 12+, Studio Imprint) */}
+            <PortalFooter
+                onLaunchGame={onLaunchGame}
+                onOpenLegal={(tab) => setLegalTab(tab)}
+            />
 
-            {/* 8. Personal Player Cabinet Modal */}
+            {/* 9. Personal Player Cabinet Modal */}
             <PortalCabinet
                 isOpen={isCabinetOpen}
                 onClose={() => setIsCabinetOpen(false)}
@@ -100,6 +109,14 @@ export const PortalPage: React.FC<PortalPageProps> = ({
                     if (heroId) onSelectAndPlay(heroId);
                     else onLaunchGame();
                 }}
+            />
+
+            {/* 10. Legal Compliance Modal (РФ) */}
+            <PortalLegalModal
+                isOpen={legalTab !== null}
+                tab={legalTab}
+                onClose={() => setLegalTab(null)}
+                onSelectTab={(t) => setLegalTab(t)}
             />
         </div>
     );
