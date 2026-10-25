@@ -177,7 +177,13 @@ export class SyncService {
     }
 
     public static getPrefixedUserId(vkUser: any, playerId: string): string {
-        if (vkUser) return `VK-${vkUser.id}`;
+        if (vkUser) {
+            const idStr = String(vkUser.id);
+            if (idStr.startsWith('tg_') || idStr.startsWith('TG-')) return `TG-${idStr.replace(/^tg_/, '')}`;
+            if (idStr.startsWith('guest_') || idStr.startsWith('GUEST-')) return `GUEST-${idStr.replace(/^guest_/, '')}`;
+            if (idStr.startsWith('VK-')) return idStr;
+            return `VK-${idStr}`;
+        }
         if (playerId === 'DEVELOPER') return 'DEVELOPER';
         if (playerId && playerId.startsWith('GUEST-')) return playerId;
         const cleanGuest = playerId
@@ -195,11 +201,7 @@ export class SyncService {
             return Promise.resolve();
         }
         const userId = this.getCurrentUserId();
-        if (!userId.startsWith('VK-')) {
-            if (!this.warnedNonVK) {
-                console.warn('[SyncService] Blocked write for non-VK user:', userId);
-                this.warnedNonVK = true;
-            }
+        if (!userId || userId === 'null' || userId === 'undefined') {
             return Promise.resolve();
         }
         if (this.syncDisabled) return Promise.resolve();

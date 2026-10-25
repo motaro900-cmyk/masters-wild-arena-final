@@ -1,0 +1,84 @@
+{
+  "id": "/?source=pwa",
+  "name": "Masters of the Wild — Арена Зверей",
+  "short_name": "Masters of the Wild",
+  "description": "Тактический автобатлер 5х5. Собери команду диких зверей и покори легендарную арену!",
+  "lang": "ru",
+  "dir": "ltr",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
+  "orientation": "landscape",
+  "background_color": "#05050a",
+  "theme_color": "#c8a870",
+  "categories": ["games", "role-playing", "strategy"],
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/assets/images/ui/icons/Gold.webp",
+      "sizes": "64x64",
+      "type": "image/webp",
+      "purpose": "any"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/tg_cover_640x360.png",
+      "sizes": "640x360",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Арена Masters of the Wild — битвы зверей"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Арена Битв",
+      "short_name": "Битва",
+      "description": "Мгновенный переход на боевую арену",
+      "url": "/?mode=battle&source=shortcut",
+      "icons": [
+        {
+          "src": "/icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Город Героев",
+      "short_name": "Город",
+      "description": "Открыть город, кузницу и казармы",
+      "url": "/?mode=city&source=shortcut",
+      "icons": [
+        {
+          "src": "/icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ]
+}

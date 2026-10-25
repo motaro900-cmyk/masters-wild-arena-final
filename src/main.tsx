@@ -8,6 +8,7 @@ import { ErrorBoundary } from './ui/components/ErrorBoundary';
 import { NotInVkScreen } from './ui/components/NotInVkScreen';
 import { LoadingScreen } from './ui/components/LoadingScreen';
 import { InitErrorScreen } from './ui/components/InitErrorScreen';
+import { StandaloneWebHUD } from './ui/components/StandaloneWebHUD';
 // SafeGameLayout is lazily loaded to prevent HUD components (GameHUD, framer-motion ~129 kB)
 // from pulling into the startup bundle. It only renders when bootState === 'READY'.
 const SafeGameLayout = React.lazy(() =>
@@ -355,6 +356,27 @@ export const Root = () => {
                     zIndex: 1,
                 }}
             >
+                {/* 🌌 Ambient Reactive Glow Backdrop (fills letterbox/pillarbox areas) */}
+                {!isMobile && (
+                    <div
+                        style={{
+                            position: 'absolute',
+                            inset: '-8%',
+                            width: '116%',
+                            height: '116%',
+                            backgroundImage: `url(${
+                                isMobile ? AssetsMap.BACKGROUNDS.MAIN_MENU_MOBILE : AssetsMap.BACKGROUNDS.MAIN_MENU
+                            })`,
+                            backgroundSize: 'cover',
+                            backgroundPosition: 'center',
+                            filter: 'blur(70px) saturate(2) brightness(0.35)',
+                            opacity: 0.6,
+                            pointerEvents: 'none',
+                            zIndex: 0,
+                        }}
+                    />
+                )}
+
                 <div
                     className="game-scale-wrapper"
                     style={{
@@ -399,6 +421,7 @@ export const Root = () => {
 
             <LoadingScreen isLoading={isAppLoading} loadingText={loadingText} />
             {showUpdateModal && <UpdateModal />}
+            <StandaloneWebHUD />
         </ErrorBoundary>
     );
 };
