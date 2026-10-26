@@ -2,281 +2,325 @@
  * PORTAL DAILY CHECK-IN (Благословение Леса: Ежедневный Календарь Наград)
  * 7-дневный прогрессивный веб-календарь с начислением золота, кристаллов
  * и редких предметов непосредственно в игровой профиль useGameStore.
+ * Полностью векторный интерфейс без Unicode-эмодзи в стандартах Diablo IV / PoE.
  */
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { proceduralAudio } from '../../utils/ProceduralAudio';
 import { portalSound } from '../PortalSoundService';
-import { useGameStore } from '../../store/useGameStore';
 import { portalSyncBridge } from '../../services/PortalSyncBridge';
+import {
+  GoldCoinGlyph,
+  CrystalGlyph,
+  HerbGlyph,
+  PotionGlyph,
+  ScrollGlyph,
+  OrbGlyph,
+  ShieldGlyph,
+  ChestGlyph,
+} from './PortalGlyphs';
 
 export interface ICheckInDay {
-    day: number;
-    title: string;
-    icon: string;
-    gold: number;
-    crystals: number;
-    itemDesc?: string;
-    isSuper?: boolean;
+  day: number;
+  title: string;
+  glyphType: 'herb' | 'potion' | 'crystal' | 'scroll' | 'orb' | 'shield' | 'chest';
+  gold: number;
+  crystals: number;
+  itemDesc?: string;
+  isSuper?: boolean;
 }
 
 export const CHECK_IN_DAYS: ICheckInDay[] = [
-    { day: 1, title: 'День 1', icon: '🌿', gold: 100, crystals: 0, itemDesc: '10x Трав' },
-    { day: 2, title: 'День 2', icon: '🧪', gold: 250, crystals: 0, itemDesc: 'Малое Зелье' },
-    { day: 3, title: 'День 3', icon: '💎', gold: 500, crystals: 15, itemDesc: '+15 Кристаллов' },
-    { day: 4, title: 'День 4', icon: '📜', gold: 750, crystals: 0, itemDesc: 'Свиток Опыта' },
-    { day: 5, title: 'День 5', icon: '🔮', gold: 1000, crystals: 25, itemDesc: '+25 Кристаллов' },
-    { day: 6, title: 'День 6', icon: '🛡️', gold: 1500, crystals: 0, itemDesc: 'Амулет Стойкости' },
-    { day: 7, title: 'День 7', icon: '👑', gold: 3000, crystals: 100, itemDesc: 'Сундук Чемпиона', isSuper: true },
+  { day: 1, title: 'День 1', glyphType: 'herb', gold: 100, crystals: 0, itemDesc: '10x Трав' },
+  { day: 2, title: 'День 2', glyphType: 'potion', gold: 250, crystals: 0, itemDesc: 'Малое Зелье' },
+  { day: 3, title: 'День 3', glyphType: 'crystal', gold: 500, crystals: 15, itemDesc: '+15 Кристаллов' },
+  { day: 4, title: 'День 4', glyphType: 'scroll', gold: 750, crystals: 0, itemDesc: 'Свиток Опыта' },
+  { day: 5, title: 'День 5', glyphType: 'orb', gold: 1000, crystals: 25, itemDesc: '+25 Кристаллов' },
+  { day: 6, title: 'День 6', glyphType: 'shield', gold: 1500, crystals: 0, itemDesc: 'Амулет Стойкости' },
+  { day: 7, title: 'День 7', glyphType: 'chest', gold: 3000, crystals: 100, itemDesc: 'Сундук Чемпиона', isSuper: true },
 ];
 
 export const PortalDailyCheckIn: React.FC = () => {
-    const [streak, setStreak] = useState(1);
-    const [canClaim, setCanClaim] = useState(true);
-    const [claimedToday, setClaimedToday] = useState(false);
-    const [feedback, setFeedback] = useState<string | null>(null);
+  const [streak, setStreak] = useState(1);
+  const [canClaim, setCanClaim] = useState(true);
+  const [claimedToday, setClaimedToday] = useState(false);
+  const [feedback, setFeedback] = useState<{ gold: number; crystals: number } | null>(null);
 
-    useEffect(() => {
-        const savedStreak = parseInt(localStorage.getItem('wild_portal_checkin_streak') || '1', 10);
-        const lastDate = localStorage.getItem('wild_portal_last_checkin_date');
-        const todayStr = new Date().toDateString();
+  useEffect(() => {
+    const savedStreak = parseInt(localStorage.getItem('wild_portal_checkin_streak') || '1', 10);
+    const lastDate = localStorage.getItem('wild_portal_last_checkin_date');
+    const todayStr = new Date().toDateString();
 
-        setStreak(savedStreak > 7 ? 1 : savedStreak);
+    setStreak(savedStreak > 7 ? 1 : savedStreak);
 
-        if (lastDate === todayStr) {
-            setCanClaim(false);
-            setClaimedToday(true);
-        } else {
-            setCanClaim(true);
-            setClaimedToday(false);
-        }
-    }, []);
+    if (lastDate === todayStr) {
+      setCanClaim(false);
+      setClaimedToday(true);
+    } else {
+      setCanClaim(true);
+      setClaimedToday(false);
+    }
+  }, []);
 
-    const handleClaim = () => {
-        if (!canClaim) return;
+  const handleClaim = () => {
+    if (!canClaim) return;
 
-        portalSound.playReward();
-        const currentReward = CHECK_IN_DAYS[(streak - 1) % CHECK_IN_DAYS.length];
+    portalSound.playReward();
+    const currentReward = CHECK_IN_DAYS[(streak - 1) % CHECK_IN_DAYS.length];
 
-        const store: any = useGameStore.getState();
-        if (currentReward.gold > 0) store.addGold?.(currentReward.gold);
-        if (currentReward.crystals > 0) store.addCrystals?.(currentReward.crystals);
+    const profile = portalSyncBridge.getProfile();
+    const todayStr = new Date().toDateString();
+    const nextStreak = streak >= 7 ? 1 : streak + 1;
 
-        const todayStr = new Date().toDateString();
-        localStorage.setItem('wild_portal_last_checkin_date', todayStr);
+    portalSyncBridge.commitMutation({
+      gold: profile.gold + currentReward.gold,
+      diamonds: profile.diamonds + currentReward.crystals,
+      lastDailyCheckinDate: todayStr,
+      dailyCheckinStreak: nextStreak,
+    });
 
-        const nextStreak = streak >= 7 ? 1 : streak + 1;
-        localStorage.setItem('wild_portal_checkin_streak', nextStreak.toString());
+    localStorage.setItem('wild_portal_last_checkin_date', todayStr);
+    localStorage.setItem('wild_portal_checkin_streak', nextStreak.toString());
 
-        setCanClaim(false);
-        setClaimedToday(true);
-        setFeedback(
-            `🎉 Получено: +${currentReward.gold} 🪙 Золота ${
-                currentReward.crystals > 0 ? `+${currentReward.crystals} 💎 Кристаллов` : ''
-            }! Награда уже ждет в игре.`
-        );
+    setCanClaim(false);
+    setClaimedToday(true);
+    setFeedback({ gold: currentReward.gold, crystals: currentReward.crystals });
 
-        setTimeout(() => setFeedback(null), 6000);
-    };
+    setTimeout(() => setFeedback(null), 6000);
+  };
 
-    return (
-        <section
-            id="rewards"
+  const renderGlyph = (type: ICheckInDay['glyphType'], isCurrent: boolean, isPast: boolean) => {
+    const glow = isCurrent;
+    switch (type) {
+      case 'herb':
+        return <HerbGlyph size={36} color={isPast ? '#4b5563' : '#34d399'} glow={glow} />;
+      case 'potion':
+        return <PotionGlyph size={36} color={isPast ? '#4b5563' : '#c084fc'} glow={glow} />;
+      case 'crystal':
+        return <CrystalGlyph size={36} color={isPast ? '#4b5563' : '#38bdf8'} glow={glow} />;
+      case 'scroll':
+        return <ScrollGlyph size={36} color={isPast ? '#4b5563' : '#fbbf24'} glow={glow} />;
+      case 'orb':
+        return <OrbGlyph size={36} color={isPast ? '#4b5563' : '#a855f7'} glow={glow} />;
+      case 'shield':
+        return <ShieldGlyph size={36} color={isPast ? '#4b5563' : '#60a5fa'} glow={glow} />;
+      case 'chest':
+        return <ChestGlyph size={42} color={isPast ? '#4b5563' : '#f59e0b'} glow={glow} />;
+    }
+  };
+
+  return (
+    <section
+      id="rewards"
+      style={{
+        position: 'relative',
+        padding: '110px 24px',
+        backgroundColor: '#07050a',
+        borderBottom: '1px solid rgba(212, 175, 55, 0.2)',
+        overflow: 'hidden',
+      }}
+    >
+      <div style={{ maxWidth: '1240px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
+        {/* Section Header */}
+        <div style={{ textAlign: 'center', marginBottom: '55px' }}>
+          <div
             style={{
-                position: 'relative',
-                padding: '90px 24px',
-                backgroundColor: '#0a0812',
-                borderBottom: '1px solid rgba(200, 168, 112, 0.15)',
-                overflow: 'hidden',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '6px 18px',
+              borderRadius: '30px',
+              background: 'rgba(212, 175, 55, 0.1)',
+              border: '1px solid rgba(212, 175, 55, 0.3)',
+              fontSize: '11px',
+              fontWeight: 800,
+              letterSpacing: '2.5px',
+              color: '#d4af37',
+              textTransform: 'uppercase',
+              marginBottom: '16px',
             }}
+          >
+            <GoldCoinGlyph size={14} color="#d4af37" />
+            СВЯТИЛИЩЕ ПРЕДКОВ
+          </div>
+          <h2
+            style={{
+              margin: '0 0 16px 0',
+              fontSize: '44px',
+              fontWeight: 900,
+              fontFamily: "'Cinzel', 'Philosopher', serif",
+              color: '#f5edd8',
+              letterSpacing: '2px',
+              textShadow: '0 4px 20px rgba(0, 0, 0, 0.8)',
+            }}
+          >
+            Благословение Первозданного Леса
+          </h2>
+          <p style={{ margin: 0, fontSize: '15px', color: '#a39582', maxWidth: '640px', marginInline: 'auto', lineHeight: 1.6 }}>
+            Входите в игру каждый день, чтобы зажигать руны мистической стелы и получать дары древних духов: чеканное золото, кристаллы маны и легендарные реликвии.
+          </p>
+        </div>
+
+        {/* 7-Day Stone Altar Grid */}
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
+            gap: '16px',
+            marginBottom: '40px',
+          }}
         >
-            <div style={{ maxWidth: '1240px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
-                {/* Section Header */}
-                <div style={{ textAlign: 'center', marginBottom: '45px' }}>
-                    <div
-                        style={{
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '8px',
-                            padding: '6px 16px',
-                            borderRadius: '30px',
-                            background: 'rgba(212, 175, 55, 0.1)',
-                            border: '1px solid rgba(212, 175, 55, 0.3)',
-                            color: '#d4af37',
-                            fontSize: '12px',
-                            fontWeight: 700,
-                            letterSpacing: '2px',
-                            textTransform: 'uppercase',
-                            marginBottom: '14px',
-                        }}
-                    >
-                        <span>🎁</span> ЕЖЕДНЕВНЫЙ ВЕБ-РЕЛИЗ
-                    </div>
-                    <h2
-                        style={{
-                            margin: '0 0 14px 0',
-                            fontFamily: "'Philosopher', 'Cinzel', serif",
-                            fontSize: 'clamp(28px, 4vw, 42px)',
-                            color: '#f9f5ea',
-                            textShadow: '0 4px 14px rgba(0,0,0,0.8)',
-                        }}
-                    >
-                        Благословение Леса
-                    </h2>
-                    <p style={{ margin: '0 auto', maxWidth: '640px', fontSize: '15px', color: '#a39886', lineHeight: 1.6 }}>
-                        Заходите на портал каждый день и забирайте возрастающие ресурсы, золото и кристаллы. 
-                        Все награды автоматически синхронизируются с вашим игровым аккаунтом.
-                    </p>
-                </div>
+          {CHECK_IN_DAYS.map((dayItem) => {
+            const isPast = dayItem.day < streak;
+            const isCurrent = dayItem.day === streak;
 
-                {/* 7-Day Grid */}
+            return (
+              <motion.div
+                key={dayItem.day}
+                whileHover={{ y: -6, scale: 1.02 }}
+                style={{
+                  position: 'relative',
+                  borderRadius: '16px',
+                  padding: '24px 16px',
+                  background: isCurrent
+                    ? 'linear-gradient(180deg, rgba(212, 175, 55, 0.2) 0%, rgba(18, 14, 24, 0.95) 100%)'
+                    : isPast
+                     ? 'rgba(12, 10, 16, 0.6)'
+                     : 'rgba(18, 14, 24, 0.85)',
+                  border: isCurrent
+                    ? '2px solid #d4af37'
+                    : dayItem.isSuper
+                     ? '1.5px solid rgba(234, 179, 8, 0.5)'
+                     : '1px solid rgba(255, 255, 255, 0.08)',
+                  boxShadow: isCurrent
+                    ? '0 12px 35px rgba(212, 175, 55, 0.3), inset 0 0 20px rgba(212, 175, 55, 0.2)'
+                    : '0 8px 24px rgba(0, 0, 0, 0.4)',
+                  textAlign: 'center',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  minHeight: '210px',
+                }}
+              >
+                {/* Top Day Badge */}
                 <div
-                    style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
-                        gap: '14px',
-                        marginBottom: '35px',
-                    }}
+                  style={{
+                    fontSize: '11px',
+                    fontWeight: 800,
+                    color: isCurrent ? '#FFE07D' : isPast ? '#6b7280' : '#8a7b6c',
+                    textTransform: 'uppercase',
+                    letterSpacing: '1.5px',
+                  }}
                 >
-                    {CHECK_IN_DAYS.map((dayItem) => {
-                        const isPast = dayItem.day < streak;
-                        const isCurrent = dayItem.day === streak;
-                        const isFuture = dayItem.day > streak;
-
-                        return (
-                            <motion.div
-                                key={dayItem.day}
-                                whileHover={{ y: -4 }}
-                                style={{
-                                    position: 'relative',
-                                    borderRadius: '16px',
-                                    padding: '20px 14px',
-                                    background: isCurrent
-                                        ? 'linear-gradient(135deg, rgba(212, 175, 55, 0.25) 0%, rgba(30, 22, 38, 0.95) 100%)'
-                                        : isPast
-                                          ? 'rgba(15, 12, 20, 0.5)'
-                                          : 'rgba(20, 16, 26, 0.8)',
-                                    border: isCurrent
-                                        ? '2px solid #d4af37'
-                                        : dayItem.isSuper
-                                          ? '1.5px solid rgba(234, 179, 8, 0.5)'
-                                          : '1px solid rgba(255, 255, 255, 0.08)',
-                                    boxShadow: isCurrent
-                                        ? '0 10px 30px rgba(212, 175, 55, 0.25), inset 0 0 15px rgba(212, 175, 55, 0.15)'
-                                        : 'none',
-                                    textAlign: 'center',
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    alignItems: 'center',
-                                    justifyContent: 'space-between',
-                                    minHeight: '180px',
-                                }}
-                            >
-                                {/* Top Day Badge */}
-                                <div
-                                    style={{
-                                        fontSize: '11px',
-                                        fontWeight: 700,
-                                        color: isCurrent ? '#FFE07D' : isPast ? '#6b7280' : '#b2a594',
-                                        textTransform: 'uppercase',
-                                        letterSpacing: '1px',
-                                    }}
-                                >
-                                    {dayItem.title}
-                                </div>
-
-                                {/* Icon Display */}
-                                <div
-                                    style={{
-                                        fontSize: '34px',
-                                        margin: '10px 0',
-                                        filter: isPast ? 'grayscale(0.8) opacity(0.5)' : 'none',
-                                    }}
-                                >
-                                    {isPast ? '✓' : dayItem.icon}
-                                </div>
-
-                                {/* Reward Detail */}
-                                <div>
-                                    <div style={{ fontSize: '14px', fontWeight: 700, color: '#f3e8d2' }}>
-                                        +{dayItem.gold} 🪙
-                                    </div>
-                                    {dayItem.crystals > 0 && (
-                                        <div style={{ fontSize: '12px', fontWeight: 700, color: '#60a5fa', marginTop: '2px' }}>
-                                            +{dayItem.crystals} 💎
-                                        </div>
-                                    )}
-                                    <div style={{ fontSize: '11px', color: '#9c8e7e', marginTop: '4px' }}>
-                                        {dayItem.itemDesc}
-                                    </div>
-                                </div>
-
-                                {/* Status ribbon */}
-                                {isPast && (
-                                    <div style={{ fontSize: '10px', color: '#10b981', fontWeight: 700, marginTop: '6px' }}>
-                                        Получено
-                                    </div>
-                                )}
-                                {isCurrent && (
-                                    <div style={{ fontSize: '10px', color: '#d4af37', fontWeight: 800, marginTop: '6px' }}>
-                                        {claimedToday ? '✓ Сегодня готово' : '⚡ ДОСТУПНО'}
-                                    </div>
-                                )}
-                            </motion.div>
-                        );
-                    })}
+                  {dayItem.title}
                 </div>
 
-                {/* Claim CTA & Notification Feedback */}
-                <div style={{ textAlign: 'center' }}>
-                    {feedback && (
-                        <div
-                            style={{
-                                display: 'inline-block',
-                                padding: '12px 24px',
-                                borderRadius: '10px',
-                                background: 'rgba(16, 185, 129, 0.15)',
-                                border: '1px solid rgba(16, 185, 129, 0.4)',
-                                color: '#6ee7b7',
-                                fontSize: '14px',
-                                fontWeight: 600,
-                                marginBottom: '20px',
-                            }}
-                        >
-                            {feedback}
-                        </div>
-                    )}
+                {/* Vector Icon */}
+                <div style={{ margin: '14px 0' }}>
+                  {renderGlyph(dayItem.glyphType, isCurrent, isPast)}
+                </div>
 
-                    <div>
-                        <button
-                            onClick={handleClaim}
-                            disabled={!canClaim}
-                            style={{
-                                padding: '16px 40px',
-                                borderRadius: '12px',
-                                background: canClaim
-                                    ? 'linear-gradient(135deg, #d4af37 0%, #aa8022 100%)'
-                                    : 'rgba(40, 32, 50, 0.6)',
-                                border: canClaim ? 'none' : '1px solid rgba(255, 255, 255, 0.1)',
-                                color: canClaim ? '#120c04' : '#73685c',
-                                fontSize: '16px',
-                                fontWeight: 800,
-                                textTransform: 'uppercase',
-                                letterSpacing: '1.5px',
-                                cursor: canClaim ? 'pointer' : 'not-allowed',
-                                boxShadow: canClaim ? '0 8px 25px rgba(212, 175, 55, 0.35)' : 'none',
-                                transition: 'all 0.25s ease',
-                            }}
-                        >
-                            {claimedToday ? '✓ Награда за сегодня уже получена' : '🎁 Забрать Благословение Леса'}
-                        </button>
+                {/* Reward Detail */}
+                <div>
+                  <div style={{ fontSize: '15px', fontWeight: 800, color: '#f3e8d2', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px' }}>
+                    <span>+{dayItem.gold}</span>
+                    <GoldCoinGlyph size={14} color="#f59e0b" />
+                  </div>
+                  {dayItem.crystals > 0 && (
+                    <div style={{ fontSize: '13px', fontWeight: 700, color: '#60a5fa', marginTop: '3px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px' }}>
+                      <span>+{dayItem.crystals}</span>
+                      <CrystalGlyph size={13} color="#60a5fa" />
                     </div>
-
-                    <p style={{ marginTop: '12px', fontSize: '12px', color: '#7c7063' }}>
-                        Счетчик обновляется ежедневно в 00:00 МСК. Ресурсы мгновенно поступают на счет персонажа.
-                    </p>
+                  )}
+                  <div style={{ fontSize: '11px', color: '#9c8e7e', marginTop: '6px' }}>
+                    {dayItem.itemDesc}
+                  </div>
                 </div>
-            </div>
-        </section>
-    );
+
+                {/* Status ribbon */}
+                {isPast && (
+                  <div style={{ fontSize: '10px', color: '#10b981', fontWeight: 800, marginTop: '8px', letterSpacing: '1px' }}>
+                    ПОЛУЧЕНО
+                  </div>
+                )}
+                {isCurrent && (
+                  <div style={{ fontSize: '10px', color: '#d4af37', fontWeight: 900, marginTop: '8px', letterSpacing: '1px' }}>
+                    {claimedToday ? '✓ ЗАБРАНО' : ' ДОСТУПНО'}
+                  </div>
+                )}
+              </motion.div>
+            );
+          })}
+        </div>
+
+        {/* Claim Action Bar */}
+        <div style={{ textAlign: 'center' }}>
+          <motion.button
+            whileHover={canClaim ? { scale: 1.04, boxShadow: '0 0 35px rgba(212, 175, 55, 0.6)' } : {}}
+            whileTap={canClaim ? { scale: 0.98 } : {}}
+            onClick={handleClaim}
+            disabled={!canClaim}
+            style={{
+              padding: '16px 44px',
+              fontSize: '14px',
+              fontWeight: 900,
+              letterSpacing: '2px',
+              textTransform: 'uppercase',
+              borderRadius: '12px',
+              border: canClaim ? '1px solid rgba(255, 235, 150, 0.6)' : '1px solid rgba(255, 255, 255, 0.1)',
+              background: canClaim
+                ? 'linear-gradient(135deg, #d4af37 0%, #aa8022 100%)'
+                : 'rgba(255, 255, 255, 0.05)',
+              color: canClaim ? '#0f0c05' : '#6b7280',
+              cursor: canClaim ? 'pointer' : 'not-allowed',
+              boxShadow: canClaim ? '0 10px 30px rgba(212, 175, 55, 0.4)' : 'none',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '10px',
+            }}
+          >
+            <ChestGlyph size={18} color={canClaim ? '#0f0c05' : '#6b7280'} />
+            {claimedToday ? 'Награда за сегодня уже в профиле' : 'Забрать Благословение Дня'}
+          </motion.button>
+        </div>
+
+        {/* Feedback Toast */}
+        {feedback && (
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -15 }}
+            style={{
+              marginTop: '25px',
+              padding: '14px 24px',
+              borderRadius: '12px',
+              backgroundColor: 'rgba(16, 185, 129, 0.15)',
+              border: '1px solid rgba(16, 185, 129, 0.4)',
+              color: '#a7f3d0',
+              fontSize: '13px',
+              fontWeight: 700,
+              textAlign: 'center',
+              maxWidth: '480px',
+              marginInline: 'auto',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+            }}
+          >
+            <span>Награда успешно начислена:</span>
+            <span>+{feedback.gold}</span>
+            <GoldCoinGlyph size={14} color="#f59e0b" />
+            {feedback.crystals > 0 && (
+              <>
+                <span>и +{feedback.crystals}</span>
+                <CrystalGlyph size={14} color="#60a5fa" />
+              </>
+            )}
+          </motion.div>
+        )}
+      </div>
+    </section>
+  );
 };
+export default PortalDailyCheckIn;

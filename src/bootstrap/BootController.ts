@@ -1062,6 +1062,8 @@ class BootController {
                 // Reset and apply remote profile
                 useGameStore.getState().resetStore();
                 stateToRestore.isSystemUpdate = true;
+                const { portalSyncBridge } = await import('../services/PortalSyncBridge');
+                stateToRestore.portalForgeTiers = portalSyncBridge.getForgeTiers();
                 useGameStore.setState(stateToRestore);
             } else if (cacheState && cacheState.lastSavedTimestamp) {
                 console.log('[BootController] No Firebase snapshot found, falling back to local cache.');
@@ -1069,12 +1071,15 @@ class BootController {
                 cacheState.vkUser = this.vkUser;
                 cacheState.isOfflineSession = true;
                 cacheState.isSystemUpdate = true;
+                const { portalSyncBridge } = await import('../services/PortalSyncBridge');
+                cacheState.portalForgeTiers = portalSyncBridge.getForgeTiers();
                 useGameStore.setState(cacheState);
             } else {
                 console.log('[BootController] New player profile creation.');
                 useGameStore.getState().resetStore();
                 const fallbackName =
                     this.vkUser?.firstName || this.vkUser?.first_name || `Игрок_${this.userId.slice(-4)}`;
+                const { portalSyncBridge } = await import('../services/PortalSyncBridge');
                 useGameStore.setState({
                     name: fallbackName,
                     onboardingCompleted: false,
@@ -1083,6 +1088,7 @@ class BootController {
                     vkUser: this.vkUser,
                     isOfflineSession: false,
                     isSystemUpdate: true,
+                    portalForgeTiers: portalSyncBridge.getForgeTiers(),
                 });
             }
         } catch (error) {
