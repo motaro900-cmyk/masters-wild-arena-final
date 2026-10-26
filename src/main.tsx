@@ -74,7 +74,7 @@ const UpdateModal: React.FC = () => {
                         boxShadow: '0 0 15px rgba(212, 175, 55, 0.2)',
                     }}
                 >
-                    <span style={{ fontSize: '32px', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))' }}>🛡️</span>
+                    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#d4af37" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" fill="rgba(212,175,55,0.2)"/></svg>
                 </div>
 
                 <h2
@@ -429,7 +429,7 @@ export const Root = () => {
                     zIndex: 1,
                 }}
             >
-                {/* 🌌 Ambient Reactive Glow Backdrop (fills letterbox/pillarbox areas) */}
+                {/* Ambient Reactive Glow Backdrop (fills letterbox/pillarbox areas) */}
                 {!isMobile && (
                     <div
                         style={{

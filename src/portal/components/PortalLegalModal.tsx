@@ -96,7 +96,7 @@ export const PortalLegalModal: React.FC<PortalLegalModalProps> = ({
         <div style={{ display: 'flex', gap: '8px', marginBottom: '18px', flexWrap: 'wrap' }}>
           {[
             { id: 'privacy' as const, label: '152-ФЗ Персональные данные' },
-            { id: 'terms' as const, label: '⚖️ Соглашение' },
+            { id: 'terms' as const, label: 'Пользовательское Соглашение' },
             { id: 'cookies' as const, label: 'Cookies & Хранилище' },
             { id: 'age' as const, label: 'Рейтинг 12+ (436-ФЗ)' },
           ].map((tabItem) => (

@@ -1,3 +1,4 @@
+import { TelegramGlyph, VkGlyph, ShieldGlyph } from './PortalGlyphs';
 /**
  * PORTAL FOOTER (Подвал Портала & Юридический Блок 152-ФЗ / 436-ФЗ)
  * Правовые документы, возрастная маркировка 12+, ссылки на сообщества
@@ -182,22 +183,9 @@ export const PortalFooter: React.FC<PortalFooterProps> = ({ onLaunchGame, onOpen
                   fontSize: '13px',
                 }}
               >
-                <span>️</span> Telegram Бот & Чат
+                <TelegramGlyph size={16} color="#38bdf8" /> Telegram Бот & Чат
               </a>
-              <a
-                href="https://vk.com"
-                target="_blank"
-                rel="noreferrer"
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  color: '#3b82f6',
-                  textDecoration: 'none',
-                  fontSize: '13px',
-                }}
-              >
-                 Сообщество ВКонтакте
+              <a href="https://vk.com" target="_blank" rel="noreferrer" style={{ display: "flex", alignItems: "center", gap: "8px", color: "#3b82f6", textDecoration: "none", fontSize: "13px" }}><VkGlyph size={16} color="#3b82f6" /> Сообщество ВКонтакте
               </a>
               <button
                 onClick={onLaunchGame}

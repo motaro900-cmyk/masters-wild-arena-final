@@ -133,7 +133,7 @@ export const PortalCabinet: React.FC<PortalCabinetProps> = ({
           alert('✓ Сохранение (.mow) успешно верифицировано и восстановлено! Хеш SHA-256 совпал.');
         } else {
           proceduralAudio.playClick(2);
-          alert(`⚠️ ${result.error || 'Ошибка проверки целостности сохранения!'}`);
+          alert(`[Внимание] ${result.error || 'Ошибка проверки целостности сохранения!'}`);
         }
       } catch (err: any) {
         alert(`Ошибка чтения файла: ${err.message || err}`);

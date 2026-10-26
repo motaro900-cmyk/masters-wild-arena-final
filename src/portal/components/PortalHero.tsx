@@ -1,3 +1,4 @@
+import { SwordGlyph, ShieldGlyph, CrownGlyph, FrostGlyph, GoldCoinGlyph, CrystalGlyph } from './PortalGlyphs';
 /**
  * PORTAL HERO SECTION (Главный экран портала)
  * Аутентичный арт из игры (bg_main.webp + panda_frost.png), статус сервера,
@@ -122,7 +123,7 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
               marginBottom: '20px',
             }}
           >
-            <span style={{ fontSize: '14px' }}></span>
+            <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#22c55e', boxShadow: '0 0 8px #22c55e', display: 'inline-block' }} />
             <span
               style={{
                 color: '#FFE07D',
@@ -212,7 +213,7 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
                 gap: '10px',
               }}
             >
-              <span></span>
+              <SwordGlyph size={18} color="#130d04" />
               <span>ВСТУПИТЬ В БИТВУ</span>
             </motion.button>
 
@@ -239,7 +240,7 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
                 transition: 'all 0.2s',
               }}
             >
-              <span style={{ display: "inline-flex" }}>●</span>
+              <ShieldGlyph size={16} color="#FFE07D" />
               <span>Личный Кабинет</span>
             </button>
 
@@ -261,7 +262,7 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
                 transition: 'all 0.2s',
               }}
             >
-              <span style={{ display: "inline-flex" }}>●</span>
+              <CrownGlyph size={16} color="#e5e7eb" />
               <span>Бестиарий</span>
             </button>
           </div>
@@ -412,7 +413,7 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
                   Фэн Лун (Снежная Панда)
                 </div>
               </div>
-              <span style={{ fontSize: '24px' }}>❄️</span>
+              <FrostGlyph size={24} color="#60a5fa" glow />
             </div>
           </div>
         </div>
