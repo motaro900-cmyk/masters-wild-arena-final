@@ -17,13 +17,11 @@ import { ShinyGoldButton } from './hud/ShinyGoldButton';
 
 interface PortalHeroProps {
   onLaunchGame: () => void;
-  onOpenCabinet: () => void;
   onExploreBeasts: () => void;
 }
 
 export const PortalHero: React.FC<PortalHeroProps> = ({
   onLaunchGame,
-  onOpenCabinet,
   onExploreBeasts,
 }) => {
   const [profile, setProfile] = useState(() => portalSyncBridge.getProfile());
@@ -459,30 +457,16 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
                 </ShinyGoldButton>
 
                 {/* Secondary Actions */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px' }}>
-                  <button
-                    id="portal-hero-open-cabinet"
-                    onClick={onOpenCabinet}
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      color: '#FFE07D',
-                      fontSize: '15px',
-                      fontWeight: 700,
-                      cursor: 'pointer',
-                      textDecoration: 'underline',
-                    }}
-                  >
-                    Открыть полный Личный Кабинет →
-                  </button>
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '12px' }}>
                   <button
                     onClick={handleLogout}
                     style={{
                       background: 'none',
                       border: 'none',
                       color: '#9ca3af',
-                      fontSize: '15px',
+                      fontSize: '14px',
                       cursor: 'pointer',
+                      textDecoration: 'underline',
                     }}
                   >
                     Выйти из аккаунта

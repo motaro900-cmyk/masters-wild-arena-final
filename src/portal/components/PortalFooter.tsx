@@ -1,12 +1,7 @@
-import { SwordGlyph, TelegramGlyph, VkGlyph, ShieldGlyph } from './PortalGlyphs';
-import { TelegramGlyph, VkGlyph, ShieldGlyph } from './PortalGlyphs';
-/**
- * PORTAL FOOTER (Подвал Портала & Юридический Блок 152-ФЗ / 436-ФЗ)
- * Правовые документы, возрастная маркировка 12+, ссылки на сообщества
- * и телеметрия игрового сервера.
- */
 import React from 'react';
+import { SwordGlyph, TelegramGlyph, VkGlyph } from './PortalGlyphs';
 import { proceduralAudio } from '../../utils/ProceduralAudio';
+import { SERVER_NAME, SERVER_ONLINE_STRING } from '../portalConstants';
 
 interface PortalFooterProps {
   onLaunchGame: () => void;
@@ -28,21 +23,21 @@ export const PortalFooter: React.FC<PortalFooterProps> = ({ onLaunchGame, onOpen
       style={{
         position: 'relative',
         backgroundColor: '#040306',
-        borderTop: '1px solid rgba(200, 168, 112, 0.2)',
+        borderTop: '1px solid rgba(212, 175, 55, 0.25)',
         color: '#9c8e7e',
         padding: '60px 24px 30px',
         fontSize: '13px',
         lineHeight: 1.6,
       }}
     >
-      <div style={{ maxWidth: '1240px', margin: '0 auto' }}>
+      <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
         {/* Top Footer Grid */}
         <div
           style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
             gap: '40px',
-            marginBottom: '50px',
+            marginBottom: '40px',
           }}
         >
           {/* Col 1: Studio & Game Brand */}
@@ -50,10 +45,10 @@ export const PortalFooter: React.FC<PortalFooterProps> = ({ onLaunchGame, onOpen
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
               <div
                 style={{
-                  width: '32px',
-                  height: '32px',
+                  width: '34px',
+                  height: '34px',
                   borderRadius: '8px',
-                  background: 'linear-gradient(135deg, #d4af37 0%, #aa8022 100%)',
+                  background: 'linear-gradient(135deg, #FFE07D 0%, #d4af37 100%)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -67,7 +62,7 @@ export const PortalFooter: React.FC<PortalFooterProps> = ({ onLaunchGame, onOpen
               <span
                 style={{
                   fontFamily: "'Philosopher', serif",
-                  fontSize: '18px',
+                  fontSize: '20px',
                   fontWeight: 700,
                   color: '#FFE07D',
                 }}
@@ -75,26 +70,25 @@ export const PortalFooter: React.FC<PortalFooterProps> = ({ onLaunchGame, onOpen
                 MASTERS OF THE WILD
               </span>
             </div>
-            <p style={{ margin: '0 0 16px 0', color: '#8c7e6f' }}>
-              Полноценная браузерная AAA-RPG нового поколения. Кроссплатформенная боевая вселенная,
-              где каждый зверь обладает душой и силой древних предков.
+            <p style={{ margin: '0 0 16px 0', color: '#c5b8a5', fontSize: '13px' }}>
+              Официальный портал браузерной арены Masters of the Wild. Сражения чемпионов, дуэли и прокачка навыков.
             </p>
             <div
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '8px',
-                padding: '4px 12px',
+                padding: '5px 12px',
                 borderRadius: '6px',
-                background: 'rgba(16, 185, 129, 0.1)',
-                border: '1px solid rgba(16, 185, 129, 0.3)',
-                color: '#10b981',
-                fontSize: '11px',
-                fontWeight: 600,
+                background: 'rgba(34, 197, 94, 0.12)',
+                border: '1px solid rgba(34, 197, 94, 0.35)',
+                color: '#4ade80',
+                fontSize: '12px',
+                fontWeight: 700,
               }}
             >
-              <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#10b981' }} />
-              Сервер S1: Wild Lands (Онлайн 1,482)
+              <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#22c55e' }} />
+              Сервер {SERVER_NAME} (Онлайн {SERVER_ONLINE_STRING})
             </div>
           </div>
 
@@ -103,14 +97,15 @@ export const PortalFooter: React.FC<PortalFooterProps> = ({ onLaunchGame, onOpen
             <h4
               style={{
                 margin: '0 0 16px 0',
-                fontSize: '13px',
+                fontSize: '14px',
                 textTransform: 'uppercase',
-                letterSpacing: '1.5px',
-                color: '#d4af37',
+                letterSpacing: '1px',
+                color: '#FFE07D',
                 fontWeight: 700,
+                fontFamily: "'Philosopher', serif",
               }}
             >
-              Разделы Портала
+              Разделы
             </h4>
             <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '8px' }}>
               <li>
@@ -118,7 +113,7 @@ export const PortalFooter: React.FC<PortalFooterProps> = ({ onLaunchGame, onOpen
                   onClick={() => scrollTo('hero')}
                   style={{ background: 'none', border: 'none', color: '#c4b5a2', cursor: 'pointer', padding: 0, fontSize: '13px' }}
                 >
-                  Главная & Промокод
+                  Главная
                 </button>
               </li>
               <li>
@@ -126,7 +121,7 @@ export const PortalFooter: React.FC<PortalFooterProps> = ({ onLaunchGame, onOpen
                   onClick={() => scrollTo('beasts')}
                   style={{ background: 'none', border: 'none', color: '#c4b5a2', cursor: 'pointer', padding: 0, fontSize: '13px' }}
                 >
-                  Интерактивный Бестиарий
+                  Звери и Чемпионы
                 </button>
               </li>
               <li>
@@ -134,7 +129,7 @@ export const PortalFooter: React.FC<PortalFooterProps> = ({ onLaunchGame, onOpen
                   onClick={() => scrollTo('music')}
                   style={{ background: 'none', border: 'none', color: '#c4b5a2', cursor: 'pointer', padding: 0, fontSize: '13px' }}
                 >
-                  Святилище Звука (OST)
+                  Саундтреки (OST)
                 </button>
               </li>
               <li>
@@ -142,7 +137,7 @@ export const PortalFooter: React.FC<PortalFooterProps> = ({ onLaunchGame, onOpen
                   onClick={() => scrollTo('rewards')}
                   style={{ background: 'none', border: 'none', color: '#c4b5a2', cursor: 'pointer', padding: 0, fontSize: '13px' }}
                 >
-                  Благословение Леса (Награды)
+                  Награды
                 </button>
               </li>
               <li>
@@ -150,7 +145,7 @@ export const PortalFooter: React.FC<PortalFooterProps> = ({ onLaunchGame, onOpen
                   onClick={() => scrollTo('leaderboard')}
                   style={{ background: 'none', border: 'none', color: '#c4b5a2', cursor: 'pointer', padding: 0, fontSize: '13px' }}
                 >
-                  Чертоги Славы (PvP)
+                  Зал Славы
                 </button>
               </li>
             </ul>
@@ -161,14 +156,15 @@ export const PortalFooter: React.FC<PortalFooterProps> = ({ onLaunchGame, onOpen
             <h4
               style={{
                 margin: '0 0 16px 0',
-                fontSize: '13px',
+                fontSize: '14px',
                 textTransform: 'uppercase',
-                letterSpacing: '1.5px',
-                color: '#d4af37',
+                letterSpacing: '1px',
+                color: '#FFE07D',
                 fontWeight: 700,
+                fontFamily: "'Philosopher', serif",
               }}
             >
-              Сообщество & Вход
+              Сообщество
             </h4>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               <a
@@ -184,27 +180,41 @@ export const PortalFooter: React.FC<PortalFooterProps> = ({ onLaunchGame, onOpen
                   fontSize: '13px',
                 }}
               >
-                <TelegramGlyph size={16} color="#38bdf8" /> Telegram Бот & Чат
+                <TelegramGlyph size={16} color="#38bdf8" /> Telegram Бот
               </a>
-              <a href="https://vk.com" target="_blank" rel="noreferrer" style={{ display: "flex", alignItems: "center", gap: "8px", color: "#3b82f6", textDecoration: "none", fontSize: "13px" }}><VkGlyph size={16} color="#3b82f6" /> Сообщество ВКонтакте
+              <a
+                href="https://vk.com"
+                target="_blank"
+                rel="noreferrer"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  color: '#3b82f6',
+                  textDecoration: 'none',
+                  fontSize: '13px',
+                }}
+              >
+                <VkGlyph size={16} color="#3b82f6" /> Сообщество ВКонтакте
               </a>
               <button
                 onClick={onLaunchGame}
                 style={{
                   marginTop: '8px',
-                  padding: '10px 18px',
-                  borderRadius: '8px',
-                  background: 'linear-gradient(135deg, #d4af37 0%, #aa8022 100%)',
+                  padding: '12px 20px',
+                  borderRadius: '10px',
+                  background: 'linear-gradient(135deg, #FFE07D 0%, #d4af37 100%)',
                   color: '#120d04',
                   border: 'none',
-                  fontSize: '12px',
-                  fontWeight: 800,
+                  fontSize: '13px',
+                  fontWeight: 900,
                   textTransform: 'uppercase',
-                  letterSpacing: '1px',
+                  letterSpacing: '0.8px',
                   cursor: 'pointer',
+                  fontFamily: "'Philosopher', serif",
                 }}
               >
-                 Запустить Игру Сейчас
+                Запустить Игру
               </button>
             </div>
           </div>
@@ -214,11 +224,12 @@ export const PortalFooter: React.FC<PortalFooterProps> = ({ onLaunchGame, onOpen
             <h4
               style={{
                 margin: '0 0 16px 0',
-                fontSize: '13px',
+                fontSize: '14px',
                 textTransform: 'uppercase',
-                letterSpacing: '1.5px',
-                color: '#d4af37',
+                letterSpacing: '1px',
+                color: '#FFE07D',
                 fontWeight: 700,
+                fontFamily: "'Philosopher', serif",
               }}
             >
               Правовая Информация
@@ -242,11 +253,11 @@ export const PortalFooter: React.FC<PortalFooterProps> = ({ onLaunchGame, onOpen
               >
                 Использование файлов cookie
               </button>
-              <div style={{ marginTop: '10px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <div
                   style={{
-                    width: '32px',
-                    height: '32px',
+                    width: '30px',
+                    height: '30px',
                     borderRadius: '50%',
                     border: '1.5px solid #d4af37',
                     display: 'flex',
@@ -263,7 +274,7 @@ export const PortalFooter: React.FC<PortalFooterProps> = ({ onLaunchGame, onOpen
                   onClick={() => onOpenLegal?.('age')}
                   style={{ background: 'none', border: 'none', padding: 0, fontSize: '11px', color: '#73685c', cursor: 'pointer', textAlign: 'left' }}
                 >
-                  Знак информационной продукции (ФЗ № 436-ФЗ)
+                  Возрастная классификация (436-ФЗ)
                 </button>
               </div>
             </div>
@@ -273,23 +284,21 @@ export const PortalFooter: React.FC<PortalFooterProps> = ({ onLaunchGame, onOpen
         {/* Bottom Bar */}
         <div
           style={{
-            paddingTop: '24px',
-            borderTop: '1px solid rgba(255, 255, 255, 0.06)',
+            paddingTop: '20px',
+            borderTop: '1px solid rgba(255, 255, 255, 0.08)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
             flexWrap: 'wrap',
-            gap: '14px',
+            gap: '12px',
             fontSize: '12px',
-            color: '#6b6053',
+            color: '#73685c',
           }}
         >
           <div>
-            Wild Games Studio © 2026. Все товарные знаки и персонажи являются собственностью студии.
+            Masters of the Wild © 2026. Все права защищены.
           </div>
-          <div style={{ display: 'flex', gap: '16px' }}>
-            <span>Версия портала: v1.2.4</span>
-            <span>•</span>
+          <div style={{ display: 'flex', gap: '14px' }}>
             <span>WebGL 2.0 / PixiJS v8 Engine</span>
           </div>
         </div>

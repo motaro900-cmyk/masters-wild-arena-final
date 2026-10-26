@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { PortalHeader } from './components/PortalHeader';
 import { PortalHero } from './components/PortalHero';
 import { PortalBeastCodex } from './components/PortalBeastCodex';
@@ -6,12 +6,9 @@ import { PortalNews } from './components/PortalNews';
 import { PortalOSTPlayer } from './components/PortalOSTPlayer';
 import { PortalDailyCheckIn } from './components/PortalDailyCheckIn';
 import { PortalHallOfFame } from './components/PortalHallOfFame';
-import { PortalCabinet } from './components/PortalCabinet';
 import { PortalFooter } from './components/PortalFooter';
 import { PortalLegalModal } from './components/PortalLegalModal';
 import { PortalParticleCanvas } from './components/PortalParticleCanvas';
-import { PortalChatDock } from './components/PortalChatDock';
-import { PortalWelcomeModal } from './components/PortalWelcomeModal';
 
 interface PortalPageProps {
     onLaunchGame: () => void;
@@ -30,14 +27,7 @@ export const PortalPage: React.FC<PortalPageProps> = ({
     onInstallPwa,
     isGameActive = false,
 }) => {
-    const [isCabinetOpen, setIsCabinetOpen] = useState(false);
-    const [isWelcomeOpen, setIsWelcomeOpen] = useState(false);
     const [legalTab, setLegalTab] = useState<'privacy' | 'terms' | 'cookies' | 'age' | null>(null);
-
-    // Clean entrance standard: No intrusive auto-popup, hero is the authoritative master gateway
-    useEffect(() => {
-        // Welcome modal only opens if triggered manually
-    }, []);
 
     const handleExploreBeasts = () => {
         const el = document.getElementById('beasts');
@@ -58,75 +48,52 @@ export const PortalPage: React.FC<PortalPageProps> = ({
                 position: 'relative',
             }}
         >
-            {/* Live Interactive Ambient Background Canvas (60 FPS Blizzard/HoYoverse standard) */}
+            {/* Live Interactive Ambient Background Canvas (60 FPS standard) */}
             <PortalParticleCanvas />
 
             {/* 1. Sticky Navigation Header */}
             <PortalHeader
                 onLaunchGame={onLaunchGame}
-                onOpenCabinet={() => setIsCabinetOpen(true)}
                 installPrompt={installPrompt}
                 onInstallPwa={onInstallPwa}
             />
 
-            {/* 2. Hero Section */}
+            {/* 2. Hero Section: Promo & Direct Site Registration / Game Account */}
             <PortalHero
                 onLaunchGame={onLaunchGame}
-                onOpenCabinet={() => setIsCabinetOpen(true)}
                 onExploreBeasts={handleExploreBeasts}
             />
 
-            {/* 3. Interactive Beast Codex (Authentic Game Sprites & 3D Cards) */}
+            {/* 3. Interactive Beast Codex (Authentic Game Sprites & Skills) */}
             <PortalBeastCodex onSelectAndPlay={onSelectAndPlay} />
 
-            {/* 3.5. Armory & Items Codex (Weapons, Armor, Shields, Relics) */}
-
-            {/* 4. Chronicles & News Hub (Steam/Battle.net standard) */}
+            {/* 4. Chronicles & News Hub */}
             <PortalNews onLaunchGame={onLaunchGame} />
 
-            {/* 5. OST Sanctuary (8-Track Web Audio Player & Canvas FFT) */}
+            {/* 5. Soundtracks Player (Procedural Web Audio) */}
             <PortalOSTPlayer isGameActive={isGameActive} />
 
-            {/* 6. Daily Rewards Retention Hub (7-Day Calendar) */}
+            {/* 6. Daily Rewards Hub (7-Day Calendar) */}
             <PortalDailyCheckIn />
 
             {/* 7. Hall of Fame (Top 10 Leaderboard & P2P Duels) */}
             <PortalHallOfFame onChallengePlayer={onChallengePlayer} />
 
-            {/* 8. Footer (152-ФЗ, 436-ФЗ 12+, Studio Imprint) */}
+            {/* 8. Footer (152-ФЗ, 436-ФЗ 12+, Direct Play) */}
             <PortalFooter
                 onLaunchGame={onLaunchGame}
                 onOpenLegal={(tab) => setLegalTab(tab)}
             />
 
-            {/* 9. Personal Player Cabinet Modal */}
-            <PortalCabinet
-                isOpen={isCabinetOpen}
-                onClose={() => setIsCabinetOpen(false)}
-                onLaunchGame={(heroId) => {
-                    if (heroId) onSelectAndPlay(heroId);
-                    else onLaunchGame();
-                }}
-            />
-
-            {/* 10. Legal Compliance Modal (РФ) */}
+            {/* 9. Legal Compliance Modal (РФ 152-ФЗ) */}
             <PortalLegalModal
                 isOpen={legalTab !== null}
                 tab={legalTab}
                 onClose={() => setLegalTab(null)}
                 onSelectTab={(t) => setLegalTab(t)}
             />
-
-            {/* 11. Live Community Chat & Activity Dock (Fixed Bottom-Right) */}
-            <PortalChatDock />
-
-            {/* 12. Promo Welcome Gate Modal: Регистрация vs Гость */}
-            <PortalWelcomeModal
-                isOpen={isWelcomeOpen}
-                onClose={() => setIsWelcomeOpen(false)}
-                onLaunchGame={onLaunchGame}
-            />
         </div>
     );
 };
+
 export default PortalPage;
