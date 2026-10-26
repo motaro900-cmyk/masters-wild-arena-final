@@ -1,13 +1,21 @@
-import { SwordGlyph, ShieldGlyph, CrownGlyph, FrostGlyph, GoldCoinGlyph, CrystalGlyph } from './PortalGlyphs';
 /**
- * PORTAL HERO SECTION (Главный экран портала)
- * Аутентичный арт из игры (bg_main.webp + panda_frost.png), статус сервера,
- * быстрый запуск боя, промокод WILD2026 и вход в Личный Кабинет.
+ * PORTAL HERO SECTION (Главный экран портала — Blizzard/Riot Split-Hero Gate)
+ * Полномасштабный 100vh экран, монументальный персонаж без коробок,
+ * бинарная развилка «Играть гостем (1 клик) / Создать аккаунт (+500 золота +50 кристаллов)»
+ * и живой статус игрового сервера.
  */
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
+import {
+  SwordGlyph,
+  ShieldGlyph,
+  CrownGlyph,
+  FrostGlyph,
+  GoldCoinGlyph,
+  CrystalGlyph,
+} from './PortalGlyphs';
 import { proceduralAudio } from '../../utils/ProceduralAudio';
-import { useGameStore } from '../../store/useGameStore';
+import { portalSound } from '../PortalSoundService';
 
 interface PortalHeroProps {
   onLaunchGame: () => void;
@@ -20,26 +28,13 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
   onOpenCabinet,
   onExploreBeasts,
 }) => {
-  const [promoCode, setPromoCode] = useState('');
-  const [promoStatus, setPromoStatus] = useState<string | null>(null);
+  const [promoCopied, setPromoCopied] = useState(false);
 
-  const handleApplyPromo = () => {
-    const code = promoCode.trim().toUpperCase();
-    if (!code) return;
-
-    proceduralAudio.playClick(1.1);
-    const store: any = useGameStore.getState();
-
-    if (code === 'WILD2026' || code === 'START') {
-      store.addGold?.(500);
-      store.addCrystals?.(50);
-      proceduralAudio.playFanfare();
-      setPromoStatus('✓ Промокод активирован: +500 Золота и +50 Кристаллов!');
-    } else {
-      setPromoStatus('✕ Неверный промокод или срок действия истек');
-    }
-    setPromoCode('');
-    setTimeout(() => setPromoStatus(null), 4000);
+  const handleCopyPromo = () => {
+    portalSound.playReward();
+    navigator.clipboard?.writeText('WILD2026');
+    setPromoCopied(true);
+    setTimeout(() => setPromoCopied(false), 2500);
   };
 
   return (
@@ -57,7 +52,7 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
         backgroundColor: '#07050d',
       }}
     >
-      {/* Authentic Game Painted Forest Background */}
+      {/* Authentic Game Painted Forest Background with subtle parallax depth */}
       <div
         style={{
           position: 'absolute',
@@ -65,19 +60,19 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
           backgroundImage: 'url(/assets/images/backgrounds/bg_main.webp)',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
-          filter: 'brightness(0.35) contrast(1.15)',
-          transform: 'scale(1.04)',
+          filter: 'brightness(0.32) contrast(1.18)',
+          transform: 'scale(1.03)',
           zIndex: 0,
         }}
       />
 
-      {/* Gradient Overlays for Atmospheric Depth */}
+      {/* Atmospheric Depth Gradients */}
       <div
         style={{
           position: 'absolute',
           inset: 0,
           background:
-            'radial-gradient(circle at 50% 45%, rgba(212, 175, 55, 0.08) 0%, rgba(5, 4, 9, 0.8) 70%, #07050d 100%)',
+            'radial-gradient(circle at 45% 45%, rgba(212, 175, 55, 0.08) 0%, rgba(5, 4, 9, 0.85) 70%, #07050d 100%)',
           zIndex: 1,
         }}
       />
@@ -87,29 +82,29 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
           bottom: 0,
           left: 0,
           right: 0,
-          height: '140px',
+          height: '180px',
           background: 'linear-gradient(to top, #07050d 0%, transparent 100%)',
           zIndex: 1,
         }}
       />
 
-      {/* Main Content Layout (2 Columns: Hero Description & Authentic In-Game Beast Showcase) */}
+      {/* Main Content Layout (Split-Hero Gate) */}
       <div
         style={{
           position: 'relative',
           zIndex: 2,
-          maxWidth: '1240px',
+          maxWidth: '1280px',
           width: '100%',
-          padding: '0 24px',
+          padding: '0 28px',
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-          gap: '40px',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))',
+          gap: '50px',
           alignItems: 'center',
         }}
       >
-        {/* Left: Headline, Telemetry & CTA Deck */}
+        {/* Left Column: Monumental Headline & Binary Action Fork */}
         <div style={{ textAlign: 'left' }}>
-          {/* Live Server & Game Engine Status Tag */}
+          {/* Live Server Tag */}
           <div
             style={{
               display: 'inline-flex',
@@ -120,10 +115,19 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
               background: 'rgba(212, 175, 55, 0.12)',
               border: '1px solid rgba(212, 175, 55, 0.4)',
               boxShadow: '0 0 25px rgba(212, 175, 55, 0.2)',
-              marginBottom: '20px',
+              marginBottom: '22px',
             }}
           >
-            <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#22c55e', boxShadow: '0 0 8px #22c55e', display: 'inline-block' }} />
+            <span
+              style={{
+                width: '8px',
+                height: '8px',
+                borderRadius: '50%',
+                backgroundColor: '#22c55e',
+                boxShadow: '0 0 10px #22c55e',
+                display: 'inline-block',
+              }}
+            />
             <span
               style={{
                 color: '#FFE07D',
@@ -138,22 +142,25 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
             </span>
           </div>
 
-          {/* Epic Title */}
+          {/* Monumental Title */}
           <h1
             style={{
-              margin: '0 0 16px 0',
-              fontFamily: "'Philosopher', 'Cinzel', serif",
-              fontSize: 'clamp(34px, 5vw, 54px)',
+              margin: '0 0 18px 0',
+              fontFamily: "'Philosopher', serif",
+              fontSize: 'clamp(36px, 5.5vw, 62px)',
               fontWeight: 900,
-              lineHeight: 1.15,
-              color: '#fff',
-              textShadow: '0 4px 20px rgba(0,0,0,0.9), 0 0 35px rgba(212, 175, 55, 0.25)',
+              lineHeight: 1.12,
+              color: '#ffffff',
+              textShadow:
+                '0 4px 25px rgba(0,0,0,0.95), 0 0 40px rgba(212, 175, 55, 0.25)',
+              letterSpacing: '0.5px',
             }}
           >
             Вступи в Битву <br />
             <span
               style={{
-                background: 'linear-gradient(135deg, #FFE07D 0%, #d4af37 50%, #f59e0b 100%)',
+                background:
+                  'linear-gradient(135deg, #FFE07D 0%, #d4af37 50%, #f59e0b 100%)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
               }}
@@ -165,257 +172,281 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
           {/* Subtitle Lore */}
           <p
             style={{
-              margin: '0 0 28px 0',
+              margin: '0 0 32px 0',
               maxWidth: '560px',
-              fontSize: '15px',
+              fontSize: '15.5px',
               lineHeight: 1.7,
               color: '#c4b5a2',
               textShadow: '0 2px 8px rgba(0,0,0,0.8)',
             }}
           >
-            Полноценная браузерная AAA-RPG. Соберите собственный отряд мифических хищников,
-            экипируйте древние реликвии и сокрушайте соперников в PvP дуэлях прямо в браузере без скачивания.
+            Полноценная браузерная темная RPG мирового уровня. Собери отряд мифических хищников,
+            затачивай реликтовое оружие и сокрушай соперников в PvP дуэлях прямо в браузере без скачивания.
           </p>
 
-          {/* CTA Buttons Deck */}
+          {/* Binary Action Fork (Blizzard / Riot Conversion Standard) */}
           <div
             style={{
               display: 'flex',
+              flexDirection: 'column',
               gap: '14px',
-              flexWrap: 'wrap',
-              alignItems: 'center',
-              marginBottom: '35px',
+              maxWidth: '480px',
+              marginBottom: '26px',
             }}
           >
-            {/* Primary: Вступить в бой */}
+            {/* Primary Dominant CTA: Быстрый старт гостем */}
             <motion.button
-              whileHover={{ scale: 1.04 }}
-              whileTap={{ scale: 0.96 }}
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
               onClick={() => {
+                portalSound.playEquip();
                 proceduralAudio.playDuelHorn();
                 onLaunchGame();
               }}
               style={{
-                padding: '16px 36px',
-                borderRadius: '14px',
-                border: '1px solid #FFE07D',
-                background: 'linear-gradient(135deg, #d4af37 0%, #aa8022 100%)',
-                color: '#130d04',
-                fontSize: '15px',
+                width: '100%',
+                padding: '18px 30px',
+                borderRadius: '16px',
+                border: '1.5px solid #FFE07D',
+                background:
+                  'linear-gradient(135deg, #d4af37 0%, #aa8022 100%)',
+                color: '#120d04',
+                fontSize: '16px',
                 fontWeight: 900,
                 fontFamily: "'Philosopher', serif",
-                letterSpacing: '1px',
+                letterSpacing: '1.2px',
                 textTransform: 'uppercase',
                 cursor: 'pointer',
-                boxShadow: '0 8px 30px rgba(212, 175, 55, 0.45)',
+                boxShadow:
+                  '0 8px 35px rgba(212, 175, 55, 0.5), inset 0 0 15px rgba(255, 255, 255, 0.3)',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '10px',
+                justifyContent: 'center',
+                gap: '12px',
               }}
             >
-              <SwordGlyph size={18} color="#130d04" />
-              <span>ВСТУПИТЬ В БИТВУ</span>
+              <SwordGlyph size={22} color="#120d04" />
+              <span>ИГРАТЬ ГОСТЕМ (В 1 КЛИК)</span>
             </motion.button>
 
-            {/* Secondary: Личный Кабинет */}
-            <button
+            {/* Secondary CTA: Создать аккаунт с бонусом */}
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
               onClick={() => {
-                proceduralAudio.playClick(1.0);
+                portalSound.playClick(1.0);
                 onOpenCabinet();
               }}
               style={{
-                padding: '16px 26px',
+                width: '100%',
+                padding: '15px 24px',
                 borderRadius: '14px',
                 border: '1.5px solid rgba(212, 175, 55, 0.45)',
-                background: 'rgba(25, 20, 32, 0.85)',
+                background:
+                  'linear-gradient(135deg, rgba(28, 21, 36, 0.9) 0%, rgba(14, 10, 18, 0.95) 100%)',
                 color: '#FFE07D',
                 fontSize: '14px',
-                fontWeight: 700,
+                fontWeight: 800,
                 fontFamily: "'Philosopher', serif",
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '8px',
-                boxShadow: '0 4px 15px rgba(0,0,0,0.6)',
+                justifyContent: 'center',
+                gap: '10px',
+                boxShadow: '0 6px 20px rgba(0,0,0,0.7)',
                 transition: 'all 0.2s',
               }}
             >
-              <ShieldGlyph size={16} color="#FFE07D" />
-              <span>Личный Кабинет</span>
-            </button>
+              <ShieldGlyph size={18} color="#FFE07D" />
+              <span>СОЗДАТЬ АККАУНТ (+500 ЗОЛОТА +50 КРИСТАЛЛОВ)</span>
+            </motion.button>
+          </div>
 
-            {/* Secondary: Бестиарий */}
+          {/* Tertiary Row: Бестиарий Link + Promo Code Pill */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '18px',
+              flexWrap: 'wrap',
+            }}
+          >
             <button
               onClick={onExploreBeasts}
               style={{
-                padding: '16px 20px',
-                borderRadius: '14px',
-                border: '1px solid rgba(255, 255, 255, 0.12)',
-                background: 'rgba(255, 255, 255, 0.04)',
-                color: '#e5e7eb',
-                fontSize: '14px',
-                fontWeight: 600,
+                background: 'none',
+                border: 'none',
+                color: '#d4af37',
+                fontSize: '13px',
+                fontWeight: 700,
+                fontFamily: "'Philosopher', serif",
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '6px',
+                textDecoration: 'underline',
+              }}
+            >
+              <CrownGlyph size={15} color="#d4af37" />
+              <span>Изучить Бестиарий и Навыки героев</span>
+            </button>
+
+            {/* Promo Code Copy Pill */}
+            <div
+              onClick={handleCopyPromo}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '6px 14px',
+                borderRadius: '20px',
+                backgroundColor: 'rgba(0, 0, 0, 0.55)',
+                border: '1px solid rgba(212, 175, 55, 0.3)',
+                fontSize: '11px',
+                color: '#e5e7eb',
+                cursor: 'pointer',
                 transition: 'all 0.2s',
               }}
+              title="Нажми, чтобы скопировать промокод"
             >
-              <CrownGlyph size={16} color="#e5e7eb" />
-              <span>Бестиарий</span>
-            </button>
-          </div>
-
-          {/* Promo Code Activator Card */}
-          <div
-            style={{
-              maxWidth: '460px',
-              padding: '16px 20px',
-              borderRadius: '16px',
-              background: 'rgba(18, 14, 24, 0.85)',
-              border: '1.5px solid rgba(212, 175, 55, 0.3)',
-              boxShadow: '0 10px 30px rgba(0,0,0,0.6)',
-            }}
-          >
-            <div
-              style={{
-                fontSize: '11px',
-                fontWeight: 700,
-                color: '#d4af37',
-                textTransform: 'uppercase',
-                letterSpacing: '1px',
-                marginBottom: '8px',
-              }}
-            >
-              Стартовый Набор Новичка (Промокод: WILD2026)
+              <GoldCoinGlyph size={14} color="#f59e0b" />
+              <span>
+                Промокод:{' '}
+                <strong style={{ color: '#FFE07D', letterSpacing: '0.5px' }}>
+                  WILD2026
+                </strong>
+              </span>
+              <span style={{ fontSize: '10px', color: '#4ade80', marginLeft: '2px' }}>
+                {promoCopied ? '✓ Скопирован!' : '(нажми)'}
+              </span>
             </div>
-            <div style={{ display: 'flex', gap: '8px' }}>
-              <input
-                type="text"
-                placeholder="Введи WILD2026"
-                value={promoCode}
-                onChange={(e) => setPromoCode(e.target.value)}
-                style={{
-                  flex: 1,
-                  padding: '10px 14px',
-                  borderRadius: '10px',
-                  background: '#09070e',
-                  border: '1px solid rgba(212, 175, 55, 0.35)',
-                  color: '#fff',
-                  fontSize: '13px',
-                  fontWeight: 700,
-                  letterSpacing: '1px',
-                  outline: 'none',
-                }}
-              />
-              <button
-                onClick={handleApplyPromo}
-                style={{
-                  padding: '10px 18px',
-                  borderRadius: '10px',
-                  background: 'linear-gradient(135deg, #d4af37 0%, #aa8022 100%)',
-                  border: 'none',
-                  color: '#120d04',
-                  fontWeight: 800,
-                  fontSize: '12px',
-                  textTransform: 'uppercase',
-                  cursor: 'pointer',
-                }}
-              >
-                Активировать
-              </button>
-            </div>
-            {promoStatus && (
-              <div
-                style={{
-                  marginTop: '8px',
-                  fontSize: '12px',
-                  color: promoStatus.startsWith('✓') ? '#4ade80' : '#ef4444',
-                  fontWeight: 600,
-                }}
-              >
-                {promoStatus}
-              </div>
-            )}
           </div>
         </div>
 
-        {/* Right: Authentic In-Game Character Showcase (Transparent Frost Panda & Runic Frame) */}
-        <div style={{ display: 'flex', justifyContent: 'center', position: 'relative' }}>
+        {/* Right Column: Monumental Character Presentation (Blizzard/Riot Scale) */}
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            position: 'relative',
+          }}
+        >
+          {/* Ambient Elemental Ice/Qi Aura */}
           <div
             style={{
+              position: 'absolute',
+              width: '420px',
+              height: '420px',
+              borderRadius: '50%',
+              background:
+                'radial-gradient(circle, rgba(96, 165, 250, 0.25) 0%, rgba(56, 189, 248, 0.1) 40%, transparent 70%)',
+              filter: 'blur(50px)',
+              pointerEvents: 'none',
+              zIndex: 1,
+            }}
+          />
+
+          {/* Golden Runic Halo behind character */}
+          <div
+            style={{
+              position: 'absolute',
+              width: '380px',
+              height: '380px',
+              borderRadius: '50%',
+              border: '1.5px dashed rgba(212, 175, 55, 0.25)',
+              boxShadow: '0 0 35px rgba(212, 175, 55, 0.1)',
+              pointerEvents: 'none',
+              zIndex: 1,
+            }}
+          />
+
+          {/* Full-Height Character Artwork (Breaks free of boxes!) */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: 'easeOut' }}
+            style={{
               position: 'relative',
-              width: '100%',
-              maxWidth: '440px',
-              height: '500px',
-              borderRadius: '24px',
-              background: 'radial-gradient(circle at 50% 60%, rgba(96, 165, 250, 0.22) 0%, rgba(10, 8, 16, 0.95) 75%)',
-              border: '2px solid rgba(212, 175, 55, 0.45)',
-              boxShadow: '0 25px 70px rgba(0,0,0,0.9), 0 0 40px rgba(96, 165, 250, 0.2)',
+              zIndex: 2,
               display: 'flex',
+              flexDirection: 'column',
               alignItems: 'center',
-              justifyContent: 'center',
-              overflow: 'hidden',
             }}
           >
-            {/* Background City/Arena Ambient Silhouette */}
-            <img
-              src="/assets/images/backgrounds/bg_city_hub.webp"
-              alt="City Hub"
-              style={{
-                position: 'absolute',
-                inset: 0,
-                width: '100%',
-                height: '100%',
-                objectFit: 'cover',
-                opacity: 0.28,
-                filter: 'blur(3px)',
-              }}
-            />
-
-            {/* Real Transparent Character Sprite */}
             <img
               src="/assets/characters/panda/panda_frost.png"
               alt="Фэн Лун (Снежная Панда)"
               style={{
-                position: 'relative',
-                maxHeight: '88%',
-                maxWidth: '88%',
+                width: '100%',
+                maxWidth: '480px',
+                height: 'auto',
+                maxHeight: '68vh',
                 objectFit: 'contain',
-                filter: 'drop-shadow(0 20px 30px rgba(0,0,0,0.95)) drop-shadow(0 0 20px rgba(96, 165, 250, 0.4))',
-                zIndex: 2,
+                filter:
+                  'drop-shadow(0 25px 45px rgba(0,0,0,0.98)) drop-shadow(0 0 30px rgba(96, 165, 250, 0.35))',
+                maskImage:
+                  'linear-gradient(to bottom, black 82%, transparent 100%)',
+                WebkitMaskImage:
+                  'linear-gradient(to bottom, black 82%, transparent 100%)',
               }}
             />
 
-            {/* Bottom Hero Tag */}
+            {/* Floating Hero Nameplate Tag */}
             <div
               style={{
-                position: 'absolute',
-                bottom: '18px',
-                left: '20px',
-                right: '20px',
-                padding: '12px 18px',
-                borderRadius: '12px',
-                background: 'rgba(8, 6, 12, 0.88)',
-                border: '1px solid rgba(212, 175, 55, 0.35)',
+                marginTop: '-24px',
+                padding: '12px 22px',
+                borderRadius: '16px',
+                background: 'rgba(10, 8, 16, 0.92)',
+                border: '1.5px solid rgba(212, 175, 55, 0.45)',
+                boxShadow:
+                  '0 12px 30px rgba(0, 0, 0, 0.8), 0 0 20px rgba(96, 165, 250, 0.2)',
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'space-between',
+                gap: '14px',
                 zIndex: 3,
               }}
             >
+              <div
+                style={{
+                  width: '36px',
+                  height: '36px',
+                  borderRadius: '10px',
+                  backgroundColor: 'rgba(96, 165, 250, 0.15)',
+                  border: '1px solid rgba(96, 165, 250, 0.4)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <FrostGlyph size={20} color="#60a5fa" glow />
+              </div>
               <div>
-                <div style={{ fontSize: '11px', color: '#60a5fa', fontWeight: 700, textTransform: 'uppercase' }}>
-                  Холод & Лед • Танк
+                <div
+                  style={{
+                    fontSize: '10px',
+                    color: '#60a5fa',
+                    fontWeight: 800,
+                    textTransform: 'uppercase',
+                    letterSpacing: '1px',
+                  }}
+                >
+                  Холод & Лед • Страж Окраин
                 </div>
-                <div style={{ fontSize: '16px', fontWeight: 800, color: '#FFE07D', fontFamily: "'Philosopher', serif" }}>
+                <div
+                  style={{
+                    fontSize: '16px',
+                    fontWeight: 800,
+                    color: '#FFE07D',
+                    fontFamily: "'Philosopher', serif",
+                  }}
+                >
                   Фэн Лун (Снежная Панда)
                 </div>
               </div>
-              <FrostGlyph size={24} color="#60a5fa" glow />
             </div>
-          </div>
+          </motion.div>
         </div>
       </div>
     </section>

@@ -107,7 +107,8 @@ export const PortalWelcomeModal: React.FC<PortalWelcomeModalProps> = ({
             borderRadius: '24px',
             boxShadow:
               '0 30px 90px rgba(0, 0, 0, 0.95), 0 0 50px rgba(212, 175, 55, 0.25)',
-            overflow: 'hidden',
+            maxHeight: '92vh',
+            overflowY: 'auto',
             display: 'flex',
             flexDirection: 'column',
           }}
@@ -171,7 +172,7 @@ export const PortalWelcomeModal: React.FC<PortalWelcomeModalProps> = ({
                 fontSize: 'clamp(24px, 3.5vw, 36px)',
                 fontWeight: 900,
                 color: '#f5edd8',
-                fontFamily: 'Cinzel, Philosopher, serif',
+                fontFamily: "'Philosopher', serif",
                 letterSpacing: '1px',
                 textShadow: '0 0 30px rgba(212, 175, 55, 0.3)',
               }}
@@ -257,7 +258,7 @@ export const PortalWelcomeModal: React.FC<PortalWelcomeModalProps> = ({
                         margin: 0,
                         fontSize: '20px',
                         color: '#f5edd8',
-                        fontFamily: 'Cinzel, serif',
+                        fontFamily: "'Philosopher', serif",
                       }}
                     >
                       Гостевой Доступ
@@ -382,7 +383,7 @@ export const PortalWelcomeModal: React.FC<PortalWelcomeModalProps> = ({
                         margin: 0,
                         fontSize: '20px',
                         color: '#f5edd8',
-                        fontFamily: 'Cinzel, serif',
+                        fontFamily: "'Philosopher', serif",
                       }}
                     >
                       Создать Аккаунт

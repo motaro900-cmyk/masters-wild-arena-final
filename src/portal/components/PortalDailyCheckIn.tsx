@@ -147,7 +147,7 @@ export const PortalDailyCheckIn: React.FC = () => {
               margin: '0 0 16px 0',
               fontSize: '44px',
               fontWeight: 900,
-              fontFamily: "'Cinzel', 'Philosopher', serif",
+              fontFamily: "'Philosopher', serif",
               color: '#f5edd8',
               letterSpacing: '2px',
               textShadow: '0 4px 20px rgba(0, 0, 0, 0.8)',

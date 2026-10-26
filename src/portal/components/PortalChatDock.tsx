@@ -266,7 +266,7 @@ export const PortalChatDock: React.FC = () => {
                       fontSize: '13px',
                       fontWeight: 800,
                       color: '#f5edd8',
-                      fontFamily: 'Cinzel, Philosopher, serif',
+                      fontFamily: "'Philosopher', serif",
                       letterSpacing: '0.5px',
                     }}
                   >

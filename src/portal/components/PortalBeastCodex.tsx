@@ -277,7 +277,7 @@ export const PortalBeastCodex: React.FC<PortalBeastCodexProps> = ({ onSelectAndP
               fontSize: 'clamp(28px, 4vw, 42px)',
               fontWeight: 900,
               color: '#f5edd8',
-              fontFamily: 'Cinzel, Philosopher, serif',
+              fontFamily: "'Philosopher', serif",
               letterSpacing: '1px',
             }}
           >
@@ -502,7 +502,7 @@ export const PortalBeastCodex: React.FC<PortalBeastCodexProps> = ({ onSelectAndP
                     fontSize: '24px',
                     fontWeight: 900,
                     color: '#f5edd8',
-                    fontFamily: 'Cinzel, Philosopher, serif',
+                    fontFamily: "'Philosopher', serif",
                     lineHeight: 1.2,
                     marginTop: '4px',
                   }}

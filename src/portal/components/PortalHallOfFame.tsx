@@ -203,7 +203,7 @@ export const PortalHallOfFame: React.FC<PortalHallOfFameProps> = ({ onChallengeP
           <h2
             style={{
               margin: '0 0 14px 0',
-              fontFamily: "'Philosopher', 'Cinzel', serif",
+              fontFamily: "'Philosopher', 'Philosopher', serif",
               fontSize: 'clamp(28px, 4vw, 42px)',
               color: '#f9f5ea',
               textShadow: '0 4px 14px rgba(0,0,0,0.8)',

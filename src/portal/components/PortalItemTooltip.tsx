@@ -192,7 +192,7 @@ export const PortalItemTooltip: React.FC<PortalItemTooltipProps> = ({ item, visi
               fontSize: '17px',
               fontWeight: 800,
               color: rarityColor,
-              fontFamily: 'Cinzel, Philosopher, serif',
+              fontFamily: "'Philosopher', serif",
               letterSpacing: '0.5px',
               textShadow: `0 0 10px ${rarityColor}60`,
             }}

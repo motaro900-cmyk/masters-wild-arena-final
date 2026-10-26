@@ -219,7 +219,7 @@ export const PortalItemCodex: React.FC = () => {
               fontSize: 'clamp(28px, 4vw, 42px)',
               fontWeight: 900,
               color: '#f5edd8',
-              fontFamily: 'Cinzel, Philosopher, serif',
+              fontFamily: "'Philosopher', serif",
               letterSpacing: '1px',
             }}
           >
@@ -404,7 +404,7 @@ export const PortalItemCodex: React.FC = () => {
                         fontWeight: 800,
                         color: '#f5edd8',
                         lineHeight: 1.25,
-                        fontFamily: 'Cinzel, Philosopher, serif',
+                        fontFamily: "'Philosopher', serif",
                         minHeight: '36px',
                         display: 'flex',
                         alignItems: 'center',
@@ -499,7 +499,7 @@ export const PortalItemCodex: React.FC = () => {
                     fontSize: '22px',
                     fontWeight: 800,
                     color: '#f5edd8',
-                    fontFamily: 'Cinzel, Philosopher, serif',
+                    fontFamily: "'Philosopher', serif",
                   }}
                 >
                   {selectedItem.name}

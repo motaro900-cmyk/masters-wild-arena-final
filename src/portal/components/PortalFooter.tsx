@@ -1,3 +1,4 @@
+import { SwordGlyph, TelegramGlyph, VkGlyph, ShieldGlyph } from './PortalGlyphs';
 import { TelegramGlyph, VkGlyph, ShieldGlyph } from './PortalGlyphs';
 /**
  * PORTAL FOOTER (Подвал Портала & Юридический Блок 152-ФЗ / 436-ФЗ)
@@ -61,11 +62,11 @@ export const PortalFooter: React.FC<PortalFooterProps> = ({ onLaunchGame, onOpen
                   fontSize: '16px',
                 }}
               >
-                
+                <SwordGlyph size={18} color="#0d0903" />
               </div>
               <span
                 style={{
-                  fontFamily: "'Philosopher', 'Cinzel', serif",
+                  fontFamily: "'Philosopher', serif",
                   fontSize: '18px',
                   fontWeight: 700,
                   color: '#FFE07D',

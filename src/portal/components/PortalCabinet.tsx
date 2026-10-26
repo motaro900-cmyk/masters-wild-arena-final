@@ -225,7 +225,7 @@ export const PortalCabinet: React.FC<PortalCabinetProps> = ({
                   fontWeight: 800,
                   letterSpacing: '1px',
                   color: '#f5edd8',
-                  fontFamily: 'Cinzel, Georgia, serif',
+                  fontFamily: "'Philosopher', serif",
                 }}
               >
                 Личный Кабинет: {playerName}
