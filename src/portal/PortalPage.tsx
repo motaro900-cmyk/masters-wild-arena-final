@@ -35,18 +35,9 @@ export const PortalPage: React.FC<PortalPageProps> = ({
     const [isWelcomeOpen, setIsWelcomeOpen] = useState(false);
     const [legalTab, setLegalTab] = useState<'privacy' | 'terms' | 'cookies' | 'age' | null>(null);
 
-    // Auto-open Welcome Gate modal on first entry unless dismissed
+    // Clean entrance standard: No intrusive auto-popup, hero is the authoritative master gateway
     useEffect(() => {
-        try {
-            const dismissed = localStorage.getItem('mow_welcome_dismissed');
-            if (!dismissed) {
-                const timer = setTimeout(() => setIsWelcomeOpen(true), 500);
-                return () => clearTimeout(timer);
-            }
-        } catch {
-            // fallback if localStorage restricted
-            setIsWelcomeOpen(true);
-        }
+        // Welcome modal only opens if triggered manually
     }, []);
 
     const handleExploreBeasts = () => {
