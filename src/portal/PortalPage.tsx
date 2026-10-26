@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { PortalHeader } from './components/PortalHeader';
 import { PortalHero } from './components/PortalHero';
 import { PortalBeastCodex } from './components/PortalBeastCodex';
@@ -9,6 +9,7 @@ import { PortalHallOfFame } from './components/PortalHallOfFame';
 import { PortalFooter } from './components/PortalFooter';
 import { PortalLegalModal } from './components/PortalLegalModal';
 import { PortalParticleCanvas } from './components/PortalParticleCanvas';
+import { portalSyncBridge } from '../services/PortalSyncBridge';
 
 interface PortalPageProps {
     onLaunchGame: () => void;
@@ -28,6 +29,17 @@ export const PortalPage: React.FC<PortalPageProps> = ({
     isGameActive = false,
 }) => {
     const [legalTab, setLegalTab] = useState<'privacy' | 'terms' | 'cookies' | 'age' | null>(null);
+    const [profile, setProfile] = useState(() => portalSyncBridge.getProfile());
+
+    useEffect(() => {
+        const handleUpdate = () => setProfile(portalSyncBridge.getProfile());
+        window.addEventListener('storage', handleUpdate);
+        window.addEventListener('mow_portal_event_dispatch', handleUpdate);
+        return () => {
+            window.removeEventListener('storage', handleUpdate);
+            window.removeEventListener('mow_portal_event_dispatch', handleUpdate);
+        };
+    }, []);
 
     const handleExploreBeasts = () => {
         const el = document.getElementById('beasts');
@@ -54,6 +66,8 @@ export const PortalPage: React.FC<PortalPageProps> = ({
             {/* 1. Sticky Navigation Header */}
             <PortalHeader
                 onLaunchGame={onLaunchGame}
+                isLoggedIn={profile.isLoggedIn}
+                playerName={profile.playerName}
                 installPrompt={installPrompt}
                 onInstallPwa={onInstallPwa}
             />

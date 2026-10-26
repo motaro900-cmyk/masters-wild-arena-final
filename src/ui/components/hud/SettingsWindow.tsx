@@ -909,13 +909,47 @@ export const SettingsWindow: React.FC<SettingsWindowProps> = ({ onClose, onOpenA
                 </div>
             </div>
 
-            {/* НАПИСАТЬ В ПОДДЕРЖКУ */}
+            {/* ВЕРНУТЬСЯ НА ПОРТАЛ & НАПИСАТЬ В ПОДДЕРЖКУ */}
             <div
                 style={{
                     marginTop: '15px',
-                    textAlign: 'center',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '10px',
+                    alignItems: 'center',
                 }}
             >
+                <motion.button
+                    whileHover={{ scale: 1.02, boxShadow: '0 0 15px rgba(212,175,55,0.4)' }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => {
+                        const url = new URL(window.location.href);
+                        url.searchParams.delete('play');
+                        url.searchParams.delete('duel');
+                        window.history.pushState({}, '', url.pathname + (url.search ? url.search : ''));
+                        window.location.reload();
+                    }}
+                    style={{
+                        width: '100%',
+                        maxWidth: '320px',
+                        padding: '12px 24px',
+                        background: 'linear-gradient(135deg, rgba(212, 175, 55, 0.25) 0%, rgba(20, 15, 25, 0.9) 100%)',
+                        border: '1.5px solid rgba(212, 175, 55, 0.6)',
+                        borderRadius: '10px',
+                        color: '#FFE07D',
+                        fontWeight: 900,
+                        fontFamily: "'Philosopher', serif",
+                        fontSize: '14px',
+                        cursor: 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '8px',
+                        boxShadow: '0 4px 15px rgba(0,0,0,0.5)',
+                    }}
+                >
+                    🏛️ ВЕРНУТЬСЯ НА ПОРТАЛ
+                </motion.button>
                 <motion.button
                     whileHover={{ scale: 1.03, boxShadow: '0 0 15px rgba(240,192,64,0.3)' }}
                     whileTap={{ scale: 0.97 }}

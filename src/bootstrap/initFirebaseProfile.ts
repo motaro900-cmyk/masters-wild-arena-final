@@ -109,7 +109,7 @@ export const initFirebaseProfile = async (
                 console.log('👶 No local state found. Initializing new player offline.');
                 useGameStore.getState().resetStore();
                 const fallbackName1 =
-                    state.vkUser?.firstName || state.vkUser?.first_name || `Игрок_${userId.slice(-4)}`;
+                    (typeof window !== 'undefined' && localStorage.getItem('mow_player_name') && localStorage.getItem('mow_player_name') !== 'Дикий Мастер' && localStorage.getItem('mow_player_name') !== 'Мастер' ? localStorage.getItem('mow_player_name')! : (state.vkUser?.firstName || state.vkUser?.first_name || `Игрок_${userId.slice(-4)}`));
                 useGameStore.setState({
                     name: fallbackName1,
                     onboardingCompleted: false,
@@ -129,7 +129,7 @@ export const initFirebaseProfile = async (
         if (result.isNew) {
             console.log('👶 No remote profile found in Firestore. Resetting store for new player.');
             useGameStore.getState().resetStore();
-            const fallbackName2 = state.vkUser?.firstName || state.vkUser?.first_name || `Игрок_${userId.slice(-4)}`;
+            const fallbackName2 = (typeof window !== 'undefined' && localStorage.getItem('mow_player_name') && localStorage.getItem('mow_player_name') !== 'Дикий Мастер' && localStorage.getItem('mow_player_name') !== 'Мастер' ? localStorage.getItem('mow_player_name')! : (state.vkUser?.firstName || state.vkUser?.first_name || `Игрок_${userId.slice(-4)}`));
             useGameStore.setState({
                 name: fallbackName2,
                 onboardingCompleted: false,
@@ -249,7 +249,7 @@ export const initFirebaseProfile = async (
         } else {
             console.log('👶 No local state found. Initializing new player offline.');
             useGameStore.getState().resetStore();
-            const fallbackName3 = state.vkUser?.firstName || state.vkUser?.first_name || `Игрок_${userId.slice(-4)}`;
+            const fallbackName3 = (typeof window !== 'undefined' && localStorage.getItem('mow_player_name') && localStorage.getItem('mow_player_name') !== 'Дикий Мастер' && localStorage.getItem('mow_player_name') !== 'Мастер' ? localStorage.getItem('mow_player_name')! : (state.vkUser?.firstName || state.vkUser?.first_name || `Игрок_${userId.slice(-4)}`));
             useGameStore.setState({
                 name: fallbackName3,
                 onboardingCompleted: false,

@@ -1,18 +1,22 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { SwordGlyph, MenuGlyph, CloseGlyph } from './PortalGlyphs';
+import { SwordGlyph, MenuGlyph, CloseGlyph, ShieldGlyph } from './PortalGlyphs';
 import { proceduralAudio } from '../../utils/ProceduralAudio';
 import { portalSound } from '../PortalSoundService';
 import { SERVER_NAME, SERVER_ONLINE_STRING } from '../portalConstants';
 
 interface PortalHeaderProps {
   onLaunchGame: () => void;
+  isLoggedIn?: boolean;
+  playerName?: string;
   installPrompt?: any;
   onInstallPwa?: () => void;
 }
 
 export const PortalHeader: React.FC<PortalHeaderProps> = ({
   onLaunchGame,
+  isLoggedIn = false,
+  playerName = '',
   installPrompt,
   onInstallPwa,
 }) => {
@@ -88,7 +92,6 @@ export const PortalHeader: React.FC<PortalHeaderProps> = ({
           left: 0,
           right: 0,
           width: '100%',
-          maxWidth: '100vw',
           boxSizing: 'border-box',
           height: '72px',
           zIndex: 1000,
@@ -208,35 +211,63 @@ export const PortalHeader: React.FC<PortalHeaderProps> = ({
 
         {/* Right: Actions */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
-          {/* Quick Play / В БОЙ */}
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => {
-              proceduralAudio.playDuelHorn();
-              onLaunchGame();
-            }}
-            style={{
-              padding: '10px 22px',
-              borderRadius: '10px',
-              border: 'none',
-              background: 'linear-gradient(135deg, #FFE07D 0%, #d4af37 50%, #aa8022 100%)',
-              color: '#120d04',
-              fontSize: '14px',
-              fontWeight: 900,
-              fontFamily: "'Philosopher', serif",
-              letterSpacing: '1px',
-              cursor: 'pointer',
-              boxShadow: '0 4px 18px rgba(212, 175, 55, 0.45)',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              whiteSpace: 'nowrap',
-            }}
-          >
-            <SwordGlyph size={16} color="#120d04" />
-            <span>В БОЙ</span>
-          </motion.button>
+          {/* Main Action Button */}
+          {isLoggedIn ? (
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => {
+                proceduralAudio.playDuelHorn();
+                onLaunchGame();
+              }}
+              style={{
+                padding: '10px 22px',
+                borderRadius: '10px',
+                border: 'none',
+                background: 'linear-gradient(135deg, #FFE07D 0%, #d4af37 50%, #aa8022 100%)',
+                color: '#120d04',
+                fontSize: '14px',
+                fontWeight: 900,
+                fontFamily: "'Philosopher', serif",
+                letterSpacing: '1px',
+                cursor: 'pointer',
+                boxShadow: '0 4px 18px rgba(212, 175, 55, 0.45)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              <SwordGlyph size={16} color="#120d04" />
+              <span>ВОЙТИ В ИГРУ</span>
+            </motion.button>
+          ) : (
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => scrollTo('hero')}
+              style={{
+                padding: '10px 20px',
+                borderRadius: '10px',
+                border: '1.5px solid rgba(212, 175, 55, 0.6)',
+                background: 'rgba(212, 175, 55, 0.15)',
+                color: '#FFE07D',
+                fontSize: '14px',
+                fontWeight: 800,
+                fontFamily: "'Philosopher', serif",
+                letterSpacing: '0.8px',
+                cursor: 'pointer',
+                boxShadow: '0 4px 14px rgba(0, 0, 0, 0.4)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              <ShieldGlyph size={16} color="#FFE07D" />
+              <span>СОЗДАТЬ АККАУНТ</span>
+            </motion.button>
+          )}
 
           {/* Mobile Hamburger Toggle Button */}
           <button
@@ -364,33 +395,58 @@ export const PortalHeader: React.FC<PortalHeaderProps> = ({
                 ))}
               </div>
 
-              {/* Direct Play Button in Mobile Drawer */}
-              <button
-                onClick={() => {
-                  proceduralAudio.playDuelHorn();
-                  setMobileMenuOpen(false);
-                  onLaunchGame();
-                }}
-                style={{
-                  width: '100%',
-                  padding: '14px',
-                  borderRadius: '10px',
-                  border: 'none',
-                  background: 'linear-gradient(135deg, #FFE07D 0%, #d4af37 100%)',
-                  color: '#120d04',
-                  fontSize: '15px',
-                  fontWeight: 900,
-                  fontFamily: "'Philosopher', serif",
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '8px',
-                }}
-              >
-                <SwordGlyph size={18} color="#120d04" />
-                <span>ИГРАТЬ СЕЙЧАС</span>
-              </button>
+              {/* Action Button in Mobile Drawer */}
+              {isLoggedIn ? (
+                <button
+                  onClick={() => {
+                    proceduralAudio.playDuelHorn();
+                    setMobileMenuOpen(false);
+                    onLaunchGame();
+                  }}
+                  style={{
+                    width: '100%',
+                    padding: '14px',
+                    borderRadius: '10px',
+                    border: 'none',
+                    background: 'linear-gradient(135deg, #FFE07D 0%, #d4af37 100%)',
+                    color: '#120d04',
+                    fontSize: '15px',
+                    fontWeight: 900,
+                    fontFamily: "'Philosopher', serif",
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px',
+                  }}
+                >
+                  <SwordGlyph size={18} color="#120d04" />
+                  <span>ВОЙТИ В ИГРУ ({playerName || 'АККАУНТ'})</span>
+                </button>
+              ) : (
+                <button
+                  onClick={() => scrollTo('hero')}
+                  style={{
+                    width: '100%',
+                    padding: '14px',
+                    borderRadius: '10px',
+                    border: '1.5px solid rgba(212, 175, 55, 0.6)',
+                    background: 'rgba(212, 175, 55, 0.15)',
+                    color: '#FFE07D',
+                    fontSize: '15px',
+                    fontWeight: 900,
+                    fontFamily: "'Philosopher', serif",
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px',
+                  }}
+                >
+                  <ShieldGlyph size={18} color="#FFE07D" />
+                  <span>СОЗДАТЬ АККАУНТ</span>
+                </button>
+              )}
             </motion.div>
           </>
         )}

@@ -1077,8 +1077,10 @@ class BootController {
             } else {
                 console.log('[BootController] New player profile creation.');
                 useGameStore.getState().resetStore();
-                const fallbackName =
-                    this.vkUser?.firstName || this.vkUser?.first_name || `Игрок_${this.userId.slice(-4)}`;
+                const portalSavedName = typeof window !== 'undefined' ? localStorage.getItem('mow_player_name') : null;
+                const fallbackName = (portalSavedName && portalSavedName !== 'Дикий Мастер' && portalSavedName !== 'Мастер' && portalSavedName.trim())
+                    ? portalSavedName.trim()
+                    : (this.vkUser?.firstName || this.vkUser?.first_name || `Игрок_${this.userId.slice(-4)}`);
                 const { portalSyncBridge } = await import('../services/PortalSyncBridge');
                 useGameStore.setState({
                     name: fallbackName,
@@ -1119,8 +1121,10 @@ class BootController {
                     'Creating default new-player profile (Firestore unavailable or first launch).',
                 );
                 useGameStore.getState().resetStore();
-                const fallbackName =
-                    this.vkUser?.firstName || this.vkUser?.first_name || `Игрок_${this.userId.slice(-4)}`;
+                const portalSavedName = typeof window !== 'undefined' ? localStorage.getItem('mow_player_name') : null;
+                const fallbackName = (portalSavedName && portalSavedName !== 'Дикий Мастер' && portalSavedName !== 'Мастер' && portalSavedName.trim())
+                    ? portalSavedName.trim()
+                    : (this.vkUser?.firstName || this.vkUser?.first_name || `Игрок_${this.userId.slice(-4)}`);
                 useGameStore.setState({
                     name: fallbackName,
                     onboardingCompleted: false,
@@ -1205,8 +1209,11 @@ class BootController {
         }
 
         let name = state.name;
-        if (!name || name === 'Мастер' || name === '') {
-            name = vkUser?.firstName || vkUser?.first_name || `Игрок_${playerId.slice(-4)}`;
+        if (!name || name === 'Мастер' || name === 'Дикий Мастер' || name === '') {
+            const portalSavedName = typeof window !== 'undefined' ? localStorage.getItem('mow_player_name') : null;
+            name = (portalSavedName && portalSavedName !== 'Дикий Мастер' && portalSavedName !== 'Мастер' && portalSavedName.trim())
+                ? portalSavedName.trim()
+                : (vkUser?.firstName || vkUser?.first_name || `Игрок_${playerId.slice(-4)}`);
         }
 
         let avatar = state.avatar;

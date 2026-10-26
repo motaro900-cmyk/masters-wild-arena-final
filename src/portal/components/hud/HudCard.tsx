@@ -1,5 +1,4 @@
 import React from 'react';
-import { BorderBeam } from './BorderBeam';
 
 interface HudCardProps {
   children: React.ReactNode;
@@ -21,13 +20,15 @@ export const HudCard: React.FC<HudCardProps> = ({
         position: 'relative',
         backgroundColor: '#0c0916',
         backgroundImage:
-          'radial-gradient(circle at 50% 0%, rgba(212, 175, 55, 0.16) 0%, rgba(12, 9, 22, 0.98) 75%)',
-        border: '2px solid rgba(212, 175, 55, 0.55)',
+          'radial-gradient(circle at 50% 0%, rgba(212, 175, 55, 0.12) 0%, rgba(12, 9, 22, 0.98) 75%)',
+        border: active ? '2px solid rgba(212, 175, 55, 0.6)' : '1.5px solid rgba(212, 175, 55, 0.35)',
         borderRadius: '24px',
-        boxShadow:
-          '0 30px 90px rgba(0, 0, 0, 0.95), 0 0 45px rgba(212, 175, 55, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+        boxShadow: active
+          ? '0 30px 90px rgba(0, 0, 0, 0.95), 0 0 30px rgba(212, 175, 55, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
+          : '0 25px 70px rgba(0, 0, 0, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.08)',
         overflow: 'hidden',
         backdropFilter: 'blur(20px)',
+        transition: 'border-color 0.3s ease, box-shadow 0.3s ease',
         ...style,
       }}
     >
@@ -35,58 +36,55 @@ export const HudCard: React.FC<HudCardProps> = ({
       <div
         style={{
           position: 'absolute',
-          top: '8px',
-          left: '8px',
+          top: '10px',
+          left: '10px',
           width: '8px',
           height: '8px',
           borderRadius: '50%',
           backgroundColor: '#d4af37',
-          boxShadow: '0 0 6px #d4af37',
-          opacity: 0.7,
+          boxShadow: '0 0 8px #d4af37',
+          opacity: 0.8,
         }}
       />
       <div
         style={{
           position: 'absolute',
-          top: '8px',
-          right: '8px',
+          top: '10px',
+          right: '10px',
           width: '8px',
           height: '8px',
           borderRadius: '50%',
           backgroundColor: '#d4af37',
-          boxShadow: '0 0 6px #d4af37',
-          opacity: 0.7,
+          boxShadow: '0 0 8px #d4af37',
+          opacity: 0.8,
         }}
       />
       <div
         style={{
           position: 'absolute',
-          bottom: '8px',
-          left: '8px',
+          bottom: '10px',
+          left: '10px',
           width: '8px',
           height: '8px',
           borderRadius: '50%',
           backgroundColor: '#d4af37',
-          boxShadow: '0 0 6px #d4af37',
-          opacity: 0.7,
+          boxShadow: '0 0 8px #d4af37',
+          opacity: 0.8,
         }}
       />
       <div
         style={{
           position: 'absolute',
-          bottom: '8px',
-          right: '8px',
+          bottom: '10px',
+          right: '10px',
           width: '8px',
           height: '8px',
           borderRadius: '50%',
           backgroundColor: '#d4af37',
-          boxShadow: '0 0 6px #d4af37',
-          opacity: 0.7,
+          boxShadow: '0 0 8px #d4af37',
+          opacity: 0.8,
         }}
       />
-
-      {/* Active Laser Border Beam */}
-      {active && <BorderBeam colorFrom={beamColor} colorTo="#d4af37" duration={7} size={280} />}
 
       {/* Content */}
       <div style={{ position: 'relative', zIndex: 2 }}>{children}</div>
