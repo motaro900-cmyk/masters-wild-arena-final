@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import {
   SwordGlyph,
   ShieldGlyph,
@@ -11,6 +11,7 @@ import {
 import { proceduralAudio } from '../../utils/ProceduralAudio';
 import { portalSound } from '../PortalSoundService';
 import { portalSyncBridge } from '../../services/PortalSyncBridge';
+import { SERVER_ONLINE_STRING, SERVER_NAME } from '../portalConstants';
 
 interface PortalHeroProps {
   onLaunchGame: () => void;
@@ -23,18 +24,15 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
   onOpenCabinet,
   onExploreBeasts,
 }) => {
-  // Sync profile state
   const [profile, setProfile] = useState(() => portalSyncBridge.getProfile());
   const isLoggedIn = !!profile.isLoggedIn;
 
-  // Master Registration Form State
   const [authMode, setAuthMode] = useState<'register' | 'login'>('register');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [nickname, setNickname] = useState('');
   const [formMsg, setFormMsg] = useState<{ text: string; isError: boolean } | null>(null);
 
-  // Subscribe to portal sync events
   useEffect(() => {
     const handleSync = (e: any) => {
       setProfile(e.detail || portalSyncBridge.getProfile());
@@ -53,7 +51,6 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
     const masterNick = nickname.trim() || email.split('@')[0];
     portalSound.playFanfare();
 
-    // Commit master registration
     portalSyncBridge.commitMutation({
       playerName: masterNick,
       accountEmail: email.trim(),
@@ -67,7 +64,7 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
     localStorage.setItem('mow_master_nick', masterNick);
 
     setFormMsg({
-      text: authMode === 'register' ? '✓ Аккаунт создан! Бонусы начислены.' : '✓ С возвращением, ' + masterNick + '!',
+      text: authMode === 'register' ? '✓ Аккаунт успешно создан на сайте! Бонусы начислены.' : '✓ С возвращением, ' + masterNick + '!',
       isError: false,
     });
   };
@@ -98,33 +95,34 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        paddingTop: '85px',
-        paddingBottom: '50px',
+        paddingTop: '90px',
+        paddingBottom: '60px',
         overflow: 'hidden',
         backgroundColor: '#07050d',
       }}
     >
-      {/* Authentic Game Painted Forest Background with subtle parallax depth */}
-      <div
+      {/* 1. Deep Layered Game Background with Subtle Breathing Zoom */}
+      <motion.div
+        animate={{ scale: [1.02, 1.05, 1.02] }}
+        transition={{ duration: 16, repeat: Infinity, ease: 'easeInOut' }}
         style={{
           position: 'absolute',
           inset: 0,
           backgroundImage: 'url(/assets/images/backgrounds/bg_main.webp)',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
-          filter: 'brightness(0.28) contrast(1.2)',
-          transform: 'scale(1.03)',
+          filter: 'brightness(0.3) contrast(1.25) saturate(1.1)',
           zIndex: 0,
         }}
       />
 
-      {/* Atmospheric Depth Gradients */}
+      {/* 2. Radial Vignette & Atmospheric Fog Gradients */}
       <div
         style={{
           position: 'absolute',
           inset: 0,
           background:
-            'radial-gradient(circle at 45% 45%, rgba(212, 175, 55, 0.08) 0%, rgba(5, 4, 9, 0.88) 70%, #07050d 100%)',
+            'radial-gradient(circle at 45% 45%, rgba(212, 175, 55, 0.08) 0%, rgba(5, 4, 9, 0.88) 65%, #07050d 100%)',
           zIndex: 1,
         }}
       />
@@ -134,77 +132,77 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
           bottom: 0,
           left: 0,
           right: 0,
-          height: '180px',
+          height: '220px',
           background: 'linear-gradient(to top, #07050d 0%, transparent 100%)',
           zIndex: 1,
         }}
       />
 
-      {/* Main Content Layout */}
+      {/* 3. Main Full-Scale Layout Container (Up to 1680px for 2K/4K displays) */}
       <div
         style={{
           position: 'relative',
           zIndex: 2,
-          maxWidth: '1280px',
+          maxWidth: '1680px',
           width: '100%',
-          padding: '0 24px',
+          padding: '0 clamp(24px, 4vw, 60px)',
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))',
-          gap: '40px',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(420px, 1fr))',
+          gap: 'clamp(36px, 5vw, 80px)',
           alignItems: 'center',
         }}
       >
-        {/* Left Column: Monumental Game Promo & Character Artwork */}
+        {/* Left Column: Epic Game Brand, Live Aura, Monumental Heading */}
         <div style={{ textAlign: 'left' }}>
-          {/* Live Server Tag */}
+          {/* Live Server Status Badge */}
           <div
             style={{
               display: 'inline-flex',
               alignItems: 'center',
-              gap: '10px',
-              padding: '6px 16px',
+              gap: '12px',
+              padding: '8px 20px',
               borderRadius: '30px',
               background: 'rgba(212, 175, 55, 0.12)',
-              border: '1px solid rgba(212, 175, 55, 0.4)',
-              boxShadow: '0 0 25px rgba(212, 175, 55, 0.2)',
-              marginBottom: '18px',
+              border: '1.5px solid rgba(212, 175, 55, 0.45)',
+              boxShadow: '0 0 25px rgba(212, 175, 55, 0.25)',
+              marginBottom: '22px',
             }}
           >
             <span
               style={{
-                width: '8px',
-                height: '8px',
+                width: '10px',
+                height: '10px',
                 borderRadius: '50%',
                 backgroundColor: '#22c55e',
-                boxShadow: '0 0 10px #22c55e',
+                boxShadow: '0 0 12px #22c55e',
                 display: 'inline-block',
               }}
             />
             <span
               style={{
                 color: '#FFE07D',
-                fontSize: '11px',
+                fontSize: '13px',
                 fontWeight: 700,
                 letterSpacing: '1.5px',
                 textTransform: 'uppercase',
                 fontFamily: "'Montserrat', sans-serif",
               }}
             >
-              Сервер S1: Wild Lands • Онлайн 1,482 воина
+              Сервер {SERVER_NAME} • Онлайн {SERVER_ONLINE_STRING} воинов
             </span>
           </div>
 
           {/* Monumental Headline */}
           <h1
             style={{
-              margin: '0 0 14px 0',
+              margin: '0 0 18px 0',
               fontFamily: "'Philosopher', serif",
-              fontSize: 'clamp(34px, 5vw, 58px)',
+              fontSize: 'clamp(38px, 5.5vw, 70px)',
               fontWeight: 900,
-              lineHeight: 1.12,
+              lineHeight: 1.1,
               color: '#ffffff',
               textShadow:
-                '0 4px 25px rgba(0,0,0,0.95), 0 0 40px rgba(212, 175, 55, 0.25)',
+                '0 4px 30px rgba(0,0,0,0.98), 0 0 50px rgba(212, 175, 55, 0.3)',
               letterSpacing: '0.5px',
             }}
           >
@@ -212,7 +210,7 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
             <span
               style={{
                 background:
-                  'linear-gradient(135deg, #FFE07D 0%, #d4af37 50%, #f59e0b 100%)',
+                  'linear-gradient(135deg, #FFE07D 0%, #d4af37 40%, #f59e0b 100%)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
               }}
@@ -224,56 +222,59 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
           {/* Lore Description */}
           <p
             style={{
-              margin: '0 0 24px 0',
-              maxWidth: '520px',
-              fontSize: '15px',
-              lineHeight: 1.65,
-              color: '#c4b5a2',
-              textShadow: '0 2px 8px rgba(0,0,0,0.8)',
+              margin: '0 0 28px 0',
+              maxWidth: '620px',
+              fontSize: 'clamp(15px, 1.3vw, 17px)',
+              lineHeight: 1.7,
+              color: '#c9bba8',
+              textShadow: '0 2px 10px rgba(0,0,0,0.9)',
             }}
           >
-            Браузерная темная RPG нового поколения. Создай единый аккаунт на сайте, получи свою учетную запись воина и начни путь в Дикоземье с эксклюзивным набором первопроходца.
+            Официальный портал темной браузерной RPG нового поколения. Создай единый аккаунт на сайте, получи свою учетную запись бойца и начни путь в Дикоземье со стартовым набором золота и кристаллов.
           </p>
 
-          {/* Character Showcase Pill */}
+          {/* Breathing Animated Character Presentation with Aura */}
           <div
             style={{
+              position: 'relative',
               display: 'inline-flex',
               alignItems: 'center',
-              gap: '14px',
-              padding: '10px 18px',
-              borderRadius: '14px',
-              background: 'rgba(12, 9, 18, 0.85)',
-              border: '1px solid rgba(96, 165, 250, 0.35)',
-              boxShadow: '0 8px 25px rgba(0,0,0,0.7)',
-              marginBottom: '20px',
+              gap: '18px',
+              padding: '14px 24px',
+              borderRadius: '20px',
+              background: 'rgba(14, 10, 22, 0.92)',
+              border: '1.5px solid rgba(96, 165, 250, 0.4)',
+              boxShadow: '0 12px 35px rgba(0,0,0,0.8), 0 0 30px rgba(96, 165, 250, 0.2)',
+              marginBottom: '26px',
             }}
           >
-            <div
+            <motion.div
+              animate={{ rotate: [0, 5, -5, 0] }}
+              transition={{ repeat: Infinity, duration: 8, ease: 'easeInOut' }}
               style={{
-                width: '34px',
-                height: '34px',
-                borderRadius: '8px',
+                width: '46px',
+                height: '46px',
+                borderRadius: '12px',
                 backgroundColor: 'rgba(96, 165, 250, 0.15)',
-                border: '1px solid rgba(96, 165, 250, 0.4)',
+                border: '1.5px solid rgba(96, 165, 250, 0.4)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
               }}
             >
-              <FrostGlyph size={18} color="#60a5fa" glow />
-            </div>
+              <FrostGlyph size={24} color="#60a5fa" glow />
+            </motion.div>
             <div>
-              <div style={{ fontSize: '10px', color: '#60a5fa', fontWeight: 800, textTransform: 'uppercase' }}>
-                Флагманский Герой
+              <div style={{ fontSize: '11px', color: '#60a5fa', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1px' }}>
+                Флагманский Чемпион
               </div>
-              <div style={{ fontSize: '14px', fontWeight: 800, color: '#FFE07D', fontFamily: "'Philosopher', serif" }}>
-                Фэн Лун • Снежный Берсерк
+              <div style={{ fontSize: '17px', fontWeight: 800, color: '#FFE07D', fontFamily: "'Philosopher', serif" }}>
+                Фэн Лун • Снежный Берсерк (Лед & Ци)
               </div>
             </div>
           </div>
 
-          {/* Quick Codex Link */}
+          {/* Beasts Link */}
           <div>
             <button
               onClick={onExploreBeasts}
@@ -281,37 +282,37 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
                 background: 'none',
                 border: 'none',
                 color: '#d4af37',
-                fontSize: '13px',
+                fontSize: '15px',
                 fontWeight: 700,
                 fontFamily: "'Philosopher', serif",
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '6px',
+                gap: '8px',
                 textDecoration: 'underline',
                 padding: 0,
               }}
             >
-              <CrownGlyph size={14} color="#d4af37" />
-              <span>Посмотреть бестиарий всех 5 героев и их навыки →</span>
+              <CrownGlyph size={18} color="#d4af37" />
+              <span>Посмотреть полный бестиарий всех 5 чемпионов и их навыки →</span>
             </button>
           </div>
         </div>
 
-        {/* Right Column: Master Account Gate (Сначала регистрация на сайте, затем учетка) */}
+        {/* Right Column: Master Account HUD Card (High-Scale, Zero Extra Junk) */}
         <div style={{ display: 'flex', justifyContent: 'center' }}>
           <div
             style={{
               width: '100%',
-              maxWidth: '460px',
-              backgroundColor: '#0c0914',
+              maxWidth: '540px',
+              backgroundColor: '#0c0916',
               backgroundImage:
-                'radial-gradient(circle at 50% 0%, rgba(212, 175, 55, 0.14) 0%, rgba(12, 9, 20, 0.98) 75%)',
-              border: '2px solid rgba(212, 175, 55, 0.5)',
-              borderRadius: '20px',
+                'radial-gradient(circle at 50% 0%, rgba(212, 175, 55, 0.18) 0%, rgba(12, 9, 22, 0.98) 75%)',
+              border: '2px solid rgba(212, 175, 55, 0.6)',
+              borderRadius: '24px',
               boxShadow:
-                '0 25px 70px rgba(0, 0, 0, 0.95), 0 0 35px rgba(212, 175, 55, 0.15)',
-              padding: '28px 24px',
+                '0 30px 90px rgba(0, 0, 0, 0.95), 0 0 45px rgba(212, 175, 55, 0.2)',
+              padding: 'clamp(28px, 4vw, 38px)',
               position: 'relative',
             }}
           >
@@ -321,18 +322,18 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
-                borderBottom: '1px solid rgba(212, 175, 55, 0.2)',
-                paddingBottom: '16px',
-                marginBottom: '20px',
+                borderBottom: '1px solid rgba(212, 175, 55, 0.25)',
+                paddingBottom: '20px',
+                marginBottom: '24px',
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <ShieldGlyph size={22} color="#FFE07D" glow />
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <ShieldGlyph size={26} color="#FFE07D" glow />
                 <span
                   style={{
                     fontFamily: "'Philosopher', serif",
-                    fontSize: '18px',
-                    fontWeight: 800,
+                    fontSize: '22px',
+                    fontWeight: 900,
                     color: '#FFE07D',
                     letterSpacing: '1px',
                   }}
@@ -344,13 +345,13 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
               {isLoggedIn && (
                 <span
                   style={{
-                    fontSize: '11px',
-                    fontWeight: 700,
+                    fontSize: '12px',
+                    fontWeight: 800,
                     color: '#4ade80',
-                    backgroundColor: 'rgba(34, 197, 94, 0.12)',
-                    padding: '3px 8px',
-                    borderRadius: '12px',
-                    border: '1px solid rgba(34, 197, 94, 0.3)',
+                    backgroundColor: 'rgba(34, 197, 94, 0.15)',
+                    padding: '4px 12px',
+                    borderRadius: '14px',
+                    border: '1px solid rgba(34, 197, 94, 0.4)',
                   }}
                 >
                   ✓ Активен
@@ -360,36 +361,38 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
 
             {/* STATE 1: ALREADY LOGGED IN -> Show Clean Game Account Details */}
             {isLoggedIn ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                 {/* Account Credentials Card */}
                 <div
                   style={{
                     backgroundColor: 'rgba(255, 255, 255, 0.03)',
-                    border: '1px solid rgba(212, 175, 55, 0.25)',
-                    borderRadius: '14px',
-                    padding: '16px',
+                    border: '1.5px solid rgba(212, 175, 55, 0.3)',
+                    borderRadius: '16px',
+                    padding: '20px',
                     display: 'flex',
                     flexDirection: 'column',
-                    gap: '10px',
+                    gap: '14px',
                   }}
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '12px', color: '#9ca3af' }}>Мастер-профиль:</span>
-                    <strong style={{ fontSize: '14px', color: '#FFE07D' }}>{profile.playerName}</strong>
+                    <span style={{ fontSize: '14px', color: '#9ca3af' }}>Мастер-профиль:</span>
+                    <strong style={{ fontSize: '16px', color: '#FFE07D' }}>{profile.playerName}</strong>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '12px', color: '#9ca3af' }}>Привязанный Email:</span>
-                    <span style={{ fontSize: '12px', color: '#e5e7eb' }}>{profile.accountEmail || 'Сайт-авторизация'}</span>
+                    <span style={{ fontSize: '14px', color: '#9ca3af' }}>Привязанный Email:</span>
+                    <span style={{ fontSize: '14px', color: '#e5e7eb' }}>{profile.accountEmail || 'Сайт-авторизация'}</span>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '12px', color: '#9ca3af' }}>Игровой UID (ID):</span>
-                    <span style={{ fontSize: '12px', fontFamily: 'monospace', color: '#60a5fa', fontWeight: 700 }}>
+                    <span style={{ fontSize: '14px', color: '#9ca3af' }}>Игровой UID (ID):</span>
+                    <span style={{ fontSize: '14px', fontFamily: 'monospace', color: '#60a5fa', fontWeight: 800 }}>
                       #{profile.guestId ? profile.guestId.slice(0, 10) : 'WILD-84920'}
                     </span>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '12px', color: '#9ca3af' }}>Сервер входа:</span>
-                    <span style={{ fontSize: '12px', color: '#4ade80', fontWeight: 600 }}>S1: Wild Lands (Онлайн: 1,482)</span>
+                    <span style={{ fontSize: '14px', color: '#9ca3af' }}>Сервер входа:</span>
+                    <span style={{ fontSize: '14px', color: '#4ade80', fontWeight: 700 }}>
+                      {SERVER_NAME} ({SERVER_ONLINE_STRING} онлайн)
+                    </span>
                   </div>
                 </div>
 
@@ -398,46 +401,46 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
                   style={{
                     display: 'grid',
                     gridTemplateColumns: '1fr 1fr',
-                    gap: '10px',
+                    gap: '14px',
                   }}
                 >
                   <div
                     style={{
-                      padding: '10px',
-                      borderRadius: '10px',
-                      backgroundColor: 'rgba(245, 158, 11, 0.1)',
-                      border: '1px solid rgba(245, 158, 11, 0.3)',
+                      padding: '14px',
+                      borderRadius: '12px',
+                      backgroundColor: 'rgba(245, 158, 11, 0.12)',
+                      border: '1px solid rgba(245, 158, 11, 0.35)',
                       display: 'flex',
                       alignItems: 'center',
-                      gap: '8px',
+                      gap: '10px',
                     }}
                   >
-                    <GoldCoinGlyph size={18} color="#f59e0b" glow />
+                    <GoldCoinGlyph size={22} color="#f59e0b" glow />
                     <div>
-                      <div style={{ fontSize: '10px', color: '#9ca3af' }}>Золото</div>
-                      <div style={{ fontSize: '13px', fontWeight: 800, color: '#f59e0b' }}>{profile.gold} G</div>
+                      <div style={{ fontSize: '11px', color: '#9ca3af' }}>Золото</div>
+                      <div style={{ fontSize: '16px', fontWeight: 900, color: '#f59e0b' }}>{profile.gold} G</div>
                     </div>
                   </div>
                   <div
                     style={{
-                      padding: '10px',
-                      borderRadius: '10px',
-                      backgroundColor: 'rgba(96, 165, 250, 0.1)',
-                      border: '1px solid rgba(96, 165, 250, 0.3)',
+                      padding: '14px',
+                      borderRadius: '12px',
+                      backgroundColor: 'rgba(96, 165, 250, 0.12)',
+                      border: '1px solid rgba(96, 165, 250, 0.35)',
                       display: 'flex',
                       alignItems: 'center',
-                      gap: '8px',
+                      gap: '10px',
                     }}
                   >
-                    <CrystalGlyph size={18} color="#60a5fa" glow />
+                    <CrystalGlyph size={22} color="#60a5fa" glow />
                     <div>
-                      <div style={{ fontSize: '10px', color: '#9ca3af' }}>Кристаллы</div>
-                      <div style={{ fontSize: '13px', fontWeight: 800, color: '#60a5fa' }}>{profile.diamonds} C</div>
+                      <div style={{ fontSize: '11px', color: '#9ca3af' }}>Кристаллы</div>
+                      <div style={{ fontSize: '16px', fontWeight: 900, color: '#60a5fa' }}>{profile.diamonds} C</div>
                     </div>
                   </div>
                 </div>
 
-                {/* MASTER ACTION BUTTON: ВОЙТИ В ИГРУ ПОД ЭТИМ АККАУНТОМ */}
+                {/* DOMINANT ACTION BUTTON: ВОЙТИ В ИГРУ ПОД ЭТИМ АККАУНТОМ */}
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
@@ -448,38 +451,38 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
                   }}
                   style={{
                     width: '100%',
-                    padding: '16px',
-                    borderRadius: '14px',
+                    padding: '18px',
+                    borderRadius: '16px',
                     border: '1.5px solid #FFE07D',
                     background: 'linear-gradient(135deg, #d4af37 0%, #aa8022 100%)',
                     color: '#120d04',
-                    fontSize: '15px',
+                    fontSize: '16px',
                     fontWeight: 900,
                     fontFamily: "'Philosopher', serif",
                     letterSpacing: '1px',
                     textTransform: 'uppercase',
                     cursor: 'pointer',
-                    boxShadow: '0 8px 30px rgba(212, 175, 55, 0.5)',
+                    boxShadow: '0 8px 35px rgba(212, 175, 55, 0.55)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    gap: '10px',
-                    marginTop: '4px',
+                    gap: '12px',
+                    marginTop: '6px',
                   }}
                 >
-                  <SwordGlyph size={20} color="#120d04" />
+                  <SwordGlyph size={22} color="#120d04" />
                   <span>ВОЙТИ В ИГРУ ПОД ЭТИМ АККАУНТОМ</span>
                 </motion.button>
 
                 {/* Secondary Actions */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '6px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '8px' }}>
                   <button
                     onClick={onOpenCabinet}
                     style={{
                       background: 'none',
                       border: 'none',
                       color: '#FFE07D',
-                      fontSize: '12px',
+                      fontSize: '13px',
                       cursor: 'pointer',
                       textDecoration: 'underline',
                     }}
@@ -492,7 +495,7 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
                       background: 'none',
                       border: 'none',
                       color: '#9ca3af',
-                      fontSize: '12px',
+                      fontSize: '13px',
                       cursor: 'pointer',
                     }}
                   >
@@ -502,30 +505,30 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
               </div>
             ) : (
               /* STATE 2: NOT LOGGED IN -> Master Registration on the Site */
-              <form onSubmit={handleAuthSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <form onSubmit={handleAuthSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 {/* Tabs: Регистрация vs Вход */}
                 <div
                   style={{
                     display: 'grid',
                     gridTemplateColumns: '1fr 1fr',
-                    gap: '6px',
-                    backgroundColor: 'rgba(0,0,0,0.4)',
-                    padding: '4px',
-                    borderRadius: '10px',
-                    border: '1px solid rgba(212, 175, 55, 0.2)',
+                    gap: '8px',
+                    backgroundColor: 'rgba(0,0,0,0.5)',
+                    padding: '5px',
+                    borderRadius: '12px',
+                    border: '1px solid rgba(212, 175, 55, 0.25)',
                   }}
                 >
                   <button
                     type="button"
                     onClick={() => setAuthMode('register')}
                     style={{
-                      padding: '8px',
-                      borderRadius: '8px',
+                      padding: '10px',
+                      borderRadius: '10px',
                       border: 'none',
                       background: authMode === 'register' ? 'rgba(212, 175, 55, 0.25)' : 'transparent',
                       color: authMode === 'register' ? '#FFE07D' : '#9ca3af',
-                      fontSize: '12px',
-                      fontWeight: 700,
+                      fontSize: '13px',
+                      fontWeight: 800,
                       cursor: 'pointer',
                       fontFamily: "'Philosopher', serif",
                     }}
@@ -536,13 +539,13 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
                     type="button"
                     onClick={() => setAuthMode('login')}
                     style={{
-                      padding: '8px',
-                      borderRadius: '8px',
+                      padding: '10px',
+                      borderRadius: '10px',
                       border: 'none',
                       background: authMode === 'login' ? 'rgba(212, 175, 55, 0.25)' : 'transparent',
                       color: authMode === 'login' ? '#FFE07D' : '#9ca3af',
-                      fontSize: '12px',
-                      fontWeight: 700,
+                      fontSize: '13px',
+                      fontWeight: 800,
                       cursor: 'pointer',
                       fontFamily: "'Philosopher', serif",
                     }}
@@ -555,30 +558,30 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
                 {authMode === 'register' && (
                   <div
                     style={{
-                      padding: '10px 14px',
-                      borderRadius: '10px',
-                      backgroundColor: 'rgba(212, 175, 55, 0.1)',
-                      border: '1px solid rgba(212, 175, 55, 0.35)',
+                      padding: '12px 16px',
+                      borderRadius: '12px',
+                      backgroundColor: 'rgba(212, 175, 55, 0.12)',
+                      border: '1px solid rgba(212, 175, 55, 0.4)',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'space-around',
                     }}
                   >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <GoldCoinGlyph size={16} color="#f59e0b" glow />
-                      <span style={{ fontSize: '12px', fontWeight: 800, color: '#f59e0b' }}>+500 Золота</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <GoldCoinGlyph size={18} color="#f59e0b" glow />
+                      <span style={{ fontSize: '13px', fontWeight: 800, color: '#f59e0b' }}>+500 Золота</span>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <CrystalGlyph size={16} color="#60a5fa" glow />
-                      <span style={{ fontSize: '12px', fontWeight: 800, color: '#60a5fa' }}>+50 Кристаллов</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <CrystalGlyph size={18} color="#60a5fa" glow />
+                      <span style={{ fontSize: '13px', fontWeight: 800, color: '#60a5fa' }}>+50 Кристаллов</span>
                     </div>
                   </div>
                 )}
 
-                {/* Inputs */}
+                {/* Inputs with high contrast and readable sizing */}
                 {authMode === 'register' && (
                   <div>
-                    <label style={{ display: 'block', fontSize: '11px', color: '#a69a89', marginBottom: '5px' }}>
+                    <label style={{ display: 'block', fontSize: '12px', color: '#b5a695', marginBottom: '6px' }}>
                       Позывной Мастера (Логин на сайте)
                     </label>
                     <input
@@ -589,12 +592,12 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
                       style={{
                         width: '100%',
                         boxSizing: 'border-box',
-                        padding: '11px 14px',
-                        borderRadius: '10px',
-                        backgroundColor: 'rgba(0, 0, 0, 0.55)',
-                        border: '1px solid rgba(212, 175, 55, 0.3)',
+                        padding: '13px 16px',
+                        borderRadius: '12px',
+                        backgroundColor: 'rgba(0, 0, 0, 0.65)',
+                        border: '1.5px solid rgba(212, 175, 55, 0.35)',
                         color: '#f5edd8',
-                        fontSize: '13px',
+                        fontSize: '14px',
                         outline: 'none',
                       }}
                     />
@@ -602,7 +605,7 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
                 )}
 
                 <div>
-                  <label style={{ display: 'block', fontSize: '11px', color: '#a69a89', marginBottom: '5px' }}>
+                  <label style={{ display: 'block', fontSize: '12px', color: '#b5a695', marginBottom: '6px' }}>
                     Email (для защиты учетной записи)
                   </label>
                   <input
@@ -614,19 +617,19 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
                     style={{
                       width: '100%',
                       boxSizing: 'border-box',
-                      padding: '11px 14px',
-                      borderRadius: '10px',
-                      backgroundColor: 'rgba(0, 0, 0, 0.55)',
-                      border: '1px solid rgba(212, 175, 55, 0.3)',
+                      padding: '13px 16px',
+                      borderRadius: '12px',
+                      backgroundColor: 'rgba(0, 0, 0, 0.65)',
+                      border: '1.5px solid rgba(212, 175, 55, 0.35)',
                       color: '#f5edd8',
-                      fontSize: '13px',
+                      fontSize: '14px',
                       outline: 'none',
                     }}
                   />
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', fontSize: '11px', color: '#a69a89', marginBottom: '5px' }}>
+                  <label style={{ display: 'block', fontSize: '12px', color: '#b5a695', marginBottom: '6px' }}>
                     Пароль
                   </label>
                   <input
@@ -638,12 +641,12 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
                     style={{
                       width: '100%',
                       boxSizing: 'border-box',
-                      padding: '11px 14px',
-                      borderRadius: '10px',
-                      backgroundColor: 'rgba(0, 0, 0, 0.55)',
-                      border: '1px solid rgba(212, 175, 55, 0.3)',
+                      padding: '13px 16px',
+                      borderRadius: '12px',
+                      backgroundColor: 'rgba(0, 0, 0, 0.65)',
+                      border: '1.5px solid rgba(212, 175, 55, 0.35)',
                       color: '#f5edd8',
-                      fontSize: '13px',
+                      fontSize: '14px',
                       outline: 'none',
                     }}
                   />
@@ -652,7 +655,7 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
                 {formMsg && (
                   <div
                     style={{
-                      fontSize: '12px',
+                      fontSize: '13px',
                       color: formMsg.isError ? '#f87171' : '#4ade80',
                       textAlign: 'center',
                     }}
@@ -668,33 +671,33 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
                   whileTap={{ scale: 0.98 }}
                   style={{
                     width: '100%',
-                    padding: '15px',
-                    borderRadius: '12px',
+                    padding: '16px',
+                    borderRadius: '14px',
                     border: '1px solid #FFE07D',
                     background: 'linear-gradient(135deg, #d4af37 0%, #aa8022 100%)',
                     color: '#120d04',
-                    fontSize: '14px',
+                    fontSize: '15px',
                     fontWeight: 900,
                     fontFamily: "'Philosopher', serif",
                     letterSpacing: '1px',
                     textTransform: 'uppercase',
                     cursor: 'pointer',
-                    boxShadow: '0 6px 25px rgba(212, 175, 55, 0.4)',
+                    boxShadow: '0 8px 30px rgba(212, 175, 55, 0.45)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    gap: '8px',
-                    marginTop: '4px',
+                    gap: '10px',
+                    marginTop: '6px',
                   }}
                 >
-                  <ShieldGlyph size={18} color="#120d04" />
+                  <ShieldGlyph size={20} color="#120d04" />
                   <span>
                     {authMode === 'register' ? 'ЗАРЕГИСТРИРОВАТЬ АККАУНТ НА САЙТЕ' : 'ВОЙТИ В МАСТЕР-АККАУНТ'}
                   </span>
                 </motion.button>
 
                 {/* Quick Guest Alternative */}
-                <div style={{ textAlign: 'center', marginTop: '4px' }}>
+                <div style={{ textAlign: 'center', marginTop: '6px' }}>
                   <button
                     type="button"
                     onClick={handleGuestQuickPlay}
@@ -702,7 +705,7 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
                       background: 'none',
                       border: 'none',
                       color: '#9ca3af',
-                      fontSize: '12px',
+                      fontSize: '13px',
                       cursor: 'pointer',
                       textDecoration: 'underline',
                     }}

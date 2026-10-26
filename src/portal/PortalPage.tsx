@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { PortalHeader } from './components/PortalHeader';
 import { PortalHero } from './components/PortalHero';
 import { PortalBeastCodex } from './components/PortalBeastCodex';
-import { PortalItemCodex } from './components/PortalItemCodex';
 import { PortalNews } from './components/PortalNews';
 import { PortalOSTPlayer } from './components/PortalOSTPlayer';
 import { PortalDailyCheckIn } from './components/PortalDailyCheckIn';
@@ -81,7 +80,6 @@ export const PortalPage: React.FC<PortalPageProps> = ({
             <PortalBeastCodex onSelectAndPlay={onSelectAndPlay} />
 
             {/* 3.5. Armory & Items Codex (Weapons, Armor, Shields, Relics) */}
-            <PortalItemCodex />
 
             {/* 4. Chronicles & News Hub (Steam/Battle.net standard) */}
             <PortalNews onLaunchGame={onLaunchGame} />
