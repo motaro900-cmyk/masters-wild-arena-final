@@ -12,6 +12,8 @@ import { proceduralAudio } from '../../utils/ProceduralAudio';
 import { portalSound } from '../PortalSoundService';
 import { portalSyncBridge } from '../../services/PortalSyncBridge';
 import { SERVER_ONLINE_STRING, SERVER_NAME } from '../portalConstants';
+import { HudCard } from './hud/HudCard';
+import { ShinyGoldButton } from './hud/ShinyGoldButton';
 
 interface PortalHeroProps {
   onLaunchGame: () => void;
@@ -299,22 +301,12 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
           </div>
         </div>
 
-        {/* Right Column: Master Account HUD Card (High-Scale, Zero Extra Junk) */}
+        {/* Right Column: Master Account HUD Card with Border Beam & Shiny Button */}
         <div style={{ display: 'flex', justifyContent: 'center' }}>
-          <div
-            style={{
-              width: '100%',
-              maxWidth: '540px',
-              backgroundColor: '#0c0916',
-              backgroundImage:
-                'radial-gradient(circle at 50% 0%, rgba(212, 175, 55, 0.18) 0%, rgba(12, 9, 22, 0.98) 75%)',
-              border: '2px solid rgba(212, 175, 55, 0.6)',
-              borderRadius: '24px',
-              boxShadow:
-                '0 30px 90px rgba(0, 0, 0, 0.95), 0 0 45px rgba(212, 175, 55, 0.2)',
-              padding: 'clamp(28px, 4vw, 38px)',
-              position: 'relative',
-            }}
+          <HudCard
+            active={true}
+            beamColor={isLoggedIn ? '#22c55e' : '#FFE07D'}
+            style={{ width: '100%', maxWidth: '540px', padding: 'clamp(28px, 4vw, 38px)' }}
           >
             {/* Header Badge */}
             <div
@@ -440,39 +432,18 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
                   </div>
                 </div>
 
-                {/* DOMINANT ACTION BUTTON: ВОЙТИ В ИГРУ ПОД ЭТИМ АККАУНТОМ */}
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
+                {/* SHINY GOLD BUTTON: ВОЙТИ В ИГРУ ПОД ЭТИМ АККАУНТОМ */}
+                <ShinyGoldButton
                   onClick={() => {
                     proceduralAudio.playDuelHorn();
                     portalSound.playEquip();
                     onLaunchGame();
                   }}
-                  style={{
-                    width: '100%',
-                    padding: '18px',
-                    borderRadius: '16px',
-                    border: '1.5px solid #FFE07D',
-                    background: 'linear-gradient(135deg, #d4af37 0%, #aa8022 100%)',
-                    color: '#120d04',
-                    fontSize: '16px',
-                    fontWeight: 900,
-                    fontFamily: "'Philosopher', serif",
-                    letterSpacing: '1px',
-                    textTransform: 'uppercase',
-                    cursor: 'pointer',
-                    boxShadow: '0 8px 35px rgba(212, 175, 55, 0.55)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '12px',
-                    marginTop: '6px',
-                  }}
+                  style={{ width: '100%', marginTop: '4px' }}
                 >
                   <SwordGlyph size={22} color="#120d04" />
                   <span>ВОЙТИ В ИГРУ ПОД ЭТИМ АККАУНТОМ</span>
-                </motion.button>
+                </ShinyGoldButton>
 
                 {/* Secondary Actions */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '8px' }}>
@@ -664,37 +635,13 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
                   </div>
                 )}
 
-                {/* Submit Button */}
-                <motion.button
-                  type="submit"
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  style={{
-                    width: '100%',
-                    padding: '16px',
-                    borderRadius: '14px',
-                    border: '1px solid #FFE07D',
-                    background: 'linear-gradient(135deg, #d4af37 0%, #aa8022 100%)',
-                    color: '#120d04',
-                    fontSize: '15px',
-                    fontWeight: 900,
-                    fontFamily: "'Philosopher', serif",
-                    letterSpacing: '1px',
-                    textTransform: 'uppercase',
-                    cursor: 'pointer',
-                    boxShadow: '0 8px 30px rgba(212, 175, 55, 0.45)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '10px',
-                    marginTop: '6px',
-                  }}
-                >
+                {/* Submit Shiny Gold Button */}
+                <ShinyGoldButton type="submit" style={{ width: '100%', marginTop: '6px' }}>
                   <ShieldGlyph size={20} color="#120d04" />
                   <span>
                     {authMode === 'register' ? 'ЗАРЕГИСТРИРОВАТЬ АККАУНТ НА САЙТЕ' : 'ВОЙТИ В МАСТЕР-АККАУНТ'}
                   </span>
-                </motion.button>
+                </ShinyGoldButton>
 
                 {/* Quick Guest Alternative */}
                 <div style={{ textAlign: 'center', marginTop: '6px' }}>
@@ -715,7 +662,7 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
                 </div>
               </form>
             )}
-          </div>
+          </HudCard>
         </div>
       </div>
     </section>
