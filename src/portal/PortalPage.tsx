@@ -1,9 +1,4 @@
-/**
- * PORTAL PAGE (Главная страница студийного игрового портала)
- * Сборка всех ключевых модулей: Header, Hero, Бестиарий, Новости, OST-плеер,
- * Ежедневные Награды, Зал Чемпионов, Личный Кабинет и Юридический Подвал (152-ФЗ / 436-ФЗ).
- */
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { PortalHeader } from './components/PortalHeader';
 import { PortalHero } from './components/PortalHero';
 import { PortalBeastCodex } from './components/PortalBeastCodex';
@@ -17,6 +12,7 @@ import { PortalFooter } from './components/PortalFooter';
 import { PortalLegalModal } from './components/PortalLegalModal';
 import { PortalParticleCanvas } from './components/PortalParticleCanvas';
 import { PortalChatDock } from './components/PortalChatDock';
+import { PortalWelcomeModal } from './components/PortalWelcomeModal';
 
 interface PortalPageProps {
     onLaunchGame: () => void;
@@ -36,7 +32,22 @@ export const PortalPage: React.FC<PortalPageProps> = ({
     isGameActive = false,
 }) => {
     const [isCabinetOpen, setIsCabinetOpen] = useState(false);
+    const [isWelcomeOpen, setIsWelcomeOpen] = useState(false);
     const [legalTab, setLegalTab] = useState<'privacy' | 'terms' | 'cookies' | 'age' | null>(null);
+
+    // Auto-open Welcome Gate modal on first entry unless dismissed
+    useEffect(() => {
+        try {
+            const dismissed = localStorage.getItem('mow_welcome_dismissed');
+            if (!dismissed) {
+                const timer = setTimeout(() => setIsWelcomeOpen(true), 500);
+                return () => clearTimeout(timer);
+            }
+        } catch {
+            // fallback if localStorage restricted
+            setIsWelcomeOpen(true);
+        }
+    }, []);
 
     const handleExploreBeasts = () => {
         const el = document.getElementById('beasts');
@@ -119,6 +130,13 @@ export const PortalPage: React.FC<PortalPageProps> = ({
 
             {/* 11. Live Community Chat & Activity Dock (Fixed Bottom-Right) */}
             <PortalChatDock />
+
+            {/* 12. Promo Welcome Gate Modal: Регистрация vs Гость */}
+            <PortalWelcomeModal
+                isOpen={isWelcomeOpen}
+                onClose={() => setIsWelcomeOpen(false)}
+                onLaunchGame={onLaunchGame}
+            />
         </div>
     );
 };
