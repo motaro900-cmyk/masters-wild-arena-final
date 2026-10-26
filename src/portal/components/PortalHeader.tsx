@@ -5,6 +5,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { proceduralAudio } from '../../utils/ProceduralAudio';
+import { portalSound } from '../PortalSoundService';
 
 interface PortalHeaderProps {
     onLaunchGame: () => void;
@@ -22,7 +23,7 @@ export const PortalHeader: React.FC<PortalHeaderProps> = ({
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     const scrollTo = (id: string) => {
-        proceduralAudio.playClick(1.0);
+        portalSound.playClick(1.0);
         setMobileMenuOpen(false);
         const el = document.getElementById(id);
         if (el) {
@@ -155,7 +156,7 @@ export const PortalHeader: React.FC<PortalHeaderProps> = ({
                     <button
                         key={item.id}
                         onClick={() => scrollTo(item.id)}
-                        onMouseEnter={() => proceduralAudio.playHover()}
+                        onMouseEnter={() => portalSound.playHover()}
                         style={{
                             background: 'none',
                             border: 'none',
@@ -181,7 +182,7 @@ export const PortalHeader: React.FC<PortalHeaderProps> = ({
                 {/* Личный Кабинет Button */}
                 <button
                     onClick={() => {
-                        proceduralAudio.playClick(1.1);
+                        portalSound.playClick(1.1);
                         onOpenCabinet();
                     }}
                     style={{

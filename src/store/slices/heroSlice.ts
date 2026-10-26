@@ -3,6 +3,7 @@ import { ITEMS_DATABASE, IEquipmentStats } from '../../game/configs/ItemsConfig'
 import { HeroLevelService } from '../../features/heroes/leveling/HeroLevelService';
 import { getLevelMultiplier } from '../../features/heroes/leveling/HeroLevelCalculator';
 import { syncService } from '../../services/SyncService';
+import { portalSyncBridge } from '../../services/PortalSyncBridge';
 
 export const createHeroSlice = (set: any, get: any) => {
     const statsCache: Record<string, { key: string; result: any }> = {};
@@ -198,7 +199,9 @@ export const createHeroSlice = (set: any, get: any) => {
 
             const talentsData = JSON.stringify(state.heroTalents[heroId] || {});
             const buffsData = JSON.stringify(state.activeBuffs || {});
-            const cacheKey = `${heroId}_lvl:${heroLevel}_eq:${eqLevels}_tal:${talentsData}_buf:${buffsData}`;
+            const portalTiers = state.portalForgeTiers || portalSyncBridge.getForgeTiers();
+            const portalTiersData = JSON.stringify(portalTiers);
+            const cacheKey = `${heroId}_lvl:${heroLevel}_eq:${eqLevels}_tal:${talentsData}_buf:${buffsData}_pt:${portalTiersData}`;
 
             if (statsCache[heroId] && statsCache[heroId].key === cacheKey) {
                 return statsCache[heroId].result;
@@ -303,6 +306,15 @@ export const createHeroSlice = (set: any, get: any) => {
                 const rawSpeed = item.speedBonus || 0;
                 if (rawSpeed) total.speed += rawSpeed * mult;
             });
+
+            // Применяем бонусы заточки Портальной Кузницы (Фэн Лун, Рикки, Громм и др.)
+            const portalBonus = portalSyncBridge.calculatePortalForgeBonus(heroData.role, portalTiers);
+            total.hp += portalBonus.hp;
+            total.attack += portalBonus.attack;
+            total.defense += portalBonus.defense;
+            total.speed = +(total.speed + portalBonus.speed).toFixed(2);
+            total.critChance += portalBonus.critChance;
+            total.critDamage = +(total.critDamage + portalBonus.critDamage).toFixed(2);
 
             // Применяем активные баффы зелий
             const buffs = state.activeBuffs || {};

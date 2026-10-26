@@ -15,6 +15,8 @@ import { PortalHallOfFame } from './components/PortalHallOfFame';
 import { PortalCabinet } from './components/PortalCabinet';
 import { PortalFooter } from './components/PortalFooter';
 import { PortalLegalModal } from './components/PortalLegalModal';
+import { PortalParticleCanvas } from './components/PortalParticleCanvas';
+import { PortalChatDock } from './components/PortalChatDock';
 
 interface PortalPageProps {
     onLaunchGame: () => void;
@@ -55,16 +57,8 @@ export const PortalPage: React.FC<PortalPageProps> = ({
                 position: 'relative',
             }}
         >
-            {/* Ambient Background Particles / Glow */}
-            <div
-                style={{
-                    position: 'fixed',
-                    inset: 0,
-                    backgroundImage: 'radial-gradient(circle at 50% 20%, rgba(212, 175, 55, 0.05) 0%, transparent 60%)',
-                    pointerEvents: 'none',
-                    zIndex: 0,
-                }}
-            />
+            {/* Live Interactive Ambient Background Canvas (60 FPS Blizzard/HoYoverse standard) */}
+            <PortalParticleCanvas />
 
             {/* 1. Sticky Navigation Header */}
             <PortalHeader
@@ -122,6 +116,9 @@ export const PortalPage: React.FC<PortalPageProps> = ({
                 onClose={() => setLegalTab(null)}
                 onSelectTab={(t) => setLegalTab(t)}
             />
+
+            {/* 11. Live Community Chat & Activity Dock (Fixed Bottom-Right) */}
+            <PortalChatDock />
         </div>
     );
 };

@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../../store/useGameStore';
 import { proceduralAudio } from '../../utils/ProceduralAudio';
 import { HEROES_DB } from '../../configs/HeroesConfig';
+import { portalSyncBridge, IPortalForgeTiers } from '../../services/PortalSyncBridge';
 
 interface PortalCabinetProps {
     isOpen: boolean;
@@ -17,61 +18,54 @@ export const PortalCabinet: React.FC<PortalCabinetProps> = ({
 }) => {
     if (!isOpen) return null;
 
-    const store: any = useGameStore();
+    const initialProfile = portalSyncBridge.getProfile();
     const [curTab, setCurTab] = useState<'gear' | 'account'>('gear');
-    const [selectedHeroId, setSelectedHeroId] = useState<string>(store.selectedHeroId || 'panda');
-    const [gold, setGold] = useState<number>(store.gold ?? 2450);
-    const [diamonds, setDiamonds] = useState<number>(store.diamonds ?? store.crystals ?? 120);
-    const [energy, setEnergy] = useState<number>(store.energy ?? 100);
-    const [rating, setRating] = useState<number>(store.rating ?? 1480);
+    const [selectedHeroId, setSelectedHeroId] = useState<string>(initialProfile.selectedHeroId || 'panda');
+    const [gold, setGold] = useState<number>(initialProfile.gold);
+    const [diamonds, setDiamonds] = useState<number>(initialProfile.diamonds);
+    const [energy, setEnergy] = useState<number>(initialProfile.energy);
+    const [rating, setRating] = useState<number>(initialProfile.rating);
     
-    // Auth & Profile state with localStorage persistence
-    const [playerName, setPlayerName] = useState<string>(() => {
-        return localStorage.getItem('mow_player_name') || store.name || 'Дикий Мастер';
-    });
-    const [guestId] = useState<string>(() => {
-        let gid = localStorage.getItem('mow_guest_id');
-        if (!gid) {
-            gid = 'MOW-' + Math.floor(1000 + Math.random() * 9000);
-            localStorage.setItem('mow_guest_id', gid);
-        }
-        return gid;
-    });
+    // Auth & Profile state with PortalSyncBridge persistence
+    const [playerName, setPlayerName] = useState<string>(initialProfile.playerName);
+    const [guestId] = useState<string>(initialProfile.guestId);
     const [copied, setCopied] = useState<boolean>(false);
     const [authMode, setAuthMode] = useState<'login' | 'register'>('register');
-    const [authEmail, setAuthEmail] = useState<string>('');
+    const [authEmail, setAuthEmail] = useState<string>(initialProfile.accountEmail || '');
     const [authPass, setAuthPass] = useState<string>('');
     const [authNick, setAuthNick] = useState<string>('');
     const [authStatus, setAuthStatus] = useState<string>('');
-    const [isLoggedIn, setIsLoggedIn] = useState<boolean>(() => {
-        return !!localStorage.getItem('mow_auth_token');
-    });
+    const [isLoggedIn, setIsLoggedIn] = useState<boolean>(initialProfile.isLoggedIn);
 
-    // Equipment Tiers state
-    const [equipTiers, setEquipTiers] = useState<{ weapon: number; armor: number; ring: number; boots: number }>(() => {
-        const saved = localStorage.getItem('mow_equip_tiers');
-        return saved ? JSON.parse(saved) : { weapon: 1, armor: 1, ring: 1, boots: 1 };
-    });
+    // Equipment Tiers state from PortalSyncBridge
+    const [equipTiers, setEquipTiers] = useState<IPortalForgeTiers>(initialProfile.equipTiers);
 
     const activeHero = HEROES_DB.find((h) => h.id === selectedHeroId) || HEROES_DB[0];
 
     useEffect(() => {
-        localStorage.setItem('mow_equip_tiers', JSON.stringify(equipTiers));
-    }, [equipTiers]);
+        const handleSync = (e: any) => {
+            const profile = e.detail || portalSyncBridge.getProfile();
+            setGold(profile.gold);
+            setDiamonds(profile.diamonds);
+            setRating(profile.rating);
+            setPlayerName(profile.playerName);
+            setSelectedHeroId(profile.selectedHeroId);
+            setEquipTiers(profile.equipTiers);
+        };
+        window.addEventListener('mow:portal_sync', handleSync);
+        return () => window.removeEventListener('mow:portal_sync', handleSync);
+    }, []);
 
-    const handleUpgrade = (slot: 'weapon' | 'armor' | 'ring' | 'boots') => {
-        const cost = (equipTiers[slot] + 1) * 350;
-        if (gold >= cost) {
-            setGold((g) => {
-                const ng = g - cost;
-                store.setGold?.(ng);
-                return ng;
-            });
-            setEquipTiers((prev) => ({ ...prev, [slot]: prev[slot] + 1 }));
+    const handleUpgrade = (slot: keyof IPortalForgeTiers) => {
+        const res = portalSyncBridge.upgradeSlot(slot);
+        if (res.success) {
+            const p = portalSyncBridge.getProfile();
+            setGold(p.gold);
+            setEquipTiers(p.equipTiers);
             proceduralAudio.playFanfare();
         } else {
             proceduralAudio.playClick(2);
-            alert(`Недостаточно золота в кошеле! Требуется ${cost} золота.`);
+            alert(res.error || 'Недостаточно золота для заточки!');
         }
     };
 
@@ -93,60 +87,60 @@ export const PortalCabinet: React.FC<PortalCabinetProps> = ({
         const nick = authNick.trim() || authEmail.split('@')[0];
         setPlayerName(nick);
         setIsLoggedIn(true);
-        localStorage.setItem('mow_player_name', nick);
         localStorage.setItem('mow_auth_token', 'mow_jwt_' + Date.now());
         localStorage.setItem('mow_auth_email', authEmail);
-        useGameStore.setState({ name: nick });
+
+        portalSyncBridge.commitMutation({
+            playerName: nick,
+            isLoggedIn: true,
+            accountEmail: authEmail,
+        });
 
         setAuthStatus(authMode === 'register' ? '✓ Аккаунт успешно создан и привязан!' : '✓ Добро пожаловать, ' + nick + '!');
     };
 
-    const handleExport = () => {
+    const handleExport = async () => {
         proceduralAudio.playClick(1);
-        const data = {
-            guestId,
-            playerName,
-            hero: selectedHeroId,
-            gold,
-            diamonds,
-            energy,
-            rating,
-            equipTiers,
-            isLoggedIn,
-            exportedAt: new Date().toISOString(),
-        };
-        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `masters-of-wild-save-${guestId}.mow`;
-        a.click();
-        URL.revokeObjectURL(url);
+        try {
+            const blob = await portalSyncBridge.exportMowSave();
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `masters-of-wild-save-${guestId}.mow`;
+            a.click();
+            URL.revokeObjectURL(url);
+            setAuthStatus('✓ Сохранение .mow защищено криптографической подписью SHA-256!');
+        } catch (e: any) {
+            alert('Ошибка экспорта сохранения: ' + (e.message || e));
+        }
     };
 
-    const handleImport = (ev: React.ChangeEvent<HTMLInputElement>) => {
+    const handleImport = async (ev: React.ChangeEvent<HTMLInputElement>) => {
         const file = ev.target.files?.[0];
         if (!file) return;
         const reader = new FileReader();
-        reader.onload = (e) => {
+        reader.onload = async (e) => {
             try {
-                const imported = JSON.parse(e.target?.result as string);
-                if (imported.gold) setGold(imported.gold);
-                if (imported.diamonds) setDiamonds(imported.diamonds);
-                if (imported.playerName) {
-                    setPlayerName(imported.playerName);
-                    localStorage.setItem('mow_player_name', imported.playerName);
-                    useGameStore.setState({ name: imported.playerName });
+                const text = e.target?.result as string;
+                const result = await portalSyncBridge.importMowSave(text);
+                if (result.success && result.payload) {
+                    const p = result.payload;
+                    setGold(p.gold);
+                    setDiamonds(p.diamonds);
+                    setPlayerName(p.playerName);
+                    setSelectedHeroId(p.selectedHeroId);
+                    setEquipTiers(p.equipTiers);
+                    setRating(p.rating);
+                    proceduralAudio.playFanfare();
+                    alert('✓ Сохранение (.mow) успешно верифицировано и восстановлено! Хеш SHA-256 совпал.');
+                } else {
+                    proceduralAudio.playClick(2);
+                    alert(`⚠️ ${result.error || 'Ошибка проверки целостности сохранения!'}`);
                 }
-                if (imported.hero && HEROES_DB.some((h) => h.id === imported.hero)) {
-                    setSelectedHeroId(imported.hero);
-                    store.setSelectedHeroId?.(imported.hero);
-                }
-                if (imported.equipTiers) setEquipTiers(imported.equipTiers);
-                proceduralAudio.playFanfare();
-                alert('✓ Сохранение (.mow) успешно восстановлено!');
-            } catch {
-                alert('Ошибка чтения файла сохранения (.mow)!');
+            } catch (err: any) {
+                alert(`Ошибка чтения файла: ${err.message || err}`);
+            } finally {
+                if (ev.target) ev.target.value = '';
             }
         };
         reader.readAsText(file);
@@ -372,30 +366,57 @@ export const PortalCabinet: React.FC<PortalCabinetProps> = ({
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
                                 {/* Hero Specs */}
                                 <div style={{ padding: '18px', borderRadius: '14px', backgroundColor: 'rgba(18, 14, 22, 0.7)', border: '1px solid rgba(212, 175, 55, 0.2)' }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-                                        <span style={{ fontSize: '14px', fontWeight: 800, color: '#f5edd8' }}>{activeHero.name}</span>
-                                        <span style={{ fontSize: '11px', padding: '3px 8px', borderRadius: '6px', backgroundColor: 'rgba(212, 175, 55, 0.2)', color: '#d4af37', fontWeight: 700 }}>
-                                            {activeHero.title}
-                                        </span>
-                                    </div>
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '12px' }}>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                            <span style={{ color: '#9c8e7e' }}>Здоровье (HP):</span>
-                                            <span style={{ color: '#4ade80', fontWeight: 700 }}>{(activeHero.stats?.hp || 700) + equipTiers.armor * 60}</span>
-                                        </div>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                            <span style={{ color: '#9c8e7e' }}>Атака (ATK):</span>
-                                            <span style={{ color: '#f87171', fontWeight: 700 }}>{(activeHero.stats?.attack || 30) + equipTiers.weapon * 8}</span>
-                                        </div>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                            <span style={{ color: '#9c8e7e' }}>Защита (DEF):</span>
-                                            <span style={{ color: '#60a5fa', fontWeight: 700 }}>{(activeHero.stats?.defense || 10) + equipTiers.boots * 4}</span>
-                                        </div>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                            <span style={{ color: '#9c8e7e' }}>Скорость (SPD):</span>
-                                            <span style={{ color: '#c084fc', fontWeight: 700 }}>{activeHero.stats?.speed || 1.8} уд/с</span>
-                                        </div>
-                                    </div>
+                                    {(() => {
+                                        const forgeBonus = portalSyncBridge.calculatePortalForgeBonus(activeHero.role, equipTiers);
+                                        const totalHp = (activeHero.stats?.hp || 700) + forgeBonus.hp;
+                                        const totalAtk = (activeHero.stats?.attack || 30) + forgeBonus.attack;
+                                        const totalDef = (activeHero.stats?.defense || 10) + forgeBonus.defense;
+                                        const totalSpd = +((activeHero.stats?.speed || 1.8) + forgeBonus.speed).toFixed(2);
+                                        const totalCrit = +((activeHero.stats?.critChance || 5) + forgeBonus.critChance).toFixed(1);
+
+                                        return (
+                                            <>
+                                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+                                                    <span style={{ fontSize: '14px', fontWeight: 800, color: '#f5edd8' }}>{activeHero.name}</span>
+                                                    <span style={{ fontSize: '11px', padding: '3px 8px', borderRadius: '6px', backgroundColor: 'rgba(212, 175, 55, 0.2)', color: '#d4af37', fontWeight: 700 }}>
+                                                        {activeHero.title} • {activeHero.role}
+                                                    </span>
+                                                </div>
+                                                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '12px' }}>
+                                                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                                        <span style={{ color: '#9c8e7e' }}>Здоровье (HP):</span>
+                                                        <span style={{ color: '#4ade80', fontWeight: 700 }}>
+                                                            {totalHp} <small style={{ opacity: 0.7 }}>(+{forgeBonus.hp})</small>
+                                                        </span>
+                                                    </div>
+                                                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                                        <span style={{ color: '#9c8e7e' }}>Атака (ATK):</span>
+                                                        <span style={{ color: '#f87171', fontWeight: 700 }}>
+                                                            {totalAtk} <small style={{ opacity: 0.7 }}>(+{forgeBonus.attack})</small>
+                                                        </span>
+                                                    </div>
+                                                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                                        <span style={{ color: '#9c8e7e' }}>Защита (DEF):</span>
+                                                        <span style={{ color: '#60a5fa', fontWeight: 700 }}>
+                                                            {totalDef} <small style={{ opacity: 0.7 }}>(+{forgeBonus.defense})</small>
+                                                        </span>
+                                                    </div>
+                                                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                                        <span style={{ color: '#9c8e7e' }}>Скорость (SPD):</span>
+                                                        <span style={{ color: '#c084fc', fontWeight: 700 }}>
+                                                            {totalSpd} уд/с <small style={{ opacity: 0.7 }}>(+{forgeBonus.speed})</small>
+                                                        </span>
+                                                    </div>
+                                                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                                        <span style={{ color: '#9c8e7e' }}>Крит. шанс:</span>
+                                                        <span style={{ color: '#fbbf24', fontWeight: 700 }}>
+                                                            {totalCrit}% <small style={{ opacity: 0.7 }}>(+{forgeBonus.critChance}%)</small>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </>
+                                        );
+                                    })()}
                                 </div>
 
                                 {/* Forge */}

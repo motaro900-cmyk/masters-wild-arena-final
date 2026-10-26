@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { proceduralAudio } from '../../utils/ProceduralAudio';
+import { PortalItemTooltip } from './PortalItemTooltip';
+import { portalSound } from '../PortalSoundService';
 
 export interface IItemEntry {
     id: string;
@@ -171,6 +172,8 @@ export const ITEMS_CATALOG: IItemEntry[] = [
 export const PortalItemCodex: React.FC = () => {
     const [activeTab, setActiveTab] = useState<'all' | 'weapon' | 'armor' | 'shield' | 'consumable'>('all');
     const [selectedItem, setSelectedItem] = useState<IItemEntry>(ITEMS_CATALOG[0]);
+    const [hoveredItem, setHoveredItem] = useState<IItemEntry | null>(null);
+    const [tooltipPos, setTooltipPos] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
 
     const filteredItems = activeTab === 'all' 
         ? ITEMS_CATALOG 
@@ -248,8 +251,9 @@ export const PortalItemCodex: React.FC = () => {
                         return (
                             <button
                                 key={tab.id}
+                                onMouseEnter={() => portalSound.playHover()}
                                 onClick={() => {
-                                    proceduralAudio.playClick(1);
+                                    portalSound.playClick(1.0);
                                     setActiveTab(tab.id as any);
                                 }}
                                 style={{
@@ -293,8 +297,19 @@ export const PortalItemCodex: React.FC = () => {
                             return (
                                 <div
                                     key={item.id}
+                                    onMouseEnter={(e) => {
+                                        portalSound.playHover();
+                                        setHoveredItem(item);
+                                        setTooltipPos({ x: e.clientX, y: e.clientY });
+                                    }}
+                                    onMouseMove={(e) => {
+                                        setTooltipPos({ x: e.clientX, y: e.clientY });
+                                    }}
+                                    onMouseLeave={() => {
+                                        setHoveredItem(null);
+                                    }}
                                     onClick={() => {
-                                        proceduralAudio.playClick(1.1);
+                                        portalSound.playEquip();
                                         setSelectedItem(item);
                                     }}
                                     style={{
@@ -499,6 +514,14 @@ export const PortalItemCodex: React.FC = () => {
                     </div>
                 </div>
             </div>
+
+            {/* Path of Exile / Diablo IV Interactive Tooltip */}
+            <PortalItemTooltip
+                item={hoveredItem}
+                visible={hoveredItem !== null}
+                x={tooltipPos.x}
+                y={tooltipPos.y}
+            />
         </section>
     );
 };

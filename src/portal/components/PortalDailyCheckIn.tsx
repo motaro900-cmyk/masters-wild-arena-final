@@ -6,7 +6,9 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { proceduralAudio } from '../../utils/ProceduralAudio';
+import { portalSound } from '../PortalSoundService';
 import { useGameStore } from '../../store/useGameStore';
+import { portalSyncBridge } from '../../services/PortalSyncBridge';
 
 export interface ICheckInDay {
     day: number;
@@ -53,7 +55,7 @@ export const PortalDailyCheckIn: React.FC = () => {
     const handleClaim = () => {
         if (!canClaim) return;
 
-        proceduralAudio.playFanfare();
+        portalSound.playReward();
         const currentReward = CHECK_IN_DAYS[(streak - 1) % CHECK_IN_DAYS.length];
 
         const store: any = useGameStore.getState();
