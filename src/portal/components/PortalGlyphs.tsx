@@ -329,3 +329,21 @@ export const ScaleGlyph: React.FC<GlyphProps> = ({ size = 16, color = '#d4af37',
   </svg>
 );
 
+export const MusicGlyph: React.FC<GlyphProps> = ({ size = 18, color = '#d4af37', glow = false }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    style={{
+      display: 'inline-block',
+      verticalAlign: 'middle',
+      filter: glow ? `drop-shadow(0 0 8px ${color}80)` : 'none',
+    }}
+  >
+    <path d="M9 18V5l12-2v13" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    <circle cx="6" cy="18" r="3" stroke={color} strokeWidth="2" fill="rgba(212, 175, 55, 0.2)" />
+    <circle cx="18" cy="16" r="3" stroke={color} strokeWidth="2" fill="rgba(212, 175, 55, 0.2)" />
+  </svg>
+);
+

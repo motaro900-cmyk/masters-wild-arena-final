@@ -1,3 +1,4 @@
+import { SwordGlyph, ShieldGlyph } from './PortalGlyphs';
 /**
  * PORTAL HEADER (Шапка игрового портала)
  * Навигация, статус игрового сервера, личный кабинет, быстрый вход в бой и PWA установка.
@@ -149,6 +150,7 @@ export const PortalHeader: React.FC<PortalHeaderProps> = ({
         {[
           { label: 'Главная', id: 'hero' },
           { label: 'Звери и Навыки', id: 'beasts' },
+          { label: 'Оружейная', id: 'armory' },
           { label: 'Саундтреки', id: 'music' },
           { label: 'Награды', id: 'rewards' },
           { label: 'Зал Славы', id: 'leaderboard' },
@@ -202,7 +204,7 @@ export const PortalHeader: React.FC<PortalHeaderProps> = ({
             transition: 'all 0.2s ease',
           }}
         >
-          <span style={{ display: "inline-flex" }}>●</span>
+          <ShieldGlyph size={15} color="#FFE07D" />
           <span>Личный Кабинет</span>
         </button>
 
@@ -253,7 +255,7 @@ export const PortalHeader: React.FC<PortalHeaderProps> = ({
             gap: '8px',
           }}
         >
-          <span></span>
+          <SwordGlyph size={16} color="#150f05" />
           <span>В БОЙ!</span>
         </motion.button>
       </div>

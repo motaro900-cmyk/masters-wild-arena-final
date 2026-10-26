@@ -1,3 +1,4 @@
+import { TrophyGlyph, CrownGlyph, SwordGlyph } from './PortalGlyphs';
 /**
  * PORTAL HALL OF FAME (Чертоги Славы & PvP Лидерборд)
  * Топ-10 Чемпионов Сервера S1, таблица почета, генератор P2P дуэлей
@@ -23,7 +24,7 @@ export interface ILeaderboardPlayer {
 export const TOP_CHAMPIONS: ILeaderboardPlayer[] = [
   {
     rank: 1,
-    name: ' СеверныйКлык',
+    name: 'СеверныйКлык',
     title: 'Великий Архимагистр',
     avatar: '/assets/images/avatars/panda.webp',
     heroName: 'Фэн Лун (Панда)',
@@ -197,7 +198,7 @@ export const PortalHallOfFame: React.FC<PortalHallOfFameProps> = ({ onChallengeP
               marginBottom: '14px',
             }}
           >
-            <span></span> ЗАЛ ЧЕМПИОНОВ S1: ДИКИЕ ЗЕМЛИ
+            <TrophyGlyph size={16} color="#d4af37" glow /> ЗАЛ ЧЕМПИОНОВ S1: ДИКИЕ ЗЕМЛИ
           </div>
           <h2
             style={{
@@ -281,7 +282,13 @@ export const PortalHallOfFame: React.FC<PortalHallOfFameProps> = ({ onChallengeP
                   >
                     #{player.rank}
                   </span>
-                  {isTop1 && <span></span>}
+                  {isTop1 ? (
+                    <CrownGlyph size={16} color="#d4af37" glow />
+                  ) : player.rank === 2 ? (
+                    <CrownGlyph size={15} color="#cbd5e1" />
+                  ) : player.rank === 3 ? (
+                    <CrownGlyph size={15} color="#d97706" />
+                  ) : null}
                 </div>
 
                 {/* Player Name & Avatar */}
@@ -323,8 +330,9 @@ export const PortalHallOfFame: React.FC<PortalHallOfFameProps> = ({ onChallengeP
                 </div>
 
                 {/* Power */}
-                <div style={{ fontSize: '13px', fontWeight: 700, color: '#eab308' }}>
-                   {player.power.toLocaleString('ru-RU')}
+                <div style={{ fontSize: '13px', fontWeight: 700, color: '#eab308', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <SwordGlyph size={13} color="#f59e0b" />
+                  <span>{player.power.toLocaleString('ru-RU')}</span>
                 </div>
 
                 {/* Win Rate */}

@@ -1,3 +1,4 @@
+import { ScrollGlyph, SwordGlyph, TrophyGlyph } from './PortalGlyphs';
 /**
  * PORTAL NEWS & CHRONICLES COMPONENT
  * Секция новостей, патчей и турниров в стиле Steam Community & Battle.net News Hub.
@@ -18,7 +19,7 @@ export const PortalNews: React.FC<PortalNewsProps> = ({ onLaunchGame }) => {
       title: '«Пробуждение Титанов»: Древняя Кузница и Баланс Арены',
       desc: 'Масштабное обновление боевой системы: запущена система перековки реликвий до +15, скорректированы критические формулы урона и активирована поддержка 60 FPS на всех мобильных браузерах.',
       tag: 'Обновление баланса',
-      action: ' ИСПЫТАТЬ В БОЮ',
+      action: 'ИСПЫТАТЬ В БОЮ',
     },
     {
       id: 2,
@@ -83,7 +84,7 @@ export const PortalNews: React.FC<PortalNewsProps> = ({ onLaunchGame }) => {
               marginBottom: '14px',
             }}
           >
-             ХРОНИКИ И ПАТЧИ ДИКОЗЕМЬЯ
+            <ScrollGlyph size={16} color="#d4af37" glow /> ХРОНИКИ И ПАТЧИ ДИКОЗЕМЬЯ
           </div>
           <h2
             style={{

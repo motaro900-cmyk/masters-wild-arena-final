@@ -1,3 +1,4 @@
+import { MusicGlyph } from './PortalGlyphs';
 /**
  * PORTAL OST PLAYER (Святилище Звука: Саундтрек Диких Земель)
  * Плеер оригинальных композиций с динамической Canvas-визуализацией спектра,
@@ -276,7 +277,7 @@ export const PortalOSTPlayer: React.FC<PortalOSTPlayerProps> = ({ isGameActive =
               marginBottom: '14px',
             }}
           >
-             СВЯТИЛИЩЕ ЗВУКА & САУНДТРЕК
+            <MusicGlyph size={16} color="#d4af37" glow /> СВЯТИЛИЩЕ ЗВУКА & САУНДТРЕК
           </div>
           <h2
             style={{
