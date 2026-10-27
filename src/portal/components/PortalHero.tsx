@@ -18,14 +18,6 @@ interface PortalHeroProps {
   onExploreBeasts: () => void;
 }
 
-const STARTER_CHAMPIONS = [
-  { id: 'panda', name: 'Фэн Лун', role: 'Боец', avatar: '/assets/images/avatars/panda.webp', color: '#4ade80' },
-  { id: 'raccoon', name: 'Рикки', role: 'Убийца', avatar: '/assets/images/avatars/cat.webp', color: '#c084fc' },
-  { id: 'minotaur', name: 'Громм', role: 'Танк', avatar: '/assets/images/avatars/boar.webp', color: '#f59e0b' },
-  { id: 'tiger_warrior', name: 'Варкан', role: 'Охотник', avatar: '/assets/images/avatars/tiger.webp', color: '#ef4444' },
-  { id: 'lion_knight', name: 'Аурелиус', role: 'Паладин', avatar: '/assets/images/avatars/lion.webp', color: '#eab308' },
-];
-
 export const PortalHero: React.FC<PortalHeroProps> = ({
   onLaunchGame,
 }) => {
@@ -33,13 +25,12 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
     accountAuthService.getCurrentAccount()
   );
 
-  // Callsign & Chosen Starter Hero
+  // Callsign
   const [callsign, setCallsign] = useState(() => {
     return localStorage.getItem('mow_player_name') || 'admin';
   });
-  const [selectedHero, setSelectedHero] = useState<string>('panda');
 
-  // Full Auth Mode: 'register' is primary, 'login' for returning players
+  // Auth Mode: 'register' is primary, 'login' for returning players
   const [authMode, setAuthMode] = useState<'register' | 'login'>('register');
   const [loginField, setLoginField] = useState('');
   const [emailField, setEmailField] = useState('');
@@ -62,27 +53,16 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
   }, []);
 
   /**
-   * Fast 1-Click Trial Play (No Password)
+   * Launch game with active session
    */
-  const handleQuickPlay = (e?: React.FormEvent) => {
-    if (e && e.preventDefault) e.preventDefault();
-    const cleanName = (loginField.trim() || callsign.trim() || 'admin');
+  const handleLaunch = () => {
     portalSound.playEquip();
     proceduralAudio.playDuelHorn();
-
-    localStorage.setItem('mow_player_name', cleanName);
-    localStorage.setItem('mow_master_nick', cleanName);
-    portalSyncBridge.commitMutation({
-      playerName: cleanName,
-      selectedHeroId: selectedHero,
-      isLoggedIn: true,
-    });
-
     onLaunchGame();
   };
 
   /**
-   * Full Account Registration
+   * Account Registration
    */
   const handleRegisterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -101,7 +81,7 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
         login: loginField,
         email: emailField,
         password: passwordField,
-        selectedHeroId: selectedHero,
+        selectedHeroId: 'panda',
       });
 
       if (!res.success) {
@@ -113,11 +93,11 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
 
       portalSound.playReward();
       proceduralAudio.playFanfare();
-      setFormMsg({ text: 'Мастер-аккаунт успешно зарегистрирован! Запуск игры...', isError: false });
+      setFormMsg({ text: 'Аккаунт успешно создан! Запуск игры...', isError: false });
 
       setTimeout(() => {
         onLaunchGame();
-      }, 400);
+      }, 350);
     } catch (err: any) {
       setFormMsg({ text: err?.message || 'Непредвиденная ошибка регистрации', isError: true });
     } finally {
@@ -126,7 +106,7 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
   };
 
   /**
-   * Full Account Login
+   * Account Login
    */
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -152,7 +132,7 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
 
       setTimeout(() => {
         onLaunchGame();
-      }, 350);
+      }, 300);
     } catch (err: any) {
       setFormMsg({ text: err?.message || 'Непредвиденная ошибка входа', isError: true });
     } finally {
@@ -196,7 +176,7 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
         }}
       />
 
-      {/* 2. Warm Sunbeam Radial Overlay (Inviting, Golden, Radiant) */}
+      {/* 2. Warm Sunbeam Radial Overlay */}
       <div
         style={{
           position: 'absolute',
@@ -218,7 +198,7 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
         }}
       />
 
-      {/* 3. Main Full-Scale Responsive Container */}
+      {/* 3. Main Container */}
       <div
         style={{
           position: 'relative',
@@ -232,7 +212,7 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
           alignItems: 'center',
         }}
       >
-        {/* Left Column: Monumental Game Branding */}
+        {/* Left Column: Game Branding */}
         <div style={{ textAlign: 'left' }}>
           {/* Status Badge */}
           <div
@@ -382,14 +362,14 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
           </div>
         </div>
 
-        {/* Right Column: Full Featured Master-Account Registration & Auth Card */}
+        {/* Right Column: Clean Master-Account Registration & Login Card */}
         <div style={{ display: 'flex', justifyContent: 'center' }}>
           <HudCard
             active={true}
             beamColor="#FFE07D"
             style={{
               width: '100%',
-              maxWidth: '560px',
+              maxWidth: '520px',
               padding: 'clamp(28px, 3.5vw, 36px)',
               backgroundColor: 'rgba(18, 12, 30, 0.94)',
               border: '2px solid rgba(255, 224, 125, 0.55)',
@@ -419,7 +399,7 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
                     letterSpacing: '0.5px',
                   }}
                 >
-                  {currentAccount ? 'МАСТЕР-АККАУНТ ВОИНА' : 'РЕГИСТРАЦИЯ ВОИНА'}
+                  {currentAccount ? 'МАСТЕР-АККАУНТ' : authMode === 'register' ? 'РЕГИСТРАЦИЯ' : 'ВХОД В ИГРУ'}
                 </span>
               </div>
               <span
@@ -464,17 +444,7 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
                     }}
                   >
                     <img
-                      src={
-                        currentAccount.profile.selectedHeroId === 'raccoon'
-                          ? '/assets/images/avatars/cat.webp'
-                          : currentAccount.profile.selectedHeroId === 'minotaur'
-                          ? '/assets/images/avatars/boar.webp'
-                          : currentAccount.profile.selectedHeroId === 'tiger_warrior'
-                          ? '/assets/images/avatars/tiger.webp'
-                          : currentAccount.profile.selectedHeroId === 'lion_knight'
-                          ? '/assets/images/avatars/lion.webp'
-                          : '/assets/images/avatars/panda.webp'
-                      }
+                      src="/assets/images/avatars/panda.webp"
                       alt="Avatar"
                       style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                     />
@@ -525,14 +495,14 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
                   </div>
                 </div>
 
-                {/* Primary Continue Button */}
+                {/* Primary Launch Button */}
                 <ShinyGoldButton
                   type="button"
-                  onClick={handleQuickPlay}
+                  onClick={handleLaunch}
                   style={{ width: '100%', padding: '20px 32px', fontSize: '18px' }}
                 >
                   <SwordGlyph size={24} color="#120d04" />
-                  <span>ПРОДОЛЖИТЬ ИГРУ</span>
+                  <span>ВОЙТИ В ИГРУ</span>
                 </ShinyGoldButton>
 
                 <button
@@ -552,7 +522,7 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
                 </button>
               </div>
             ) : (
-              /* PROMINENT REGISTRATION & AUTH TABS */
+              /* CLEAN REGISTRATION & LOGIN FORM */
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 {/* Tabs Switcher: Регистрация (default) / Вход */}
                 <div
@@ -638,7 +608,7 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
                   </div>
                 )}
 
-                {/* Starter Bonus Preview Banner */}
+                {/* Bonus Strip */}
                 <div
                   style={{
                     padding: '10px 16px',
@@ -666,7 +636,7 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
                 </div>
 
                 {authMode === 'register' ? (
-                  /* ── FULL REGISTRATION FORM ── */
+                  /* ── CLEAN REGISTRATION FORM ── */
                   <form onSubmit={handleRegisterSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                     {/* 1. Callsign / Login */}
                     <div>
@@ -702,76 +672,7 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
                       />
                     </div>
 
-                    {/* 2. Starter Hero Selector */}
-                    <div>
-                      <label
-                        style={{
-                          display: 'block',
-                          fontSize: '13px',
-                          color: '#f5edd8',
-                          marginBottom: '8px',
-                          fontWeight: 700,
-                        }}
-                      >
-                        Выберите стартового чемпиона:
-                      </label>
-                      <div
-                        style={{
-                          display: 'grid',
-                          gridTemplateColumns: 'repeat(5, 1fr)',
-                          gap: '8px',
-                        }}
-                      >
-                        {STARTER_CHAMPIONS.map((h) => {
-                          const isSel = selectedHero === h.id;
-                          return (
-                            <button
-                              key={h.id}
-                              type="button"
-                              onClick={() => {
-                                portalSound.playClick(1.0);
-                                setSelectedHero(h.id);
-                              }}
-                              style={{
-                                padding: '6px 4px',
-                                borderRadius: '12px',
-                                border: isSel ? `2px solid ${h.color}` : '1.5px solid rgba(212, 175, 55, 0.3)',
-                                backgroundColor: isSel ? 'rgba(212, 175, 55, 0.22)' : 'rgba(0,0,0,0.5)',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                alignItems: 'center',
-                                gap: '4px',
-                                cursor: 'pointer',
-                                outline: 'none',
-                                boxShadow: isSel ? `0 0 16px ${h.color}88` : 'none',
-                                transition: 'all 0.15s ease',
-                              }}
-                            >
-                              <div
-                                style={{
-                                  width: '42px',
-                                  height: '42px',
-                                  borderRadius: '50%',
-                                  overflow: 'hidden',
-                                  border: `1.5px solid ${isSel ? h.color : 'rgba(255,255,255,0.3)'}`,
-                                }}
-                              >
-                                <img
-                                  src={h.avatar}
-                                  alt={h.name}
-                                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                />
-                              </div>
-                              <span style={{ fontSize: '11px', fontWeight: 800, color: isSel ? '#FFE07D' : '#d4c7b6' }}>
-                                {h.name.split(' ')[0]}
-                              </span>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-
-                    {/* 3. Email */}
+                    {/* 2. Email */}
                     <div>
                       <label
                         style={{
@@ -804,7 +705,7 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
                       />
                     </div>
 
-                    {/* 4. Password & Confirm Password (2 Columns) */}
+                    {/* 3. Password & Confirm Password (2 Columns) */}
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                       <div>
                         <label
@@ -891,29 +792,9 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
                     >
                       🔒 100% сохранение прогресса. Нажимая кнопку, вы соглашаетесь с Политикой конфиденциальности.
                     </div>
-
-                    {/* Quick Guest Play Fallback */}
-                    <div style={{ textAlign: 'center', marginTop: '2px' }}>
-                      <button
-                        type="button"
-                        onClick={handleQuickPlay}
-                        style={{
-                          background: 'none',
-                          border: 'none',
-                          color: '#FFE07D',
-                          fontSize: '13px',
-                          fontWeight: 700,
-                          cursor: 'pointer',
-                          textDecoration: 'underline',
-                          padding: 0,
-                        }}
-                      >
-                        Или начать пробный бой без пароля (в 1 клик) →
-                      </button>
-                    </div>
                   </form>
                 ) : (
-                  /* ── FULL LOGIN FORM ── */
+                  /* ── CLEAN LOGIN FORM ── */
                   <form onSubmit={handleLoginSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                     <div>
                       <label
@@ -986,7 +867,7 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
                       style={{ width: '100%', padding: '20px 24px', fontSize: '18px', marginTop: '6px' }}
                     >
                       <SwordGlyph size={24} color="#120d04" />
-                      <span>{isLoading ? 'ПРОВЕРКА ВХОДА...' : 'ВОЙТИ В МАСТЕР-АККАУНТ'}</span>
+                      <span>{isLoading ? 'ПРОВЕРКА ВХОДА...' : 'ВОЙТИ В ИГРУ'}</span>
                     </ShinyGoldButton>
 
                     <div style={{ textAlign: 'center', marginTop: '4px' }}>
