@@ -19,6 +19,7 @@ import profileLoadHandler from './profile-load.js';
 import profileDeleteHandler from './profile-delete.js';
 import healthHandler from './health.js';
 import logErrorHandler from './log-error.js';
+import { handleRegister, handleLogin, handleAuthMe } from './authHandler.js';
 import { createRateLimiter } from './securityMiddleware.js';
 
 // Import server-authoritative game handlers
@@ -129,6 +130,11 @@ router.post('/clan/create', gameActionLimiter, adaptHandler(handleCreateClan));
 router.post('/clan/join', gameActionLimiter, adaptHandler(handleJoinClan));
 router.post('/clan/leave', gameActionLimiter, adaptHandler(handleLeaveClan));
 router.get('/leaderboard/top', publicLimiter, adaptHandler(handleGetLeaderboard));
+
+// Master Account Authentication Routes
+router.post('/auth/register', profileLimiter, adaptHandler(handleRegister));
+router.post('/auth/login', profileLimiter, adaptHandler(handleLogin));
+router.get('/auth/me', profileLimiter, adaptHandler(handleAuthMe));
 
 // Mount router on BOTH /api and / to handle all routing conventions seamlessly
 app.use('/api', router);

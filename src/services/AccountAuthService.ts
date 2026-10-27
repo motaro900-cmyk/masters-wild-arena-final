@@ -154,7 +154,7 @@ class AccountAuthService {
     }
 
     /**
-     * Регистрация нового аккаунта
+     * Регистрация нового мастер-аккаунта (сначала серверное API, при офлайне — защищенный локальный фоллбэк)
      */
     public async register(params: {
         login: string;
@@ -167,7 +167,7 @@ class AccountAuthService {
         const cleanPass = params.password.trim();
         const cleanHero = params.selectedHeroId || 'panda';
 
-        // 1. Валидация логина
+        // 1. Клиентская валидация логина
         if (!cleanLogin || cleanLogin.length < 3) {
             return { success: false, error: 'Имя персонажа (логин) должно содержать не менее 3 символов' };
         }
@@ -186,7 +186,67 @@ class AccountAuthService {
             return { success: false, error: 'Пароль должен содержать минимум 4 символа' };
         }
 
-        // 4. Проверка на уникальность
+        // 4. Попытка серверной регистрации через универсальный эндпоинт /api/auth/register
+        try {
+            const response = await fetch('/api/auth/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    login: cleanLogin,
+                    email: cleanEmail,
+                    password: cleanPass,
+                    selectedHeroId: cleanHero,
+                }),
+            });
+
+            const data = await response.json();
+
+            if (response.ok && data.success && data.account) {
+                const accounts = this.getAllAccounts();
+                const serverAcc: IUserAccount = {
+                    id: data.account.id,
+                    login: data.account.login,
+                    email: data.account.email,
+                    passwordHash: 'SERVER_AUTHORITATIVE',
+                    salt: '',
+                    createdAt: data.account.createdAt || Date.now(),
+                    lastLoginAt: Date.now(),
+                    profile: data.profile || {
+                        playerName: cleanLogin,
+                        selectedHeroId: cleanHero,
+                        level: 1,
+                        exp: 0,
+                        gold: 500,
+                        diamonds: 50,
+                        energy: 100,
+                        rating: 1000,
+                        equipTiers: { weapon: 1, armor: 1, ring: 1, boots: 1 },
+                    },
+                };
+
+                if (data.token) {
+                    localStorage.setItem('mow_session_token', data.token);
+                    localStorage.setItem('mow_auth_token', data.token);
+                }
+
+                // Обновляем локальный кэш аккаунтов
+                const filtered = accounts.filter(
+                    (a) => a.login.toLowerCase() !== cleanLogin.toLowerCase()
+                );
+                filtered.push(serverAcc);
+                this.saveAccounts(filtered);
+
+                // Устанавливаем активную сессию
+                this.setActiveSession(serverAcc);
+                return { success: true, account: serverAcc };
+            } else if (!response.ok && data.error) {
+                return { success: false, error: data.error };
+            }
+        } catch (netErr) {
+            console.warn('[AccountAuthService] Серверный API недоступен, переключение на локальный реестр:', netErr);
+        }
+
+        // 5. Офлайн-фоллбэк: локальное криптографическое сохранение
         const accounts = this.getAllAccounts();
         const existsLogin = accounts.some(
             (acc) => acc.login.toLowerCase() === cleanLogin.toLowerCase()
@@ -202,7 +262,6 @@ class AccountAuthService {
             return { success: false, error: 'Аккаунт с таким Email уже зарегистрирован' };
         }
 
-        // 5. Создание записи аккаунта
         const salt = this.generateSalt();
         const passwordHash = await this.hashPassword(cleanPass, salt);
         const newAccount: IUserAccount = {
@@ -233,21 +292,19 @@ class AccountAuthService {
 
         accounts.push(newAccount);
         this.saveAccounts(accounts);
-
-        // 6. Установка активной сессии
         this.setActiveSession(newAccount);
 
         return { success: true, account: newAccount };
     }
 
     /**
-     * Авторизация существующего аккаунта
+     * Авторизация существующего аккаунта (серверное API с локальным фоллбэком)
      */
     public async login(params: {
         identifier: string; // login or email
         password: string;
     }): Promise<{ success: boolean; error?: string; account?: IUserAccount }> {
-        const cleanIdent = params.identifier.trim().toLowerCase();
+        const cleanIdent = params.identifier.trim();
         const cleanPass = params.password.trim();
 
         if (!cleanIdent) {
@@ -257,27 +314,87 @@ class AccountAuthService {
             return { success: false, error: 'Введите пароль' };
         }
 
+        // 1. Попытка серверной авторизации через /api/auth/login
+        try {
+            const response = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    identifier: cleanIdent,
+                    password: cleanPass,
+                }),
+            });
+
+            const data = await response.json();
+
+            if (response.ok && data.success && data.account) {
+                const accounts = this.getAllAccounts();
+                const serverAcc: IUserAccount = {
+                    id: data.account.id,
+                    login: data.account.login,
+                    email: data.account.email,
+                    passwordHash: 'SERVER_AUTHORITATIVE',
+                    salt: '',
+                    createdAt: data.account.createdAt || Date.now(),
+                    lastLoginAt: Date.now(),
+                    profile: data.profile || {
+                        playerName: data.account.login,
+                        selectedHeroId: 'panda',
+                        level: 1,
+                        exp: 0,
+                        gold: 500,
+                        diamonds: 50,
+                        energy: 100,
+                        rating: 1000,
+                        equipTiers: { weapon: 1, armor: 1, ring: 1, boots: 1 },
+                    },
+                };
+
+                if (data.token) {
+                    localStorage.setItem('mow_session_token', data.token);
+                    localStorage.setItem('mow_auth_token', data.token);
+                }
+
+                const existingIdx = accounts.findIndex(
+                    (a) => a.id === serverAcc.id || a.login.toLowerCase() === serverAcc.login.toLowerCase()
+                );
+                if (existingIdx !== -1) {
+                    accounts[existingIdx] = serverAcc;
+                } else {
+                    accounts.push(serverAcc);
+                }
+                this.saveAccounts(accounts);
+                this.setActiveSession(serverAcc);
+                return { success: true, account: serverAcc };
+            } else if (!response.ok && data.error) {
+                return { success: false, error: data.error };
+            }
+        } catch (netErr) {
+            console.warn('[AccountAuthService] Сервер авторизации офлайн, проверяем локальный кэш:', netErr);
+        }
+
+        // 2. Офлайн-фоллбэк: проверка по локальной базе
         const accounts = this.getAllAccounts();
         const account = accounts.find(
             (acc) =>
-                acc.login.toLowerCase() === cleanIdent ||
-                acc.email.toLowerCase() === cleanIdent
+                acc.login.toLowerCase() === cleanIdent.toLowerCase() ||
+                acc.email.toLowerCase() === cleanIdent.toLowerCase()
         );
 
         if (!account) {
             return { success: false, error: 'Аккаунт с таким логином или Email не найден' };
         }
 
-        const computedHash = await this.hashPassword(cleanPass, account.salt);
-        if (computedHash !== account.passwordHash) {
-            return { success: false, error: 'Неверный пароль. Попробуйте снова' };
+        if (account.passwordHash !== 'SERVER_AUTHORITATIVE') {
+            const computedHash = await this.hashPassword(cleanPass, account.salt);
+            if (computedHash !== account.passwordHash) {
+                return { success: false, error: 'Неверный пароль. Попробуйте снова' };
+            }
         }
 
         // Обновляем время входа
         account.lastLoginAt = Date.now();
         this.saveAccounts(accounts);
-
-        // Устанавливаем активную сессию
         this.setActiveSession(account);
 
         return { success: true, account };
