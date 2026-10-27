@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import {
   SwordGlyph,
   ShieldGlyph,
@@ -8,7 +8,6 @@ import {
 } from './PortalGlyphs';
 import { proceduralAudio } from '../../utils/ProceduralAudio';
 import { portalSound } from '../PortalSoundService';
-import { OFFICIAL_DOMAIN, STORAGE_BACKEND } from '../portalConstants';
 import { HudCard } from './hud/HudCard';
 import { ShinyGoldButton } from './hud/ShinyGoldButton';
 import { accountAuthService, IUserAccount } from '../../services/AccountAuthService';
@@ -159,13 +158,13 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        paddingTop: '110px',
-        paddingBottom: '80px',
+        paddingTop: '100px',
+        paddingBottom: '70px',
         overflow: 'hidden',
-        backgroundColor: '#07050d',
+        backgroundColor: '#0c0817',
       }}
     >
-      {/* 1. Deep Layered Game Background with Subtle Breathing Zoom */}
+      {/* 1. Bright, High-Saturated, Vibrant Fantasy Game Background */}
       <motion.div
         animate={{ scale: [1.02, 1.05, 1.02] }}
         transition={{ duration: 16, repeat: Infinity, ease: 'easeInOut' }}
@@ -174,19 +173,19 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
           inset: 0,
           backgroundImage: 'url(/assets/images/backgrounds/bg_main.webp)',
           backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          filter: 'brightness(0.32) contrast(1.25) saturate(1.15)',
+          backgroundPosition: 'center 35%',
+          filter: 'brightness(0.85) contrast(1.1) saturate(1.35)',
           zIndex: 0,
         }}
       />
 
-      {/* 2. Radial Vignette & Atmospheric Fog Gradients */}
+      {/* 2. Warm Sunbeam Radial Overlay (Inviting, Golden, Atmospheric) */}
       <div
         style={{
           position: 'absolute',
           inset: 0,
           background:
-            'radial-gradient(circle at 45% 45%, rgba(212, 175, 55, 0.09) 0%, rgba(5, 4, 9, 0.88) 65%, #07050d 100%)',
+            'radial-gradient(circle at 50% 35%, rgba(255, 230, 150, 0.18) 0%, rgba(20, 12, 30, 0.42) 65%, #0e0a1a 100%)',
           zIndex: 1,
         }}
       />
@@ -196,8 +195,8 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
           bottom: 0,
           left: 0,
           right: 0,
-          height: '240px',
-          background: 'linear-gradient(to top, #07050d 0%, transparent 100%)',
+          height: '160px',
+          background: 'linear-gradient(to top, #0c0817 0%, transparent 100%)',
           zIndex: 1,
         }}
       />
@@ -207,18 +206,18 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
         style={{
           position: 'relative',
           zIndex: 2,
-          maxWidth: '1760px',
+          maxWidth: '1680px',
           width: '100%',
           padding: '0 clamp(24px, 4vw, 70px)',
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(460px, 1fr))',
-          gap: 'clamp(40px, 5vw, 90px)',
+          gap: 'clamp(40px, 5vw, 80px)',
           alignItems: 'center',
         }}
       >
         {/* Left Column: Monumental Branding & Direct Game Intro */}
         <div style={{ textAlign: 'left' }}>
-          {/* Status Badge */}
+          {/* Status Badge (No Tech Jargon) */}
           <div
             style={{
               display: 'inline-flex',
@@ -226,10 +225,11 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
               gap: '12px',
               padding: '10px 24px',
               borderRadius: '30px',
-              background: 'rgba(212, 175, 55, 0.14)',
-              border: '1.5px solid rgba(212, 175, 55, 0.5)',
-              boxShadow: '0 0 30px rgba(212, 175, 55, 0.3)',
-              marginBottom: '26px',
+              background: 'rgba(212, 175, 55, 0.22)',
+              border: '1.5px solid rgba(255, 224, 125, 0.65)',
+              boxShadow: '0 0 30px rgba(255, 215, 0, 0.35)',
+              marginBottom: '24px',
+              backdropFilter: 'blur(8px)',
             }}
           >
             <span
@@ -238,21 +238,22 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
                 height: '12px',
                 borderRadius: '50%',
                 backgroundColor: '#22c55e',
-                boxShadow: '0 0 14px #22c55e',
+                boxShadow: '0 0 16px #4ade80',
                 display: 'inline-block',
               }}
             />
             <span
               style={{
-                color: '#FFE07D',
+                color: '#FFE899',
                 fontSize: '15px',
                 fontWeight: 800,
                 letterSpacing: '1.5px',
                 textTransform: 'uppercase',
                 fontFamily: "'Montserrat', sans-serif",
+                textShadow: '0 2px 8px rgba(0,0,0,0.8)',
               }}
             >
-              ⚡ Zero-Server • React 19 + PixiJS v8 • 60 FPS
+              ✨ Официальный сайт • Играй бесплатно в браузере
             </span>
           </div>
 
@@ -266,7 +267,7 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
               lineHeight: 1.1,
               color: '#ffffff',
               textShadow:
-                '0 4px 35px rgba(0,0,0,0.98), 0 0 60px rgba(212, 175, 55, 0.35)',
+                '0 4px 35px rgba(0,0,0,0.98), 0 0 60px rgba(255, 215, 0, 0.45)',
               letterSpacing: '0.5px',
             }}
           >
@@ -274,94 +275,110 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
             <span
               style={{
                 background:
-                  'linear-gradient(135deg, #FFE07D 0%, #d4af37 50%, #aa8022 100%)',
+                  'linear-gradient(135deg, #FFF0A8 0%, #FFE07D 40%, #eab308 100%)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
+                filter: 'drop-shadow(0 2px 14px rgba(234, 179, 8, 0.5))',
               }}
             >
               MASTERS OF THE WILD
             </span>
           </h1>
 
-          {/* Direct Concise Game Description */}
+          {/* Direct Concise Game Description (No Dev Jargon) */}
           <p
             style={{
-              margin: '0 0 28px 0',
+              margin: '0 0 26px 0',
               maxWidth: '680px',
               fontSize: 'clamp(17px, 1.35vw, 21px)',
               lineHeight: 1.7,
-              color: '#d4c7b6',
-              textShadow: '0 2px 12px rgba(0,0,0,0.95)',
+              color: '#f5edd8',
+              textShadow: '0 2px 14px rgba(0,0,0,0.95)',
             }}
           >
-            Официальный сайт браузерной тактической RPG ({OFFICIAL_DOMAIN}).
-            Мгновенный запуск прямо в окне браузера без скачивания и очередей.
-            10 уникальных чемпионов, кузница экипировки из 7 слотов, соревновательная арена с 9 PvP-рангами и оркестровый саундтрек (-14 LUFS).
+            Официальный сайт браузерной тактической RPG. Мгновенный запуск прямо в браузере без скачивания и ожидания.
+            5 легендарных чемпионов, глубокая кузница экипировки из 7 слотов, соревновательная арена и живой оркестровый саундтрек.
           </p>
 
-          {/* Feature Badges Row */}
+          {/* Fantasy Features Row (No Dev Jargon) */}
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px' }}>
             <span
               style={{
-                fontSize: '13px',
-                fontWeight: 700,
+                fontSize: '14px',
+                fontWeight: 800,
                 color: '#FFE07D',
-                backgroundColor: 'rgba(212, 175, 55, 0.12)',
-                padding: '6px 14px',
-                borderRadius: '12px',
-                border: '1px solid rgba(212, 175, 55, 0.35)',
+                backgroundColor: 'rgba(212, 175, 55, 0.2)',
+                padding: '8px 18px',
+                borderRadius: '14px',
+                border: '1.5px solid rgba(255, 224, 125, 0.45)',
+                boxShadow: '0 4px 15px rgba(0,0,0,0.4)',
+                backdropFilter: 'blur(6px)',
               }}
             >
-              ⚡ 0 сек загрузки
+              ⚔️ Тактические дуэли
             </span>
             <span
               style={{
-                fontSize: '13px',
-                fontWeight: 700,
-                color: '#4ade80',
-                backgroundColor: 'rgba(34, 197, 94, 0.12)',
-                padding: '6px 14px',
-                borderRadius: '12px',
-                border: '1px solid rgba(34, 197, 94, 0.35)',
+                fontSize: '14px',
+                fontWeight: 800,
+                color: '#86efac',
+                backgroundColor: 'rgba(34, 197, 94, 0.2)',
+                padding: '8px 18px',
+                borderRadius: '14px',
+                border: '1.5px solid rgba(74, 222, 128, 0.45)',
+                boxShadow: '0 4px 15px rgba(0,0,0,0.4)',
+                backdropFilter: 'blur(6px)',
               }}
             >
-              🎮 60 FPS на PixiJS v8
+              🛡️ Кузница артефактов
             </span>
             <span
               style={{
-                fontSize: '13px',
-                fontWeight: 700,
-                color: '#60a5fa',
-                backgroundColor: 'rgba(96, 165, 250, 0.12)',
-                padding: '6px 14px',
-                borderRadius: '12px',
-                border: '1px solid rgba(96, 165, 250, 0.35)',
+                fontSize: '14px',
+                fontWeight: 800,
+                color: '#93c5fd',
+                backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                padding: '8px 18px',
+                borderRadius: '14px',
+                border: '1.5px solid rgba(96, 165, 250, 0.45)',
+                boxShadow: '0 4px 15px rgba(0,0,0,0.4)',
+                backdropFilter: 'blur(6px)',
               }}
             >
-              ☁️ VK Cloud Storage
+              🏆 Рейтинговая арена
             </span>
             <span
               style={{
-                fontSize: '13px',
-                fontWeight: 700,
-                color: '#e2d7c5',
-                backgroundColor: 'rgba(255, 255, 255, 0.08)',
-                padding: '6px 14px',
-                borderRadius: '12px',
-                border: '1px solid rgba(255, 255, 255, 0.2)',
+                fontSize: '14px',
+                fontWeight: 800,
+                color: '#fbcfe8',
+                backgroundColor: 'rgba(236, 72, 153, 0.2)',
+                padding: '8px 18px',
+                borderRadius: '14px',
+                border: '1.5px solid rgba(244, 114, 182, 0.45)',
+                boxShadow: '0 4px 15px rgba(0,0,0,0.4)',
+                backdropFilter: 'blur(6px)',
               }}
             >
-              ⚖️ 152-ФЗ Комплаенс
+              🎼 Оркестровый саундтрек
             </span>
           </div>
         </div>
 
-        {/* Right Column: Zero-Barrier Instant Launch Card (10/10 UX & Conversion) */}
+        {/* Right Column: Zero-Barrier Instant Launch Card (Vibrant, Radiant, Tactile) */}
         <div style={{ display: 'flex', justifyContent: 'center' }}>
           <HudCard
             active={true}
             beamColor="#FFE07D"
-            style={{ width: '100%', maxWidth: '580px', padding: 'clamp(28px, 4vw, 42px)' }}
+            style={{
+              width: '100%',
+              maxWidth: '560px',
+              padding: 'clamp(28px, 4vw, 40px)',
+              backgroundColor: 'rgba(18, 12, 28, 0.88)',
+              border: '2px solid rgba(255, 224, 125, 0.45)',
+              boxShadow: '0 20px 50px rgba(0,0,0,0.85), 0 0 35px rgba(212, 175, 55, 0.25)',
+              backdropFilter: 'blur(16px)',
+            }}
           >
             {/* Header Badge */}
             <div
@@ -369,13 +386,13 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
-                borderBottom: '1.5px solid rgba(212, 175, 55, 0.3)',
-                paddingBottom: '18px',
+                borderBottom: '1.5px solid rgba(212, 175, 55, 0.35)',
+                paddingBottom: '16px',
                 marginBottom: '20px',
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <ShieldGlyph size={26} color="#FFE07D" glow />
+                <ShieldGlyph size={28} color="#FFE07D" glow />
                 <span
                   style={{
                     fontFamily: "'Philosopher', serif",
@@ -385,18 +402,18 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
                     letterSpacing: '0.5px',
                   }}
                 >
-                  {currentAccount ? 'МАСТЕР-АККАУНТ' : 'МГНОВЕННЫЙ ЗАПУСК'}
+                  {currentAccount ? 'МАСТЕР-АККАУНТ' : 'БЫСТРЫЙ СТАРТ'}
                 </span>
               </div>
               <span
                 style={{
-                  fontSize: '12px',
+                  fontSize: '13px',
                   fontWeight: 800,
                   color: '#4ade80',
-                  backgroundColor: 'rgba(34, 197, 94, 0.15)',
-                  padding: '5px 12px',
+                  backgroundColor: 'rgba(34, 197, 94, 0.2)',
+                  padding: '6px 14px',
                   borderRadius: '14px',
-                  border: '1px solid rgba(34, 197, 94, 0.45)',
+                  border: '1.5px solid rgba(34, 197, 94, 0.5)',
                 }}
               >
                 ● 0 сек ожидания
@@ -411,7 +428,7 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
                     padding: '16px 20px',
                     borderRadius: '16px',
                     backgroundColor: 'rgba(0, 0, 0, 0.65)',
-                    border: '1.5px solid rgba(212, 175, 55, 0.35)',
+                    border: '1.5px solid rgba(212, 175, 55, 0.4)',
                     display: 'flex',
                     alignItems: 'center',
                     gap: '16px',
@@ -424,7 +441,7 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
                       borderRadius: '14px',
                       overflow: 'hidden',
                       border: '2px solid #FFE07D',
-                      boxShadow: '0 0 16px rgba(212, 175, 55, 0.4)',
+                      boxShadow: '0 0 18px rgba(212, 175, 55, 0.5)',
                       flexShrink: 0,
                       backgroundColor: '#120d1c',
                     }}
@@ -446,10 +463,10 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
                     >
                       {currentAccount.login}
                     </div>
-                    <div style={{ fontSize: '13px', color: '#b5a695', marginTop: '2px' }}>
+                    <div style={{ fontSize: '13px', color: '#d4c7b6', marginTop: '2px' }}>
                       {currentAccount.email}
                     </div>
-                    <div style={{ fontSize: '12px', color: '#FFE07D', fontWeight: 700, marginTop: '2px' }}>
+                    <div style={{ fontSize: '13px', color: '#FFE07D', fontWeight: 800, marginTop: '2px' }}>
                       Фэн Лун (Мастер Дао) • Уровень {currentAccount.profile.level || 1}
                     </div>
                   </div>
@@ -460,22 +477,22 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
                   style={{
                     padding: '12px 16px',
                     borderRadius: '12px',
-                    backgroundColor: 'rgba(212, 175, 55, 0.1)',
-                    border: '1px solid rgba(212, 175, 55, 0.3)',
+                    backgroundColor: 'rgba(212, 175, 55, 0.12)',
+                    border: '1.5px solid rgba(212, 175, 55, 0.4)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-around',
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <GoldCoinGlyph size={18} color="#f59e0b" glow />
-                    <span style={{ fontSize: '14px', fontWeight: 800, color: '#f59e0b' }}>
+                    <GoldCoinGlyph size={20} color="#f59e0b" glow />
+                    <span style={{ fontSize: '15px', fontWeight: 900, color: '#f59e0b' }}>
                       {currentAccount.profile.gold} Золота
                     </span>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <CrystalGlyph size={18} color="#60a5fa" glow />
-                    <span style={{ fontSize: '14px', fontWeight: 800, color: '#60a5fa' }}>
+                    <CrystalGlyph size={20} color="#60a5fa" glow />
+                    <span style={{ fontSize: '15px', fontWeight: 900, color: '#60a5fa' }}>
                       {currentAccount.profile.diamonds} Кристаллов
                     </span>
                   </div>
@@ -485,7 +502,7 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
                 <ShinyGoldButton
                   type="button"
                   onClick={handleQuickPlay}
-                  style={{ width: '100%', padding: '20px 32px', fontSize: '18px' }}
+                  style={{ width: '100%', padding: '22px 32px', fontSize: '19px' }}
                 >
                   <SwordGlyph size={24} color="#120d04" />
                   <span>ПРОДОЛЖИТЬ ИГРУ</span>
@@ -497,7 +514,7 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
                   style={{
                     background: 'none',
                     border: 'none',
-                    color: '#9ca3af',
+                    color: '#d4c7b6',
                     fontSize: '13px',
                     cursor: 'pointer',
                     textDecoration: 'underline',
@@ -513,27 +530,27 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
                 {/* Starter Resources Strip */}
                 <div
                   style={{
-                    padding: '12px 16px',
-                    borderRadius: '12px',
-                    backgroundColor: 'rgba(212, 175, 55, 0.1)',
-                    border: '1.5px solid rgba(212, 175, 55, 0.4)',
+                    padding: '12px 18px',
+                    borderRadius: '14px',
+                    backgroundColor: 'rgba(212, 175, 55, 0.14)',
+                    border: '1.5px solid rgba(255, 224, 125, 0.45)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-around',
-                    fontSize: '13px',
+                    fontSize: '14px',
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <GoldCoinGlyph size={18} color="#f59e0b" glow />
-                    <span style={{ color: '#f59e0b', fontWeight: 800 }}>+500 Золота</span>
+                    <span style={{ color: '#f59e0b', fontWeight: 900 }}>+500 Золота</span>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <CrystalGlyph size={18} color="#60a5fa" glow />
-                    <span style={{ color: '#60a5fa', fontWeight: 800 }}>+50 Кристаллов</span>
+                    <span style={{ color: '#60a5fa', fontWeight: 900 }}>+50 Кристаллов</span>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <SwordGlyph size={18} color="#4ade80" />
-                    <span style={{ color: '#4ade80', fontWeight: 800 }}>Шест Фэн Луна</span>
+                    <span style={{ color: '#4ade80', fontWeight: 900 }}>Шест Фэн Луна</span>
                   </div>
                 </div>
 
@@ -545,8 +562,8 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
                         style={{
                           display: 'block',
                           fontSize: '14px',
-                          color: '#e2d7c5',
-                          marginBottom: '6px',
+                          color: '#f5edd8',
+                          marginBottom: '8px',
                           fontWeight: 700,
                         }}
                       >
@@ -562,11 +579,11 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
                           width: '100%',
                           boxSizing: 'border-box',
                           padding: '16px 20px',
-                          borderRadius: '12px',
+                          borderRadius: '14px',
                           backgroundColor: 'rgba(0, 0, 0, 0.75)',
-                          border: '1.5px solid rgba(212, 175, 55, 0.5)',
+                          border: '1.5px solid rgba(255, 224, 125, 0.55)',
                           color: '#ffffff',
-                          fontSize: '16px',
+                          fontSize: '17px',
                           fontWeight: 700,
                           outline: 'none',
                         }}
@@ -582,16 +599,16 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
                       <span>ИГРАТЬ СРАЗУ В БРАУЗЕРЕ</span>
                     </ShinyGoldButton>
 
-                    {/* Storage & Privacy Note */}
+                    {/* Clean Storage Note (No Dev Jargon) */}
                     <div
                       style={{
-                        fontSize: '12px',
-                        color: '#9ca3af',
+                        fontSize: '13px',
+                        color: '#d4c7b6',
                         textAlign: 'center',
                         lineHeight: 1.5,
                       }}
                     >
-                      🔒 Сохранение: {STORAGE_BACKEND}. Без очередей и скачивания.
+                      🔒 Автоматическое сохранение персонажа. Без скачивания и установки.
                     </div>
 
                     {/* Toggle to Open Advanced Password Protection */}
@@ -602,7 +619,7 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
                         style={{
                           background: 'none',
                           border: 'none',
-                          color: '#d4af37',
+                          color: '#FFE07D',
                           fontSize: '13px',
                           fontWeight: 700,
                           cursor: 'pointer',
@@ -823,7 +840,7 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
                       style={{
                         background: 'none',
                         border: 'none',
-                        color: '#9ca3af',
+                        color: '#d4c7b6',
                         fontSize: '13px',
                         cursor: 'pointer',
                         textDecoration: 'underline',

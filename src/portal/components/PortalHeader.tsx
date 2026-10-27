@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { SwordGlyph, MenuGlyph, CloseGlyph, ShieldGlyph } from './PortalGlyphs';
 import { proceduralAudio } from '../../utils/ProceduralAudio';
 import { portalSound } from '../PortalSoundService';
-import { SERVER_NAME, SERVER_ONLINE_STRING } from '../portalConstants';
 
 interface PortalHeaderProps {
   onLaunchGame: () => void;

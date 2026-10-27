@@ -1,27 +1,17 @@
 /**
- * PORTAL CONSTANTS (Единый канонический источник правды для официального портала игры)
- * Согласно эталонному аудиту кодовой базы Masters of the Wild (559 коммитов).
+ * PORTAL CONSTANTS (Единый канонический источник данных для официального портала игры)
  */
 
 export const OFFICIAL_DOMAIN = 'mastersofthewild.ru';
 export const GAME_TITLE = 'Masters of the Wild';
 export const GAME_TITLE_RU = 'Мастера Дикой природы';
 export const GAME_VERSION = 'v1.0 (HD)';
-export const GAME_STATUS_TEXT = 'Zero-Server • Мгновенный запуск 60 FPS';
+export const GAME_STATUS_TEXT = 'Официальный сайт • Мгновенный запуск';
 
-// Архитектурные метаданные
-export const ARCHITECTURE_TITLE = 'Zero-Server Client-Side Engine';
-export const ENGINE_STACK = 'React 19 + PixiJS v8 + Zustand';
-export const STORAGE_BACKEND = 'VK Cloud Storage (4 шарда) + LocalStorage';
-export const COMPLIANCE_LAW = 'Федеральный закон № 152-ФЗ «О персональных данных»';
-
-// Аудио метаданные
-export const AUDIO_TRACKS_COUNT = 18;
-export const AUDIO_STANDARD = 'EBU R128 (-14 LUFS)';
-
-// Экономика и экипировка
+export const CHAMPIONS_COUNT = 5;
 export const GEAR_SLOTS_COUNT = 7;
 export const GEAR_DATABASE_SIZE = '188 КБ';
+
 export const GEAR_SLOTS = [
   'Оружие',
   'Шлем',
