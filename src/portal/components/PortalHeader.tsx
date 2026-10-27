@@ -82,6 +82,17 @@ export const PortalHeader: React.FC<PortalHeaderProps> = ({
           .portal-brand-subtitle {
             display: none !important;
           }
+          .portal-header-cta-text {
+            display: none !important;
+          }
+          .portal-header-cta-short {
+            display: inline !important;
+          }
+        }
+        @media (min-width: 481px) {
+          .portal-header-cta-short {
+            display: none !important;
+          }
         }
       `}</style>
 
@@ -102,7 +113,7 @@ export const PortalHeader: React.FC<PortalHeaderProps> = ({
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          padding: '0 24px',
+          padding: '0 clamp(10px, 2.5vw, 24px)',
         }}
       >
         {/* Left: Brand Logo & Server Badge */}
@@ -239,7 +250,8 @@ export const PortalHeader: React.FC<PortalHeaderProps> = ({
               }}
             >
               <SwordGlyph size={16} color="#120d04" />
-              <span>ВОЙТИ В ИГРУ</span>
+              <span className="portal-header-cta-text">ВОЙТИ В ИГРУ</span>
+              <span className="portal-header-cta-short">В ИГРУ</span>
             </motion.button>
           ) : (
             <motion.button
@@ -265,7 +277,8 @@ export const PortalHeader: React.FC<PortalHeaderProps> = ({
               }}
             >
               <SwordGlyph size={16} color="#120d04" />
-              <span>ИГРАТЬ СЕЙЧАС</span>
+              <span className="portal-header-cta-text">ИГРАТЬ СЕЙЧАС</span>
+              <span className="portal-header-cta-short">ИГРАТЬ</span>
             </motion.button>
           )}
 

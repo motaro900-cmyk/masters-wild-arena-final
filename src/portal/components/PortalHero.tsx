@@ -205,9 +205,9 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
           zIndex: 2,
           maxWidth: '1680px',
           width: '100%',
-          padding: '0 clamp(24px, 4vw, 70px)',
+          padding: '0 clamp(14px, 3.5vw, 70px)',
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(460px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 460px), 1fr))',
           gap: 'clamp(40px, 5vw, 80px)',
           alignItems: 'center',
         }}
@@ -242,9 +242,9 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
             <span
               style={{
                 color: '#FFE899',
-                fontSize: '15px',
+                fontSize: 'clamp(11px, 2.8vw, 15px)',
                 fontWeight: 800,
-                letterSpacing: '1.5px',
+                letterSpacing: 'clamp(0.5px, 0.2vw, 1.5px)',
                 textTransform: 'uppercase',
                 fontFamily: "'Montserrat', sans-serif",
                 textShadow: '0 2px 8px rgba(0,0,0,0.8)',
@@ -370,7 +370,7 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
             style={{
               width: '100%',
               maxWidth: '520px',
-              padding: 'clamp(28px, 3.5vw, 36px)',
+              padding: 'clamp(18px, 3.5vw, 36px)',
               backgroundColor: 'rgba(18, 12, 30, 0.94)',
               border: '2px solid rgba(255, 224, 125, 0.55)',
               boxShadow: '0 25px 60px rgba(0,0,0,0.9), 0 0 40px rgba(212, 175, 55, 0.3)',
