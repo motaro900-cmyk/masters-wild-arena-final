@@ -33,6 +33,7 @@ export const PortalHeader: React.FC<PortalHeaderProps> = ({
 
   const navItems = [
     { label: 'Главная', id: 'hero' },
+    { label: 'Об игре & Скриншоты', id: 'about' },
     { label: 'Звери и Чемпионы', id: 'beasts' },
     { label: 'Саундтреки', id: 'music' },
     { label: 'Награды', id: 'rewards' },

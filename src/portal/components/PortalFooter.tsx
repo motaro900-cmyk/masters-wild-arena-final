@@ -71,7 +71,7 @@ export const PortalFooter: React.FC<PortalFooterProps> = ({ onLaunchGame, onOpen
               </span>
             </div>
             <p style={{ margin: '0 0 16px 0', color: '#c5b8a5', fontSize: '13px' }}>
-              Официальный портал браузерной арены Masters of the Wild. Сражения чемпионов, дуэли и прокачка навыков.
+              Официальный сайт браузерной темной RPG Masters of the Wild (mastersofthewild.ru). Издатель и разработчик: Wild Games Studio (wildgames.ru).
             </p>
             <div
               style={{
@@ -88,7 +88,7 @@ export const PortalFooter: React.FC<PortalFooterProps> = ({ onLaunchGame, onOpen
               }}
             >
               <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#22c55e' }} />
-              Сервер {SERVER_NAME} (Онлайн {SERVER_ONLINE_STRING})
+              Сервер {SERVER_NAME} (s1.mastersofthewild.ru • Онлайн {SERVER_ONLINE_STRING})
             </div>
           </div>
 
@@ -98,77 +98,71 @@ export const PortalFooter: React.FC<PortalFooterProps> = ({ onLaunchGame, onOpen
               style={{
                 margin: '0 0 16px 0',
                 fontSize: '14px',
+                color: '#FFE07D',
+                fontFamily: "'Philosopher', serif",
                 textTransform: 'uppercase',
                 letterSpacing: '1px',
-                color: '#FFE07D',
-                fontWeight: 700,
-                fontFamily: "'Philosopher', serif",
               }}
             >
-              Разделы
+              РАЗДЕЛЫ
             </h4>
-            <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <li>
-                <button
-                  onClick={() => scrollTo('hero')}
-                  style={{ background: 'none', border: 'none', color: '#c4b5a2', cursor: 'pointer', padding: 0, fontSize: '13px' }}
-                >
-                  Главная
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={() => scrollTo('beasts')}
-                  style={{ background: 'none', border: 'none', color: '#c4b5a2', cursor: 'pointer', padding: 0, fontSize: '13px' }}
-                >
-                  Звери и Чемпионы
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={() => scrollTo('music')}
-                  style={{ background: 'none', border: 'none', color: '#c4b5a2', cursor: 'pointer', padding: 0, fontSize: '13px' }}
-                >
-                  Саундтреки (OST)
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={() => scrollTo('rewards')}
-                  style={{ background: 'none', border: 'none', color: '#c4b5a2', cursor: 'pointer', padding: 0, fontSize: '13px' }}
-                >
-                  Награды
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={() => scrollTo('leaderboard')}
-                  style={{ background: 'none', border: 'none', color: '#c4b5a2', cursor: 'pointer', padding: 0, fontSize: '13px' }}
-                >
-                  Зал Славы
-                </button>
-              </li>
-            </ul>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <button
+                onClick={() => scrollTo('hero')}
+                style={{ background: 'none', border: 'none', padding: 0, color: '#e5e7eb', cursor: 'pointer', textAlign: 'left', fontSize: '14px' }}
+              >
+                Главная & Регистрация
+              </button>
+              <button
+                onClick={() => scrollTo('about')}
+                style={{ background: 'none', border: 'none', padding: 0, color: '#e5e7eb', cursor: 'pointer', textAlign: 'left', fontSize: '14px' }}
+              >
+                Об игре & Скриншоты
+              </button>
+              <button
+                onClick={() => scrollTo('beasts')}
+                style={{ background: 'none', border: 'none', padding: 0, color: '#e5e7eb', cursor: 'pointer', textAlign: 'left', fontSize: '14px' }}
+              >
+                Звери и Чемпионы
+              </button>
+              <button
+                onClick={() => scrollTo('music')}
+                style={{ background: 'none', border: 'none', padding: 0, color: '#e5e7eb', cursor: 'pointer', textAlign: 'left', fontSize: '14px' }}
+              >
+                Саундтреки (OST)
+              </button>
+              <button
+                onClick={() => scrollTo('rewards')}
+                style={{ background: 'none', border: 'none', padding: 0, color: '#e5e7eb', cursor: 'pointer', textAlign: 'left', fontSize: '14px' }}
+              >
+                Награды
+              </button>
+              <button
+                onClick={() => scrollTo('leaderboard')}
+                style={{ background: 'none', border: 'none', padding: 0, color: '#e5e7eb', cursor: 'pointer', textAlign: 'left', fontSize: '14px' }}
+              >
+                Зал Славы
+              </button>
+            </div>
           </div>
 
-          {/* Col 3: Community & Direct Play */}
+          {/* Col 3: Community & Play */}
           <div>
             <h4
               style={{
                 margin: '0 0 16px 0',
                 fontSize: '14px',
+                color: '#FFE07D',
+                fontFamily: "'Philosopher', serif",
                 textTransform: 'uppercase',
                 letterSpacing: '1px',
-                color: '#FFE07D',
-                fontWeight: 700,
-                fontFamily: "'Philosopher', serif",
               }}
             >
-              Сообщество
+              СООБЩЕСТВО
             </h4>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <a
-                href="https://t.me/MastersoftheWildGamebot"
+                href="https://t.me/motw_arena_bot"
                 target="_blank"
                 rel="noreferrer"
                 style={{
@@ -177,13 +171,14 @@ export const PortalFooter: React.FC<PortalFooterProps> = ({ onLaunchGame, onOpen
                   gap: '8px',
                   color: '#60a5fa',
                   textDecoration: 'none',
-                  fontSize: '13px',
+                  fontSize: '14px',
                 }}
               >
-                <TelegramGlyph size={16} color="#38bdf8" /> Telegram Бот
+                <TelegramGlyph size={18} color="#60a5fa" />
+                <span>Telegram Бот</span>
               </a>
               <a
-                href="https://vk.com"
+                href="https://vk.com/club238197449"
                 target="_blank"
                 rel="noreferrer"
                 style={{
@@ -192,47 +187,47 @@ export const PortalFooter: React.FC<PortalFooterProps> = ({ onLaunchGame, onOpen
                   gap: '8px',
                   color: '#3b82f6',
                   textDecoration: 'none',
-                  fontSize: '13px',
+                  fontSize: '14px',
                 }}
               >
-                <VkGlyph size={16} color="#3b82f6" /> Сообщество ВКонтакте
+                <VkGlyph size={18} color="#3b82f6" />
+                <span>Сообщество ВКонтакте</span>
               </a>
+
               <button
                 onClick={onLaunchGame}
                 style={{
                   marginTop: '8px',
                   padding: '12px 20px',
                   borderRadius: '10px',
+                  border: 'none',
                   background: 'linear-gradient(135deg, #FFE07D 0%, #d4af37 100%)',
                   color: '#120d04',
-                  border: 'none',
                   fontSize: '13px',
                   fontWeight: 900,
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.8px',
-                  cursor: 'pointer',
                   fontFamily: "'Philosopher', serif",
+                  cursor: 'pointer',
+                  letterSpacing: '0.8px',
                 }}
               >
-                Запустить Игру
+                ЗАПУСТИТЬ ИГРУ
               </button>
             </div>
           </div>
 
-          {/* Col 4: Legal & 152-ФЗ Compliance */}
+          {/* Col 4: Legal & Compliance */}
           <div>
             <h4
               style={{
                 margin: '0 0 16px 0',
                 fontSize: '14px',
+                color: '#FFE07D',
+                fontFamily: "'Philosopher', serif",
                 textTransform: 'uppercase',
                 letterSpacing: '1px',
-                color: '#FFE07D',
-                fontWeight: 700,
-                fontFamily: "'Philosopher', serif",
               }}
             >
-              Правовая Информация
+              ПРАВОВАЯ ИНФОРМАЦИЯ
             </h4>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               <button
@@ -296,10 +291,10 @@ export const PortalFooter: React.FC<PortalFooterProps> = ({ onLaunchGame, onOpen
           }}
         >
           <div>
-            Masters of the Wild © 2026. Все права защищены.
+            Wild Games Studio © 2026. mastersofthewild.ru / wildgames.ru. Все права защищены.
           </div>
           <div style={{ display: 'flex', gap: '14px' }}>
-            <span>WebGL 2.0 / PixiJS v8 Engine</span>
+            <span>WebGL 2.0 / PixiJS v8 Engine (60 FPS)</span>
           </div>
         </div>
       </div>

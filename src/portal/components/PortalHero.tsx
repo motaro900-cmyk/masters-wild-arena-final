@@ -44,7 +44,7 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
   const handleAuthSubmit = (e?: React.FormEvent) => {
     if (e && e.preventDefault) e.preventDefault();
     if (!email.trim() || !password.trim()) {
-      setFormMsg({ text: 'Заполните email и пароль', isError: true });
+      setFormMsg({ text: 'Заполните email и пароль для учетной записи', isError: true });
       return;
     }
 
@@ -54,6 +54,7 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
 
     localStorage.setItem('mow_auth_token', 'mow_jwt_' + Date.now());
     localStorage.setItem('mow_auth_email', email.trim());
+    localStorage.setItem('mow_player_name', masterNick);
     localStorage.setItem('mow_master_nick', masterNick);
 
     portalSyncBridge.commitMutation({
@@ -70,16 +71,10 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
     setFormMsg({
       text:
         authMode === 'register'
-          ? '✓ Аккаунт успешно создан на сайте! Получено +500 золота и +50 кристаллов.'
-          : '✓ С возвращением, ' + masterNick + '!',
+          ? '✓ Мастер-аккаунт успешно создан! Прогресс будет сохраняться на сервере.'
+          : '✓ Добро пожаловать обратно, ' + masterNick + '!',
       isError: false,
     });
-  };
-
-  const handleGuestQuickPlay = () => {
-    portalSound.playEquip();
-    proceduralAudio.playDuelHorn();
-    onLaunchGame();
   };
 
   const handleLogout = () => {
@@ -91,6 +86,12 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
     localStorage.removeItem('mow_auth_token');
     localStorage.removeItem('mow_auth_email');
     setFormMsg(null);
+  };
+
+  const scrollToAbout = () => {
+    portalSound.playClick(1.0);
+    const el = document.getElementById('about');
+    if (el) el.scrollIntoView({ behavior: 'smooth' });
   };
 
   return (
@@ -195,7 +196,7 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
                 fontFamily: "'Montserrat', sans-serif",
               }}
             >
-              Сервер {SERVER_NAME} • Онлайн {SERVER_ONLINE_STRING} воинов
+              Сервер {SERVER_NAME} • mastersofthewild.ru • Онлайн {SERVER_ONLINE_STRING} воинов
             </span>
           </div>
 
@@ -204,16 +205,16 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
             style={{
               margin: '0 0 22px 0',
               fontFamily: "'Philosopher', serif",
-              fontSize: 'clamp(46px, 5.8vw, 84px)',
+              fontSize: 'clamp(42px, 5.2vw, 78px)',
               fontWeight: 900,
-              lineHeight: 1.08,
+              lineHeight: 1.1,
               color: '#ffffff',
               textShadow:
                 '0 4px 35px rgba(0,0,0,0.98), 0 0 60px rgba(212, 175, 55, 0.35)',
               letterSpacing: '0.5px',
             }}
           >
-            Вступи в Битву <br />
+            Добро пожаловать в <br />
             <span
               style={{
                 background:
@@ -222,7 +223,7 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
                 WebkitTextFillColor: 'transparent',
               }}
             >
-              Легендарных Зверей
+              Masters of the Wild
             </span>
           </h1>
 
@@ -237,7 +238,7 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
               textShadow: '0 2px 12px rgba(0,0,0,0.95)',
             }}
           >
-            Официальный портал темной браузерной RPG нового поколения. Создай аккаунт на сайте, получи защищенную учетную запись бойца и начни путь в Дикоземье со стартовым набором золота и кристаллов.
+            Официальный российский сайт темной браузерной RPG нового поколения (wildgames.ru). Зарегистрируйте мастер-аккаунт, начните путь в Дикоземье с чистого листа на 1-м уровне и покоряйте арену с гарантированным сохранением всего прогресса на сервере.
           </p>
 
           {/* Unified Starter Champion Presentation */}
@@ -259,54 +260,93 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
               animate={{ rotate: [0, 5, -5, 0] }}
               transition={{ repeat: Infinity, duration: 8, ease: 'easeInOut' }}
               style={{
-                width: '54px',
-                height: '54px',
-                borderRadius: '14px',
-                backgroundColor: 'rgba(96, 165, 250, 0.18)',
-                border: '1.5px solid rgba(96, 165, 250, 0.45)',
+                width: '56px',
+                height: '56px',
+                borderRadius: '16px',
+                background: 'linear-gradient(135deg, rgba(96, 165, 250, 0.3) 0%, rgba(30, 58, 138, 0.6) 100%)',
+                border: '1.5px solid #60a5fa',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
+                boxShadow: '0 0 20px rgba(96, 165, 250, 0.5)',
+                flexShrink: 0,
               }}
             >
-              <FrostGlyph size={28} color="#60a5fa" glow />
+              <FrostGlyph size={32} color="#93c5fd" />
             </motion.div>
             <div>
-              <div style={{ fontSize: '12px', color: '#60a5fa', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1.5px' }}>
-                Единый Стартовый Чемпион
+              <div
+                style={{
+                  fontSize: '11px',
+                  fontWeight: 900,
+                  color: '#93c5fd',
+                  letterSpacing: '1.5px',
+                  textTransform: 'uppercase',
+                  marginBottom: '4px',
+                }}
+              >
+                ЕДИНЫЙ СТАРТОВЫЙ ЧЕМПИОН
               </div>
-              <div style={{ fontSize: '20px', fontWeight: 900, color: '#FFE07D', fontFamily: "'Philosopher', serif" }}>
-                Фэн Лун • Снежный Берсерк (Лед & Ци)
+              <div
+                style={{
+                  fontFamily: "'Philosopher', serif",
+                  fontSize: '20px',
+                  fontWeight: 900,
+                  color: '#ffffff',
+                  letterSpacing: '0.5px',
+                }}
+              >
+                Фэн Лун • Снежный Берсерк (Ур. 1, 0 XP • Лед & Ци)
               </div>
             </div>
           </div>
 
-          {/* Beasts Codex Link */}
-          <div>
+          {/* Quick Links: Steam Showcase & Beast Codex */}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '24px', alignItems: 'center' }}>
+            <button
+              onClick={scrollToAbout}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: '#FFE07D',
+                fontSize: '16px',
+                fontWeight: 800,
+                fontFamily: "'Philosopher', serif",
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                textDecoration: 'underline',
+                padding: 0,
+              }}
+            >
+              <span>🎮 Смотреть скриншоты и описание игры (Steam-style) ↓</span>
+            </button>
+
             <button
               onClick={onExploreBeasts}
               style={{
                 background: 'none',
                 border: 'none',
                 color: '#d4af37',
-                fontSize: '17px',
+                fontSize: '16px',
                 fontWeight: 700,
                 fontFamily: "'Philosopher', serif",
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '10px',
+                gap: '8px',
                 textDecoration: 'underline',
                 padding: 0,
               }}
             >
-              <CrownGlyph size={20} color="#d4af37" />
-              <span>Посмотреть полный бестиарий всех 5 чемпионов и их навыки →</span>
+              <CrownGlyph size={18} color="#d4af37" />
+              <span>Бестиарий чемпионов →</span>
             </button>
           </div>
         </div>
 
-        {/* Right Column: Master Account HUD Card with Border Beam & High-Scale Elements */}
+        {/* Right Column: Master Account HUD Card with High-Scale Elements */}
         <div style={{ display: 'flex', justifyContent: 'center' }}>
           <HudCard
             active={true}
@@ -380,9 +420,9 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
                     <span style={{ fontSize: '15px', color: '#e5e7eb' }}>{profile.accountEmail || 'Сайт-авторизация'}</span>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '15px', color: '#9ca3af' }}>Игровой UID (ID):</span>
-                    <span style={{ fontSize: '16px', fontFamily: 'monospace', color: '#60a5fa', fontWeight: 800 }}>
-                      #{profile.guestId ? profile.guestId.slice(0, 10) : 'WILD-84920'}
+                    <span style={{ fontSize: '15px', color: '#9ca3af' }}>Статус аккаунта:</span>
+                    <span style={{ fontSize: '15px', color: '#4ade80', fontWeight: 800 }}>
+                      Чистый старт (Ур. 1 • 0 XP)
                     </span>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -393,8 +433,8 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span style={{ fontSize: '15px', color: '#9ca3af' }}>Сервер входа:</span>
-                    <span style={{ fontSize: '15px', color: '#4ade80', fontWeight: 700 }}>
-                      {SERVER_NAME} ({SERVER_ONLINE_STRING} онлайн)
+                    <span style={{ fontSize: '15px', color: '#60a5fa', fontWeight: 700 }}>
+                      s1.mastersofthewild.ru ({SERVER_ONLINE_STRING} онлайн)
                     </span>
                   </div>
                 </div>
@@ -556,6 +596,7 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
                     </label>
                     <input
                       type="text"
+                      required
                       placeholder="Например: Воин_Севера"
                       value={nickname}
                       onChange={(e) => setNickname(e.target.value)}
@@ -576,7 +617,7 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
 
                 <div>
                   <label style={{ display: 'block', fontSize: '14px', color: '#e2d7c5', marginBottom: '8px', fontWeight: 600 }}>
-                    Email (для защиты учетной записи)
+                    Email (для защиты учетной записи и сохранения прогресса)
                   </label>
                   <input
                     type="email"
@@ -643,26 +684,20 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
                 >
                   <ShieldGlyph size={24} color="#120d04" />
                   <span>
-                    {authMode === 'register' ? 'ЗАРЕГИСТРИРОВАТЬ АККАУНТ НА САЙТЕ' : 'ВОЙТИ В МАСТЕР-АККАУНТ'}
+                    {authMode === 'register' ? 'СОЗДАТЬ МАСТЕР-АККАУНТ И НАЧАТЬ С 0' : 'ВОЙТИ В МАСТЕР-АККАУНТ'}
                   </span>
                 </ShinyGoldButton>
 
-                {/* Quick Guest Alternative */}
-                <div style={{ textAlign: 'center', marginTop: '10px' }}>
-                  <button
-                    type="button"
-                    onClick={handleGuestQuickPlay}
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      color: '#9ca3af',
-                      fontSize: '15px',
-                      cursor: 'pointer',
-                      textDecoration: 'underline',
-                    }}
-                  >
-                    Или зайти сразу как гость без сохранения на сервере →
-                  </button>
+                <div
+                  style={{
+                    textAlign: 'center',
+                    fontSize: '12px',
+                    color: '#9ca3af',
+                    marginTop: '8px',
+                    lineHeight: 1.5,
+                  }}
+                >
+                  🔒 Регистрация на сайте гарантирует 100% сохранение прогресса персонажа
                 </div>
               </form>
             )}

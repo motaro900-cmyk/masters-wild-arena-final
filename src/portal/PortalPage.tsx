@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { PortalHeader } from './components/PortalHeader';
 import { PortalHero } from './components/PortalHero';
+import { PortalGameShowcase } from './components/PortalGameShowcase';
 import { PortalBeastCodex } from './components/PortalBeastCodex';
 import { PortalNews } from './components/PortalNews';
 import { PortalOSTPlayer } from './components/PortalOSTPlayer';
@@ -48,6 +49,17 @@ export const PortalPage: React.FC<PortalPageProps> = ({
         }
     };
 
+    const handleRegisterClick = () => {
+        if (profile.isLoggedIn) {
+            onLaunchGame();
+        } else {
+            const el = document.getElementById('hero');
+            if (el) {
+                el.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+    };
+
     return (
         <div
             style={{
@@ -76,6 +88,12 @@ export const PortalPage: React.FC<PortalPageProps> = ({
             <PortalHero
                 onLaunchGame={onLaunchGame}
                 onExploreBeasts={handleExploreBeasts}
+            />
+
+            {/* 2.5 Steam-style Game Showcase & Authentic Screenshots */}
+            <PortalGameShowcase
+                onRegisterClick={handleRegisterClick}
+                isLoggedIn={profile.isLoggedIn}
             />
 
             {/* 3. Interactive Beast Codex (Authentic Game Sprites & Skills) */}
