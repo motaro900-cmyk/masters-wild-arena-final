@@ -3,16 +3,30 @@ import { IEquipmentStats } from './types';
 export const weapons: Record<string, IEquipmentStats> = {
     stick: {
         id: 'stick',
-        name: 'Бамбуковая Палка',
+        name: 'Шест Дзена',
         requiredLevel: 1,
-        rarity: 'COMMON',
+        rarity: 'RARE',
         attackBonus: 32,
         priceGold: 2500,
         image: '/assets/images/items/weapons/stick.webp',
         atlasFrame: 'stick.png',
         mainTab: 'ARSENAL',
         subTab: 'WEAPONS',
-        desc: 'Простая бамбуковая палка. Не самое грозное оружие, но с чего-то надо начинать.',
+        desc: 'Канонический реликвийный шест мастера Дао Фэн Луна из железного бамбука. Наполнен энергией Ци.',
+    },
+
+    weapon_zen_staff: {
+        id: 'weapon_zen_staff',
+        name: 'Шест Дзена',
+        requiredLevel: 1,
+        rarity: 'RARE',
+        attackBonus: 32,
+        priceGold: 2500,
+        image: '/assets/images/items/weapons/stick.webp',
+        atlasFrame: 'stick.png',
+        mainTab: 'ARSENAL',
+        subTab: 'WEAPONS',
+        desc: 'Канонический реликвийный шест мастера Дао Фэн Луна из железного бамбука. Наполнен энергией Ци.',
     },
 
     sling_leather: {

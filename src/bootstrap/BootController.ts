@@ -1202,10 +1202,15 @@ class BootController {
         const vkUser = state.vkUser;
 
         let playerId = state.playerId;
+        const masterAccountId = typeof window !== 'undefined' ? localStorage.getItem('mow_active_account_id') : null;
         if (!playerId || playerId === 'undefined' || playerId === 'null' || playerId.includes('undefined')) {
-            playerId = vkUser?.id
-                ? `VK-${vkUser.id}`
-                : `GUEST-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+            if (masterAccountId) {
+                playerId = masterAccountId;
+            } else {
+                playerId = vkUser?.id
+                    ? 'VK-' + vkUser.id
+                    : 'GUEST-' + Date.now() + '-' + Math.random().toString(36).substring(2, 9);
+            }
         }
 
         let name = state.name;
