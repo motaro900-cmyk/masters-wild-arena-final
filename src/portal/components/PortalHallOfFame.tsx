@@ -1,12 +1,12 @@
 import { TrophyGlyph, CrownGlyph, SwordGlyph } from './PortalGlyphs';
 /**
  * PORTAL HALL OF FAME (Чертоги Славы & PvP Лидерборд)
- * Топ-10 Чемпионов Сервера S1, таблица почета, генератор P2P дуэлей
- * и прямой вызов соперников на арену.
+ * Топ Чемпионов Арены Дикоземья, ранговая система 9 лиг и прямые P2P дуэли.
  */
 import React, { useState } from 'react';
 import { proceduralAudio } from '../../utils/ProceduralAudio';
 import { duelChallengeService } from '../../utils/DuelChallengeService';
+import { PVP_RANKS } from '../portalConstants';
 
 export interface ILeaderboardPlayer {
   rank: number;
@@ -25,122 +25,122 @@ export const TOP_CHAMPIONS: ILeaderboardPlayer[] = [
   {
     rank: 1,
     name: 'СеверныйКлык',
-    title: 'Великий Архимагистр',
+    title: 'Верховный Владыка',
     avatar: '/assets/images/avatars/panda.webp',
-    heroName: 'Боевой Панда (Мастер Дао)',
+    heroName: 'Фэн Лун (Мастер Дао)',
     level: 80,
     power: 148500,
     winRate: '94.2%',
-    pvpScore: 3840,
-    badge: 'ГРАНДМАСТЕР',
+    pvpScore: 7840,
+    badge: 'ВЛАДЫКА',
   },
   {
     rank: 2,
     name: 'СолнечныйГнев',
     title: 'Первый Паладин',
     avatar: '/assets/images/avatars/lion.webp',
-    heroName: 'Аурелиус (Лев)',
+    heroName: 'Аурелиус (Лорд Прайда)',
     level: 79,
     power: 142100,
     winRate: '91.8%',
-    pvpScore: 3690,
-    badge: 'АЛМАЗ I',
+    pvpScore: 7190,
+    badge: 'ЛЕГЕНДА',
   },
   {
     rank: 3,
     name: 'ЯростьДжунглей',
     title: 'Кровавый Берсерк',
     avatar: '/assets/images/avatars/tiger.webp',
-    heroName: 'Варкан (Тигр)',
+    heroName: 'Варкан (Повелитель Джунглей)',
     level: 79,
     power: 139800,
     winRate: '89.5%',
-    pvpScore: 3550,
-    badge: 'АЛМАЗ II',
+    pvpScore: 6850,
+    badge: 'ЛЕГЕНДА',
   },
   {
     rank: 4,
     name: 'ПризракТени',
     title: 'Безмолвный Клинок',
     avatar: '/assets/images/avatars/panther.webp',
-    heroName: 'Рикки (Пантера)',
+    heroName: 'Нyx (Танцор Теней)',
     level: 78,
     power: 135400,
     winRate: '88.1%',
-    pvpScore: 3410,
-    badge: 'АЛМАЗ III',
+    pvpScore: 5910,
+    badge: 'ЧЕМПИОН',
   },
   {
     rank: 5,
     name: 'КаменнаяСкала',
     title: 'Землетрясец Гор',
-    avatar: '/assets/images/avatars/bear.webp',
-    heroName: 'Громм (Медведь)',
+    avatar: '/assets/images/avatars/boar.webp',
+    heroName: 'Громм (Хранитель Лабиринта)',
     level: 77,
     power: 131200,
     winRate: '86.4%',
-    pvpScore: 3320,
-    badge: 'ПЛАТИНА I',
+    pvpScore: 5420,
+    badge: 'ЧЕМПИОН',
   },
   {
     rank: 6,
-    name: 'ВетерПустошей',
-    title: 'Мастер Ветра',
-    avatar: '/assets/images/avatars/avatar_extra_1.webp',
-    heroName: 'Боевой Панда',
+    name: 'ДикийВетер',
+    title: 'Мастер Засад',
+    avatar: '/assets/images/avatars/cat.webp',
+    heroName: 'Рикки (Дикий Страж)',
     level: 76,
     power: 128900,
     winRate: '85.0%',
-    pvpScore: 3200,
-    badge: 'ПЛАТИНА II',
+    pvpScore: 4820,
+    badge: 'ГРОССМЕЙСТЕР',
   },
   {
     rank: 7,
-    name: 'ХранительЛеса',
-    title: 'Друид Рощи',
-    avatar: '/assets/images/avatars/avatar_extra_2.webp',
-    heroName: 'Аурелиус',
+    name: 'ЛедянойМолот',
+    title: 'Хранитель Недр',
+    avatar: '/assets/images/avatars/bear.webp',
+    heroName: 'Кристалл (Танк)',
     level: 75,
     power: 125400,
     winRate: '83.7%',
-    pvpScore: 3110,
-    badge: 'ПЛАТИНА III',
+    pvpScore: 4210,
+    badge: 'ГРОССМЕЙСТЕР',
   },
   {
     rank: 8,
     name: 'Громобой',
-    title: 'Повелитель Бурь',
-    avatar: '/assets/images/avatars/avatar_extra_3.webp',
-    heroName: 'Варкан',
+    title: 'Призыватель Бурь',
+    avatar: '/assets/images/avatars/avatar_extra_1.webp',
+    heroName: 'Тэзар (Маг)',
     level: 74,
     power: 121800,
     winRate: '82.2%',
-    pvpScore: 3040,
-    badge: 'ЗОЛОТО I',
+    pvpScore: 3640,
+    badge: 'МАСТЕР',
   },
   {
     rank: 9,
-    name: 'ОгненныйКоготь',
-    title: 'Истребитель Драконов',
+    name: 'СтражСвященнойРощи',
+    title: 'Целитель Жизни',
     avatar: '/assets/images/avatars/avatar_extra_4.webp',
-    heroName: 'Рикки',
+    heroName: 'Эльра (Поддержка)',
     level: 73,
     power: 119500,
     winRate: '80.9%',
-    pvpScore: 2980,
-    badge: 'ЗОЛОТО II',
+    pvpScore: 2880,
+    badge: 'ЭЛИТА',
   },
   {
     rank: 10,
-    name: 'ЛедянойШторм',
-    title: 'Страж Ледника',
-    avatar: '/assets/images/avatars/avatar_extra_5.webp',
-    heroName: 'Громм',
+    name: 'ТеньБездны',
+    title: 'Ходок по Пустоте',
+    avatar: '/assets/images/avatars/avatar_extra_3.webp',
+    heroName: 'Каэль (Мифик)',
     level: 72,
     power: 116200,
     winRate: '79.5%',
-    pvpScore: 2910,
-    badge: 'ЗОЛОТО III',
+    pvpScore: 1950,
+    badge: 'ВЕТЕРАН',
   },
 ];
 
@@ -430,6 +430,34 @@ export const PortalHallOfFame: React.FC<PortalHallOfFameProps> = ({ onChallengeP
             {copiedLink}
           </div>
         )}
+
+        {/* Canonical 9 PvP Leagues Strip */}
+        <div style={{ marginTop: '30px' }}>
+          <div style={{ fontSize: '13px', fontWeight: 800, color: '#d4af37', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '14px', textAlign: 'center' }}>
+            🏆 9 Канонических Лиг PvP Арены
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))', gap: '8px' }}>
+            {PVP_RANKS.map((rk, idx) => (
+              <div
+                key={rk.name}
+                style={{
+                  backgroundColor: 'rgba(255, 255, 255, 0.03)',
+                  border: `1.5px solid ${rk.color}55`,
+                  borderRadius: '12px',
+                  padding: '10px 8px',
+                  textAlign: 'center',
+                }}
+              >
+                <div style={{ fontSize: '12px', fontWeight: 800, color: rk.color, textTransform: 'uppercase' }}>
+                  {rk.name}
+                </div>
+                <div style={{ fontSize: '10.5px', color: '#9ca3af', marginTop: '3px' }}>
+                  {rk.range}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </section>
   );

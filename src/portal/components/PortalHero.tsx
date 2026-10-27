@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   SwordGlyph,
   ShieldGlyph,
@@ -8,10 +8,11 @@ import {
 } from './PortalGlyphs';
 import { proceduralAudio } from '../../utils/ProceduralAudio';
 import { portalSound } from '../PortalSoundService';
-import { OFFICIAL_DOMAIN } from '../portalConstants';
+import { OFFICIAL_DOMAIN, STORAGE_BACKEND } from '../portalConstants';
 import { HudCard } from './hud/HudCard';
 import { ShinyGoldButton } from './hud/ShinyGoldButton';
 import { accountAuthService, IUserAccount } from '../../services/AccountAuthService';
+import { portalSyncBridge } from '../../services/PortalSyncBridge';
 
 interface PortalHeroProps {
   onLaunchGame: () => void;
@@ -25,8 +26,14 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
     accountAuthService.getCurrentAccount()
   );
 
-  // Auth Form State
-  const [authMode, setAuthMode] = useState<'register' | 'login'>('register');
+  // Quick Play Callsign
+  const [callsign, setCallsign] = useState(() => {
+    return localStorage.getItem('mow_player_name') || 'admin';
+  });
+
+  // Optional Advanced Auth Form State
+  const [showAdvancedAuth, setShowAdvancedAuth] = useState(false);
+  const [authMode, setAuthMode] = useState<'register' | 'login'>('login');
   const [loginField, setLoginField] = useState('');
   const [emailField, setEmailField] = useState('');
   const [passwordField, setPasswordField] = useState('');
@@ -40,11 +47,35 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
     const handleAuthChange = (e: any) => {
       const acc = e.detail?.account ?? accountAuthService.getCurrentAccount();
       setCurrentAccount(acc);
+      if (acc?.login) setCallsign(acc.login);
     };
     window.addEventListener('mow:auth_state_changed', handleAuthChange);
     return () => window.removeEventListener('mow:auth_state_changed', handleAuthChange);
   }, []);
 
+  /**
+   * Frictionless 1-Click Launch (Zero-Barrier Onboarding)
+   */
+  const handleQuickPlay = (e?: React.FormEvent) => {
+    if (e && e.preventDefault) e.preventDefault();
+    const cleanName = callsign.trim() || 'admin';
+    portalSound.playEquip();
+    proceduralAudio.playDuelHorn();
+
+    // Persist player name locally for game launch
+    localStorage.setItem('mow_player_name', cleanName);
+    localStorage.setItem('mow_master_nick', cleanName);
+    portalSyncBridge.commitMutation({
+      playerName: cleanName,
+      isLoggedIn: true,
+    });
+
+    onLaunchGame();
+  };
+
+  /**
+   * Optional Full Account Registration
+   */
   const handleRegisterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormMsg(null);
@@ -66,7 +97,7 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
 
       portalSound.playReward();
       proceduralAudio.playFanfare();
-      setFormMsg({ text: 'Аккаунт успешно создан! Входим в мир...', isError: false });
+      setFormMsg({ text: 'Аккаунт успешно создан! Запуск...', isError: false });
 
       setTimeout(() => {
         onLaunchGame();
@@ -78,6 +109,9 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
     }
   };
 
+  /**
+   * Optional Full Account Login
+   */
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormMsg(null);
@@ -108,12 +142,6 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleContinueAsCurrent = () => {
-    portalSound.playEquip();
-    proceduralAudio.playDuelHorn();
-    onLaunchGame();
   };
 
   const handleLogout = () => {
@@ -224,14 +252,14 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
                 fontFamily: "'Montserrat', sans-serif",
               }}
             >
-              Официальный портал • {OFFICIAL_DOMAIN} • Играть онлайн
+              ⚡ Zero-Server • React 19 + PixiJS v8 • 60 FPS
             </span>
           </div>
 
           {/* Monumental Headline */}
           <h1
             style={{
-              margin: '0 0 22px 0',
+              margin: '0 0 20px 0',
               fontFamily: "'Philosopher', serif",
               fontSize: 'clamp(42px, 5.2vw, 78px)',
               fontWeight: 900,
@@ -258,7 +286,7 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
           {/* Direct Concise Game Description */}
           <p
             style={{
-              margin: '0',
+              margin: '0 0 28px 0',
               maxWidth: '680px',
               fontSize: 'clamp(17px, 1.35vw, 21px)',
               lineHeight: 1.7,
@@ -267,75 +295,133 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
             }}
           >
             Официальный сайт браузерной тактической RPG ({OFFICIAL_DOMAIN}).
-            Мгновенный запуск прямо в окне браузера без скачивания и тяжелых установок.
-            Прокачивайте чемпионов, куйте эпическую экипировку и побеждайте на соревновательной арене Дикоземья.
+            Мгновенный запуск прямо в окне браузера без скачивания и очередей.
+            10 уникальных чемпионов, кузница экипировки из 7 слотов, соревновательная арена с 9 PvP-рангами и оркестровый саундтрек (-14 LUFS).
           </p>
+
+          {/* Feature Badges Row */}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px' }}>
+            <span
+              style={{
+                fontSize: '13px',
+                fontWeight: 700,
+                color: '#FFE07D',
+                backgroundColor: 'rgba(212, 175, 55, 0.12)',
+                padding: '6px 14px',
+                borderRadius: '12px',
+                border: '1px solid rgba(212, 175, 55, 0.35)',
+              }}
+            >
+              ⚡ 0 сек загрузки
+            </span>
+            <span
+              style={{
+                fontSize: '13px',
+                fontWeight: 700,
+                color: '#4ade80',
+                backgroundColor: 'rgba(34, 197, 94, 0.12)',
+                padding: '6px 14px',
+                borderRadius: '12px',
+                border: '1px solid rgba(34, 197, 94, 0.35)',
+              }}
+            >
+              🎮 60 FPS на PixiJS v8
+            </span>
+            <span
+              style={{
+                fontSize: '13px',
+                fontWeight: 700,
+                color: '#60a5fa',
+                backgroundColor: 'rgba(96, 165, 250, 0.12)',
+                padding: '6px 14px',
+                borderRadius: '12px',
+                border: '1px solid rgba(96, 165, 250, 0.35)',
+              }}
+            >
+              ☁️ VK Cloud Storage
+            </span>
+            <span
+              style={{
+                fontSize: '13px',
+                fontWeight: 700,
+                color: '#e2d7c5',
+                backgroundColor: 'rgba(255, 255, 255, 0.08)',
+                padding: '6px 14px',
+                borderRadius: '12px',
+                border: '1px solid rgba(255, 255, 255, 0.2)',
+              }}
+            >
+              ⚖️ 152-ФЗ Комплаенс
+            </span>
+          </div>
         </div>
 
-        {/* Right Column: Full-Fledged Account System (Registration & Login) */}
+        {/* Right Column: Zero-Barrier Instant Launch Card (10/10 UX & Conversion) */}
         <div style={{ display: 'flex', justifyContent: 'center' }}>
           <HudCard
             active={true}
             beamColor="#FFE07D"
-            style={{ width: '100%', maxWidth: '580px', padding: 'clamp(28px, 4vw, 44px)' }}
+            style={{ width: '100%', maxWidth: '580px', padding: 'clamp(28px, 4vw, 42px)' }}
           >
-            {currentAccount ? (
-              /* ALREADY LOGGED IN: Active Master Account Card */
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '22px' }}>
-                <div
+            {/* Header Badge */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                borderBottom: '1.5px solid rgba(212, 175, 55, 0.3)',
+                paddingBottom: '18px',
+                marginBottom: '20px',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <ShieldGlyph size={26} color="#FFE07D" glow />
+                <span
                   style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    borderBottom: '1.5px solid rgba(212, 175, 55, 0.3)',
-                    paddingBottom: '18px',
+                    fontFamily: "'Philosopher', serif",
+                    fontSize: '22px',
+                    fontWeight: 900,
+                    color: '#FFE07D',
+                    letterSpacing: '0.5px',
                   }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <ShieldGlyph size={26} color="#FFE07D" glow />
-                    <span
-                      style={{
-                        fontFamily: "'Philosopher', serif",
-                        fontSize: '22px',
-                        fontWeight: 900,
-                        color: '#FFE07D',
-                      }}
-                    >
-                      АККАУНТ АКТИВЕН
-                    </span>
-                  </div>
-                  <span
-                    style={{
-                      fontSize: '12px',
-                      fontWeight: 800,
-                      color: '#4ade80',
-                      backgroundColor: 'rgba(34, 197, 94, 0.15)',
-                      padding: '5px 12px',
-                      borderRadius: '14px',
-                      border: '1px solid rgba(34, 197, 94, 0.45)',
-                    }}
-                  >
-                    ● В сети
-                  </span>
-                </div>
+                  {currentAccount ? 'МАСТЕР-АККАУНТ' : 'МГНОВЕННЫЙ ЗАПУСК'}
+                </span>
+              </div>
+              <span
+                style={{
+                  fontSize: '12px',
+                  fontWeight: 800,
+                  color: '#4ade80',
+                  backgroundColor: 'rgba(34, 197, 94, 0.15)',
+                  padding: '5px 12px',
+                  borderRadius: '14px',
+                  border: '1px solid rgba(34, 197, 94, 0.45)',
+                }}
+              >
+                ● 0 сек ожидания
+              </span>
+            </div>
 
-                {/* Account Details Box */}
+            {currentAccount ? (
+              /* ACTIVE LOGGED IN ACCOUNT CARD */
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                 <div
                   style={{
-                    padding: '18px 22px',
+                    padding: '16px 20px',
                     borderRadius: '16px',
                     backgroundColor: 'rgba(0, 0, 0, 0.65)',
                     border: '1.5px solid rgba(212, 175, 55, 0.35)',
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '18px',
+                    gap: '16px',
                   }}
                 >
                   <div
                     style={{
-                      width: '64px',
-                      height: '64px',
-                      borderRadius: '16px',
+                      width: '60px',
+                      height: '60px',
+                      borderRadius: '14px',
                       overflow: 'hidden',
                       border: '2px solid #FFE07D',
                       boxShadow: '0 0 16px rgba(212, 175, 55, 0.4)',
@@ -352,11 +438,10 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
                   <div>
                     <div
                       style={{
-                        fontSize: '22px',
+                        fontSize: '20px',
                         fontWeight: 900,
                         color: '#ffffff',
                         fontFamily: "'Philosopher', serif",
-                        letterSpacing: '0.5px',
                       }}
                     >
                       {currentAccount.login}
@@ -364,8 +449,8 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
                     <div style={{ fontSize: '13px', color: '#b5a695', marginTop: '2px' }}>
                       {currentAccount.email}
                     </div>
-                    <div style={{ fontSize: '12px', color: '#FFE07D', fontWeight: 700, marginTop: '4px' }}>
-                      Мастер Дао • Уровень {currentAccount.profile.level || 1}
+                    <div style={{ fontSize: '12px', color: '#FFE07D', fontWeight: 700, marginTop: '2px' }}>
+                      Фэн Лун (Мастер Дао) • Уровень {currentAccount.profile.level || 1}
                     </div>
                   </div>
                 </div>
@@ -373,7 +458,7 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
                 {/* Resources Bar */}
                 <div
                   style={{
-                    padding: '14px 18px',
+                    padding: '12px 16px',
                     borderRadius: '12px',
                     backgroundColor: 'rgba(212, 175, 55, 0.1)',
                     border: '1px solid rgba(212, 175, 55, 0.3)',
@@ -383,30 +468,29 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <GoldCoinGlyph size={20} color="#f59e0b" glow />
+                    <GoldCoinGlyph size={18} color="#f59e0b" glow />
                     <span style={{ fontSize: '14px', fontWeight: 800, color: '#f59e0b' }}>
                       {currentAccount.profile.gold} Золота
                     </span>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <CrystalGlyph size={20} color="#60a5fa" glow />
+                    <CrystalGlyph size={18} color="#60a5fa" glow />
                     <span style={{ fontSize: '14px', fontWeight: 800, color: '#60a5fa' }}>
                       {currentAccount.profile.diamonds} Кристаллов
                     </span>
                   </div>
                 </div>
 
-                {/* Play Button */}
+                {/* Primary Button */}
                 <ShinyGoldButton
                   type="button"
-                  onClick={handleContinueAsCurrent}
+                  onClick={handleQuickPlay}
                   style={{ width: '100%', padding: '20px 32px', fontSize: '18px' }}
                 >
                   <SwordGlyph size={24} color="#120d04" />
                   <span>ПРОДОЛЖИТЬ ИГРУ</span>
                 </ShinyGoldButton>
 
-                {/* Logout Button */}
                 <button
                   type="button"
                   onClick={handleLogout}
@@ -414,128 +498,48 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
                     background: 'none',
                     border: 'none',
                     color: '#9ca3af',
-                    fontSize: '14px',
+                    fontSize: '13px',
                     cursor: 'pointer',
                     textDecoration: 'underline',
                     textAlign: 'center',
-                    marginTop: '-4px',
                   }}
                 >
                   Сменить аккаунт / Выйти
                 </button>
               </div>
             ) : (
-              /* NOT LOGGED IN: Full-Fledged Registration / Login Tabs */
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                {/* Tabs Switcher */}
-                <div
-                  style={{
-                    display: 'grid',
-                    gridTemplateColumns: '1fr 1fr',
-                    gap: '10px',
-                    backgroundColor: 'rgba(0,0,0,0.5)',
-                    padding: '6px',
-                    borderRadius: '16px',
-                    border: '1px solid rgba(212, 175, 55, 0.3)',
-                  }}
-                >
-                  <button
-                    type="button"
-                    onClick={() => {
-                      portalSound.playClick(1.0);
-                      setAuthMode('register');
-                      setFormMsg(null);
-                    }}
-                    style={{
-                      padding: '12px 16px',
-                      borderRadius: '12px',
-                      border: 'none',
-                      backgroundColor:
-                        authMode === 'register' ? 'rgba(212, 175, 55, 0.25)' : 'transparent',
-                      color: authMode === 'register' ? '#FFE07D' : '#9ca3af',
-                      fontFamily: "'Philosopher', serif",
-                      fontSize: '16px',
-                      fontWeight: 800,
-                      cursor: 'pointer',
-                      transition: 'all 0.2s',
-                      boxShadow:
-                        authMode === 'register' ? '0 0 15px rgba(212, 175, 55, 0.2)' : 'none',
-                    }}
-                  >
-                    РЕГИСТРАЦИЯ
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      portalSound.playClick(1.0);
-                      setAuthMode('login');
-                      setFormMsg(null);
-                    }}
-                    style={{
-                      padding: '12px 16px',
-                      borderRadius: '12px',
-                      border: 'none',
-                      backgroundColor:
-                        authMode === 'login' ? 'rgba(212, 175, 55, 0.25)' : 'transparent',
-                      color: authMode === 'login' ? '#FFE07D' : '#9ca3af',
-                      fontFamily: "'Philosopher', serif",
-                      fontSize: '16px',
-                      fontWeight: 800,
-                      cursor: 'pointer',
-                      transition: 'all 0.2s',
-                      boxShadow:
-                        authMode === 'login' ? '0 0 15px rgba(212, 175, 55, 0.2)' : 'none',
-                    }}
-                  >
-                    ВХОД В АККАУНТ
-                  </button>
-                </div>
-
+              /* INSTANT PLAY (ZERO BARRIER) + OPTIONAL ADVANCED AUTH */
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
                 {/* Starter Resources Strip */}
                 <div
                   style={{
                     padding: '12px 16px',
                     borderRadius: '12px',
                     backgroundColor: 'rgba(212, 175, 55, 0.1)',
-                    border: '1px solid rgba(212, 175, 55, 0.35)',
+                    border: '1.5px solid rgba(212, 175, 55, 0.4)',
                     display: 'flex',
                     alignItems: 'center',
-                    justifyContent: 'space-between',
+                    justifyContent: 'space-around',
                     fontSize: '13px',
                   }}
                 >
-                  <span style={{ color: '#FFE07D', fontWeight: 800 }}>🎁 Стартовый бонус:</span>
-                  <span style={{ color: '#f59e0b', fontWeight: 800 }}>+500 Золота</span>
-                  <span style={{ color: '#60a5fa', fontWeight: 800 }}>+50 Кристаллов</span>
-                  <span style={{ color: '#4ade80', fontWeight: 800 }}>Шест мастера</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <GoldCoinGlyph size={18} color="#f59e0b" glow />
+                    <span style={{ color: '#f59e0b', fontWeight: 800 }}>+500 Золота</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <CrystalGlyph size={18} color="#60a5fa" glow />
+                    <span style={{ color: '#60a5fa', fontWeight: 800 }}>+50 Кристаллов</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <SwordGlyph size={18} color="#4ade80" />
+                    <span style={{ color: '#4ade80', fontWeight: 800 }}>Шест Фэн Луна</span>
+                  </div>
                 </div>
 
-                {/* Form Message (Error / Success) */}
-                {formMsg && (
-                  <div
-                    style={{
-                      padding: '12px 16px',
-                      borderRadius: '12px',
-                      fontSize: '14px',
-                      fontWeight: 700,
-                      backgroundColor: formMsg.isError
-                        ? 'rgba(239, 68, 68, 0.15)'
-                        : 'rgba(34, 197, 94, 0.15)',
-                      border: `1.5px solid ${formMsg.isError ? 'rgba(239, 68, 68, 0.5)' : 'rgba(34, 197, 94, 0.5)'}`,
-                      color: formMsg.isError ? '#fca5a5' : '#86efac',
-                      textAlign: 'center',
-                    }}
-                  >
-                    {formMsg.text}
-                  </div>
-                )}
-
-                {/* FORM: Registration Mode */}
-                {authMode === 'register' ? (
-                  <form
-                    onSubmit={handleRegisterSubmit}
-                    style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}
-                  >
+                {!showAdvancedAuth ? (
+                  /* ZERO FRICTION MODE: CALLSIGN + 1-CLICK INSTANT LAUNCH */
+                  <form onSubmit={handleQuickPlay} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                     <div>
                       <label
                         style={{
@@ -546,18 +550,18 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
                           fontWeight: 700,
                         }}
                       >
-                        Позывной воина (Логин персонажа):
+                        Позывной воина (Имя персонажа на арене):
                       </label>
                       <input
                         type="text"
                         required
-                        placeholder="Например, admin или Voin"
-                        value={loginField}
-                        onChange={(e) => setLoginField(e.target.value)}
+                        placeholder="admin"
+                        value={callsign}
+                        onChange={(e) => setCallsign(e.target.value)}
                         style={{
                           width: '100%',
                           boxSizing: 'border-box',
-                          padding: '14px 18px',
+                          padding: '16px 20px',
                           borderRadius: '12px',
                           backgroundColor: 'rgba(0, 0, 0, 0.75)',
                           border: '1.5px solid rgba(212, 175, 55, 0.5)',
@@ -569,162 +573,266 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
                       />
                     </div>
 
-                    <div>
-                      <label
-                        style={{
-                          display: 'block',
-                          fontSize: '14px',
-                          color: '#e2d7c5',
-                          marginBottom: '6px',
-                          fontWeight: 700,
-                        }}
-                      >
-                        Email (для сохранения и доступа к аккаунту):
-                      </label>
-                      <input
-                        type="email"
-                        required
-                        placeholder="voin@mastersofthewild.ru"
-                        value={emailField}
-                        onChange={(e) => setEmailField(e.target.value)}
-                        style={{
-                          width: '100%',
-                          boxSizing: 'border-box',
-                          padding: '14px 18px',
-                          borderRadius: '12px',
-                          backgroundColor: 'rgba(0, 0, 0, 0.75)',
-                          border: '1.5px solid rgba(212, 175, 55, 0.5)',
-                          color: '#ffffff',
-                          fontSize: '16px',
-                          fontWeight: 700,
-                          outline: 'none',
-                        }}
-                      />
-                    </div>
-
-                    <div>
-                      <label
-                        style={{
-                          display: 'block',
-                          fontSize: '14px',
-                          color: '#e2d7c5',
-                          marginBottom: '6px',
-                          fontWeight: 700,
-                        }}
-                      >
-                        Пароль:
-                      </label>
-                      <input
-                        type="password"
-                        required
-                        placeholder="Минимум 4 символа"
-                        value={passwordField}
-                        onChange={(e) => setPasswordField(e.target.value)}
-                        style={{
-                          width: '100%',
-                          boxSizing: 'border-box',
-                          padding: '14px 18px',
-                          borderRadius: '12px',
-                          backgroundColor: 'rgba(0, 0, 0, 0.75)',
-                          border: '1.5px solid rgba(212, 175, 55, 0.5)',
-                          color: '#ffffff',
-                          fontSize: '16px',
-                          fontWeight: 700,
-                          outline: 'none',
-                        }}
-                      />
-                    </div>
-
+                    {/* BIG GOLD CTA BUTTON */}
                     <ShinyGoldButton
                       type="submit"
-                      disabled={isLoading}
-                      style={{ width: '100%', padding: '20px 32px', fontSize: '18px', marginTop: '6px' }}
+                      style={{ width: '100%', padding: '22px 32px', fontSize: '19px', marginTop: '4px' }}
                     >
-                      <ShieldGlyph size={24} color="#120d04" />
-                      <span>{isLoading ? 'СОЗДАНИЕ АККАУНТА...' : 'СОЗДАТЬ АККАУНТ И В БОЙ'}</span>
+                      <SwordGlyph size={26} color="#120d04" />
+                      <span>ИГРАТЬ СРАЗУ В БРАУЗЕРЕ</span>
                     </ShinyGoldButton>
+
+                    {/* Storage & Privacy Note */}
+                    <div
+                      style={{
+                        fontSize: '12px',
+                        color: '#9ca3af',
+                        textAlign: 'center',
+                        lineHeight: 1.5,
+                      }}
+                    >
+                      🔒 Сохранение: {STORAGE_BACKEND}. Без очередей и скачивания.
+                    </div>
+
+                    {/* Toggle to Open Advanced Password Protection */}
+                    <div style={{ textAlign: 'center', marginTop: '2px' }}>
+                      <button
+                        type="button"
+                        onClick={() => setShowAdvancedAuth(true)}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: '#d4af37',
+                          fontSize: '13px',
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                          textDecoration: 'underline',
+                          padding: 0,
+                        }}
+                      >
+                        Войти под паролем / Защитить аккаунт Email →
+                      </button>
+                    </div>
                   </form>
                 ) : (
-                  /* FORM: Login Mode */
-                  <form
-                    onSubmit={handleLoginSubmit}
-                    style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}
-                  >
-                    <div>
-                      <label
-                        style={{
-                          display: 'block',
-                          fontSize: '14px',
-                          color: '#e2d7c5',
-                          marginBottom: '6px',
-                          fontWeight: 700,
-                        }}
-                      >
-                        Имя персонажа или Email:
-                      </label>
-                      <input
-                        type="text"
-                        required
-                        placeholder="admin или ваш email"
-                        value={loginIdentField}
-                        onChange={(e) => setLoginIdentField(e.target.value)}
-                        style={{
-                          width: '100%',
-                          boxSizing: 'border-box',
-                          padding: '14px 18px',
-                          borderRadius: '12px',
-                          backgroundColor: 'rgba(0, 0, 0, 0.75)',
-                          border: '1.5px solid rgba(212, 175, 55, 0.5)',
-                          color: '#ffffff',
-                          fontSize: '16px',
-                          fontWeight: 700,
-                          outline: 'none',
-                        }}
-                      />
-                    </div>
-
-                    <div>
-                      <label
-                        style={{
-                          display: 'block',
-                          fontSize: '14px',
-                          color: '#e2d7c5',
-                          marginBottom: '6px',
-                          fontWeight: 700,
-                        }}
-                      >
-                        Пароль:
-                      </label>
-                      <input
-                        type="password"
-                        required
-                        placeholder="Ваш пароль"
-                        value={loginPassField}
-                        onChange={(e) => setLoginPassField(e.target.value)}
-                        style={{
-                          width: '100%',
-                          boxSizing: 'border-box',
-                          padding: '14px 18px',
-                          borderRadius: '12px',
-                          backgroundColor: 'rgba(0, 0, 0, 0.75)',
-                          border: '1.5px solid rgba(212, 175, 55, 0.5)',
-                          color: '#ffffff',
-                          fontSize: '16px',
-                          fontWeight: 700,
-                          outline: 'none',
-                        }}
-                      />
-                    </div>
-
-                    <ShinyGoldButton
-                      type="submit"
-                      disabled={isLoading}
-                      style={{ width: '100%', padding: '20px 32px', fontSize: '18px', marginTop: '6px' }}
+                  /* ADVANCED AUTH: REGISTER / LOGIN TABS */
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    {/* Tabs Switcher */}
+                    <div
+                      style={{
+                        display: 'grid',
+                        gridTemplateColumns: '1fr 1fr',
+                        gap: '8px',
+                        backgroundColor: 'rgba(0,0,0,0.5)',
+                        padding: '4px',
+                        borderRadius: '14px',
+                        border: '1px solid rgba(212, 175, 55, 0.3)',
+                      }}
                     >
-                      <SwordGlyph size={24} color="#120d04" />
-                      <span>{isLoading ? 'ПРОВЕРКА...' : 'ВОЙТИ В АККАУНТ И В БОЙ'}</span>
-                    </ShinyGoldButton>
-                  </form>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          portalSound.playClick(1.0);
+                          setAuthMode('login');
+                          setFormMsg(null);
+                        }}
+                        style={{
+                          padding: '10px 14px',
+                          borderRadius: '10px',
+                          border: 'none',
+                          backgroundColor:
+                            authMode === 'login' ? 'rgba(212, 175, 55, 0.25)' : 'transparent',
+                          color: authMode === 'login' ? '#FFE07D' : '#9ca3af',
+                          fontFamily: "'Philosopher', serif",
+                          fontSize: '15px',
+                          fontWeight: 800,
+                          cursor: 'pointer',
+                        }}
+                      >
+                        ВХОД
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          portalSound.playClick(1.0);
+                          setAuthMode('register');
+                          setFormMsg(null);
+                        }}
+                        style={{
+                          padding: '10px 14px',
+                          borderRadius: '10px',
+                          border: 'none',
+                          backgroundColor:
+                            authMode === 'register' ? 'rgba(212, 175, 55, 0.25)' : 'transparent',
+                          color: authMode === 'register' ? '#FFE07D' : '#9ca3af',
+                          fontFamily: "'Philosopher', serif",
+                          fontSize: '15px',
+                          fontWeight: 800,
+                          cursor: 'pointer',
+                        }}
+                      >
+                        РЕГИСТРАЦИЯ
+                      </button>
+                    </div>
+
+                    {/* Form Message */}
+                    {formMsg && (
+                      <div
+                        style={{
+                          padding: '10px 14px',
+                          borderRadius: '10px',
+                          fontSize: '13px',
+                          fontWeight: 700,
+                          backgroundColor: formMsg.isError
+                            ? 'rgba(239, 68, 68, 0.15)'
+                            : 'rgba(34, 197, 94, 0.15)',
+                          border: `1.5px solid ${formMsg.isError ? 'rgba(239, 68, 68, 0.5)' : 'rgba(34, 197, 94, 0.5)'}`,
+                          color: formMsg.isError ? '#fca5a5' : '#86efac',
+                          textAlign: 'center',
+                        }}
+                      >
+                        {formMsg.text}
+                      </div>
+                    )}
+
+                    {authMode === 'register' ? (
+                      <form onSubmit={handleRegisterSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                        <div>
+                          <input
+                            type="text"
+                            required
+                            placeholder="Позывной воина (от 3 символов)"
+                            value={loginField}
+                            onChange={(e) => setLoginField(e.target.value)}
+                            style={{
+                              width: '100%',
+                              boxSizing: 'border-box',
+                              padding: '12px 16px',
+                              borderRadius: '10px',
+                              backgroundColor: 'rgba(0, 0, 0, 0.75)',
+                              border: '1.5px solid rgba(212, 175, 55, 0.45)',
+                              color: '#ffffff',
+                              fontSize: '15px',
+                              outline: 'none',
+                            }}
+                          />
+                        </div>
+                        <div>
+                          <input
+                            type="email"
+                            required
+                            placeholder="Email (для восстановления)"
+                            value={emailField}
+                            onChange={(e) => setEmailField(e.target.value)}
+                            style={{
+                              width: '100%',
+                              boxSizing: 'border-box',
+                              padding: '12px 16px',
+                              borderRadius: '10px',
+                              backgroundColor: 'rgba(0, 0, 0, 0.75)',
+                              border: '1.5px solid rgba(212, 175, 55, 0.45)',
+                              color: '#ffffff',
+                              fontSize: '15px',
+                              outline: 'none',
+                            }}
+                          />
+                        </div>
+                        <div>
+                          <input
+                            type="password"
+                            required
+                            placeholder="Пароль (минимум 4 символа)"
+                            value={passwordField}
+                            onChange={(e) => setPasswordField(e.target.value)}
+                            style={{
+                              width: '100%',
+                              boxSizing: 'border-box',
+                              padding: '12px 16px',
+                              borderRadius: '10px',
+                              backgroundColor: 'rgba(0, 0, 0, 0.75)',
+                              border: '1.5px solid rgba(212, 175, 55, 0.45)',
+                              color: '#ffffff',
+                              fontSize: '15px',
+                              outline: 'none',
+                            }}
+                          />
+                        </div>
+
+                        <ShinyGoldButton type="submit" disabled={isLoading} style={{ width: '100%', padding: '16px' }}>
+                          <ShieldGlyph size={20} color="#120d04" />
+                          <span>{isLoading ? 'СОЗДАНИЕ...' : 'СОЗДАТЬ АККАУНТ И В БОЙ'}</span>
+                        </ShinyGoldButton>
+                      </form>
+                    ) : (
+                      <form onSubmit={handleLoginSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                        <div>
+                          <input
+                            type="text"
+                            required
+                            placeholder="Позывной или Email"
+                            value={loginIdentField}
+                            onChange={(e) => setLoginIdentField(e.target.value)}
+                            style={{
+                              width: '100%',
+                              boxSizing: 'border-box',
+                              padding: '12px 16px',
+                              borderRadius: '10px',
+                              backgroundColor: 'rgba(0, 0, 0, 0.75)',
+                              border: '1.5px solid rgba(212, 175, 55, 0.45)',
+                              color: '#ffffff',
+                              fontSize: '15px',
+                              outline: 'none',
+                            }}
+                          />
+                        </div>
+                        <div>
+                          <input
+                            type="password"
+                            required
+                            placeholder="Пароль"
+                            value={loginPassField}
+                            onChange={(e) => setLoginPassField(e.target.value)}
+                            style={{
+                              width: '100%',
+                              boxSizing: 'border-box',
+                              padding: '12px 16px',
+                              borderRadius: '10px',
+                              backgroundColor: 'rgba(0, 0, 0, 0.75)',
+                              border: '1.5px solid rgba(212, 175, 55, 0.45)',
+                              color: '#ffffff',
+                              fontSize: '15px',
+                              outline: 'none',
+                            }}
+                          />
+                        </div>
+
+                        <ShinyGoldButton type="submit" disabled={isLoading} style={{ width: '100%', padding: '16px' }}>
+                          <SwordGlyph size={20} color="#120d04" />
+                          <span>{isLoading ? 'ПРОВЕРКА...' : 'ВОЙТИ И В БОЙ'}</span>
+                        </ShinyGoldButton>
+                      </form>
+                    )}
+
+                    {/* Back to Quick Play */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowAdvancedAuth(false);
+                        setFormMsg(null);
+                      }}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: '#9ca3af',
+                        fontSize: '13px',
+                        cursor: 'pointer',
+                        textDecoration: 'underline',
+                        textAlign: 'center',
+                      }}
+                    >
+                      ← Вернуться к быстрому запуску без пароля
+                    </button>
+                  </div>
                 )}
               </div>
             )}
