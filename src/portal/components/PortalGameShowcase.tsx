@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { portalSound } from '../PortalSoundService';
 import { proceduralAudio } from '../../utils/ProceduralAudio';
-import { SERVER_NAME, SERVER_ONLINE_STRING } from '../portalConstants';
 
 interface ShowcaseSlide {
   id: string;
@@ -42,7 +41,7 @@ const SHOWCASE_SLIDES: ShowcaseSlide[] = [
     title: 'Бестиарий и Чемпионы',
     tag: '5 УНИКАЛЬНЫХ КЛАССОВ',
     description:
-      'Глубокая система прокачки чемпионов: Фэн Лун (Боец), Рикки (Убийца), Громм (Танк), Варкан и Аурелиус с уникальными ветками пассивных умений и коллекцией обликов.',
+      'Глубокая система прокачки чемпионов: Боевой Панда (Мастер Дао), Рикки (Убийца), Громм (Танк), Варкан и Аурелиус с уникальными ветками пассивных умений и коллекцией обликов.',
     src: '/assets/images/showcase/showcase_heroes.png',
   },
   {
@@ -540,7 +539,7 @@ export const PortalGameShowcase: React.FC<PortalGameShowcaseProps> = ({
             </h4>
             <p style={{ fontSize: '14px', lineHeight: 1.6, color: '#d4c7b6', margin: 0 }}>
               Никаких платных преимуществ и раздутых статов. Каждый мастер начинает с чистого листа: 1-й уровень,
-              стартовый чемпион Боевой Панда (Фэн Лун, Мастер Дао) и честный путь развития.
+              стартовый чемпион Боевой Панда (Боевой Панда, Мастер Дао) и честный путь развития.
             </p>
           </div>
 
