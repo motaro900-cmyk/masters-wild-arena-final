@@ -18,6 +18,14 @@ interface PortalHeroProps {
   onExploreBeasts: () => void;
 }
 
+const STARTER_CHAMPIONS = [
+  { id: 'panda', name: 'Фэн Лун', role: 'Боец', avatar: '/assets/images/avatars/panda.webp', color: '#4ade80' },
+  { id: 'raccoon', name: 'Рикки', role: 'Убийца', avatar: '/assets/images/avatars/cat.webp', color: '#c084fc' },
+  { id: 'minotaur', name: 'Громм', role: 'Танк', avatar: '/assets/images/avatars/boar.webp', color: '#f59e0b' },
+  { id: 'tiger_warrior', name: 'Варкан', role: 'Охотник', avatar: '/assets/images/avatars/tiger.webp', color: '#ef4444' },
+  { id: 'lion_knight', name: 'Аурелиус', role: 'Паладин', avatar: '/assets/images/avatars/lion.webp', color: '#eab308' },
+];
+
 export const PortalHero: React.FC<PortalHeroProps> = ({
   onLaunchGame,
 }) => {
@@ -25,17 +33,18 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
     accountAuthService.getCurrentAccount()
   );
 
-  // Quick Play Callsign
+  // Callsign & Chosen Starter Hero
   const [callsign, setCallsign] = useState(() => {
     return localStorage.getItem('mow_player_name') || 'admin';
   });
+  const [selectedHero, setSelectedHero] = useState<string>('panda');
 
-  // Optional Advanced Auth Form State
-  const [showAdvancedAuth, setShowAdvancedAuth] = useState(false);
-  const [authMode, setAuthMode] = useState<'register' | 'login'>('login');
+  // Full Auth Mode: 'register' is primary, 'login' for returning players
+  const [authMode, setAuthMode] = useState<'register' | 'login'>('register');
   const [loginField, setLoginField] = useState('');
   const [emailField, setEmailField] = useState('');
   const [passwordField, setPasswordField] = useState('');
+  const [confirmPassField, setConfirmPassField] = useState('');
   const [loginIdentField, setLoginIdentField] = useState('');
   const [loginPassField, setLoginPassField] = useState('');
 
@@ -53,19 +62,19 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
   }, []);
 
   /**
-   * Frictionless 1-Click Launch (Zero-Barrier Onboarding)
+   * Fast 1-Click Trial Play (No Password)
    */
   const handleQuickPlay = (e?: React.FormEvent) => {
     if (e && e.preventDefault) e.preventDefault();
-    const cleanName = callsign.trim() || 'admin';
+    const cleanName = (loginField.trim() || callsign.trim() || 'admin');
     portalSound.playEquip();
     proceduralAudio.playDuelHorn();
 
-    // Persist player name locally for game launch
     localStorage.setItem('mow_player_name', cleanName);
     localStorage.setItem('mow_master_nick', cleanName);
     portalSyncBridge.commitMutation({
       playerName: cleanName,
+      selectedHeroId: selectedHero,
       isLoggedIn: true,
     });
 
@@ -73,11 +82,18 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
   };
 
   /**
-   * Optional Full Account Registration
+   * Full Account Registration
    */
   const handleRegisterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormMsg(null);
+
+    if (passwordField !== confirmPassField) {
+      portalSound.playClick(0.7);
+      setFormMsg({ text: 'Пароли не совпадают! Проверьте повтор пароля.', isError: true });
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -85,6 +101,7 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
         login: loginField,
         email: emailField,
         password: passwordField,
+        selectedHeroId: selectedHero,
       });
 
       if (!res.success) {
@@ -96,20 +113,20 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
 
       portalSound.playReward();
       proceduralAudio.playFanfare();
-      setFormMsg({ text: 'Аккаунт успешно создан! Запуск...', isError: false });
+      setFormMsg({ text: 'Мастер-аккаунт успешно зарегистрирован! Запуск игры...', isError: false });
 
       setTimeout(() => {
         onLaunchGame();
-      }, 350);
+      }, 400);
     } catch (err: any) {
-      setFormMsg({ text: err?.message || 'Непредвиденная ошибка', isError: true });
+      setFormMsg({ text: err?.message || 'Непредвиденная ошибка регистрации', isError: true });
     } finally {
       setIsLoading(false);
     }
   };
 
   /**
-   * Optional Full Account Login
+   * Full Account Login
    */
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -124,20 +141,20 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
 
       if (!res.success) {
         portalSound.playClick(0.7);
-        setFormMsg({ text: res.error || 'Неверные данные входа', isError: true });
+        setFormMsg({ text: res.error || 'Неверный логин или пароль', isError: true });
         setIsLoading(false);
         return;
       }
 
       portalSound.playReward();
       proceduralAudio.playDuelHorn();
-      setFormMsg({ text: `С возвращением, ${res.account?.login}! Запуск...`, isError: false });
+      setFormMsg({ text: `С возвращением, ${res.account?.login}! Вход в игру...`, isError: false });
 
       setTimeout(() => {
         onLaunchGame();
-      }, 300);
+      }, 350);
     } catch (err: any) {
-      setFormMsg({ text: err?.message || 'Непредвиденная ошибка', isError: true });
+      setFormMsg({ text: err?.message || 'Непредвиденная ошибка входа', isError: true });
     } finally {
       setIsLoading(false);
     }
@@ -158,13 +175,13 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        paddingTop: '100px',
-        paddingBottom: '70px',
+        paddingTop: '110px',
+        paddingBottom: '80px',
         overflow: 'hidden',
         backgroundColor: '#0c0817',
       }}
     >
-      {/* 1. Bright, High-Saturated, Vibrant Fantasy Game Background */}
+      {/* 1. Vibrant, High-Saturated, Radiant Game Background */}
       <motion.div
         animate={{ scale: [1.02, 1.05, 1.02] }}
         transition={{ duration: 16, repeat: Infinity, ease: 'easeInOut' }}
@@ -174,18 +191,18 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
           backgroundImage: 'url(/assets/images/backgrounds/bg_main.webp)',
           backgroundSize: 'cover',
           backgroundPosition: 'center 35%',
-          filter: 'brightness(0.85) contrast(1.1) saturate(1.35)',
+          filter: 'brightness(0.9) contrast(1.15) saturate(1.4)',
           zIndex: 0,
         }}
       />
 
-      {/* 2. Warm Sunbeam Radial Overlay (Inviting, Golden, Atmospheric) */}
+      {/* 2. Warm Sunbeam Radial Overlay (Inviting, Golden, Radiant) */}
       <div
         style={{
           position: 'absolute',
           inset: 0,
           background:
-            'radial-gradient(circle at 50% 35%, rgba(255, 230, 150, 0.18) 0%, rgba(20, 12, 30, 0.42) 65%, #0e0a1a 100%)',
+            'radial-gradient(circle at 50% 30%, rgba(255, 230, 150, 0.22) 0%, rgba(25, 14, 38, 0.45) 60%, #0e0a1a 100%)',
           zIndex: 1,
         }}
       />
@@ -201,7 +218,7 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
         }}
       />
 
-      {/* 3. Main Full-Scale Layout Container (Clean 2-Column Responsive Layout) */}
+      {/* 3. Main Full-Scale Responsive Container */}
       <div
         style={{
           position: 'relative',
@@ -215,9 +232,9 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
           alignItems: 'center',
         }}
       >
-        {/* Left Column: Monumental Branding & Direct Game Intro */}
+        {/* Left Column: Monumental Game Branding */}
         <div style={{ textAlign: 'left' }}>
-          {/* Status Badge (No Tech Jargon) */}
+          {/* Status Badge */}
           <div
             style={{
               display: 'inline-flex',
@@ -225,9 +242,9 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
               gap: '12px',
               padding: '10px 24px',
               borderRadius: '30px',
-              background: 'rgba(212, 175, 55, 0.22)',
-              border: '1.5px solid rgba(255, 224, 125, 0.65)',
-              boxShadow: '0 0 30px rgba(255, 215, 0, 0.35)',
+              background: 'rgba(212, 175, 55, 0.25)',
+              border: '1.5px solid rgba(255, 224, 125, 0.75)',
+              boxShadow: '0 0 35px rgba(255, 215, 0, 0.4)',
               marginBottom: '24px',
               backdropFilter: 'blur(8px)',
             }}
@@ -285,7 +302,7 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
             </span>
           </h1>
 
-          {/* Direct Concise Game Description (No Dev Jargon) */}
+          {/* Direct Concise Game Description */}
           <p
             style={{
               margin: '0 0 26px 0',
@@ -296,21 +313,21 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
               textShadow: '0 2px 14px rgba(0,0,0,0.95)',
             }}
           >
-            Официальный сайт браузерной тактической RPG. Мгновенный запуск прямо в браузере без скачивания и ожидания.
+            Браузерная тактическая RPG нового поколения. Мгновенный запуск прямо в браузере без скачивания файлов.
             5 легендарных чемпионов, глубокая кузница экипировки из 7 слотов, соревновательная арена и живой оркестровый саундтрек.
           </p>
 
-          {/* Fantasy Features Row (No Dev Jargon) */}
+          {/* Fantasy Features Row */}
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px' }}>
             <span
               style={{
                 fontSize: '14px',
                 fontWeight: 800,
                 color: '#FFE07D',
-                backgroundColor: 'rgba(212, 175, 55, 0.2)',
+                backgroundColor: 'rgba(212, 175, 55, 0.22)',
                 padding: '8px 18px',
                 borderRadius: '14px',
-                border: '1.5px solid rgba(255, 224, 125, 0.45)',
+                border: '1.5px solid rgba(255, 224, 125, 0.55)',
                 boxShadow: '0 4px 15px rgba(0,0,0,0.4)',
                 backdropFilter: 'blur(6px)',
               }}
@@ -322,10 +339,10 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
                 fontSize: '14px',
                 fontWeight: 800,
                 color: '#86efac',
-                backgroundColor: 'rgba(34, 197, 94, 0.2)',
+                backgroundColor: 'rgba(34, 197, 94, 0.22)',
                 padding: '8px 18px',
                 borderRadius: '14px',
-                border: '1.5px solid rgba(74, 222, 128, 0.45)',
+                border: '1.5px solid rgba(74, 222, 128, 0.55)',
                 boxShadow: '0 4px 15px rgba(0,0,0,0.4)',
                 backdropFilter: 'blur(6px)',
               }}
@@ -337,10 +354,10 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
                 fontSize: '14px',
                 fontWeight: 800,
                 color: '#93c5fd',
-                backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                backgroundColor: 'rgba(59, 130, 246, 0.22)',
                 padding: '8px 18px',
                 borderRadius: '14px',
-                border: '1.5px solid rgba(96, 165, 250, 0.45)',
+                border: '1.5px solid rgba(96, 165, 250, 0.55)',
                 boxShadow: '0 4px 15px rgba(0,0,0,0.4)',
                 backdropFilter: 'blur(6px)',
               }}
@@ -352,10 +369,10 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
                 fontSize: '14px',
                 fontWeight: 800,
                 color: '#fbcfe8',
-                backgroundColor: 'rgba(236, 72, 153, 0.2)',
+                backgroundColor: 'rgba(236, 72, 153, 0.22)',
                 padding: '8px 18px',
                 borderRadius: '14px',
-                border: '1.5px solid rgba(244, 114, 182, 0.45)',
+                border: '1.5px solid rgba(244, 114, 182, 0.55)',
                 boxShadow: '0 4px 15px rgba(0,0,0,0.4)',
                 backdropFilter: 'blur(6px)',
               }}
@@ -365,7 +382,7 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
           </div>
         </div>
 
-        {/* Right Column: Zero-Barrier Instant Launch Card (Vibrant, Radiant, Tactile) */}
+        {/* Right Column: Full Featured Master-Account Registration & Auth Card */}
         <div style={{ display: 'flex', justifyContent: 'center' }}>
           <HudCard
             active={true}
@@ -373,11 +390,11 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
             style={{
               width: '100%',
               maxWidth: '560px',
-              padding: 'clamp(28px, 4vw, 40px)',
-              backgroundColor: 'rgba(18, 12, 28, 0.88)',
-              border: '2px solid rgba(255, 224, 125, 0.45)',
-              boxShadow: '0 20px 50px rgba(0,0,0,0.85), 0 0 35px rgba(212, 175, 55, 0.25)',
-              backdropFilter: 'blur(16px)',
+              padding: 'clamp(28px, 3.5vw, 36px)',
+              backgroundColor: 'rgba(18, 12, 30, 0.94)',
+              border: '2px solid rgba(255, 224, 125, 0.55)',
+              boxShadow: '0 25px 60px rgba(0,0,0,0.9), 0 0 40px rgba(212, 175, 55, 0.3)',
+              backdropFilter: 'blur(20px)',
             }}
           >
             {/* Header Badge */}
@@ -402,7 +419,7 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
                     letterSpacing: '0.5px',
                   }}
                 >
-                  {currentAccount ? 'МАСТЕР-АККАУНТ' : 'БЫСТРЫЙ СТАРТ'}
+                  {currentAccount ? 'МАСТЕР-АККАУНТ ВОИНА' : 'РЕГИСТРАЦИЯ ВОИНА'}
                 </span>
               </div>
               <span
@@ -410,13 +427,13 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
                   fontSize: '13px',
                   fontWeight: 800,
                   color: '#4ade80',
-                  backgroundColor: 'rgba(34, 197, 94, 0.2)',
+                  backgroundColor: 'rgba(34, 197, 94, 0.22)',
                   padding: '6px 14px',
                   borderRadius: '14px',
-                  border: '1.5px solid rgba(34, 197, 94, 0.5)',
+                  border: '1.5px solid rgba(34, 197, 94, 0.55)',
                 }}
               >
-                ● 0 сек ожидания
+                ● Облачный сейв
               </span>
             </div>
 
@@ -427,8 +444,8 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
                   style={{
                     padding: '16px 20px',
                     borderRadius: '16px',
-                    backgroundColor: 'rgba(0, 0, 0, 0.65)',
-                    border: '1.5px solid rgba(212, 175, 55, 0.4)',
+                    backgroundColor: 'rgba(0, 0, 0, 0.75)',
+                    border: '1.5px solid rgba(212, 175, 55, 0.45)',
                     display: 'flex',
                     alignItems: 'center',
                     gap: '16px',
@@ -436,18 +453,28 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
                 >
                   <div
                     style={{
-                      width: '60px',
-                      height: '60px',
+                      width: '64px',
+                      height: '64px',
                       borderRadius: '14px',
                       overflow: 'hidden',
                       border: '2px solid #FFE07D',
-                      boxShadow: '0 0 18px rgba(212, 175, 55, 0.5)',
+                      boxShadow: '0 0 20px rgba(212, 175, 55, 0.55)',
                       flexShrink: 0,
                       backgroundColor: '#120d1c',
                     }}
                   >
                     <img
-                      src="/assets/images/avatars/panda.webp"
+                      src={
+                        currentAccount.profile.selectedHeroId === 'raccoon'
+                          ? '/assets/images/avatars/cat.webp'
+                          : currentAccount.profile.selectedHeroId === 'minotaur'
+                          ? '/assets/images/avatars/boar.webp'
+                          : currentAccount.profile.selectedHeroId === 'tiger_warrior'
+                          ? '/assets/images/avatars/tiger.webp'
+                          : currentAccount.profile.selectedHeroId === 'lion_knight'
+                          ? '/assets/images/avatars/lion.webp'
+                          : '/assets/images/avatars/panda.webp'
+                      }
                       alt="Avatar"
                       style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                     />
@@ -455,7 +482,7 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
                   <div>
                     <div
                       style={{
-                        fontSize: '20px',
+                        fontSize: '22px',
                         fontWeight: 900,
                         color: '#ffffff',
                         fontFamily: "'Philosopher', serif",
@@ -467,7 +494,7 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
                       {currentAccount.email}
                     </div>
                     <div style={{ fontSize: '13px', color: '#FFE07D', fontWeight: 800, marginTop: '2px' }}>
-                      Фэн Лун (Мастер Дао) • Уровень {currentAccount.profile.level || 1}
+                      Уровень {currentAccount.profile.level || 1} • Рейтинг {currentAccount.profile.rating || 1000} 🏆
                     </div>
                   </div>
                 </div>
@@ -477,8 +504,8 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
                   style={{
                     padding: '12px 16px',
                     borderRadius: '12px',
-                    backgroundColor: 'rgba(212, 175, 55, 0.12)',
-                    border: '1.5px solid rgba(212, 175, 55, 0.4)',
+                    backgroundColor: 'rgba(212, 175, 55, 0.15)',
+                    border: '1.5px solid rgba(212, 175, 55, 0.45)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-around',
@@ -498,11 +525,11 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
                   </div>
                 </div>
 
-                {/* Primary Button */}
+                {/* Primary Continue Button */}
                 <ShinyGoldButton
                   type="button"
                   onClick={handleQuickPlay}
-                  style={{ width: '100%', padding: '22px 32px', fontSize: '19px' }}
+                  style={{ width: '100%', padding: '20px 32px', fontSize: '18px' }}
                 >
                   <SwordGlyph size={24} color="#120d04" />
                   <span>ПРОДОЛЖИТЬ ИГРУ</span>
@@ -525,19 +552,103 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
                 </button>
               </div>
             ) : (
-              /* INSTANT PLAY (ZERO BARRIER) + OPTIONAL ADVANCED AUTH */
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
-                {/* Starter Resources Strip */}
+              /* PROMINENT REGISTRATION & AUTH TABS */
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                {/* Tabs Switcher: Регистрация (default) / Вход */}
                 <div
                   style={{
-                    padding: '12px 18px',
+                    display: 'grid',
+                    gridTemplateColumns: '1fr 1fr',
+                    gap: '8px',
+                    backgroundColor: 'rgba(0,0,0,0.6)',
+                    padding: '5px',
                     borderRadius: '14px',
-                    backgroundColor: 'rgba(212, 175, 55, 0.14)',
+                    border: '1.5px solid rgba(212, 175, 55, 0.35)',
+                  }}
+                >
+                  <button
+                    type="button"
+                    onClick={() => {
+                      portalSound.playClick(1.0);
+                      setAuthMode('register');
+                      setFormMsg(null);
+                    }}
+                    style={{
+                      padding: '12px 14px',
+                      borderRadius: '10px',
+                      border: 'none',
+                      backgroundColor:
+                        authMode === 'register' ? 'rgba(212, 175, 55, 0.3)' : 'transparent',
+                      color: authMode === 'register' ? '#FFE07D' : '#9ca3af',
+                      fontFamily: "'Philosopher', serif",
+                      fontSize: '16px',
+                      fontWeight: 900,
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease',
+                      boxShadow:
+                        authMode === 'register' ? '0 2px 10px rgba(212, 175, 55, 0.35)' : 'none',
+                    }}
+                  >
+                    РЕГИСТРАЦИЯ
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      portalSound.playClick(1.0);
+                      setAuthMode('login');
+                      setFormMsg(null);
+                    }}
+                    style={{
+                      padding: '12px 14px',
+                      borderRadius: '10px',
+                      border: 'none',
+                      backgroundColor:
+                        authMode === 'login' ? 'rgba(212, 175, 55, 0.3)' : 'transparent',
+                      color: authMode === 'login' ? '#FFE07D' : '#9ca3af',
+                      fontFamily: "'Philosopher', serif",
+                      fontSize: '16px',
+                      fontWeight: 900,
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease',
+                      boxShadow:
+                        authMode === 'login' ? '0 2px 10px rgba(212, 175, 55, 0.35)' : 'none',
+                    }}
+                  >
+                    ВХОД
+                  </button>
+                </div>
+
+                {/* Form Alert Message */}
+                {formMsg && (
+                  <div
+                    style={{
+                      padding: '12px 16px',
+                      borderRadius: '12px',
+                      fontSize: '14px',
+                      fontWeight: 700,
+                      backgroundColor: formMsg.isError
+                        ? 'rgba(239, 68, 68, 0.2)'
+                        : 'rgba(34, 197, 94, 0.2)',
+                      border: `1.5px solid ${formMsg.isError ? 'rgba(239, 68, 68, 0.6)' : 'rgba(34, 197, 94, 0.6)'}`,
+                      color: formMsg.isError ? '#fca5a5' : '#86efac',
+                      textAlign: 'center',
+                    }}
+                  >
+                    {formMsg.text}
+                  </div>
+                )}
+
+                {/* Starter Bonus Preview Banner */}
+                <div
+                  style={{
+                    padding: '10px 16px',
+                    borderRadius: '12px',
+                    backgroundColor: 'rgba(212, 175, 55, 0.15)',
                     border: '1.5px solid rgba(255, 224, 125, 0.45)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-around',
-                    fontSize: '14px',
+                    fontSize: '13px',
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -550,72 +661,242 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <SwordGlyph size={18} color="#4ade80" />
-                    <span style={{ color: '#4ade80', fontWeight: 900 }}>Шест Фэн Луна</span>
+                    <span style={{ color: '#4ade80', fontWeight: 900 }}>Шест Дзена</span>
                   </div>
                 </div>
 
-                {!showAdvancedAuth ? (
-                  /* ZERO FRICTION MODE: CALLSIGN + 1-CLICK INSTANT LAUNCH */
-                  <form onSubmit={handleQuickPlay} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                {authMode === 'register' ? (
+                  /* ── FULL REGISTRATION FORM ── */
+                  <form onSubmit={handleRegisterSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                    {/* 1. Callsign / Login */}
                     <div>
                       <label
                         style={{
                           display: 'block',
-                          fontSize: '14px',
+                          fontSize: '13px',
                           color: '#f5edd8',
-                          marginBottom: '8px',
+                          marginBottom: '6px',
                           fontWeight: 700,
                         }}
                       >
-                        Позывной воина (Имя персонажа на арене):
+                        Позывной воина (Логин персонажа):
                       </label>
                       <input
                         type="text"
                         required
-                        placeholder="admin"
-                        value={callsign}
-                        onChange={(e) => setCallsign(e.target.value)}
+                        placeholder="Например: Громобой, admin"
+                        value={loginField}
+                        onChange={(e) => setLoginField(e.target.value)}
                         style={{
                           width: '100%',
                           boxSizing: 'border-box',
-                          padding: '16px 20px',
-                          borderRadius: '14px',
+                          padding: '14px 18px',
+                          borderRadius: '12px',
                           backgroundColor: 'rgba(0, 0, 0, 0.75)',
                           border: '1.5px solid rgba(255, 224, 125, 0.55)',
                           color: '#ffffff',
-                          fontSize: '17px',
+                          fontSize: '15px',
                           fontWeight: 700,
                           outline: 'none',
                         }}
                       />
                     </div>
 
+                    {/* 2. Starter Hero Selector */}
+                    <div>
+                      <label
+                        style={{
+                          display: 'block',
+                          fontSize: '13px',
+                          color: '#f5edd8',
+                          marginBottom: '8px',
+                          fontWeight: 700,
+                        }}
+                      >
+                        Выберите стартового чемпиона:
+                      </label>
+                      <div
+                        style={{
+                          display: 'grid',
+                          gridTemplateColumns: 'repeat(5, 1fr)',
+                          gap: '8px',
+                        }}
+                      >
+                        {STARTER_CHAMPIONS.map((h) => {
+                          const isSel = selectedHero === h.id;
+                          return (
+                            <button
+                              key={h.id}
+                              type="button"
+                              onClick={() => {
+                                portalSound.playClick(1.0);
+                                setSelectedHero(h.id);
+                              }}
+                              style={{
+                                padding: '6px 4px',
+                                borderRadius: '12px',
+                                border: isSel ? `2px solid ${h.color}` : '1.5px solid rgba(212, 175, 55, 0.3)',
+                                backgroundColor: isSel ? 'rgba(212, 175, 55, 0.22)' : 'rgba(0,0,0,0.5)',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                gap: '4px',
+                                cursor: 'pointer',
+                                outline: 'none',
+                                boxShadow: isSel ? `0 0 16px ${h.color}88` : 'none',
+                                transition: 'all 0.15s ease',
+                              }}
+                            >
+                              <div
+                                style={{
+                                  width: '42px',
+                                  height: '42px',
+                                  borderRadius: '50%',
+                                  overflow: 'hidden',
+                                  border: `1.5px solid ${isSel ? h.color : 'rgba(255,255,255,0.3)'}`,
+                                }}
+                              >
+                                <img
+                                  src={h.avatar}
+                                  alt={h.name}
+                                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                />
+                              </div>
+                              <span style={{ fontSize: '11px', fontWeight: 800, color: isSel ? '#FFE07D' : '#d4c7b6' }}>
+                                {h.name.split(' ')[0]}
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* 3. Email */}
+                    <div>
+                      <label
+                        style={{
+                          display: 'block',
+                          fontSize: '13px',
+                          color: '#f5edd8',
+                          marginBottom: '6px',
+                          fontWeight: 700,
+                        }}
+                      >
+                        Email (для защиты и сохранения прогресса):
+                      </label>
+                      <input
+                        type="email"
+                        required
+                        placeholder="yourname@domain.ru"
+                        value={emailField}
+                        onChange={(e) => setEmailField(e.target.value)}
+                        style={{
+                          width: '100%',
+                          boxSizing: 'border-box',
+                          padding: '14px 18px',
+                          borderRadius: '12px',
+                          backgroundColor: 'rgba(0, 0, 0, 0.75)',
+                          border: '1.5px solid rgba(255, 224, 125, 0.55)',
+                          color: '#ffffff',
+                          fontSize: '15px',
+                          outline: 'none',
+                        }}
+                      />
+                    </div>
+
+                    {/* 4. Password & Confirm Password (2 Columns) */}
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                      <div>
+                        <label
+                          style={{
+                            display: 'block',
+                            fontSize: '13px',
+                            color: '#f5edd8',
+                            marginBottom: '6px',
+                            fontWeight: 700,
+                          }}
+                        >
+                          Пароль:
+                        </label>
+                        <input
+                          type="password"
+                          required
+                          placeholder="Минимум 4 симв."
+                          value={passwordField}
+                          onChange={(e) => setPasswordField(e.target.value)}
+                          style={{
+                            width: '100%',
+                            boxSizing: 'border-box',
+                            padding: '14px 16px',
+                            borderRadius: '12px',
+                            backgroundColor: 'rgba(0, 0, 0, 0.75)',
+                            border: '1.5px solid rgba(255, 224, 125, 0.55)',
+                            color: '#ffffff',
+                            fontSize: '15px',
+                            outline: 'none',
+                          }}
+                        />
+                      </div>
+                      <div>
+                        <label
+                          style={{
+                            display: 'block',
+                            fontSize: '13px',
+                            color: '#f5edd8',
+                            marginBottom: '6px',
+                            fontWeight: 700,
+                          }}
+                        >
+                          Повтор пароля:
+                        </label>
+                        <input
+                          type="password"
+                          required
+                          placeholder="Повторите"
+                          value={confirmPassField}
+                          onChange={(e) => setConfirmPassField(e.target.value)}
+                          style={{
+                            width: '100%',
+                            boxSizing: 'border-box',
+                            padding: '14px 16px',
+                            borderRadius: '12px',
+                            backgroundColor: 'rgba(0, 0, 0, 0.75)',
+                            border: '1.5px solid rgba(255, 224, 125, 0.55)',
+                            color: '#ffffff',
+                            fontSize: '15px',
+                            outline: 'none',
+                          }}
+                        />
+                      </div>
+                    </div>
+
                     {/* BIG GOLD CTA BUTTON */}
                     <ShinyGoldButton
                       type="submit"
-                      style={{ width: '100%', padding: '22px 32px', fontSize: '19px', marginTop: '4px' }}
+                      disabled={isLoading}
+                      style={{ width: '100%', padding: '20px 24px', fontSize: '18px', marginTop: '6px' }}
                     >
-                      <SwordGlyph size={26} color="#120d04" />
-                      <span>ИГРАТЬ СРАЗУ В БРАУЗЕРЕ</span>
+                      <SwordGlyph size={24} color="#120d04" />
+                      <span>{isLoading ? 'СОЗДАНИЕ АККАУНТА...' : 'СОЗДАТЬ АККАУНТ И В БОЙ'}</span>
                     </ShinyGoldButton>
 
-                    {/* Clean Storage Note (No Dev Jargon) */}
+                    {/* Storage & Privacy note */}
                     <div
                       style={{
-                        fontSize: '13px',
+                        fontSize: '12px',
                         color: '#d4c7b6',
                         textAlign: 'center',
-                        lineHeight: 1.5,
+                        lineHeight: 1.4,
                       }}
                     >
-                      🔒 Автоматическое сохранение персонажа. Без скачивания и установки.
+                      🔒 100% сохранение прогресса. Нажимая кнопку, вы соглашаетесь с Политикой конфиденциальности.
                     </div>
 
-                    {/* Toggle to Open Advanced Password Protection */}
+                    {/* Quick Guest Play Fallback */}
                     <div style={{ textAlign: 'center', marginTop: '2px' }}>
                       <button
                         type="button"
-                        onClick={() => setShowAdvancedAuth(true)}
+                        onClick={handleQuickPlay}
                         style={{
                           background: 'none',
                           border: 'none',
@@ -627,229 +908,109 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
                           padding: 0,
                         }}
                       >
-                        Войти под паролем / Защитить аккаунт Email →
+                        Или начать пробный бой без пароля (в 1 клик) →
                       </button>
                     </div>
                   </form>
                 ) : (
-                  /* ADVANCED AUTH: REGISTER / LOGIN TABS */
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                    {/* Tabs Switcher */}
-                    <div
-                      style={{
-                        display: 'grid',
-                        gridTemplateColumns: '1fr 1fr',
-                        gap: '8px',
-                        backgroundColor: 'rgba(0,0,0,0.5)',
-                        padding: '4px',
-                        borderRadius: '14px',
-                        border: '1px solid rgba(212, 175, 55, 0.3)',
-                      }}
-                    >
-                      <button
-                        type="button"
-                        onClick={() => {
-                          portalSound.playClick(1.0);
-                          setAuthMode('login');
-                          setFormMsg(null);
-                        }}
+                  /* ── FULL LOGIN FORM ── */
+                  <form onSubmit={handleLoginSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                    <div>
+                      <label
                         style={{
-                          padding: '10px 14px',
-                          borderRadius: '10px',
-                          border: 'none',
-                          backgroundColor:
-                            authMode === 'login' ? 'rgba(212, 175, 55, 0.25)' : 'transparent',
-                          color: authMode === 'login' ? '#FFE07D' : '#9ca3af',
-                          fontFamily: "'Philosopher', serif",
-                          fontSize: '15px',
-                          fontWeight: 800,
-                          cursor: 'pointer',
+                          display: 'block',
+                          fontSize: '13px',
+                          color: '#f5edd8',
+                          marginBottom: '6px',
+                          fontWeight: 700,
                         }}
                       >
-                        ВХОД
-                      </button>
+                        Позывной воина или Email:
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="Логин или yourname@domain.ru"
+                        value={loginIdentField}
+                        onChange={(e) => setLoginIdentField(e.target.value)}
+                        style={{
+                          width: '100%',
+                          boxSizing: 'border-box',
+                          padding: '14px 18px',
+                          borderRadius: '12px',
+                          backgroundColor: 'rgba(0, 0, 0, 0.75)',
+                          border: '1.5px solid rgba(255, 224, 125, 0.55)',
+                          color: '#ffffff',
+                          fontSize: '15px',
+                          fontWeight: 700,
+                          outline: 'none',
+                        }}
+                      />
+                    </div>
+                    <div>
+                      <label
+                        style={{
+                          display: 'block',
+                          fontSize: '13px',
+                          color: '#f5edd8',
+                          marginBottom: '6px',
+                          fontWeight: 700,
+                        }}
+                      >
+                        Пароль:
+                      </label>
+                      <input
+                        type="password"
+                        required
+                        placeholder="Ваш пароль"
+                        value={loginPassField}
+                        onChange={(e) => setLoginPassField(e.target.value)}
+                        style={{
+                          width: '100%',
+                          boxSizing: 'border-box',
+                          padding: '14px 18px',
+                          borderRadius: '12px',
+                          backgroundColor: 'rgba(0, 0, 0, 0.75)',
+                          border: '1.5px solid rgba(255, 224, 125, 0.55)',
+                          color: '#ffffff',
+                          fontSize: '15px',
+                          outline: 'none',
+                        }}
+                      />
+                    </div>
+
+                    {/* BIG GOLD CTA BUTTON */}
+                    <ShinyGoldButton
+                      type="submit"
+                      disabled={isLoading}
+                      style={{ width: '100%', padding: '20px 24px', fontSize: '18px', marginTop: '6px' }}
+                    >
+                      <SwordGlyph size={24} color="#120d04" />
+                      <span>{isLoading ? 'ПРОВЕРКА ВХОДА...' : 'ВОЙТИ В МАСТЕР-АККАУНТ'}</span>
+                    </ShinyGoldButton>
+
+                    <div style={{ textAlign: 'center', marginTop: '4px' }}>
                       <button
                         type="button"
                         onClick={() => {
-                          portalSound.playClick(1.0);
                           setAuthMode('register');
                           setFormMsg(null);
                         }}
                         style={{
-                          padding: '10px 14px',
-                          borderRadius: '10px',
+                          background: 'none',
                           border: 'none',
-                          backgroundColor:
-                            authMode === 'register' ? 'rgba(212, 175, 55, 0.25)' : 'transparent',
-                          color: authMode === 'register' ? '#FFE07D' : '#9ca3af',
-                          fontFamily: "'Philosopher', serif",
-                          fontSize: '15px',
-                          fontWeight: 800,
-                          cursor: 'pointer',
-                        }}
-                      >
-                        РЕГИСТРАЦИЯ
-                      </button>
-                    </div>
-
-                    {/* Form Message */}
-                    {formMsg && (
-                      <div
-                        style={{
-                          padding: '10px 14px',
-                          borderRadius: '10px',
+                          color: '#FFE07D',
                           fontSize: '13px',
                           fontWeight: 700,
-                          backgroundColor: formMsg.isError
-                            ? 'rgba(239, 68, 68, 0.15)'
-                            : 'rgba(34, 197, 94, 0.15)',
-                          border: `1.5px solid ${formMsg.isError ? 'rgba(239, 68, 68, 0.5)' : 'rgba(34, 197, 94, 0.5)'}`,
-                          color: formMsg.isError ? '#fca5a5' : '#86efac',
-                          textAlign: 'center',
+                          cursor: 'pointer',
+                          textDecoration: 'underline',
+                          padding: 0,
                         }}
                       >
-                        {formMsg.text}
-                      </div>
-                    )}
-
-                    {authMode === 'register' ? (
-                      <form onSubmit={handleRegisterSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                        <div>
-                          <input
-                            type="text"
-                            required
-                            placeholder="Позывной воина (от 3 символов)"
-                            value={loginField}
-                            onChange={(e) => setLoginField(e.target.value)}
-                            style={{
-                              width: '100%',
-                              boxSizing: 'border-box',
-                              padding: '12px 16px',
-                              borderRadius: '10px',
-                              backgroundColor: 'rgba(0, 0, 0, 0.75)',
-                              border: '1.5px solid rgba(212, 175, 55, 0.45)',
-                              color: '#ffffff',
-                              fontSize: '15px',
-                              outline: 'none',
-                            }}
-                          />
-                        </div>
-                        <div>
-                          <input
-                            type="email"
-                            required
-                            placeholder="Email (для восстановления)"
-                            value={emailField}
-                            onChange={(e) => setEmailField(e.target.value)}
-                            style={{
-                              width: '100%',
-                              boxSizing: 'border-box',
-                              padding: '12px 16px',
-                              borderRadius: '10px',
-                              backgroundColor: 'rgba(0, 0, 0, 0.75)',
-                              border: '1.5px solid rgba(212, 175, 55, 0.45)',
-                              color: '#ffffff',
-                              fontSize: '15px',
-                              outline: 'none',
-                            }}
-                          />
-                        </div>
-                        <div>
-                          <input
-                            type="password"
-                            required
-                            placeholder="Пароль (минимум 4 символа)"
-                            value={passwordField}
-                            onChange={(e) => setPasswordField(e.target.value)}
-                            style={{
-                              width: '100%',
-                              boxSizing: 'border-box',
-                              padding: '12px 16px',
-                              borderRadius: '10px',
-                              backgroundColor: 'rgba(0, 0, 0, 0.75)',
-                              border: '1.5px solid rgba(212, 175, 55, 0.45)',
-                              color: '#ffffff',
-                              fontSize: '15px',
-                              outline: 'none',
-                            }}
-                          />
-                        </div>
-
-                        <ShinyGoldButton type="submit" disabled={isLoading} style={{ width: '100%', padding: '16px' }}>
-                          <ShieldGlyph size={20} color="#120d04" />
-                          <span>{isLoading ? 'СОЗДАНИЕ...' : 'СОЗДАТЬ АККАУНТ И В БОЙ'}</span>
-                        </ShinyGoldButton>
-                      </form>
-                    ) : (
-                      <form onSubmit={handleLoginSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                        <div>
-                          <input
-                            type="text"
-                            required
-                            placeholder="Позывной или Email"
-                            value={loginIdentField}
-                            onChange={(e) => setLoginIdentField(e.target.value)}
-                            style={{
-                              width: '100%',
-                              boxSizing: 'border-box',
-                              padding: '12px 16px',
-                              borderRadius: '10px',
-                              backgroundColor: 'rgba(0, 0, 0, 0.75)',
-                              border: '1.5px solid rgba(212, 175, 55, 0.45)',
-                              color: '#ffffff',
-                              fontSize: '15px',
-                              outline: 'none',
-                            }}
-                          />
-                        </div>
-                        <div>
-                          <input
-                            type="password"
-                            required
-                            placeholder="Пароль"
-                            value={loginPassField}
-                            onChange={(e) => setLoginPassField(e.target.value)}
-                            style={{
-                              width: '100%',
-                              boxSizing: 'border-box',
-                              padding: '12px 16px',
-                              borderRadius: '10px',
-                              backgroundColor: 'rgba(0, 0, 0, 0.75)',
-                              border: '1.5px solid rgba(212, 175, 55, 0.45)',
-                              color: '#ffffff',
-                              fontSize: '15px',
-                              outline: 'none',
-                            }}
-                          />
-                        </div>
-
-                        <ShinyGoldButton type="submit" disabled={isLoading} style={{ width: '100%', padding: '16px' }}>
-                          <SwordGlyph size={20} color="#120d04" />
-                          <span>{isLoading ? 'ПРОВЕРКА...' : 'ВОЙТИ И В БОЙ'}</span>
-                        </ShinyGoldButton>
-                      </form>
-                    )}
-
-                    {/* Back to Quick Play */}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setShowAdvancedAuth(false);
-                        setFormMsg(null);
-                      }}
-                      style={{
-                        background: 'none',
-                        border: 'none',
-                        color: '#d4c7b6',
-                        fontSize: '13px',
-                        cursor: 'pointer',
-                        textDecoration: 'underline',
-                        textAlign: 'center',
-                      }}
-                    >
-                      ← Вернуться к быстрому запуску без пароля
-                    </button>
-                  </div>
+                        Еще нет аккаунта? Зарегистрироваться за 10 секунд →
+                      </button>
+                    </div>
+                  </form>
                 )}
               </div>
             )}

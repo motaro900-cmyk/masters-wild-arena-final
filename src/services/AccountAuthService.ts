@@ -160,10 +160,12 @@ class AccountAuthService {
         login: string;
         email: string;
         password: string;
+        selectedHeroId?: string;
     }): Promise<{ success: boolean; error?: string; account?: IUserAccount }> {
         const cleanLogin = params.login.trim();
         const cleanEmail = params.email.trim().toLowerCase();
         const cleanPass = params.password.trim();
+        const cleanHero = params.selectedHeroId || 'panda';
 
         // 1. Валидация логина
         if (!cleanLogin || cleanLogin.length < 3) {
@@ -213,7 +215,7 @@ class AccountAuthService {
             lastLoginAt: Date.now(),
             profile: {
                 playerName: cleanLogin,
-                selectedHeroId: 'panda',
+                selectedHeroId: cleanHero,
                 level: 1,
                 exp: 0,
                 gold: 500,
@@ -297,6 +299,7 @@ class AccountAuthService {
         portalSyncBridge.commitMutation({
             playerName: account.login,
             accountEmail: account.email,
+            selectedHeroId: account.profile.selectedHeroId || 'panda',
             isLoggedIn: true,
             gold: account.profile.gold,
             diamonds: account.profile.diamonds,

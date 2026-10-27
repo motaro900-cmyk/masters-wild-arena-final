@@ -87,9 +87,9 @@ export const PortalGameShowcase: React.FC<PortalGameShowcaseProps> = ({
       style={{
         position: 'relative',
         padding: '100px clamp(20px, 4vw, 60px)',
-        backgroundColor: '#07050d',
-        borderTop: '1.5px solid rgba(212, 175, 55, 0.25)',
-        borderBottom: '1.5px solid rgba(212, 175, 55, 0.25)',
+        background: 'radial-gradient(circle at 50% 15%, rgba(42, 28, 66, 0.95) 0%, rgba(18, 12, 28, 0.98) 60%, #0c0817 100%)',
+        borderTop: '1.5px solid rgba(240, 192, 64, 0.35)',
+        borderBottom: '1.5px solid rgba(240, 192, 64, 0.35)',
         overflow: 'hidden',
       }}
     >
@@ -182,15 +182,15 @@ export const PortalGameShowcase: React.FC<PortalGameShowcaseProps> = ({
               gap: '16px',
             }}
           >
-            {/* Active High-Res Viewport */}
+            {/* Active High-Res Viewport (Completely Clean & Unobstructed) */}
             <div
               style={{
                 position: 'relative',
                 aspectRatio: '16 / 9',
                 backgroundColor: '#0c0916',
                 borderRadius: '18px',
-                border: '2px solid rgba(212, 175, 55, 0.5)',
-                boxShadow: '0 25px 60px rgba(0, 0, 0, 0.95), 0 0 30px rgba(212, 175, 55, 0.15)',
+                border: '2px solid rgba(240, 192, 64, 0.5)',
+                boxShadow: '0 25px 60px rgba(0, 0, 0, 0.95), 0 0 30px rgba(212, 175, 55, 0.25)',
                 overflow: 'hidden',
               }}
             >
@@ -212,30 +212,54 @@ export const PortalGameShowcase: React.FC<PortalGameShowcaseProps> = ({
                 />
               </AnimatePresence>
 
-              {/* Tag & Title Overlay Bar */}
+              {/* Minimal Slide Counter Badge */}
               <div
                 style={{
                   position: 'absolute',
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  background: 'linear-gradient(to top, rgba(8, 6, 12, 0.95) 0%, rgba(8, 6, 12, 0.6) 70%, transparent 100%)',
-                  padding: '24px 28px',
+                  top: '16px',
+                  right: '16px',
                   display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'flex-end',
+                  alignItems: 'center',
+                  gap: '8px',
+                  background: 'rgba(10, 7, 16, 0.78)',
+                  backdropFilter: 'blur(8px)',
+                  padding: '6px 14px',
+                  borderRadius: '20px',
+                  border: '1px solid rgba(240, 192, 64, 0.45)',
+                  boxShadow: '0 4px 15px rgba(0,0,0,0.5)',
                 }}
               >
-                <div>
+                <span style={{ fontSize: '12px', color: '#FFE07D', fontWeight: 800 }}>
+                  Кадр {activeIdx + 1} / {SHOWCASE_SLIDES.length}
+                </span>
+              </div>
+            </div>
+
+            {/* Slide Information Bar (Clear, Readable, Non-Overlapping) */}
+            <div
+              style={{
+                background: 'linear-gradient(135deg, rgba(22, 15, 36, 0.95) 0%, rgba(14, 10, 24, 0.98) 100%)',
+                border: '1.5px solid rgba(240, 192, 64, 0.35)',
+                borderRadius: '14px',
+                padding: '16px 22px',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                boxShadow: '0 10px 25px rgba(0,0,0,0.6)',
+                backdropFilter: 'blur(10px)',
+              }}
+            >
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
                   <span
                     style={{
                       fontSize: '11px',
                       fontWeight: 800,
                       color: '#FFE07D',
-                      backgroundColor: 'rgba(212, 175, 55, 0.2)',
+                      backgroundColor: 'rgba(212, 175, 55, 0.25)',
                       padding: '4px 10px',
                       borderRadius: '8px',
-                      border: '1px solid rgba(212, 175, 55, 0.4)',
+                      border: '1px solid rgba(255, 224, 125, 0.45)',
                       letterSpacing: '1px',
                       textTransform: 'uppercase',
                     }}
@@ -245,72 +269,72 @@ export const PortalGameShowcase: React.FC<PortalGameShowcaseProps> = ({
                   <h3
                     style={{
                       fontFamily: "'Philosopher', serif",
-                      fontSize: '24px',
+                      fontSize: '22px',
                       fontWeight: 900,
                       color: '#ffffff',
-                      margin: '8px 0 4px 0',
+                      margin: 0,
                     }}
                   >
                     {activeSlide.title}
                   </h3>
-                  <p
-                    style={{
-                      margin: 0,
-                      fontSize: '14px',
-                      color: '#d4c7b6',
-                      maxWidth: '650px',
-                      lineHeight: 1.4,
-                    }}
-                  >
-                    {activeSlide.description}
-                  </p>
                 </div>
+                <p
+                  style={{
+                    margin: 0,
+                    fontSize: '14px',
+                    color: '#d4c7b6',
+                    lineHeight: 1.5,
+                    maxWidth: '680px',
+                  }}
+                >
+                  {activeSlide.description}
+                </p>
+              </div>
 
-                {/* Arrow Navigation */}
-                <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
-                  <button
-                    onClick={handlePrev}
-                    aria-label="Предыдущий скриншот"
-                    style={{
-                      width: '42px',
-                      height: '42px',
-                      borderRadius: '10px',
-                      border: '1.5px solid rgba(212, 175, 55, 0.5)',
-                      background: 'rgba(12, 9, 18, 0.85)',
-                      color: '#FFE07D',
-                      fontSize: '18px',
-                      fontWeight: 900,
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      transition: 'all 0.15s ease',
-                    }}
-                  >
-                    ‹
-                  </button>
-                  <button
-                    onClick={handleNext}
-                    aria-label="Следующий скриншот"
-                    style={{
-                      width: '42px',
-                      height: '42px',
-                      borderRadius: '10px',
-                      border: '1.5px solid rgba(212, 175, 55, 0.5)',
-                      background: 'rgba(12, 9, 18, 0.85)',
-                      color: '#FFE07D',
-                      fontSize: '18px',
-                      fontWeight: 900,
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      transition: 'all 0.15s ease',
-                    }}
-                  >
-                    ›
-                  </button>
-                </div>
+              {/* Prev / Next Buttons */}
+              <div style={{ display: 'flex', gap: '8px', flexShrink: 0, marginLeft: '16px' }}>
+                <button
+                  onClick={handlePrev}
+                  aria-label="Предыдущий скриншот"
+                  style={{
+                    width: '42px',
+                    height: '42px',
+                    borderRadius: '10px',
+                    border: '1.5px solid rgba(240, 192, 64, 0.5)',
+                    background: 'rgba(28, 20, 42, 0.9)',
+                    color: '#FFE07D',
+                    fontSize: '20px',
+                    fontWeight: 900,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'all 0.15s ease',
+                  }}
+                >
+                  ‹
+                </button>
+                <button
+                  onClick={handleNext}
+                  aria-label="Следующий скриншот"
+                  style={{
+                    width: '42px',
+                    height: '42px',
+                    borderRadius: '10px',
+                    border: '1.5px solid rgba(240, 192, 64, 0.5)',
+                    background: 'rgba(28, 20, 42, 0.9)',
+                    color: '#FFE07D',
+                    fontSize: '20px',
+                    fontWeight: 900,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'all 0.15s ease',
+                  }}
+                >
+                  ›
+                </button>
               </div>
             </div>
 
@@ -459,7 +483,7 @@ export const PortalGameShowcase: React.FC<PortalGameShowcaseProps> = ({
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <span style={{ color: '#9ca3af' }}>Сохранение:</span>
-                  <span style={{ color: '#f59e0b', fontWeight: 800 }}>Локально (LocalStorage / IndexedDB) + VK</span>
+                  <span style={{ color: '#4ade80', fontWeight: 800 }}>Облачное сохранение прогресса на сервере</span>
                 </div>
               </div>
             </div>
@@ -476,32 +500,33 @@ export const PortalGameShowcase: React.FC<PortalGameShowcaseProps> = ({
                   padding: '18px 24px',
                   borderRadius: '12px',
                   border: 'none',
-                  background: 'linear-gradient(135deg, #FFE07D 0%, #d4af37 50%, #aa8022 100%)',
-                  color: '#120d04',
+                  background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 50%, #b45309 100%)',
+                  color: '#ffffff',
                   fontSize: '16px',
                   fontWeight: 900,
                   fontFamily: "'Philosopher', serif",
                   letterSpacing: '1px',
                   cursor: 'pointer',
-                  boxShadow: '0 6px 20px rgba(212, 175, 55, 0.4)',
+                  boxShadow: '0 8px 25px rgba(245, 158, 11, 0.45)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   gap: '10px',
+                  textShadow: '0 1px 4px rgba(0,0,0,0.6)',
                 }}
               >
-                <span>ИГРАТЬ В БРАУЗЕРЕ (В 1 КЛИК)</span>
-                <span>→</span>
+                <span>СОЗДАТЬ МАСТЕР-АККАУНТ И ИГРАТЬ</span>
+                <span>⚔️</span>
               </button>
               <div
                 style={{
                   textAlign: 'center',
                   fontSize: '12px',
-                  color: '#9ca3af',
+                  color: '#d4c7b6',
                   marginTop: '10px',
                 }}
               >
-                ✓ Мгновенный запуск без скачивания • Локальное сохранение
+                ✓ Полноценная регистрация • Вход под своим паролем • Сохранение на сервере
               </div>
             </div>
           </div>
@@ -566,7 +591,7 @@ export const PortalGameShowcase: React.FC<PortalGameShowcaseProps> = ({
               Надежное сохранение
             </h4>
             <p style={{ fontSize: '14px', lineHeight: 1.6, color: '#d4c7b6', margin: 0 }}>
-              Ваш прогресс надежно сохраняется в локальной памяти браузера (LocalStorage / IndexedDB).
+              Ваш прогресс надежно сохраняется в облаке и привязывается к вашему мастер-аккаунту.
               Сражайтесь дома на ПК или в дороге с телефона без потери снаряжения.
             </p>
           </div>
