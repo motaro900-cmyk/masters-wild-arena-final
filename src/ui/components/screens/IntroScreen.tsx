@@ -19,8 +19,7 @@ const FANTASY_NAMES = [
     'Остроухий',
     'Огнегрив',
     'Северный_Волк',
-    'Игрок_OPER',
-    'Следопыт',
+        'Следопыт',
     'Зверобой',
 ];
 
@@ -83,8 +82,7 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onComplete }) => {
             'блять',
             'админ',
             'gm',
-            'admin',
-            'moder',
+                        'moder',
             'очко',
             'гнида',
             'мразь',

@@ -323,6 +323,10 @@ export function resolveAvatarPath(avatarVal: string | undefined | null): string 
     if (clean.startsWith('http') || clean.startsWith('data:')) {
         return clean;
     }
+    if (clean.includes('assets/')) {
+        const pathPart = clean.startsWith('/') ? clean : `/${clean}`;
+        return resolveAssetPath(pathPart);
+    }
     if (clean.startsWith('/')) {
         return resolveAssetPath(clean);
     }

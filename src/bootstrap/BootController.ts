@@ -1080,7 +1080,7 @@ class BootController {
                 const portalSavedName = typeof window !== 'undefined' ? localStorage.getItem('mow_player_name') : null;
                 const fallbackName = (portalSavedName && portalSavedName !== 'Дикий Мастер' && portalSavedName !== 'Мастер' && portalSavedName.trim())
                     ? portalSavedName.trim()
-                    : (this.vkUser?.firstName || this.vkUser?.first_name || `Игрок_${this.userId.slice(-4)}`);
+                    : (this.vkUser?.firstName || this.vkUser?.first_name || 'admin');
                 const { portalSyncBridge } = await import('../services/PortalSyncBridge');
                 useGameStore.setState({
                     name: fallbackName,
@@ -1124,7 +1124,7 @@ class BootController {
                 const portalSavedName = typeof window !== 'undefined' ? localStorage.getItem('mow_player_name') : null;
                 const fallbackName = (portalSavedName && portalSavedName !== 'Дикий Мастер' && portalSavedName !== 'Мастер' && portalSavedName.trim())
                     ? portalSavedName.trim()
-                    : (this.vkUser?.firstName || this.vkUser?.first_name || `Игрок_${this.userId.slice(-4)}`);
+                    : (this.vkUser?.firstName || this.vkUser?.first_name || 'admin');
                 useGameStore.setState({
                     name: fallbackName,
                     onboardingCompleted: false,
@@ -1213,12 +1213,12 @@ class BootController {
             const portalSavedName = typeof window !== 'undefined' ? localStorage.getItem('mow_player_name') : null;
             name = (portalSavedName && portalSavedName !== 'Дикий Мастер' && portalSavedName !== 'Мастер' && portalSavedName.trim())
                 ? portalSavedName.trim()
-                : (vkUser?.firstName || vkUser?.first_name || `Игрок_${playerId.slice(-4)}`);
+                : (vkUser?.firstName || vkUser?.first_name || 'admin');
         }
 
         let avatar = state.avatar;
         if (!avatar || avatar === 'none' || avatar === '' || avatar.startsWith('sprite:')) {
-            avatar = vkUser?.photo200 || vkUser?.photo_200 || vkUser?.photo || 'sprite:sprite-avatar avatar-pos-1';
+            avatar = vkUser?.photo200 || vkUser?.photo_200 || vkUser?.photo || '/assets/images/avatars/panda.webp';
         }
 
         let level = state.level || 1;

@@ -30,7 +30,7 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
   const [authMode, setAuthMode] = useState<'register' | 'login'>('register');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [nickname, setNickname] = useState('');
+  const [nickname, setNickname] = useState('admin');
   const [formMsg, setFormMsg] = useState<{ text: string; isError: boolean } | null>(null);
 
   useEffect(() => {
@@ -597,7 +597,7 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
                     <input
                       type="text"
                       required
-                      placeholder="Например: Воин_Севера"
+                      placeholder="admin"
                       value={nickname}
                       onChange={(e) => setNickname(e.target.value)}
                       style={{

@@ -34,7 +34,7 @@ const SHOWCASE_SLIDES: ShowcaseSlide[] = [
     title: 'Тактические Сражения',
     tag: 'АВТОБАТЛЕР & РЕАЛЬНОЕ ВРЕМЯ',
     description:
-      'Динамичные пошаговые дуэли на рунической арене: комбо льда, пламени и энергии Ци, применение ультимейтов и честный просчет каждого удара на движке PixiJS v8.',
+      'Динамичные пошаговые дуэли на рунической арене: комбо льда, пламени и энергии Ци, применение ультимейтов и честный просчет каждого удара с честным расчетом физики и комбо-эффектов.',
     src: '/assets/images/showcase/showcase_battle.png',
   },
   {
@@ -159,7 +159,7 @@ export const PortalGameShowcase: React.FC<PortalGameShowcaseProps> = ({
               lineHeight: 1.6,
             }}
           >
-            Каждый скриншот снят непосредственно из реальной игровой сессии на движке WebGL 2.0 / PixiJS v8.
+            Каждый скриншот снят непосредственно из реальной игровой сессии в ультра-качестве.
             Оцените визуальный стиль, интерфейс и масштаб возможностей игры перед входом.
           </p>
         </div>
@@ -440,27 +440,27 @@ export const PortalGameShowcase: React.FC<PortalGameShowcaseProps> = ({
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <span style={{ color: '#9ca3af' }}>Жанр:</span>
-                  <span style={{ color: '#FFE07D', fontWeight: 700 }}>Темное фэнтези / Автобатлер / RPG</span>
+                  <span style={{ color: '#FFE07D', fontWeight: 700 }}>Темное фэнтези / Тактическая RPG</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span style={{ color: '#9ca3af' }}>Сервер:</span>
-                  <span style={{ color: '#4ade80', fontWeight: 700 }}>{SERVER_NAME} ({SERVER_ONLINE_STRING} онлайн)</span>
+                  <span style={{ color: '#9ca3af' }}>Платформа:</span>
+                  <span style={{ color: '#e5e7eb', fontWeight: 700 }}>Любой браузер (ПК, Смартфоны, Планшеты)</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span style={{ color: '#9ca3af' }}>Домен:</span>
-                  <span style={{ color: '#60a5fa', fontWeight: 700 }}>mastersofthewild.ru</span>
+                  <span style={{ color: '#9ca3af' }}>Запуск:</span>
+                  <span style={{ color: '#4ade80', fontWeight: 700 }}>Мгновенно без скачивания (за 3 сек)</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span style={{ color: '#9ca3af' }}>Издатель:</span>
-                  <span style={{ color: '#e5e7eb', fontWeight: 600 }}>Wild Games Studio (wildgames.ru)</span>
+                  <span style={{ color: '#9ca3af' }}>Язык:</span>
+                  <span style={{ color: '#e5e7eb', fontWeight: 600 }}>Полностью на русском (звук и текст)</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span style={{ color: '#9ca3af' }}>Движок:</span>
-                  <span style={{ color: '#e5e7eb', fontWeight: 600 }}>WebGL 2.0 / PixiJS v8 (60 FPS)</span>
+                  <span style={{ color: '#9ca3af' }}>Режимы:</span>
+                  <span style={{ color: '#60a5fa', fontWeight: 600 }}>Арена, Рейтинговый PvP, Кланы, Кузница</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span style={{ color: '#9ca3af' }}>Вход:</span>
-                  <span style={{ color: '#f59e0b', fontWeight: 800 }}>Только с сохранением прогресса</span>
+                  <span style={{ color: '#9ca3af' }}>Сохранение:</span>
+                  <span style={{ color: '#f59e0b', fontWeight: 800 }}>100% Облачный профиль персонажа</span>
                 </div>
               </div>
             </div>
@@ -595,8 +595,8 @@ export const PortalGameShowcase: React.FC<PortalGameShowcaseProps> = ({
               Прямо в браузере за 3 секунды
             </h4>
             <p style={{ fontSize: '14px', lineHeight: 1.6, color: '#d4c7b6', margin: 0 }}>
-              Забудьте о скачивании десятков гигабайт и долгих установках. Движок PixiJS v8 обеспечивает
-              кинематографическую картинку со стабильными 60 FPS прямо во вкладке браузера.
+              Забудьте о скачивании десятков гигабайт и долгих установках. Продвинутая оптимизация графики обеспечивает
+              кинематографическую плавную картинку прямо во вкладке браузера.
             </p>
           </div>
 

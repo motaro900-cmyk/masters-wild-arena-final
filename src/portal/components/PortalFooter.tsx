@@ -294,7 +294,7 @@ export const PortalFooter: React.FC<PortalFooterProps> = ({ onLaunchGame, onOpen
             Wild Games Studio © 2026. mastersofthewild.ru / wildgames.ru. Все права защищены.
           </div>
           <div style={{ display: 'flex', gap: '14px' }}>
-            <span>WebGL 2.0 / PixiJS v8 Engine (60 FPS)</span>
+            <span>Кроссплатформенная версия (HD / 60 FPS)</span>
           </div>
         </div>
       </div>
