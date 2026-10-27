@@ -171,7 +171,7 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
           backgroundImage: 'url(/assets/images/backgrounds/bg_main.webp)',
           backgroundSize: 'cover',
           backgroundPosition: 'center 35%',
-          filter: 'brightness(0.9) contrast(1.15) saturate(1.4)',
+          filter: 'brightness(1.02) contrast(1.12) saturate(1.2)',
           zIndex: 0,
         }}
       />
@@ -182,7 +182,7 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
           position: 'absolute',
           inset: 0,
           background:
-            'radial-gradient(circle at 50% 30%, rgba(255, 230, 150, 0.22) 0%, rgba(25, 14, 38, 0.45) 60%, #0e0a1a 100%)',
+            'radial-gradient(circle at 50% 30%, rgba(255, 235, 160, 0.16) 0%, rgba(20, 14, 32, 0.38) 60%, #0c0817 100%)',
           zIndex: 1,
         }}
       />
