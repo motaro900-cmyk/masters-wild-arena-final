@@ -71,7 +71,7 @@ export const PortalFooter: React.FC<PortalFooterProps> = ({ onLaunchGame, onOpen
               </span>
             </div>
             <p style={{ margin: '0 0 16px 0', color: '#c5b8a5', fontSize: '13px' }}>
-              Официальный сайт браузерной темной RPG Masters of the Wild (mastersofthewild.ru). Издатель и разработчик: Wild Games Studio (wildgames.ru).
+              Официальный сайт браузерной темной RPG Masters of the Wild (mastersofthewild.ru). Мгновенный запуск прямо в браузере без установки.
             </p>
             <div
               style={{
@@ -88,7 +88,7 @@ export const PortalFooter: React.FC<PortalFooterProps> = ({ onLaunchGame, onOpen
               }}
             >
               <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#22c55e' }} />
-              Сервер {SERVER_NAME} (s1.mastersofthewild.ru • Онлайн {SERVER_ONLINE_STRING})
+              mastersofthewild.ru • Версия 1.0 (HD) • Онлайн
             </div>
           </div>
 
@@ -111,7 +111,7 @@ export const PortalFooter: React.FC<PortalFooterProps> = ({ onLaunchGame, onOpen
                 onClick={() => scrollTo('hero')}
                 style={{ background: 'none', border: 'none', padding: 0, color: '#e5e7eb', cursor: 'pointer', textAlign: 'left', fontSize: '14px' }}
               >
-                Главная & Регистрация
+                Главная & Быстрый старт
               </button>
               <button
                 onClick={() => scrollTo('about')}
@@ -291,7 +291,7 @@ export const PortalFooter: React.FC<PortalFooterProps> = ({ onLaunchGame, onOpen
           }}
         >
           <div>
-            Wild Games Studio © 2026. mastersofthewild.ru / wildgames.ru. Все права защищены.
+            Masters of the Wild © 2026. mastersofthewild.ru. Все права защищены.
           </div>
           <div style={{ display: 'flex', gap: '14px' }}>
             <span>Кроссплатформенная версия (HD / 60 FPS)</span>

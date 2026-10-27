@@ -4,14 +4,13 @@ import {
   SwordGlyph,
   ShieldGlyph,
   CrownGlyph,
-  FrostGlyph,
   GoldCoinGlyph,
   CrystalGlyph,
 } from './PortalGlyphs';
 import { proceduralAudio } from '../../utils/ProceduralAudio';
 import { portalSound } from '../PortalSoundService';
 import { portalSyncBridge } from '../../services/PortalSyncBridge';
-import { SERVER_ONLINE_STRING, SERVER_NAME } from '../portalConstants';
+import { OFFICIAL_DOMAIN } from '../portalConstants';
 import { HudCard } from './hud/HudCard';
 import { ShinyGoldButton } from './hud/ShinyGoldButton';
 
@@ -25,67 +24,35 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
   onExploreBeasts,
 }) => {
   const [profile, setProfile] = useState(() => portalSyncBridge.getProfile());
-  const isLoggedIn = !!profile.isLoggedIn;
-
-  const [authMode, setAuthMode] = useState<'register' | 'login'>('register');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [nickname, setNickname] = useState('admin');
-  const [formMsg, setFormMsg] = useState<{ text: string; isError: boolean } | null>(null);
+  const [nickname, setNickname] = useState(() => {
+    return localStorage.getItem('mow_player_name') || profile.playerName || 'admin';
+  });
 
   useEffect(() => {
     const handleSync = (e: any) => {
-      setProfile(e.detail || portalSyncBridge.getProfile());
+      const updated = e.detail || portalSyncBridge.getProfile();
+      setProfile(updated);
+      if (updated.playerName) setNickname(updated.playerName);
     };
     window.addEventListener('mow:portal_sync', handleSync);
     return () => window.removeEventListener('mow:portal_sync', handleSync);
   }, []);
 
-  const handleAuthSubmit = (e?: React.FormEvent) => {
+  const handleLaunch = (e?: React.FormEvent) => {
     if (e && e.preventDefault) e.preventDefault();
-    if (!email.trim() || !password.trim()) {
-      setFormMsg({ text: 'Заполните email и пароль для учетной записи', isError: true });
-      return;
-    }
+    const cleanNick = nickname.trim() || 'admin';
+    portalSound.playEquip();
+    proceduralAudio.playDuelHorn();
 
-    const masterNick = nickname.trim() || email.split('@')[0];
-    portalSound.playReward();
-    proceduralAudio.playFanfare();
-
-    localStorage.setItem('mow_auth_token', 'mow_jwt_' + Date.now());
-    localStorage.setItem('mow_auth_email', email.trim());
-    localStorage.setItem('mow_player_name', masterNick);
-    localStorage.setItem('mow_master_nick', masterNick);
-
+    // Persist player name locally for game launch
+    localStorage.setItem('mow_player_name', cleanNick);
+    localStorage.setItem('mow_master_nick', cleanNick);
     portalSyncBridge.commitMutation({
-      playerName: masterNick,
-      accountEmail: email.trim(),
+      playerName: cleanNick,
       isLoggedIn: true,
-      gold: profile.gold + (authMode === 'register' ? 500 : 0),
-      diamonds: profile.diamonds + (authMode === 'register' ? 50 : 0),
     });
 
-    const updated = portalSyncBridge.getProfile();
-    setProfile(updated);
-
-    setFormMsg({
-      text:
-        authMode === 'register'
-          ? '✓ Мастер-аккаунт успешно создан! Прогресс будет сохраняться на сервере.'
-          : '✓ Добро пожаловать обратно, ' + masterNick + '!',
-      isError: false,
-    });
-  };
-
-  const handleLogout = () => {
-    portalSound.playClick(0.9);
-    portalSyncBridge.commitMutation({
-      isLoggedIn: false,
-      accountEmail: '',
-    });
-    localStorage.removeItem('mow_auth_token');
-    localStorage.removeItem('mow_auth_email');
-    setFormMsg(null);
+    onLaunchGame();
   };
 
   const scrollToAbout = () => {
@@ -160,9 +127,9 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
           alignItems: 'center',
         }}
       >
-        {/* Left Column: Monumental Branding, Server Status, Unified Hero */}
+        {/* Left Column: Monumental Branding, Real Starter Hero */}
         <div style={{ textAlign: 'left' }}>
-          {/* Live Server Status Badge */}
+          {/* Status Badge */}
           <div
             style={{
               display: 'inline-flex',
@@ -196,7 +163,7 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
                 fontFamily: "'Montserrat', sans-serif",
               }}
             >
-              Сервер {SERVER_NAME} • mastersofthewild.ru • Онлайн {SERVER_ONLINE_STRING} воинов
+              Официальная веб-версия • {OFFICIAL_DOMAIN} • Запуск в 1 клик
             </span>
           </div>
 
@@ -218,16 +185,16 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
             <span
               style={{
                 background:
-                  'linear-gradient(135deg, #FFE07D 0%, #d4af37 40%, #f59e0b 100%)',
+                  'linear-gradient(135deg, #FFE07D 0%, #d4af37 50%, #aa8022 100%)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
               }}
             >
-              Masters of the Wild
+              MASTERS OF THE WILD
             </span>
           </h1>
 
-          {/* Lore Description */}
+          {/* Honest Description */}
           <p
             style={{
               margin: '0 0 32px 0',
@@ -238,10 +205,12 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
               textShadow: '0 2px 12px rgba(0,0,0,0.95)',
             }}
           >
-            Официальный российский сайт темной браузерной RPG нового поколения (wildgames.ru). Зарегистрируйте мастер-аккаунт, начните путь в Дикоземье с чистого листа на 1-м уровне и покоряйте арену с гарантированным сохранением всего прогресса на сервере.
+            Официальный сайт браузерной тактической RPG ({OFFICIAL_DOMAIN}).
+            Мгновенный запуск прямо в браузере без скачивания и тяжелых установок.
+            Прокачивайте чемпионов, куйте редкое снаряжение и покоряйте соревновательную арену Дикоземья.
           </p>
 
-          {/* Unified Starter Champion Presentation */}
+          {/* Unified Starter Champion Presentation: Authentic Daoist Panda */}
           <div
             style={{
               position: 'relative',
@@ -251,41 +220,41 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
               padding: '16px 28px',
               borderRadius: '22px',
               background: 'rgba(14, 10, 22, 0.94)',
-              border: '1.5px solid rgba(96, 165, 250, 0.45)',
-              boxShadow: '0 14px 40px rgba(0,0,0,0.85), 0 0 35px rgba(96, 165, 250, 0.25)',
+              border: '1.5px solid rgba(212, 175, 55, 0.45)',
+              boxShadow: '0 14px 40px rgba(0,0,0,0.85), 0 0 35px rgba(212, 175, 55, 0.25)',
               marginBottom: '30px',
             }}
           >
-            <motion.div
-              animate={{ rotate: [0, 5, -5, 0] }}
-              transition={{ repeat: Infinity, duration: 8, ease: 'easeInOut' }}
+            <div
               style={{
                 width: '56px',
                 height: '56px',
                 borderRadius: '16px',
-                background: 'linear-gradient(135deg, rgba(96, 165, 250, 0.3) 0%, rgba(30, 58, 138, 0.6) 100%)',
-                border: '1.5px solid #60a5fa',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                boxShadow: '0 0 20px rgba(96, 165, 250, 0.5)',
+                overflow: 'hidden',
+                border: '2px solid #FFE07D',
+                boxShadow: '0 0 20px rgba(212, 175, 55, 0.5)',
                 flexShrink: 0,
+                backgroundColor: '#120d1c',
               }}
             >
-              <FrostGlyph size={32} color="#93c5fd" />
-            </motion.div>
+              <img
+                src="/assets/images/avatars/panda.webp"
+                alt="Боевой Панда"
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              />
+            </div>
             <div>
               <div
                 style={{
                   fontSize: '11px',
                   fontWeight: 900,
-                  color: '#93c5fd',
+                  color: '#FFE07D',
                   letterSpacing: '1.5px',
                   textTransform: 'uppercase',
                   marginBottom: '4px',
                 }}
               >
-                ЕДИНЫЙ СТАРТОВЫЙ ЧЕМПИОН
+                СТАРТОВЫЙ ЧЕМПИОН
               </div>
               <div
                 style={{
@@ -296,7 +265,10 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
                   letterSpacing: '0.5px',
                 }}
               >
-                Фэн Лун • Снежный Берсерк (Ур. 1, 0 XP • Лед & Ци)
+                Боевой Панда (Фэн Лун) • Мастер Дао
+              </div>
+              <div style={{ fontSize: '13px', color: '#b5a695', marginTop: '2px' }}>
+                Страж Окраин • Энергия Ци и Бамбуковый Шест (1-й уровень, 0 XP)
               </div>
             </div>
           </div>
@@ -320,7 +292,7 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
                 padding: 0,
               }}
             >
-              <span>🎮 Смотреть скриншоты и описание игры (Steam-style) ↓</span>
+              <span>🎮 Смотреть скриншоты и обзор систем игры ↓</span>
             </button>
 
             <button
@@ -346,11 +318,11 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
           </div>
         </div>
 
-        {/* Right Column: Master Account HUD Card with High-Scale Elements */}
+        {/* Right Column: Honest Instant Launch Card (No Fake Password Fields) */}
         <div style={{ display: 'flex', justifyContent: 'center' }}>
           <HudCard
             active={true}
-            beamColor={isLoggedIn ? '#22c55e' : '#FFE07D'}
+            beamColor="#FFE07D"
             style={{ width: '100%', maxWidth: '620px', padding: 'clamp(32px, 4.5vw, 48px)' }}
           >
             {/* Header Badge */}
@@ -375,332 +347,117 @@ export const PortalHero: React.FC<PortalHeroProps> = ({
                     letterSpacing: '1px',
                   }}
                 >
-                  {isLoggedIn ? 'ИГРОВАЯ УЧЕТНАЯ ЗАПИСЬ' : 'МАСТЕР-АККАУНТ САЙТА'}
+                  БЫСТРЫЙ СТАРТ В БРАУЗЕРЕ
                 </span>
               </div>
 
-              {isLoggedIn && (
-                <span
-                  style={{
-                    fontSize: '13px',
-                    fontWeight: 800,
-                    color: '#4ade80',
-                    backgroundColor: 'rgba(34, 197, 94, 0.15)',
-                    padding: '6px 14px',
-                    borderRadius: '16px',
-                    border: '1.5px solid rgba(34, 197, 94, 0.45)',
-                  }}
-                >
-                  ✓ Активен
-                </span>
-              )}
+              <span
+                style={{
+                  fontSize: '13px',
+                  fontWeight: 800,
+                  color: '#4ade80',
+                  backgroundColor: 'rgba(34, 197, 94, 0.15)',
+                  padding: '6px 14px',
+                  borderRadius: '16px',
+                  border: '1.5px solid rgba(34, 197, 94, 0.45)',
+                }}
+              >
+                ⚡ Без скачивания
+              </span>
             </div>
 
-            {/* STATE 1: ALREADY LOGGED IN -> Show Clean Game Account Details */}
-            {isLoggedIn ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '22px' }}>
-                {/* Account Credentials Card */}
-                <div
-                  style={{
-                    backgroundColor: 'rgba(255, 255, 255, 0.04)',
-                    border: '1.5px solid rgba(212, 175, 55, 0.35)',
-                    borderRadius: '18px',
-                    padding: '24px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '16px',
-                  }}
-                >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '15px', color: '#9ca3af' }}>Мастер-профиль:</span>
-                    <strong style={{ fontSize: '18px', color: '#FFE07D' }}>{profile.playerName}</strong>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '15px', color: '#9ca3af' }}>Привязанный Email:</span>
-                    <span style={{ fontSize: '15px', color: '#e5e7eb' }}>{profile.accountEmail || 'Сайт-авторизация'}</span>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '15px', color: '#9ca3af' }}>Статус аккаунта:</span>
-                    <span style={{ fontSize: '15px', color: '#4ade80', fontWeight: 800 }}>
-                      Чистый старт (Ур. 1 • 0 XP)
-                    </span>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '15px', color: '#9ca3af' }}>Стартовый персонаж:</span>
-                    <span style={{ fontSize: '15px', color: '#FFE07D', fontWeight: 700 }}>
-                      Фэн Лун (Снежная Панда, Ур. 1)
-                    </span>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '15px', color: '#9ca3af' }}>Сервер входа:</span>
-                    <span style={{ fontSize: '15px', color: '#60a5fa', fontWeight: 700 }}>
-                      s1.mastersofthewild.ru ({SERVER_ONLINE_STRING} онлайн)
-                    </span>
-                  </div>
+            {/* Launch Form */}
+            <form onSubmit={handleLaunch} style={{ display: 'flex', flexDirection: 'column', gap: '22px' }}>
+              {/* Starter Resources Box */}
+              <div
+                style={{
+                  padding: '16px 20px',
+                  borderRadius: '14px',
+                  backgroundColor: 'rgba(212, 175, 55, 0.12)',
+                  border: '1.5px solid rgba(212, 175, 55, 0.4)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-around',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <GoldCoinGlyph size={22} color="#f59e0b" glow />
+                  <span style={{ fontSize: '15px', fontWeight: 900, color: '#f59e0b' }}>+500 Золота</span>
                 </div>
-
-                {/* Balance Pills */}
-                <div
-                  style={{
-                    display: 'grid',
-                    gridTemplateColumns: '1fr 1fr',
-                    gap: '16px',
-                  }}
-                >
-                  <div
-                    style={{
-                      padding: '18px',
-                      borderRadius: '14px',
-                      backgroundColor: 'rgba(245, 158, 11, 0.14)',
-                      border: '1.5px solid rgba(245, 158, 11, 0.4)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '14px',
-                    }}
-                  >
-                    <GoldCoinGlyph size={26} color="#f59e0b" glow />
-                    <div>
-                      <div style={{ fontSize: '12px', color: '#9ca3af', fontWeight: 600 }}>Золото</div>
-                      <div style={{ fontSize: '20px', fontWeight: 900, color: '#f59e0b' }}>{profile.gold} G</div>
-                    </div>
-                  </div>
-                  <div
-                    style={{
-                      padding: '18px',
-                      borderRadius: '14px',
-                      backgroundColor: 'rgba(96, 165, 250, 0.14)',
-                      border: '1.5px solid rgba(96, 165, 250, 0.4)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '14px',
-                    }}
-                  >
-                    <CrystalGlyph size={26} color="#60a5fa" glow />
-                    <div>
-                      <div style={{ fontSize: '12px', color: '#9ca3af', fontWeight: 600 }}>Кристаллы</div>
-                      <div style={{ fontSize: '20px', fontWeight: 900, color: '#60a5fa' }}>{profile.diamonds} C</div>
-                    </div>
-                  </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <CrystalGlyph size={22} color="#60a5fa" glow />
+                  <span style={{ fontSize: '15px', fontWeight: 900, color: '#60a5fa' }}>+50 Кристаллов</span>
                 </div>
-
-                {/* SHINY GOLD BUTTON: ВОЙТИ В ИГРУ ПОД ЭТИМ АККАУНТОМ */}
-                <ShinyGoldButton
-                  onClick={() => {
-                    proceduralAudio.playDuelHorn();
-                    portalSound.playEquip();
-                    onLaunchGame();
-                  }}
-                  style={{ width: '100%', padding: '22px 32px', fontSize: '18px', marginTop: '6px' }}
-                >
-                  <SwordGlyph size={24} color="#120d04" />
-                  <span>ВОЙТИ В ИГРУ ПОД ЭТИМ АККАУНТОМ</span>
-                </ShinyGoldButton>
-
-                {/* Secondary Actions */}
-                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '12px' }}>
-                  <button
-                    onClick={handleLogout}
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      color: '#9ca3af',
-                      fontSize: '14px',
-                      cursor: 'pointer',
-                      textDecoration: 'underline',
-                    }}
-                  >
-                    Выйти из аккаунта
-                  </button>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <SwordGlyph size={20} color="#4ade80" />
+                  <span style={{ fontSize: '14px', fontWeight: 800, color: '#4ade80' }}>Бамбуковый шест</span>
                 </div>
               </div>
-            ) : (
-              /* STATE 2: NOT LOGGED IN -> Master Registration on the Site */
-              <form onSubmit={handleAuthSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                {/* Tabs: Регистрация vs Вход */}
-                <div
+
+              {/* Callsign / Nickname Input */}
+              <div>
+                <label style={{ display: 'block', fontSize: '15px', color: '#e2d7c5', marginBottom: '8px', fontWeight: 700 }}>
+                  Позывной Мастера (Имя персонажа на арене):
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="admin"
+                  value={nickname}
+                  onChange={(e) => setNickname(e.target.value)}
                   style={{
-                    display: 'grid',
-                    gridTemplateColumns: '1fr 1fr',
-                    gap: '10px',
-                    backgroundColor: 'rgba(0,0,0,0.55)',
-                    padding: '6px',
+                    width: '100%',
+                    boxSizing: 'border-box',
+                    padding: '16px 20px',
                     borderRadius: '14px',
-                    border: '1.5px solid rgba(212, 175, 55, 0.3)',
+                    backgroundColor: 'rgba(0, 0, 0, 0.75)',
+                    border: '1.5px solid rgba(212, 175, 55, 0.5)',
+                    color: '#ffffff',
+                    fontSize: '17px',
+                    fontWeight: 700,
+                    outline: 'none',
+                    letterSpacing: '0.5px',
                   }}
-                >
-                  <button
-                    type="button"
-                    onClick={() => setAuthMode('register')}
-                    style={{
-                      padding: '14px',
-                      borderRadius: '10px',
-                      border: 'none',
-                      background: authMode === 'register' ? 'rgba(212, 175, 55, 0.28)' : 'transparent',
-                      color: authMode === 'register' ? '#FFE07D' : '#9ca3af',
-                      fontSize: '16px',
-                      fontWeight: 800,
-                      cursor: 'pointer',
-                      fontFamily: "'Philosopher', serif",
-                    }}
-                  >
-                    Создать аккаунт
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setAuthMode('login')}
-                    style={{
-                      padding: '14px',
-                      borderRadius: '10px',
-                      border: 'none',
-                      background: authMode === 'login' ? 'rgba(212, 175, 55, 0.28)' : 'transparent',
-                      color: authMode === 'login' ? '#FFE07D' : '#9ca3af',
-                      fontSize: '16px',
-                      fontWeight: 800,
-                      cursor: 'pointer',
-                      fontFamily: "'Philosopher', serif",
-                    }}
-                  >
-                    Войти в аккаунт
-                  </button>
+                />
+                <div style={{ fontSize: '12px', color: '#9ca3af', marginTop: '6px' }}>
+                  1-й уровень, 0 XP • Честный старт для всех воинов
                 </div>
+              </div>
 
-                {/* Starter Bonus Callout */}
-                {authMode === 'register' && (
-                  <div
-                    style={{
-                      padding: '14px 20px',
-                      borderRadius: '14px',
-                      backgroundColor: 'rgba(212, 175, 55, 0.15)',
-                      border: '1.5px solid rgba(212, 175, 55, 0.45)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-around',
-                    }}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      <GoldCoinGlyph size={22} color="#f59e0b" glow />
-                      <span style={{ fontSize: '15px', fontWeight: 900, color: '#f59e0b' }}>+500 Золота</span>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      <CrystalGlyph size={22} color="#60a5fa" glow />
-                      <span style={{ fontSize: '15px', fontWeight: 900, color: '#60a5fa' }}>+50 Кристаллов</span>
-                    </div>
-                  </div>
-                )}
+              {/* Big Golden Action Button: В БОЙ */}
+              <ShinyGoldButton
+                type="submit"
+                style={{ width: '100%', padding: '22px 32px', fontSize: '19px', marginTop: '4px' }}
+              >
+                <SwordGlyph size={26} color="#120d04" />
+                <span>В БОЙ • ИГРАТЬ В БРАУЗЕРЕ</span>
+              </ShinyGoldButton>
 
-                {/* Inputs with high contrast and readable 16px sizing */}
-                {authMode === 'register' && (
-                  <div>
-                    <label style={{ display: 'block', fontSize: '14px', color: '#e2d7c5', marginBottom: '8px', fontWeight: 600 }}>
-                      Позывной Мастера (Логин на сайте и имя в игре)
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="admin"
-                      value={nickname}
-                      onChange={(e) => setNickname(e.target.value)}
-                      style={{
-                        width: '100%',
-                        boxSizing: 'border-box',
-                        padding: '16px 20px',
-                        borderRadius: '14px',
-                        backgroundColor: 'rgba(0, 0, 0, 0.7)',
-                        border: '1.5px solid rgba(212, 175, 55, 0.4)',
-                        color: '#ffffff',
-                        fontSize: '16px',
-                        outline: 'none',
-                      }}
-                    />
-                  </div>
-                )}
-
+              {/* Honest Persistence Notice */}
+              <div
+                style={{
+                  backgroundColor: 'rgba(255, 255, 255, 0.03)',
+                  border: '1px solid rgba(212, 175, 55, 0.25)',
+                  borderRadius: '14px',
+                  padding: '14px 18px',
+                  fontSize: '13px',
+                  lineHeight: 1.5,
+                  color: '#b5a695',
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: '12px',
+                }}
+              >
+                <span style={{ fontSize: '20px', flexShrink: 0 }}>💾</span>
                 <div>
-                  <label style={{ display: 'block', fontSize: '14px', color: '#e2d7c5', marginBottom: '8px', fontWeight: 600 }}>
-                    Email (для защиты учетной записи и сохранения прогресса)
-                  </label>
-                  <input
-                    type="email"
-                    required
-                    placeholder="name@example.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    style={{
-                      width: '100%',
-                      boxSizing: 'border-box',
-                      padding: '16px 20px',
-                      borderRadius: '14px',
-                      backgroundColor: 'rgba(0, 0, 0, 0.7)',
-                      border: '1.5px solid rgba(212, 175, 55, 0.4)',
-                      color: '#ffffff',
-                      fontSize: '16px',
-                      outline: 'none',
-                    }}
-                  />
+                  <strong style={{ color: '#FFE07D', display: 'block', marginBottom: '2px' }}>
+                    100% Локальное сохранение прогресса
+                  </strong>
+                  Ваш прогресс надежно сохраняется в локальном хранилище браузера (LocalStorage / IndexedDB).
+                  Для синхронизации между устройствами доступен запуск через VK Mini Apps.
                 </div>
-
-                <div>
-                  <label style={{ display: 'block', fontSize: '14px', color: '#e2d7c5', marginBottom: '8px', fontWeight: 600 }}>
-                    Пароль
-                  </label>
-                  <input
-                    type="password"
-                    required
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    style={{
-                      width: '100%',
-                      boxSizing: 'border-box',
-                      padding: '16px 20px',
-                      borderRadius: '14px',
-                      backgroundColor: 'rgba(0, 0, 0, 0.7)',
-                      border: '1.5px solid rgba(212, 175, 55, 0.4)',
-                      color: '#ffffff',
-                      fontSize: '16px',
-                      outline: 'none',
-                    }}
-                  />
-                </div>
-
-                {formMsg && (
-                  <div
-                    style={{
-                      fontSize: '14px',
-                      fontWeight: 600,
-                      color: formMsg.isError ? '#f87171' : '#4ade80',
-                      textAlign: 'center',
-                    }}
-                  >
-                    {formMsg.text}
-                  </div>
-                )}
-
-                {/* Submit Shiny Gold Button */}
-                <ShinyGoldButton
-                  type="submit"
-                  onClick={() => handleAuthSubmit()}
-                  style={{ width: '100%', padding: '22px 32px', fontSize: '18px', marginTop: '8px' }}
-                >
-                  <ShieldGlyph size={24} color="#120d04" />
-                  <span>
-                    {authMode === 'register' ? 'СОЗДАТЬ МАСТЕР-АККАУНТ И НАЧАТЬ С 0' : 'ВОЙТИ В МАСТЕР-АККАУНТ'}
-                  </span>
-                </ShinyGoldButton>
-
-                <div
-                  style={{
-                    textAlign: 'center',
-                    fontSize: '12px',
-                    color: '#9ca3af',
-                    marginTop: '8px',
-                    lineHeight: 1.5,
-                  }}
-                >
-                  🔒 Регистрация на сайте гарантирует 100% сохранение прогресса персонажа
-                </div>
-              </form>
-            )}
+              </div>
+            </form>
           </HudCard>
         </div>
       </div>

@@ -112,7 +112,7 @@ class PortalSyncBridgeService {
             storeState.name ||
             localProfile?.name ||
             localStorage.getItem('mow_player_name') ||
-            'Дикий Мастер';
+            'admin';
 
         const selectedHeroId =
             storeState.selectedHeroId ||

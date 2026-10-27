@@ -198,7 +198,7 @@ export const PortalHallOfFame: React.FC<PortalHallOfFameProps> = ({ onChallengeP
               marginBottom: '14px',
             }}
           >
-            <TrophyGlyph size={16} color="#d4af37" glow /> ЗАЛ ЧЕМПИОНОВ S1: ДИКИЕ ЗЕМЛИ
+            <TrophyGlyph size={16} color="#d4af37" glow /> ЗАЛ СЛАВЫ: АРЕНА ДИКОЗЕМЬЯ
           </div>
           <h2
             style={{
@@ -212,7 +212,7 @@ export const PortalHallOfFame: React.FC<PortalHallOfFameProps> = ({ onChallengeP
             Чертоги Славы & PvP Арена
           </h2>
           <p style={{ margin: '0 auto', maxWidth: '640px', fontSize: '15px', color: '#a39886', lineHeight: 1.6 }}>
-            Сильнейшие воины нашего сервера. Сражайтесь на PvP Арене, накапливайте боевой рейтинг
+            Сильнейшие воины соревновательной арены. Сражайтесь на PvP Арене, накапливайте боевой рейтинг
             и бросайте персональные вызовы другим игрокам через прямые P2P дуэли.
           </p>
         </div>

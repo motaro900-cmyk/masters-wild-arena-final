@@ -408,7 +408,7 @@ export const PortalGameShowcase: React.FC<PortalGameShowcaseProps> = ({
                     MASTERS OF THE WILD
                   </div>
                   <div style={{ fontSize: '11px', color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.8px' }}>
-                    mastersofthewild.ru • wildgames.ru
+                    Официальный портал • mastersofthewild.ru
                   </div>
                 </div>
               </div>
@@ -460,7 +460,7 @@ export const PortalGameShowcase: React.FC<PortalGameShowcaseProps> = ({
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <span style={{ color: '#9ca3af' }}>Сохранение:</span>
-                  <span style={{ color: '#f59e0b', fontWeight: 800 }}>100% Облачный профиль персонажа</span>
+                  <span style={{ color: '#f59e0b', fontWeight: 800 }}>Локально (LocalStorage / IndexedDB) + VK</span>
                 </div>
               </div>
             </div>
@@ -491,7 +491,7 @@ export const PortalGameShowcase: React.FC<PortalGameShowcaseProps> = ({
                   gap: '10px',
                 }}
               >
-                <span>{isLoggedIn ? 'ПЕРЕЙТИ К ИГРЕ (АККАУНТ АКТИВЕН)' : 'СОЗДАТЬ АККАУНТ И НАЧАТЬ С 0'}</span>
+                <span>ИГРАТЬ В БРАУЗЕРЕ (В 1 КЛИК)</span>
                 <span>→</span>
               </button>
               <div
@@ -502,7 +502,7 @@ export const PortalGameShowcase: React.FC<PortalGameShowcaseProps> = ({
                   marginTop: '10px',
                 }}
               >
-                ✓ Полная синхронизация прогресса на сервере
+                ✓ Мгновенный запуск без скачивания • Локальное сохранение
               </div>
             </div>
           </div>
@@ -540,7 +540,7 @@ export const PortalGameShowcase: React.FC<PortalGameShowcaseProps> = ({
             </h4>
             <p style={{ fontSize: '14px', lineHeight: 1.6, color: '#d4c7b6', margin: 0 }}>
               Никаких платных преимуществ и раздутых статов. Каждый мастер начинает с чистого листа: 1-й уровень,
-              стартовый чемпион Фэн Лун и честный путь развития через арены и победы.
+              стартовый чемпион Боевой Панда (Фэн Лун, Мастер Дао) и честный путь развития.
             </p>
           </div>
 
@@ -564,11 +564,11 @@ export const PortalGameShowcase: React.FC<PortalGameShowcaseProps> = ({
                 margin: '0 0 10px 0',
               }}
             >
-              100% Защита прогресса
+              Надежное сохранение
             </h4>
             <p style={{ fontSize: '14px', lineHeight: 1.6, color: '#d4c7b6', margin: 0 }}>
-              Регистрация на сайте mastersofthewild.ru навсегда связывает ваш прогресс с защищенной учетной записью.
-              Сражайтесь дома на ПК или в дороге с телефона — прогресс непрерывен.
+              Ваш прогресс надежно сохраняется в локальной памяти браузера (LocalStorage / IndexedDB).
+              Сражайтесь дома на ПК или в дороге с телефона без потери снаряжения.
             </p>
           </div>
 

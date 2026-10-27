@@ -179,7 +179,7 @@ export const PortalHeader: React.FC<PortalHeaderProps> = ({
                 boxShadow: '0 0 8px #22c55e',
               }}
             />
-            <span>{SERVER_NAME} ({SERVER_ONLINE_STRING} онлайн)</span>
+            <span>Версия 1.0 HD • Онлайн</span>
           </div>
         </div>
 
@@ -246,27 +246,27 @@ export const PortalHeader: React.FC<PortalHeaderProps> = ({
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              onClick={() => scrollTo('hero')}
+              onClick={onLaunchGame}
               style={{
-                padding: '10px 20px',
+                padding: '10px 22px',
                 borderRadius: '10px',
-                border: '1.5px solid rgba(212, 175, 55, 0.6)',
-                background: 'rgba(212, 175, 55, 0.15)',
-                color: '#FFE07D',
+                border: 'none',
+                background: 'linear-gradient(135deg, #FFE07D 0%, #d4af37 100%)',
+                color: '#120d04',
                 fontSize: '14px',
-                fontWeight: 800,
+                fontWeight: 900,
                 fontFamily: "'Philosopher', serif",
-                letterSpacing: '0.8px',
+                letterSpacing: '1px',
                 cursor: 'pointer',
-                boxShadow: '0 4px 14px rgba(0, 0, 0, 0.4)',
+                boxShadow: '0 4px 18px rgba(212, 175, 55, 0.45)',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '8px',
                 whiteSpace: 'nowrap',
               }}
             >
-              <ShieldGlyph size={16} color="#FFE07D" />
-              <span>СОЗДАТЬ АККАУНТ</span>
+              <SwordGlyph size={16} color="#120d04" />
+              <span>ИГРАТЬ СЕЙЧАС</span>
             </motion.button>
           )}
 
@@ -363,9 +363,9 @@ export const PortalHeader: React.FC<PortalHeaderProps> = ({
                       boxShadow: '0 0 8px #22c55e',
                     }}
                   />
-                  <span>Сервер {SERVER_NAME}</span>
+                  <span>Клиент v1.0 HD</span>
                 </div>
-                <span style={{ fontWeight: 700 }}>{SERVER_ONLINE_STRING} онлайн</span>
+                <span style={{ fontWeight: 700 }}>Онлайн</span>
               </div>
 
               {/* Mobile Links */}
@@ -426,14 +426,17 @@ export const PortalHeader: React.FC<PortalHeaderProps> = ({
                 </button>
               ) : (
                 <button
-                  onClick={() => scrollTo('hero')}
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    onLaunchGame();
+                  }}
                   style={{
                     width: '100%',
                     padding: '14px',
                     borderRadius: '10px',
-                    border: '1.5px solid rgba(212, 175, 55, 0.6)',
-                    background: 'rgba(212, 175, 55, 0.15)',
-                    color: '#FFE07D',
+                    border: 'none',
+                    background: 'linear-gradient(135deg, #FFE07D 0%, #d4af37 100%)',
+                    color: '#120d04',
                     fontSize: '15px',
                     fontWeight: 900,
                     fontFamily: "'Philosopher', serif",
@@ -444,8 +447,8 @@ export const PortalHeader: React.FC<PortalHeaderProps> = ({
                     gap: '8px',
                   }}
                 >
-                  <ShieldGlyph size={18} color="#FFE07D" />
-                  <span>СОЗДАТЬ АККАУНТ</span>
+                  <SwordGlyph size={18} color="#120d04" />
+                  <span>ИГРАТЬ СЕЙЧАС (В 1 КЛИК)</span>
                 </button>
               )}
             </motion.div>
